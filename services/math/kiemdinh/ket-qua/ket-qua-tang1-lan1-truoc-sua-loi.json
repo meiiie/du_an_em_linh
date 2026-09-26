@@ -1,0 +1,2721 @@
+{
+ "truy_vet": {
+  "bo_de": "bo-de-kiem-thu/cac-ca.yaml",
+  "sha256_bo_de": "814a329c0f34a00909ccfaf3d39a11ba50c3692f14036ee9d95b6eb79b26cc56",
+  "phien_ban_bo_de": "1.0",
+  "phien_ban_sympy": "1.14.0",
+  "phien_ban_python": "3.13.5",
+  "phien_ban_bo_kiem": "tang1-thu-nghiem-0.1",
+  "phien_ban_bang_cong_thuc": null,
+  "tai_lieu_da_dung": [],
+  "thoi_diem_kiem": "2026-09-27T00:00:01+07:00",
+  "timeout_moi_ca_s": 30
+ },
+ "thoi_gian": {
+  "nap_sympy_va_bo_kiem_s": 0.2,
+  "chay_toan_bo_s": 1.9,
+  "trung_binh_ms_moi_ca": 18.6,
+  "cham_nhat": [
+   [
+    88.3,
+    "L01"
+   ],
+   [
+    87.0,
+    "C23"
+   ],
+   [
+    83.2,
+    "L29"
+   ],
+   [
+    79.0,
+    "C02"
+   ],
+   [
+    72.1,
+    "BC1"
+   ]
+  ]
+ },
+ "tong_hop": {
+  "so_ca": 102,
+  "so_ca_loi": 69,
+  "so_ca_dung": 33,
+  "loi_bat_duoc": 67,
+  "loi_bo_lot_DAT": 0,
+  "loi_khong_kiem_duoc": 2,
+  "recall": 0.971,
+  "ti_le_loi_bi_cham_DAT": 0.0,
+  "dung_dat": 31,
+  "dung_bao_nham": 1,
+  "dung_khong_kiem_duoc": 1,
+  "ti_le_bao_nham": 0.0303,
+  "ti_le_khong_kiem_duoc_tren_tat_ca": 0.0294,
+  "recall_tren_ca_hinh_thuc_hoa_duoc": {
+   "so_ca_loi": 67,
+   "bat_duoc": 67,
+   "recall": 1.0
+  }
+ },
+ "theo_nhom": {
+  "sai_dau": {
+   "so_ca": 5,
+   "bat_duoc": 5,
+   "bo_lot": 0,
+   "khong_kiem_duoc": 0,
+   "dat_dung": 0,
+   "bao_nham": 0
+  },
+  "dieu_kien_xac_dinh": {
+   "so_ca": 9,
+   "bat_duoc": 9,
+   "bo_lot": 0,
+   "khong_kiem_duoc": 0,
+   "dat_dung": 0,
+   "bao_nham": 0
+  },
+  "don_vi": {
+   "so_ca": 4,
+   "bat_duoc": 4,
+   "bo_lot": 0,
+   "khong_kiem_duoc": 0,
+   "dat_dung": 0,
+   "bao_nham": 0
+  },
+  "bia_cong_thuc": {
+   "so_ca": 7,
+   "bat_duoc": 7,
+   "bo_lot": 0,
+   "khong_kiem_duoc": 0,
+   "dat_dung": 0,
+   "bao_nham": 0
+  },
+  "mat_thua_nghiem": {
+   "so_ca": 4,
+   "bat_duoc": 4,
+   "bo_lot": 0,
+   "khong_kiem_duoc": 0,
+   "dat_dung": 0,
+   "bao_nham": 0
+  },
+  "chia_cho_0": {
+   "so_ca": 4,
+   "bat_duoc": 4,
+   "bo_lot": 0,
+   "khong_kiem_duoc": 0,
+   "dat_dung": 0,
+   "bao_nham": 0
+  },
+  "luong_giac": {
+   "so_ca": 5,
+   "bat_duoc": 5,
+   "bo_lot": 0,
+   "khong_kiem_duoc": 0,
+   "dat_dung": 0,
+   "bao_nham": 0
+  },
+  "bpt_nhan_so_am": {
+   "so_ca": 5,
+   "bat_duoc": 5,
+   "bo_lot": 0,
+   "khong_kiem_duoc": 0,
+   "dat_dung": 0,
+   "bao_nham": 0
+  },
+  "tich_phan_nguyen_ham": {
+   "so_ca": 6,
+   "bat_duoc": 6,
+   "bo_lot": 0,
+   "khong_kiem_duoc": 0,
+   "dat_dung": 0,
+   "bao_nham": 0
+  },
+  "to_hop_xac_suat": {
+   "so_ca": 5,
+   "bat_duoc": 5,
+   "bo_lot": 0,
+   "khong_kiem_duoc": 0,
+   "dat_dung": 0,
+   "bao_nham": 0
+  },
+  "dao_ham_don_dieu_cuc_tri": {
+   "so_ca": 13,
+   "bat_duoc": 13,
+   "bo_lot": 0,
+   "khong_kiem_duoc": 0,
+   "dat_dung": 0,
+   "bao_nham": 0
+  },
+  "loi_van_khong_kiem_duoc": {
+   "so_ca": 2,
+   "bat_duoc": 0,
+   "bo_lot": 0,
+   "khong_kiem_duoc": 2,
+   "dat_dung": 0,
+   "bao_nham": 0
+  },
+  "doi_chung": {
+   "so_ca": 33,
+   "bat_duoc": 0,
+   "bo_lot": 0,
+   "khong_kiem_duoc": 1,
+   "dat_dung": 31,
+   "bao_nham": 1
+  }
+ },
+ "dinh_vi_buoc_sai": {
+  "so_ca": 5,
+  "dung_buoc": 5,
+  "chi_tiet": [
+   {
+    "id": "B01",
+    "nhan": 3,
+    "may": 3,
+    "trang_thai": "SAI"
+   },
+   {
+    "id": "B02",
+    "nhan": 2,
+    "may": 2,
+    "trang_thai": "SAI"
+   },
+   {
+    "id": "B03",
+    "nhan": 3,
+    "may": 3,
+    "trang_thai": "SAI"
+   },
+   {
+    "id": "B04",
+    "nhan": 5,
+    "may": 5,
+    "trang_thai": "SAI"
+   },
+   {
+    "id": "B05",
+    "nhan": 3,
+    "may": 3,
+    "trang_thai": "SAI"
+   }
+  ]
+ },
+ "ca_loi_khong_bat_duoc": [
+  {
+   "id": "K01",
+   "nhom_loi": "loi_van_khong_kiem_duoc",
+   "trang_thai": "KHONG_KIEM_DUOC",
+   "chi_tiet": "Tầng 1 không kiểm được lập luận bằng lời; không được coi là ĐẠT"
+  },
+  {
+   "id": "K02",
+   "nhom_loi": "loi_van_khong_kiem_duoc",
+   "trang_thai": "KHONG_KIEM_DUOC",
+   "chi_tiet": "Tầng 1 không kiểm được ảnh viết tay chưa số hóa; không được coi là ĐẠT"
+  }
+ ],
+ "ca_dung_khong_dat": [
+  {
+   "id": "DC7",
+   "trang_thai": "SAI",
+   "chi_tiet": "giá trị cực đại: AI {1}, máy {1, 1}"
+  },
+  {
+   "id": "KC1",
+   "trang_thai": "KHONG_KIEM_DUOC",
+   "chi_tiet": "Tầng 1 không kiểm được lập luận bằng lời; không được coi là ĐẠT"
+  }
+ ],
+ "ket_qua_tung_ca": [
+  {
+   "id": "L01",
+   "nhom_loi": "sai_dau",
+   "nhan": "sai",
+   "buoc_sai_nhan": null,
+   "tang": 1,
+   "trang_thai": "SAI",
+   "buoc_sai": 1,
+   "loai_kiem": "khong_tuong_duong",
+   "chi_tiet": "Hai vế không bằng nhau trên miền (hoặc khác miền xác định)",
+   "phan_chung": {
+    "diem": {
+     "x": "1"
+    },
+    "gia_tri_1": "4.00000000000000",
+    "gia_tri_2": "16.0000000000000",
+    "ly_do": "giá trị khác nhau"
+   },
+   "bang_chung": "thay_so_huu_ti",
+   "canh_bao": [],
+   "ma_loi": null,
+   "do_tin_cay_ma_loi": null,
+   "thoi_gian_ms": 88.3,
+   "ket_cuc": "bat_duoc",
+   "trang_thai_noi_dung_mo_phong": "BI_CHAN"
+  },
+  {
+   "id": "L02",
+   "nhom_loi": "sai_dau",
+   "nhan": "sai",
+   "buoc_sai_nhan": null,
+   "tang": 1,
+   "trang_thai": "SAI",
+   "buoc_sai": 1,
+   "loai_kiem": "dao_ham_sai",
+   "chi_tiet": "y' của AI khác đạo hàm máy tính: -2*sin(2*x)",
+   "phan_chung": {
+    "diem": {
+     "x": "1"
+    },
+    "gia_tri_1": "-1.81859485365136",
+    "gia_tri_2": "1.81859485365136",
+    "ly_do": "giá trị khác nhau"
+   },
+   "bang_chung": "diff+thay_so_huu_ti",
+   "canh_bao": [],
+   "ma_loi": null,
+   "do_tin_cay_ma_loi": null,
+   "thoi_gian_ms": 16.1,
+   "ket_cuc": "bat_duoc",
+   "trang_thai_noi_dung_mo_phong": "BI_CHAN"
+  },
+  {
+   "id": "L03",
+   "nhom_loi": "sai_dau",
+   "nhan": "sai",
+   "buoc_sai_nhan": null,
+   "tang": 1,
+   "trang_thai": "SAI",
+   "buoc_sai": 1,
+   "loai_kiem": "thua_nghiem_khong_thoa",
+   "chi_tiet": "x = -2 không thỏa phương trình",
+   "phan_chung": {
+    "nghiem": "-2",
+    "gia_tri_hieu": "20"
+   },
+   "bang_chung": "the_nghiem_chinh_xac",
+   "canh_bao": [],
+   "ma_loi": null,
+   "do_tin_cay_ma_loi": null,
+   "thoi_gian_ms": 1.5,
+   "ket_cuc": "bat_duoc",
+   "trang_thai_noi_dung_mo_phong": "BI_CHAN"
+  },
+  {
+   "id": "L04",
+   "nhom_loi": "sai_dau",
+   "nhan": "sai",
+   "buoc_sai_nhan": null,
+   "tang": 1,
+   "trang_thai": "SAI",
+   "buoc_sai": 1,
+   "loai_kiem": "khong_tuong_duong",
+   "chi_tiet": "Hai vế không bằng nhau trên miền (hoặc khác miền xác định)",
+   "phan_chung": {
+    "diem": {
+     "x": "0"
+    },
+    "gia_tri_1": "2.00000000000000",
+    "gia_tri_2": "-2.00000000000000",
+    "ly_do": "giá trị khác nhau"
+   },
+   "bang_chung": "thay_so_huu_ti",
+   "canh_bao": [],
+   "ma_loi": null,
+   "do_tin_cay_ma_loi": null,
+   "thoi_gian_ms": 8.4,
+   "ket_cuc": "bat_duoc",
+   "trang_thai_noi_dung_mo_phong": "BI_CHAN"
+  },
+  {
+   "id": "L05",
+   "nhom_loi": "dieu_kien_xac_dinh",
+   "nhan": "sai",
+   "buoc_sai_nhan": null,
+   "tang": 1,
+   "trang_thai": "SAI",
+   "buoc_sai": 1,
+   "loai_kiem": "thua_nghiem_vi_pham_dkxd",
+   "chi_tiet": "x = -1 vi phạm điều kiện xác định",
+   "phan_chung": {
+    "nghiem": "-1",
+    "dieu_kien": [
+     "x > 0",
+     "x - 3 > 0"
+    ]
+   },
+   "bang_chung": "the_nghiem_chinh_xac",
+   "canh_bao": [],
+   "ma_loi": null,
+   "do_tin_cay_ma_loi": null,
+   "thoi_gian_ms": 11.9,
+   "ket_cuc": "bat_duoc",
+   "trang_thai_noi_dung_mo_phong": "BI_CHAN"
+  },
+  {
+   "id": "L06",
+   "nhom_loi": "dieu_kien_xac_dinh",
+   "nhan": "sai",
+   "buoc_sai_nhan": null,
+   "tang": 1,
+   "trang_thai": "SAI",
+   "buoc_sai": 1,
+   "loai_kiem": "thua_nghiem_khong_thoa",
+   "chi_tiet": "x = 1 không thỏa phương trình",
+   "phan_chung": {
+    "nghiem": "1",
+    "gia_tri_hieu": "4"
+   },
+   "bang_chung": "the_nghiem_chinh_xac",
+   "canh_bao": [],
+   "ma_loi": null,
+   "do_tin_cay_ma_loi": null,
+   "thoi_gian_ms": 2.0,
+   "ket_cuc": "bat_duoc",
+   "trang_thai_noi_dung_mo_phong": "BI_CHAN"
+  },
+  {
+   "id": "L07",
+   "nhom_loi": "dieu_kien_xac_dinh",
+   "nhan": "sai",
+   "buoc_sai_nhan": null,
+   "tang": 1,
+   "trang_thai": "SAI",
+   "buoc_sai": 1,
+   "loai_kiem": "khac_tap",
+   "chi_tiet": "Tập của AI khác tập máy tính; điểm chứng kiến x = 2: AI nói thuộc, kiểm trực tiếp là không thuộc",
+   "phan_chung": {
+    "x": "2",
+    "tap_ai": "Interval(-oo, 2)",
+    "tap_may": "Interval.open(-oo, 2)"
+   },
+   "bang_chung": "solveset+kiem_truc_tiep",
+   "canh_bao": [],
+   "ma_loi": null,
+   "do_tin_cay_ma_loi": null,
+   "thoi_gian_ms": 16.5,
+   "ket_cuc": "bat_duoc",
+   "trang_thai_noi_dung_mo_phong": "BI_CHAN"
+  },
+  {
+   "id": "L08",
+   "nhom_loi": "dieu_kien_xac_dinh",
+   "nhan": "sai",
+   "buoc_sai_nhan": null,
+   "tang": 1,
+   "trang_thai": "SAI",
+   "buoc_sai": 1,
+   "loai_kiem": "sai_mien_xac_dinh",
+   "chi_tiet": "Hai vế không bằng nhau trên miền đã nêu",
+   "phan_chung": {
+    "diem": {
+     "x": "-1"
+    },
+    "ly_do": "vế phải không xác định tại điểm thuộc miền đã nêu"
+   },
+   "bang_chung": "thay_so_huu_ti",
+   "canh_bao": [],
+   "ma_loi": null,
+   "do_tin_cay_ma_loi": null,
+   "thoi_gian_ms": 12.3,
+   "ket_cuc": "bat_duoc",
+   "trang_thai_noi_dung_mo_phong": "BI_CHAN"
+  },
+  {
+   "id": "L09",
+   "nhom_loi": "dieu_kien_xac_dinh",
+   "nhan": "sai",
+   "buoc_sai_nhan": null,
+   "tang": 1,
+   "trang_thai": "SAI",
+   "buoc_sai": 1,
+   "loai_kiem": "thua_nghiem_vi_pham_dkxd",
+   "chi_tiet": "x = 2 vi phạm điều kiện xác định",
+   "phan_chung": {
+    "nghiem": "2",
+    "dieu_kien": [
+     "Ne(x - 2, 0)"
+    ]
+   },
+   "bang_chung": "the_nghiem_chinh_xac",
+   "canh_bao": [],
+   "ma_loi": null,
+   "do_tin_cay_ma_loi": null,
+   "thoi_gian_ms": 1.7,
+   "ket_cuc": "bat_duoc",
+   "trang_thai_noi_dung_mo_phong": "BI_CHAN"
+  },
+  {
+   "id": "L10",
+   "nhom_loi": "dieu_kien_xac_dinh",
+   "nhan": "sai",
+   "buoc_sai_nhan": null,
+   "tang": 1,
+   "trang_thai": "SAI",
+   "buoc_sai": 1,
+   "loai_kiem": "thua_nghiem_vi_pham_dkxd",
+   "chi_tiet": "Họ 2*pi*k + pi/2 chứa x = -15*pi/2 vi phạm ĐKXĐ",
+   "phan_chung": {
+    "ho": "2*pi*k + pi/2",
+    "k": -4,
+    "x": "-15*pi/2"
+   },
+   "bang_chung": "the_nghiem_chinh_xac",
+   "canh_bao": [],
+   "ma_loi": null,
+   "do_tin_cay_ma_loi": null,
+   "thoi_gian_ms": 3.0,
+   "ket_cuc": "bat_duoc",
+   "trang_thai_noi_dung_mo_phong": "BI_CHAN"
+  },
+  {
+   "id": "L11",
+   "nhom_loi": "dieu_kien_xac_dinh",
+   "nhan": "sai",
+   "buoc_sai_nhan": null,
+   "tang": 1,
+   "trang_thai": "SAI",
+   "buoc_sai": 1,
+   "loai_kiem": "thua_nghiem_vi_pham_dkxd",
+   "chi_tiet": "x = -2 vi phạm điều kiện xác định",
+   "phan_chung": {
+    "nghiem": "-2",
+    "dieu_kien": [
+     "Ne(log(x), 0)",
+     "x > 0"
+    ]
+   },
+   "bang_chung": "the_nghiem_chinh_xac",
+   "canh_bao": [],
+   "ma_loi": null,
+   "do_tin_cay_ma_loi": null,
+   "thoi_gian_ms": 4.8,
+   "ket_cuc": "bat_duoc",
+   "trang_thai_noi_dung_mo_phong": "BI_CHAN"
+  },
+  {
+   "id": "L12",
+   "nhom_loi": "don_vi",
+   "nhan": "sai",
+   "buoc_sai_nhan": null,
+   "tang": 1,
+   "trang_thai": "SAI",
+   "buoc_sai": 1,
+   "loai_kiem": "sai_gia_tri_doi_don_vi",
+   "chi_tiet": "Cùng thứ nguyên nhưng giá trị khác: trái/phải = 25/9",
+   "phan_chung": {
+    "trai_SI": "20*meter/second",
+    "phai_SI": "36*meter/(5*second)"
+   },
+   "bang_chung": "sympy.physics.units",
+   "canh_bao": [],
+   "ma_loi": null,
+   "do_tin_cay_ma_loi": null,
+   "thoi_gian_ms": 12.3,
+   "ket_cuc": "bat_duoc",
+   "trang_thai_noi_dung_mo_phong": "BI_CHAN"
+  },
+  {
+   "id": "L13",
+   "nhom_loi": "don_vi",
+   "nhan": "sai",
+   "buoc_sai_nhan": null,
+   "tang": 1,
+   "trang_thai": "SAI",
+   "buoc_sai": 1,
+   "loai_kiem": "sai_gia_tri_doi_don_vi",
+   "chi_tiet": "Cùng thứ nguyên nhưng giá trị khác: trái/phải = 1/100",
+   "phan_chung": {
+    "trai_SI": "meter**2",
+    "phai_SI": "100*meter**2"
+   },
+   "bang_chung": "sympy.physics.units",
+   "canh_bao": [],
+   "ma_loi": null,
+   "do_tin_cay_ma_loi": null,
+   "thoi_gian_ms": 7.9,
+   "ket_cuc": "bat_duoc",
+   "trang_thai_noi_dung_mo_phong": "BI_CHAN"
+  },
+  {
+   "id": "L14",
+   "nhom_loi": "don_vi",
+   "nhan": "sai",
+   "buoc_sai_nhan": null,
+   "tang": 1,
+   "trang_thai": "SAI",
+   "buoc_sai": 1,
+   "loai_kiem": "sai_thu_nguyen",
+   "chi_tiet": "Thứ nguyên hai vế khác nhau: length vs length/time",
+   "phan_chung": {
+    "thu_nguyen_trai": "length",
+    "thu_nguyen_phai": "length/time"
+   },
+   "bang_chung": "sympy.physics.units",
+   "canh_bao": [],
+   "ma_loi": null,
+   "do_tin_cay_ma_loi": null,
+   "thoi_gian_ms": 0.9,
+   "ket_cuc": "bat_duoc",
+   "trang_thai_noi_dung_mo_phong": "BI_CHAN"
+  },
+  {
+   "id": "L15",
+   "nhom_loi": "don_vi",
+   "nhan": "sai",
+   "buoc_sai_nhan": null,
+   "tang": 1,
+   "trang_thai": "SAI",
+   "buoc_sai": 1,
+   "loai_kiem": "sai_gia_tri_doi_don_vi",
+   "chi_tiet": "Cùng thứ nguyên nhưng giá trị khác: trái/phải = 10",
+   "phan_chung": {
+    "trai_SI": "meter**3/1000",
+    "phai_SI": "meter**3/10000"
+   },
+   "bang_chung": "sympy.physics.units",
+   "canh_bao": [],
+   "ma_loi": null,
+   "do_tin_cay_ma_loi": null,
+   "thoi_gian_ms": 4.7,
+   "ket_cuc": "bat_duoc",
+   "trang_thai_noi_dung_mo_phong": "BI_CHAN"
+  },
+  {
+   "id": "L16",
+   "nhom_loi": "bia_cong_thuc",
+   "nhan": "sai",
+   "buoc_sai_nhan": null,
+   "tang": 1,
+   "trang_thai": "SAI",
+   "buoc_sai": 1,
+   "loai_kiem": "khong_tuong_duong",
+   "chi_tiet": "Hai vế không bằng nhau trên miền (hoặc khác miền xác định)",
+   "phan_chung": {
+    "diem": {
+     "a": "-8/3",
+     "b": "3"
+    },
+    "gia_tri_1": "0.111111111111111",
+    "gia_tri_2": "16.1111111111111",
+    "ly_do": "giá trị khác nhau"
+   },
+   "bang_chung": "thay_so_huu_ti",
+   "canh_bao": [],
+   "ma_loi": null,
+   "do_tin_cay_ma_loi": null,
+   "thoi_gian_ms": 9.5,
+   "ket_cuc": "bat_duoc",
+   "trang_thai_noi_dung_mo_phong": "BI_CHAN"
+  },
+  {
+   "id": "L17",
+   "nhom_loi": "bia_cong_thuc",
+   "nhan": "sai",
+   "buoc_sai_nhan": null,
+   "tang": 1,
+   "trang_thai": "SAI",
+   "buoc_sai": 1,
+   "loai_kiem": "khong_tuong_duong",
+   "chi_tiet": "Hai vế không bằng nhau trên miền đã nêu",
+   "phan_chung": {
+    "diem": {
+     "a": "11",
+     "b": "39"
+    },
+    "gia_tri_1": "3.91202300542815",
+    "gia_tri_2": "6.06145691892802",
+    "ly_do": "giá trị khác nhau"
+   },
+   "bang_chung": "thay_so_huu_ti",
+   "canh_bao": [],
+   "ma_loi": null,
+   "do_tin_cay_ma_loi": null,
+   "thoi_gian_ms": 16.3,
+   "ket_cuc": "bat_duoc",
+   "trang_thai_noi_dung_mo_phong": "BI_CHAN"
+  },
+  {
+   "id": "L18",
+   "nhom_loi": "bia_cong_thuc",
+   "nhan": "sai",
+   "buoc_sai_nhan": null,
+   "tang": 1,
+   "trang_thai": "SAI",
+   "buoc_sai": 1,
+   "loai_kiem": "khong_tuong_duong",
+   "chi_tiet": "Hai vế không bằng nhau trên miền (hoặc khác miền xác định)",
+   "phan_chung": {
+    "diem": {
+     "a": "-8/3",
+     "b": "3"
+    },
+    "gia_tri_1": "0.327194696796152",
+    "gia_tri_2": "-0.316152618575945",
+    "ly_do": "giá trị khác nhau"
+   },
+   "bang_chung": "thay_so_huu_ti",
+   "canh_bao": [],
+   "ma_loi": null,
+   "do_tin_cay_ma_loi": null,
+   "thoi_gian_ms": 34.7,
+   "ket_cuc": "bat_duoc",
+   "trang_thai_noi_dung_mo_phong": "BI_CHAN"
+  },
+  {
+   "id": "L19",
+   "nhom_loi": "bia_cong_thuc",
+   "nhan": "sai",
+   "buoc_sai_nhan": null,
+   "tang": 1,
+   "trang_thai": "SAI",
+   "buoc_sai": 1,
+   "loai_kiem": "khong_tuong_duong",
+   "chi_tiet": "Hai vế không bằng nhau trên miền đã nêu",
+   "phan_chung": {
+    "diem": {
+     "a": "11",
+     "b": "39"
+    },
+    "gia_tri_1": "40.5215991787096",
+    "gia_tri_2": "50.0000000000000",
+    "ly_do": "giá trị khác nhau"
+   },
+   "bang_chung": "thay_so_huu_ti",
+   "canh_bao": [],
+   "ma_loi": null,
+   "do_tin_cay_ma_loi": null,
+   "thoi_gian_ms": 10.3,
+   "ket_cuc": "bat_duoc",
+   "trang_thai_noi_dung_mo_phong": "BI_CHAN"
+  },
+  {
+   "id": "L20",
+   "nhom_loi": "bia_cong_thuc",
+   "nhan": "sai",
+   "buoc_sai_nhan": null,
+   "tang": 1,
+   "trang_thai": "SAI",
+   "buoc_sai": 1,
+   "loai_kiem": "dao_ham_sai",
+   "chi_tiet": "y' của AI khác đạo hàm máy tính: 2*x/(x - 1) - (x**2 + 1)/(x - 1)**2",
+   "phan_chung": {
+    "diem": {
+     "x": "0"
+    },
+    "gia_tri_1": "-1.00000000000000",
+    "gia_tri_2": "0",
+    "ly_do": "giá trị khác nhau"
+   },
+   "bang_chung": "diff+thay_so_huu_ti",
+   "canh_bao": [],
+   "ma_loi": null,
+   "do_tin_cay_ma_loi": null,
+   "thoi_gian_ms": 29.6,
+   "ket_cuc": "bat_duoc",
+   "trang_thai_noi_dung_mo_phong": "BI_CHAN"
+  },
+  {
+   "id": "L21",
+   "nhom_loi": "bia_cong_thuc",
+   "nhan": "sai",
+   "buoc_sai_nhan": null,
+   "tang": 1,
+   "trang_thai": "SAI",
+   "buoc_sai": 1,
+   "loai_kiem": "khong_tuong_duong",
+   "chi_tiet": "Hai vế không bằng nhau trên miền (hoặc khác miền xác định)",
+   "phan_chung": {
+    "diem": {
+     "x": "0"
+    },
+    "gia_tri_1": "1.00000000000000",
+    "gia_tri_2": "-1.00000000000000",
+    "ly_do": "giá trị khác nhau"
+   },
+   "bang_chung": "thay_so_huu_ti",
+   "canh_bao": [],
+   "ma_loi": null,
+   "do_tin_cay_ma_loi": null,
+   "thoi_gian_ms": 22.7,
+   "ket_cuc": "bat_duoc",
+   "trang_thai_noi_dung_mo_phong": "BI_CHAN"
+  },
+  {
+   "id": "L22",
+   "nhom_loi": "bia_cong_thuc",
+   "nhan": "sai",
+   "buoc_sai_nhan": null,
+   "tang": 1,
+   "trang_thai": "SAI",
+   "buoc_sai": 1,
+   "loai_kiem": "dao_ham_sai",
+   "chi_tiet": "y' của AI khác đạo hàm máy tính: 2**x*log(2)",
+   "phan_chung": {
+    "diem": {
+     "x": "0"
+    },
+    "gia_tri_1": "0.693147180559945",
+    "gia_tri_2": "0",
+    "ly_do": "giá trị khác nhau"
+   },
+   "bang_chung": "diff+thay_so_huu_ti",
+   "canh_bao": [],
+   "ma_loi": null,
+   "do_tin_cay_ma_loi": null,
+   "thoi_gian_ms": 14.2,
+   "ket_cuc": "bat_duoc",
+   "trang_thai_noi_dung_mo_phong": "BI_CHAN"
+  },
+  {
+   "id": "L24",
+   "nhom_loi": "mat_thua_nghiem",
+   "nhan": "sai",
+   "buoc_sai_nhan": null,
+   "tang": 1,
+   "trang_thai": "SAI",
+   "buoc_sai": 1,
+   "loai_kiem": "mat_nghiem",
+   "chi_tiet": "Máy tìm thấy nghiệm bị bỏ sót: {-3}",
+   "phan_chung": {
+    "nghiem_bi_mat": [
+     "-3"
+    ],
+    "tap_nghiem_may": "{-3, 3}"
+   },
+   "bang_chung": "giai_lai+the_nguoc (solveset)",
+   "canh_bao": [],
+   "ma_loi": null,
+   "do_tin_cay_ma_loi": null,
+   "thoi_gian_ms": 3.3,
+   "ket_cuc": "bat_duoc",
+   "trang_thai_noi_dung_mo_phong": "BI_CHAN"
+  },
+  {
+   "id": "L25",
+   "nhom_loi": "mat_thua_nghiem",
+   "nhan": "sai",
+   "buoc_sai_nhan": null,
+   "tang": 1,
+   "trang_thai": "SAI",
+   "buoc_sai": 1,
+   "loai_kiem": "mat_nghiem",
+   "chi_tiet": "Máy tìm thấy nghiệm bị bỏ sót: {-2}",
+   "phan_chung": {
+    "nghiem_bi_mat": [
+     "-2"
+    ],
+    "tap_nghiem_may": "{-2, 1}"
+   },
+   "bang_chung": "giai_lai+the_nguoc (solveset)",
+   "canh_bao": [],
+   "ma_loi": null,
+   "do_tin_cay_ma_loi": null,
+   "thoi_gian_ms": 6.1,
+   "ket_cuc": "bat_duoc",
+   "trang_thai_noi_dung_mo_phong": "BI_CHAN"
+  },
+  {
+   "id": "L26",
+   "nhom_loi": "mat_thua_nghiem",
+   "nhan": "sai",
+   "buoc_sai_nhan": null,
+   "tang": 1,
+   "trang_thai": "SAI",
+   "buoc_sai": 1,
+   "loai_kiem": "thua_nghiem_khong_thoa",
+   "chi_tiet": "x = -2 không thỏa phương trình",
+   "phan_chung": {
+    "nghiem": "-2",
+    "gia_tri_hieu": "6"
+   },
+   "bang_chung": "the_nghiem_chinh_xac",
+   "canh_bao": [],
+   "ma_loi": null,
+   "do_tin_cay_ma_loi": null,
+   "thoi_gian_ms": 1.3,
+   "ket_cuc": "bat_duoc",
+   "trang_thai_noi_dung_mo_phong": "BI_CHAN"
+  },
+  {
+   "id": "L27",
+   "nhom_loi": "mat_thua_nghiem",
+   "nhan": "sai",
+   "buoc_sai_nhan": null,
+   "tang": 1,
+   "trang_thai": "SAI",
+   "buoc_sai": 1,
+   "loai_kiem": "mat_nghiem",
+   "chi_tiet": "Máy tìm thấy nghiệm bị bỏ sót: {0}",
+   "phan_chung": {
+    "nghiem_bi_mat": [
+     "0"
+    ],
+    "tap_nghiem_may": "{0, log(2)}"
+   },
+   "bang_chung": "giai_lai+the_nguoc (solveset)",
+   "canh_bao": [],
+   "ma_loi": null,
+   "do_tin_cay_ma_loi": null,
+   "thoi_gian_ms": 12.3,
+   "ket_cuc": "bat_duoc",
+   "trang_thai_noi_dung_mo_phong": "BI_CHAN"
+  },
+  {
+   "id": "L23",
+   "nhom_loi": "chia_cho_0",
+   "nhan": "sai",
+   "buoc_sai_nhan": null,
+   "tang": 1,
+   "trang_thai": "SAI",
+   "buoc_sai": 1,
+   "loai_kiem": "mat_nghiem",
+   "chi_tiet": "Máy tìm thấy nghiệm bị bỏ sót: {0}",
+   "phan_chung": {
+    "nghiem_bi_mat": [
+     "0"
+    ],
+    "tap_nghiem_may": "{-2, 0, 2}"
+   },
+   "bang_chung": "giai_lai+the_nguoc (solveset)",
+   "canh_bao": [],
+   "ma_loi": null,
+   "do_tin_cay_ma_loi": null,
+   "thoi_gian_ms": 6.4,
+   "ket_cuc": "bat_duoc",
+   "trang_thai_noi_dung_mo_phong": "BI_CHAN"
+  },
+  {
+   "id": "L28",
+   "nhom_loi": "chia_cho_0",
+   "nhan": "sai",
+   "buoc_sai_nhan": null,
+   "tang": 1,
+   "trang_thai": "SAI",
+   "buoc_sai": 1,
+   "loai_kiem": "mat_nghiem",
+   "chi_tiet": "Máy tìm thấy nghiệm bị bỏ sót: {2}",
+   "phan_chung": {
+    "nghiem_bi_mat": [
+     "2"
+    ],
+    "tap_nghiem_may": "{2, 3}"
+   },
+   "bang_chung": "giai_lai+the_nguoc (solveset)",
+   "canh_bao": [],
+   "ma_loi": null,
+   "do_tin_cay_ma_loi": null,
+   "thoi_gian_ms": 8.1,
+   "ket_cuc": "bat_duoc",
+   "trang_thai_noi_dung_mo_phong": "BI_CHAN"
+  },
+  {
+   "id": "L29",
+   "nhom_loi": "chia_cho_0",
+   "nhan": "sai",
+   "buoc_sai_nhan": null,
+   "tang": 1,
+   "trang_thai": "SAI",
+   "buoc_sai": 1,
+   "loai_kiem": "mat_ho_nghiem",
+   "chi_tiet": "Nghiệm {-pi, pi} (trong [-2π, 2π)) không thuộc họ nào AI nêu",
+   "phan_chung": {
+    "nghiem_bi_mat": [
+     "pi",
+     "-pi"
+    ],
+    "nghiem_trong_cua_so": "{-2*pi, -pi, 0, pi}"
+   },
+   "bang_chung": "giai_tren_cua_so+the_nguoc",
+   "canh_bao": [],
+   "ma_loi": null,
+   "do_tin_cay_ma_loi": null,
+   "thoi_gian_ms": 83.2,
+   "ket_cuc": "bat_duoc",
+   "trang_thai_noi_dung_mo_phong": "BI_CHAN"
+  },
+  {
+   "id": "L31",
+   "nhom_loi": "luong_giac",
+   "nhan": "sai",
+   "buoc_sai_nhan": null,
+   "tang": 1,
+   "trang_thai": "SAI",
+   "buoc_sai": 1,
+   "loai_kiem": "mat_ho_nghiem",
+   "chi_tiet": "Nghiệm {-7*pi/6, 5*pi/6} (trong [-2π, 2π)) không thuộc họ nào AI nêu",
+   "phan_chung": {
+    "nghiem_bi_mat": [
+     "-7*pi/6",
+     "5*pi/6"
+    ],
+    "nghiem_trong_cua_so": "{-11*pi/6, -7*pi/6, 5*pi/6, pi/6}"
+   },
+   "bang_chung": "giai_tren_cua_so+the_nguoc",
+   "canh_bao": [],
+   "ma_loi": null,
+   "do_tin_cay_ma_loi": null,
+   "thoi_gian_ms": 30.4,
+   "ket_cuc": "bat_duoc",
+   "trang_thai_noi_dung_mo_phong": "BI_CHAN"
+  },
+  {
+   "id": "L32",
+   "nhom_loi": "luong_giac",
+   "nhan": "sai",
+   "buoc_sai_nhan": null,
+   "tang": 1,
+   "trang_thai": "SAI",
+   "buoc_sai": 1,
+   "loai_kiem": "chu_ky_sai",
+   "chi_tiet": "Chu kỳ dương nhỏ nhất là pi; 2*pi là một chu kỳ nhưng không nhỏ nhất",
+   "phan_chung": {
+    "chu_ky_may": "pi"
+   },
+   "bang_chung": "periodicity",
+   "canh_bao": [],
+   "ma_loi": null,
+   "do_tin_cay_ma_loi": null,
+   "thoi_gian_ms": 3.3,
+   "ket_cuc": "bat_duoc",
+   "trang_thai_noi_dung_mo_phong": "BI_CHAN"
+  },
+  {
+   "id": "L33",
+   "nhom_loi": "luong_giac",
+   "nhan": "sai",
+   "buoc_sai_nhan": null,
+   "tang": 1,
+   "trang_thai": "SAI",
+   "buoc_sai": 1,
+   "loai_kiem": "mat_ho_nghiem",
+   "chi_tiet": "Nghiệm {-pi/2, 3*pi/2} (trong [-2π, 2π)) không thuộc họ nào AI nêu",
+   "phan_chung": {
+    "nghiem_bi_mat": [
+     "-pi/2",
+     "3*pi/2"
+    ],
+    "nghiem_trong_cua_so": "{-3*pi/2, -pi/2, 3*pi/2, pi/2}"
+   },
+   "bang_chung": "giai_tren_cua_so+the_nguoc",
+   "canh_bao": [],
+   "ma_loi": null,
+   "do_tin_cay_ma_loi": null,
+   "thoi_gian_ms": 22.3,
+   "ket_cuc": "bat_duoc",
+   "trang_thai_noi_dung_mo_phong": "BI_CHAN"
+  },
+  {
+   "id": "L34",
+   "nhom_loi": "luong_giac",
+   "nhan": "sai",
+   "buoc_sai_nhan": null,
+   "tang": 1,
+   "trang_thai": "SAI",
+   "buoc_sai": 1,
+   "loai_kiem": "mat_ho_nghiem",
+   "chi_tiet": "Nghiệm {-3*pi/4, 5*pi/4} (trong [-2π, 2π)) không thuộc họ nào AI nêu",
+   "phan_chung": {
+    "nghiem_bi_mat": [
+     "-3*pi/4",
+     "5*pi/4"
+    ],
+    "nghiem_trong_cua_so": "{-3*pi/4, -7*pi/4, 5*pi/4, pi/4}"
+   },
+   "bang_chung": "giai_tren_cua_so+the_nguoc",
+   "canh_bao": [],
+   "ma_loi": null,
+   "do_tin_cay_ma_loi": null,
+   "thoi_gian_ms": 23.1,
+   "ket_cuc": "bat_duoc",
+   "trang_thai_noi_dung_mo_phong": "BI_CHAN"
+  },
+  {
+   "id": "L35",
+   "nhom_loi": "luong_giac",
+   "nhan": "sai",
+   "buoc_sai_nhan": null,
+   "tang": 1,
+   "trang_thai": "SAI",
+   "buoc_sai": 1,
+   "loai_kiem": "thua_nghiem_khong_thoa",
+   "chi_tiet": "Họ 2*pi*k + 2*pi/3 chứa x = -22*pi/3 không là nghiệm",
+   "phan_chung": {
+    "ho": "2*pi*k + 2*pi/3",
+    "k": -4,
+    "x": "-22*pi/3"
+   },
+   "bang_chung": "the_nghiem_chinh_xac",
+   "canh_bao": [],
+   "ma_loi": null,
+   "do_tin_cay_ma_loi": null,
+   "thoi_gian_ms": 6.2,
+   "ket_cuc": "bat_duoc",
+   "trang_thai_noi_dung_mo_phong": "BI_CHAN"
+  },
+  {
+   "id": "L36",
+   "nhom_loi": "bpt_nhan_so_am",
+   "nhan": "sai",
+   "buoc_sai_nhan": null,
+   "tang": 1,
+   "trang_thai": "SAI",
+   "buoc_sai": 1,
+   "loai_kiem": "khac_tap",
+   "chi_tiet": "Tập của AI khác tập máy tính; điểm chứng kiến x = 1: AI nói không thuộc, kiểm trực tiếp là thuộc",
+   "phan_chung": {
+    "x": "1",
+    "tap_ai": "Interval.open(2, oo)",
+    "tap_may": "Interval.open(-oo, 2)"
+   },
+   "bang_chung": "solveset+kiem_truc_tiep",
+   "canh_bao": [],
+   "ma_loi": null,
+   "do_tin_cay_ma_loi": null,
+   "thoi_gian_ms": 12.1,
+   "ket_cuc": "bat_duoc",
+   "trang_thai_noi_dung_mo_phong": "BI_CHAN"
+  },
+  {
+   "id": "L37",
+   "nhom_loi": "bpt_nhan_so_am",
+   "nhan": "sai",
+   "buoc_sai_nhan": null,
+   "tang": 1,
+   "trang_thai": "SAI",
+   "buoc_sai": 1,
+   "loai_kiem": "khac_tap",
+   "chi_tiet": "Tập của AI khác tập máy tính; điểm chứng kiến x = -6: AI nói không thuộc, kiểm trực tiếp là thuộc",
+   "phan_chung": {
+    "x": "-6",
+    "tap_ai": "Interval(7, oo)",
+    "tap_may": "Interval(-oo, -5)"
+   },
+   "bang_chung": "solveset+kiem_truc_tiep",
+   "canh_bao": [],
+   "ma_loi": null,
+   "do_tin_cay_ma_loi": null,
+   "thoi_gian_ms": 13.2,
+   "ket_cuc": "bat_duoc",
+   "trang_thai_noi_dung_mo_phong": "BI_CHAN"
+  },
+  {
+   "id": "L38",
+   "nhom_loi": "bpt_nhan_so_am",
+   "nhan": "sai",
+   "buoc_sai_nhan": null,
+   "tang": 1,
+   "trang_thai": "SAI",
+   "buoc_sai": 1,
+   "loai_kiem": "khac_tap",
+   "chi_tiet": "Tập của AI khác tập máy tính; điểm chứng kiến x = -1: AI nói không thuộc, kiểm trực tiếp là thuộc",
+   "phan_chung": {
+    "x": "-1",
+    "tap_ai": "Interval.open(1, oo)",
+    "tap_may": "Union(Interval.open(-oo, 0), Interval.open(1, oo))"
+   },
+   "bang_chung": "solveset+kiem_truc_tiep",
+   "canh_bao": [],
+   "ma_loi": null,
+   "do_tin_cay_ma_loi": null,
+   "thoi_gian_ms": 15.7,
+   "ket_cuc": "bat_duoc",
+   "trang_thai_noi_dung_mo_phong": "BI_CHAN"
+  },
+  {
+   "id": "L39",
+   "nhom_loi": "bpt_nhan_so_am",
+   "nhan": "sai",
+   "buoc_sai_nhan": null,
+   "tang": 1,
+   "trang_thai": "SAI",
+   "buoc_sai": 1,
+   "loai_kiem": "khac_tap",
+   "chi_tiet": "Tập của AI khác tập máy tính; điểm chứng kiến x = 1: AI nói thuộc, kiểm trực tiếp là không thuộc",
+   "phan_chung": {
+    "x": "1",
+    "tap_ai": "Union(Interval(-oo, 2), Interval(3, oo))",
+    "tap_may": "Interval(2, 3)"
+   },
+   "bang_chung": "solveset+kiem_truc_tiep",
+   "canh_bao": [],
+   "ma_loi": null,
+   "do_tin_cay_ma_loi": null,
+   "thoi_gian_ms": 32.2,
+   "ket_cuc": "bat_duoc",
+   "trang_thai_noi_dung_mo_phong": "BI_CHAN"
+  },
+  {
+   "id": "L40",
+   "nhom_loi": "tich_phan_nguyen_ham",
+   "nhan": "sai",
+   "buoc_sai_nhan": null,
+   "tang": 1,
+   "trang_thai": "SAI",
+   "buoc_sai": 1,
+   "loai_kiem": "thieu_hang_so_C",
+   "chi_tiet": "Họ nguyên hàm thiếu hằng số C (quy ước trình bày)",
+   "phan_chung": null,
+   "bang_chung": "luat_trinh_bay",
+   "canh_bao": [],
+   "ma_loi": null,
+   "do_tin_cay_ma_loi": null,
+   "thoi_gian_ms": 0.6,
+   "ket_cuc": "bat_duoc",
+   "trang_thai_noi_dung_mo_phong": "BI_CHAN"
+  },
+  {
+   "id": "L41",
+   "nhom_loi": "tich_phan_nguyen_ham",
+   "nhan": "sai",
+   "buoc_sai_nhan": null,
+   "tang": 1,
+   "trang_thai": "SAI",
+   "buoc_sai": 1,
+   "loai_kiem": "tich_phan_sai",
+   "chi_tiet": "Máy tính được 3, AI cho 4",
+   "phan_chung": {
+    "gia_tri_may": "3",
+    "gia_tri_so": "3.00000000000000000000000000000000000000000000000000000000000"
+   },
+   "bang_chung": "integrate+quad",
+   "canh_bao": [],
+   "ma_loi": null,
+   "do_tin_cay_ma_loi": null,
+   "thoi_gian_ms": 24.7,
+   "ket_cuc": "bat_duoc",
+   "trang_thai_noi_dung_mo_phong": "BI_CHAN"
+  },
+  {
+   "id": "L42",
+   "nhom_loi": "tich_phan_nguyen_ham",
+   "nhan": "sai",
+   "buoc_sai_nhan": null,
+   "tang": 1,
+   "trang_thai": "SAI",
+   "buoc_sai": 1,
+   "loai_kiem": "ham_khong_xac_dinh_tren_doan",
+   "chi_tiet": "f không xác định (không liên tục) tại điểm thuộc đoạn Interval(-1, 1); không áp dụng Newton–Leibniz, AI vẫn cho giá trị -2",
+   "phan_chung": {
+    "diem_ngoai_mien": "{0}"
+   },
+   "bang_chung": "tap_xac_dinh",
+   "canh_bao": [],
+   "ma_loi": null,
+   "do_tin_cay_ma_loi": null,
+   "thoi_gian_ms": 5.3,
+   "ket_cuc": "bat_duoc",
+   "trang_thai_noi_dung_mo_phong": "BI_CHAN"
+  },
+  {
+   "id": "L43",
+   "nhom_loi": "tich_phan_nguyen_ham",
+   "nhan": "sai",
+   "buoc_sai_nhan": null,
+   "tang": 1,
+   "trang_thai": "SAI",
+   "buoc_sai": 1,
+   "loai_kiem": "nguyen_ham_sai_mien",
+   "chi_tiet": "F không xác định tại x = -1 trong khi f xác định",
+   "phan_chung": {
+    "x": "-1"
+   },
+   "bang_chung": "thay_so_huu_ti",
+   "canh_bao": [],
+   "ma_loi": null,
+   "do_tin_cay_ma_loi": null,
+   "thoi_gian_ms": 1.4,
+   "ket_cuc": "bat_duoc",
+   "trang_thai_noi_dung_mo_phong": "BI_CHAN"
+  },
+  {
+   "id": "L44",
+   "nhom_loi": "tich_phan_nguyen_ham",
+   "nhan": "sai",
+   "buoc_sai_nhan": null,
+   "tang": 1,
+   "trang_thai": "SAI",
+   "buoc_sai": 1,
+   "loai_kiem": "nguyen_ham_sai",
+   "chi_tiet": "F'(x) ≠ f(x) (vi phân ngược)",
+   "phan_chung": {
+    "diem": {
+     "x": "0"
+    },
+    "gia_tri_1": "1.00000000000000",
+    "gia_tri_2": "4.00000000000000",
+    "ly_do": "giá trị khác nhau"
+   },
+   "bang_chung": "vi_phan_nguoc+thay_so",
+   "canh_bao": [],
+   "ma_loi": null,
+   "do_tin_cay_ma_loi": null,
+   "thoi_gian_ms": 33.5,
+   "ket_cuc": "bat_duoc",
+   "trang_thai_noi_dung_mo_phong": "BI_CHAN"
+  },
+  {
+   "id": "L45",
+   "nhom_loi": "tich_phan_nguyen_ham",
+   "nhan": "sai",
+   "buoc_sai_nhan": null,
+   "tang": 1,
+   "trang_thai": "SAI",
+   "buoc_sai": 1,
+   "loai_kiem": "tich_phan_sai",
+   "chi_tiet": "Máy tính được 2, AI cho -2",
+   "phan_chung": {
+    "gia_tri_may": "2",
+    "gia_tri_so": "2.00000000000000000000000000000000000000000000000000000000000"
+   },
+   "bang_chung": "integrate+quad",
+   "canh_bao": [],
+   "ma_loi": null,
+   "do_tin_cay_ma_loi": null,
+   "thoi_gian_ms": 9.1,
+   "ket_cuc": "bat_duoc",
+   "trang_thai_noi_dung_mo_phong": "BI_CHAN"
+  },
+  {
+   "id": "L46",
+   "nhom_loi": "to_hop_xac_suat",
+   "nhan": "sai",
+   "buoc_sai_nhan": null,
+   "tang": 1,
+   "trang_thai": "SAI",
+   "buoc_sai": 1,
+   "loai_kiem": "dem_sai",
+   "chi_tiet": "Liệt kê cho 120, AI cho 720",
+   "phan_chung": {
+    "gia_tri_liet_ke": "120"
+   },
+   "bang_chung": "liet_ke_120_phan_tu",
+   "canh_bao": [
+    "phụ thuộc mô hình hóa đề (không gian mẫu) do người soạn"
+   ],
+   "ma_loi": null,
+   "do_tin_cay_ma_loi": null,
+   "thoi_gian_ms": 0.5,
+   "ket_cuc": "bat_duoc",
+   "trang_thai_noi_dung_mo_phong": "BI_CHAN"
+  },
+  {
+   "id": "L47",
+   "nhom_loi": "to_hop_xac_suat",
+   "nhan": "sai",
+   "buoc_sai_nhan": null,
+   "tang": 1,
+   "trang_thai": "SAI",
+   "buoc_sai": 1,
+   "loai_kiem": "xac_suat_sai",
+   "chi_tiet": "Liệt kê cho 1/6, AI cho 1/12",
+   "phan_chung": {
+    "gia_tri_liet_ke": "1/6"
+   },
+   "bang_chung": "liet_ke_36_phan_tu",
+   "canh_bao": [
+    "phụ thuộc mô hình hóa đề (không gian mẫu) do người soạn"
+   ],
+   "ma_loi": null,
+   "do_tin_cay_ma_loi": null,
+   "thoi_gian_ms": 0.4,
+   "ket_cuc": "bat_duoc",
+   "trang_thai_noi_dung_mo_phong": "BI_CHAN"
+  },
+  {
+   "id": "L48",
+   "nhom_loi": "to_hop_xac_suat",
+   "nhan": "sai",
+   "buoc_sai_nhan": null,
+   "tang": 1,
+   "trang_thai": "SAI",
+   "buoc_sai": 1,
+   "loai_kiem": "dem_sai",
+   "chi_tiet": "Liệt kê cho 120, AI cho 3125",
+   "phan_chung": {
+    "gia_tri_liet_ke": "120"
+   },
+   "bang_chung": "liet_ke_120_phan_tu",
+   "canh_bao": [
+    "phụ thuộc mô hình hóa đề (không gian mẫu) do người soạn"
+   ],
+   "ma_loi": null,
+   "do_tin_cay_ma_loi": null,
+   "thoi_gian_ms": 0.4,
+   "ket_cuc": "bat_duoc",
+   "trang_thai_noi_dung_mo_phong": "BI_CHAN"
+  },
+  {
+   "id": "L49",
+   "nhom_loi": "to_hop_xac_suat",
+   "nhan": "sai",
+   "buoc_sai_nhan": null,
+   "tang": 1,
+   "trang_thai": "SAI",
+   "buoc_sai": 1,
+   "loai_kiem": "xac_suat_sai",
+   "chi_tiet": "Liệt kê cho 7/8, AI cho 3/8",
+   "phan_chung": {
+    "gia_tri_liet_ke": "7/8"
+   },
+   "bang_chung": "liet_ke_8_phan_tu",
+   "canh_bao": [
+    "phụ thuộc mô hình hóa đề (không gian mẫu) do người soạn"
+   ],
+   "ma_loi": null,
+   "do_tin_cay_ma_loi": null,
+   "thoi_gian_ms": 0.4,
+   "ket_cuc": "bat_duoc",
+   "trang_thai_noi_dung_mo_phong": "BI_CHAN"
+  },
+  {
+   "id": "L50",
+   "nhom_loi": "to_hop_xac_suat",
+   "nhan": "sai",
+   "buoc_sai_nhan": null,
+   "tang": 1,
+   "trang_thai": "SAI",
+   "buoc_sai": 1,
+   "loai_kiem": "xac_suat_sai",
+   "chi_tiet": "Liệt kê cho 4/13, AI cho 17/52",
+   "phan_chung": {
+    "gia_tri_liet_ke": "4/13"
+   },
+   "bang_chung": "liet_ke_52_phan_tu",
+   "canh_bao": [
+    "phụ thuộc mô hình hóa đề (không gian mẫu) do người soạn"
+   ],
+   "ma_loi": null,
+   "do_tin_cay_ma_loi": null,
+   "thoi_gian_ms": 0.4,
+   "ket_cuc": "bat_duoc",
+   "trang_thai_noi_dung_mo_phong": "BI_CHAN"
+  },
+  {
+   "id": "D01",
+   "nhom_loi": "dao_ham_don_dieu_cuc_tri",
+   "nhan": "sai",
+   "buoc_sai_nhan": null,
+   "tang": 1,
+   "trang_thai": "SAI",
+   "buoc_sai": 1,
+   "loai_kiem": "dao_ham_sai",
+   "chi_tiet": "y' của AI khác đạo hàm máy tính: 3*x**2 - 6*x",
+   "phan_chung": {
+    "diem": {
+     "x": "1"
+    },
+    "gia_tri_1": "-3.00000000000000",
+    "gia_tri_2": "0",
+    "ly_do": "giá trị khác nhau"
+   },
+   "bang_chung": "diff+thay_so_huu_ti",
+   "canh_bao": [],
+   "ma_loi": null,
+   "do_tin_cay_ma_loi": null,
+   "thoi_gian_ms": 4.8,
+   "ket_cuc": "bat_duoc",
+   "trang_thai_noi_dung_mo_phong": "BI_CHAN"
+  },
+  {
+   "id": "D02",
+   "nhom_loi": "dao_ham_don_dieu_cuc_tri",
+   "nhan": "sai",
+   "buoc_sai_nhan": null,
+   "tang": 1,
+   "trang_thai": "SAI",
+   "buoc_sai": 1,
+   "loai_kiem": "don_dieu_sai",
+   "chi_tiet": "đồng biến: AI (-1; 1), máy (-oo; -1), (1; oo); nghịch biến: AI (-oo; -1), (1; oo), máy (-1; 1)",
+   "phan_chung": {
+    "dong_bien_may": "(-oo; -1), (1; oo)",
+    "nghich_bien_may": "(-1; 1)",
+    "dao_ham": "3*x**2 - 3",
+    "TXD": "Reals"
+   },
+   "bang_chung": "xet_dau_fprime+thay_so",
+   "canh_bao": [],
+   "ma_loi": null,
+   "do_tin_cay_ma_loi": null,
+   "thoi_gian_ms": 7.1,
+   "ket_cuc": "bat_duoc",
+   "trang_thai_noi_dung_mo_phong": "BI_CHAN"
+  },
+  {
+   "id": "D03",
+   "nhom_loi": "dao_ham_don_dieu_cuc_tri",
+   "nhan": "sai",
+   "buoc_sai_nhan": null,
+   "tang": 1,
+   "trang_thai": "SAI",
+   "buoc_sai": 1,
+   "loai_kiem": "cuc_tri_sai",
+   "chi_tiet": "điểm cực tiểu: AI {0}, máy {}",
+   "phan_chung": {
+    "diem_cuc_dai": [],
+    "diem_cuc_tieu": [],
+    "gia_tri_cuc_dai": [],
+    "gia_tri_cuc_tieu": [],
+    "dao_ham": "3*x**2",
+    "bang_dau": [
+     {
+      "khoang": "(-oo; 0)",
+      "trong_D": true,
+      "dau": 1
+     },
+     {
+      "khoang": "(0; oo)",
+      "trong_D": true,
+      "dau": 1
+     }
+    ]
+   },
+   "bang_chung": "xet_dau_fprime_tai_diem_huu_ti",
+   "canh_bao": [],
+   "ma_loi": null,
+   "do_tin_cay_ma_loi": null,
+   "thoi_gian_ms": 2.1,
+   "ket_cuc": "bat_duoc",
+   "trang_thai_noi_dung_mo_phong": "BI_CHAN"
+  },
+  {
+   "id": "D04",
+   "nhom_loi": "dao_ham_don_dieu_cuc_tri",
+   "nhan": "sai",
+   "buoc_sai_nhan": null,
+   "tang": 1,
+   "trang_thai": "SAI",
+   "buoc_sai": 1,
+   "loai_kiem": "cuc_tri_sai",
+   "chi_tiet": "điểm cực đại: AI {0}, máy {}",
+   "phan_chung": {
+    "diem_cuc_dai": [],
+    "diem_cuc_tieu": [
+     "3"
+    ],
+    "gia_tri_cuc_dai": [],
+    "gia_tri_cuc_tieu": [
+     "-27"
+    ],
+    "dao_ham": "4*x**3 - 12*x**2",
+    "bang_dau": [
+     {
+      "khoang": "(-oo; 0)",
+      "trong_D": true,
+      "dau": -1
+     },
+     {
+      "khoang": "(0; 3)",
+      "trong_D": true,
+      "dau": -1
+     },
+     {
+      "khoang": "(3; oo)",
+      "trong_D": true,
+      "dau": 1
+     }
+    ]
+   },
+   "bang_chung": "xet_dau_fprime_tai_diem_huu_ti",
+   "canh_bao": [],
+   "ma_loi": null,
+   "do_tin_cay_ma_loi": null,
+   "thoi_gian_ms": 8.8,
+   "ket_cuc": "bat_duoc",
+   "trang_thai_noi_dung_mo_phong": "BI_CHAN"
+  },
+  {
+   "id": "D05",
+   "nhom_loi": "dao_ham_don_dieu_cuc_tri",
+   "nhan": "sai",
+   "buoc_sai_nhan": null,
+   "tang": 1,
+   "trang_thai": "SAI",
+   "buoc_sai": 1,
+   "loai_kiem": "cuc_tri_sai",
+   "chi_tiet": "điểm cực tiểu: AI {}, máy {0}",
+   "phan_chung": {
+    "diem_cuc_dai": [],
+    "diem_cuc_tieu": [
+     "0"
+    ],
+    "gia_tri_cuc_dai": [],
+    "gia_tri_cuc_tieu": [
+     "0"
+    ],
+    "dao_ham": "sign(x)",
+    "bang_dau": [
+     {
+      "khoang": "(-oo; 0)",
+      "trong_D": true,
+      "dau": -1
+     },
+     {
+      "khoang": "(0; oo)",
+      "trong_D": true,
+      "dau": 1
+     }
+    ]
+   },
+   "bang_chung": "xet_dau_fprime_tai_diem_huu_ti",
+   "canh_bao": [],
+   "ma_loi": null,
+   "do_tin_cay_ma_loi": null,
+   "thoi_gian_ms": 6.0,
+   "ket_cuc": "bat_duoc",
+   "trang_thai_noi_dung_mo_phong": "BI_CHAN"
+  },
+  {
+   "id": "D06",
+   "nhom_loi": "dao_ham_don_dieu_cuc_tri",
+   "nhan": "sai",
+   "buoc_sai_nhan": null,
+   "tang": 1,
+   "trang_thai": "SAI",
+   "buoc_sai": 1,
+   "loai_kiem": "cuc_tri_sai",
+   "chi_tiet": "điểm cực tiểu: AI {}, máy {0, 2}",
+   "phan_chung": {
+    "diem_cuc_dai": [
+     "1"
+    ],
+    "diem_cuc_tieu": [
+     "0",
+     "2"
+    ],
+    "gia_tri_cuc_dai": [
+     "1"
+    ],
+    "gia_tri_cuc_tieu": [
+     "0",
+     "0"
+    ],
+    "dao_ham": "(2*x - 2)*sign(x**2 - 2*x)",
+    "bang_dau": [
+     {
+      "khoang": "(-oo; 0)",
+      "trong_D": true,
+      "dau": -1
+     },
+     {
+      "khoang": "(0; 1)",
+      "trong_D": true,
+      "dau": 1
+     },
+     {
+      "khoang": "(1; 2)",
+      "trong_D": true,
+      "dau": -1
+     },
+     {
+      "khoang": "(2; oo)",
+      "trong_D": true,
+      "dau": 1
+     }
+    ]
+   },
+   "bang_chung": "xet_dau_fprime_tai_diem_huu_ti",
+   "canh_bao": [],
+   "ma_loi": null,
+   "do_tin_cay_ma_loi": null,
+   "thoi_gian_ms": 57.2,
+   "ket_cuc": "bat_duoc",
+   "trang_thai_noi_dung_mo_phong": "BI_CHAN"
+  },
+  {
+   "id": "D07",
+   "nhom_loi": "dao_ham_don_dieu_cuc_tri",
+   "nhan": "sai",
+   "buoc_sai_nhan": null,
+   "tang": 1,
+   "trang_thai": "SAI",
+   "buoc_sai": 1,
+   "loai_kiem": "don_dieu_sai",
+   "chi_tiet": "khoảng (1; +oo) chứa điểm ngoài TXĐ Union(Interval(-oo, 0), Interval(2, oo)); đồng biến: AI (1; oo), máy (2; oo); khoảng (-oo; 1) chứa điểm ngoài TXĐ Union(Interval(-oo, 0), Interval(2, oo)); nghịch biến: AI (-oo; 1), máy (-oo; 0)",
+   "phan_chung": {
+    "dong_bien_may": "(2; oo)",
+    "nghich_bien_may": "(-oo; 0)",
+    "dao_ham": "(x - 1)/sqrt(x**2 - 2*x)",
+    "TXD": "Union(Interval(-oo, 0), Interval(2, oo))"
+   },
+   "bang_chung": "xet_dau_fprime+thay_so",
+   "canh_bao": [],
+   "ma_loi": null,
+   "do_tin_cay_ma_loi": null,
+   "thoi_gian_ms": 36.5,
+   "ket_cuc": "bat_duoc",
+   "trang_thai_noi_dung_mo_phong": "BI_CHAN"
+  },
+  {
+   "id": "D08",
+   "nhom_loi": "dao_ham_don_dieu_cuc_tri",
+   "nhan": "sai",
+   "buoc_sai_nhan": null,
+   "tang": 1,
+   "trang_thai": "SAI",
+   "buoc_sai": 1,
+   "loai_kiem": "don_dieu_sai",
+   "chi_tiet": "tập R chứa điểm ngoài TXĐ Union(Interval.open(-oo, 1), Interval.open(1, oo))",
+   "phan_chung": {
+    "dong_bien_may": "∅",
+    "nghich_bien_may": "(-oo; 1), (1; oo)",
+    "dao_ham": "1/(x - 1) - (x + 1)/(x - 1)**2",
+    "TXD": "Union(Interval.open(-oo, 1), Interval.open(1, oo))"
+   },
+   "bang_chung": "xet_dau_fprime+thay_so",
+   "canh_bao": [],
+   "ma_loi": null,
+   "do_tin_cay_ma_loi": null,
+   "thoi_gian_ms": 24.6,
+   "ket_cuc": "bat_duoc",
+   "trang_thai_noi_dung_mo_phong": "BI_CHAN"
+  },
+  {
+   "id": "D09",
+   "nhom_loi": "dao_ham_don_dieu_cuc_tri",
+   "nhan": "sai",
+   "buoc_sai_nhan": null,
+   "tang": 1,
+   "trang_thai": "SAI",
+   "buoc_sai": 1,
+   "loai_kiem": "cuc_tri_sai",
+   "chi_tiet": "điểm cực đại: AI {3}, máy {-1}",
+   "phan_chung": {
+    "diem_cuc_dai": [
+     "-1"
+    ],
+    "diem_cuc_tieu": [
+     "1"
+    ],
+    "gia_tri_cuc_dai": [
+     "3"
+    ],
+    "gia_tri_cuc_tieu": [
+     "-1"
+    ],
+    "dao_ham": "3*x**2 - 3",
+    "bang_dau": [
+     {
+      "khoang": "(-oo; -1)",
+      "trong_D": true,
+      "dau": 1
+     },
+     {
+      "khoang": "(-1; 1)",
+      "trong_D": true,
+      "dau": -1
+     },
+     {
+      "khoang": "(1; oo)",
+      "trong_D": true,
+      "dau": 1
+     }
+    ]
+   },
+   "bang_chung": "xet_dau_fprime_tai_diem_huu_ti",
+   "canh_bao": [],
+   "ma_loi": null,
+   "do_tin_cay_ma_loi": null,
+   "thoi_gian_ms": 4.0,
+   "ket_cuc": "bat_duoc",
+   "trang_thai_noi_dung_mo_phong": "BI_CHAN"
+  },
+  {
+   "id": "D10",
+   "nhom_loi": "dao_ham_don_dieu_cuc_tri",
+   "nhan": "sai",
+   "buoc_sai_nhan": null,
+   "tang": 1,
+   "trang_thai": "SAI",
+   "buoc_sai": 1,
+   "loai_kiem": "cuc_tri_sai",
+   "chi_tiet": "giá trị cực tiểu: AI {1}, máy {-1}",
+   "phan_chung": {
+    "diem_cuc_dai": [
+     "-1"
+    ],
+    "diem_cuc_tieu": [
+     "1"
+    ],
+    "gia_tri_cuc_dai": [
+     "3"
+    ],
+    "gia_tri_cuc_tieu": [
+     "-1"
+    ],
+    "dao_ham": "3*x**2 - 3",
+    "bang_dau": [
+     {
+      "khoang": "(-oo; -1)",
+      "trong_D": true,
+      "dau": 1
+     },
+     {
+      "khoang": "(-1; 1)",
+      "trong_D": true,
+      "dau": -1
+     },
+     {
+      "khoang": "(1; oo)",
+      "trong_D": true,
+      "dau": 1
+     }
+    ]
+   },
+   "bang_chung": "xet_dau_fprime_tai_diem_huu_ti",
+   "canh_bao": [],
+   "ma_loi": null,
+   "do_tin_cay_ma_loi": null,
+   "thoi_gian_ms": 3.1,
+   "ket_cuc": "bat_duoc",
+   "trang_thai_noi_dung_mo_phong": "BI_CHAN"
+  },
+  {
+   "id": "D11",
+   "nhom_loi": "dao_ham_don_dieu_cuc_tri",
+   "nhan": "sai",
+   "buoc_sai_nhan": null,
+   "tang": 1,
+   "trang_thai": "SAI",
+   "buoc_sai": 1,
+   "loai_kiem": "don_dieu_sai",
+   "chi_tiet": "không nghịch biến trên cả tập (-oo; 1) U (1; +oo): x1 < x2 nhưng f(x1)=-1.000000000, f(x2)=2001.000000",
+   "phan_chung": {
+    "dong_bien_may": "∅",
+    "nghich_bien_may": "(-oo; 1), (1; oo)",
+    "dao_ham": "1/(x - 1) - (x + 1)/(x - 1)**2",
+    "TXD": "Union(Interval.open(-oo, 1), Interval.open(1, oo))",
+    "phan_vi_du_thu_tu": {
+     "x1": "0",
+     "f_x1": "-1.000000000",
+     "x2": "1001/1000",
+     "f_x2": "2001.000000"
+    }
+   },
+   "bang_chung": "xet_dau_fprime+thay_so",
+   "canh_bao": [],
+   "ma_loi": null,
+   "do_tin_cay_ma_loi": null,
+   "thoi_gian_ms": 19.7,
+   "ket_cuc": "bat_duoc",
+   "trang_thai_noi_dung_mo_phong": "BI_CHAN"
+  },
+  {
+   "id": "D12",
+   "nhom_loi": "dao_ham_don_dieu_cuc_tri",
+   "nhan": "sai",
+   "buoc_sai_nhan": null,
+   "tang": 1,
+   "trang_thai": "SAI",
+   "buoc_sai": 1,
+   "loai_kiem": "don_dieu_sai",
+   "chi_tiet": "không đồng biến trên cả tập R \\ {-1}: x1 < x2 nhưng f(x1)=5.000000000, f(x2)=-2998.000000",
+   "phan_chung": {
+    "dong_bien_may": "(-oo; -1), (-1; oo)",
+    "nghich_bien_may": "∅",
+    "dao_ham": "2/(x + 1) - (2*x - 1)/(x + 1)**2",
+    "TXD": "Union(Interval.open(-oo, -1), Interval.open(-1, oo))",
+    "phan_vi_du_thu_tu": {
+     "x1": "-2",
+     "f_x1": "5.000000000",
+     "x2": "-999/1000",
+     "f_x2": "-2998.000000"
+    }
+   },
+   "bang_chung": "xet_dau_fprime+thay_so",
+   "canh_bao": [],
+   "ma_loi": null,
+   "do_tin_cay_ma_loi": null,
+   "thoi_gian_ms": 31.4,
+   "ket_cuc": "bat_duoc",
+   "trang_thai_noi_dung_mo_phong": "BI_CHAN"
+  },
+  {
+   "id": "D13",
+   "nhom_loi": "dao_ham_don_dieu_cuc_tri",
+   "nhan": "sai",
+   "buoc_sai_nhan": null,
+   "tang": 1,
+   "trang_thai": "SAI",
+   "buoc_sai": 1,
+   "loai_kiem": "cuc_tri_sai",
+   "chi_tiet": "điểm cực đại: AI {0}, máy {-1, 1}; điểm cực tiểu: AI {-1, 1}, máy {0}",
+   "phan_chung": {
+    "diem_cuc_dai": [
+     "-1",
+     "1"
+    ],
+    "diem_cuc_tieu": [
+     "0"
+    ],
+    "gia_tri_cuc_dai": [
+     "1",
+     "1"
+    ],
+    "gia_tri_cuc_tieu": [
+     "0"
+    ],
+    "dao_ham": "-4*x**3 + 4*x",
+    "bang_dau": [
+     {
+      "khoang": "(-oo; -1)",
+      "trong_D": true,
+      "dau": 1
+     },
+     {
+      "khoang": "(-1; 0)",
+      "trong_D": true,
+      "dau": -1
+     },
+     {
+      "khoang": "(0; 1)",
+      "trong_D": true,
+      "dau": 1
+     },
+     {
+      "khoang": "(1; oo)",
+      "trong_D": true,
+      "dau": -1
+     }
+    ]
+   },
+   "bang_chung": "xet_dau_fprime_tai_diem_huu_ti",
+   "canh_bao": [],
+   "ma_loi": null,
+   "do_tin_cay_ma_loi": null,
+   "thoi_gian_ms": 11.5,
+   "ket_cuc": "bat_duoc",
+   "trang_thai_noi_dung_mo_phong": "BI_CHAN"
+  },
+  {
+   "id": "B01",
+   "nhom_loi": "sai_dau",
+   "nhan": "sai",
+   "buoc_sai_nhan": 3,
+   "tang": 1,
+   "trang_thai": "SAI",
+   "buoc_sai": 3,
+   "loai_kiem": "khong_tuong_duong",
+   "chi_tiet": "Dòng 3 không bằng dòng 2 trên miền xác định của dòng 1",
+   "phan_chung": {
+    "diem": {
+     "x": "0"
+    },
+    "gia_tri_1": "0",
+    "gia_tri_2": "2.00000000000000",
+    "ly_do": "giá trị khác nhau"
+   },
+   "bang_chung": "thay_so_huu_ti",
+   "canh_bao": [],
+   "ma_loi": null,
+   "do_tin_cay_ma_loi": null,
+   "thoi_gian_ms": 25.6,
+   "ket_cuc": "bat_duoc",
+   "trang_thai_noi_dung_mo_phong": "BI_CHAN"
+  },
+  {
+   "id": "B02",
+   "nhom_loi": "chia_cho_0",
+   "nhan": "sai",
+   "buoc_sai_nhan": 2,
+   "tang": 1,
+   "trang_thai": "SAI",
+   "buoc_sai": 2,
+   "loai_kiem": "mat_nghiem",
+   "chi_tiet": "Từ dòng 1 sang dòng 2 mất nghiệm {0}",
+   "phan_chung": {
+    "nghiem_bi_mat": [
+     "0"
+    ]
+   },
+   "bang_chung": "giai_lai+the_nguoc",
+   "canh_bao": [],
+   "ma_loi": null,
+   "do_tin_cay_ma_loi": null,
+   "thoi_gian_ms": 8.7,
+   "ket_cuc": "bat_duoc",
+   "trang_thai_noi_dung_mo_phong": "BI_CHAN"
+  },
+  {
+   "id": "B03",
+   "nhom_loi": "bpt_nhan_so_am",
+   "nhan": "sai",
+   "buoc_sai_nhan": 3,
+   "tang": 1,
+   "trang_thai": "SAI",
+   "buoc_sai": 3,
+   "loai_kiem": "khong_tuong_duong",
+   "chi_tiet": "Dòng 3 không tương đương dòng 2 trên miền của đề; tại x = 1 dòng 2 sai, dòng 3 đúng",
+   "phan_chung": {
+    "x": "1"
+   },
+   "bang_chung": "solveset+kiem_truc_tiep",
+   "canh_bao": [],
+   "ma_loi": null,
+   "do_tin_cay_ma_loi": null,
+   "thoi_gian_ms": 23.2,
+   "ket_cuc": "bat_duoc",
+   "trang_thai_noi_dung_mo_phong": "BI_CHAN"
+  },
+  {
+   "id": "B04",
+   "nhom_loi": "dieu_kien_xac_dinh",
+   "nhan": "sai",
+   "buoc_sai_nhan": 5,
+   "tang": 1,
+   "trang_thai": "SAI",
+   "buoc_sai": 5,
+   "loai_kiem": "ket_luan_sai",
+   "chi_tiet": "Kết luận {-1, 4}, tập nghiệm đúng (trong ĐKXĐ của đề) {4}",
+   "phan_chung": {
+    "tap_may": "{4}"
+   },
+   "bang_chung": "giai_lai+the_nguoc",
+   "canh_bao": [
+    "dòng 2 là phép biến đổi hệ quả (thêm {-1}), cần thử lại ở kết luận",
+    "dòng 3 là phép biến đổi hệ quả (thêm {-1}), cần thử lại ở kết luận",
+    "dòng 4 là phép biến đổi hệ quả (thêm {-1}), cần thử lại ở kết luận"
+   ],
+   "ma_loi": null,
+   "do_tin_cay_ma_loi": null,
+   "thoi_gian_ms": 58.2,
+   "ket_cuc": "bat_duoc",
+   "trang_thai_noi_dung_mo_phong": "BI_CHAN"
+  },
+  {
+   "id": "B05",
+   "nhom_loi": "dieu_kien_xac_dinh",
+   "nhan": "sai",
+   "buoc_sai_nhan": 3,
+   "tang": 1,
+   "trang_thai": "SAI",
+   "buoc_sai": 3,
+   "loai_kiem": "ket_luan_sai",
+   "chi_tiet": "Kết luận sai: Tập của AI khác tập máy tính; điểm chứng kiến x = -2: AI nói thuộc, kiểm trực tiếp là không thuộc",
+   "phan_chung": {
+    "x": "-2",
+    "tap_ai": "Union(Interval(-oo, -2), Interval(1, oo))",
+    "tap_may": "Union(Interval.open(-oo, -2), Interval(1, oo))"
+   },
+   "bang_chung": "solveset+kiem_truc_tiep",
+   "canh_bao": [],
+   "ma_loi": null,
+   "do_tin_cay_ma_loi": null,
+   "thoi_gian_ms": 54.5,
+   "ket_cuc": "bat_duoc",
+   "trang_thai_noi_dung_mo_phong": "BI_CHAN"
+  },
+  {
+   "id": "K01",
+   "nhom_loi": "loi_van_khong_kiem_duoc",
+   "nhan": "sai",
+   "buoc_sai_nhan": null,
+   "tang": 1,
+   "trang_thai": "KHONG_KIEM_DUOC",
+   "buoc_sai": null,
+   "loai_kiem": "khong_hinh_thuc_hoa",
+   "chi_tiet": "Tầng 1 không kiểm được lập luận bằng lời; không được coi là ĐẠT",
+   "phan_chung": null,
+   "bang_chung": null,
+   "canh_bao": [],
+   "ma_loi": null,
+   "do_tin_cay_ma_loi": null,
+   "thoi_gian_ms": 0.0,
+   "ket_cuc": "khong_kiem_duoc",
+   "trang_thai_noi_dung_mo_phong": "CHO_GIAO_VIEN_DUYET"
+  },
+  {
+   "id": "K02",
+   "nhom_loi": "loi_van_khong_kiem_duoc",
+   "nhan": "sai",
+   "buoc_sai_nhan": null,
+   "tang": 1,
+   "trang_thai": "KHONG_KIEM_DUOC",
+   "buoc_sai": null,
+   "loai_kiem": "khong_hinh_thuc_hoa",
+   "chi_tiet": "Tầng 1 không kiểm được ảnh viết tay chưa số hóa; không được coi là ĐẠT",
+   "phan_chung": null,
+   "bang_chung": null,
+   "canh_bao": [],
+   "ma_loi": null,
+   "do_tin_cay_ma_loi": null,
+   "thoi_gian_ms": 0.0,
+   "ket_cuc": "khong_kiem_duoc",
+   "trang_thai_noi_dung_mo_phong": "CHO_GIAO_VIEN_DUYET"
+  },
+  {
+   "id": "C01",
+   "nhom_loi": "doi_chung",
+   "nhan": "dung",
+   "buoc_sai_nhan": null,
+   "tang": 1,
+   "trang_thai": "DAT",
+   "buoc_sai": null,
+   "loai_kiem": "dong_nhat",
+   "chi_tiet": "Rút gọn hiệu = 0",
+   "phan_chung": null,
+   "bang_chung": "ky_hieu+thay_so",
+   "canh_bao": [],
+   "ma_loi": null,
+   "do_tin_cay_ma_loi": null,
+   "thoi_gian_ms": 34.1,
+   "ket_cuc": "dat_dung",
+   "trang_thai_noi_dung_mo_phong": "CHO_GIAO_VIEN_DUYET"
+  },
+  {
+   "id": "C02",
+   "nhom_loi": "doi_chung",
+   "nhan": "dung",
+   "buoc_sai_nhan": null,
+   "tang": 1,
+   "trang_thai": "DAT",
+   "buoc_sai": null,
+   "loai_kiem": "dong_nhat",
+   "chi_tiet": "Rút gọn hiệu = 0",
+   "phan_chung": null,
+   "bang_chung": "ky_hieu+thay_so",
+   "canh_bao": [],
+   "ma_loi": null,
+   "do_tin_cay_ma_loi": null,
+   "thoi_gian_ms": 79.0,
+   "ket_cuc": "dat_dung",
+   "trang_thai_noi_dung_mo_phong": "CHO_GIAO_VIEN_DUYET"
+  },
+  {
+   "id": "C03",
+   "nhom_loi": "doi_chung",
+   "nhan": "dung",
+   "buoc_sai_nhan": null,
+   "tang": 1,
+   "trang_thai": "DAT",
+   "buoc_sai": null,
+   "loai_kiem": "dong_nhat",
+   "chi_tiet": "Thay số 13 điểm hữu tỉ đều bằng nhau (không rút gọn được ký hiệu)",
+   "phan_chung": null,
+   "bang_chung": "thay_so_huu_ti",
+   "canh_bao": [],
+   "ma_loi": null,
+   "do_tin_cay_ma_loi": null,
+   "thoi_gian_ms": 34.9,
+   "ket_cuc": "dat_dung",
+   "trang_thai_noi_dung_mo_phong": "CHO_GIAO_VIEN_DUYET"
+  },
+  {
+   "id": "C04",
+   "nhom_loi": "doi_chung",
+   "nhan": "dung",
+   "buoc_sai_nhan": null,
+   "tang": 1,
+   "trang_thai": "DAT",
+   "buoc_sai": null,
+   "loai_kiem": "tap_nghiem",
+   "chi_tiet": "Tập nghiệm khớp {2, 3}",
+   "phan_chung": null,
+   "bang_chung": "giai_lai+the_nguoc (solveset)",
+   "canh_bao": [],
+   "ma_loi": null,
+   "do_tin_cay_ma_loi": null,
+   "thoi_gian_ms": 6.6,
+   "ket_cuc": "dat_dung",
+   "trang_thai_noi_dung_mo_phong": "CHO_GIAO_VIEN_DUYET"
+  },
+  {
+   "id": "C05",
+   "nhom_loi": "doi_chung",
+   "nhan": "dung",
+   "buoc_sai_nhan": null,
+   "tang": 1,
+   "trang_thai": "DAT",
+   "buoc_sai": null,
+   "loai_kiem": "tap_nghiem",
+   "chi_tiet": "Tập nghiệm khớp {4}",
+   "phan_chung": null,
+   "bang_chung": "giai_lai+the_nguoc (solveset+logcombine)",
+   "canh_bao": [],
+   "ma_loi": null,
+   "do_tin_cay_ma_loi": null,
+   "thoi_gian_ms": 28.3,
+   "ket_cuc": "dat_dung",
+   "trang_thai_noi_dung_mo_phong": "CHO_GIAO_VIEN_DUYET"
+  },
+  {
+   "id": "C06",
+   "nhom_loi": "doi_chung",
+   "nhan": "dung",
+   "buoc_sai_nhan": null,
+   "tang": 1,
+   "trang_thai": "DAT",
+   "buoc_sai": null,
+   "loai_kiem": "tap_nghiem",
+   "chi_tiet": "Tập nghiệm khớp {6}",
+   "phan_chung": null,
+   "bang_chung": "giai_lai+the_nguoc (solveset)",
+   "canh_bao": [],
+   "ma_loi": null,
+   "do_tin_cay_ma_loi": null,
+   "thoi_gian_ms": 15.4,
+   "ket_cuc": "dat_dung",
+   "trang_thai_noi_dung_mo_phong": "CHO_GIAO_VIEN_DUYET"
+  },
+  {
+   "id": "C07",
+   "nhom_loi": "doi_chung",
+   "nhan": "dung",
+   "buoc_sai_nhan": null,
+   "tang": 1,
+   "trang_thai": "DAT",
+   "buoc_sai": null,
+   "loai_kiem": "ho_nghiem",
+   "chi_tiet": "Họ nghiệm đúng và phủ đủ nghiệm trong [-2π, 2π)",
+   "phan_chung": null,
+   "bang_chung": "giai_tren_cua_so+the_nguoc",
+   "canh_bao": [
+    "đầy đủ được kiểm trên cửa sổ [-2π,2π) (giả định chu kỳ ≤ 2π)"
+   ],
+   "ma_loi": null,
+   "do_tin_cay_ma_loi": null,
+   "thoi_gian_ms": 37.8,
+   "ket_cuc": "dat_dung",
+   "trang_thai_noi_dung_mo_phong": "CHO_GIAO_VIEN_DUYET"
+  },
+  {
+   "id": "C08",
+   "nhom_loi": "doi_chung",
+   "nhan": "dung",
+   "buoc_sai_nhan": null,
+   "tang": 1,
+   "trang_thai": "DAT",
+   "buoc_sai": null,
+   "loai_kiem": "tap_nghiem_bpt",
+   "chi_tiet": "Tập khớp: Interval.open(-oo, 2)",
+   "phan_chung": null,
+   "bang_chung": "solveset+thay_so_62_diem",
+   "canh_bao": [],
+   "ma_loi": null,
+   "do_tin_cay_ma_loi": null,
+   "thoi_gian_ms": 34.1,
+   "ket_cuc": "dat_dung",
+   "trang_thai_noi_dung_mo_phong": "CHO_GIAO_VIEN_DUYET"
+  },
+  {
+   "id": "C09",
+   "nhom_loi": "doi_chung",
+   "nhan": "dung",
+   "buoc_sai_nhan": null,
+   "tang": 1,
+   "trang_thai": "DAT",
+   "buoc_sai": null,
+   "loai_kiem": "tap_nghiem_bpt",
+   "chi_tiet": "Tập khớp: Union(Interval.open(-oo, 0), Interval.open(1, oo))",
+   "phan_chung": null,
+   "bang_chung": "solveset+thay_so_64_diem",
+   "canh_bao": [],
+   "ma_loi": null,
+   "do_tin_cay_ma_loi": null,
+   "thoi_gian_ms": 54.8,
+   "ket_cuc": "dat_dung",
+   "trang_thai_noi_dung_mo_phong": "CHO_GIAO_VIEN_DUYET"
+  },
+  {
+   "id": "C10",
+   "nhom_loi": "doi_chung",
+   "nhan": "dung",
+   "buoc_sai_nhan": null,
+   "tang": 1,
+   "trang_thai": "DAT",
+   "buoc_sai": null,
+   "loai_kiem": "nguyen_ham",
+   "chi_tiet": "F' = f (vi phân ngược)",
+   "phan_chung": null,
+   "bang_chung": "ky_hieu+thay_so",
+   "canh_bao": [],
+   "ma_loi": null,
+   "do_tin_cay_ma_loi": null,
+   "thoi_gian_ms": 17.1,
+   "ket_cuc": "dat_dung",
+   "trang_thai_noi_dung_mo_phong": "CHO_GIAO_VIEN_DUYET"
+  },
+  {
+   "id": "C11",
+   "nhom_loi": "doi_chung",
+   "nhan": "dung",
+   "buoc_sai_nhan": null,
+   "tang": 1,
+   "trang_thai": "DAT",
+   "buoc_sai": null,
+   "loai_kiem": "tich_phan",
+   "chi_tiet": "Giá trị 3 khớp (ký hiệu + tích phân số)",
+   "phan_chung": null,
+   "bang_chung": "integrate+quad",
+   "canh_bao": [],
+   "ma_loi": null,
+   "do_tin_cay_ma_loi": null,
+   "thoi_gian_ms": 6.1,
+   "ket_cuc": "dat_dung",
+   "trang_thai_noi_dung_mo_phong": "CHO_GIAO_VIEN_DUYET"
+  },
+  {
+   "id": "C12",
+   "nhom_loi": "doi_chung",
+   "nhan": "dung",
+   "buoc_sai_nhan": null,
+   "tang": 1,
+   "trang_thai": "DAT",
+   "buoc_sai": null,
+   "loai_kiem": "don_vi",
+   "chi_tiet": "Cùng thứ nguyên, bằng nhau sau khi đổi về SI",
+   "phan_chung": null,
+   "bang_chung": "sympy.physics.units",
+   "canh_bao": [],
+   "ma_loi": null,
+   "do_tin_cay_ma_loi": null,
+   "thoi_gian_ms": 5.2,
+   "ket_cuc": "dat_dung",
+   "trang_thai_noi_dung_mo_phong": "CHO_GIAO_VIEN_DUYET"
+  },
+  {
+   "id": "C13",
+   "nhom_loi": "doi_chung",
+   "nhan": "dung",
+   "buoc_sai_nhan": null,
+   "tang": 1,
+   "trang_thai": "DAT",
+   "buoc_sai": null,
+   "loai_kiem": "dem",
+   "chi_tiet": "Liệt kê: 120",
+   "phan_chung": null,
+   "bang_chung": "liet_ke_120_phan_tu",
+   "canh_bao": [],
+   "ma_loi": null,
+   "do_tin_cay_ma_loi": null,
+   "thoi_gian_ms": 0.4,
+   "ket_cuc": "dat_dung",
+   "trang_thai_noi_dung_mo_phong": "CHO_GIAO_VIEN_DUYET"
+  },
+  {
+   "id": "C14",
+   "nhom_loi": "doi_chung",
+   "nhan": "dung",
+   "buoc_sai_nhan": null,
+   "tang": 1,
+   "trang_thai": "DAT",
+   "buoc_sai": null,
+   "loai_kiem": "xac_suat",
+   "chi_tiet": "Liệt kê: 1/6",
+   "phan_chung": null,
+   "bang_chung": "liet_ke_36_phan_tu",
+   "canh_bao": [],
+   "ma_loi": null,
+   "do_tin_cay_ma_loi": null,
+   "thoi_gian_ms": 0.3,
+   "ket_cuc": "dat_dung",
+   "trang_thai_noi_dung_mo_phong": "CHO_GIAO_VIEN_DUYET"
+  },
+  {
+   "id": "C15",
+   "nhom_loi": "doi_chung",
+   "nhan": "dung",
+   "buoc_sai_nhan": null,
+   "tang": 1,
+   "trang_thai": "DAT",
+   "buoc_sai": null,
+   "loai_kiem": "dao_ham",
+   "chi_tiet": "Khớp diff(f)",
+   "phan_chung": null,
+   "bang_chung": "ky_hieu+thay_so",
+   "canh_bao": [],
+   "ma_loi": null,
+   "do_tin_cay_ma_loi": null,
+   "thoi_gian_ms": 21.8,
+   "ket_cuc": "dat_dung",
+   "trang_thai_noi_dung_mo_phong": "CHO_GIAO_VIEN_DUYET"
+  },
+  {
+   "id": "C16",
+   "nhom_loi": "doi_chung",
+   "nhan": "dung",
+   "buoc_sai_nhan": null,
+   "tang": 1,
+   "trang_thai": "DAT",
+   "buoc_sai": null,
+   "loai_kiem": "nguyen_ham",
+   "chi_tiet": "F' = f (vi phân ngược)",
+   "phan_chung": null,
+   "bang_chung": "thay_so_huu_ti",
+   "canh_bao": [],
+   "ma_loi": null,
+   "do_tin_cay_ma_loi": null,
+   "thoi_gian_ms": 47.6,
+   "ket_cuc": "dat_dung",
+   "trang_thai_noi_dung_mo_phong": "CHO_GIAO_VIEN_DUYET"
+  },
+  {
+   "id": "C17",
+   "nhom_loi": "doi_chung",
+   "nhan": "dung",
+   "buoc_sai_nhan": null,
+   "tang": 1,
+   "trang_thai": "DAT",
+   "buoc_sai": null,
+   "loai_kiem": "ho_nghiem",
+   "chi_tiet": "Họ nghiệm đúng và phủ đủ nghiệm trong [-2π, 2π)",
+   "phan_chung": null,
+   "bang_chung": "giai_tren_cua_so+the_nguoc",
+   "canh_bao": [
+    "đầy đủ được kiểm trên cửa sổ [-2π,2π) (giả định chu kỳ ≤ 2π)"
+   ],
+   "ma_loi": null,
+   "do_tin_cay_ma_loi": null,
+   "thoi_gian_ms": 21.8,
+   "ket_cuc": "dat_dung",
+   "trang_thai_noi_dung_mo_phong": "CHO_GIAO_VIEN_DUYET"
+  },
+  {
+   "id": "C18",
+   "nhom_loi": "doi_chung",
+   "nhan": "dung",
+   "buoc_sai_nhan": null,
+   "tang": 1,
+   "trang_thai": "DAT",
+   "buoc_sai": null,
+   "loai_kiem": "chu_ky",
+   "chi_tiet": "Chu kỳ pi",
+   "phan_chung": null,
+   "bang_chung": "periodicity",
+   "canh_bao": [],
+   "ma_loi": null,
+   "do_tin_cay_ma_loi": null,
+   "thoi_gian_ms": 2.6,
+   "ket_cuc": "dat_dung",
+   "trang_thai_noi_dung_mo_phong": "CHO_GIAO_VIEN_DUYET"
+  },
+  {
+   "id": "C19",
+   "nhom_loi": "doi_chung",
+   "nhan": "dung",
+   "buoc_sai_nhan": null,
+   "tang": 1,
+   "trang_thai": "DAT",
+   "buoc_sai": null,
+   "loai_kiem": "ho_nghiem",
+   "chi_tiet": "Họ nghiệm đúng và phủ đủ nghiệm trong [-2π, 2π)",
+   "phan_chung": null,
+   "bang_chung": "giai_tren_cua_so+the_nguoc",
+   "canh_bao": [
+    "đầy đủ được kiểm trên cửa sổ [-2π,2π) (giả định chu kỳ ≤ 2π)"
+   ],
+   "ma_loi": null,
+   "do_tin_cay_ma_loi": null,
+   "thoi_gian_ms": 18.7,
+   "ket_cuc": "dat_dung",
+   "trang_thai_noi_dung_mo_phong": "CHO_GIAO_VIEN_DUYET"
+  },
+  {
+   "id": "C20",
+   "nhom_loi": "doi_chung",
+   "nhan": "dung",
+   "buoc_sai_nhan": null,
+   "tang": 1,
+   "trang_thai": "DAT",
+   "buoc_sai": null,
+   "loai_kiem": "dong_nhat",
+   "chi_tiet": "Rút gọn hiệu = 0",
+   "phan_chung": null,
+   "bang_chung": "ky_hieu+thay_so",
+   "canh_bao": [],
+   "ma_loi": null,
+   "do_tin_cay_ma_loi": null,
+   "thoi_gian_ms": 29.5,
+   "ket_cuc": "dat_dung",
+   "trang_thai_noi_dung_mo_phong": "CHO_GIAO_VIEN_DUYET"
+  },
+  {
+   "id": "C21",
+   "nhom_loi": "doi_chung",
+   "nhan": "dung",
+   "buoc_sai_nhan": null,
+   "tang": 1,
+   "trang_thai": "DAT",
+   "buoc_sai": null,
+   "loai_kiem": "dong_nhat",
+   "chi_tiet": "Rút gọn hiệu = 0",
+   "phan_chung": null,
+   "bang_chung": "ky_hieu+thay_so",
+   "canh_bao": [],
+   "ma_loi": null,
+   "do_tin_cay_ma_loi": null,
+   "thoi_gian_ms": 7.8,
+   "ket_cuc": "dat_dung",
+   "trang_thai_noi_dung_mo_phong": "CHO_GIAO_VIEN_DUYET"
+  },
+  {
+   "id": "C22",
+   "nhom_loi": "doi_chung",
+   "nhan": "dung",
+   "buoc_sai_nhan": null,
+   "tang": 1,
+   "trang_thai": "DAT",
+   "buoc_sai": null,
+   "loai_kiem": "nguyen_ham",
+   "chi_tiet": "F' = f (vi phân ngược)",
+   "phan_chung": null,
+   "bang_chung": "ky_hieu+thay_so",
+   "canh_bao": [],
+   "ma_loi": null,
+   "do_tin_cay_ma_loi": null,
+   "thoi_gian_ms": 51.3,
+   "ket_cuc": "dat_dung",
+   "trang_thai_noi_dung_mo_phong": "CHO_GIAO_VIEN_DUYET"
+  },
+  {
+   "id": "C23",
+   "nhom_loi": "doi_chung",
+   "nhan": "dung",
+   "buoc_sai_nhan": null,
+   "tang": 1,
+   "trang_thai": "DAT",
+   "buoc_sai": null,
+   "loai_kiem": "tap_nghiem_bpt",
+   "chi_tiet": "Tập khớp: Interval.Lopen(1, 3)",
+   "phan_chung": null,
+   "bang_chung": "solveset+thay_so_64_diem",
+   "canh_bao": [],
+   "ma_loi": null,
+   "do_tin_cay_ma_loi": null,
+   "thoi_gian_ms": 87.0,
+   "ket_cuc": "dat_dung",
+   "trang_thai_noi_dung_mo_phong": "CHO_GIAO_VIEN_DUYET"
+  },
+  {
+   "id": "DC1",
+   "nhom_loi": "doi_chung",
+   "nhan": "dung",
+   "buoc_sai_nhan": null,
+   "tang": 1,
+   "trang_thai": "DAT",
+   "buoc_sai": null,
+   "loai_kiem": "don_dieu",
+   "chi_tiet": "Khớp khoảng đơn điệu máy tính",
+   "phan_chung": null,
+   "bang_chung": "xet_dau_fprime+thay_so",
+   "canh_bao": [],
+   "ma_loi": null,
+   "do_tin_cay_ma_loi": null,
+   "thoi_gian_ms": 6.1,
+   "ket_cuc": "dat_dung",
+   "trang_thai_noi_dung_mo_phong": "CHO_GIAO_VIEN_DUYET"
+  },
+  {
+   "id": "DC2",
+   "nhom_loi": "doi_chung",
+   "nhan": "dung",
+   "buoc_sai_nhan": null,
+   "tang": 1,
+   "trang_thai": "DAT",
+   "buoc_sai": null,
+   "loai_kiem": "cuc_tri",
+   "chi_tiet": "Khớp phân tích dấu f'",
+   "phan_chung": null,
+   "bang_chung": "xet_dau_fprime_tai_diem_huu_ti",
+   "canh_bao": [],
+   "ma_loi": null,
+   "do_tin_cay_ma_loi": null,
+   "thoi_gian_ms": 3.9,
+   "ket_cuc": "dat_dung",
+   "trang_thai_noi_dung_mo_phong": "CHO_GIAO_VIEN_DUYET"
+  },
+  {
+   "id": "DC3",
+   "nhom_loi": "doi_chung",
+   "nhan": "dung",
+   "buoc_sai_nhan": null,
+   "tang": 1,
+   "trang_thai": "DAT",
+   "buoc_sai": null,
+   "loai_kiem": "cuc_tri",
+   "chi_tiet": "Khớp phân tích dấu f'",
+   "phan_chung": null,
+   "bang_chung": "xet_dau_fprime_tai_diem_huu_ti",
+   "canh_bao": [],
+   "ma_loi": null,
+   "do_tin_cay_ma_loi": null,
+   "thoi_gian_ms": 2.3,
+   "ket_cuc": "dat_dung",
+   "trang_thai_noi_dung_mo_phong": "CHO_GIAO_VIEN_DUYET"
+  },
+  {
+   "id": "DC4",
+   "nhom_loi": "doi_chung",
+   "nhan": "dung",
+   "buoc_sai_nhan": null,
+   "tang": 1,
+   "trang_thai": "DAT",
+   "buoc_sai": null,
+   "loai_kiem": "cuc_tri",
+   "chi_tiet": "Khớp phân tích dấu f'",
+   "phan_chung": null,
+   "bang_chung": "xet_dau_fprime_tai_diem_huu_ti",
+   "canh_bao": [],
+   "ma_loi": null,
+   "do_tin_cay_ma_loi": null,
+   "thoi_gian_ms": 6.7,
+   "ket_cuc": "dat_dung",
+   "trang_thai_noi_dung_mo_phong": "CHO_GIAO_VIEN_DUYET"
+  },
+  {
+   "id": "DC5",
+   "nhom_loi": "doi_chung",
+   "nhan": "dung",
+   "buoc_sai_nhan": null,
+   "tang": 1,
+   "trang_thai": "DAT",
+   "buoc_sai": null,
+   "loai_kiem": "don_dieu",
+   "chi_tiet": "Khớp khoảng đơn điệu máy tính",
+   "phan_chung": null,
+   "bang_chung": "xet_dau_fprime+thay_so",
+   "canh_bao": [],
+   "ma_loi": null,
+   "do_tin_cay_ma_loi": null,
+   "thoi_gian_ms": 37.6,
+   "ket_cuc": "dat_dung",
+   "trang_thai_noi_dung_mo_phong": "CHO_GIAO_VIEN_DUYET"
+  },
+  {
+   "id": "DC6",
+   "nhom_loi": "doi_chung",
+   "nhan": "dung",
+   "buoc_sai_nhan": null,
+   "tang": 1,
+   "trang_thai": "DAT",
+   "buoc_sai": null,
+   "loai_kiem": "don_dieu",
+   "chi_tiet": "Khớp khoảng đơn điệu máy tính",
+   "phan_chung": null,
+   "bang_chung": "xet_dau_fprime+thay_so",
+   "canh_bao": [],
+   "ma_loi": null,
+   "do_tin_cay_ma_loi": null,
+   "thoi_gian_ms": 18.4,
+   "ket_cuc": "dat_dung",
+   "trang_thai_noi_dung_mo_phong": "CHO_GIAO_VIEN_DUYET"
+  },
+  {
+   "id": "DC7",
+   "nhom_loi": "doi_chung",
+   "nhan": "dung",
+   "buoc_sai_nhan": null,
+   "tang": 1,
+   "trang_thai": "SAI",
+   "buoc_sai": 1,
+   "loai_kiem": "cuc_tri_sai",
+   "chi_tiet": "giá trị cực đại: AI {1}, máy {1, 1}",
+   "phan_chung": {
+    "diem_cuc_dai": [
+     "-1",
+     "1"
+    ],
+    "diem_cuc_tieu": [
+     "0"
+    ],
+    "gia_tri_cuc_dai": [
+     "1",
+     "1"
+    ],
+    "gia_tri_cuc_tieu": [
+     "0"
+    ],
+    "dao_ham": "-4*x**3 + 4*x",
+    "bang_dau": [
+     {
+      "khoang": "(-oo; -1)",
+      "trong_D": true,
+      "dau": 1
+     },
+     {
+      "khoang": "(-1; 0)",
+      "trong_D": true,
+      "dau": -1
+     },
+     {
+      "khoang": "(0; 1)",
+      "trong_D": true,
+      "dau": 1
+     },
+     {
+      "khoang": "(1; oo)",
+      "trong_D": true,
+      "dau": -1
+     }
+    ]
+   },
+   "bang_chung": "xet_dau_fprime_tai_diem_huu_ti",
+   "canh_bao": [],
+   "ma_loi": null,
+   "do_tin_cay_ma_loi": null,
+   "thoi_gian_ms": 9.1,
+   "ket_cuc": "bao_nham",
+   "trang_thai_noi_dung_mo_phong": "BI_CHAN"
+  },
+  {
+   "id": "BC1",
+   "nhom_loi": "doi_chung",
+   "nhan": "dung",
+   "buoc_sai_nhan": null,
+   "tang": 1,
+   "trang_thai": "DAT",
+   "buoc_sai": null,
+   "loai_kiem": "bien_doi_bieu_thuc",
+   "chi_tiet": "Mọi cặp dòng liên tiếp tương đương",
+   "phan_chung": null,
+   "bang_chung": "thay_so_huu_ti",
+   "canh_bao": [],
+   "ma_loi": null,
+   "do_tin_cay_ma_loi": null,
+   "thoi_gian_ms": 72.1,
+   "ket_cuc": "dat_dung",
+   "trang_thai_noi_dung_mo_phong": "CHO_GIAO_VIEN_DUYET"
+  },
+  {
+   "id": "BC2",
+   "nhom_loi": "doi_chung",
+   "nhan": "dung",
+   "buoc_sai_nhan": null,
+   "tang": 1,
+   "trang_thai": "DAT",
+   "buoc_sai": null,
+   "loai_kiem": "bien_doi_phuong_trinh",
+   "chi_tiet": "Không mất nghiệm ở bước nào; kết luận đúng",
+   "phan_chung": null,
+   "bang_chung": "giai_lai+the_nguoc",
+   "canh_bao": [
+    "dòng 2 là phép biến đổi hệ quả (thêm {1}), cần thử lại ở kết luận",
+    "dòng 3 là phép biến đổi hệ quả (thêm {1}), cần thử lại ở kết luận"
+   ],
+   "ma_loi": null,
+   "do_tin_cay_ma_loi": null,
+   "thoi_gian_ms": 23.4,
+   "ket_cuc": "dat_dung",
+   "trang_thai_noi_dung_mo_phong": "CHO_GIAO_VIEN_DUYET"
+  },
+  {
+   "id": "KC1",
+   "nhom_loi": "doi_chung",
+   "nhan": "dung",
+   "buoc_sai_nhan": null,
+   "tang": 1,
+   "trang_thai": "KHONG_KIEM_DUOC",
+   "buoc_sai": null,
+   "loai_kiem": "khong_hinh_thuc_hoa",
+   "chi_tiet": "Tầng 1 không kiểm được lập luận bằng lời; không được coi là ĐẠT",
+   "phan_chung": null,
+   "bang_chung": null,
+   "canh_bao": [],
+   "ma_loi": null,
+   "do_tin_cay_ma_loi": null,
+   "thoi_gian_ms": 0.0,
+   "ket_cuc": "khong_kiem_duoc",
+   "trang_thai_noi_dung_mo_phong": "CHO_GIAO_VIEN_DUYET"
+  }
+ ]
+}

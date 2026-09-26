@@ -1,0 +1,382 @@
+{
+ "truy_vet": {
+  "bo_de": "bo-de-kiem-thu/cac-ca-5-buoc.yaml",
+  "sha256_bo_de": "92c034aa815e648157df38772fa3844311ae2b53870306476322a79e20c228b1",
+  "phien_ban_sympy": "1.14.0",
+  "phien_ban_python": "3.13.5",
+  "phien_ban_bang_cong_thuc": null,
+  "tai_lieu_da_dung": [],
+  "thoi_diem_kiem": "2026-09-27T00:01:30+07:00"
+ },
+ "tong_hop": {
+  "so_ca": 12,
+  "so_ca_loi": 9,
+  "so_ca_dung": 3,
+  "loi_bat_duoc": 9,
+  "dung_ma_buoc_tren_ca_loi": 9,
+  "dung_ca_ma_buoc_va_dong_o_tren_ca_loi": 9,
+  "ca_dung_bao_nham": 0,
+  "khong_kiem_duoc": 0,
+  "thoi_gian_s": 0.97
+ },
+ "ket_qua_tung_ca": [
+  {
+   "id": "S01",
+   "mo_ta": "Bài làm đúng đủ 5 bước",
+   "nhan": "dung",
+   "buoc_sai_nhan": null,
+   "trang_thai": "DAT",
+   "buoc_sai": null,
+   "loai_kiem": "bai_lam_5_buoc",
+   "chi_tiet": "Cả 5 bước hợp lệ",
+   "phan_chung": null,
+   "ma_loi": null,
+   "do_tin_cay_ma_loi": null,
+   "dung_ma_buoc": true,
+   "dung_dong_hoac_o": true,
+   "thoi_gian_ms": 75.7
+  },
+  {
+   "id": "S02",
+   "mo_ta": "Bảng xét dấu sai một ô (ô 3), kết luận chép theo bảng",
+   "nhan": "sai",
+   "buoc_sai_nhan": {
+    "ma_buoc": "B.DH.XETDAU",
+    "dong": null,
+    "o": {
+     "k": 3,
+     "hang": "dau_y_phay"
+    }
+   },
+   "trang_thai": "SAI",
+   "buoc_sai": {
+    "ma_buoc": "B.DH.XETDAU",
+    "dong": null,
+    "o": {
+     "k": 3,
+     "khoang": "(2; oo)",
+     "hang": "dau_y_phay"
+    }
+   },
+   "loai_kiem": "sai_o_bang_xet_dau",
+   "chi_tiet": "Ô 3 (2; oo): bài làm ghi '-', máy tính dấu 1",
+   "phan_chung": {
+    "diem_thu": "3",
+    "dau_y_phay": 1
+   },
+   "ma_loi": null,
+   "do_tin_cay_ma_loi": null,
+   "dung_ma_buoc": true,
+   "dung_dong_hoac_o": true,
+   "thoi_gian_ms": 15.4
+  },
+  {
+   "id": "S03",
+   "mo_ta": "Thiếu điểm y' không xác định (x = ±2) của y = |x^2 - 4|",
+   "nhan": "sai",
+   "buoc_sai_nhan": {
+    "ma_buoc": "B.DH.NGHIEM",
+    "dong": 3,
+    "o": null
+   },
+   "trang_thai": "SAI",
+   "buoc_sai": {
+    "ma_buoc": "B.DH.NGHIEM",
+    "dong": 3,
+    "o": null
+   },
+   "loai_kiem": "sai_diem_toi_han",
+   "chi_tiet": "y' không xác định (trong TXĐ): bài làm {}, máy {-2, 2}",
+   "phan_chung": {
+    "y_phay_bang_0": [
+     "0"
+    ],
+    "y_phay_khong_xd": [
+     "-2",
+     "2"
+    ]
+   },
+   "ma_loi": null,
+   "do_tin_cay_ma_loi": null,
+   "dung_ma_buoc": true,
+   "dung_dong_hoac_o": true,
+   "thoi_gian_ms": 204.9
+  },
+  {
+   "id": "S04",
+   "mo_ta": "Bảng đúng nhưng kết luận cực đại tại x = 0 nơi y' không đổi dấu",
+   "nhan": "sai",
+   "buoc_sai_nhan": {
+    "ma_buoc": "B.DH.KETLUAN",
+    "dong": 5,
+    "o": null
+   },
+   "trang_thai": "SAI",
+   "buoc_sai": {
+    "ma_buoc": "B.DH.KETLUAN",
+    "dong": 5,
+    "o": null
+   },
+   "loai_kiem": "cuc_tri_sai",
+   "chi_tiet": "điểm cực đại: AI {0}, máy {}",
+   "phan_chung": {
+    "diem_cuc_dai": [],
+    "diem_cuc_tieu": [
+     "3"
+    ],
+    "gia_tri_cuc_dai": [],
+    "gia_tri_cuc_tieu": [
+     "-27"
+    ],
+    "dao_ham": "4*x**3 - 12*x**2",
+    "bang_dau": [
+     {
+      "khoang": "(-oo; 0)",
+      "trong_D": true,
+      "dau": -1
+     },
+     {
+      "khoang": "(0; 3)",
+      "trong_D": true,
+      "dau": -1
+     },
+     {
+      "khoang": "(3; oo)",
+      "trong_D": true,
+      "dau": 1
+     }
+    ]
+   },
+   "ma_loi": null,
+   "do_tin_cay_ma_loi": null,
+   "dung_ma_buoc": true,
+   "dung_dong_hoac_o": true,
+   "thoi_gian_ms": 41.9
+  },
+  {
+   "id": "S05",
+   "mo_ta": "Kết luận đơn điệu dùng hợp khoảng",
+   "nhan": "sai",
+   "buoc_sai_nhan": {
+    "ma_buoc": "B.DH.KETLUAN",
+    "dong": 5,
+    "o": null
+   },
+   "trang_thai": "SAI",
+   "buoc_sai": {
+    "ma_buoc": "B.DH.KETLUAN",
+    "dong": 5,
+    "o": null
+   },
+   "loai_kiem": "don_dieu_sai",
+   "chi_tiet": "không nghịch biến trên cả tập (-oo; 1) U (1; +oo): x1 < x2 nhưng f(x1)=-1.000000000, f(x2)=2001.000000",
+   "phan_chung": {
+    "dong_bien_may": "∅",
+    "nghich_bien_may": "(-oo; 1), (1; oo)",
+    "dao_ham": "1/(x - 1) - (x + 1)/(x - 1)**2",
+    "TXD": "Union(Interval.open(-oo, 1), Interval.open(1, oo))",
+    "phan_vi_du_thu_tu": {
+     "x1": "0",
+     "f_x1": "-1.000000000",
+     "x2": "1001/1000",
+     "f_x2": "2001.000000"
+    }
+   },
+   "ma_loi": null,
+   "do_tin_cay_ma_loi": null,
+   "dung_ma_buoc": true,
+   "dung_dong_hoac_o": true,
+   "thoi_gian_ms": 126.5
+  },
+  {
+   "id": "S06",
+   "mo_ta": "Sai tập xác định của y = sqrt(x^2 - 2x)",
+   "nhan": "sai",
+   "buoc_sai_nhan": {
+    "ma_buoc": "B.DH.TXD",
+    "dong": 1,
+    "o": null
+   },
+   "trang_thai": "SAI",
+   "buoc_sai": {
+    "ma_buoc": "B.DH.TXD",
+    "dong": 1,
+    "o": null
+   },
+   "loai_kiem": "sai_tap_xac_dinh",
+   "chi_tiet": "Tập của bài làm khác tập máy tính; điểm chứng kiến x = 1: bài làm nói thuộc, kiểm trực tiếp là không thuộc",
+   "phan_chung": {
+    "x": "1",
+    "tap_ai": "Reals",
+    "tap_may": "Union(Interval(-oo, 0), Interval(2, oo))"
+   },
+   "ma_loi": null,
+   "do_tin_cay_ma_loi": null,
+   "dung_ma_buoc": true,
+   "dung_dong_hoac_o": true,
+   "thoi_gian_ms": 18.7
+  },
+  {
+   "id": "S07",
+   "mo_ta": "Sai đạo hàm",
+   "nhan": "sai",
+   "buoc_sai_nhan": {
+    "ma_buoc": "B.DH.DAOHAM",
+    "dong": 2,
+    "o": null
+   },
+   "trang_thai": "SAI",
+   "buoc_sai": {
+    "ma_buoc": "B.DH.DAOHAM",
+    "dong": 2,
+    "o": null
+   },
+   "loai_kiem": "dao_ham_sai",
+   "chi_tiet": "y' của AI khác đạo hàm máy tính: 3*x**2 - 6*x",
+   "phan_chung": {
+    "diem": {
+     "x": "1"
+    },
+    "gia_tri_1": "-3.00000000000000",
+    "gia_tri_2": "0",
+    "ly_do": "giá trị khác nhau"
+   },
+   "ma_loi": null,
+   "do_tin_cay_ma_loi": null,
+   "dung_ma_buoc": true,
+   "dung_dong_hoac_o": true,
+   "thoi_gian_ms": 14.9
+  },
+  {
+   "id": "S08",
+   "mo_ta": "Hệ số bậc cao âm, xét dấu ngược cả bảng (ô sai đầu tiên là ô 1)",
+   "nhan": "sai",
+   "buoc_sai_nhan": {
+    "ma_buoc": "B.DH.XETDAU",
+    "dong": null,
+    "o": {
+     "k": 1,
+     "hang": "dau_y_phay"
+    }
+   },
+   "trang_thai": "SAI",
+   "buoc_sai": {
+    "ma_buoc": "B.DH.XETDAU",
+    "dong": null,
+    "o": {
+     "k": 1,
+     "khoang": "(-oo; -1)",
+     "hang": "dau_y_phay"
+    }
+   },
+   "loai_kiem": "sai_o_bang_xet_dau",
+   "chi_tiet": "Ô 1 (-oo; -1): bài làm ghi '+', máy tính dấu -1",
+   "phan_chung": {
+    "diem_thu": "-2",
+    "dau_y_phay": -1
+   },
+   "ma_loi": null,
+   "do_tin_cay_ma_loi": null,
+   "dung_ma_buoc": true,
+   "dung_dong_hoac_o": true,
+   "thoi_gian_ms": 30.8
+  },
+  {
+   "id": "S09",
+   "mo_ta": "Bài làm đúng, có điểm y' không xác định",
+   "nhan": "dung",
+   "buoc_sai_nhan": null,
+   "trang_thai": "DAT",
+   "buoc_sai": null,
+   "loai_kiem": "bai_lam_5_buoc",
+   "chi_tiet": "Cả 5 bước hợp lệ",
+   "phan_chung": null,
+   "ma_loi": null,
+   "do_tin_cay_ma_loi": null,
+   "dung_ma_buoc": true,
+   "dung_dong_hoac_o": true,
+   "thoi_gian_ms": 195.7
+  },
+  {
+   "id": "S10",
+   "mo_ta": "Bài làm đúng, TXĐ không phải R",
+   "nhan": "dung",
+   "buoc_sai_nhan": null,
+   "trang_thai": "DAT",
+   "buoc_sai": null,
+   "loai_kiem": "bai_lam_5_buoc",
+   "chi_tiet": "Cả 5 bước hợp lệ",
+   "phan_chung": null,
+   "ma_loi": null,
+   "do_tin_cay_ma_loi": null,
+   "dung_ma_buoc": true,
+   "dung_dong_hoac_o": true,
+   "thoi_gian_ms": 197.5
+  },
+  {
+   "id": "S11",
+   "mo_ta": "Hàng dấu đúng, hàng chiều biến thiên sai ô 2",
+   "nhan": "sai",
+   "buoc_sai_nhan": {
+    "ma_buoc": "B.DH.XETDAU",
+    "dong": null,
+    "o": {
+     "k": 2,
+     "hang": "chieu_bien_thien"
+    }
+   },
+   "trang_thai": "SAI",
+   "buoc_sai": {
+    "ma_buoc": "B.DH.XETDAU",
+    "dong": null,
+    "o": {
+     "k": 2,
+     "khoang": "(0; 2)",
+     "hang": "chieu_bien_thien"
+    }
+   },
+   "loai_kiem": "sai_o_chieu_bien_thien",
+   "chi_tiet": "Ô 2 (0; 2): chiều 'tang' không khớp dấu y' -1",
+   "phan_chung": null,
+   "ma_loi": null,
+   "do_tin_cay_ma_loi": null,
+   "dung_ma_buoc": true,
+   "dung_dong_hoac_o": true,
+   "thoi_gian_ms": 31.8
+  },
+  {
+   "id": "S12",
+   "mo_ta": "Bảng thiếu mốc x = 2 (gộp ô), các bước trước đúng",
+   "nhan": "sai",
+   "buoc_sai_nhan": {
+    "ma_buoc": "B.DH.XETDAU",
+    "dong": null,
+    "o": {
+     "k": 2,
+     "hang": "dau_y_phay"
+    }
+   },
+   "trang_thai": "SAI",
+   "buoc_sai": {
+    "ma_buoc": "B.DH.XETDAU",
+    "dong": null,
+    "o": {
+     "k": 2,
+     "khoang": "(0; oo)",
+     "hang": "dau_y_phay"
+    }
+   },
+   "loai_kiem": "sai_o_bang_xet_dau",
+   "chi_tiet": "Ô 2 (0; oo): bài làm ghi '-', máy tính khoảng này gồm nhiều dấu/phần ngoài TXĐ (thiếu mốc)",
+   "phan_chung": {
+    "diem_thu": "3",
+    "dau_y_phay": 1
+   },
+   "ma_loi": null,
+   "do_tin_cay_ma_loi": null,
+   "dung_ma_buoc": true,
+   "dung_dong_hoac_o": true,
+   "thoi_gian_ms": 14.9
+  }
+ ]
+}

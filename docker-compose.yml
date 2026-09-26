@@ -1,0 +1,41 @@
+services:
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: hoc_toan
+      POSTGRES_PASSWORD: hoc_toan
+      POSTGRES_DB: hoc_toan
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U hoc_toan -d hoc_toan"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  math:
+    build:
+      context: .
+      dockerfile: services/math/Dockerfile
+    ports:
+      - "8000:8000"
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      DATABASE_URL: postgres://hoc_toan:hoc_toan@postgres:5432/hoc_toan
+      MATH_SERVICE_URL: http://math:8000
+    depends_on:
+      postgres:
+        condition: service_healthy
+      math:
+        condition: service_started
+
+volumes:
+  pgdata:

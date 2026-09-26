@@ -1,0 +1,17 @@
+{
+  "name": "hoc-toan-ai",
+  "private": true,
+  "packageManager": "pnpm@10.33.3",
+  "pnpm": {
+    "onlyBuiltDependencies": ["esbuild", "unrs-resolver"]
+  },
+  "scripts": {
+    "dev:web": "pnpm --filter web dev",
+    "dev:math": "cd services/math && .venv/bin/uvicorn app.main:app --host 127.0.0.1 --port 8000",
+    "seed": "pnpm --filter web seed",
+    "db:migrate": "pnpm --filter web db:migrate",
+    "test:math": "cd services/math && .venv/bin/pytest",
+    "lint": "pnpm --filter web lint",
+    "typecheck": "pnpm --filter web typecheck"
+  }
+}

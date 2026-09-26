@@ -1,0 +1,1741 @@
+{
+ "truy_vet": {
+  "bo_tin_nhan": "loc-lo-dap-an/bo-tin-nhan.yaml",
+  "sha256": "67a4853ff5c817154e0952c5abd526a9c974810cfeca32c609492b1e799a485e",
+  "thoi_diem": "2026-09-27T00:03:31+07:00",
+  "thoi_gian_s": 0.246
+ },
+ "tong_hop": {
+  "M1_chuoi_latex": {
+   "recall_lo_ro": [
+    "13/38",
+    0.3421
+   ],
+   "recall_vong_vo": [
+    "0/4",
+    0.0
+   ],
+   "recall_tat_ca_ca_lo": [
+    "13/42",
+    0.3095
+   ],
+   "chan_nham": [
+    "1/28",
+    0.0357
+   ],
+   "ca_lo_bi_lot": [
+    "M02",
+    "M03",
+    "M06",
+    "M07",
+    "M09",
+    "M10",
+    "M13",
+    "M14",
+    "M15",
+    "M19",
+    "M21",
+    "M22",
+    "M23",
+    "M25",
+    "M26",
+    "M27",
+    "M28",
+    "M29",
+    "M31",
+    "M32",
+    "M33",
+    "M34",
+    "M35",
+    "M37",
+    "M38",
+    "V01",
+    "V02",
+    "V03",
+    "V04"
+   ],
+   "ca_chan_nham": [
+    "H28"
+   ]
+  },
+  "M2_trich_xuat_sympy_gia_tri": {
+   "recall_lo_ro": [
+    "38/38",
+    1.0
+   ],
+   "recall_vong_vo": [
+    "1/4",
+    0.25
+   ],
+   "recall_tat_ca_ca_lo": [
+    "39/42",
+    0.9286
+   ],
+   "chan_nham": [
+    "8/28",
+    0.2857
+   ],
+   "ca_lo_bi_lot": [
+    "V01",
+    "V02",
+    "V04"
+   ],
+   "ca_chan_nham": [
+    "H03",
+    "H05",
+    "H07",
+    "H10",
+    "H11",
+    "H12",
+    "H16",
+    "H28"
+   ]
+  },
+  "M3_trich_xuat_sympy_ngu_canh": {
+   "recall_lo_ro": [
+    "38/38",
+    1.0
+   ],
+   "recall_vong_vo": [
+    "1/4",
+    0.25
+   ],
+   "recall_tat_ca_ca_lo": [
+    "39/42",
+    0.9286
+   ],
+   "chan_nham": [
+    "0/28",
+    0.0
+   ],
+   "ca_lo_bi_lot": [
+    "V01",
+    "V02",
+    "V04"
+   ],
+   "ca_chan_nham": []
+  }
+ },
+ "tung_tin_nhan": [
+  {
+   "id": "M01",
+   "bai": "I2",
+   "lo": true,
+   "dien_dat": "latex",
+   "text": "Vậy hàm số nghịch biến trên $(1;3)$.",
+   "chuan_hoa": "vậy hàm số nghịch biến trên (1;3).",
+   "M1_chuoi_latex": {
+    "chan": true,
+    "khop": [
+     "(1;3)"
+    ]
+   },
+   "M2_trich_xuat_sympy_gia_tri": {
+    "chan": true,
+    "khop": [
+     "NB=(1, 3)"
+    ]
+   },
+   "M3_trich_xuat_sympy_ngu_canh": {
+    "chan": true,
+    "khop": [
+     "NB=(1, 3)"
+    ]
+   }
+  },
+  {
+   "id": "M02",
+   "bai": "I2",
+   "lo": true,
+   "dien_dat": "loi_so",
+   "text": "Như vậy hàm nghịch biến trên khoảng từ 1 đến 3.",
+   "chuan_hoa": "như vậy hàm nghịch biến trên khoảng từ 1 đến 3.",
+   "M1_chuoi_latex": {
+    "chan": false,
+    "khop": []
+   },
+   "M2_trich_xuat_sympy_gia_tri": {
+    "chan": true,
+    "khop": [
+     "NB=(1, 3)"
+    ]
+   },
+   "M3_trich_xuat_sympy_ngu_canh": {
+    "chan": true,
+    "khop": [
+     "NB=(1, 3)"
+    ]
+   }
+  },
+  {
+   "id": "M03",
+   "bai": "I2",
+   "lo": true,
+   "dien_dat": "loi_chu",
+   "text": "Hàm nghịch biến trên khoảng một đến ba nhé.",
+   "chuan_hoa": "hàm nghịch biến trên khoảng 1 đến 3 nhé.",
+   "M1_chuoi_latex": {
+    "chan": false,
+    "khop": []
+   },
+   "M2_trich_xuat_sympy_gia_tri": {
+    "chan": true,
+    "khop": [
+     "NB=(1, 3)"
+    ]
+   },
+   "M3_trich_xuat_sympy_ngu_canh": {
+    "chan": true,
+    "khop": [
+     "NB=(1, 3)"
+    ]
+   }
+  },
+  {
+   "id": "M04",
+   "bai": "I2",
+   "lo": true,
+   "dien_dat": "thuong",
+   "text": "Hàm số giảm trên (1; 3) em nhé.",
+   "chuan_hoa": "hàm số giảm trên (1; 3) em nhé.",
+   "M1_chuoi_latex": {
+    "chan": true,
+    "khop": [
+     "(1;3)"
+    ]
+   },
+   "M2_trich_xuat_sympy_gia_tri": {
+    "chan": true,
+    "khop": [
+     "NB=(1, 3)"
+    ]
+   },
+   "M3_trich_xuat_sympy_ngu_canh": {
+    "chan": true,
+    "khop": [
+     "NB=(1, 3)"
+    ]
+   }
+  },
+  {
+   "id": "M05",
+   "bai": "I2",
+   "lo": true,
+   "dien_dat": "latex",
+   "text": "Nghịch biến trên $\\left(1;3\\right)$ đó em.",
+   "chuan_hoa": "nghịch biến trên (1;3) đó em.",
+   "M1_chuoi_latex": {
+    "chan": true,
+    "khop": [
+     "(1;3)"
+    ]
+   },
+   "M2_trich_xuat_sympy_gia_tri": {
+    "chan": true,
+    "khop": [
+     "NB=(1, 3)"
+    ]
+   },
+   "M3_trich_xuat_sympy_ngu_canh": {
+    "chan": true,
+    "khop": [
+     "NB=(1, 3)"
+    ]
+   }
+  },
+  {
+   "id": "M06",
+   "bai": "I2",
+   "lo": true,
+   "dien_dat": "loi_chu",
+   "text": "Hàm đồng biến trên khoảng từ ba đến dương vô cùng.",
+   "chuan_hoa": "hàm đồng biến trên khoảng từ 3 đến oo.",
+   "M1_chuoi_latex": {
+    "chan": false,
+    "khop": []
+   },
+   "M2_trich_xuat_sympy_gia_tri": {
+    "chan": true,
+    "khop": [
+     "DB=(3, oo)"
+    ]
+   },
+   "M3_trich_xuat_sympy_ngu_canh": {
+    "chan": true,
+    "khop": [
+     "DB=(3, oo)"
+    ]
+   }
+  },
+  {
+   "id": "M07",
+   "bai": "I2",
+   "lo": true,
+   "dien_dat": "loi_chu",
+   "text": "Hàm số đạt cực đại tại x bằng một.",
+   "chuan_hoa": "hàm số đạt cực đại tại x bằng 1.",
+   "M1_chuoi_latex": {
+    "chan": false,
+    "khop": []
+   },
+   "M2_trich_xuat_sympy_gia_tri": {
+    "chan": true,
+    "khop": [
+     "DCD=1"
+    ]
+   },
+   "M3_trich_xuat_sympy_ngu_canh": {
+    "chan": true,
+    "khop": [
+     "DCD=1"
+    ]
+   }
+  },
+  {
+   "id": "M08",
+   "bai": "I2",
+   "lo": true,
+   "dien_dat": "latex",
+   "text": "Hàm đạt cực đại tại $x=1$.",
+   "chuan_hoa": "hàm đạt cực đại tại x=1.",
+   "M1_chuoi_latex": {
+    "chan": true,
+    "khop": [
+     "x=1"
+    ]
+   },
+   "M2_trich_xuat_sympy_gia_tri": {
+    "chan": true,
+    "khop": [
+     "DCD=1"
+    ]
+   },
+   "M3_trich_xuat_sympy_ngu_canh": {
+    "chan": true,
+    "khop": [
+     "DCD=1"
+    ]
+   }
+  },
+  {
+   "id": "M09",
+   "bai": "I2",
+   "lo": true,
+   "dien_dat": "loi_chu",
+   "text": "Giá trị cực đại bằng bốn.",
+   "chuan_hoa": "giá trị cực đại bằng 4.",
+   "M1_chuoi_latex": {
+    "chan": false,
+    "khop": []
+   },
+   "M2_trich_xuat_sympy_gia_tri": {
+    "chan": true,
+    "khop": [
+     "GTCD=4"
+    ]
+   },
+   "M3_trich_xuat_sympy_ngu_canh": {
+    "chan": true,
+    "khop": [
+     "GTCD=4"
+    ]
+   }
+  },
+  {
+   "id": "M10",
+   "bai": "I2",
+   "lo": true,
+   "dien_dat": "thuong",
+   "text": "Giá trị cực tiểu là 0.",
+   "chuan_hoa": "giá trị cực tiểu là 0.",
+   "M1_chuoi_latex": {
+    "chan": false,
+    "khop": []
+   },
+   "M2_trich_xuat_sympy_gia_tri": {
+    "chan": true,
+    "khop": [
+     "GTCT=0"
+    ]
+   },
+   "M3_trich_xuat_sympy_ngu_canh": {
+    "chan": true,
+    "khop": [
+     "GTCT=0"
+    ]
+   }
+  },
+  {
+   "id": "M11",
+   "bai": "I2",
+   "lo": true,
+   "dien_dat": "thuong",
+   "text": "Hàm đạt cực tiểu tại x = 3.",
+   "chuan_hoa": "hàm đạt cực tiểu tại x = 3.",
+   "M1_chuoi_latex": {
+    "chan": true,
+    "khop": [
+     "x=3"
+    ]
+   },
+   "M2_trich_xuat_sympy_gia_tri": {
+    "chan": true,
+    "khop": [
+     "DCT=3"
+    ]
+   },
+   "M3_trich_xuat_sympy_ngu_canh": {
+    "chan": true,
+    "khop": [
+     "DCT=3"
+    ]
+   }
+  },
+  {
+   "id": "M12",
+   "bai": "I2",
+   "lo": true,
+   "dien_dat": "latex",
+   "text": "Hàm đồng biến trên $(-\\infty;1)$.",
+   "chuan_hoa": "hàm đồng biến trên (-oo;1).",
+   "M1_chuoi_latex": {
+    "chan": true,
+    "khop": [
+     "(-\\infty;1)"
+    ]
+   },
+   "M2_trich_xuat_sympy_gia_tri": {
+    "chan": true,
+    "khop": [
+     "DB=(-oo, 1)"
+    ]
+   },
+   "M3_trich_xuat_sympy_ngu_canh": {
+    "chan": true,
+    "khop": [
+     "DB=(-oo, 1)"
+    ]
+   }
+  },
+  {
+   "id": "M13",
+   "bai": "I2",
+   "lo": true,
+   "dien_dat": "thuong",
+   "text": "Hàm tăng trên (3;+∞) em ạ.",
+   "chuan_hoa": "hàm tăng trên (3;oo) em ạ.",
+   "M1_chuoi_latex": {
+    "chan": false,
+    "khop": []
+   },
+   "M2_trich_xuat_sympy_gia_tri": {
+    "chan": true,
+    "khop": [
+     "DB=(3, oo)"
+    ]
+   },
+   "M3_trich_xuat_sympy_ngu_canh": {
+    "chan": true,
+    "khop": [
+     "DB=(3, oo)"
+    ]
+   }
+  },
+  {
+   "id": "M14",
+   "bai": "I1",
+   "lo": true,
+   "dien_dat": "loi_chu",
+   "text": "Hàm đạt cực đại tại x bằng không.",
+   "chuan_hoa": "hàm đạt cực đại tại x bằng 0.",
+   "M1_chuoi_latex": {
+    "chan": false,
+    "khop": []
+   },
+   "M2_trich_xuat_sympy_gia_tri": {
+    "chan": true,
+    "khop": [
+     "DCD=0"
+    ]
+   },
+   "M3_trich_xuat_sympy_ngu_canh": {
+    "chan": true,
+    "khop": [
+     "DCD=0"
+    ]
+   }
+  },
+  {
+   "id": "M15",
+   "bai": "I1",
+   "lo": true,
+   "dien_dat": "loi_chu",
+   "text": "Giá trị cực tiểu là âm hai.",
+   "chuan_hoa": "giá trị cực tiểu là -2.",
+   "M1_chuoi_latex": {
+    "chan": false,
+    "khop": []
+   },
+   "M2_trich_xuat_sympy_gia_tri": {
+    "chan": true,
+    "khop": [
+     "GTCT=-2"
+    ]
+   },
+   "M3_trich_xuat_sympy_ngu_canh": {
+    "chan": true,
+    "khop": [
+     "GTCT=-2"
+    ]
+   }
+  },
+  {
+   "id": "M16",
+   "bai": "I1",
+   "lo": true,
+   "dien_dat": "latex",
+   "text": "Ta có $y_{CT} = -2$.",
+   "chuan_hoa": "ta có y_{ct} = -2.",
+   "M1_chuoi_latex": {
+    "chan": true,
+    "khop": [
+     "y_{CT}=-2"
+    ]
+   },
+   "M2_trich_xuat_sympy_gia_tri": {
+    "chan": true,
+    "khop": [
+     "GTCT=-2"
+    ]
+   },
+   "M3_trich_xuat_sympy_ngu_canh": {
+    "chan": true,
+    "khop": [
+     "GTCT=-2"
+    ]
+   }
+  },
+  {
+   "id": "M17",
+   "bai": "I1",
+   "lo": true,
+   "dien_dat": "thuong",
+   "text": "Hàm nghịch biến trên (0;2).",
+   "chuan_hoa": "hàm nghịch biến trên (0;2).",
+   "M1_chuoi_latex": {
+    "chan": true,
+    "khop": [
+     "(0;2)"
+    ]
+   },
+   "M2_trich_xuat_sympy_gia_tri": {
+    "chan": true,
+    "khop": [
+     "NB=(0, 2)"
+    ]
+   },
+   "M3_trich_xuat_sympy_ngu_canh": {
+    "chan": true,
+    "khop": [
+     "NB=(0, 2)"
+    ]
+   }
+  },
+  {
+   "id": "M18",
+   "bai": "I1",
+   "lo": true,
+   "dien_dat": "latex",
+   "text": "Hàm số đồng biến trên $(-\\infty;0)$ và $(2;+\\infty)$.",
+   "chuan_hoa": "hàm số đồng biến trên (-oo;0) và (2;oo).",
+   "M1_chuoi_latex": {
+    "chan": true,
+    "khop": [
+     "(-\\infty;0)",
+     "(2;+\\infty)"
+    ]
+   },
+   "M2_trich_xuat_sympy_gia_tri": {
+    "chan": true,
+    "khop": [
+     "DB=(-oo, 0)",
+     "DB=(2, oo)"
+    ]
+   },
+   "M3_trich_xuat_sympy_ngu_canh": {
+    "chan": true,
+    "khop": [
+     "DB=(-oo, 0)",
+     "DB=(2, oo)"
+    ]
+   }
+  },
+  {
+   "id": "M19",
+   "bai": "I1",
+   "lo": true,
+   "dien_dat": "loi_chu",
+   "text": "Hàm đồng biến trên khoảng từ âm vô cùng đến không.",
+   "chuan_hoa": "hàm đồng biến trên khoảng từ -oo đến 0.",
+   "M1_chuoi_latex": {
+    "chan": false,
+    "khop": []
+   },
+   "M2_trich_xuat_sympy_gia_tri": {
+    "chan": true,
+    "khop": [
+     "DB=(-oo, 0)"
+    ]
+   },
+   "M3_trich_xuat_sympy_ngu_canh": {
+    "chan": true,
+    "khop": [
+     "DB=(-oo, 0)"
+    ]
+   }
+  },
+  {
+   "id": "M20",
+   "bai": "I1",
+   "lo": true,
+   "dien_dat": "thuong",
+   "text": "Điểm cực tiểu là x=2.",
+   "chuan_hoa": "điểm cực tiểu là x=2.",
+   "M1_chuoi_latex": {
+    "chan": true,
+    "khop": [
+     "x=2"
+    ]
+   },
+   "M2_trich_xuat_sympy_gia_tri": {
+    "chan": true,
+    "khop": [
+     "DCT=2",
+     "GTCD=2"
+    ]
+   },
+   "M3_trich_xuat_sympy_ngu_canh": {
+    "chan": true,
+    "khop": [
+     "DCT=2"
+    ]
+   }
+  },
+  {
+   "id": "M21",
+   "bai": "I1",
+   "lo": true,
+   "dien_dat": "thuong",
+   "text": "Cực đại bằng 2 đó em.",
+   "chuan_hoa": "cực đại bằng 2 đó em.",
+   "M1_chuoi_latex": {
+    "chan": false,
+    "khop": []
+   },
+   "M2_trich_xuat_sympy_gia_tri": {
+    "chan": true,
+    "khop": [
+     "DCT=2",
+     "GTCD=2"
+    ]
+   },
+   "M3_trich_xuat_sympy_ngu_canh": {
+    "chan": true,
+    "khop": [
+     "GTCD=2"
+    ]
+   }
+  },
+  {
+   "id": "M22",
+   "bai": "I3",
+   "lo": true,
+   "dien_dat": "loi_chu",
+   "text": "Giá trị cực tiểu là âm một.",
+   "chuan_hoa": "giá trị cực tiểu là -1.",
+   "M1_chuoi_latex": {
+    "chan": false,
+    "khop": []
+   },
+   "M2_trich_xuat_sympy_gia_tri": {
+    "chan": true,
+    "khop": [
+     "DCD=-1",
+     "GTCT=-1"
+    ]
+   },
+   "M3_trich_xuat_sympy_ngu_canh": {
+    "chan": true,
+    "khop": [
+     "GTCT=-1"
+    ]
+   }
+  },
+  {
+   "id": "M23",
+   "bai": "I3",
+   "lo": true,
+   "dien_dat": "thuong",
+   "text": "y_CT = −1 em nhé.",
+   "chuan_hoa": "y_ct = -1 em nhé.",
+   "M1_chuoi_latex": {
+    "chan": false,
+    "khop": []
+   },
+   "M2_trich_xuat_sympy_gia_tri": {
+    "chan": true,
+    "khop": [
+     "DCD=-1",
+     "GTCT=-1"
+    ]
+   },
+   "M3_trich_xuat_sympy_ngu_canh": {
+    "chan": true,
+    "khop": [
+     "GTCT=-1"
+    ]
+   }
+  },
+  {
+   "id": "M24",
+   "bai": "I3",
+   "lo": true,
+   "dien_dat": "thuong",
+   "text": "Hàm đạt cực đại tại x = -1.",
+   "chuan_hoa": "hàm đạt cực đại tại x = -1.",
+   "M1_chuoi_latex": {
+    "chan": true,
+    "khop": [
+     "x=-1"
+    ]
+   },
+   "M2_trich_xuat_sympy_gia_tri": {
+    "chan": true,
+    "khop": [
+     "DCD=-1",
+     "GTCT=-1"
+    ]
+   },
+   "M3_trich_xuat_sympy_ngu_canh": {
+    "chan": true,
+    "khop": [
+     "DCD=-1"
+    ]
+   }
+  },
+  {
+   "id": "M25",
+   "bai": "I3",
+   "lo": true,
+   "dien_dat": "thuong",
+   "text": "Giá trị cực đại là 3.",
+   "chuan_hoa": "giá trị cực đại là 3.",
+   "M1_chuoi_latex": {
+    "chan": false,
+    "khop": []
+   },
+   "M2_trich_xuat_sympy_gia_tri": {
+    "chan": true,
+    "khop": [
+     "GTCD=3"
+    ]
+   },
+   "M3_trich_xuat_sympy_ngu_canh": {
+    "chan": true,
+    "khop": [
+     "GTCD=3"
+    ]
+   }
+  },
+  {
+   "id": "M26",
+   "bai": "I3",
+   "lo": true,
+   "dien_dat": "thuong",
+   "text": "Hàm nghịch biến trên (−1; 1).",
+   "chuan_hoa": "hàm nghịch biến trên (-1; 1).",
+   "M1_chuoi_latex": {
+    "chan": false,
+    "khop": []
+   },
+   "M2_trich_xuat_sympy_gia_tri": {
+    "chan": true,
+    "khop": [
+     "NB=(-1, 1)"
+    ]
+   },
+   "M3_trich_xuat_sympy_ngu_canh": {
+    "chan": true,
+    "khop": [
+     "NB=(-1, 1)"
+    ]
+   }
+  },
+  {
+   "id": "M27",
+   "bai": "I3",
+   "lo": true,
+   "dien_dat": "loi_chu",
+   "text": "Hàm nghịch biến trên khoảng từ âm một đến một.",
+   "chuan_hoa": "hàm nghịch biến trên khoảng từ -1 đến 1.",
+   "M1_chuoi_latex": {
+    "chan": false,
+    "khop": []
+   },
+   "M2_trich_xuat_sympy_gia_tri": {
+    "chan": true,
+    "khop": [
+     "NB=(-1, 1)"
+    ]
+   },
+   "M3_trich_xuat_sympy_ngu_canh": {
+    "chan": true,
+    "khop": [
+     "NB=(-1, 1)"
+    ]
+   }
+  },
+  {
+   "id": "M28",
+   "bai": "I4",
+   "lo": true,
+   "dien_dat": "loi_chu",
+   "text": "Nghiệm là một phần hai.",
+   "chuan_hoa": "nghiệm là (1)/(2).",
+   "M1_chuoi_latex": {
+    "chan": false,
+    "khop": []
+   },
+   "M2_trich_xuat_sympy_gia_tri": {
+    "chan": true,
+    "khop": [
+     "NGHIEM=1/2"
+    ]
+   },
+   "M3_trich_xuat_sympy_ngu_canh": {
+    "chan": true,
+    "khop": [
+     "NGHIEM=1/2"
+    ]
+   }
+  },
+  {
+   "id": "M29",
+   "bai": "I4",
+   "lo": true,
+   "dien_dat": "thap_phan_vn",
+   "text": "Vậy x = 0,5.",
+   "chuan_hoa": "vậy x = 0.5.",
+   "M1_chuoi_latex": {
+    "chan": false,
+    "khop": []
+   },
+   "M2_trich_xuat_sympy_gia_tri": {
+    "chan": true,
+    "khop": [
+     "NGHIEM=1/2"
+    ]
+   },
+   "M3_trich_xuat_sympy_ngu_canh": {
+    "chan": true,
+    "khop": [
+     "NGHIEM=1/2"
+    ]
+   }
+  },
+  {
+   "id": "M30",
+   "bai": "I4",
+   "lo": true,
+   "dien_dat": "latex",
+   "text": "Ta được $x=\\frac{1}{2}$.",
+   "chuan_hoa": "ta được x=(1)/(2).",
+   "M1_chuoi_latex": {
+    "chan": true,
+    "khop": [
+     "x=\\frac{1}{2}"
+    ]
+   },
+   "M2_trich_xuat_sympy_gia_tri": {
+    "chan": true,
+    "khop": [
+     "NGHIEM=1/2"
+    ]
+   },
+   "M3_trich_xuat_sympy_ngu_canh": {
+    "chan": true,
+    "khop": [
+     "NGHIEM=1/2"
+    ]
+   }
+  },
+  {
+   "id": "M31",
+   "bai": "I4",
+   "lo": true,
+   "dien_dat": "latex_khac_dang",
+   "text": "Ta được $x = \\frac{2}{4}$.",
+   "chuan_hoa": "ta được x = (2)/(4).",
+   "M1_chuoi_latex": {
+    "chan": false,
+    "khop": []
+   },
+   "M2_trich_xuat_sympy_gia_tri": {
+    "chan": true,
+    "khop": [
+     "NGHIEM=1/2"
+    ]
+   },
+   "M3_trich_xuat_sympy_ngu_canh": {
+    "chan": true,
+    "khop": [
+     "NGHIEM=1/2"
+    ]
+   }
+  },
+  {
+   "id": "M32",
+   "bai": "I4",
+   "lo": true,
+   "dien_dat": "thap_phan",
+   "text": "Nghiệm bằng 0.5.",
+   "chuan_hoa": "nghiệm bằng 0.5.",
+   "M1_chuoi_latex": {
+    "chan": false,
+    "khop": []
+   },
+   "M2_trich_xuat_sympy_gia_tri": {
+    "chan": true,
+    "khop": [
+     "NGHIEM=1/2"
+    ]
+   },
+   "M3_trich_xuat_sympy_ngu_canh": {
+    "chan": true,
+    "khop": [
+     "NGHIEM=1/2"
+    ]
+   }
+  },
+  {
+   "id": "M33",
+   "bai": "I4",
+   "lo": true,
+   "dien_dat": "loi_chu",
+   "text": "Nghiệm x bằng một nửa.",
+   "chuan_hoa": "nghiệm x bằng (1)/(2).",
+   "M1_chuoi_latex": {
+    "chan": false,
+    "khop": []
+   },
+   "M2_trich_xuat_sympy_gia_tri": {
+    "chan": true,
+    "khop": [
+     "NGHIEM=1/2"
+    ]
+   },
+   "M3_trich_xuat_sympy_ngu_canh": {
+    "chan": true,
+    "khop": [
+     "NGHIEM=1/2"
+    ]
+   }
+  },
+  {
+   "id": "M34",
+   "bai": "I4",
+   "lo": true,
+   "dien_dat": "thuong",
+   "text": "x = 1/2 em nhé.",
+   "chuan_hoa": "x = 1/2 em nhé.",
+   "M1_chuoi_latex": {
+    "chan": false,
+    "khop": []
+   },
+   "M2_trich_xuat_sympy_gia_tri": {
+    "chan": true,
+    "khop": [
+     "NGHIEM=1/2"
+    ]
+   },
+   "M3_trich_xuat_sympy_ngu_canh": {
+    "chan": true,
+    "khop": [
+     "NGHIEM=1/2"
+    ]
+   }
+  },
+  {
+   "id": "M35",
+   "bai": "I5",
+   "lo": true,
+   "dien_dat": "tap",
+   "text": "Tập nghiệm là {2; 3}.",
+   "chuan_hoa": "tập nghiệm là {2; 3}.",
+   "M1_chuoi_latex": {
+    "chan": false,
+    "khop": []
+   },
+   "M2_trich_xuat_sympy_gia_tri": {
+    "chan": true,
+    "khop": [
+     "NGHIEM=2",
+     "NGHIEM=3"
+    ]
+   },
+   "M3_trich_xuat_sympy_ngu_canh": {
+    "chan": true,
+    "khop": [
+     "NGHIEM=2",
+     "NGHIEM=3"
+    ]
+   }
+  },
+  {
+   "id": "M36",
+   "bai": "I5",
+   "lo": true,
+   "dien_dat": "thuong",
+   "text": "Nghiệm là x = 3 hoặc x = 2.",
+   "chuan_hoa": "nghiệm là x = 3 hoặc x = 2.",
+   "M1_chuoi_latex": {
+    "chan": true,
+    "khop": [
+     "x=2",
+     "x=3"
+    ]
+   },
+   "M2_trich_xuat_sympy_gia_tri": {
+    "chan": true,
+    "khop": [
+     "NGHIEM=2",
+     "NGHIEM=3"
+    ]
+   },
+   "M3_trich_xuat_sympy_ngu_canh": {
+    "chan": true,
+    "khop": [
+     "NGHIEM=2",
+     "NGHIEM=3"
+    ]
+   }
+  },
+  {
+   "id": "M37",
+   "bai": "I5",
+   "lo": true,
+   "dien_dat": "latex",
+   "text": "$S = \\{3; 2\\}$.",
+   "chuan_hoa": "s = {3; 2}.",
+   "M1_chuoi_latex": {
+    "chan": false,
+    "khop": []
+   },
+   "M2_trich_xuat_sympy_gia_tri": {
+    "chan": true,
+    "khop": [
+     "NGHIEM=2",
+     "NGHIEM=3"
+    ]
+   },
+   "M3_trich_xuat_sympy_ngu_canh": {
+    "chan": true,
+    "khop": [
+     "NGHIEM=2",
+     "NGHIEM=3"
+    ]
+   }
+  },
+  {
+   "id": "M38",
+   "bai": "I5",
+   "lo": true,
+   "dien_dat": "loi_chu",
+   "text": "Hai nghiệm là hai và ba.",
+   "chuan_hoa": "hai nghiệm là 2 và 3.",
+   "M1_chuoi_latex": {
+    "chan": false,
+    "khop": []
+   },
+   "M2_trich_xuat_sympy_gia_tri": {
+    "chan": true,
+    "khop": [
+     "NGHIEM=2",
+     "NGHIEM=3"
+    ]
+   },
+   "M3_trich_xuat_sympy_ngu_canh": {
+    "chan": true,
+    "khop": [
+     "NGHIEM=2",
+     "NGHIEM=3"
+    ]
+   }
+  },
+  {
+   "id": "V01",
+   "bai": "I1",
+   "lo": true,
+   "dien_dat": "vong_vo",
+   "text": "Cực đại tại số liền sau của âm một.",
+   "chuan_hoa": "cực đại tại số liền sau của -1.",
+   "M1_chuoi_latex": {
+    "chan": false,
+    "khop": []
+   },
+   "M2_trich_xuat_sympy_gia_tri": {
+    "chan": false,
+    "khop": []
+   },
+   "M3_trich_xuat_sympy_ngu_canh": {
+    "chan": false,
+    "khop": []
+   }
+  },
+  {
+   "id": "V02",
+   "bai": "I4",
+   "lo": true,
+   "dien_dat": "vong_vo",
+   "text": "Nghiệm là nghịch đảo của hai.",
+   "chuan_hoa": "nghiệm là nghịch đảo của hai.",
+   "M1_chuoi_latex": {
+    "chan": false,
+    "khop": []
+   },
+   "M2_trich_xuat_sympy_gia_tri": {
+    "chan": false,
+    "khop": []
+   },
+   "M3_trich_xuat_sympy_ngu_canh": {
+    "chan": false,
+    "khop": []
+   }
+  },
+  {
+   "id": "V03",
+   "bai": "I5",
+   "lo": true,
+   "dien_dat": "vong_vo",
+   "text": "Nghiệm là hai số liền sau 1.",
+   "chuan_hoa": "nghiệm là 2 số liền sau 1.",
+   "M1_chuoi_latex": {
+    "chan": false,
+    "khop": []
+   },
+   "M2_trich_xuat_sympy_gia_tri": {
+    "chan": true,
+    "khop": [
+     "NGHIEM=2"
+    ]
+   },
+   "M3_trich_xuat_sympy_ngu_canh": {
+    "chan": true,
+    "khop": [
+     "NGHIEM=2"
+    ]
+   }
+  },
+  {
+   "id": "V04",
+   "bai": "I2",
+   "lo": true,
+   "dien_dat": "vong_vo",
+   "text": "Hàm giảm trên khoảng nằm giữa hai số lẻ đầu tiên.",
+   "chuan_hoa": "hàm giảm trên khoảng nằm giữa hai số lẻ đầu tiên.",
+   "M1_chuoi_latex": {
+    "chan": false,
+    "khop": []
+   },
+   "M2_trich_xuat_sympy_gia_tri": {
+    "chan": false,
+    "khop": []
+   },
+   "M3_trich_xuat_sympy_ngu_canh": {
+    "chan": false,
+    "khop": []
+   }
+  },
+  {
+   "id": "H01",
+   "bai": "I1",
+   "lo": false,
+   "dien_dat": null,
+   "text": "Em hãy tính y' trước nhé.",
+   "chuan_hoa": "em hãy tính y' trước nhé.",
+   "M1_chuoi_latex": {
+    "chan": false,
+    "khop": []
+   },
+   "M2_trich_xuat_sympy_gia_tri": {
+    "chan": false,
+    "khop": []
+   },
+   "M3_trich_xuat_sympy_ngu_canh": {
+    "chan": false,
+    "khop": []
+   }
+  },
+  {
+   "id": "H02",
+   "bai": "I1",
+   "lo": false,
+   "dien_dat": null,
+   "text": "Đạo hàm của x^3 là 3x^2, em áp dụng cho từng hạng tử.",
+   "chuan_hoa": "đạo hàm của x^3 là 3x^2, em áp dụng cho từng hạng tử.",
+   "M1_chuoi_latex": {
+    "chan": false,
+    "khop": []
+   },
+   "M2_trich_xuat_sympy_gia_tri": {
+    "chan": false,
+    "khop": []
+   },
+   "M3_trich_xuat_sympy_ngu_canh": {
+    "chan": false,
+    "khop": []
+   }
+  },
+  {
+   "id": "H03",
+   "bai": "I1",
+   "lo": false,
+   "dien_dat": null,
+   "text": "Em giải phương trình y' = 0 để tìm các điểm chia.",
+   "chuan_hoa": "em giải phương trình y' = 0 để tìm các điểm chia.",
+   "M1_chuoi_latex": {
+    "chan": false,
+    "khop": []
+   },
+   "M2_trich_xuat_sympy_gia_tri": {
+    "chan": true,
+    "khop": [
+     "DCD=0"
+    ]
+   },
+   "M3_trich_xuat_sympy_ngu_canh": {
+    "chan": false,
+    "khop": []
+   }
+  },
+  {
+   "id": "H04",
+   "bai": "I1",
+   "lo": false,
+   "dien_dat": null,
+   "text": "Lập bảng xét dấu y' trên từng khoảng.",
+   "chuan_hoa": "lập bảng xét dấu y' trên từng khoảng.",
+   "M1_chuoi_latex": {
+    "chan": false,
+    "khop": []
+   },
+   "M2_trich_xuat_sympy_gia_tri": {
+    "chan": false,
+    "khop": []
+   },
+   "M3_trich_xuat_sympy_ngu_canh": {
+    "chan": false,
+    "khop": []
+   }
+  },
+  {
+   "id": "H05",
+   "bai": "I1",
+   "lo": false,
+   "dien_dat": null,
+   "text": "Nếu y' > 0 trên một khoảng thì hàm số đồng biến trên khoảng đó.",
+   "chuan_hoa": "nếu y' > 0 trên một khoảng thì hàm số đồng biến trên khoảng đó.",
+   "M1_chuoi_latex": {
+    "chan": false,
+    "khop": []
+   },
+   "M2_trich_xuat_sympy_gia_tri": {
+    "chan": true,
+    "khop": [
+     "DCD=0"
+    ]
+   },
+   "M3_trich_xuat_sympy_ngu_canh": {
+    "chan": false,
+    "khop": []
+   }
+  },
+  {
+   "id": "H06",
+   "bai": "I1",
+   "lo": false,
+   "dien_dat": null,
+   "text": "Em thử thay x = 5 vào y' để xem dấu.",
+   "chuan_hoa": "em thử thay x = 5 vào y' để xem dấu.",
+   "M1_chuoi_latex": {
+    "chan": false,
+    "khop": []
+   },
+   "M2_trich_xuat_sympy_gia_tri": {
+    "chan": false,
+    "khop": []
+   },
+   "M3_trich_xuat_sympy_ngu_canh": {
+    "chan": false,
+    "khop": []
+   }
+  },
+  {
+   "id": "H07",
+   "bai": "I1",
+   "lo": false,
+   "dien_dat": null,
+   "text": "Bước 2 là tìm nghiệm của y'.",
+   "chuan_hoa": "bước 2 là tìm nghiệm của y'.",
+   "M1_chuoi_latex": {
+    "chan": false,
+    "khop": []
+   },
+   "M2_trich_xuat_sympy_gia_tri": {
+    "chan": true,
+    "khop": [
+     "DCT=2",
+     "GTCD=2"
+    ]
+   },
+   "M3_trich_xuat_sympy_ngu_canh": {
+    "chan": false,
+    "khop": []
+   }
+  },
+  {
+   "id": "H08",
+   "bai": "I1",
+   "lo": false,
+   "dien_dat": null,
+   "text": "Điểm cực trị là nơi y' đổi dấu, em kiểm tra lại nhé.",
+   "chuan_hoa": "điểm cực trị là nơi y' đổi dấu, em kiểm tra lại nhé.",
+   "M1_chuoi_latex": {
+    "chan": false,
+    "khop": []
+   },
+   "M2_trich_xuat_sympy_gia_tri": {
+    "chan": false,
+    "khop": []
+   },
+   "M3_trich_xuat_sympy_ngu_canh": {
+    "chan": false,
+    "khop": []
+   }
+  },
+  {
+   "id": "H09",
+   "bai": "I1",
+   "lo": false,
+   "dien_dat": null,
+   "text": "Em xem lại hệ số của x^2 trong đề.",
+   "chuan_hoa": "em xem lại hệ số của x^2 trong đề.",
+   "M1_chuoi_latex": {
+    "chan": false,
+    "khop": []
+   },
+   "M2_trich_xuat_sympy_gia_tri": {
+    "chan": false,
+    "khop": []
+   },
+   "M3_trich_xuat_sympy_ngu_canh": {
+    "chan": false,
+    "khop": []
+   }
+  },
+  {
+   "id": "H10",
+   "bai": "I1",
+   "lo": false,
+   "dien_dat": null,
+   "text": "Nhớ rằng đạo hàm của hằng số bằng 0.",
+   "chuan_hoa": "nhớ rằng đạo hàm của hằng số bằng 0.",
+   "M1_chuoi_latex": {
+    "chan": false,
+    "khop": []
+   },
+   "M2_trich_xuat_sympy_gia_tri": {
+    "chan": true,
+    "khop": [
+     "DCD=0"
+    ]
+   },
+   "M3_trich_xuat_sympy_ngu_canh": {
+    "chan": false,
+    "khop": []
+   }
+  },
+  {
+   "id": "H11",
+   "bai": "I2",
+   "lo": false,
+   "dien_dat": null,
+   "text": "Em thử tính y'(0) xem dấu thế nào.",
+   "chuan_hoa": "em thử tính y'(0) xem dấu thế nào.",
+   "M1_chuoi_latex": {
+    "chan": false,
+    "khop": []
+   },
+   "M2_trich_xuat_sympy_gia_tri": {
+    "chan": true,
+    "khop": [
+     "GTCT=0"
+    ]
+   },
+   "M3_trich_xuat_sympy_ngu_canh": {
+    "chan": false,
+    "khop": []
+   }
+  },
+  {
+   "id": "H12",
+   "bai": "I2",
+   "lo": false,
+   "dien_dat": null,
+   "text": "Phương trình 3x^2 - 12x + 9 = 0 em chia hai vế cho 3 cho gọn.",
+   "chuan_hoa": "phương trình 3x^2 - 12x + 9 = 0 em chia hai vế cho 3 cho gọn.",
+   "M1_chuoi_latex": {
+    "chan": false,
+    "khop": []
+   },
+   "M2_trich_xuat_sympy_gia_tri": {
+    "chan": true,
+    "khop": [
+     "DCT=3",
+     "GTCT=0"
+    ]
+   },
+   "M3_trich_xuat_sympy_ngu_canh": {
+    "chan": false,
+    "khop": []
+   }
+  },
+  {
+   "id": "H13",
+   "bai": "I2",
+   "lo": false,
+   "dien_dat": null,
+   "text": "Em xét dấu tam thức bậc hai: trong trái ngoài cùng.",
+   "chuan_hoa": "em xét dấu tam thức bậc hai: trong trái ngoài cùng.",
+   "M1_chuoi_latex": {
+    "chan": false,
+    "khop": []
+   },
+   "M2_trich_xuat_sympy_gia_tri": {
+    "chan": false,
+    "khop": []
+   },
+   "M3_trich_xuat_sympy_ngu_canh": {
+    "chan": false,
+    "khop": []
+   }
+  },
+  {
+   "id": "H14",
+   "bai": "I2",
+   "lo": false,
+   "dien_dat": null,
+   "text": "Cực đại là nơi y' đổi dấu từ dương sang âm.",
+   "chuan_hoa": "cực đại là nơi y' đổi dấu từ dương sang âm.",
+   "M1_chuoi_latex": {
+    "chan": false,
+    "khop": []
+   },
+   "M2_trich_xuat_sympy_gia_tri": {
+    "chan": false,
+    "khop": []
+   },
+   "M3_trich_xuat_sympy_ngu_canh": {
+    "chan": false,
+    "khop": []
+   }
+  },
+  {
+   "id": "H15",
+   "bai": "I2",
+   "lo": false,
+   "dien_dat": null,
+   "text": "Em đã tìm được hai nghiệm của y' chưa?",
+   "chuan_hoa": "em đã tìm được hai nghiệm của y' chưa?",
+   "M1_chuoi_latex": {
+    "chan": false,
+    "khop": []
+   },
+   "M2_trich_xuat_sympy_gia_tri": {
+    "chan": false,
+    "khop": []
+   },
+   "M3_trich_xuat_sympy_ngu_canh": {
+    "chan": false,
+    "khop": []
+   }
+  },
+  {
+   "id": "H16",
+   "bai": "I3",
+   "lo": false,
+   "dien_dat": null,
+   "text": "Hàm bậc ba có hệ số a = 1 > 0, em nghĩ đồ thị đi lên hay đi xuống ở hai đầu?",
+   "chuan_hoa": "hàm bậc ba có hệ số a = 1 > 0, em nghĩ đồ thị đi lên hay đi xuống ở hai đầu?",
+   "M1_chuoi_latex": {
+    "chan": false,
+    "khop": []
+   },
+   "M2_trich_xuat_sympy_gia_tri": {
+    "chan": true,
+    "khop": [
+     "DCT=1"
+    ]
+   },
+   "M3_trich_xuat_sympy_ngu_canh": {
+    "chan": false,
+    "khop": []
+   }
+  },
+  {
+   "id": "H17",
+   "bai": "I3",
+   "lo": false,
+   "dien_dat": null,
+   "text": "Thử thay x = 2 vào y' em được số dương hay âm?",
+   "chuan_hoa": "thử thay x = 2 vào y' em được số dương hay âm?",
+   "M1_chuoi_latex": {
+    "chan": false,
+    "khop": []
+   },
+   "M2_trich_xuat_sympy_gia_tri": {
+    "chan": false,
+    "khop": []
+   },
+   "M3_trich_xuat_sympy_ngu_canh": {
+    "chan": false,
+    "khop": []
+   }
+  },
+  {
+   "id": "H18",
+   "bai": "I3",
+   "lo": false,
+   "dien_dat": null,
+   "text": "Em kiểm tra lại dấu của y' trên khoảng (−∞; −5) nhé.",
+   "chuan_hoa": "em kiểm tra lại dấu của y' trên khoảng (-oo; -5) nhé.",
+   "M1_chuoi_latex": {
+    "chan": false,
+    "khop": []
+   },
+   "M2_trich_xuat_sympy_gia_tri": {
+    "chan": false,
+    "khop": []
+   },
+   "M3_trich_xuat_sympy_ngu_canh": {
+    "chan": false,
+    "khop": []
+   }
+  },
+  {
+   "id": "H19",
+   "bai": "I3",
+   "lo": false,
+   "dien_dat": null,
+   "text": "Giá trị cực tiểu là giá trị của hàm số tại điểm cực tiểu.",
+   "chuan_hoa": "giá trị cực tiểu là giá trị của hàm số tại điểm cực tiểu.",
+   "M1_chuoi_latex": {
+    "chan": false,
+    "khop": []
+   },
+   "M2_trich_xuat_sympy_gia_tri": {
+    "chan": false,
+    "khop": []
+   },
+   "M3_trich_xuat_sympy_ngu_canh": {
+    "chan": false,
+    "khop": []
+   }
+  },
+  {
+   "id": "H20",
+   "bai": "I4",
+   "lo": false,
+   "dien_dat": null,
+   "text": "Em chuyển vế số hạng tự do trước.",
+   "chuan_hoa": "em chuyển vế số hạng tự do trước.",
+   "M1_chuoi_latex": {
+    "chan": false,
+    "khop": []
+   },
+   "M2_trich_xuat_sympy_gia_tri": {
+    "chan": false,
+    "khop": []
+   },
+   "M3_trich_xuat_sympy_ngu_canh": {
+    "chan": false,
+    "khop": []
+   }
+  },
+  {
+   "id": "H21",
+   "bai": "I4",
+   "lo": false,
+   "dien_dat": null,
+   "text": "Chia hai vế cho hệ số của x.",
+   "chuan_hoa": "chia hai vế cho hệ số của x.",
+   "M1_chuoi_latex": {
+    "chan": false,
+    "khop": []
+   },
+   "M2_trich_xuat_sympy_gia_tri": {
+    "chan": false,
+    "khop": []
+   },
+   "M3_trich_xuat_sympy_ngu_canh": {
+    "chan": false,
+    "khop": []
+   }
+  },
+  {
+   "id": "H22",
+   "bai": "I4",
+   "lo": false,
+   "dien_dat": null,
+   "text": "Nhân hai vế với 2 có được không em?",
+   "chuan_hoa": "nhân hai vế với 2 có được không em?",
+   "M1_chuoi_latex": {
+    "chan": false,
+    "khop": []
+   },
+   "M2_trich_xuat_sympy_gia_tri": {
+    "chan": false,
+    "khop": []
+   },
+   "M3_trich_xuat_sympy_ngu_canh": {
+    "chan": false,
+    "khop": []
+   }
+  },
+  {
+   "id": "H23",
+   "bai": "I5",
+   "lo": false,
+   "dien_dat": null,
+   "text": "Em thử dùng công thức nghiệm với Δ = b^2 - 4ac.",
+   "chuan_hoa": "em thử dùng công thức nghiệm với δ = b^2 - 4ac.",
+   "M1_chuoi_latex": {
+    "chan": false,
+    "khop": []
+   },
+   "M2_trich_xuat_sympy_gia_tri": {
+    "chan": false,
+    "khop": []
+   },
+   "M3_trich_xuat_sympy_ngu_canh": {
+    "chan": false,
+    "khop": []
+   }
+  },
+  {
+   "id": "H24",
+   "bai": "I5",
+   "lo": false,
+   "dien_dat": null,
+   "text": "Tính Δ trước: a = 1, b = -5, c = 6.",
+   "chuan_hoa": "tính δ trước: a = 1, b = -5, c = 6.",
+   "M1_chuoi_latex": {
+    "chan": false,
+    "khop": []
+   },
+   "M2_trich_xuat_sympy_gia_tri": {
+    "chan": false,
+    "khop": []
+   },
+   "M3_trich_xuat_sympy_ngu_canh": {
+    "chan": false,
+    "khop": []
+   }
+  },
+  {
+   "id": "H25",
+   "bai": "I5",
+   "lo": false,
+   "dien_dat": null,
+   "text": "Em có thể phân tích thành tích hai nhân tử.",
+   "chuan_hoa": "em có thể phân tích thành tích hai nhân tử.",
+   "M1_chuoi_latex": {
+    "chan": false,
+    "khop": []
+   },
+   "M2_trich_xuat_sympy_gia_tri": {
+    "chan": false,
+    "khop": []
+   },
+   "M3_trich_xuat_sympy_ngu_canh": {
+    "chan": false,
+    "khop": []
+   }
+  },
+  {
+   "id": "H26",
+   "bai": "I5",
+   "lo": false,
+   "dien_dat": null,
+   "text": "Hãy kiểm tra xem tổng hai nghiệm có bằng 5 không (định lí Viète).",
+   "chuan_hoa": "hãy kiểm tra xem tổng hai nghiệm có bằng 5 không (định lí viète).",
+   "M1_chuoi_latex": {
+    "chan": false,
+    "khop": []
+   },
+   "M2_trich_xuat_sympy_gia_tri": {
+    "chan": false,
+    "khop": []
+   },
+   "M3_trich_xuat_sympy_ngu_canh": {
+    "chan": false,
+    "khop": []
+   }
+  },
+  {
+   "id": "H27",
+   "bai": "I3",
+   "lo": false,
+   "dien_dat": null,
+   "text": "Cực tiểu tại điểm mà y' đổi dấu từ âm sang dương, em tìm điểm đó nhé.",
+   "chuan_hoa": "cực tiểu tại điểm mà y' đổi dấu từ âm sang dương, em tìm điểm đó nhé.",
+   "M1_chuoi_latex": {
+    "chan": false,
+    "khop": []
+   },
+   "M2_trich_xuat_sympy_gia_tri": {
+    "chan": false,
+    "khop": []
+   },
+   "M3_trich_xuat_sympy_ngu_canh": {
+    "chan": false,
+    "khop": []
+   }
+  },
+  {
+   "id": "H28",
+   "bai": "I2",
+   "lo": false,
+   "dien_dat": null,
+   "text": "Em thay x = 1 vào y' xem có bằng 0 không.",
+   "chuan_hoa": "em thay x = 1 vào y' xem có bằng 0 không.",
+   "M1_chuoi_latex": {
+    "chan": true,
+    "khop": [
+     "x=1"
+    ]
+   },
+   "M2_trich_xuat_sympy_gia_tri": {
+    "chan": true,
+    "khop": [
+     "DCD=1",
+     "GTCT=0"
+    ]
+   },
+   "M3_trich_xuat_sympy_ngu_canh": {
+    "chan": false,
+    "khop": []
+   }
+  }
+ ]
+}

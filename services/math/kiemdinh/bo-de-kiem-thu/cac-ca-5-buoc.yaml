@@ -1,0 +1,222 @@
+# Bộ đề bổ sung v1.1 – bài làm có cấu trúc 5 bước (chủ đề mẫu: đơn điệu & cực trị, Toán 12)
+# Soạn 27/09/2026 SAU khi đã chạy bộ v1.0, theo yêu cầu bổ sung của điều phối (ma_buoc + ô bảng).
+# Do Kiểm định SOẠN MÔ PHỎNG, không lấy từ log AI/học sinh thật.
+# Mã bước (do điều phối/Sư phạm cấp): B.DH.TXD, B.DH.DAOHAM, B.DH.NGHIEM, B.DH.XETDAU, B.DH.KETLUAN
+# Dòng: 1 = TXĐ, 2 = đạo hàm, 3 = nghiệm/điểm y' không xác định, 4 = bảng (không đánh số dòng, dùng ô), 5 = kết luận.
+# Bảng: `moc` gồm -oo, các điểm hàng x, oo; `dau[j]` = dấu y' trên khoảng thứ j+1 (+, -, || nếu ngoài TXĐ);
+# `dau_tai_diem[j]` (tùy chọn) = ô tại điểm thứ j+1: 0 hoặc ||. Chỉ số ô k xen kẽ: k=1 khoảng đầu, k=2 điểm 1, k=3 khoảng 2, ...
+# `chieu` (tùy chọn) là hàng chiều biến thiên: tang / giam / khong_xd.
+# y_phay_khong_xd: các điểm THUỘC TXĐ mà y' không xác định (điểm ngoài TXĐ chỉ xuất hiện ở hàng mốc của bảng).
+phien_ban: "1.2-5buoc"
+# v1.2 (27/09 ~00:05): đổi quy ước chỉ số ô theo giao ước nhóm (k xen kẽ khoảng/điểm; hàng "x" | "dau_y'" | "bien_thien"),
+# chuyển nhãn S02, S08, S11, S12 sang quy ước mới; thêm S13–S16. Ghi trong NHAT-KY.md.
+nguon: "soan_mo_phong"
+ca:
+- id: S01
+  nhan: dung
+  mo_ta: "Bài làm đúng đủ 5 bước"
+  ma_loi_supham: null
+  bai_lam:
+    ham: "x**3 - 3*x**2 + 2"
+    TXD: "R"
+    dao_ham: "3*x**2 - 6*x"
+    y_phay_bang_0: ["0", "2"]
+    y_phay_khong_xd: []
+    bang: {moc: ["-oo", "0", "2", "oo"], dau: ["+", "-", "+"], chieu: ["tang", "giam", "tang"]}
+    ket_luan: {dong_bien: ["(-oo; 0)", "(2; +oo)"], nghich_bien: ["(0; 2)"], cuc_dai_x: ["0"], cuc_tieu_x: ["2"], gia_tri_cuc_dai: ["2"], gia_tri_cuc_tieu: ["-2"]}
+  buoc_sai_nhan: null
+- id: S02
+  nhan: sai
+  mo_ta: "Bảng xét dấu sai một ô (ô 3), kết luận chép theo bảng"
+  ma_loi_supham: null
+  bai_lam:
+    ham: "x**3 - 3*x**2 + 2"
+    TXD: "R"
+    dao_ham: "3*x**2 - 6*x"
+    y_phay_bang_0: ["0", "2"]
+    y_phay_khong_xd: []
+    bang: {moc: ["-oo", "0", "2", "oo"], dau: ["+", "-", "-"]}
+    ket_luan: {dong_bien: ["(-oo; 0)"], nghich_bien: ["(0; +oo)"], cuc_dai_x: ["0"], cuc_tieu_x: []}
+  buoc_sai_nhan: {ma_buoc: B.DH.XETDAU, dong: null, o: {k: 5, hang: "dau_y'"}}
+- id: S03
+  nhan: sai
+  mo_ta: "Thiếu điểm y' không xác định (x = ±2) của y = |x^2 - 4|"
+  ma_loi_supham: null
+  bai_lam:
+    ham: "Abs(x**2 - 4)"
+    TXD: "R"
+    dao_ham: "2*x*(x**2 - 4)/Abs(x**2 - 4)"
+    y_phay_bang_0: ["0"]
+    y_phay_khong_xd: []
+    bang: {moc: ["-oo", "0", "oo"], dau: ["-", "+"]}
+    ket_luan: {cuc_tieu_x: ["0"], cuc_dai_x: []}
+  buoc_sai_nhan: {ma_buoc: B.DH.NGHIEM, dong: 3, o: null}
+- id: S04
+  nhan: sai
+  mo_ta: "Bảng đúng nhưng kết luận cực đại tại x = 0 nơi y' không đổi dấu"
+  ma_loi_supham: null
+  bai_lam:
+    ham: "x**4 - 4*x**3"
+    TXD: "R"
+    dao_ham: "4*x**3 - 12*x**2"
+    y_phay_bang_0: ["0", "3"]
+    y_phay_khong_xd: []
+    bang: {moc: ["-oo", "0", "3", "oo"], dau: ["-", "-", "+"]}
+    ket_luan: {cuc_dai_x: ["0"], cuc_tieu_x: ["3"]}
+  buoc_sai_nhan: {ma_buoc: B.DH.KETLUAN, dong: 5, o: null}
+- id: S05
+  nhan: sai
+  mo_ta: "Kết luận đơn điệu dùng hợp khoảng"
+  ma_loi_supham: null
+  bai_lam:
+    ham: "(x + 1)/(x - 1)"
+    TXD: "R \\ {1}"
+    dao_ham: "-2/(x - 1)**2"
+    y_phay_bang_0: []
+    y_phay_khong_xd: []
+    bang: {moc: ["-oo", "1", "oo"], dau: ["-", "-"]}
+    ket_luan: {nghich_bien_tren_tap: "(-oo; 1) U (1; +oo)"}
+  buoc_sai_nhan: {ma_buoc: B.DH.KETLUAN, dong: 5, o: null}
+- id: S06
+  nhan: sai
+  mo_ta: "Sai tập xác định của y = sqrt(x^2 - 2x)"
+  ma_loi_supham: null
+  bai_lam:
+    ham: "sqrt(x**2 - 2*x)"
+    TXD: "R"
+    dao_ham: "(x - 1)/sqrt(x**2 - 2*x)"
+    y_phay_bang_0: ["1"]
+    y_phay_khong_xd: []
+    bang: {moc: ["-oo", "1", "oo"], dau: ["-", "+"]}
+    ket_luan: {nghich_bien: ["(-oo; 1)"], dong_bien: ["(1; +oo)"]}
+  buoc_sai_nhan: {ma_buoc: B.DH.TXD, dong: 1, o: null}
+- id: S07
+  nhan: sai
+  mo_ta: "Sai đạo hàm"
+  ma_loi_supham: null
+  bai_lam:
+    ham: "x**3 - 3*x**2 + 2"
+    TXD: "R"
+    dao_ham: "3*x**2 - 3*x"
+    y_phay_bang_0: ["0", "1"]
+    y_phay_khong_xd: []
+    bang: {moc: ["-oo", "0", "1", "oo"], dau: ["+", "-", "+"]}
+    ket_luan: {dong_bien: ["(-oo; 0)", "(1; +oo)"], nghich_bien: ["(0; 1)"]}
+  buoc_sai_nhan: {ma_buoc: B.DH.DAOHAM, dong: 2, o: null}
+- id: S08
+  nhan: sai
+  mo_ta: "Hệ số bậc cao âm, xét dấu ngược cả bảng (ô sai đầu tiên là ô 1)"
+  ma_loi_supham: null
+  bai_lam:
+    ham: "-x**3 + 3*x"
+    TXD: "R"
+    dao_ham: "-3*x**2 + 3"
+    y_phay_bang_0: ["-1", "1"]
+    y_phay_khong_xd: []
+    bang: {moc: ["-oo", "-1", "1", "oo"], dau: ["+", "-", "+"]}
+    ket_luan: {dong_bien: ["(-oo; -1)", "(1; +oo)"], nghich_bien: ["(-1; 1)"]}
+  buoc_sai_nhan: {ma_buoc: B.DH.XETDAU, dong: null, o: {k: 1, hang: "dau_y'"}}
+- id: S09
+  nhan: dung
+  mo_ta: "Bài làm đúng, có điểm y' không xác định"
+  ma_loi_supham: null
+  bai_lam:
+    ham: "Abs(x**2 - 4)"
+    TXD: "R"
+    dao_ham: "2*x*(x**2 - 4)/Abs(x**2 - 4)"
+    y_phay_bang_0: ["0"]
+    y_phay_khong_xd: ["-2", "2"]
+    bang: {moc: ["-oo", "-2", "0", "2", "oo"], dau: ["-", "+", "-", "+"]}
+    ket_luan: {cuc_dai_x: ["0"], cuc_tieu_x: ["-2", "2"], dong_bien: ["(-2; 0)", "(2; +oo)"], nghich_bien: ["(-oo; -2)", "(0; 2)"]}
+  buoc_sai_nhan: null
+- id: S10
+  nhan: dung
+  mo_ta: "Bài làm đúng, TXĐ không phải R"
+  ma_loi_supham: null
+  bai_lam:
+    ham: "sqrt(x**2 - 2*x)"
+    TXD: "(-oo; 0] U [2; +oo)"
+    dao_ham: "(x - 1)/sqrt(x**2 - 2*x)"
+    y_phay_bang_0: []
+    y_phay_khong_xd: ["0", "2"]
+    bang: {moc: ["-oo", "0", "2", "oo"], dau: ["-", "||", "+"]}
+    ket_luan: {nghich_bien: ["(-oo; 0)"], dong_bien: ["(2; +oo)"], cuc_dai_x: [], cuc_tieu_x: []}
+  buoc_sai_nhan: null
+- id: S11
+  nhan: sai
+  mo_ta: "Hàng dấu đúng, hàng chiều biến thiên sai ô 2"
+  ma_loi_supham: null
+  bai_lam:
+    ham: "x**3 - 3*x**2 + 2"
+    TXD: "R"
+    dao_ham: "3*x**2 - 6*x"
+    y_phay_bang_0: ["0", "2"]
+    y_phay_khong_xd: []
+    bang: {moc: ["-oo", "0", "2", "oo"], dau: ["+", "-", "+"], chieu: ["tang", "tang", "giam"]}
+    ket_luan: {dong_bien: ["(-oo; 2)"], nghich_bien: ["(2; +oo)"]}
+  buoc_sai_nhan: {ma_buoc: B.DH.XETDAU, dong: null, o: {k: 3, hang: bien_thien}}
+- id: S12
+  nhan: sai
+  mo_ta: "Bảng thiếu mốc x = 2 (gộp ô), các bước trước đúng"
+  ma_loi_supham: null
+  bai_lam:
+    ham: "x**3 - 3*x**2 + 2"
+    TXD: "R"
+    dao_ham: "3*x**2 - 6*x"
+    y_phay_bang_0: ["0", "2"]
+    y_phay_khong_xd: []
+    bang: {moc: ["-oo", "0", "oo"], dau: ["+", "-"]}
+    ket_luan: {dong_bien: ["(-oo; 0)"], nghich_bien: ["(0; +oo)"]}
+  buoc_sai_nhan: {ma_buoc: B.DH.NGHIEM, dong: null, o: {k: null, hang: x}}
+- id: S13
+  nhan: sai
+  mo_ta: "Ô tại điểm x = -2 ghi 0 trong khi y' không xác định (phải là ||)"
+  ma_loi_supham: null
+  bai_lam:
+    ham: "Abs(x**2 - 4)"
+    TXD: "R"
+    dao_ham: "2*x*(x**2 - 4)/Abs(x**2 - 4)"
+    y_phay_bang_0: ["0"]
+    y_phay_khong_xd: ["-2", "2"]
+    bang: {moc: ["-oo", "-2", "0", "2", "oo"], dau: ["-", "+", "-", "+"], dau_tai_diem: ["0", "0", "||"]}
+    ket_luan: {cuc_dai_x: ["0"], cuc_tieu_x: ["-2", "2"]}
+  buoc_sai_nhan: {ma_buoc: B.DH.XETDAU, dong: null, o: {k: 2, hang: "dau_y'"}}
+- id: S14
+  nhan: sai
+  mo_ta: "Hàng x thừa điểm x = 1 (không phải nghiệm y')"
+  ma_loi_supham: null
+  bai_lam:
+    ham: "x**3 - 3*x**2 + 2"
+    TXD: "R"
+    dao_ham: "3*x**2 - 6*x"
+    y_phay_bang_0: ["0", "2"]
+    y_phay_khong_xd: []
+    bang: {moc: ["-oo", "0", "1", "2", "oo"], dau: ["+", "-", "-", "+"]}
+    ket_luan: {dong_bien: ["(-oo; 0)", "(2; +oo)"], nghich_bien: ["(0; 2)"]}
+  buoc_sai_nhan: {ma_buoc: B.DH.NGHIEM, dong: null, o: {k: 4, hang: x}}
+- id: S15
+  nhan: dung
+  mo_ta: "Bài làm đúng, có ô tại điểm và hàng biến thiên"
+  ma_loi_supham: null
+  bai_lam:
+    ham: "x**3 - 3*x**2 + 2"
+    TXD: "R"
+    dao_ham: "3*x**2 - 6*x"
+    y_phay_bang_0: ["0", "2"]
+    y_phay_khong_xd: []
+    bang: {moc: ["-oo", "0", "2", "oo"], dau: ["+", "-", "+"], dau_tai_diem: ["0", "0"], chieu: ["tang", "giam", "tang"]}
+    ket_luan: {dong_bien: ["(-oo; 0)", "(2; +oo)"], nghich_bien: ["(0; 2)"], cuc_dai_x: ["0"], cuc_tieu_x: ["2"]}
+  buoc_sai_nhan: null
+- id: S16
+  nhan: sai
+  mo_ta: "Hàng x thiếu điểm x = 1 nằm ngoài TXĐ của y = (x+1)/(x-1)"
+  ma_loi_supham: null
+  bai_lam:
+    ham: "(x + 1)/(x - 1)"
+    TXD: "R \\ {1}"
+    dao_ham: "-2/(x - 1)**2"
+    y_phay_bang_0: []
+    y_phay_khong_xd: []
+    bang: {moc: ["-oo", "oo"], dau: ["-"]}
+    ket_luan: {nghich_bien: ["(-oo; 1)", "(1; +oo)"]}
+  buoc_sai_nhan: {ma_buoc: B.DH.NGHIEM, dong: null, o: {k: null, hang: x}}

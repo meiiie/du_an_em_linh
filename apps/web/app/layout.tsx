@@ -1,0 +1,22 @@
+import type { Metadata } from "next";
+import { Be_Vietnam_Pro } from "next/font/google";
+import "./globals.css";
+
+const beVietnam = Be_Vietnam_Pro({
+  subsets: ["latin", "vietnamese"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-sans",
+});
+
+export const metadata: Metadata = {
+  title: "Học toán với AI",
+  description: "Nguyên mẫu gia sư toán THPT — đơn điệu và cực trị",
+};
+
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <html lang="vi" className={beVietnam.variable}>
+      <body className="min-h-screen font-sans antialiased">{children}</body>
+    </html>
+  );
+}

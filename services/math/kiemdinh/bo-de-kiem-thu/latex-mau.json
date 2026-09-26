@@ -1,0 +1,287 @@
+{
+ "mo_ta": "Chuỗi LaTeX mẫu dùng lại cho bộ chuẩn hóa LaTeX dùng chung (trước Tầng 1). Soạn mô phỏng 27/09/2026. sympy_mong_doi viết theo cú pháp SymPy với x thực, k nguyên; so bằng tương đương ký hiệu/tập, không so chuỗi.",
+ "phien_ban": "0.1",
+ "ngay": "2026-09-27",
+ "muc": [
+  {
+   "id": "LX01",
+   "latex_goc": "\\frac{1}{2}",
+   "sympy_mong_doi": "Rational(1, 2)",
+   "loai": "so",
+   "ghi_chu_chuan_hoa": "Phân số chuẩn."
+  },
+  {
+   "id": "LX02",
+   "latex_goc": "\\dfrac{2}{4}",
+   "sympy_mong_doi": "Rational(1, 2)",
+   "loai": "so",
+   "ghi_chu_chuan_hoa": "\\dfrac → \\frac; so giá trị, không so chuỗi."
+  },
+  {
+   "id": "LX03",
+   "latex_goc": "0,5",
+   "sympy_mong_doi": "Rational(1, 2)",
+   "loai": "so",
+   "ghi_chu_chuan_hoa": "Dấu phẩy thập phân kiểu Việt → dấu chấm; cẩn thận nhầm với dấu phân cách."
+  },
+  {
+   "id": "LX04",
+   "latex_goc": "2{,}5",
+   "sympy_mong_doi": "Rational(5, 2)",
+   "loai": "so",
+   "ghi_chu_chuan_hoa": "MathLive có thể xuất {,} cho dấu phẩy thập phân."
+  },
+  {
+   "id": "LX05",
+   "latex_goc": "x^2-5x+6",
+   "sympy_mong_doi": "x**2 - 5*x + 6",
+   "loai": "bieu_thuc",
+   "ghi_chu_chuan_hoa": "Nhân ngầm 5x."
+  },
+  {
+   "id": "LX06",
+   "latex_goc": "3x^{2}-6x",
+   "sympy_mong_doi": "3*x**2 - 6*x",
+   "loai": "bieu_thuc",
+   "ghi_chu_chuan_hoa": "Mũ trong ngoặc nhọn."
+  },
+  {
+   "id": "LX07",
+   "latex_goc": "\\sqrt{x+3}",
+   "sympy_mong_doi": "sqrt(x + 3)",
+   "loai": "bieu_thuc",
+   "ghi_chu_chuan_hoa": ""
+  },
+  {
+   "id": "LX08",
+   "latex_goc": "\\sqrt[3]{x}",
+   "sympy_mong_doi": "real_root(x, 3)",
+   "loai": "bieu_thuc",
+   "ghi_chu_chuan_hoa": "Căn bậc ba THPT xác định với x < 0: phải dùng real_root, không dùng x**(1/3) (căn phức chính)."
+  },
+  {
+   "id": "LX09",
+   "latex_goc": "\\log_{2} x",
+   "sympy_mong_doi": "log(x, 2)",
+   "loai": "bieu_thuc",
+   "ghi_chu_chuan_hoa": "Logarit cơ số 2."
+  },
+  {
+   "id": "LX10",
+   "latex_goc": "\\log_2(x-3)",
+   "sympy_mong_doi": "log(x - 3, 2)",
+   "loai": "bieu_thuc",
+   "ghi_chu_chuan_hoa": "Cơ số không có ngoặc nhọn."
+  },
+  {
+   "id": "LX11",
+   "latex_goc": "\\ln x",
+   "sympy_mong_doi": "log(x)",
+   "loai": "bieu_thuc",
+   "ghi_chu_chuan_hoa": "ln = log tự nhiên của SymPy."
+  },
+  {
+   "id": "LX12",
+   "latex_goc": "\\log x",
+   "sympy_mong_doi": "log(x, 10)",
+   "loai": "bieu_thuc",
+   "ghi_chu_chuan_hoa": "QUAN TRỌNG: SGK Việt Nam viết log x = log cơ số 10; SymPy log(x) là ln. Bộ chuẩn hóa phải đổi."
+  },
+  {
+   "id": "LX13",
+   "latex_goc": "\\lg x",
+   "sympy_mong_doi": "log(x, 10)",
+   "loai": "bieu_thuc",
+   "ghi_chu_chuan_hoa": "lg = log10 (một số tài liệu)."
+  },
+  {
+   "id": "LX14",
+   "latex_goc": "\\sin 2x",
+   "sympy_mong_doi": "sin(2*x)",
+   "loai": "bieu_thuc",
+   "ghi_chu_chuan_hoa": "Đối số không ngoặc: sin 2x hiểu là sin(2x)."
+  },
+  {
+   "id": "LX15",
+   "latex_goc": "\\sin^2 x",
+   "sympy_mong_doi": "sin(x)**2",
+   "loai": "bieu_thuc",
+   "ghi_chu_chuan_hoa": "sin^2 x = (sin x)^2."
+  },
+  {
+   "id": "LX16",
+   "latex_goc": "\\cot x",
+   "sympy_mong_doi": "cot(x)",
+   "loai": "bieu_thuc",
+   "ghi_chu_chuan_hoa": ""
+  },
+  {
+   "id": "LX17",
+   "latex_goc": "\\text{tg}\\,x",
+   "sympy_mong_doi": "tan(x)",
+   "loai": "bieu_thuc",
+   "ghi_chu_chuan_hoa": "Ký hiệu cũ tg, cotg trong tài liệu Việt Nam."
+  },
+  {
+   "id": "LX18",
+   "latex_goc": "\\text{cotg}\\,x",
+   "sympy_mong_doi": "cot(x)",
+   "loai": "bieu_thuc",
+   "ghi_chu_chuan_hoa": "Ký hiệu cũ cotg."
+  },
+  {
+   "id": "LX19",
+   "latex_goc": "|x-1|",
+   "sympy_mong_doi": "Abs(x - 1)",
+   "loai": "bieu_thuc",
+   "ghi_chu_chuan_hoa": "Giá trị tuyệt đối."
+  },
+  {
+   "id": "LX20",
+   "latex_goc": "\\left| x \\right|",
+   "sympy_mong_doi": "Abs(x)",
+   "loai": "bieu_thuc",
+   "ghi_chu_chuan_hoa": "\\left| \\right|."
+  },
+  {
+   "id": "LX21",
+   "latex_goc": "e^{2x}",
+   "sympy_mong_doi": "exp(2*x)",
+   "loai": "bieu_thuc",
+   "ghi_chu_chuan_hoa": "e là hằng số Euler, không phải biến."
+  },
+  {
+   "id": "LX22",
+   "latex_goc": "2^x",
+   "sympy_mong_doi": "2**x",
+   "loai": "bieu_thuc",
+   "ghi_chu_chuan_hoa": ""
+  },
+  {
+   "id": "LX23",
+   "latex_goc": "\\frac{\\sqrt{3}}{2}",
+   "sympy_mong_doi": "sqrt(3)/2",
+   "loai": "so",
+   "ghi_chu_chuan_hoa": ""
+  },
+  {
+   "id": "LX24",
+   "latex_goc": "x^{\\frac{1}{3}}",
+   "sympy_mong_doi": "x**Rational(1, 3)",
+   "loai": "bieu_thuc",
+   "ghi_chu_chuan_hoa": "Lũy thừa mũ hữu tỉ: SGK chỉ xét cơ số > 0."
+  },
+  {
+   "id": "LX25",
+   "latex_goc": "x \\geq 7",
+   "sympy_mong_doi": "x >= 7",
+   "loai": "bpt",
+   "ghi_chu_chuan_hoa": ""
+  },
+  {
+   "id": "LX26",
+   "latex_goc": "x \\leqslant -5",
+   "sympy_mong_doi": "x <= -5",
+   "loai": "bpt",
+   "ghi_chu_chuan_hoa": "\\leqslant / \\geqslant hay dùng ở VN."
+  },
+  {
+   "id": "LX27",
+   "latex_goc": "x \\ne 1",
+   "sympy_mong_doi": "Ne(x, 1)",
+   "loai": "dieu_kien",
+   "ghi_chu_chuan_hoa": ""
+  },
+  {
+   "id": "LX28",
+   "latex_goc": "y' = 3x^2 - 6x",
+   "sympy_mong_doi": "Eq(Symbol(\"yp\"), 3*x**2 - 6*x)",
+   "loai": "phuong_trinh",
+   "ghi_chu_chuan_hoa": "Dấu phẩy trên y' → ký hiệu yp; chuẩn hóa phải nhận y', f'(x)."
+  },
+  {
+   "id": "LX29",
+   "latex_goc": "(-\\infty; 2)",
+   "sympy_mong_doi": "Interval.open(-oo, 2)",
+   "loai": "khoang",
+   "ghi_chu_chuan_hoa": "Khoảng kiểu VN dùng dấu chấm phẩy."
+  },
+  {
+   "id": "LX30",
+   "latex_goc": "[2; 3]",
+   "sympy_mong_doi": "Interval(2, 3)",
+   "loai": "khoang",
+   "ghi_chu_chuan_hoa": ""
+  },
+  {
+   "id": "LX31",
+   "latex_goc": "(-\\infty;0)\\cup(2;+\\infty)",
+   "sympy_mong_doi": "Union(Interval.open(-oo, 0), Interval.open(2, oo))",
+   "loai": "khoang",
+   "ghi_chu_chuan_hoa": "\\cup."
+  },
+  {
+   "id": "LX32",
+   "latex_goc": "\\mathbb{R}\\setminus\\{1\\}",
+   "sympy_mong_doi": "Complement(Reals, FiniteSet(1))",
+   "loai": "khoang",
+   "ghi_chu_chuan_hoa": "R \\ {1}."
+  },
+  {
+   "id": "LX33",
+   "latex_goc": "\\{2; 3\\}",
+   "sympy_mong_doi": "FiniteSet(2, 3)",
+   "loai": "tap",
+   "ghi_chu_chuan_hoa": "Tập nghiệm; thứ tự không quan trọng."
+  },
+  {
+   "id": "LX34",
+   "latex_goc": "x = \\pm 2",
+   "sympy_mong_doi": "FiniteSet(2, -2)",
+   "loai": "tap",
+   "ghi_chu_chuan_hoa": "± sinh hai nghiệm."
+  },
+  {
+   "id": "LX35",
+   "latex_goc": "x = \\dfrac{\\pi}{6} + k2\\pi",
+   "sympy_mong_doi": "pi/6 + 2*k*pi",
+   "loai": "ho_nghiem",
+   "ghi_chu_chuan_hoa": "k2π kiểu VN, k ∈ Z."
+  },
+  {
+   "id": "LX36",
+   "latex_goc": "\\int 3x^2\\,dx",
+   "sympy_mong_doi": "Integral(3*x**2, x)",
+   "loai": "tich_phan",
+   "ghi_chu_chuan_hoa": ""
+  },
+  {
+   "id": "LX37",
+   "latex_goc": "\\int_{1}^{2} 2x\\,dx",
+   "sympy_mong_doi": "Integral(2*x, (x, 1, 2))",
+   "loai": "tich_phan",
+   "ghi_chu_chuan_hoa": ""
+  },
+  {
+   "id": "LX38",
+   "latex_goc": "C_{10}^{3}",
+   "sympy_mong_doi": "binomial(10, 3)",
+   "loai": "to_hop",
+   "ghi_chu_chuan_hoa": "Ký hiệu VN C_n^k (n dưới, k trên) – ngược với một số tài liệu nước ngoài."
+  },
+  {
+   "id": "LX39",
+   "latex_goc": "A_{10}^{3}",
+   "sympy_mong_doi": "ff(10, 3)",
+   "loai": "to_hop",
+   "ghi_chu_chuan_hoa": "Chỉnh hợp A_n^k."
+  },
+  {
+   "id": "LX40",
+   "latex_goc": "\\sqrt{x^2}",
+   "sympy_mong_doi": "Abs(x)",
+   "loai": "bieu_thuc",
+   "ghi_chu_chuan_hoa": "Với x thực."
+  }
+ ]
+}

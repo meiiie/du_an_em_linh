@@ -1,0 +1,1095 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "hoc-toan-ai/supham/03-schema-bai-tap.json",
+  "title": "Bài tập trong ngân hàng — lược đồ nhãn v0.1 (nhóm Sư phạm)",
+  "description": "Một bản ghi = một bài (một phiên bản). Trường có hậu tố _noi_bo hoặc có hien_thi_cho_hoc_sinh=false KHÔNG BAO GIỜ được gửi tới học sinh hoặc tới mô hình gia sư. Tên trường tiếng Việt không dấu, snake_case. Bảng ánh xạ sang tên trường của nhóm AI: xem 03-luoc-do-nhan-bai-tap.md mục 4.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "phien_ban",
+    "lop",
+    "cap_hoc",
+    "mach_noi_dung",
+    "chu_de",
+    "yeu_cau_can_dat",
+    "ky_nang_chinh",
+    "ky_nang_phu",
+    "ky_nang_tien_quyet",
+    "thanh_phan_nang_luc",
+    "muc_do_4",
+    "muc_do_bo_3",
+    "muc_bloom",
+    "dang_cau",
+    "dang_bai",
+    "de_bai",
+    "dap_an_noi_bo",
+    "khung_buoc",
+    "loi_giai_tung_buoc",
+    "tieu_chi_cham",
+    "thang_goi_y",
+    "loi_sai_thuong_gap",
+    "do_kho_uoc_luong",
+    "thoi_gian_du_kien",
+    "nguon",
+    "kiem_dinh",
+    "trang_thai"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[A-Z0-9]+(-[A-Z0-9]+)+$",
+      "description": "Mã bài, ví dụ DH12-05-TH-01 (chủ đề DH, lớp 12, kỹ năng 05, mức TH, số thứ tự 01). = item_id của nhóm AI."
+    },
+    "phien_ban": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Tăng mỗi lần sửa nội dung; mọi kết quả kiểm định gắn với (id, phien_ban)."
+    },
+    "lop": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 12
+    },
+    "cap_hoc": {
+      "enum": [
+        "TIEU_HOC",
+        "THCS",
+        "THPT"
+      ]
+    },
+    "mach_noi_dung": {
+      "enum": [
+        "SO_VA_PHEP_TINH",
+        "SO_VA_DAI_SO",
+        "DAI_SO_VA_MOT_SO_YEU_TO_GIAI_TICH",
+        "MOT_SO_YEU_TO_GIAI_TICH",
+        "HINH_HOC_VA_DO_LUONG",
+        "THONG_KE_VA_XAC_SUAT",
+        "HOAT_DONG_THUC_HANH_TRAI_NGHIEM",
+        "CHUYEN_DE_HOC_TAP"
+      ],
+      "description": "Theo tên mạch dùng trong bảng Nội dung cụ thể của CT môn Toán 2018: Tiểu học 'Số và phép tính', THCS 'Số và Đại số', lớp 10–11 'Đại số và Một số yếu tố giải tích', lớp 12 ghi 'Một số yếu tố giải tích'. Ba mạch khái quát toàn chương trình: 'Số, Đại số và Một số yếu tố giải tích; Hình học và Đo lường; Thống kê và Xác suất'."
+    },
+    "chu_de": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Ví dụ: 'Ứng dụng đạo hàm để khảo sát và vẽ đồ thị của hàm số'."
+    },
+    "noi_dung": {
+      "type": "string",
+      "description": "Đơn vị kiến thức theo cột Nội dung của CT, ví dụ 'Tính đơn điệu của hàm số'."
+    },
+    "chuong": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "Tên chương theo bộ SGK nhà trường dùng (tùy chọn; SGK khác nhau)."
+    },
+    "bai": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "yeu_cau_can_dat": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "ma",
+          "trich_nguyen_van",
+          "nguon"
+        ],
+        "properties": {
+          "ma": {
+            "type": "string",
+            "description": "Mã nội bộ của dự án cho câu YCCĐ, ví dụ YCCD.T12.GT.UDDH.01 (CT 2018 không đánh mã chính thức)."
+          },
+          "trich_nguyen_van": {
+            "type": "string",
+            "minLength": 5
+          },
+          "nguon": {
+            "type": "string",
+            "description": "Ví dụ: 'CT GDPT môn Toán 2018 (TT 32/2018/TT-BGDĐT), Lớp 12, tr.105'."
+          }
+        }
+      }
+    },
+    "ky_nang_chinh": {
+      "$ref": "#/$defs/ma_ky_nang"
+    },
+    "ky_nang_phu": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/ma_ky_nang"
+      },
+      "uniqueItems": true
+    },
+    "ky_nang_tien_quyet": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "ma",
+          "muc_toi_thieu"
+        ],
+        "properties": {
+          "ma": {
+            "$ref": "#/$defs/ma_ky_nang"
+          },
+          "muc_toi_thieu": {
+            "$ref": "#/$defs/muc_do_4"
+          }
+        }
+      },
+      "description": "Kỹ năng phải đạt trước khi giao bài này (ngoài tiên quyết đã khai trong danh mục kỹ năng)."
+    },
+    "thanh_phan_nang_luc": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "enum": [
+          "TDLL",
+          "MHH",
+          "GQVD",
+          "GTTH",
+          "CCPT"
+        ]
+      },
+      "description": "TDLL tư duy và lập luận toán học; MHH mô hình hoá toán học; GQVD giải quyết vấn đề toán học; GTTH giao tiếp toán học; CCPT sử dụng công cụ, phương tiện học toán (5 thành phần theo CT môn Toán 2018, mục IV.2)."
+    },
+    "muc_do_4": {
+      "$ref": "#/$defs/muc_do_4"
+    },
+    "muc_do_bo_3": {
+      "enum": [
+        "BIET",
+        "HIEU",
+        "VAN_DUNG"
+      ],
+      "description": "Nhãn quy đổi theo 3 mức của CV 7991/BGDĐT-GDTrH: NB→BIET, TH→HIEU, VD và VDC→VAN_DUNG."
+    },
+    "muc_bloom": {
+      "enum": [
+        "NHO",
+        "HIEU",
+        "VAN_DUNG",
+        "PHAN_TICH",
+        "DANH_GIA",
+        "SANG_TAO"
+      ],
+      "description": "Mức Bloom chính (Anderson & Krathwohl 2001: Remember, Understand, Apply, Analyze, Evaluate, Create)."
+    },
+    "muc_bloom_phu": {
+      "type": "array",
+      "items": {
+        "enum": [
+          "NHO",
+          "HIEU",
+          "VAN_DUNG",
+          "PHAN_TICH",
+          "DANH_GIA",
+          "SANG_TAO"
+        ]
+      },
+      "uniqueItems": true
+    },
+    "dang_cau": {
+      "enum": [
+        "TN_NHIEU_LUA_CHON",
+        "TN_DUNG_SAI",
+        "TRA_LOI_NGAN",
+        "TU_LUAN"
+      ],
+      "description": "3 dạng trắc nghiệm theo QĐ 764/QĐ-BGDĐT và CV 7991 + tự luận."
+    },
+    "dang_bai": {
+      "type": "string",
+      "pattern": "^DB\\.[A-Z]{2}\\.[A-Z0-9_]+$",
+      "description": "Mã dạng bài trong danh mục Sư phạm, ví dụ DB.DH.CUC_TRI_DA_THUC. Dùng cho nhật ký 'dạng bài đã sai'."
+    },
+    "de_bai": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "van_ban"
+      ],
+      "properties": {
+        "van_ban": {
+          "type": "string",
+          "minLength": 5
+        },
+        "latex": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "ham_so_sympy": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Biểu thức SymPy của hàm trong đề (để chấm từng dòng)."
+        },
+        "hinh": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "phuong_an": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "nhan",
+          "noi_dung"
+        ],
+        "properties": {
+          "nhan": {
+            "enum": [
+              "A",
+              "B",
+              "C",
+              "D"
+            ]
+          },
+          "noi_dung": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "y_dung_sai": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "nhan",
+          "menh_de"
+        ],
+        "properties": {
+          "nhan": {
+            "enum": [
+              "a",
+              "b",
+              "c",
+              "d"
+            ]
+          },
+          "menh_de": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "dap_an_noi_bo": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "hien_thi_cho_hoc_sinh",
+        "gia_tri"
+      ],
+      "properties": {
+        "hien_thi_cho_hoc_sinh": {
+          "const": false
+        },
+        "gia_tri": {
+          "description": "MCQ: 'B'; Đúng/Sai: {\"a\":true,...}; trả lời ngắn: số/chuỗi chuẩn hoá; tự luận: mô tả kết luận."
+        },
+        "bieu_thuc_sympy": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Dạng máy kiểm được của đáp án (tập nghiệm, khoảng, giá trị)."
+        },
+        "dinh_dang_tra_loi_ngan": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Ví dụ 'so_nguyen', 'so_thap_phan_2_chu_so'."
+        }
+      }
+    },
+    "loi_giai_tung_buoc": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "hien_thi_cho_hoc_sinh",
+        "cac_buoc"
+      ],
+      "properties": {
+        "hien_thi_cho_hoc_sinh": {
+          "const": false
+        },
+        "cac_buoc": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "buoc",
+              "noi_dung",
+              "ma_ky_nang",
+              "ma_buoc"
+            ],
+            "properties": {
+              "buoc": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "noi_dung": {
+                "type": "string"
+              },
+              "latex": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "sympy": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "ma_ky_nang": {
+                "$ref": "#/$defs/ma_ky_nang"
+              },
+              "ma_buoc": {
+                "$ref": "#/$defs/ma_buoc"
+              }
+            }
+          }
+        }
+      },
+      "description": "Chỉ dùng nội bộ (chấm, sinh gợi ý, kiểm định). (buoc, ma_ky_nang) = buoc_ky_nang của nhóm AI. Không dùng để bắt học sinh đi đúng các bước này. Mỗi bước lời giải gắn ma_buoc (khung bước) và ma_ky_nang."
+    },
+    "tieu_chi_cham": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "chap_nhan_cach_giai_khac",
+        "dieu_kien_dat"
+      ],
+      "properties": {
+        "chap_nhan_cach_giai_khac": {
+          "const": true
+        },
+        "dieu_kien_dat": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "ma",
+              "mo_ta",
+              "kiem_bang"
+            ],
+            "properties": {
+              "ma": {
+                "type": "string"
+              },
+              "mo_ta": {
+                "type": "string"
+              },
+              "kiem_bang": {
+                "enum": [
+                  "SYMPY",
+                  "LUAT",
+                  "MO_HINH",
+                  "GIAO_VIEN"
+                ]
+              }
+            }
+          }
+        }
+      },
+      "description": "Điều kiện là sự kiện toán học phải đúng ở kết luận/mỗi dòng (mỗi dòng suy ra hợp lệ từ dòng trước; kết luận khớp đáp án), KHÔNG phải danh sách bước bắt buộc."
+    },
+    "thang_goi_y": {
+      "type": "array",
+      "minItems": 1,
+      "description": "Thang gợi ý 3 cấp gắn theo cặp (bài, ma_buoc), sinh sẵn từ lời giải và đã qua kiểm định. Mỗi ma_buoc trong khung_buoc có đúng 1 thang. Cấp 1: định hướng/nhắc kiến thức; cấp 2: kiến thức/công thức đích danh + việc cần làm ở bước này (vị trí dòng/ô lỗi do gia sư ghép lúc chạy từ buoc_sai); cấp 3: phương pháp + bước kế, KHÔNG có kết quả cuối. Khi học sinh bí ngay từ đầu, dùng thang của bước đầu tiên có bat_buoc_trinh_bay=true.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "ma_buoc",
+          "cac_cap"
+        ],
+        "properties": {
+          "ma_buoc": {
+            "$ref": "#/$defs/ma_buoc"
+          },
+          "cac_cap": {
+            "type": "array",
+            "minItems": 3,
+            "maxItems": 3,
+            "prefixItems": [
+              {
+                "$ref": "#/$defs/goi_y",
+                "properties": {
+                  "cap": {
+                    "const": 1
+                  }
+                }
+              },
+              {
+                "$ref": "#/$defs/goi_y",
+                "properties": {
+                  "cap": {
+                    "const": 2
+                  }
+                }
+              },
+              {
+                "$ref": "#/$defs/goi_y",
+                "properties": {
+                  "cap": {
+                    "const": 3
+                  }
+                }
+              }
+            ],
+            "description": "Đúng 3 cấp."
+          }
+        }
+      }
+    },
+    "loi_sai_thuong_gap": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "ma_loi"
+        ],
+        "properties": {
+          "ma_loi": {
+            "$ref": "#/$defs/ma_loi"
+          },
+          "ghi_chu_rieng": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      },
+      "description": "Mã lỗi tra trong danh mục ma-loi-DH.csv (mỗi mã có đúng 1 ky_nang_chinh)."
+    },
+    "do_kho_uoc_luong": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "gia_tri",
+        "thang",
+        "nguon"
+      ],
+      "properties": {
+        "gia_tri": {
+          "type": "number",
+          "minimum": 1,
+          "maximum": 5
+        },
+        "thang": {
+          "const": "1-5"
+        },
+        "logit": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "description": "Quy đổi cho Elo (nhóm AI đề xuất công thức quy đổi)."
+        },
+        "nguon": {
+          "enum": [
+            "UOC_LUONG_NGUOI_SOAN",
+            "UOC_LUONG_GIAO_VIEN",
+            "HIEU_CHINH_DU_LIEU"
+          ]
+        },
+        "so_luot_lam": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "cap_nhat_luc": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        }
+      },
+      "description": "Ban đầu là ƯỚC LƯỢNG của người soạn/giáo viên; sẽ hiệu chỉnh bằng dữ liệu làm bài thật."
+    },
+    "thoi_gian_du_kien": {
+      "type": "number",
+      "exclusiveMinimum": 0,
+      "description": "Phút; ước lượng của người soạn."
+    },
+    "dung_lam_bai_mau": {
+      "type": "boolean",
+      "default": false,
+      "description": "Được phép dùng làm 'bài mẫu khác' (worked example) khi học sinh bí ở bài cùng dạng."
+    },
+    "bai_tuong_tu_de_hon": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "nguon": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "loai",
+        "ban_quyen"
+      ],
+      "properties": {
+        "loai": {
+          "enum": [
+            "TU_SOAN",
+            "GIAO_VIEN_NHAP",
+            "TRICH_DE_CONG_KHAI",
+            "SINH_TU_DONG"
+          ]
+        },
+        "tac_gia": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "tai_lieu": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "url": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "ban_quyen": {
+          "enum": [
+            "TU_SOAN_CUA_DU_AN",
+            "DUOC_CAP_PHEP",
+            "VAN_BAN_NHA_NUOC",
+            "CHUA_RO"
+          ]
+        },
+        "ghi_chu_ban_quyen": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "kiem_dinh": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "tang_1_may_tu_kiem",
+        "tang_2_kiem_qua_tai_lieu",
+        "tang_3_doi_chieu_bang_cong_thuc"
+      ],
+      "properties": {
+        "tang_1_may_tu_kiem": {
+          "$ref": "#/$defs/ket_qua_tang"
+        },
+        "tang_2_kiem_qua_tai_lieu": {
+          "$ref": "#/$defs/ket_qua_tang"
+        },
+        "tang_3_doi_chieu_bang_cong_thuc": {
+          "$ref": "#/$defs/ket_qua_tang"
+        }
+      }
+    },
+    "trang_thai": {
+      "enum": [
+        "DA_PHAT_HANH",
+        "CHO_GIAO_VIEN_DUYET",
+        "BI_CHAN"
+      ]
+    },
+    "nguoi_tao": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "tao_luc": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time"
+    },
+    "cap_nhat_luc": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time"
+    },
+    "khung_buoc": {
+      "type": "array",
+      "minItems": 1,
+      "description": "Khung bước gợi ý trình bày cho bài (thứ tự hiển thị). Không bắt học sinh đi đúng một con đường: bước có bat_buoc_trinh_bay=false được phép bỏ/gộp.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "ma_buoc",
+          "dang_nhap",
+          "bat_buoc_trinh_bay"
+        ],
+        "properties": {
+          "ma_buoc": {
+            "$ref": "#/$defs/ma_buoc"
+          },
+          "dang_nhap": {
+            "enum": [
+              "DONG",
+              "BANG",
+              "O_TRA_LOI"
+            ]
+          },
+          "bat_buoc_trinh_bay": {
+            "type": "boolean"
+          }
+        }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "dang_cau": {
+            "const": "TN_NHIEU_LUA_CHON"
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "phuong_an"
+        ],
+        "properties": {
+          "phuong_an": {
+            "minItems": 4,
+            "maxItems": 4
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "dang_cau": {
+            "const": "TN_DUNG_SAI"
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "y_dung_sai"
+        ],
+        "properties": {
+          "y_dung_sai": {
+            "minItems": 4,
+            "maxItems": 4
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "muc_do_4": {
+            "const": "NB"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "muc_do_bo_3": {
+            "const": "BIET"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "muc_do_4": {
+            "const": "TH"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "muc_do_bo_3": {
+            "const": "HIEU"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "muc_do_4": {
+            "enum": [
+              "VD",
+              "VDC"
+            ]
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "muc_do_bo_3": {
+            "const": "VAN_DUNG"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "kiem_dinh": {
+            "anyOf": [
+              {
+                "properties": {
+                  "tang_1_may_tu_kiem": {
+                    "properties": {
+                      "ket_qua": {
+                        "const": "SAI"
+                      }
+                    }
+                  }
+                }
+              },
+              {
+                "properties": {
+                  "tang_2_kiem_qua_tai_lieu": {
+                    "properties": {
+                      "ket_qua": {
+                        "const": "SAI"
+                      }
+                    }
+                  }
+                }
+              },
+              {
+                "properties": {
+                  "tang_3_doi_chieu_bang_cong_thuc": {
+                    "properties": {
+                      "ket_qua": {
+                        "const": "SAI"
+                      }
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "trang_thai": {
+            "const": "BI_CHAN"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "trang_thai": {
+            "const": "DA_PHAT_HANH"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "kiem_dinh": {
+            "properties": {
+              "tang_1_may_tu_kiem": {
+                "properties": {
+                  "ket_qua": {
+                    "enum": [
+                      "DAT",
+                      "GV_DUYET"
+                    ]
+                  }
+                }
+              },
+              "tang_2_kiem_qua_tai_lieu": {
+                "properties": {
+                  "ket_qua": {
+                    "enum": [
+                      "DAT",
+                      "GV_DUYET"
+                    ]
+                  }
+                }
+              },
+              "tang_3_doi_chieu_bang_cong_thuc": {
+                "properties": {
+                  "ket_qua": {
+                    "enum": [
+                      "DAT",
+                      "GV_DUYET"
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "nguon": {
+            "properties": {
+              "ban_quyen": {
+                "not": {
+                  "const": "CHUA_RO"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "ma_ky_nang": {
+      "type": "string",
+      "pattern": "^T(0[1-9]|1[0-2])\\.[A-Z]{2}\\.[0-9]{2}$",
+      "description": "Ví dụ T12.DH.05, T11.DH.01, T10.HS.01."
+    },
+    "ma_loi": {
+      "type": "string",
+      "pattern": "^ERR\\.[A-Z]{2}\\.[0-9]{2}$"
+    },
+    "muc_do_4": {
+      "enum": [
+        "NB",
+        "TH",
+        "VD",
+        "VDC"
+      ]
+    },
+    "goi_y": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "cap",
+        "noi_dung",
+        "khong_chua_ket_qua_cuoi"
+      ],
+      "properties": {
+        "cap": {
+          "enum": [
+            1,
+            2,
+            3
+          ]
+        },
+        "noi_dung": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "null chỉ được phép ở cấp 3 khi không viết được mà không lộ kết quả (bài 1 bước); khi đó bắt buộc ly_do_trong."
+        },
+        "ly_do_trong": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "ma_cong_thuc": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Id công thức trong bảng công thức đã kiểm định (tầng 3)."
+        },
+        "khong_chua_ket_qua_cuoi": {
+          "const": true
+        }
+      }
+    },
+    "ket_qua_tang": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "ket_qua"
+      ],
+      "properties": {
+        "ket_qua": {
+          "enum": [
+            "DAT",
+            "SAI",
+            "KHONG_KIEM_DUOC",
+            "GV_DUYET"
+          ]
+        },
+        "cong_cu": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "thoi_diem": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date-time"
+        },
+        "chi_tiet": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "tai_lieu_doi_chieu": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "nguoi_duyet": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "ly_do": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "if": {
+        "properties": {
+          "ket_qua": {
+            "const": "GV_DUYET"
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "nguoi_duyet",
+          "thoi_diem",
+          "ly_do"
+        ],
+        "properties": {
+          "nguoi_duyet": {
+            "type": "string",
+            "minLength": 1
+          },
+          "thoi_diem": {
+            "type": "string"
+          },
+          "ly_do": {
+            "type": "string",
+            "minLength": 3
+          }
+        }
+      }
+    },
+    "ma_buoc": {
+      "type": "string",
+      "pattern": "^B\\.[A-Z]{2}\\.[A-Z0-9]+$",
+      "description": "Mã bước trong khung trình bày do Sư phạm cấp. Chủ đề DH: B.DH.DOCBANG, B.DH.MOHINH, B.DH.TXD, B.DH.DAOHAM, B.DH.NGHIEM, B.DH.XETDAU, B.DH.DAOHAM2, B.DH.GIATRI, B.DH.THAMSO, B.DH.THULAI, B.DH.KETLUAN (bảng định nghĩa: giai-doan-1-su-pham.md mục A.5)."
+    },
+    "buoc_sai": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "ma_buoc",
+        "dong",
+        "o"
+      ],
+      "description": "Vị trí lỗi lúc chạy (không lưu trong ngân hàng; định nghĩa để các nhóm dùng chung). dong: số dòng trong bước dạng DONG (1-based); o = {hang ∈ {x, dau_y', bien_thien}, k} cho bước dạng BANG; trường không dùng = null. Giá trị ô dấu ∈ {+, −, 0, ||}. Nếu học sinh bỏ sót điểm tới hạn, lỗi gán vào B.DH.NGHIEM (máy báo 'dấu đổi trong khoảng'), không gán 'chọn sai dấu'.",
+      "properties": {
+        "ma_buoc": {
+          "$ref": "#/$defs/ma_buoc"
+        },
+        "dong": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 1
+        },
+        "o": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "hang",
+                "k"
+              ],
+              "properties": {
+                "hang": {
+                  "enum": [
+                    "x",
+                    "dau_y'",
+                    "bien_thien"
+                  ]
+                },
+                "k": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "description": "Hàng dau_y' và bien_thien: đếm xen kẽ từ trái sang phải, k lẻ = khoảng, k chẵn = điểm chia (2 điểm chia: k=1,3,5 là khoảng; k=2,4 là điểm). Hàng x: k = thứ tự điểm chia. Tính theo các điểm/khoảng do CHÍNH học sinh dựng."
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+    "ket_qua_dong_tang_1": {
+      "enum": [
+        "DAT",
+        "SAI_BIEN_DOI",
+        "SAI_GIA_TRI",
+        "DIEM_THIEU",
+        "DIEM_THUA",
+        "DAU_DOI_TRONG_KHOANG",
+        "KHONG_KIEM_DUOC"
+      ],
+      "description": "Loại kết quả Tầng 1 khi chấm bài làm của học sinh (dự kiến, do Kiểm định/AI chốt). Khác ket_qua_tang (kiểm định nội dung ngân hàng)."
+    }
+  }
+}

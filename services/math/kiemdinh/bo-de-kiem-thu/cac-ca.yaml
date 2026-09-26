@@ -1,0 +1,812 @@
+# Bộ đề kiểm thử Tầng 1 – Kiểm định, giai đoạn 1 (v1, soạn 26/09/2026)
+# TẤT CẢ các ca dưới đây do nhóm Kiểm định SOẠN MÔ PHỎNG các lỗi AI hay gặp.
+# KHÔNG phải thu thập từ log AI thật. Phạm vi giả định: Toán THPT VN lớp 10–12 (GDPT 2018).
+# Trường `lop` là ước lượng của Kiểm định, cần Sư phạm xác nhận.
+# Trường `ma_loi_supham`: để null vì lúc soạn chưa có file supham/giai-doan-1-su-pham.md.
+# Cú pháp biểu thức: SymPy (x là biến thực, k là số nguyên, C là hằng số tích phân).
+# log(u, b) = logarit cơ số b; log(u) = ln u. Khoảng: "(a; b]", hợp bằng " U ", "R", "R \ {a}".
+phien_ban: "1.0"
+ngay_soan: "2026-09-26"
+nguon: "soan_mo_phong"
+ca:
+# ===================== N1 – SAI DẤU =====================
+- id: L01
+  chu_de: "Hằng đẳng thức (kiến thức nền dùng ở THPT)"
+  lop: 10
+  nhom_loi: sai_dau
+  ma_loi_supham: null
+  de_bai: "Khai triển (x - 3)^2."
+  khang_dinh_ai: "(x - 3)^2 = x^2 + 6x + 9"
+  kiem: {kieu: dong_nhat, trai: "(x - 3)**2", phai: "x**2 + 6*x + 9"}
+  nhan: sai
+  ly_do: "Đúng là x^2 - 6x + 9."
+- id: L02
+  chu_de: "Đạo hàm hàm lượng giác"
+  lop: 11
+  nhom_loi: sai_dau
+  ma_loi_supham: null
+  de_bai: "Tính đạo hàm y = cos 2x."
+  khang_dinh_ai: "y' = 2 sin 2x"
+  kiem: {kieu: dao_ham, ham: "cos(2*x)", dao_ham_ai: "2*sin(2*x)"}
+  nhan: sai
+  ly_do: "(cos u)' = -u' sin u, đúng là -2 sin 2x."
+- id: L03
+  chu_de: "Phương trình bậc hai"
+  lop: 10
+  nhom_loi: sai_dau
+  ma_loi_supham: null
+  de_bai: "Giải phương trình x^2 - 5x + 6 = 0."
+  khang_dinh_ai: "Phương trình có hai nghiệm x = -2, x = -3."
+  kiem: {kieu: tap_nghiem_pt, pt: "x**2 - 5*x + 6 = 0", nghiem_ai: ["-2", "-3"]}
+  nhan: sai
+  ly_do: "Nghiệm đúng là 2 và 3 (nhầm dấu theo Viète)."
+- id: L04
+  chu_de: "Biến đổi đa thức (kiến thức nền)"
+  lop: 10
+  nhom_loi: sai_dau
+  ma_loi_supham: null
+  de_bai: "Rút gọn -(x - 2)(x + 1)."
+  khang_dinh_ai: "-(x - 2)(x + 1) = -x^2 + x - 2"
+  kiem: {kieu: dong_nhat, trai: "-(x - 2)*(x + 1)", phai: "-x**2 + x - 2"}
+  nhan: sai
+  ly_do: "Đúng là -x^2 + x + 2 (quên đổi dấu hạng tử -2)."
+# ===================== N2 – ĐIỀU KIỆN XÁC ĐỊNH =====================
+- id: L05
+  chu_de: "Phương trình logarit"
+  lop: 11
+  nhom_loi: dieu_kien_xac_dinh
+  ma_loi_supham: null
+  de_bai: "Giải phương trình log2(x) + log2(x - 3) = 2."
+  khang_dinh_ai: "x(x - 3) = 4 nên x = 4 hoặc x = -1."
+  kiem: {kieu: tap_nghiem_pt, pt: "log(x, 2) + log(x - 3, 2) = 2", nghiem_ai: ["4", "-1"]}
+  nhan: sai
+  ly_do: "Điều kiện x > 3 loại x = -1; tập nghiệm {4}."
+- id: L06
+  chu_de: "Phương trình chứa căn"
+  lop: 10
+  nhom_loi: dieu_kien_xac_dinh
+  ma_loi_supham: null
+  de_bai: "Giải phương trình sqrt(x + 3) = x - 3."
+  khang_dinh_ai: "Bình phương: x^2 - 7x + 6 = 0, nghiệm x = 1, x = 6."
+  kiem: {kieu: tap_nghiem_pt, pt: "sqrt(x + 3) = x - 3", nghiem_ai: ["1", "6"]}
+  nhan: sai
+  ly_do: "Thiếu điều kiện x - 3 ≥ 0; x = 1 cho 2 = -2 vô lý. Tập nghiệm {6}."
+- id: L07
+  chu_de: "Tập xác định của hàm số"
+  lop: 10
+  nhom_loi: dieu_kien_xac_dinh
+  ma_loi_supham: null
+  de_bai: "Tìm tập xác định của y = 1/sqrt(2 - x)."
+  khang_dinh_ai: "D = (-∞; 2]"
+  kiem: {kieu: tap_xac_dinh, ham: "1/sqrt(2 - x)", tap_ai: "(-oo; 2]"}
+  nhan: sai
+  ly_do: "Căn ở mẫu nên 2 - x > 0; D = (-∞; 2)."
+- id: L08
+  chu_de: "Tính chất logarit"
+  lop: 11
+  nhom_loi: dieu_kien_xac_dinh
+  ma_loi_supham: null
+  de_bai: "Rút gọn ln(x^2) với x ≠ 0."
+  khang_dinh_ai: "ln(x^2) = 2 ln x với mọi x ≠ 0"
+  kiem: {kieu: dong_nhat, trai: "log(x**2)", phai: "2*log(x)", mien: ["Ne(x, 0)"]}
+  nhan: sai
+  ly_do: "Với x ≠ 0 đúng là ln(x^2) = 2 ln|x|; 2 ln x chỉ xác định khi x > 0."
+- id: L09
+  chu_de: "Phương trình chứa ẩn ở mẫu"
+  lop: 10
+  nhom_loi: dieu_kien_xac_dinh
+  ma_loi_supham: null
+  de_bai: "Giải phương trình (x^2 - 4)/(x - 2) = 0."
+  khang_dinh_ai: "x^2 - 4 = 0 nên x = 2 hoặc x = -2."
+  kiem: {kieu: tap_nghiem_pt, pt: "(x**2 - 4)/(x - 2) = 0", nghiem_ai: ["2", "-2"]}
+  nhan: sai
+  ly_do: "Điều kiện x ≠ 2; tập nghiệm {-2}."
+- id: L10
+  chu_de: "Phương trình lượng giác có tan"
+  lop: 11
+  nhom_loi: dieu_kien_xac_dinh
+  ma_loi_supham: null
+  de_bai: "Giải phương trình tan x · cos x = 1."
+  khang_dinh_ai: "tan x cos x = sin x nên sin x = 1, x = π/2 + k2π."
+  kiem: {kieu: tap_nghiem_pt, pt: "tan(x)*cos(x) = 1", ho_nghiem_ai: ["pi/2 + 2*k*pi"]}
+  nhan: sai
+  ly_do: "Điều kiện cos x ≠ 0 loại toàn bộ họ nghiệm; phương trình vô nghiệm."
+- id: L11
+  chu_de: "Phương trình logarit có ẩn ở cơ số"
+  lop: 11
+  nhom_loi: dieu_kien_xac_dinh
+  ma_loi_supham: null
+  de_bai: "Giải phương trình log_x(4) = 2."
+  khang_dinh_ai: "x^2 = 4 nên x = 2 hoặc x = -2."
+  kiem: {kieu: tap_nghiem_pt, pt: "log(4, x) = 2", nghiem_ai: ["2", "-2"]}
+  nhan: sai
+  ly_do: "Cơ số phải > 0 và ≠ 1; loại x = -2."
+# ===================== N3 – SAI ĐƠN VỊ =====================
+- id: L12
+  chu_de: "Bài toán thực tế – đổi đơn vị vận tốc"
+  lop: 10
+  nhom_loi: don_vi
+  ma_loi_supham: null
+  de_bai: "Một ô tô chạy 72 km/h. Đổi ra m/s."
+  khang_dinh_ai: "72 km/h = 7,2 m/s"
+  kiem: {kieu: don_vi, trai: "72*kilometer/hour", phai: "7.2*meter/second"}
+  nhan: sai
+  ly_do: "72 km/h = 72000 m / 3600 s = 20 m/s."
+- id: L13
+  chu_de: "Bài toán thực tế – diện tích"
+  lop: 10
+  nhom_loi: don_vi
+  ma_loi_supham: null
+  de_bai: "Hình chữ nhật có kích thước 2 m và 50 cm. Tính diện tích."
+  khang_dinh_ai: "S = 2 · 50 = 100 m^2"
+  kiem: {kieu: don_vi, trai: "2*meter*50*centimeter", phai: "100*meter**2"}
+  nhan: sai
+  ly_do: "Phải đổi cùng đơn vị: 2 m · 0,5 m = 1 m^2."
+- id: L14
+  chu_de: "Bài toán thực tế – quãng đường"
+  lop: 10
+  nhom_loi: don_vi
+  ma_loi_supham: null
+  de_bai: "Vật chuyển động đều v = 10 m/s trong t = 3 s. Tính quãng đường."
+  khang_dinh_ai: "s = v·t = 30 m/s"
+  kiem: {kieu: don_vi, trai: "10*meter/second*3*second", phai: "30*meter/second"}
+  nhan: sai
+  ly_do: "Sai thứ nguyên: quãng đường là 30 m."
+- id: L15
+  chu_de: "Bài toán thực tế – thể tích"
+  lop: 10
+  nhom_loi: don_vi
+  ma_loi_supham: null
+  de_bai: "Bể chứa 1 lít nước. Đổi ra cm^3."
+  khang_dinh_ai: "1 lít = 100 cm^3"
+  kiem: {kieu: don_vi, trai: "1*liter", phai: "100*centimeter**3"}
+  nhan: sai
+  ly_do: "1 lít = 1 dm^3 = 1000 cm^3."
+# ===================== N4 – BỊA CÔNG THỨC =====================
+- id: L16
+  chu_de: "Hằng đẳng thức"
+  lop: 10
+  nhom_loi: bia_cong_thuc
+  ma_loi_supham: null
+  de_bai: "Khai triển (a + b)^2."
+  khang_dinh_ai: "(a + b)^2 = a^2 + b^2"
+  kiem: {kieu: dong_nhat, trai: "(a + b)**2", phai: "a**2 + b**2"}
+  nhan: sai
+  ly_do: "Thiếu 2ab."
+- id: L17
+  chu_de: "Tính chất logarit"
+  lop: 11
+  nhom_loi: bia_cong_thuc
+  ma_loi_supham: null
+  de_bai: "Với a, b > 0, biến đổi ln(a + b)."
+  khang_dinh_ai: "ln(a + b) = ln a + ln b"
+  kiem: {kieu: dong_nhat, trai: "log(a + b)", phai: "log(a) + log(b)", mien: ["a > 0", "b > 0"]}
+  nhan: sai
+  ly_do: "Công thức đúng là ln(ab) = ln a + ln b; không có công thức cho ln(a + b)."
+- id: L18
+  chu_de: "Công thức cộng lượng giác"
+  lop: 11
+  nhom_loi: bia_cong_thuc
+  ma_loi_supham: null
+  de_bai: "Khai triển sin(a + b)."
+  khang_dinh_ai: "sin(a + b) = sin a + sin b"
+  kiem: {kieu: dong_nhat, trai: "sin(a + b)", phai: "sin(a) + sin(b)"}
+  nhan: sai
+  ly_do: "Đúng là sin a cos b + cos a sin b."
+- id: L19
+  chu_de: "Căn thức"
+  lop: 10
+  nhom_loi: bia_cong_thuc
+  ma_loi_supham: null
+  de_bai: "Với a, b ≥ 0, rút gọn sqrt(a^2 + b^2)."
+  khang_dinh_ai: "sqrt(a^2 + b^2) = a + b"
+  kiem: {kieu: dong_nhat, trai: "sqrt(a**2 + b**2)", phai: "a + b", mien: ["a >= 0", "b >= 0"]}
+  nhan: sai
+  ly_do: "Không rút gọn được như vậy (vd a = 3, b = 4: 5 ≠ 7)."
+- id: L20
+  chu_de: "Đạo hàm của thương"
+  lop: 11
+  nhom_loi: bia_cong_thuc
+  ma_loi_supham: null
+  de_bai: "Tính đạo hàm y = (x^2 + 1)/(x - 1)."
+  khang_dinh_ai: "y' = (x^2 + 1)'/(x - 1)' = 2x"
+  kiem: {kieu: dao_ham, ham: "(x**2 + 1)/(x - 1)", dao_ham_ai: "2*x"}
+  nhan: sai
+  ly_do: "Bịa quy tắc (u/v)' = u'/v'; đúng là (u'v - uv')/v^2."
+- id: L21
+  chu_de: "Công thức nhân đôi"
+  lop: 11
+  nhom_loi: bia_cong_thuc
+  ma_loi_supham: null
+  de_bai: "Biểu diễn cos 2x theo cos x."
+  khang_dinh_ai: "cos 2x = 1 - 2cos^2 x"
+  kiem: {kieu: dong_nhat, trai: "cos(2*x)", phai: "1 - 2*cos(x)**2"}
+  nhan: sai
+  ly_do: "Đúng là 2cos^2 x - 1 (hoặc 1 - 2sin^2 x)."
+- id: L22
+  chu_de: "Đạo hàm hàm mũ"
+  lop: 11
+  nhom_loi: bia_cong_thuc
+  ma_loi_supham: null
+  de_bai: "Tính đạo hàm y = 2^x."
+  khang_dinh_ai: "y' = x · 2^(x-1)"
+  kiem: {kieu: dao_ham, ham: "2**x", dao_ham_ai: "x*2**(x - 1)"}
+  nhan: sai
+  ly_do: "Nhầm với đạo hàm lũy thừa; đúng là 2^x ln 2."
+# ===================== N5 – MẤT / THỪA NGHIỆM =====================
+- id: L24
+  chu_de: "Phương trình bậc hai khuyết"
+  lop: 10
+  nhom_loi: mat_thua_nghiem
+  ma_loi_supham: null
+  de_bai: "Giải phương trình x^2 = 9."
+  khang_dinh_ai: "x = 3"
+  kiem: {kieu: tap_nghiem_pt, pt: "x**2 = 9", nghiem_ai: ["3"]}
+  nhan: sai
+  ly_do: "Mất nghiệm x = -3."
+- id: L25
+  chu_de: "Phương trình tích"
+  lop: 10
+  nhom_loi: mat_thua_nghiem
+  ma_loi_supham: null
+  de_bai: "Giải phương trình (x - 1)^2 (x + 2) = 0."
+  khang_dinh_ai: "x = 1 (nghiệm kép)"
+  kiem: {kieu: tap_nghiem_pt, pt: "(x - 1)**2*(x + 2) = 0", nghiem_ai: ["1"]}
+  nhan: sai
+  ly_do: "Mất nghiệm x = -2."
+- id: L26
+  chu_de: "Phương trình chứa dấu giá trị tuyệt đối"
+  lop: 10
+  nhom_loi: mat_thua_nghiem
+  ma_loi_supham: null
+  de_bai: "Giải phương trình |x - 1| = 2x + 1."
+  khang_dinh_ai: "x - 1 = 2x + 1 hoặc x - 1 = -(2x + 1), nên x = -2 hoặc x = 0."
+  kiem: {kieu: tap_nghiem_pt, pt: "Abs(x - 1) = 2*x + 1", nghiem_ai: ["-2", "0"]}
+  nhan: sai
+  ly_do: "x = -2 cho 3 = -3, thừa nghiệm; tập nghiệm {0}."
+- id: L27
+  chu_de: "Phương trình mũ"
+  lop: 11
+  nhom_loi: mat_thua_nghiem
+  ma_loi_supham: null
+  de_bai: "Giải phương trình e^(2x) - 3e^x + 2 = 0."
+  khang_dinh_ai: "Đặt t = e^x: t^2 - 3t + 2 = 0, lấy t = 2 nên x = ln 2."
+  kiem: {kieu: tap_nghiem_pt, pt: "exp(2*x) - 3*exp(x) + 2 = 0", nghiem_ai: ["log(2)"]}
+  nhan: sai
+  ly_do: "Bỏ sót t = 1 (x = 0)."
+# ===================== N6 – CHIA CHO BIỂU THỨC CÓ THỂ BẰNG 0 =====================
+- id: L23
+  chu_de: "Phương trình bậc ba"
+  lop: 10
+  nhom_loi: chia_cho_0
+  ma_loi_supham: null
+  de_bai: "Giải phương trình x^3 = 4x."
+  khang_dinh_ai: "Chia hai vế cho x: x^2 = 4, nên x = ±2."
+  kiem: {kieu: tap_nghiem_pt, pt: "x**3 = 4*x", nghiem_ai: ["2", "-2"]}
+  nhan: sai
+  ly_do: "Chia cho x làm mất nghiệm x = 0."
+- id: L28
+  chu_de: "Phương trình tích"
+  lop: 10
+  nhom_loi: chia_cho_0
+  ma_loi_supham: null
+  de_bai: "Giải phương trình x(x - 2) = 3(x - 2)."
+  khang_dinh_ai: "Chia hai vế cho (x - 2): x = 3."
+  kiem: {kieu: tap_nghiem_pt, pt: "x*(x - 2) = 3*(x - 2)", nghiem_ai: ["3"]}
+  nhan: sai
+  ly_do: "Mất nghiệm x = 2."
+- id: L29
+  chu_de: "Phương trình lượng giác"
+  lop: 11
+  nhom_loi: chia_cho_0
+  ma_loi_supham: null
+  de_bai: "Giải phương trình sin x cos x = sin x."
+  khang_dinh_ai: "Chia hai vế cho sin x: cos x = 1, x = k2π."
+  kiem: {kieu: tap_nghiem_pt, pt: "sin(x)*cos(x) = sin(x)", ho_nghiem_ai: ["2*k*pi"]}
+  nhan: sai
+  ly_do: "Mất họ sin x = 0, tập nghiệm đúng x = kπ."
+# ===================== N7 – LƯỢNG GIÁC (CHU KỲ, HỌ NGHIỆM) =====================
+- id: L31
+  chu_de: "Phương trình lượng giác cơ bản"
+  lop: 11
+  nhom_loi: luong_giac
+  ma_loi_supham: null
+  de_bai: "Giải phương trình sin x = 1/2."
+  khang_dinh_ai: "x = π/6 + k2π"
+  kiem: {kieu: tap_nghiem_pt, pt: "sin(x) = 1/2", ho_nghiem_ai: ["pi/6 + 2*k*pi"]}
+  nhan: sai
+  ly_do: "Thiếu họ x = 5π/6 + k2π."
+- id: L32
+  chu_de: "Tính tuần hoàn"
+  lop: 11
+  nhom_loi: luong_giac
+  ma_loi_supham: null
+  de_bai: "Tìm chu kỳ của hàm số y = sin 2x."
+  khang_dinh_ai: "T = 2π"
+  kiem: {kieu: chu_ky, ham: "sin(2*x)", chu_ky_ai: "2*pi"}
+  nhan: sai
+  ly_do: "Chu kỳ (dương nhỏ nhất) là π."
+- id: L33
+  chu_de: "Phương trình lượng giác cơ bản"
+  lop: 11
+  nhom_loi: luong_giac
+  ma_loi_supham: null
+  de_bai: "Giải phương trình cos x = 0."
+  khang_dinh_ai: "x = π/2 + k2π"
+  kiem: {kieu: tap_nghiem_pt, pt: "cos(x) = 0", ho_nghiem_ai: ["pi/2 + 2*k*pi"]}
+  nhan: sai
+  ly_do: "Đúng là x = π/2 + kπ (mất họ -π/2 + k2π)."
+- id: L34
+  chu_de: "Phương trình lượng giác cơ bản"
+  lop: 11
+  nhom_loi: luong_giac
+  ma_loi_supham: null
+  de_bai: "Giải phương trình tan x = 1."
+  khang_dinh_ai: "x = π/4 + k2π"
+  kiem: {kieu: tap_nghiem_pt, pt: "tan(x) = 1", ho_nghiem_ai: ["pi/4 + 2*k*pi"]}
+  nhan: sai
+  ly_do: "tan có chu kỳ π: x = π/4 + kπ."
+- id: L35
+  chu_de: "Phương trình lượng giác cơ bản"
+  lop: 11
+  nhom_loi: luong_giac
+  ma_loi_supham: null
+  de_bai: "Giải phương trình cos x = 1/2."
+  khang_dinh_ai: "x = π/3 + k2π hoặc x = 2π/3 + k2π"
+  kiem: {kieu: tap_nghiem_pt, pt: "cos(x) = 1/2", ho_nghiem_ai: ["pi/3 + 2*k*pi", "2*pi/3 + 2*k*pi"]}
+  nhan: sai
+  ly_do: "Nhầm với công thức của sin; đúng là x = ±π/3 + k2π."
+# ===================== N8 – BẤT PHƯƠNG TRÌNH (NHÂN/CHIA SỐ ÂM) =====================
+- id: L36
+  chu_de: "Bất phương trình bậc nhất"
+  lop: 10
+  nhom_loi: bpt_nhan_so_am
+  ma_loi_supham: null
+  de_bai: "Giải bất phương trình -2x + 4 > 0."
+  khang_dinh_ai: "-2x > -4 nên x > 2."
+  kiem: {kieu: tap_nghiem_bpt, bpt: "-2*x + 4 > 0", tap_ai: "(2; +oo)"}
+  nhan: sai
+  ly_do: "Chia cho -2 phải đổi chiều: x < 2."
+- id: L37
+  chu_de: "Bất phương trình bậc nhất"
+  lop: 10
+  nhom_loi: bpt_nhan_so_am
+  ma_loi_supham: null
+  de_bai: "Giải bất phương trình (x - 1)/(-3) ≥ 2."
+  khang_dinh_ai: "Nhân hai vế với 3 (bỏ mất dấu âm): x - 1 ≥ 6 nên x ≥ 7."
+  kiem: {kieu: tap_nghiem_bpt, bpt: "(x - 1)/(-3) >= 2", tap_ai: "[7; +oo)"}
+  nhan: sai
+  ly_do: "Nhân với -3 đổi chiều: x - 1 ≤ -6, x ≤ -5."
+- id: L38
+  chu_de: "Bất phương trình chứa ẩn ở mẫu"
+  lop: 10
+  nhom_loi: bpt_nhan_so_am
+  ma_loi_supham: null
+  de_bai: "Giải bất phương trình 1/x < 1."
+  khang_dinh_ai: "Nhân hai vế với x: 1 < x. Tập nghiệm (1; +∞)."
+  kiem: {kieu: tap_nghiem_bpt, bpt: "1/x < 1", tap_ai: "(1; +oo)"}
+  nhan: sai
+  ly_do: "Nhân với x chưa rõ dấu; tập nghiệm đúng (-∞; 0) ∪ (1; +∞)."
+- id: L39
+  chu_de: "Bất phương trình bậc hai"
+  lop: 10
+  nhom_loi: bpt_nhan_so_am
+  ma_loi_supham: null
+  de_bai: "Giải bất phương trình -x^2 + 5x - 6 ≥ 0."
+  khang_dinh_ai: "Tập nghiệm (-∞; 2] ∪ [3; +∞)."
+  kiem: {kieu: tap_nghiem_bpt, bpt: "-x**2 + 5*x - 6 >= 0", tap_ai: "(-oo; 2] U [3; +oo)"}
+  nhan: sai
+  ly_do: "Hệ số a < 0 nên tam thức ≥ 0 trong đoạn [2; 3]."
+# ===================== N9 – TÍCH PHÂN / NGUYÊN HÀM =====================
+- id: L40
+  chu_de: "Nguyên hàm"
+  lop: 12
+  nhom_loi: tich_phan_nguyen_ham
+  ma_loi_supham: null
+  de_bai: "Tìm ∫ 3x^2 dx."
+  khang_dinh_ai: "∫ 3x^2 dx = x^3"
+  kiem: {kieu: nguyen_ham, ham: "3*x**2", nguyen_ham_ai: "x**3"}
+  nhan: sai
+  ly_do: "Quên hằng số C."
+- id: L41
+  chu_de: "Tích phân"
+  lop: 12
+  nhom_loi: tich_phan_nguyen_ham
+  ma_loi_supham: null
+  de_bai: "Tính tích phân từ 1 đến 2 của 2x dx."
+  khang_dinh_ai: "= x^2 tại x = 2 = 4"
+  kiem: {kieu: tich_phan, ham: "2*x", can_duoi: "1", can_tren: "2", gia_tri_ai: "4"}
+  nhan: sai
+  ly_do: "Quên trừ giá trị tại cận dưới: 4 - 1 = 3."
+- id: L42
+  chu_de: "Tích phân"
+  lop: 12
+  nhom_loi: tich_phan_nguyen_ham
+  ma_loi_supham: null
+  de_bai: "Tính tích phân từ -1 đến 1 của 1/x^2 dx."
+  khang_dinh_ai: "= [-1/x] từ -1 đến 1 = -1 - 1 = -2"
+  kiem: {kieu: tich_phan, ham: "1/x**2", can_duoi: "-1", can_tren: "1", gia_tri_ai: "-2"}
+  nhan: sai
+  ly_do: "Hàm không liên tục (không xác định) tại x = 0 thuộc đoạn; không áp dụng Newton–Leibniz được. (Hàm dương mà ra kết quả âm.)"
+- id: L43
+  chu_de: "Nguyên hàm"
+  lop: 12
+  nhom_loi: tich_phan_nguyen_ham
+  ma_loi_supham: null
+  de_bai: "Tìm ∫ (1/x) dx."
+  khang_dinh_ai: "∫ (1/x) dx = ln x + C"
+  kiem: {kieu: nguyen_ham, ham: "1/x", nguyen_ham_ai: "log(x) + C"}
+  nhan: sai
+  ly_do: "Trên miền x ≠ 0 phải là ln|x| + C; ln x không xác định khi x < 0."
+- id: L44
+  chu_de: "Nguyên hàm hàm lượng giác"
+  lop: 12
+  nhom_loi: tich_phan_nguyen_ham
+  ma_loi_supham: null
+  de_bai: "Tìm ∫ cos 2x dx."
+  khang_dinh_ai: "∫ cos 2x dx = 2 sin 2x + C"
+  kiem: {kieu: nguyen_ham, ham: "cos(2*x)", nguyen_ham_ai: "2*sin(2*x) + C"}
+  nhan: sai
+  ly_do: "Đúng là (1/2) sin 2x + C."
+- id: L45
+  chu_de: "Tích phân"
+  lop: 12
+  nhom_loi: tich_phan_nguyen_ham
+  ma_loi_supham: null
+  de_bai: "Tính tích phân từ 0 đến π của sin x dx."
+  khang_dinh_ai: "= [cos x] từ 0 đến π = -1 - 1 = -2"
+  kiem: {kieu: tich_phan, ham: "sin(x)", can_duoi: "0", can_tren: "pi", gia_tri_ai: "-2"}
+  nhan: sai
+  ly_do: "Nguyên hàm của sin x là -cos x; kết quả 2."
+# ===================== N10 – TỔ HỢP / XÁC SUẤT =====================
+- id: L46
+  chu_de: "Tổ hợp"
+  lop: 10
+  nhom_loi: to_hop_xac_suat
+  ma_loi_supham: null
+  de_bai: "Có bao nhiêu cách chọn 3 học sinh từ 10 học sinh để đi trực nhật (không phân biệt vai trò)?"
+  khang_dinh_ai: "A(10,3) = 720 cách"
+  kiem: {kieu: dem, khong_gian: "combinations(range(10), 3)", gia_tri_ai: "720"}
+  nhan: sai
+  ly_do: "Không phân biệt thứ tự: C(10,3) = 120."
+- id: L47
+  chu_de: "Xác suất cổ điển"
+  lop: 10
+  nhom_loi: to_hop_xac_suat
+  ma_loi_supham: null
+  de_bai: "Gieo hai con xúc xắc cân đối. Tính xác suất tổng số chấm bằng 7."
+  khang_dinh_ai: "Có 3 cặp (1,6), (2,5), (3,4) nên P = 3/36 = 1/12."
+  kiem: {kieu: xac_suat, khong_gian: "product(range(1, 7), repeat=2)", su_kien: "lambda t: t[0] + t[1] == 7", gia_tri_ai: "1/12"}
+  nhan: sai
+  ly_do: "Kết quả có thứ tự: 6 kết quả thuận lợi, P = 1/6."
+- id: L48
+  chu_de: "Hoán vị"
+  lop: 10
+  nhom_loi: to_hop_xac_suat
+  ma_loi_supham: null
+  de_bai: "Có bao nhiêu cách xếp 5 bạn thành một hàng ngang?"
+  khang_dinh_ai: "5^5 = 3125 cách"
+  kiem: {kieu: dem, khong_gian: "permutations(range(5))", gia_tri_ai: "3125"}
+  nhan: sai
+  ly_do: "5! = 120."
+- id: L49
+  chu_de: "Xác suất cổ điển"
+  lop: 10
+  nhom_loi: to_hop_xac_suat
+  ma_loi_supham: null
+  de_bai: "Tung 3 đồng xu cân đối. Tính xác suất có ít nhất một mặt ngửa."
+  khang_dinh_ai: "P = 3/8"
+  kiem: {kieu: xac_suat, khong_gian: "product([0, 1], repeat=3)", su_kien: "lambda t: sum(t) >= 1", gia_tri_ai: "3/8"}
+  nhan: sai
+  ly_do: "3/8 là xác suất đúng một mặt ngửa; đúng là 1 - 1/8 = 7/8."
+- id: L50
+  chu_de: "Xác suất – quy tắc cộng"
+  lop: 10
+  nhom_loi: to_hop_xac_suat
+  ma_loi_supham: null
+  de_bai: "Rút ngẫu nhiên 1 lá từ bộ bài 52 lá. Tính xác suất được lá cơ hoặc lá K."
+  khang_dinh_ai: "P = 13/52 + 4/52 = 17/52"
+  kiem: {kieu: xac_suat, khong_gian: "product(range(4), range(13))", su_kien: "lambda t: t[0] == 0 or t[1] == 12", gia_tri_ai: "17/52"}
+  nhan: sai
+  ly_do: "Hai biến cố không xung khắc (K cơ tính 2 lần): 16/52 = 4/13."
+# ===================== N11 – CHỦ ĐỀ MẪU: ỨNG DỤNG ĐẠO HÀM (TOÁN 12) =====================
+- id: D01
+  chu_de: "Ứng dụng đạo hàm – tính đạo hàm"
+  lop: 12
+  nhom_loi: dao_ham_don_dieu_cuc_tri
+  loai_con: sai_dao_ham
+  ma_loi_supham: null
+  de_bai: "Xét y = x^3 - 3x^2 + 2. Tính y'."
+  khang_dinh_ai: "y' = 3x^2 - 3x"
+  kiem: {kieu: dao_ham, ham: "x**3 - 3*x**2 + 2", dao_ham_ai: "3*x**2 - 3*x"}
+  nhan: sai
+  ly_do: "(3x^2)' = 6x; đúng là y' = 3x^2 - 6x."
+- id: D02
+  chu_de: "Ứng dụng đạo hàm – tính đơn điệu"
+  lop: 12
+  nhom_loi: dao_ham_don_dieu_cuc_tri
+  loai_con: xet_dau_sai
+  ma_loi_supham: null
+  de_bai: "Tìm các khoảng đơn điệu của y = x^3 - 3x."
+  khang_dinh_ai: "Đồng biến trên (-1; 1); nghịch biến trên (-∞; -1) và (1; +∞)."
+  kiem: {kieu: don_dieu, ham: "x**3 - 3*x", dong_bien: ["(-1; 1)"], nghich_bien: ["(-oo; -1)", "(1; +oo)"]}
+  nhan: sai
+  ly_do: "y' = 3x^2 - 3 > 0 ngoài [-1; 1]: xét dấu ngược."
+- id: D03
+  chu_de: "Ứng dụng đạo hàm – cực trị"
+  lop: 12
+  nhom_loi: dao_ham_don_dieu_cuc_tri
+  loai_con: cuc_tri_khi_y_phay_khong_doi_dau
+  ma_loi_supham: null
+  de_bai: "Tìm cực trị của y = x^3."
+  khang_dinh_ai: "y'(0) = 0 nên hàm số đạt cực tiểu tại x = 0."
+  kiem: {kieu: cuc_tri, ham: "x**3", cuc_tieu_x: ["0"], cuc_dai_x: []}
+  nhan: sai
+  ly_do: "y' = 3x^2 ≥ 0 không đổi dấu qua 0; hàm số không có cực trị."
+- id: D04
+  chu_de: "Ứng dụng đạo hàm – cực trị"
+  lop: 12
+  nhom_loi: dao_ham_don_dieu_cuc_tri
+  loai_con: cuc_tri_khi_y_phay_khong_doi_dau
+  ma_loi_supham: null
+  de_bai: "Tìm cực trị của y = x^4 - 4x^3."
+  khang_dinh_ai: "y' = 4x^2(x - 3) = 0 tại x = 0, x = 3. Cực đại tại x = 0, cực tiểu tại x = 3."
+  kiem: {kieu: cuc_tri, ham: "x**4 - 4*x**3", cuc_dai_x: ["0"], cuc_tieu_x: ["3"]}
+  nhan: sai
+  ly_do: "y' không đổi dấu qua x = 0 (nghiệm kép); chỉ có cực tiểu tại x = 3."
+- id: D05
+  chu_de: "Ứng dụng đạo hàm – cực trị"
+  lop: 12
+  nhom_loi: dao_ham_don_dieu_cuc_tri
+  loai_con: quen_diem_y_phay_khong_xac_dinh
+  ma_loi_supham: null
+  de_bai: "Tìm cực trị của y = |x|."
+  khang_dinh_ai: "y' = ±1 không có nghiệm nên hàm số không có cực trị."
+  kiem: {kieu: cuc_tri, ham: "Abs(x)", cuc_dai_x: [], cuc_tieu_x: []}
+  nhan: sai
+  ly_do: "y' không xác định tại x = 0 nhưng đổi dấu từ - sang +: cực tiểu tại x = 0."
+- id: D06
+  chu_de: "Ứng dụng đạo hàm – cực trị"
+  lop: 12
+  nhom_loi: dao_ham_don_dieu_cuc_tri
+  loai_con: quen_diem_y_phay_khong_xac_dinh
+  ma_loi_supham: null
+  de_bai: "Tìm cực trị của y = |x^2 - 2x|."
+  khang_dinh_ai: "y' = 0 tại x = 1; hàm số chỉ có một cực đại tại x = 1."
+  kiem: {kieu: cuc_tri, ham: "Abs(x**2 - 2*x)", cuc_dai_x: ["1"], cuc_tieu_x: []}
+  nhan: sai
+  ly_do: "Bỏ sót x = 0 và x = 2 (y' không xác định, đổi dấu - sang +): hai điểm cực tiểu."
+- id: D07
+  chu_de: "Ứng dụng đạo hàm – tính đơn điệu"
+  lop: 12
+  nhom_loi: dao_ham_don_dieu_cuc_tri
+  loai_con: bo_dieu_kien_xac_dinh
+  ma_loi_supham: null
+  de_bai: "Tìm các khoảng đơn điệu của y = sqrt(x^2 - 2x)."
+  khang_dinh_ai: "y' = (x - 1)/sqrt(x^2 - 2x); nghịch biến trên (-∞; 1), đồng biến trên (1; +∞)."
+  kiem: {kieu: don_dieu, ham: "sqrt(x**2 - 2*x)", dong_bien: ["(1; +oo)"], nghich_bien: ["(-oo; 1)"]}
+  nhan: sai
+  ly_do: "TXĐ D = (-∞; 0] ∪ [2; +∞): nghịch biến trên (-∞; 0), đồng biến trên (2; +∞)."
+- id: D08
+  chu_de: "Ứng dụng đạo hàm – tính đơn điệu"
+  lop: 12
+  nhom_loi: dao_ham_don_dieu_cuc_tri
+  loai_con: bo_dieu_kien_xac_dinh
+  ma_loi_supham: null
+  de_bai: "Xét tính đơn điệu của y = (x + 1)/(x - 1)."
+  khang_dinh_ai: "y' = -2/(x - 1)^2 < 0 nên hàm số nghịch biến trên R."
+  kiem: {kieu: don_dieu, ham: "(x + 1)/(x - 1)", nghich_bien_tren_tap: "R"}
+  nhan: sai
+  ly_do: "x = 1 không thuộc TXĐ; không thể nghịch biến trên R."
+- id: D09
+  chu_de: "Ứng dụng đạo hàm – cực trị"
+  lop: 12
+  nhom_loi: dao_ham_don_dieu_cuc_tri
+  loai_con: nham_gia_tri_voi_diem_cuc_tri
+  ma_loi_supham: null
+  de_bai: "Tìm điểm cực đại của hàm số y = x^3 - 3x + 1."
+  khang_dinh_ai: "Điểm cực đại của hàm số là 3."
+  kiem: {kieu: cuc_tri, ham: "x**3 - 3*x + 1", cuc_dai_x: ["3"]}
+  nhan: sai
+  ly_do: "3 là giá trị cực đại; điểm cực đại là x = -1."
+- id: D10
+  chu_de: "Ứng dụng đạo hàm – cực trị"
+  lop: 12
+  nhom_loi: dao_ham_don_dieu_cuc_tri
+  loai_con: nham_gia_tri_voi_diem_cuc_tri
+  ma_loi_supham: null
+  de_bai: "Tìm giá trị cực tiểu của hàm số y = x^3 - 3x + 1."
+  khang_dinh_ai: "Giá trị cực tiểu của hàm số là 1."
+  kiem: {kieu: cuc_tri, ham: "x**3 - 3*x + 1", gia_tri_cuc_tieu: ["1"]}
+  nhan: sai
+  ly_do: "1 là điểm cực tiểu (x = 1); giá trị cực tiểu là y(1) = -1."
+- id: D11
+  chu_de: "Ứng dụng đạo hàm – tính đơn điệu"
+  lop: 12
+  nhom_loi: dao_ham_don_dieu_cuc_tri
+  loai_con: hop_khoang_sai
+  ma_loi_supham: null
+  de_bai: "Tìm các khoảng nghịch biến của y = (x + 1)/(x - 1)."
+  khang_dinh_ai: "Hàm số nghịch biến trên (-∞; 1) ∪ (1; +∞)."
+  kiem: {kieu: don_dieu, ham: "(x + 1)/(x - 1)", nghich_bien_tren_tap: "(-oo; 1) U (1; +oo)"}
+  nhan: sai
+  ly_do: "Chỉ nghịch biến trên từng khoảng; trên hợp thì không (y(0) = -1 < y(2) = 3)."
+- id: D12
+  chu_de: "Ứng dụng đạo hàm – tính đơn điệu"
+  lop: 12
+  nhom_loi: dao_ham_don_dieu_cuc_tri
+  loai_con: hop_khoang_sai
+  ma_loi_supham: null
+  de_bai: "Xét tính đơn điệu của y = (2x - 1)/(x + 1)."
+  khang_dinh_ai: "y' = 3/(x + 1)^2 > 0 nên hàm số đồng biến trên R \\ {-1}."
+  kiem: {kieu: don_dieu, ham: "(2*x - 1)/(x + 1)", dong_bien_tren_tap: "R \\ {-1}"}
+  nhan: sai
+  ly_do: "Đồng biến trên từng khoảng (-∞; -1) và (-1; +∞), không phải trên R \\ {-1}."
+- id: D13
+  chu_de: "Ứng dụng đạo hàm – cực trị"
+  lop: 12
+  nhom_loi: dao_ham_don_dieu_cuc_tri
+  loai_con: xet_dau_sai
+  ma_loi_supham: null
+  de_bai: "Tìm cực trị của y = -x^4 + 2x^2."
+  khang_dinh_ai: "Cực tiểu tại x = ±1, cực đại tại x = 0."
+  kiem: {kieu: cuc_tri, ham: "-x**4 + 2*x**2", cuc_tieu_x: ["-1", "1"], cuc_dai_x: ["0"]}
+  nhan: sai
+  ly_do: "Hệ số bậc cao âm, xét dấu ngược: cực đại tại x = ±1, cực tiểu tại x = 0."
+# ===================== B – LỜI GIẢI NHIỀU DÒNG (ĐỊNH VỊ BƯỚC SAI) =====================
+- id: B01
+  chu_de: "Rút gọn biểu thức nhiều bước"
+  lop: 10
+  nhom_loi: sai_dau
+  ma_loi_supham: null
+  de_bai: "Rút gọn (x + 1)^2 - (x - 1)^2."
+  khang_dinh_ai: "Lời giải 4 dòng (xem kiem.dong)."
+  kiem:
+    kieu: bien_doi_bieu_thuc
+    dong: ["(x + 1)**2 - (x - 1)**2", "x**2 + 2*x + 1 - (x**2 - 2*x + 1)", "x**2 + 2*x + 1 - x**2 - 2*x + 1", "2"]
+  nhan: sai
+  buoc_sai_nhan: 3
+  ly_do: "Dòng 3 bỏ ngoặc sai dấu (-(-2x) thành -2x, -(+1) thành +1); đúng là 4x."
+- id: B02
+  chu_de: "Giải phương trình nhiều bước"
+  lop: 10
+  nhom_loi: chia_cho_0
+  ma_loi_supham: null
+  de_bai: "Giải phương trình x^3 = 4x."
+  khang_dinh_ai: "Lời giải nhiều dòng (xem kiem.dong), kết luận {2; -2}."
+  kiem:
+    kieu: bien_doi_phuong_trinh
+    dong: ["x**3 = 4*x", "x**2 = 4", "(x - 2)*(x + 2) = 0"]
+    ket_luan: ["2", "-2"]
+  nhan: sai
+  buoc_sai_nhan: 2
+  ly_do: "Dòng 2 chia cho x, mất nghiệm 0."
+- id: B03
+  chu_de: "Giải bất phương trình nhiều bước"
+  lop: 10
+  nhom_loi: bpt_nhan_so_am
+  ma_loi_supham: null
+  de_bai: "Giải bất phương trình -3x + 6 < 0."
+  khang_dinh_ai: "Lời giải 3 dòng (xem kiem.dong), kết luận (-∞; 2)."
+  kiem:
+    kieu: bien_doi_bpt
+    dong: ["-3*x + 6 < 0", "-3*x < -6", "x < 2"]
+    ket_luan: "(-oo; 2)"
+  nhan: sai
+  buoc_sai_nhan: 3
+  ly_do: "Dòng 3 chia cho -3 không đổi chiều; đúng là x > 2."
+- id: B04
+  chu_de: "Giải phương trình logarit nhiều bước"
+  lop: 11
+  nhom_loi: dieu_kien_xac_dinh
+  ma_loi_supham: null
+  de_bai: "Giải phương trình log2(x) + log2(x - 3) = 2."
+  khang_dinh_ai: "Lời giải 4 dòng + kết luận {4; -1}."
+  kiem:
+    kieu: bien_doi_phuong_trinh
+    dong: ["log(x, 2) + log(x - 3, 2) = 2", "log(x*(x - 3), 2) = 2", "x*(x - 3) = 4", "x**2 - 3*x - 4 = 0"]
+    ket_luan: ["4", "-1"]
+  nhan: sai
+  buoc_sai_nhan: 5
+  ly_do: "Các dòng biến đổi tương đương trong miền x > 3; sai ở kết luận (dòng 5) không loại x = -1."
+- id: B05
+  chu_de: "Giải bất phương trình chứa ẩn ở mẫu nhiều bước"
+  lop: 10
+  nhom_loi: dieu_kien_xac_dinh
+  ma_loi_supham: null
+  de_bai: "Giải bất phương trình (x - 1)/(x + 2) ≥ 0."
+  khang_dinh_ai: "Lời giải 2 dòng + kết luận (-∞; -2] ∪ [1; +∞)."
+  kiem:
+    kieu: bien_doi_bpt
+    dong: ["(x - 1)/(x + 2) >= 0", "(x - 1)*(x + 2) >= 0"]
+    ket_luan: "(-oo; -2] U [1; +oo)"
+  nhan: sai
+  buoc_sai_nhan: 3
+  ly_do: "Kết luận (dòng 3) lấy cả x = -2 là điểm làm mẫu bằng 0."
+# ===================== K – KHÔNG HÌNH THỨC HÓA ĐƯỢC (Tầng 1 phải trả KHÔNG KIỂM ĐƯỢC) =====================
+- id: K01
+  chu_de: "Hình học phẳng – chứng minh bằng lời"
+  lop: 10
+  nhom_loi: loi_van_khong_kiem_duoc
+  ma_loi_supham: null
+  de_bai: "Tam giác ABC có góc B bằng góc C. Chứng minh hoặc bác bỏ: ABC là tam giác đều."
+  khang_dinh_ai: "Vì góc B = góc C nên ba góc bằng nhau, vậy ABC đều."
+  kiem: {kieu: loi_van}
+  nhan: sai
+  ly_do: "Chỉ suy ra được tam giác cân tại A."
+- id: K02
+  chu_de: "Bài làm chỉ có ảnh viết tay"
+  lop: 11
+  nhom_loi: loi_van_khong_kiem_duoc
+  ma_loi_supham: null
+  de_bai: "Học sinh/AI nộp ảnh chụp lời giải viết tay (chưa số hóa)."
+  khang_dinh_ai: "(ảnh, không có văn bản)"
+  kiem: {kieu: anh_viet_tay}
+  nhan: sai
+  ly_do: "Giả định ảnh chứa lời giải sai; Tầng 1 không đọc được ảnh."
+# ===================== ĐỐI CHỨNG – CA ĐÚNG =====================
+- {id: C01, chu_de: "Hằng đẳng thức", lop: 10, nhom_loi: doi_chung, ma_loi_supham: null, de_bai: "Khai triển (a + b)^2.", khang_dinh_ai: "(a + b)^2 = a^2 + 2ab + b^2", kiem: {kieu: dong_nhat, trai: "(a + b)**2", phai: "a**2 + 2*a*b + b**2"}, nhan: dung, ly_do: "Hằng đẳng thức đúng."}
+- {id: C02, chu_de: "Công thức cộng", lop: 11, nhom_loi: doi_chung, ma_loi_supham: null, de_bai: "Khai triển sin(a + b).", khang_dinh_ai: "sin(a + b) = sin a cos b + cos a sin b", kiem: {kieu: dong_nhat, trai: "sin(a + b)", phai: "sin(a)*cos(b) + cos(a)*sin(b)"}, nhan: dung, ly_do: "Công thức cộng."}
+- {id: C03, chu_de: "Tính chất logarit", lop: 11, nhom_loi: doi_chung, ma_loi_supham: null, de_bai: "Với a, b > 0, biến đổi ln(ab).", khang_dinh_ai: "ln(ab) = ln a + ln b", kiem: {kieu: dong_nhat, trai: "log(a*b)", phai: "log(a) + log(b)", mien: ["a > 0", "b > 0"]}, nhan: dung, ly_do: "Đúng với a, b > 0."}
+- {id: C04, chu_de: "Phương trình bậc hai", lop: 10, nhom_loi: doi_chung, ma_loi_supham: null, de_bai: "Giải x^2 - 5x + 6 = 0.", khang_dinh_ai: "x = 2, x = 3", kiem: {kieu: tap_nghiem_pt, pt: "x**2 - 5*x + 6 = 0", nghiem_ai: ["2", "3"]}, nhan: dung, ly_do: "Đúng."}
+- {id: C05, chu_de: "Phương trình logarit", lop: 11, nhom_loi: doi_chung, ma_loi_supham: null, de_bai: "Giải log2(x) + log2(x - 3) = 2.", khang_dinh_ai: "x = 4", kiem: {kieu: tap_nghiem_pt, pt: "log(x, 2) + log(x - 3, 2) = 2", nghiem_ai: ["4"]}, nhan: dung, ly_do: "Đúng, đã loại x = -1."}
+- {id: C06, chu_de: "Phương trình chứa căn", lop: 10, nhom_loi: doi_chung, ma_loi_supham: null, de_bai: "Giải sqrt(x + 3) = x - 3.", khang_dinh_ai: "x = 6", kiem: {kieu: tap_nghiem_pt, pt: "sqrt(x + 3) = x - 3", nghiem_ai: ["6"]}, nhan: dung, ly_do: "Đúng."}
+- {id: C07, chu_de: "Phương trình lượng giác cơ bản", lop: 11, nhom_loi: doi_chung, ma_loi_supham: null, de_bai: "Giải sin x = 1/2.", khang_dinh_ai: "x = π/6 + k2π hoặc x = 5π/6 + k2π", kiem: {kieu: tap_nghiem_pt, pt: "sin(x) = 1/2", ho_nghiem_ai: ["pi/6 + 2*k*pi", "5*pi/6 + 2*k*pi"]}, nhan: dung, ly_do: "Đúng."}
+- {id: C08, chu_de: "Bất phương trình bậc nhất", lop: 10, nhom_loi: doi_chung, ma_loi_supham: null, de_bai: "Giải -2x + 4 > 0.", khang_dinh_ai: "x < 2", kiem: {kieu: tap_nghiem_bpt, bpt: "-2*x + 4 > 0", tap_ai: "(-oo; 2)"}, nhan: dung, ly_do: "Đúng."}
+- {id: C09, chu_de: "Bất phương trình chứa ẩn ở mẫu", lop: 10, nhom_loi: doi_chung, ma_loi_supham: null, de_bai: "Giải 1/x < 1.", khang_dinh_ai: "(-∞; 0) ∪ (1; +∞)", kiem: {kieu: tap_nghiem_bpt, bpt: "1/x < 1", tap_ai: "(-oo; 0) U (1; +oo)"}, nhan: dung, ly_do: "Đúng."}
+- {id: C10, chu_de: "Nguyên hàm", lop: 12, nhom_loi: doi_chung, ma_loi_supham: null, de_bai: "Tìm ∫ 3x^2 dx.", khang_dinh_ai: "x^3 + C", kiem: {kieu: nguyen_ham, ham: "3*x**2", nguyen_ham_ai: "x**3 + C"}, nhan: dung, ly_do: "Đúng."}
+- {id: C11, chu_de: "Tích phân", lop: 12, nhom_loi: doi_chung, ma_loi_supham: null, de_bai: "Tính tích phân từ 1 đến 2 của 2x dx.", khang_dinh_ai: "= 3", kiem: {kieu: tich_phan, ham: "2*x", can_duoi: "1", can_tren: "2", gia_tri_ai: "3"}, nhan: dung, ly_do: "Đúng."}
+- {id: C12, chu_de: "Đổi đơn vị", lop: 10, nhom_loi: doi_chung, ma_loi_supham: null, de_bai: "Đổi 72 km/h ra m/s.", khang_dinh_ai: "72 km/h = 20 m/s", kiem: {kieu: don_vi, trai: "72*kilometer/hour", phai: "20*meter/second"}, nhan: dung, ly_do: "Đúng."}
+- {id: C13, chu_de: "Tổ hợp", lop: 10, nhom_loi: doi_chung, ma_loi_supham: null, de_bai: "Chọn 3 học sinh từ 10 (không phân biệt vai trò).", khang_dinh_ai: "C(10,3) = 120", kiem: {kieu: dem, khong_gian: "combinations(range(10), 3)", gia_tri_ai: "120"}, nhan: dung, ly_do: "Đúng."}
+- {id: C14, chu_de: "Xác suất cổ điển", lop: 10, nhom_loi: doi_chung, ma_loi_supham: null, de_bai: "Gieo 2 xúc xắc, P(tổng = 7).", khang_dinh_ai: "P = 6/36 = 1/6", kiem: {kieu: xac_suat, khong_gian: "product(range(1, 7), repeat=2)", su_kien: "lambda t: t[0] + t[1] == 7", gia_tri_ai: "1/6"}, nhan: dung, ly_do: "Đúng."}
+- {id: C15, chu_de: "Đạo hàm lượng giác", lop: 11, nhom_loi: doi_chung, ma_loi_supham: null, de_bai: "Tính đạo hàm y = cos 2x.", khang_dinh_ai: "y' = -2 sin 2x", kiem: {kieu: dao_ham, ham: "cos(2*x)", dao_ham_ai: "-2*sin(2*x)"}, nhan: dung, ly_do: "Đúng."}
+- {id: C16, chu_de: "Nguyên hàm", lop: 12, nhom_loi: doi_chung, ma_loi_supham: null, de_bai: "Tìm ∫ (1/x) dx.", khang_dinh_ai: "ln|x| + C", kiem: {kieu: nguyen_ham, ham: "1/x", nguyen_ham_ai: "log(Abs(x)) + C"}, nhan: dung, ly_do: "Đúng."}
+- {id: C17, chu_de: "Phương trình lượng giác cơ bản", lop: 11, nhom_loi: doi_chung, ma_loi_supham: null, de_bai: "Giải cos x = 0.", khang_dinh_ai: "x = π/2 + kπ", kiem: {kieu: tap_nghiem_pt, pt: "cos(x) = 0", ho_nghiem_ai: ["pi/2 + k*pi"]}, nhan: dung, ly_do: "Đúng."}
+- {id: C18, chu_de: "Tính tuần hoàn", lop: 11, nhom_loi: doi_chung, ma_loi_supham: null, de_bai: "Chu kỳ của y = sin 2x.", khang_dinh_ai: "T = π", kiem: {kieu: chu_ky, ham: "sin(2*x)", chu_ky_ai: "pi"}, nhan: dung, ly_do: "Đúng."}
+- {id: C19, chu_de: "Phương trình lượng giác cơ bản", lop: 11, nhom_loi: doi_chung, ma_loi_supham: null, de_bai: "Giải tan x = 1.", khang_dinh_ai: "x = π/4 + kπ", kiem: {kieu: tap_nghiem_pt, pt: "tan(x) = 1", ho_nghiem_ai: ["pi/4 + k*pi"]}, nhan: dung, ly_do: "Đúng."}
+- {id: C20, chu_de: "Rút gọn phân thức", lop: 10, nhom_loi: doi_chung, ma_loi_supham: null, de_bai: "Rút gọn (x^2 - 1)/(x - 1) với x ≠ 1.", khang_dinh_ai: "= x + 1 (x ≠ 1)", kiem: {kieu: dong_nhat, trai: "(x**2 - 1)/(x - 1)", phai: "x + 1", mien: ["Ne(x, 1)"]}, nhan: dung, ly_do: "Đúng trên miền x ≠ 1."}
+- {id: C21, chu_de: "Căn thức", lop: 10, nhom_loi: doi_chung, ma_loi_supham: null, de_bai: "Rút gọn sqrt(x^2).", khang_dinh_ai: "sqrt(x^2) = |x|", kiem: {kieu: dong_nhat, trai: "sqrt(x**2)", phai: "Abs(x)"}, nhan: dung, ly_do: "Đúng với mọi x thực."}
+- {id: C22, chu_de: "Nguyên hàm (dạng tương đương khác CAS)", lop: 12, nhom_loi: doi_chung, ma_loi_supham: null, de_bai: "Tìm ∫ 2 sin x cos x dx.", khang_dinh_ai: "= -cos(2x)/4 · 2 = -cos(2x)/2 + C", kiem: {kieu: nguyen_ham, ham: "2*sin(x)*cos(x)", nguyen_ham_ai: "-cos(2*x)/2 + C"}, nhan: dung, ly_do: "Đúng; khác dạng sin^2 x + C chỉ một hằng số."}
+- {id: C23, chu_de: "Bất phương trình logarit", lop: 11, nhom_loi: doi_chung, ma_loi_supham: null, de_bai: "Giải log_{1/2}(x - 1) ≥ -1.", khang_dinh_ai: "0 < x - 1 ≤ 2, tập nghiệm (1; 3]", kiem: {kieu: tap_nghiem_bpt, bpt: "log(x - 1, 1/2) >= -1", tap_ai: "(1; 3]"}, nhan: dung, ly_do: "Cơ số < 1 đổi chiều, kèm điều kiện x > 1."}
+- {id: DC1, chu_de: "Ứng dụng đạo hàm – tính đơn điệu", lop: 12, nhom_loi: doi_chung, ma_loi_supham: null, de_bai: "Khoảng đơn điệu của y = x^3 - 3x.", khang_dinh_ai: "Đồng biến trên (-∞; -1) và (1; +∞); nghịch biến trên (-1; 1).", kiem: {kieu: don_dieu, ham: "x**3 - 3*x", dong_bien: ["(-oo; -1)", "(1; +oo)"], nghich_bien: ["(-1; 1)"]}, nhan: dung, ly_do: "Đúng."}
+- {id: DC2, chu_de: "Ứng dụng đạo hàm – cực trị", lop: 12, nhom_loi: doi_chung, ma_loi_supham: null, de_bai: "Cực trị của y = x^3 - 3x + 1.", khang_dinh_ai: "Cực đại tại x = -1, y_CĐ = 3; cực tiểu tại x = 1, y_CT = -1.", kiem: {kieu: cuc_tri, ham: "x**3 - 3*x + 1", cuc_dai_x: ["-1"], cuc_tieu_x: ["1"], gia_tri_cuc_dai: ["3"], gia_tri_cuc_tieu: ["-1"]}, nhan: dung, ly_do: "Đúng."}
+- {id: DC3, chu_de: "Ứng dụng đạo hàm – cực trị", lop: 12, nhom_loi: doi_chung, ma_loi_supham: null, de_bai: "Cực trị của y = x^3.", khang_dinh_ai: "Hàm số không có cực trị.", kiem: {kieu: cuc_tri, ham: "x**3", cuc_dai_x: [], cuc_tieu_x: []}, nhan: dung, ly_do: "Đúng."}
+- {id: DC4, chu_de: "Ứng dụng đạo hàm – cực trị", lop: 12, nhom_loi: doi_chung, ma_loi_supham: null, de_bai: "Cực trị của y = |x|.", khang_dinh_ai: "Cực tiểu tại x = 0, y_CT = 0; không có cực đại.", kiem: {kieu: cuc_tri, ham: "Abs(x)", cuc_dai_x: [], cuc_tieu_x: ["0"], gia_tri_cuc_tieu: ["0"]}, nhan: dung, ly_do: "Đúng."}
+- {id: DC5, chu_de: "Ứng dụng đạo hàm – tính đơn điệu", lop: 12, nhom_loi: doi_chung, ma_loi_supham: null, de_bai: "Khoảng đơn điệu của y = sqrt(x^2 - 2x).", khang_dinh_ai: "Nghịch biến trên (-∞; 0), đồng biến trên (2; +∞).", kiem: {kieu: don_dieu, ham: "sqrt(x**2 - 2*x)", dong_bien: ["(2; +oo)"], nghich_bien: ["(-oo; 0)"]}, nhan: dung, ly_do: "Đúng."}
+- {id: DC6, chu_de: "Ứng dụng đạo hàm – tính đơn điệu", lop: 12, nhom_loi: doi_chung, ma_loi_supham: null, de_bai: "Khoảng đơn điệu của y = (x + 1)/(x - 1).", khang_dinh_ai: "Nghịch biến trên từng khoảng (-∞; 1) và (1; +∞).", kiem: {kieu: don_dieu, ham: "(x + 1)/(x - 1)", dong_bien: [], nghich_bien: ["(-oo; 1)", "(1; +oo)"]}, nhan: dung, ly_do: "Đúng."}
+- {id: DC7, chu_de: "Ứng dụng đạo hàm – cực trị", lop: 12, nhom_loi: doi_chung, ma_loi_supham: null, de_bai: "Cực trị của y = -x^4 + 2x^2.", khang_dinh_ai: "Cực đại tại x = ±1 (y = 1), cực tiểu tại x = 0 (y = 0).", kiem: {kieu: cuc_tri, ham: "-x**4 + 2*x**2", cuc_dai_x: ["-1", "1"], cuc_tieu_x: ["0"], gia_tri_cuc_dai: ["1"], gia_tri_cuc_tieu: ["0"]}, nhan: dung, ly_do: "Đúng."}
+- id: BC1
+  chu_de: "Rút gọn lượng giác nhiều bước"
+  lop: 11
+  nhom_loi: doi_chung
+  ma_loi_supham: null
+  de_bai: "Rút gọn sin^4 x - cos^4 x."
+  khang_dinh_ai: "Lời giải 4 dòng (xem kiem.dong)."
+  kiem:
+    kieu: bien_doi_bieu_thuc
+    dong: ["sin(x)**4 - cos(x)**4", "(sin(x)**2 - cos(x)**2)*(sin(x)**2 + cos(x)**2)", "sin(x)**2 - cos(x)**2", "-cos(2*x)"]
+  nhan: dung
+  ly_do: "Đúng từng dòng."
+- id: BC2
+  chu_de: "Phương trình chứa căn nhiều bước (có bước hệ quả)"
+  lop: 10
+  nhom_loi: doi_chung
+  ma_loi_supham: null
+  de_bai: "Giải sqrt(x + 3) = x - 3."
+  khang_dinh_ai: "Bình phương (phép hệ quả), giải được 1 và 6, thử lại loại 1, kết luận {6}."
+  kiem:
+    kieu: bien_doi_phuong_trinh
+    dong: ["sqrt(x + 3) = x - 3", "x + 3 = (x - 3)**2", "x**2 - 7*x + 6 = 0"]
+    ket_luan: ["6"]
+  nhan: dung
+  ly_do: "Bước bình phương là hệ quả (thêm nghiệm ngoại lai) nhưng kết luận đã thử lại, đúng."
+- id: KC1
+  chu_de: "Hình học phẳng – chứng minh bằng lời"
+  lop: 10
+  nhom_loi: doi_chung
+  ma_loi_supham: null
+  de_bai: "Chứng minh: trong tam giác vuông, trung tuyến ứng với cạnh huyền bằng nửa cạnh huyền."
+  khang_dinh_ai: "Lấy D đối xứng với A qua trung điểm M của BC, ABDC là hình chữ nhật nên AD = BC, suy ra AM = BC/2."
+  kiem: {kieu: loi_van}
+  nhan: dung
+  ly_do: "Chứng minh đúng; Tầng 1 không kiểm được lời văn."

@@ -1,0 +1,909 @@
+[
+  {
+    "id": "DH12-03-VD-01",
+    "phien_ban": 1,
+    "lop": 12,
+    "cap_hoc": "THPT",
+    "mach_noi_dung": "MOT_SO_YEU_TO_GIAI_TICH",
+    "chu_de": "Ứng dụng đạo hàm để khảo sát và vẽ đồ thị của hàm số",
+    "noi_dung": "Tính đơn điệu của hàm số",
+    "chuong": null,
+    "bai": null,
+    "yeu_cau_can_dat": [
+      {
+        "ma": "YCCD.T12.GT.UDDH.01",
+        "trich_nguyen_van": "Nhận biết được tính đồng biến, nghịch biến của một hàm số trên một khoảng dựa vào dấu của đạo hàm cấp một của nó.",
+        "nguon": "CT GDPT môn Toán 2018 (TT 32/2018/TT-BGDĐT), Lớp 12, tr.105"
+      },
+      {
+        "ma": "YCCD.T12.GT.UDDH.02",
+        "trich_nguyen_van": "Thể hiện được tính đồng biến, nghịch biến của hàm số trong bảng biến thiên.",
+        "nguon": "CT GDPT môn Toán 2018 (TT 32/2018/TT-BGDĐT), Lớp 12, tr.105"
+      }
+    ],
+    "ky_nang_chinh": "T12.DH.03",
+    "ky_nang_phu": [
+      "T12.DH.02"
+    ],
+    "ky_nang_tien_quyet": [
+      {
+        "ma": "T11.DH.01",
+        "muc_toi_thieu": "VD"
+      },
+      {
+        "ma": "T10.DS.01",
+        "muc_toi_thieu": "VD"
+      }
+    ],
+    "thanh_phan_nang_luc": [
+      "GQVD",
+      "TDLL"
+    ],
+    "muc_do_4": "VD",
+    "muc_do_bo_3": "VAN_DUNG",
+    "muc_bloom": "VAN_DUNG",
+    "muc_bloom_phu": [],
+    "dang_cau": "TU_LUAN",
+    "dang_bai": "DB.DH.KHOANG_DON_DIEU_DA_THUC",
+    "de_bai": {
+      "van_ban": "Tìm các khoảng đồng biến, nghịch biến của hàm số y = x³ − 6x² + 9x + 2.",
+      "latex": "y = x^3 - 6x^2 + 9x + 2",
+      "ham_so_sympy": "x**3 - 6*x**2 + 9*x + 2",
+      "hinh": []
+    },
+    "dap_an_noi_bo": {
+      "hien_thi_cho_hoc_sinh": false,
+      "gia_tri": "Đồng biến trên (−∞; 1) và (3; +∞); nghịch biến trên (1; 3).",
+      "bieu_thuc_sympy": "{'dong_bien': Union(Interval.open(-oo, 1), Interval.open(3, oo)), 'nghich_bien': Interval.open(1, 3)}",
+      "dinh_dang_tra_loi_ngan": null
+    },
+    "khung_buoc": [
+      {
+        "ma_buoc": "B.DH.TXD",
+        "dang_nhap": "DONG",
+        "bat_buoc_trinh_bay": false
+      },
+      {
+        "ma_buoc": "B.DH.DAOHAM",
+        "dang_nhap": "DONG",
+        "bat_buoc_trinh_bay": true
+      },
+      {
+        "ma_buoc": "B.DH.NGHIEM",
+        "dang_nhap": "DONG",
+        "bat_buoc_trinh_bay": true
+      },
+      {
+        "ma_buoc": "B.DH.XETDAU",
+        "dang_nhap": "BANG",
+        "bat_buoc_trinh_bay": true
+      },
+      {
+        "ma_buoc": "B.DH.KETLUAN",
+        "dang_nhap": "DONG",
+        "bat_buoc_trinh_bay": true
+      }
+    ],
+    "loi_giai_tung_buoc": {
+      "hien_thi_cho_hoc_sinh": false,
+      "cac_buoc": [
+        {
+          "buoc": 1,
+          "noi_dung": "Tập xác định D = ℝ.",
+          "latex": "D=\\mathbb{R}",
+          "sympy": "S.Reals",
+          "ma_ky_nang": "T12.DH.02",
+          "ma_buoc": "B.DH.TXD"
+        },
+        {
+          "buoc": 2,
+          "noi_dung": "y' = 3x² − 12x + 9 = 3(x − 1)(x − 3).",
+          "latex": "y' = 3x^2-12x+9 = 3(x-1)(x-3)",
+          "sympy": "3*(x-1)*(x-3)",
+          "ma_ky_nang": "T12.DH.02",
+          "ma_buoc": "B.DH.DAOHAM"
+        },
+        {
+          "buoc": 3,
+          "noi_dung": "y' = 0 ⇔ x = 1 hoặc x = 3.",
+          "latex": "y'=0 \\iff x\\in\\{1;3\\}",
+          "sympy": "FiniteSet(1, 3)",
+          "ma_ky_nang": "T12.DH.02",
+          "ma_buoc": "B.DH.NGHIEM"
+        },
+        {
+          "buoc": 4,
+          "noi_dung": "Bảng xét dấu: y' > 0 trên (−∞;1) và (3;+∞); y' < 0 trên (1;3).",
+          "latex": null,
+          "sympy": null,
+          "ma_ky_nang": "T12.DH.03",
+          "ma_buoc": "B.DH.XETDAU"
+        },
+        {
+          "buoc": 5,
+          "noi_dung": "Kết luận: đồng biến trên (−∞;1) và (3;+∞); nghịch biến trên (1;3).",
+          "latex": null,
+          "sympy": null,
+          "ma_ky_nang": "T12.DH.03",
+          "ma_buoc": "B.DH.KETLUAN"
+        }
+      ]
+    },
+    "tieu_chi_cham": {
+      "chap_nhan_cach_giai_khac": true,
+      "dieu_kien_dat": [
+        {
+          "ma": "C1",
+          "mo_ta": "Mỗi dòng học sinh viết suy ra hợp lệ từ dòng trước (kiểm cặp dòng k−1 → k), không so với các bước của lời giải chuẩn.",
+          "kiem_bang": "SYMPY"
+        },
+        {
+          "ma": "C2",
+          "mo_ta": "Các khoảng đồng biến học sinh nêu đúng bằng {x ∈ D : y' > 0} (từng khoảng rời, không thừa, không thiếu); tương tự nghịch biến.",
+          "kiem_bang": "SYMPY"
+        },
+        {
+          "ma": "C3",
+          "mo_ta": "Có lập luận về dấu của y' dưới bất kỳ hình thức hợp lệ nào (bảng xét dấu, lời văn, thử điểm).",
+          "kiem_bang": "LUAT"
+        }
+      ]
+    },
+    "thang_goi_y": [
+      {
+        "ma_buoc": "B.DH.TXD",
+        "cac_cap": [
+          {
+            "cap": 1,
+            "noi_dung": "Hàm đa thức có điều kiện xác định gì không?",
+            "ly_do_trong": null,
+            "ma_cong_thuc": [],
+            "khong_chua_ket_qua_cuoi": true
+          },
+          {
+            "cap": 2,
+            "noi_dung": "Nhớ lại: loại hàm nào cần điều kiện (mẫu khác 0, biểu thức dưới căn bậc hai không âm)? Hàm này có mẫu hay căn không? Ghi TXĐ thành dòng đầu tiên.",
+            "ly_do_trong": null,
+            "ma_cong_thuc": [],
+            "khong_chua_ket_qua_cuoi": true
+          },
+          {
+            "cap": 3,
+            "noi_dung": null,
+            "ly_do_trong": "Bước quá ngắn: mọi gợi ý cấp 3 đều lộ kết quả; chuyển sang bài tương tự.",
+            "ma_cong_thuc": [],
+            "khong_chua_ket_qua_cuoi": true
+          }
+        ]
+      },
+      {
+        "ma_buoc": "B.DH.DAOHAM",
+        "cac_cap": [
+          {
+            "cap": 1,
+            "noi_dung": "Đạo hàm của xⁿ là gì? Đạo hàm của tổng bằng gì?",
+            "ly_do_trong": null,
+            "ma_cong_thuc": [
+              "CT.DH.DAOHAM.01"
+            ],
+            "khong_chua_ket_qua_cuoi": true
+          },
+          {
+            "cap": 2,
+            "noi_dung": "Dùng (xⁿ)' = n·xⁿ⁻¹ và đạo hàm của tổng bằng tổng các đạo hàm; hằng số có đạo hàm 0.",
+            "ly_do_trong": null,
+            "ma_cong_thuc": [
+              "CT.DH.DAOHAM.01"
+            ],
+            "khong_chua_ket_qua_cuoi": true
+          },
+          {
+            "cap": 3,
+            "noi_dung": "Lấy đạo hàm từng hạng tử rồi cộng lại; sau đó đặt nhân tử chung để y' có dạng tích. Bước tiếp theo: đạo hàm hạng tử −6x².",
+            "ly_do_trong": null,
+            "ma_cong_thuc": [
+              "CT.DH.DAOHAM.01"
+            ],
+            "khong_chua_ket_qua_cuoi": true
+          }
+        ]
+      },
+      {
+        "ma_buoc": "B.DH.NGHIEM",
+        "cac_cap": [
+          {
+            "cap": 1,
+            "noi_dung": "Muốn biết y' đổi dấu ở đâu, em cần tìm những điểm nào?",
+            "ly_do_trong": null,
+            "ma_cong_thuc": [],
+            "khong_chua_ket_qua_cuoi": true
+          },
+          {
+            "cap": 2,
+            "noi_dung": "Giải phương trình y' = 0; hàm đa thức nên không có điểm y' không xác định.",
+            "ly_do_trong": null,
+            "ma_cong_thuc": [],
+            "khong_chua_ket_qua_cuoi": true
+          },
+          {
+            "cap": 3,
+            "noi_dung": "Đặt nhân tử chung rồi giải phương trình bậc hai còn lại (nhẩm nghiệm hoặc dùng biệt thức). Bước tiếp theo: chia cả hai vế cho 3 rồi phân tích nhân tử.",
+            "ly_do_trong": null,
+            "ma_cong_thuc": [],
+            "khong_chua_ket_qua_cuoi": true
+          }
+        ]
+      },
+      {
+        "ma_buoc": "B.DH.XETDAU",
+        "cac_cap": [
+          {
+            "cap": 1,
+            "noi_dung": "Trên mỗi khoảng giữa hai nghiệm liên tiếp, dấu của y' có thay đổi không?",
+            "ly_do_trong": null,
+            "ma_cong_thuc": [
+              "CT.DH.DAU_TAM_THUC.01"
+            ],
+            "khong_chua_ket_qua_cuoi": true
+          },
+          {
+            "cap": 2,
+            "noi_dung": "Dấu của tam thức bậc hai: cùng dấu hệ số a ở ngoài hai nghiệm, trái dấu a ở giữa hai nghiệm.",
+            "ly_do_trong": null,
+            "ma_cong_thuc": [
+              "CT.DH.DAU_TAM_THUC.01"
+            ],
+            "khong_chua_ket_qua_cuoi": true
+          },
+          {
+            "cap": 3,
+            "noi_dung": "Chọn một giá trị thử trong từng khoảng, thay vào y' dạng tích để lấy dấu. Bước tiếp theo: thử một giá trị nhỏ hơn nghiệm bé nhất.",
+            "ly_do_trong": null,
+            "ma_cong_thuc": [
+              "CT.DH.DAU_TAM_THUC.01"
+            ],
+            "khong_chua_ket_qua_cuoi": true
+          }
+        ]
+      },
+      {
+        "ma_buoc": "B.DH.KETLUAN",
+        "cac_cap": [
+          {
+            "cap": 1,
+            "noi_dung": "Dấu của y' trên một khoảng cho biết hàm tăng hay giảm?",
+            "ly_do_trong": null,
+            "ma_cong_thuc": [
+              "CT.DH.DON_DIEU.01"
+            ],
+            "khong_chua_ket_qua_cuoi": true
+          },
+          {
+            "cap": 2,
+            "noi_dung": "y' > 0 trên khoảng K thì đồng biến trên K; y' < 0 thì nghịch biến. Kết luận riêng từng khoảng.",
+            "ly_do_trong": null,
+            "ma_cong_thuc": [
+              "CT.DH.DON_DIEU.01"
+            ],
+            "khong_chua_ket_qua_cuoi": true
+          },
+          {
+            "cap": 3,
+            "noi_dung": "Đọc từng cột của bảng xét dấu và viết kết luận cho từng khoảng một, không nối khoảng bằng ∪. Bước tiếp theo: viết kết luận cho khoảng đầu tiên.",
+            "ly_do_trong": null,
+            "ma_cong_thuc": [
+              "CT.DH.DON_DIEU.01"
+            ],
+            "khong_chua_ket_qua_cuoi": true
+          }
+        ]
+      }
+    ],
+    "loi_sai_thuong_gap": [
+      {
+        "ma_loi": "ERR.DH.01",
+        "ghi_chu_rieng": "Tính sai hệ số khi đạo hàm −6x²."
+      },
+      {
+        "ma_loi": "ERR.DH.06",
+        "ghi_chu_rieng": null
+      },
+      {
+        "ma_loi": "ERR.DH.07",
+        "ghi_chu_rieng": "Viết 'đồng biến trên (−∞;1) ∪ (3;+∞)'."
+      }
+    ],
+    "do_kho_uoc_luong": {
+      "gia_tri": 2,
+      "thang": "1-5",
+      "logit": null,
+      "nguon": "UOC_LUONG_NGUOI_SOAN",
+      "so_luot_lam": 0,
+      "cap_nhat_luc": null
+    },
+    "thoi_gian_du_kien": 5,
+    "dung_lam_bai_mau": true,
+    "bai_tuong_tu_de_hon": [
+      "DH12-03-NB-01"
+    ],
+    "nguon": {
+      "loai": "TU_SOAN",
+      "tac_gia": "Nhóm Sư phạm (dự án)",
+      "tai_lieu": null,
+      "url": null,
+      "ban_quyen": "TU_SOAN_CUA_DU_AN",
+      "ghi_chu_ban_quyen": "Tự soạn, không chép SGK."
+    },
+    "kiem_dinh": {
+      "tang_1_may_tu_kiem": {
+        "ket_qua": "DAT",
+        "cong_cu": "SymPy 1.14.0 — supham/kiem-tra-sympy/kiem_tra_bai_mau.py",
+        "thoi_diem": "2026-09-26T23:55:59+07:00",
+        "chi_tiet": "y'>0: (−∞,1)∪(3,∞); y'<0: (1,3) — khớp đáp án nội bộ.",
+        "tai_lieu_doi_chieu": [],
+        "nguoi_duyet": null,
+        "ly_do": null
+      },
+      "tang_2_kiem_qua_tai_lieu": {
+        "ket_qua": "KHONG_KIEM_DUOC",
+        "cong_cu": null,
+        "thoi_diem": null,
+        "chi_tiet": "Chưa chạy: chờ quy trình của nhóm Kiểm định.",
+        "tai_lieu_doi_chieu": [],
+        "nguoi_duyet": null,
+        "ly_do": null
+      },
+      "tang_3_doi_chieu_bang_cong_thuc": {
+        "ket_qua": "KHONG_KIEM_DUOC",
+        "cong_cu": null,
+        "thoi_diem": null,
+        "chi_tiet": "Chưa có bảng công thức đã kiểm định; mã CT.DH.DON_DIEU.01 là mã giữ chỗ.",
+        "tai_lieu_doi_chieu": [],
+        "nguoi_duyet": null,
+        "ly_do": null
+      }
+    },
+    "trang_thai": "CHO_GIAO_VIEN_DUYET",
+    "nguoi_tao": "supham",
+    "tao_luc": "2026-09-26T23:58:00+07:00",
+    "cap_nhat_luc": null
+  },
+  {
+    "id": "DH12-01-TH-01",
+    "phien_ban": 1,
+    "lop": 12,
+    "cap_hoc": "THPT",
+    "mach_noi_dung": "MOT_SO_YEU_TO_GIAI_TICH",
+    "chu_de": "Ứng dụng đạo hàm để khảo sát và vẽ đồ thị của hàm số",
+    "noi_dung": "Tính đơn điệu của hàm số",
+    "yeu_cau_can_dat": [
+      {
+        "ma": "YCCD.T12.GT.UDDH.01",
+        "trich_nguyen_van": "Nhận biết được tính đồng biến, nghịch biến của một hàm số trên một khoảng dựa vào dấu của đạo hàm cấp một của nó.",
+        "nguon": "CT GDPT môn Toán 2018 (TT 32/2018/TT-BGDĐT), Lớp 12, tr.105"
+      }
+    ],
+    "ky_nang_chinh": "T12.DH.01",
+    "ky_nang_phu": [
+      "T12.DH.03"
+    ],
+    "ky_nang_tien_quyet": [
+      {
+        "ma": "T10.DS.01",
+        "muc_toi_thieu": "TH"
+      }
+    ],
+    "thanh_phan_nang_luc": [
+      "TDLL"
+    ],
+    "muc_do_4": "TH",
+    "muc_do_bo_3": "HIEU",
+    "muc_bloom": "HIEU",
+    "muc_bloom_phu": [
+      "PHAN_TICH"
+    ],
+    "dang_cau": "TN_DUNG_SAI",
+    "dang_bai": "DB.DH.DON_DIEU_TU_BIEU_THUC_DAO_HAM",
+    "de_bai": {
+      "van_ban": "Cho hàm số y = f(x) có đạo hàm f'(x) = x²(x − 2) với mọi x ∈ ℝ. Mỗi mệnh đề sau đúng hay sai? a) f nghịch biến trên (−∞; 2). b) f đồng biến trên (2; +∞). c) f nghịch biến trên (0; 2). d) f đồng biến trên (−1; 1).",
+      "latex": "f'(x) = x^2(x-2)",
+      "ham_so_sympy": null,
+      "hinh": []
+    },
+    "y_dung_sai": [
+      {
+        "nhan": "a",
+        "menh_de": "f nghịch biến trên (−∞; 2)."
+      },
+      {
+        "nhan": "b",
+        "menh_de": "f đồng biến trên (2; +∞)."
+      },
+      {
+        "nhan": "c",
+        "menh_de": "f nghịch biến trên (0; 2)."
+      },
+      {
+        "nhan": "d",
+        "menh_de": "f đồng biến trên (−1; 1)."
+      }
+    ],
+    "dap_an_noi_bo": {
+      "hien_thi_cho_hoc_sinh": false,
+      "gia_tri": {
+        "a": true,
+        "b": true,
+        "c": true,
+        "d": false
+      },
+      "bieu_thuc_sympy": "f'>0: Interval.open(2, oo); f'<0: (−∞,0)∪(0,2); f'=0: {0, 2}",
+      "dinh_dang_tra_loi_ngan": null
+    },
+    "khung_buoc": [
+      {
+        "ma_buoc": "B.DH.XETDAU",
+        "dang_nhap": "BANG",
+        "bat_buoc_trinh_bay": false
+      },
+      {
+        "ma_buoc": "B.DH.KETLUAN",
+        "dang_nhap": "O_TRA_LOI",
+        "bat_buoc_trinh_bay": true
+      }
+    ],
+    "loi_giai_tung_buoc": {
+      "hien_thi_cho_hoc_sinh": false,
+      "cac_buoc": [
+        {
+          "buoc": 1,
+          "noi_dung": "x² ≥ 0 và chỉ bằng 0 tại x = 0, nên dấu f' là dấu của (x − 2) khi x ≠ 0.",
+          "latex": null,
+          "sympy": null,
+          "ma_ky_nang": "T12.DH.03",
+          "ma_buoc": "B.DH.XETDAU"
+        },
+        {
+          "buoc": 2,
+          "noi_dung": "f' < 0 trên (−∞;0) và (0;2), f'(0) = 0; f' > 0 trên (2;+∞).",
+          "latex": null,
+          "sympy": null,
+          "ma_ky_nang": "T12.DH.03",
+          "ma_buoc": "B.DH.XETDAU"
+        },
+        {
+          "buoc": 3,
+          "noi_dung": "f' ≤ 0 trên (−∞;2) và chỉ bằng 0 tại hữu hạn điểm ⇒ f nghịch biến trên (−∞;2) (a đúng, c đúng); f' > 0 trên (2;+∞) (b đúng); trên (−1;1) f' ≤ 0 nên d sai.",
+          "latex": null,
+          "sympy": null,
+          "ma_ky_nang": "T12.DH.01",
+          "ma_buoc": "B.DH.KETLUAN"
+        }
+      ]
+    },
+    "tieu_chi_cham": {
+      "chap_nhan_cach_giai_khac": true,
+      "dieu_kien_dat": [
+        {
+          "ma": "C1",
+          "mo_ta": "Chọn đúng Đúng/Sai cho cả 4 ý (điểm từng phần theo QĐ 764 chỉ dùng khi mô phỏng đề thi; trong luyện tập, từng ý được ghi nhận riêng cho mô hình học sinh).",
+          "kiem_bang": "LUAT"
+        }
+      ]
+    },
+    "thang_goi_y": [
+      {
+        "ma_buoc": "B.DH.XETDAU",
+        "cac_cap": [
+          {
+            "cap": 1,
+            "noi_dung": "Nhân tử x² có thể âm không? Khi x đi qua 0, x² có đổi dấu không?",
+            "ly_do_trong": null,
+            "ma_cong_thuc": [
+              "CT.DH.DON_DIEU.02"
+            ],
+            "khong_chua_ket_qua_cuoi": true
+          },
+          {
+            "cap": 2,
+            "noi_dung": "Xét dấu từng nhân tử x² và (x − 2) rồi nhân dấu; nghiệm bội chẵn không làm đổi dấu.",
+            "ly_do_trong": null,
+            "ma_cong_thuc": [
+              "CT.DH.DON_DIEU.02"
+            ],
+            "khong_chua_ket_qua_cuoi": true
+          },
+          {
+            "cap": 3,
+            "noi_dung": "Lập bảng dấu hai hàng (x² và x − 2), nhân dấu từng cột. Bước tiếp theo: điền dấu của x − 2 ở mỗi khoảng.",
+            "ly_do_trong": null,
+            "ma_cong_thuc": [
+              "CT.DH.DON_DIEU.02"
+            ],
+            "khong_chua_ket_qua_cuoi": true
+          }
+        ]
+      },
+      {
+        "ma_buoc": "B.DH.KETLUAN",
+        "cac_cap": [
+          {
+            "cap": 1,
+            "noi_dung": "Nếu f' ≤ 0 trên cả khoảng và chỉ bằng 0 tại một điểm thì f có nghịch biến trên cả khoảng không?",
+            "ly_do_trong": null,
+            "ma_cong_thuc": [
+              "CT.DH.DON_DIEU.02"
+            ],
+            "khong_chua_ket_qua_cuoi": true
+          },
+          {
+            "cap": 2,
+            "noi_dung": "Định lí: f' ≥ 0 (≤ 0) trên K và f' = 0 chỉ tại hữu hạn điểm thì f đồng biến (nghịch biến) trên K.",
+            "ly_do_trong": null,
+            "ma_cong_thuc": [
+              "CT.DH.DON_DIEU.02"
+            ],
+            "khong_chua_ket_qua_cuoi": true
+          },
+          {
+            "cap": 3,
+            "noi_dung": "Với từng ý, kiểm tra trên cả khoảng đã cho f' có giữ một dấu hay không (cho phép bằng 0 tại hữu hạn điểm). Bước tiếp theo: xét ý a với bảng dấu vừa lập.",
+            "ly_do_trong": null,
+            "ma_cong_thuc": [
+              "CT.DH.DON_DIEU.02"
+            ],
+            "khong_chua_ket_qua_cuoi": true
+          }
+        ]
+      }
+    ],
+    "loi_sai_thuong_gap": [
+      {
+        "ma_loi": "ERR.DH.05",
+        "ghi_chu_rieng": "Cho rằng f' đổi dấu tại x = 0 nên chọn a) Sai."
+      },
+      {
+        "ma_loi": "ERR.DH.07",
+        "ghi_chu_rieng": null
+      }
+    ],
+    "do_kho_uoc_luong": {
+      "gia_tri": 3,
+      "thang": "1-5",
+      "logit": null,
+      "nguon": "UOC_LUONG_NGUOI_SOAN",
+      "so_luot_lam": 0,
+      "cap_nhat_luc": null
+    },
+    "thoi_gian_du_kien": 4,
+    "dung_lam_bai_mau": false,
+    "bai_tuong_tu_de_hon": [
+      "DH12-01-NB-01"
+    ],
+    "nguon": {
+      "loai": "TU_SOAN",
+      "tac_gia": "Nhóm Sư phạm (dự án)",
+      "tai_lieu": null,
+      "url": null,
+      "ban_quyen": "TU_SOAN_CUA_DU_AN",
+      "ghi_chu_ban_quyen": null
+    },
+    "kiem_dinh": {
+      "tang_1_may_tu_kiem": {
+        "ket_qua": "DAT",
+        "cong_cu": "SymPy 1.14.0 — supham/kiem-tra-sympy/kiem_tra_bai_mau.py",
+        "thoi_diem": "2026-09-26T23:55:59+07:00",
+        "chi_tiet": "[True, True, True, False] khớp.",
+        "tai_lieu_doi_chieu": [],
+        "nguoi_duyet": null,
+        "ly_do": null
+      },
+      "tang_2_kiem_qua_tai_lieu": {
+        "ket_qua": "KHONG_KIEM_DUOC",
+        "chi_tiet": "Chưa chạy."
+      },
+      "tang_3_doi_chieu_bang_cong_thuc": {
+        "ket_qua": "GV_DUYET",
+        "nguoi_duyet": "GV_MAU_01 (ví dụ minh hoạ, không phải người thật)",
+        "thoi_diem": "2026-09-26T23:59:00+07:00",
+        "ly_do": "Định lí 'f' ≤ 0, bằng 0 tại hữu hạn điểm ⇒ nghịch biến' chưa có trong bảng công thức; giáo viên xác nhận thủ công."
+      }
+    },
+    "trang_thai": "CHO_GIAO_VIEN_DUYET"
+  },
+  {
+    "id": "DH12-06-VDC-01",
+    "phien_ban": 1,
+    "lop": 12,
+    "cap_hoc": "THPT",
+    "mach_noi_dung": "MOT_SO_YEU_TO_GIAI_TICH",
+    "chu_de": "Ứng dụng đạo hàm để khảo sát và vẽ đồ thị của hàm số",
+    "noi_dung": "Tính đơn điệu của hàm số (cực trị)",
+    "yeu_cau_can_dat": [
+      {
+        "ma": "YCCD.T12.GT.UDDH.03",
+        "trich_nguyen_van": "Nhận biết được tính đơn điệu, điểm cực trị, giá trị cực trị của hàm số thông qua bảng biến thiên hoặc thông qua hình ảnh hình học của đồ thị hàm số.",
+        "nguon": "CT GDPT môn Toán 2018 (TT 32/2018/TT-BGDĐT), Lớp 12, tr.106"
+      }
+    ],
+    "ky_nang_chinh": "T12.DH.06",
+    "ky_nang_phu": [
+      "T12.DH.05"
+    ],
+    "ky_nang_tien_quyet": [
+      {
+        "ma": "T12.DH.05",
+        "muc_toi_thieu": "VD"
+      }
+    ],
+    "thanh_phan_nang_luc": [
+      "TDLL",
+      "GQVD"
+    ],
+    "muc_do_4": "VDC",
+    "muc_do_bo_3": "VAN_DUNG",
+    "muc_bloom": "PHAN_TICH",
+    "muc_bloom_phu": [
+      "DANH_GIA"
+    ],
+    "dang_cau": "TRA_LOI_NGAN",
+    "dang_bai": "DB.DH.THAM_SO_CUC_TRI_TAI_DIEM",
+    "de_bai": {
+      "van_ban": "Tìm giá trị của tham số m để hàm số y = x³ − 3mx² + 3(m² − 1)x đạt cực đại tại x = 2.",
+      "latex": "y = x^3 - 3mx^2 + 3(m^2-1)x",
+      "ham_so_sympy": "x**3 - 3*m*x**2 + 3*(m**2 - 1)*x",
+      "hinh": []
+    },
+    "dap_an_noi_bo": {
+      "hien_thi_cho_hoc_sinh": false,
+      "gia_tri": 3,
+      "bieu_thuc_sympy": "FiniteSet(3)",
+      "dinh_dang_tra_loi_ngan": "so_nguyen"
+    },
+    "khung_buoc": [
+      {
+        "ma_buoc": "B.DH.DAOHAM",
+        "dang_nhap": "DONG",
+        "bat_buoc_trinh_bay": true
+      },
+      {
+        "ma_buoc": "B.DH.THAMSO",
+        "dang_nhap": "DONG",
+        "bat_buoc_trinh_bay": true
+      },
+      {
+        "ma_buoc": "B.DH.THULAI",
+        "dang_nhap": "DONG",
+        "bat_buoc_trinh_bay": true
+      },
+      {
+        "ma_buoc": "B.DH.KETLUAN",
+        "dang_nhap": "O_TRA_LOI",
+        "bat_buoc_trinh_bay": true
+      }
+    ],
+    "loi_giai_tung_buoc": {
+      "hien_thi_cho_hoc_sinh": false,
+      "cac_buoc": [
+        {
+          "buoc": 1,
+          "noi_dung": "y' = 3x² − 6mx + 3(m² − 1).",
+          "latex": null,
+          "sympy": "3*x**2 - 6*m*x + 3*(m**2 - 1)",
+          "ma_ky_nang": "T12.DH.02",
+          "ma_buoc": "B.DH.DAOHAM"
+        },
+        {
+          "buoc": 2,
+          "noi_dung": "Điều kiện cần: y'(2) = 0 ⇔ 3m² − 12m + 9 = 0 ⇔ m = 1 hoặc m = 3.",
+          "latex": null,
+          "sympy": "FiniteSet(1, 3)",
+          "ma_ky_nang": "T12.DH.06",
+          "ma_buoc": "B.DH.THAMSO"
+        },
+        {
+          "buoc": 3,
+          "noi_dung": "Thử lại: y' = 3(x − (m − 1))(x − (m + 1)). m = 1: y' đổi dấu − sang + tại x = 2 ⇒ cực tiểu, loại. m = 3: y' đổi dấu + sang − tại x = 2 ⇒ cực đại, nhận.",
+          "latex": null,
+          "sympy": null,
+          "ma_ky_nang": "T12.DH.05",
+          "ma_buoc": "B.DH.THULAI"
+        },
+        {
+          "buoc": 4,
+          "noi_dung": "Kết luận m = 3.",
+          "latex": null,
+          "sympy": null,
+          "ma_ky_nang": "T12.DH.06",
+          "ma_buoc": "B.DH.KETLUAN"
+        }
+      ]
+    },
+    "tieu_chi_cham": {
+      "chap_nhan_cach_giai_khac": true,
+      "dieu_kien_dat": [
+        {
+          "ma": "C1",
+          "mo_ta": "Giá trị điền vào ô trả lời ngắn bằng 3 (so khớp số sau chuẩn hoá).",
+          "kiem_bang": "SYMPY"
+        }
+      ]
+    },
+    "thang_goi_y": [
+      {
+        "ma_buoc": "B.DH.DAOHAM",
+        "cac_cap": [
+          {
+            "cap": 1,
+            "noi_dung": "Đạo hàm theo biến nào? m đóng vai trò gì khi lấy đạo hàm theo x?",
+            "ly_do_trong": null,
+            "ma_cong_thuc": [
+              "CT.DH.DAOHAM.01"
+            ],
+            "khong_chua_ket_qua_cuoi": true
+          },
+          {
+            "cap": 2,
+            "noi_dung": "Coi m là hằng số; dùng (xⁿ)' = n·xⁿ⁻¹.",
+            "ly_do_trong": null,
+            "ma_cong_thuc": [
+              "CT.DH.DAOHAM.01"
+            ],
+            "khong_chua_ket_qua_cuoi": true
+          },
+          {
+            "cap": 3,
+            "noi_dung": "Lấy đạo hàm từng hạng tử theo x, giữ m như một hệ số. Bước tiếp theo: đạo hàm hạng tử −3mx².",
+            "ly_do_trong": null,
+            "ma_cong_thuc": [
+              "CT.DH.DAOHAM.01"
+            ],
+            "khong_chua_ket_qua_cuoi": true
+          }
+        ]
+      },
+      {
+        "ma_buoc": "B.DH.THAMSO",
+        "cac_cap": [
+          {
+            "cap": 1,
+            "noi_dung": "Nếu hàm đạt cực trị tại x = 2 (và có đạo hàm tại đó) thì y'(2) bằng bao nhiêu?",
+            "ly_do_trong": null,
+            "ma_cong_thuc": [
+              "CT.DH.CUC_TRI.01"
+            ],
+            "khong_chua_ket_qua_cuoi": true
+          },
+          {
+            "cap": 2,
+            "noi_dung": "Điều kiện cần: y'(2) = 0; đây mới là điều kiện cần, cho ra các giá trị m ứng viên.",
+            "ly_do_trong": null,
+            "ma_cong_thuc": [
+              "CT.DH.CUC_TRI.01"
+            ],
+            "khong_chua_ket_qua_cuoi": true
+          },
+          {
+            "cap": 3,
+            "noi_dung": "Thay x = 2 vào y' được phương trình bậc hai theo m, giải để có các ứng viên. Bước tiếp theo: thay x = 2 vào biểu thức y'.",
+            "ly_do_trong": null,
+            "ma_cong_thuc": [
+              "CT.DH.CUC_TRI.01"
+            ],
+            "khong_chua_ket_qua_cuoi": true
+          }
+        ]
+      },
+      {
+        "ma_buoc": "B.DH.THULAI",
+        "cac_cap": [
+          {
+            "cap": 1,
+            "noi_dung": "Với mỗi ứng viên m, làm sao biết x = 2 là cực đại hay cực tiểu?",
+            "ly_do_trong": null,
+            "ma_cong_thuc": [
+              "CT.DH.CUC_TRI.01"
+            ],
+            "khong_chua_ket_qua_cuoi": true
+          },
+          {
+            "cap": 2,
+            "noi_dung": "Dấu hiệu: y' đổi dấu từ + sang − khi đi qua x₀ thì x₀ là điểm cực đại.",
+            "ly_do_trong": null,
+            "ma_cong_thuc": [
+              "CT.DH.CUC_TRI.01"
+            ],
+            "khong_chua_ket_qua_cuoi": true
+          },
+          {
+            "cap": 3,
+            "noi_dung": "Với từng ứng viên, viết lại y' (phân tích nhân tử) và xét dấu y' ở hai bên x = 2. Bước tiếp theo: thay ứng viên thứ nhất vào y'.",
+            "ly_do_trong": null,
+            "ma_cong_thuc": [
+              "CT.DH.CUC_TRI.01"
+            ],
+            "khong_chua_ket_qua_cuoi": true
+          }
+        ]
+      },
+      {
+        "ma_buoc": "B.DH.KETLUAN",
+        "cac_cap": [
+          {
+            "cap": 1,
+            "noi_dung": "Đề hỏi giá trị nào? Các ứng viên đã qua bước thử lại chưa?",
+            "ly_do_trong": null,
+            "ma_cong_thuc": [],
+            "khong_chua_ket_qua_cuoi": true
+          },
+          {
+            "cap": 2,
+            "noi_dung": "Chỉ giữ ứng viên thỏa mãn khi thử lại.",
+            "ly_do_trong": null,
+            "ma_cong_thuc": [],
+            "khong_chua_ket_qua_cuoi": true
+          },
+          {
+            "cap": 3,
+            "noi_dung": null,
+            "ly_do_trong": "Bước quá ngắn: mọi gợi ý cấp 3 đều lộ kết quả; chuyển sang bài tương tự.",
+            "ma_cong_thuc": [],
+            "khong_chua_ket_qua_cuoi": true
+          }
+        ]
+      }
+    ],
+    "loi_sai_thuong_gap": [
+      {
+        "ma_loi": "ERR.DH.16",
+        "ghi_chu_rieng": "Kết luận m ∈ {1; 3}."
+      },
+      {
+        "ma_loi": "ERR.DH.12",
+        "ghi_chu_rieng": null
+      },
+      {
+        "ma_loi": "ERR.DH.01",
+        "ghi_chu_rieng": null
+      }
+    ],
+    "do_kho_uoc_luong": {
+      "gia_tri": 4,
+      "thang": "1-5",
+      "logit": null,
+      "nguon": "UOC_LUONG_NGUOI_SOAN",
+      "so_luot_lam": 0,
+      "cap_nhat_luc": null
+    },
+    "thoi_gian_du_kien": 8,
+    "dung_lam_bai_mau": false,
+    "bai_tuong_tu_de_hon": [
+      "DH12-06-VD-01",
+      "DH12-05-VD-01"
+    ],
+    "nguon": {
+      "loai": "TU_SOAN",
+      "tac_gia": "Nhóm Sư phạm (dự án)",
+      "tai_lieu": null,
+      "url": null,
+      "ban_quyen": "TU_SOAN_CUA_DU_AN",
+      "ghi_chu_ban_quyen": null
+    },
+    "kiem_dinh": {
+      "tang_1_may_tu_kiem": {
+        "ket_qua": "DAT",
+        "cong_cu": "SymPy 1.14.0 — supham/kiem-tra-sympy/kiem_tra_bai_mau.py",
+        "thoi_diem": "2026-09-26T23:55:59+07:00",
+        "chi_tiet": "y'(2)=0 ⇔ m∈{1,3}; thử lại chỉ m=3 cho cực đại."
+      },
+      "tang_2_kiem_qua_tai_lieu": {
+        "ket_qua": "KHONG_KIEM_DUOC",
+        "chi_tiet": "Chưa chạy."
+      },
+      "tang_3_doi_chieu_bang_cong_thuc": {
+        "ket_qua": "KHONG_KIEM_DUOC",
+        "chi_tiet": "Chưa có bảng công thức."
+      }
+    },
+    "trang_thai": "CHO_GIAO_VIEN_DUYET"
+  }
+]

@@ -1,0 +1,289 @@
+{
+ "phien_ban_sympy": "1.14.0",
+ "backend": "antlr4-python3-runtime 4.11.1",
+ "so_mau": 40,
+ "dung": 21,
+ "ti_le": 0.525,
+ "chi_tiet": [
+  {
+   "id": "LX01",
+   "latex": "\\frac{1}{2}",
+   "parse_latex": "1/2",
+   "mong_doi": "1/2",
+   "dung": true
+  },
+  {
+   "id": "LX02",
+   "latex": "\\dfrac{2}{4}",
+   "parse_latex": "2/4",
+   "mong_doi": "1/2",
+   "dung": true
+  },
+  {
+   "id": "LX03",
+   "latex": "0,5",
+   "parse_latex": "0",
+   "mong_doi": "1/2",
+   "dung": false
+  },
+  {
+   "id": "LX04",
+   "latex": "2{,}5",
+   "parse_latex": "2",
+   "mong_doi": "5/2",
+   "dung": false
+  },
+  {
+   "id": "LX05",
+   "latex": "x^2-5x+6",
+   "parse_latex": "x**2 - 5*x + 6",
+   "mong_doi": "x**2 - 5*x + 6",
+   "dung": true
+  },
+  {
+   "id": "LX06",
+   "latex": "3x^{2}-6x",
+   "parse_latex": "3*x**2 - 6*x",
+   "mong_doi": "3*x**2 - 6*x",
+   "dung": true
+  },
+  {
+   "id": "LX07",
+   "latex": "\\sqrt{x+3}",
+   "parse_latex": "sqrt(x + 3)",
+   "mong_doi": "sqrt(x + 3)",
+   "dung": true
+  },
+  {
+   "id": "LX08",
+   "latex": "\\sqrt[3]{x}",
+   "parse_latex": "x**(1/3)",
+   "mong_doi": "Abs(x)**(1/3)*sign(x)",
+   "dung": false
+  },
+  {
+   "id": "LX09",
+   "latex": "\\log_{2} x",
+   "parse_latex": "log(x)/log(2)",
+   "mong_doi": "log(x)/log(2)",
+   "dung": true
+  },
+  {
+   "id": "LX10",
+   "latex": "\\log_2(x-3)",
+   "parse_latex": "log(x - 3)/log(2)",
+   "mong_doi": "log(x - 3)/log(2)",
+   "dung": true
+  },
+  {
+   "id": "LX11",
+   "latex": "\\ln x",
+   "parse_latex": "log(x)",
+   "mong_doi": "log(x)",
+   "dung": true
+  },
+  {
+   "id": "LX12",
+   "latex": "\\log x",
+   "parse_latex": "log(x)",
+   "mong_doi": "log(x)/log(10)",
+   "dung": false
+  },
+  {
+   "id": "LX13",
+   "latex": "\\lg x",
+   "parse_latex": "log(x)/log(10)",
+   "mong_doi": "log(x)/log(10)",
+   "dung": true
+  },
+  {
+   "id": "LX14",
+   "latex": "\\sin 2x",
+   "parse_latex": "sin(2*x)",
+   "mong_doi": "sin(2*x)",
+   "dung": true
+  },
+  {
+   "id": "LX15",
+   "latex": "\\sin^2 x",
+   "parse_latex": "sin(x)**2",
+   "mong_doi": "sin(x)**2",
+   "dung": true
+  },
+  {
+   "id": "LX16",
+   "latex": "\\cot x",
+   "parse_latex": "cot(x)",
+   "mong_doi": "cot(x)",
+   "dung": true
+  },
+  {
+   "id": "LX17",
+   "latex": "\\text{tg}\\,x",
+   "parse_latex": "g*t*text*x",
+   "mong_doi": "tan(x)",
+   "dung": false
+  },
+  {
+   "id": "LX18",
+   "latex": "\\text{cotg}\\,x",
+   "parse_latex": "c*g*o*t*text*x",
+   "mong_doi": "cot(x)",
+   "dung": false
+  },
+  {
+   "id": "LX19",
+   "latex": "|x-1|",
+   "parse_latex": "Abs(x - 1)",
+   "mong_doi": "Abs(x - 1)",
+   "dung": true
+  },
+  {
+   "id": "LX20",
+   "latex": "\\left| x \\right|",
+   "parse_latex": "LỖI: LaTeXParsingError",
+   "mong_doi": "Abs(x)",
+   "dung": false
+  },
+  {
+   "id": "LX21",
+   "latex": "e^{2x}",
+   "parse_latex": "e**(2*x)",
+   "mong_doi": "exp(2*x)",
+   "dung": false
+  },
+  {
+   "id": "LX22",
+   "latex": "2^x",
+   "parse_latex": "2**x",
+   "mong_doi": "2**x",
+   "dung": true
+  },
+  {
+   "id": "LX23",
+   "latex": "\\frac{\\sqrt{3}}{2}",
+   "parse_latex": "sqrt(3)/2",
+   "mong_doi": "sqrt(3)/2",
+   "dung": true
+  },
+  {
+   "id": "LX24",
+   "latex": "x^{\\frac{1}{3}}",
+   "parse_latex": "x**(1/3)",
+   "mong_doi": "x**(1/3)",
+   "dung": true
+  },
+  {
+   "id": "LX25",
+   "latex": "x \\geq 7",
+   "parse_latex": "x >= 7",
+   "mong_doi": "x >= 7",
+   "dung": true
+  },
+  {
+   "id": "LX26",
+   "latex": "x \\leqslant -5",
+   "parse_latex": "x <= -5",
+   "mong_doi": "x <= -5",
+   "dung": true
+  },
+  {
+   "id": "LX27",
+   "latex": "x \\ne 1",
+   "parse_latex": "ne*x",
+   "mong_doi": "Ne(x, 1)",
+   "dung": false
+  },
+  {
+   "id": "LX28",
+   "latex": "y' = 3x^2 - 6x",
+   "parse_latex": "Eq(y', 3*x**2 - 6*x)",
+   "mong_doi": "Eq(yp, 3*x**2 - 6*x)",
+   "dung": false
+  },
+  {
+   "id": "LX29",
+   "latex": "(-\\infty; 2)",
+   "parse_latex": "LỖI: LaTeXParsingError",
+   "mong_doi": "Interval.open(-oo, 2)",
+   "dung": false
+  },
+  {
+   "id": "LX30",
+   "latex": "[2; 3]",
+   "parse_latex": "LỖI: LaTeXParsingError",
+   "mong_doi": "Interval(2, 3)",
+   "dung": false
+  },
+  {
+   "id": "LX31",
+   "latex": "(-\\infty;0)\\cup(2;+\\infty)",
+   "parse_latex": "LỖI: LaTeXParsingError",
+   "mong_doi": "Union(Interval.open(-oo, 0), Interval.open(2, oo))",
+   "dung": false
+  },
+  {
+   "id": "LX32",
+   "latex": "\\mathbb{R}\\setminus\\{1\\}",
+   "parse_latex": "R*mathbb*setminus",
+   "mong_doi": "Union(Interval.open(-oo, 1), Interval.open(1, oo))",
+   "dung": false
+  },
+  {
+   "id": "LX33",
+   "latex": "\\{2; 3\\}",
+   "parse_latex": "LỖI: LaTeXParsingError",
+   "mong_doi": "{2, 3}",
+   "dung": false
+  },
+  {
+   "id": "LX34",
+   "latex": "x = \\pm 2",
+   "parse_latex": "Eq(x, 2*pm)",
+   "mong_doi": "{-2, 2}",
+   "dung": false
+  },
+  {
+   "id": "LX35",
+   "latex": "x = \\dfrac{\\pi}{6} + k2\\pi",
+   "parse_latex": "Eq(x, 2*k*pi + pi/6)",
+   "mong_doi": "2*pi*k + pi/6",
+   "dung": false
+  },
+  {
+   "id": "LX36",
+   "latex": "\\int 3x^2\\,dx",
+   "parse_latex": "Integral(3*x**2, x)",
+   "mong_doi": "Integral(3*x**2, x)",
+   "dung": true
+  },
+  {
+   "id": "LX37",
+   "latex": "\\int_{1}^{2} 2x\\,dx",
+   "parse_latex": "Integral(2*x, (x, 1, 2))",
+   "mong_doi": "Integral(2*x, (x, 1, 2))",
+   "dung": true
+  },
+  {
+   "id": "LX38",
+   "latex": "C_{10}^{3}",
+   "parse_latex": "C_{10}**3",
+   "mong_doi": "120",
+   "dung": false
+  },
+  {
+   "id": "LX39",
+   "latex": "A_{10}^{3}",
+   "parse_latex": "A_{10}**3",
+   "mong_doi": "720",
+   "dung": false
+  },
+  {
+   "id": "LX40",
+   "latex": "\\sqrt{x^2}",
+   "parse_latex": "Abs(x)",
+   "mong_doi": "Abs(x)",
+   "dung": true
+  }
+ ]
+}

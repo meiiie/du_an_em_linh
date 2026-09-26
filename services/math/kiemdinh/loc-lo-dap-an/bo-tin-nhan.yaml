@@ -1,0 +1,83 @@
+# Bộ tin nhắn thử bộ lọc chặn lộ đáp án – soạn mô phỏng 27/09/2026 (không phải log thật).
+# Mỗi bài có danh sách "sự kiện được bảo vệ" (đáp án cuối). Tin nhắn có nhãn lo: true (lộ) / false (gợi ý hợp lệ).
+# loai sự kiện: DB (khoảng đồng biến), NB (khoảng nghịch biến), DCD/DCT (điểm cực đại/tiểu), GTCD/GTCT (giá trị cực đại/tiểu), NGHIEM.
+bai:
+  I1: {de: "y = x^3 - 3x^2 + 2", su_kien: [[DB, "(-oo; 0)"], [DB, "(2; oo)"], [NB, "(0; 2)"], [DCD, "0"], [GTCD, "2"], [DCT, "2"], [GTCT, "-2"]]}
+  I2: {de: "y = x^3 - 6x^2 + 9x", su_kien: [[DB, "(-oo; 1)"], [DB, "(3; oo)"], [NB, "(1; 3)"], [DCD, "1"], [GTCD, "4"], [DCT, "3"], [GTCT, "0"]]}
+  I3: {de: "y = x^3 - 3x + 1", su_kien: [[DB, "(-oo; -1)"], [DB, "(1; oo)"], [NB, "(-1; 1)"], [DCD, "-1"], [GTCD, "3"], [DCT, "1"], [GTCT, "-1"]]}
+  I4: {de: "2x - 1 = 0", su_kien: [[NGHIEM, "1/2"]]}
+  I5: {de: "x^2 - 5x + 6 = 0", su_kien: [[NGHIEM, "2"], [NGHIEM, "3"]]}
+tin_nhan:
+# ---------- LỘ ĐÁP ÁN ----------
+- {id: M01, bai: I2, lo: true, dien_dat: latex, text: "Vậy hàm số nghịch biến trên $(1;3)$."}
+- {id: M02, bai: I2, lo: true, dien_dat: loi_so, text: "Như vậy hàm nghịch biến trên khoảng từ 1 đến 3."}
+- {id: M03, bai: I2, lo: true, dien_dat: loi_chu, text: "Hàm nghịch biến trên khoảng một đến ba nhé."}
+- {id: M04, bai: I2, lo: true, dien_dat: thuong, text: "Hàm số giảm trên (1; 3) em nhé."}
+- {id: M05, bai: I2, lo: true, dien_dat: latex, text: "Nghịch biến trên $\\left(1;3\\right)$ đó em."}
+- {id: M06, bai: I2, lo: true, dien_dat: loi_chu, text: "Hàm đồng biến trên khoảng từ ba đến dương vô cùng."}
+- {id: M07, bai: I2, lo: true, dien_dat: loi_chu, text: "Hàm số đạt cực đại tại x bằng một."}
+- {id: M08, bai: I2, lo: true, dien_dat: latex, text: "Hàm đạt cực đại tại $x=1$."}
+- {id: M09, bai: I2, lo: true, dien_dat: loi_chu, text: "Giá trị cực đại bằng bốn."}
+- {id: M10, bai: I2, lo: true, dien_dat: thuong, text: "Giá trị cực tiểu là 0."}
+- {id: M11, bai: I2, lo: true, dien_dat: thuong, text: "Hàm đạt cực tiểu tại x = 3."}
+- {id: M12, bai: I2, lo: true, dien_dat: latex, text: "Hàm đồng biến trên $(-\\infty;1)$."}
+- {id: M13, bai: I2, lo: true, dien_dat: thuong, text: "Hàm tăng trên (3;+∞) em ạ."}
+- {id: M14, bai: I1, lo: true, dien_dat: loi_chu, text: "Hàm đạt cực đại tại x bằng không."}
+- {id: M15, bai: I1, lo: true, dien_dat: loi_chu, text: "Giá trị cực tiểu là âm hai."}
+- {id: M16, bai: I1, lo: true, dien_dat: latex, text: "Ta có $y_{CT} = -2$."}
+- {id: M17, bai: I1, lo: true, dien_dat: thuong, text: "Hàm nghịch biến trên (0;2)."}
+- {id: M18, bai: I1, lo: true, dien_dat: latex, text: "Hàm số đồng biến trên $(-\\infty;0)$ và $(2;+\\infty)$."}
+- {id: M19, bai: I1, lo: true, dien_dat: loi_chu, text: "Hàm đồng biến trên khoảng từ âm vô cùng đến không."}
+- {id: M20, bai: I1, lo: true, dien_dat: thuong, text: "Điểm cực tiểu là x=2."}
+- {id: M21, bai: I1, lo: true, dien_dat: thuong, text: "Cực đại bằng 2 đó em."}
+- {id: M22, bai: I3, lo: true, dien_dat: loi_chu, text: "Giá trị cực tiểu là âm một."}
+- {id: M23, bai: I3, lo: true, dien_dat: thuong, text: "y_CT = −1 em nhé."}
+- {id: M24, bai: I3, lo: true, dien_dat: thuong, text: "Hàm đạt cực đại tại x = -1."}
+- {id: M25, bai: I3, lo: true, dien_dat: thuong, text: "Giá trị cực đại là 3."}
+- {id: M26, bai: I3, lo: true, dien_dat: thuong, text: "Hàm nghịch biến trên (−1; 1)."}
+- {id: M27, bai: I3, lo: true, dien_dat: loi_chu, text: "Hàm nghịch biến trên khoảng từ âm một đến một."}
+- {id: M28, bai: I4, lo: true, dien_dat: loi_chu, text: "Nghiệm là một phần hai."}
+- {id: M29, bai: I4, lo: true, dien_dat: thap_phan_vn, text: "Vậy x = 0,5."}
+- {id: M30, bai: I4, lo: true, dien_dat: latex, text: "Ta được $x=\\frac{1}{2}$."}
+- {id: M31, bai: I4, lo: true, dien_dat: latex_khac_dang, text: "Ta được $x = \\frac{2}{4}$."}
+- {id: M32, bai: I4, lo: true, dien_dat: thap_phan, text: "Nghiệm bằng 0.5."}
+- {id: M33, bai: I4, lo: true, dien_dat: loi_chu, text: "Nghiệm x bằng một nửa."}
+- {id: M34, bai: I4, lo: true, dien_dat: thuong, text: "x = 1/2 em nhé."}
+- {id: M35, bai: I5, lo: true, dien_dat: tap, text: "Tập nghiệm là {2; 3}."}
+- {id: M36, bai: I5, lo: true, dien_dat: thuong, text: "Nghiệm là x = 3 hoặc x = 2."}
+- {id: M37, bai: I5, lo: true, dien_dat: latex, text: "$S = \\{3; 2\\}$."}
+- {id: M38, bai: I5, lo: true, dien_dat: loi_chu, text: "Hai nghiệm là hai và ba."}
+# ---------- LỘ VÒNG VO (dự kiến lọt – để đo giới hạn) ----------
+- {id: V01, bai: I1, lo: true, dien_dat: vong_vo, text: "Cực đại tại số liền sau của âm một."}
+- {id: V02, bai: I4, lo: true, dien_dat: vong_vo, text: "Nghiệm là nghịch đảo của hai."}
+- {id: V03, bai: I5, lo: true, dien_dat: vong_vo, text: "Nghiệm là hai số liền sau 1."}
+- {id: V04, bai: I2, lo: true, dien_dat: vong_vo, text: "Hàm giảm trên khoảng nằm giữa hai số lẻ đầu tiên."}
+# ---------- GỢI Ý HỢP LỆ (không lộ) ----------
+- {id: H01, bai: I1, lo: false, text: "Em hãy tính y' trước nhé."}
+- {id: H02, bai: I1, lo: false, text: "Đạo hàm của x^3 là 3x^2, em áp dụng cho từng hạng tử."}
+- {id: H03, bai: I1, lo: false, text: "Em giải phương trình y' = 0 để tìm các điểm chia."}
+- {id: H04, bai: I1, lo: false, text: "Lập bảng xét dấu y' trên từng khoảng."}
+- {id: H05, bai: I1, lo: false, text: "Nếu y' > 0 trên một khoảng thì hàm số đồng biến trên khoảng đó."}
+- {id: H06, bai: I1, lo: false, text: "Em thử thay x = 5 vào y' để xem dấu."}
+- {id: H07, bai: I1, lo: false, text: "Bước 2 là tìm nghiệm của y'."}
+- {id: H08, bai: I1, lo: false, text: "Điểm cực trị là nơi y' đổi dấu, em kiểm tra lại nhé."}
+- {id: H09, bai: I1, lo: false, text: "Em xem lại hệ số của x^2 trong đề."}
+- {id: H10, bai: I1, lo: false, text: "Nhớ rằng đạo hàm của hằng số bằng 0."}
+- {id: H11, bai: I2, lo: false, text: "Em thử tính y'(0) xem dấu thế nào."}
+- {id: H12, bai: I2, lo: false, text: "Phương trình 3x^2 - 12x + 9 = 0 em chia hai vế cho 3 cho gọn."}
+- {id: H13, bai: I2, lo: false, text: "Em xét dấu tam thức bậc hai: trong trái ngoài cùng."}
+- {id: H14, bai: I2, lo: false, text: "Cực đại là nơi y' đổi dấu từ dương sang âm."}
+- {id: H15, bai: I2, lo: false, text: "Em đã tìm được hai nghiệm của y' chưa?"}
+- {id: H16, bai: I3, lo: false, text: "Hàm bậc ba có hệ số a = 1 > 0, em nghĩ đồ thị đi lên hay đi xuống ở hai đầu?"}
+- {id: H17, bai: I3, lo: false, text: "Thử thay x = 2 vào y' em được số dương hay âm?"}
+- {id: H18, bai: I3, lo: false, text: "Em kiểm tra lại dấu của y' trên khoảng (−∞; −5) nhé."}
+- {id: H19, bai: I3, lo: false, text: "Giá trị cực tiểu là giá trị của hàm số tại điểm cực tiểu."}
+- {id: H20, bai: I4, lo: false, text: "Em chuyển vế số hạng tự do trước."}
+- {id: H21, bai: I4, lo: false, text: "Chia hai vế cho hệ số của x."}
+- {id: H22, bai: I4, lo: false, text: "Nhân hai vế với 2 có được không em?"}
+- {id: H23, bai: I5, lo: false, text: "Em thử dùng công thức nghiệm với Δ = b^2 - 4ac."}
+- {id: H24, bai: I5, lo: false, text: "Tính Δ trước: a = 1, b = -5, c = 6."}
+- {id: H25, bai: I5, lo: false, text: "Em có thể phân tích thành tích hai nhân tử."}
+- {id: H26, bai: I5, lo: false, text: "Hãy kiểm tra xem tổng hai nghiệm có bằng 5 không (định lí Viète)."}
+- {id: H27, bai: I3, lo: false, text: "Cực tiểu tại điểm mà y' đổi dấu từ âm sang dương, em tìm điểm đó nhé."}
+- {id: H28, bai: I2, lo: false, text: "Em thay x = 1 vào y' xem có bằng 0 không."}

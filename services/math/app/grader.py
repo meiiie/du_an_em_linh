@@ -1,0 +1,622 @@
+# -*- coding: utf-8 -*-
+"""Chấm bài theo khung 5 bước.
+
+Chỉ số sản phẩm (build §6.4), KHÁC bộ YAML kiểm định (k bắt đầu từ 1):
+- dong: chỉ số dòng trong bước, bắt đầu từ 0. Cặp dòng sai thì dong là dòng sau của cặp.
+- hang X: k = thứ tự điểm chia học sinh, bắt đầu từ 0 sau khi sắp trái sang phải.
+- hang DAU_YPHAY / BIEN_THIEN: k bắt đầu từ 0, xen kẽ khoảng, điểm, khoảng, ...
+  k chẵn = ô khoảng, k lẻ = ô điểm. Với 2 điểm chia, dấu trên (p1; +∞) là k = 4.
+- Điểm thiếu: buoc_sai.ma_buoc = B.DH.NGHIEM, o = {hang: X, k: null}, loai DIEM_THIEU.
+"""
+from app.machine import bai_lam_may
+from app.normalizer import NORMALIZER_VERSION, normalize_domain, normalize_expr
+from app.paths import load_kiem
+
+K = load_kiem()
+
+ORDER = ["B.DH.TXD", "B.DH.DAOHAM", "B.DH.NGHIEM", "B.DH.XETDAU", "B.DH.KETLUAN"]
+
+# loai_kiem của bộ Kiểm định -> enum sản phẩm (đúng tập đã chốt)
+_MAP_LOAI = {
+    "dao_ham_sai": "SAI_BIEN_DOI",
+    "khong_tuong_duong": "SAI_BIEN_DOI",
+    "sai_mien_xac_dinh": "SAI_BIEN_DOI",
+    "sai_dau_o_khoang": "SAI_GIA_TRI",
+    "sai_o_tai_diem": "SAI_GIA_TRI",
+    "sai_o_chieu_bien_thien": "SAI_GIA_TRI",
+    "sai_tap_xac_dinh": "SAI_GIA_TRI",
+    "khac_tap": "SAI_GIA_TRI",
+    "cuc_tri_sai": "SAI_GIA_TRI",
+    "don_dieu_sai": "SAI_GIA_TRI",
+    "ket_luan_sai": "SAI_GIA_TRI",
+    "sai_diem_toi_han": "DIEM_THIEU",
+    "sai_hang_x_bang": "DIEM_THIEU",
+    "dau_doi_trong_khoang": "DAU_DOI_TRONG_KHOANG",
+    "thua_nghiem_vi_pham_dkxd": "DIEM_THUA",
+    "thua_nghiem_khong_thoa": "DIEM_THUA",
+    "mat_nghiem": "DIEM_THIEU",
+}
+
+_MA_LOI = {
+    "dao_ham_sai": ("ERR.DH.01", 0.8),
+    "sai_tap_xac_dinh": ("ERR.DH.02", 0.75),
+    "khac_tap": ("ERR.DH.02", 0.7),
+    "sai_dau_o_khoang": ("ERR.DH.06", 0.8),
+    "sai_o_tai_diem": ("ERR.DH.05", 0.6),
+    "sai_o_chieu_bien_thien": ("ERR.DH.12", 0.55),
+    "don_dieu_sai": ("ERR.DH.07", 0.65),
+    "cuc_tri_sai": ("ERR.DH.12", 0.6),
+    "DIEM_THIEU": ("ERR.DH.03", 0.7),
+    "DIEM_THUA": ("ERR.DH.21", 0.65),
+    "DAU_DOI_TRONG_KHOANG": ("ERR.DH.03", 0.72),
+    "SAI_BIEN_DOI": ("ERR.DH.01", 0.6),
+    "SAI_GIA_TRI": ("ERR.DH.06", 0.5),
+}
+
+
+def _buoc(ma, dong=None, o=None):
+    return {"ma_buoc": ma, "dong": dong, "o": o}
+
+
+def _thong_bao(buoc_sai, loai):
+    if not buoc_sai:
+        return "Các bước đã nộp hợp lệ."
+    ma = buoc_sai["ma_buoc"]
+    ten = {
+        "B.DH.TXD": "tập xác định",
+        "B.DH.DAOHAM": "đạo hàm",
+        "B.DH.NGHIEM": "nghiệm và điểm tới hạn",
+        "B.DH.XETDAU": "bảng xét dấu",
+        "B.DH.KETLUAN": "kết luận",
+    }.get(ma, ma)
+    if loai == "DAU_DOI_TRONG_KHOANG":
+        return "Ở bước nghiệm: trong một khoảng em dựng, y' đổi dấu. Em tìm lại các điểm làm y' bằng 0 hoặc không xác định."
+    if loai == "DIEM_THIEU":
+        return "Bước nghiệm chưa khớp tập điểm tới hạn. Em kiểm tra lại phương trình y' = 0 và các điểm y' không xác định."
+    if loai == "DIEM_THUA":
+        return "Bước nghiệm có điểm không phải điểm tới hạn. Em thử thay lại từng điểm vào y'."
+    if loai == "KHONG_KIEM_DUOC":
+        return "Máy chưa kiểm được bước %s. Thầy cô sẽ xem." % ten
+    o = buoc_sai.get("o")
+    if o:
+        return "Ô ở bước %s cần xem lại. Em kiểm tra lại cả bước rồi nộp." % ten
+    dong = buoc_sai.get("dong")
+    if dong is None:
+        return "Bước %s cần xem lại." % ten
+    return "Bước %s, dòng %d cần xem lại." % (ten, dong + 1)
+
+
+def _pack(trang, loai, buoc_sai, loai_kiem, per, chuan, chua_xong=False, nop_toi=None):
+    ma_loi, tin = None, None
+    if trang == "SAI":
+        cap = _MA_LOI.get(loai_kiem) or _MA_LOI.get(loai)
+        if cap:
+            ma_loi, tin = cap
+    return {
+        "ket_qua": trang,
+        "loai_ket_qua": loai if trang != "DAT" else "DAT",
+        "buoc_sai": buoc_sai if trang == "SAI" else None,
+        "ma_loi": ma_loi if trang == "SAI" else None,
+        "do_tin_cay": tin if trang == "SAI" else None,
+        "per_buoc": per,
+        "chuan_hoa": chuan,
+        "phien_ban_chuan_hoa": NORMALIZER_VERSION,
+        "thong_bao": _thong_bao(buoc_sai if trang != "DAT" else None, loai),
+        "chua_xong": chua_xong,
+        "nop_toi": nop_toi,
+    }
+
+
+def _idx(lines):
+    return sorted(lines, key=lambda d: d.get("dong", 0))
+
+
+def _cells(step):
+    bang = step.get("bang") or {}
+    return bang.get("cac_o") or []
+
+
+def _translate_o(o):
+    """k kiểm định (bắt đầu 1, xen kẽ) -> k sản phẩm (bắt đầu 0)."""
+    if not o:
+        return None
+    hang = o.get("hang")
+    k = o.get("k")
+    if hang in ("dau_y'", "DAU_YPHAY"):
+        return {"hang": "DAU_YPHAY", "k": None if k is None else int(k) - 1}
+    if hang in ("bien_thien", "BIEN_THIEN"):
+        return {"hang": "BIEN_THIEN", "k": None if k is None else int(k) - 1}
+    if hang in ("x", "X"):
+        if k is None:
+            return {"hang": "X", "k": None}
+        return {"hang": "X", "k": int(k) // 2 - 1}
+    return {"hang": hang, "k": k}
+
+
+def _loai_san_pham(r):
+    if r["trang_thai"] == "DAT":
+        return "DAT", None
+    if r["trang_thai"] == "KHONG_KIEM_DUOC":
+        return "KHONG_KIEM_DUOC", r.get("loai_kiem")
+    vans = r.get("cac_van_de") or []
+    if vans:
+        # Ưu tiên điểm thiếu, rồi điểm thừa, rồi đổi dấu trong khoảng.
+        order = ["DIEM_THIEU", "DIEM_THUA", "DAU_DOI_TRONG_KHOANG"]
+        kinds = [v["loai_ket_qua"] for v in vans]
+        for name in order:
+            if name in kinds:
+                return name, r.get("loai_kiem")
+        return kinds[0], r.get("loai_kiem")
+    lk = r.get("loai_kiem")
+    if lk == "sai_diem_toi_han":
+        # phân biệt thiếu/thừa qua phan_chung nếu có
+        return "DIEM_THIEU", lk
+    return _MAP_LOAI.get(lk, "SAI_GIA_TRI"), lk
+
+
+def _buoc_tu_ket_qua(r, last_nghiem_dong):
+    bs = r.get("buoc_sai") or {}
+    vans = r.get("cac_van_de") or []
+    loai, lk = _loai_san_pham(r)
+    if loai == "DAU_DOI_TRONG_KHOANG":
+        return _buoc("B.DH.NGHIEM", last_nghiem_dong, None), loai, lk
+    if vans and loai in ("DIEM_THIEU", "DIEM_THUA"):
+        chosen = next(v for v in vans if v["loai_ket_qua"] == loai)
+        src = chosen["buoc_sai"]
+        o = _translate_o(src.get("o"))
+        # Không có ô bảng: lỗi nằm ở các dòng nghiệm, gán dòng cuối của bước (0-based).
+        dong = None if o else last_nghiem_dong
+        return _buoc(src["ma_buoc"], dong, o), loai, lk
+    if not bs:
+        return None, loai, lk
+    dong = bs.get("dong")
+    # Bộ kiểm ghi dong = 1,2,3,5 theo thứ tự bước khi bước chỉ có một dòng logic.
+    if bs.get("o"):
+        dong_sp = None
+    elif dong in (1, 2, 3, 5):
+        dong_sp = 0
+    else:
+        dong_sp = dong
+    if loai == "DAU_DOI_TRONG_KHOANG" or (r.get("loai_kiem") == "dau_doi_trong_khoang"):
+        return _buoc("B.DH.NGHIEM", last_nghiem_dong, None), "DAU_DOI_TRONG_KHOANG", lk
+    return _buoc(bs.get("ma_buoc"), dong_sp, _translate_o(bs.get("o"))), loai, lk
+
+
+def _per(stop, err_ma=None, err_trang="SAI"):
+    per = {}
+    for ma in ORDER:
+        if err_ma and ma == err_ma:
+            per[ma] = err_trang
+            break
+        per[ma] = "DAT"
+        if ma == stop:
+            break
+    return per
+
+
+def _parse_nghiem_lines(lines):
+    import re
+    roots, kxd = [], []
+    chuan = []
+    for line in _idx(lines):
+        raw = line.get("latex") or ""
+        loai_dong = line.get("loai")
+        text = raw.lower()
+        is_kxd = loai_dong == "KHONG_XD" or ("không xác định" in text) or ("khong xac dinh" in text)
+        if re.search(r"không có|khong co|không nghiệm|khong nghiem|∅|emptyset", text) and not re.search(r"\d", text):
+            chuan.append({"dong": line.get("dong", 0), "trang_thai_chuan_hoa": "OK", "chuoi_chuan_hoa": "rong"})
+            continue
+        parts = re.split(r"\\lor|\\vee|\\quad|;| hoặc | hoac |,| và | va ", raw)
+        found = []
+        for part in parts:
+            m = re.search(r"x\s*=\s*(.+)", part.replace("$", ""))
+            chunk = m.group(1) if m else part
+            token = normalize_expr(chunk.strip(" ."))
+            if token is None:
+                continue
+            # bỏ phần thừa sau số
+            token = re.split(r"[^0-9+\-*/().a-zA-Z]", token)[0] if False else token
+            if re.fullmatch(r"[+\-]?\d+(?:\.\d+)?(?:/\d+)?", token) or re.fullmatch(r"[+\-]?\(\d+\)/\(\d+\)", token):
+                found.append(token)
+        if not found and raw.strip():
+            return None, None, chuan, line.get("dong", 0)
+        chuan.append({"dong": line.get("dong", 0), "trang_thai_chuan_hoa": "OK", "chuoi_chuan_hoa": ",".join(found)})
+        if is_kxd:
+            kxd.extend(found)
+        else:
+            roots.extend(found)
+    return roots, kxd, chuan, None
+
+
+def _interval_strings(text):
+    import re
+    t = text.replace("∞", "oo").replace("\\infty", "oo").replace("−", "-").replace("–", "-")
+    t = t.replace("\\left", "").replace("\\right", "")
+    out = []
+    for m in re.finditer(r"([\(\[])\s*([^;]+?)\s*;\s*([^\)\]]+?)\s*([\)\]])", t):
+        a = m.group(2).strip().replace(" ", "")
+        b = m.group(3).strip().replace(" ", "")
+        a = a.replace("+oo", "+oo")
+        if a in ("oo",):
+            a = "+oo"
+        if b in ("oo",):
+            b = "+oo"
+        if a.startswith("oo"):
+            a = "+" + a
+        out.append("%s%s; %s%s" % (m.group(1), a, b, m.group(4)))
+    return out
+
+
+def _parse_ket_luan(step):
+    import re
+    lines = _idx(step.get("cac_dong") or [])
+    claims = set(step.get("khai_bao") or [])
+    kl = {}
+    db, nb = [], []
+    db_tap = nb_tap = None
+    cd, ct, gcd, gct = [], [], [], []
+    saw = set()
+    chuan = []
+    for line in lines:
+        raw = line.get("latex") or ""
+        t = raw.lower()
+        intervals = _interval_strings(raw)
+        has_union = ("\\cup" in raw) or ("∪" in raw) or (" U " in raw)
+        if re.search(r"đồng biến|dong bien", t):
+            saw.add("dong_bien")
+            if has_union:
+                db_tap = " U ".join(intervals) if intervals else None
+            else:
+                db.extend(intervals)
+        elif re.search(r"nghịch biến|nghich bien", t):
+            saw.add("nghich_bien")
+            if has_union:
+                nb_tap = " U ".join(intervals) if intervals else None
+            else:
+                nb.extend(intervals)
+        elif re.search(r"cực đại|cuc dai", t):
+            saw.add("cuc_dai")
+            cd.extend(re.findall(r"x\s*=\s*([+\-]?\d+(?:[.,]\d+)?(?:/\d+)?)", t.replace("$", "")))
+            ys = re.findall(r"y\s*(?:=|cd|cđ|_{cd}|_{cđ})?\s*=?\s*([+\-]?\d+(?:[.,]\d+)?)", t.replace("_{", "").replace("}", ""))
+            # lấy số sau 'y'
+            ys = re.findall(r"y\s*(?:_\s*\{?\s*c[dđ]\s*\}?)?\s*=\s*([+\-]?\d+(?:[.,]\d+)?)", raw.lower().replace("\\", ""))
+            gcd.extend(ys)
+        elif re.search(r"cực tiểu|cuc tieu", t):
+            saw.add("cuc_tieu")
+            ct.extend(re.findall(r"x\s*=\s*([+\-]?\d+(?:[.,]\d+)?(?:/\d+)?)", t.replace("$", "")))
+            ys = re.findall(r"y\s*(?:_\s*\{?\s*ct\s*\}?)?\s*=\s*([+\-]?\d+(?:[.,]\d+)?)", raw.lower().replace("\\", ""))
+            gct.extend(ys)
+        elif raw.strip():
+            return None, [{"dong": line.get("dong", 0), "trang_thai_chuan_hoa": "THAT_BAI"}]
+        chuan.append({"dong": line.get("dong", 0), "trang_thai_chuan_hoa": "OK"})
+    if "dong_bien" in claims or "dong_bien" in saw:
+        if db_tap:
+            kl["dong_bien_tren_tap"] = db_tap
+        else:
+            kl["dong_bien"] = [s.replace(",", ".") for s in db]
+    if "nghich_bien" in claims or "nghich_bien" in saw:
+        if nb_tap:
+            kl["nghich_bien_tren_tap"] = nb_tap
+        else:
+            kl["nghich_bien"] = [s.replace(",", ".") for s in nb]
+    if "cuc_dai" in claims or "cuc_dai" in saw:
+        kl["cuc_dai_x"] = [s.replace(",", ".") for s in cd]
+        if gcd:
+            kl["gia_tri_cuc_dai"] = [s.replace(",", ".") for s in gcd]
+    if "cuc_tieu" in claims or "cuc_tieu" in saw:
+        kl["cuc_tieu_x"] = [s.replace(",", ".") for s in ct]
+        if gct:
+            kl["gia_tri_cuc_tieu"] = [s.replace(",", ".") for s in gct]
+    if not kl:
+        return None, chuan
+    return kl, chuan
+
+
+def _bang_tu_o(cells):
+    xs = [c for c in cells if c.get("hang") in ("X", "x")]
+    xs = sorted(xs, key=lambda c: c.get("k", 0))
+    diem = []
+    for c in xs:
+        token = normalize_expr(str(c.get("gia_tri")))
+        if token is None:
+            return None, c.get("k", 0)
+        diem.append(token)
+    m = len(diem)
+    dau_cells = {(c["k"]): c.get("gia_tri") for c in cells if c.get("hang") in ("DAU_YPHAY", "dau_y'")}
+    chieu_cells = {(c["k"]): c.get("gia_tri") for c in cells if c.get("hang") in ("BIEN_THIEN", "bien_thien")}
+    # k sản phẩm: chẵn = khoảng
+    dau = []
+    for j in range(m + 1):
+        k = 2 * j
+        if k not in dau_cells or dau_cells[k] in (None, ""):
+            return None, k
+        val = str(dau_cells[k]).replace("−", "-").replace("–", "-")
+        if val not in ("+", "-", "0", "||"):
+            return None, k
+        dau.append(val)
+    dau_tai = []
+    has_point = any((2 * j + 1) in dau_cells for j in range(m))
+    if has_point:
+        for j in range(m):
+            k = 2 * j + 1
+            val = dau_cells.get(k)
+            if val in (None, ""):
+                return None, k
+            val = str(val).replace("−", "-")
+            if val not in ("+", "-", "0", "||"):
+                return None, k
+            dau_tai.append(val)
+    chieu = []
+    has_chieu = any((2 * j) in chieu_cells for j in range(m + 1))
+    if has_chieu:
+        for j in range(m + 1):
+            k = 2 * j
+            val = chieu_cells.get(k)
+            if val in (None, ""):
+                return None, k
+            val = str(val).upper()
+            chieu.append({"TANG": "tang", "GIAM": "giam", "TANG_LEN": "tang", "GIAM_XUONG": "giam", "||": "khong_xd"}.get(val, val.lower()))
+    moc = ["-oo"] + diem + ["+oo"]
+    bang = {"moc": moc, "dau": dau}
+    if dau_tai:
+        bang["dau_tai_diem"] = dau_tai
+    if chieu:
+        bang["chieu"] = chieu
+    return bang, None
+
+
+def payload_to_bai_lam(payload, den):
+    """Trả (bai_lam | None, loi_som | None). loi_som là kết quả chấm nếu hỏng trước SymPy."""
+    steps = {s["ma_buoc"]: s for s in payload["cac_buoc"]}
+    ham = payload["ham"]
+    chuan = []
+    den_i = ORDER.index(den)
+
+    txd_lines = _idx((steps.get("B.DH.TXD") or {}).get("cac_dong") or [])
+    if not txd_lines:
+        return None, _pack("KHONG_KIEM_DUOC", "KHONG_KIEM_DUOC", _buoc("B.DH.TXD", 0, None), "thieu_dong", _per("B.DH.TXD", "B.DH.TXD", "KHONG_KIEM_DUOC"), chuan, nop_toi=den)
+    domains = []
+    for line in txd_lines:
+        dom = normalize_domain(line.get("latex"))
+        if not dom:
+            return None, _pack("KHONG_KIEM_DUOC", "KHONG_KIEM_DUOC", _buoc("B.DH.TXD", line.get("dong", 0), None), "that_bai_chuan_hoa", _per("B.DH.TXD", "B.DH.TXD", "KHONG_KIEM_DUOC"), chuan, nop_toi=den)
+        try:
+            K.parse_tap(dom)
+        except Exception:
+            return None, _pack("KHONG_KIEM_DUOC", "KHONG_KIEM_DUOC", _buoc("B.DH.TXD", line.get("dong", 0), None), "that_bai_chuan_hoa", _per("B.DH.TXD", "B.DH.TXD", "KHONG_KIEM_DUOC"), chuan, nop_toi=den)
+        domains.append(dom)
+        chuan.append({"ma_buoc": "B.DH.TXD", "dong": line.get("dong", 0), "trang_thai_chuan_hoa": "OK", "chuoi_chuan_hoa": dom})
+    for i in range(1, len(domains)):
+        if str(K.parse_tap(domains[i])) != str(K.parse_tap(domains[i - 1])):
+            return None, _pack("SAI", "SAI_BIEN_DOI", _buoc("B.DH.TXD", txd_lines[i].get("dong", i), None), "khong_tuong_duong", _per("B.DH.TXD", "B.DH.TXD"), chuan, nop_toi=den)
+
+    if den_i < 1:
+        bl = bai_lam_may(ham)
+        if not bl:
+            return None, _pack("KHONG_KIEM_DUOC", "KHONG_KIEM_DUOC", _buoc("B.DH.TXD", 0, None), "khong_giai_duoc", {}, chuan, nop_toi=den)
+        bl["TXD"] = domains[-1]
+        return bl, None
+
+    dh_lines = _idx((steps.get("B.DH.DAOHAM") or {}).get("cac_dong") or [])
+    exprs = []
+    for line in dh_lines:
+        ex = normalize_expr(line.get("latex"))
+        if not ex:
+            return None, _pack("KHONG_KIEM_DUOC", "KHONG_KIEM_DUOC", _buoc("B.DH.DAOHAM", line.get("dong", 0), None), "that_bai_chuan_hoa", _per("B.DH.DAOHAM", "B.DH.DAOHAM", "KHONG_KIEM_DUOC"), chuan, nop_toi=den)
+        try:
+            K.P(ex)
+        except Exception:
+            return None, _pack("KHONG_KIEM_DUOC", "KHONG_KIEM_DUOC", _buoc("B.DH.DAOHAM", line.get("dong", 0), None), "that_bai_chuan_hoa", _per("B.DH.DAOHAM", "B.DH.DAOHAM", "KHONG_KIEM_DUOC"), chuan, nop_toi=den)
+        exprs.append(ex)
+        chuan.append({"ma_buoc": "B.DH.DAOHAM", "dong": line.get("dong", 0), "trang_thai_chuan_hoa": "OK", "chuoi_chuan_hoa": ex})
+    if not exprs:
+        return None, _pack("KHONG_KIEM_DUOC", "KHONG_KIEM_DUOC", _buoc("B.DH.DAOHAM", 0, None), "thieu_dong", _per("B.DH.DAOHAM", "B.DH.DAOHAM", "KHONG_KIEM_DUOC"), chuan, nop_toi=den)
+    if len(exprs) > 1:
+        pair = K.kiem_bien_doi_bieu_thuc(exprs)
+        if pair["trang_thai"] != "DAT":
+            # buoc_sai của hàm này là số dòng 1-based của dòng sau
+            dong = (pair.get("buoc_sai") or 2) - 1
+            trang = "KHONG_KIEM_DUOC" if pair["trang_thai"] != "SAI" else "SAI"
+            loai = "KHONG_KIEM_DUOC" if trang != "SAI" else "SAI_BIEN_DOI"
+            return None, _pack(trang, loai, _buoc("B.DH.DAOHAM", dong, None), pair.get("loai_kiem"), _per("B.DH.DAOHAM", "B.DH.DAOHAM", trang), chuan, nop_toi=den)
+
+    bl = bai_lam_may(ham)
+    if not bl:
+        return None, _pack("KHONG_KIEM_DUOC", "KHONG_KIEM_DUOC", None, "khong_giai_duoc", {}, chuan, nop_toi=den)
+    bl["TXD"] = domains[-1]
+    bl["dao_ham"] = exprs[0]
+    bl["_exprs"] = exprs
+    bl["_chuan"] = chuan
+
+    if den_i < 2:
+        return bl, None
+
+    roots, kxd, ch_n, bad = _parse_nghiem_lines((steps.get("B.DH.NGHIEM") or {}).get("cac_dong") or [])
+    if bad is not None or roots is None:
+        return None, _pack("KHONG_KIEM_DUOC", "KHONG_KIEM_DUOC", _buoc("B.DH.NGHIEM", bad or 0, None), "that_bai_chuan_hoa", _per("B.DH.NGHIEM", "B.DH.NGHIEM", "KHONG_KIEM_DUOC"), chuan, nop_toi=den)
+    for c in ch_n:
+        c["ma_buoc"] = "B.DH.NGHIEM"
+        chuan.append(c)
+    bl["y_phay_bang_0"] = roots
+    bl["y_phay_khong_xd"] = kxd
+    bl["_last_nghiem"] = (ch_n[-1]["dong"] if ch_n else 0)
+    if den_i < 3:
+        # giữ bảng máy
+        return bl, None
+
+    bang, bad_k = _bang_tu_o(_cells(steps.get("B.DH.XETDAU") or {}))
+    if bang is None:
+        return None, _pack(
+            "KHONG_KIEM_DUOC" if bad_k is None else "SAI",
+            "KHONG_KIEM_DUOC" if bad_k is None else "SAI_GIA_TRI",
+            _buoc("B.DH.XETDAU", None, {"hang": "DAU_YPHAY", "k": bad_k}),
+            "o_trong" if bad_k is not None else "that_bai_chuan_hoa",
+            _per("B.DH.XETDAU", "B.DH.XETDAU", "SAI" if bad_k is not None else "KHONG_KIEM_DUOC"),
+            chuan,
+            nop_toi=den,
+        )
+    bl["bang"] = bang
+    if den_i < 4:
+        return bl, None
+
+    kl, ch_k = _parse_ket_luan(steps.get("B.DH.KETLUAN") or {})
+    if kl is None:
+        dong = 0
+        if ch_k and ch_k[0].get("trang_thai_chuan_hoa") == "THAT_BAI":
+            dong = ch_k[0].get("dong", 0)
+        return None, _pack("KHONG_KIEM_DUOC", "KHONG_KIEM_DUOC", _buoc("B.DH.KETLUAN", dong, None), "that_bai_chuan_hoa", _per("B.DH.KETLUAN", "B.DH.KETLUAN", "KHONG_KIEM_DUOC"), chuan, nop_toi=den)
+    bl["ket_luan"] = kl
+    return bl, None
+
+
+def _overlay_may(student_bl, den):
+    """Phần sau `den` lấy lời giải máy để chấm đúng phần học sinh đã nộp."""
+    ham = student_bl["ham"]
+    may = bai_lam_may(ham)
+    if may is None:
+        return None
+    den_i = ORDER.index(den)
+    out = dict(may)
+    out["ham"] = ham
+    if den_i >= 0:
+        out["TXD"] = student_bl["TXD"]
+    if den_i >= 1:
+        out["dao_ham"] = student_bl["dao_ham"]
+    if den_i >= 2:
+        out["y_phay_bang_0"] = student_bl["y_phay_bang_0"]
+        out["y_phay_khong_xd"] = student_bl["y_phay_khong_xd"]
+    if den_i >= 3:
+        out["bang"] = student_bl["bang"]
+    if den_i >= 4:
+        out["ket_luan"] = student_bl["ket_luan"]
+    return out
+
+
+def grade(payload):
+    den = payload.get("nop_toi") or "B.DH.KETLUAN"
+    if den not in ORDER:
+        den = "B.DH.KETLUAN"
+    bl, som = payload_to_bai_lam(payload, den)
+    if som:
+        return som
+    full = _overlay_may(bl, den)
+    if full is None:
+        return _pack("KHONG_KIEM_DUOC", "KHONG_KIEM_DUOC", None, "khong_giai_duoc", {}, bl.get("_chuan") or [], nop_toi=den)
+    # bỏ khóa nội bộ
+    clean = {k: v for k, v in full.items() if not k.startswith("_")}
+    try:
+        r = K.kiem_5_buoc(clean)
+    except Exception as ex:
+        return _pack("KHONG_KIEM_DUOC", "KHONG_KIEM_DUOC", None, "loi_cong_cu", {}, bl.get("_chuan") or [], nop_toi=den)
+    last_n = bl.get("_last_nghiem", 0)
+    if r["trang_thai"] == "DAT":
+        return _pack("DAT", "DAT", None, "dat", _per(den), bl.get("_chuan") or [], chua_xong=den != "B.DH.KETLUAN", nop_toi=den)
+    buoc_sai, loai, lk = _buoc_tu_ket_qua(r, last_n)
+    # Nếu lỗi nằm ở bước sau phần học sinh nộp (không mong đợi vì đã vá bằng lời giải máy) thì coi phần đã nộp là đạt.
+    if buoc_sai and ORDER.index(buoc_sai["ma_buoc"]) > ORDER.index(den):
+        return _pack("DAT", "DAT", None, "dat", _per(den), bl.get("_chuan") or [], chua_xong=True, nop_toi=den)
+    if r["trang_thai"] == "KHONG_KIEM_DUOC":
+        return _pack("KHONG_KIEM_DUOC", "KHONG_KIEM_DUOC", buoc_sai, lk, _per(den, buoc_sai["ma_buoc"] if buoc_sai else den, "KHONG_KIEM_DUOC"), bl.get("_chuan") or [], nop_toi=den)
+    # Sai đạo hàm ở dòng 0 khi có nhiều dòng: kiem_5_buoc chỉ thấy dòng đầu.
+    if buoc_sai and buoc_sai["ma_buoc"] == "B.DH.DAOHAM":
+        buoc_sai = _buoc("B.DH.DAOHAM", 0, None)
+    return _pack("SAI", loai, buoc_sai, lk or loai, _per(den, buoc_sai["ma_buoc"] if buoc_sai else den), bl.get("_chuan") or [], nop_toi=den)
+
+
+def bai_lam_sang_payload(bl, ham=None):
+    """Đổi bài làm kiểu YAML kiểm định sang payload sản phẩm (k từ 0) để chấm lại."""
+    ham = ham or bl["ham"]
+    cells = []
+    moc = bl["bang"]["moc"]
+    diem = moc[1:-1]
+    for i, p in enumerate(diem):
+        cells.append({"hang": "X", "k": i, "gia_tri": str(p)})
+    for j, s in enumerate(bl["bang"]["dau"]):
+        cells.append({"hang": "DAU_YPHAY", "k": 2 * j, "gia_tri": s})
+    for j, s in enumerate(bl["bang"].get("dau_tai_diem") or []):
+        cells.append({"hang": "DAU_YPHAY", "k": 2 * j + 1, "gia_tri": s})
+    for j, s in enumerate(bl["bang"].get("chieu") or []):
+        g = {"tang": "TANG", "giam": "GIAM", "khong_xd": "||"}.get(s, s)
+        cells.append({"hang": "BIEN_THIEN", "k": 2 * j, "gia_tri": g})
+    nghiem = []
+    for i, v in enumerate(bl.get("y_phay_bang_0") or []):
+        nghiem.append({"dong": i, "latex": "x = %s" % v, "loai": "NGHIEM"})
+    base = len(nghiem)
+    for i, v in enumerate(bl.get("y_phay_khong_xd") or []):
+        nghiem.append({"dong": base + i, "latex": "y' không xác định tại x = %s" % v, "loai": "KHONG_XD"})
+    if not nghiem:
+        nghiem.append({"dong": 0, "latex": "không có nghiệm", "loai": "NGHIEM"})
+    kl = bl.get("ket_luan") or {}
+    dong_kl = []
+    n = 0
+    khai = []
+    if "dong_bien" in kl or "dong_bien_tren_tap" in kl:
+        khai.append("dong_bien")
+        if kl.get("dong_bien_tren_tap"):
+            text = "đồng biến trên %s" % kl["dong_bien_tren_tap"]
+        else:
+            text = "đồng biến trên " + " và ".join(kl.get("dong_bien") or [])
+            if not kl.get("dong_bien"):
+                text = "không đồng biến trên khoảng nào"
+        dong_kl.append({"dong": n, "latex": text})
+        n += 1
+    if "nghich_bien" in kl or "nghich_bien_tren_tap" in kl:
+        khai.append("nghich_bien")
+        if kl.get("nghich_bien_tren_tap"):
+            text = "nghịch biến trên %s" % kl["nghich_bien_tren_tap"]
+        else:
+            text = "nghịch biến trên " + " và ".join(kl.get("nghich_bien") or [])
+            if not kl.get("nghich_bien"):
+                text = "không nghịch biến trên khoảng nào"
+        dong_kl.append({"dong": n, "latex": text})
+        n += 1
+    if any(k in kl for k in ("cuc_dai_x", "gia_tri_cuc_dai")):
+        khai.append("cuc_dai")
+        xs = kl.get("cuc_dai_x") or []
+        ys = kl.get("gia_tri_cuc_dai") or []
+        if not xs:
+            dong_kl.append({"dong": n, "latex": "không có cực đại"})
+        else:
+            bits = []
+            for i, x in enumerate(xs):
+                bit = "x = %s" % x
+                if i < len(ys):
+                    bit += ", y = %s" % ys[i]
+                bits.append(bit)
+            dong_kl.append({"dong": n, "latex": "cực đại tại " + "; ".join(bits)})
+        n += 1
+    if any(k in kl for k in ("cuc_tieu_x", "gia_tri_cuc_tieu")):
+        khai.append("cuc_tieu")
+        xs = kl.get("cuc_tieu_x") or []
+        ys = kl.get("gia_tri_cuc_tieu") or []
+        if not xs:
+            dong_kl.append({"dong": n, "latex": "không có cực tiểu"})
+        else:
+            bits = []
+            for i, x in enumerate(xs):
+                bit = "x = %s" % x
+                if i < len(ys):
+                    bit += ", y = %s" % ys[i]
+                bits.append(bit)
+            dong_kl.append({"dong": n, "latex": "cực tiểu tại " + "; ".join(bits)})
+    return {
+        "ham": ham,
+        "nop_toi": "B.DH.KETLUAN",
+        "cac_buoc": [
+            {"ma_buoc": "B.DH.TXD", "cac_dong": [{"dong": 0, "latex": bl["TXD"]}]},
+            {"ma_buoc": "B.DH.DAOHAM", "cac_dong": [{"dong": 0, "latex": bl["dao_ham"]}]},
+            {"ma_buoc": "B.DH.NGHIEM", "cac_dong": nghiem},
+            {"ma_buoc": "B.DH.XETDAU", "bang": {"loai_bang": "XET_DAU", "cac_o": cells}},
+            {"ma_buoc": "B.DH.KETLUAN", "khai_bao": khai, "cac_dong": dong_kl},
+        ],
+    }
+
+
+def nhan_sang_san_pham(nhan):
+    """Nhãn YAML (k từ 1, dong = số thứ tự bước) -> buoc_sai sản phẩm."""
+    if nhan is None:
+        return None
+    o = nhan.get("o")
+    if not o:
+        return _buoc(nhan["ma_buoc"], 0, None)
+    return _buoc(nhan["ma_buoc"], None, _translate_o(o))
