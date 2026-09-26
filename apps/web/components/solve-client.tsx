@@ -23,10 +23,14 @@ export function SolveClient({
   problemId,
   title,
   latex,
+  moLoiGiai = false,
+  loiGiai = null,
 }: {
   problemId: string;
   title: string;
   latex: string;
+  moLoiGiai?: boolean;
+  loiGiai?: string | null;
 }) {
   const [step, setStep] = useState(0);
   const [txd, setTxd] = useState("");
@@ -382,6 +386,13 @@ export function SolveClient({
           >
             {grade.finished ? "Em đã hoàn thành bài này." : grade.thong_bao}
           </p>
+        ) : null}
+
+        {grade?.finished && moLoiGiai && loiGiai ? (
+          <div data-testid="loi-giai-sau-nop" className="mt-3 rounded-xl bg-stone-50 px-3 py-2 text-sm leading-relaxed">
+            <p className="font-semibold">Lời giải lớp cho phép xem sau khi nộp</p>
+            <p className="mt-1">{loiGiai}</p>
+          </div>
         ) : null}
 
         <button

@@ -27,3 +27,6 @@ dev = ["pytest>=8"]
 testpaths = ["tests"]
 pythonpath = ["."]
 addopts = "-q"
+
+[tool.fastapi]
+entrypoint = "app.main:app"

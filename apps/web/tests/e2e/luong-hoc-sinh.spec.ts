@@ -16,6 +16,10 @@ test.describe("học sinh", () => {
     await page.getByTestId("password").fill("hocsinh123");
     await page.getByRole("button", { name: "Vào học" }).click();
     await expect(page.getByRole("heading", { name: "Chào An" })).toBeVisible();
+    await expect(page.getByTestId("mo-sidebar")).toBeVisible();
+    await page.getByTestId("mo-sidebar").click();
+    await expect(page.getByTestId("nav-hs-lo-trinh")).toBeVisible();
+    await page.getByTestId("dong-sidebar").click();
 
     await page.getByTestId("bai-DH12-03-VD-01").click();
     await expect(page.getByTestId("solve-screen")).toBeVisible();
@@ -50,6 +54,8 @@ test.describe("giáo viên", () => {
     await page.getByTestId("password").fill("giaovien123");
     await page.getByRole("button", { name: "Vào học" }).click();
     await expect(page.getByRole("heading", { name: "Lớp 12A1 thử" })).toBeVisible();
+    await expect(page.getByTestId("sidebar")).toBeVisible();
+    await expect(page.getByTestId("nav-gv-duyet")).toBeVisible();
     await expect(page.getByTestId("canh-bao-ket")).toContainText("Chi");
 
     await page.goto("/gv/duyet");

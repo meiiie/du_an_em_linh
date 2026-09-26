@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { eq } from "drizzle-orm";
+import { Card } from "@/components/ui/card";
+import { PageHeader } from "@/components/ui/page-header";
 import { requireRole } from "@/lib/auth";
 import { ghiNhatKy } from "@/lib/actions/hs";
 import { db } from "@/lib/db";
@@ -20,26 +22,27 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ m
   const states = await db.select().from(masteryStates);
   return (
     <main data-testid="tien-do">
-      <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-        <h1 className="text-xl font-bold">{view3 ? "Tiến độ theo 3 mức (CV 7991)" : "Tiến độ theo 4 mức"}</h1>
-        <Link
-          data-testid="toggle-muc"
-          href={view3 ? "/gv/tien-do" : "/gv/tien-do?muc=3"}
-          className="rounded-full bg-white px-3 py-1.5 text-sm shadow ring-1 ring-stone-200"
-        >
-          {view3 ? "Xem 4 mức" : "Xem 3 mức Biết / Hiểu / Vận dụng"}
-        </Link>
-      </div>
-      <p className="mb-2 text-xs text-slate-500">
-        Ô ghi mức hiện tại và xác suất thành thạo của mô hình. Mức 3 được suy ra lúc hiển thị, không lưu riêng trên học sinh.
-      </p>
-      <div className="overflow-x-auto rounded-2xl bg-white shadow-sm ring-1 ring-stone-200">
+      <PageHeader
+        kicker="Lớp"
+        title={view3 ? "Tiến độ theo 3 mức (CV 7991)" : "Tiến độ theo 4 mức"}
+        description="Ô ghi mức hiện tại và xác suất thành thạo. Mức 3 được suy ra lúc hiển thị, không lưu riêng trên học sinh."
+        actions={
+          <Link
+            data-testid="toggle-muc"
+            href={view3 ? "/gv/tien-do" : "/gv/tien-do?muc=3"}
+            className="rounded-full bg-white px-3 py-1.5 text-sm ring-1 ring-line"
+          >
+            {view3 ? "Xem 4 mức" : "Xem 3 mức Biết / Hiểu / Vận dụng"}
+          </Link>
+        }
+      />
+      <Card className="overflow-x-auto p-0">
         <table className="min-w-full text-left text-xs">
           <thead>
-            <tr>
-              <th className="p-2">Học sinh</th>
+            <tr className="border-b border-line bg-paper/70">
+              <th className="p-3">Học sinh</th>
               {skillRows.map((s) => (
-                <th key={s.code} className="p-2">
+                <th key={s.code} className="p-3">
                   {s.code}
                 </th>
               ))}
@@ -47,17 +50,22 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ m
           </thead>
           <tbody>
             {ens.map((e) => (
-              <tr key={e.userId} className="border-t border-stone-100">
-                <td className="p-2 font-medium">{name.get(e.userId)}</td>
+              <tr key={e.userId} className="border-t border-line/70">
+                <td className="p-3 font-medium">{name.get(e.userId)}</td>
                 {skillRows.map((s) => {
                   const st = states.find((x) => x.studentId === e.userId && x.skillCode === s.code);
-                  if (!st) return <td key={s.code} className="p-2 text-slate-400">—</td>;
+                  if (!st)
+                    return (
+                      <td key={s.code} className="p-3 text-muted">
+                        —
+                      </td>
+                    );
                   const muc4 = st.currentMucDo4 as Muc4;
                   const label = view3 ? LABEL3[TO3[muc4]] : LABEL4[muc4];
                   return (
-                    <td key={s.code} className="p-2">
+                    <td key={s.code} className="p-3">
                       {label}
-                      <span className="block text-slate-500">{st.mastery.toFixed(2)}</span>
+                      <span className="block text-muted">{st.mastery.toFixed(2)}</span>
                     </td>
                   );
                 })}
@@ -65,7 +73,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ m
             ))}
           </tbody>
         </table>
-      </div>
+      </Card>
     </main>
   );
 }

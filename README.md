@@ -4,6 +4,8 @@ Nguyên mẫu nghiên cứu (NCKH) cho học sinh THPT, môn Toán 12, chủ đ�
 
 Học sinh làm bài theo năm bước (`B.DH.TXD`, `B.DH.DAOHAM`, `B.DH.NGHIEM`, `B.DH.XETDAU`, `B.DH.KETLUAN`). Gia sư sửa và giảng, không đưa đáp án. Mỗi bài phải qua cổng kiểm định ba tầng trước khi phát hành.
 
+Giao diện có thanh bên cố định trên máy tính và ngăn kéo trên điện thoại. Đối chiếu với thiết kế nằm ở `docs/doi-chieu-thiet-ke.md`.
+
 ## Sơ đồ
 
 ```mermaid

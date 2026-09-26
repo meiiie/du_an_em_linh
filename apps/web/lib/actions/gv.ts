@@ -5,10 +5,12 @@ import { eq } from "drizzle-orm";
 import { mkdir, writeFile } from "fs/promises";
 import path from "path";
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { requireRole } from "../auth";
 import { db, sql } from "../db";
 import {
   auditLogs,
+  classSettings,
   contentReviews,
   documents,
   formulaSheets,
@@ -208,7 +210,7 @@ export async function sinhBienThe(form: FormData) {
   const seed = Number(form.get("seed") || Date.now() % 10000);
   const gen = await mathJob<Gen>("generate", { dang, seed });
   if (gen.loi || !gen.ham) {
-    return { ok: false as const, thong_bao: gen.loi || "Không sinh được" };
+    redirect(`/gv/sinh-bai?loi=${encodeURIComponent(gen.loi || "Không sinh được")}`);
   }
   const corpus = await currentCorpus();
   const verified = await mathJob<{
@@ -217,10 +219,11 @@ export async function sinhBienThe(form: FormData) {
     tang: { tang: number; trang_thai: string; ly_do?: string; loai_ket_qua?: string; buoc_sai?: unknown; trich_dan?: unknown; cong_thuc?: unknown }[];
   }>("verify", { ham: gen.ham, bai_lam: gen.bai_lam, ...corpus });
   const id = crypto.randomUUID();
+  const code = `GEN-${dang}-${seed}-${id.slice(0, 8)}`;
   const contentHash = hashContent({ de: gen.de_bai, bl: gen.bai_lam, hints: gen.thang_goi_y });
   await db.insert(problems).values({
     id,
-    code: `GEN-${dang}-${seed}-${id.slice(0, 8)}`,
+    code,
     skillCode: gen.ky_nang_chinh,
     skillCodesPhu: [],
     mucDo4: gen.muc_do_4,
@@ -272,5 +275,16 @@ export async function sinhBienThe(form: FormData) {
   await audit(user.id, "SINH_BIEN_THE", "problem", id, verified.trang_thai_phat_hanh);
   revalidatePath("/gv/ngan-hang");
   revalidatePath("/gv/duyet");
-  return { ok: true as const, status: verified.trang_thai_phat_hanh, code: id };
+  redirect(`/gv/sinh-bai?ma=${encodeURIComponent(code)}&trang=${encodeURIComponent(verified.trang_thai_phat_hanh)}`);
+}
+
+export async function luuCaiDatLop(form: FormData) {
+  await requireRole("GV");
+  const mo = form.get("mo_loi_giai") === "on";
+  const rows = await db.select().from(classSettings);
+  if (rows[0]) {
+    await db.update(classSettings).set({ moLoiGiaiSauKhiNop: mo }).where(eq(classSettings.classId, rows[0].classId));
+  }
+  revalidatePath("/gv/cai-dat");
+  revalidatePath("/hs");
 }

@@ -1,47 +1,28 @@
 # -*- coding: utf-8 -*-
 """API HTTP. Module này không import SymPy."""
 from fastapi import FastAPI
-from pydantic import BaseModel
+from fastapi.middleware.cors import CORSMiddleware
 
-from app.sandbox import run_sympy_job
+from app.routers import v1
+from app.schemas import HealthOut
 
-app = FastAPI(title="Dịch vụ toán — Học toán với AI", version="0.1.0")
-
-
-class Job(BaseModel):
-    model_config = {"extra": "allow"}
+app = FastAPI(
+    title="Dịch vụ toán — Học toán với AI",
+    version="0.1.0",
+    summary="Chấm 5 bước, kiểm định 3 tầng, lọc lộ đáp án, sinh biến thể.",
+)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://127.0.0.1:3000",
+        "http://localhost:3000",
+    ],
+    allow_methods=["GET", "POST"],
+    allow_headers=["content-type"],
+)
+app.include_router(v1)
 
 
 @app.get("/health")
-def health():
-    return {"ok": True, "service": "math"}
-
-
-@app.post("/v1/grade")
-def grade_ep(body: dict):
-    return run_sympy_job("grade", body, timeout=int(body.get("timeout_s") or 12))
-
-
-@app.post("/v1/verify")
-def verify_ep(body: dict):
-    return run_sympy_job("verify", body, timeout=int(body.get("timeout_s") or 20))
-
-
-@app.post("/v1/filter")
-def filter_ep(body: dict):
-    return run_sympy_job("filter", body, timeout=int(body.get("timeout_s") or 12))
-
-
-@app.post("/v1/generate")
-def generate_ep(body: dict):
-    return run_sympy_job("generate", body, timeout=int(body.get("timeout_s") or 20))
-
-
-@app.post("/v1/solve")
-def solve_ep(body: dict):
-    return run_sympy_job("solve", body, timeout=int(body.get("timeout_s") or 20))
-
-
-@app.post("/v1/extract")
-def extract_ep(body: dict):
-    return run_sympy_job("extract_pdf", body, timeout=20)
+def health() -> HealthOut:
+    return HealthOut(ok=True, service="math", version="0.1.0")
