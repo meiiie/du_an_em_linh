@@ -50,7 +50,7 @@ test.describe("học sinh", () => {
 test.describe("học sinh máy tính", () => {
   test.use({ viewport: { width: 1280, height: 800 } });
 
-  test("lộ trình có thanh bên sáng", async ({ page }) => {
+  test("lộ trình có thanh bên mực", async ({ page }) => {
     await page.goto("/dang-nhap");
     await page.getByTestId("email").fill("hs.an@demo.local");
     await page.getByTestId("password").fill("hocsinh123");
