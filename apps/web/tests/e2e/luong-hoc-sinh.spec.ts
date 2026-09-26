@@ -19,6 +19,7 @@ test.describe("học sinh", () => {
     await expect(page.getByTestId("mo-sidebar")).toBeVisible();
     await page.getByTestId("mo-sidebar").click();
     await expect(page.getByTestId("nav-hs-lo-trinh")).toBeVisible();
+    await page.screenshot({ path: `${SHOTS}/hs-sidebar-390.png`, fullPage: true });
     await page.getByTestId("dong-sidebar").click();
 
     await page.getByTestId("bai-DH12-03-VD-01").click();
@@ -50,6 +51,7 @@ test.describe("giáo viên", () => {
 
   test("hàng đợi kiểm định và tiến độ 4 mức / 3 mức", async ({ page }) => {
     await page.goto("/dang-nhap");
+    await page.screenshot({ path: `${SHOTS}/dang-nhap.png`, fullPage: true });
     await page.getByTestId("email").fill("gv@demo.local");
     await page.getByTestId("password").fill("giaovien123");
     await page.getByRole("button", { name: "Vào học" }).click();
@@ -71,5 +73,9 @@ test.describe("giáo viên", () => {
     await expect(page.getByRole("heading", { name: /3 mức/ })).toBeVisible();
     await expect(page.getByTestId("tien-do")).toContainText("Biết");
     await page.screenshot({ path: `${SHOTS}/gv-tien-do-3-muc.png`, fullPage: true });
+
+    await page.goto("/gv/cai-dat");
+    await expect(page.getByTestId("mo-loi-giai")).toBeVisible();
+    await page.screenshot({ path: `${SHOTS}/gv-cai-dat.png`, fullPage: true });
   });
 });
