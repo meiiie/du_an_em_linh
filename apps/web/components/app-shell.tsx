@@ -97,15 +97,17 @@ export function AppShell({
           open ? "top-0 translate-x-0" : "top-12 -translate-x-full max-lg:invisible lg:translate-x-0",
         )}
       >
-        <button
-          className="absolute right-2 top-2 inline-flex size-11 items-center justify-center text-chalk/60 hover:text-chalk lg:hidden"
-          onClick={() => setOpen(false)}
-          aria-label="Đóng"
-          data-testid="dong-sidebar"
-          type="button"
-        >
-          <X className="h-5 w-5" aria-hidden />
-        </button>
+        <div className="flex h-12 items-center justify-end px-2 lg:hidden">
+          <button
+            className="inline-flex size-11 items-center justify-center text-chalk/60 hover:text-chalk"
+            onClick={() => setOpen(false)}
+            aria-label="Đóng"
+            data-testid="dong-sidebar"
+            type="button"
+          >
+            <X className="h-5 w-5" aria-hidden />
+          </button>
+        </div>
         <div className="hidden items-center gap-2 px-4 pb-4 pt-5 lg:flex">
           <BrandMark invert />
           <div className="min-w-0">
