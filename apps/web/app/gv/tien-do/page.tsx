@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { eq } from "drizzle-orm";
-import { Card } from "@/components/ui/card";
 import { PageHeader } from "@/components/ui/page-header";
 import { requireRole } from "@/lib/auth";
 import { ghiNhatKy } from "@/lib/actions/hs";
@@ -30,19 +29,19 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ m
           <Link
             data-testid="toggle-muc"
             href={view3 ? "/gv/tien-do" : "/gv/tien-do?muc=3"}
-            className="rounded-button bg-canvas px-3 py-1.5 text-sm font-medium text-primary ring-1 ring-line hover:bg-paper"
+            className="rounded-button px-3 py-1.5 text-sm font-medium ring-1 ring-line hover:bg-wash"
           >
             {view3 ? "Xem 4 mức" : "Xem 3 mức Biết / Hiểu / Vận dụng"}
           </Link>
         }
       />
-      <Card className="overflow-x-auto p-0">
+      <div className="overflow-x-auto border-y border-line">
         <table className="min-w-full text-left text-xs">
           <thead>
-            <tr className="border-b border-line bg-paper">
-              <th className="p-3 font-semibold">Học sinh</th>
+            <tr className="border-b border-line bg-wash">
+              <th className="p-3 font-medium">Học sinh</th>
               {skillRows.map((s) => (
-                <th key={s.code} className="p-3 font-semibold" translate="no">
+                <th key={s.code} className="p-3 font-medium font-mono" translate="no">
                   {s.code}
                 </th>
               ))}
@@ -50,7 +49,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ m
           </thead>
           <tbody>
             {ens.map((e) => (
-              <tr key={e.userId} className="border-t border-line/70">
+              <tr key={e.userId} className="border-t border-line">
                 <td className="p-3 font-medium">{name.get(e.userId)}</td>
                 {skillRows.map((s) => {
                   const st = states.find((x) => x.studentId === e.userId && x.skillCode === s.code);
@@ -73,7 +72,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ m
             ))}
           </tbody>
         </table>
-      </Card>
+      </div>
     </main>
   );
 }

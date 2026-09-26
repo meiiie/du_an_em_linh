@@ -19,39 +19,48 @@ async function dangNhap(formData: FormData) {
   redirect(roles.some((r) => r.roleCode === "GV") ? "/gv" : "/hs");
 }
 
+const STEPS = ["Tập xác định", "Đạo hàm", "Nghiệm y′", "Xét dấu", "Kết luận"];
+
 export default async function LoginPage({ searchParams }: { searchParams: Promise<{ loi?: string }> }) {
   const sp = await searchParams;
   return (
-    <main className="relative min-h-screen overflow-hidden bg-paper">
+    <main className="min-h-screen bg-canvas">
       <a href="#form-dang-nhap" className="skip-link">
         Bỏ qua đến form đăng nhập
       </a>
-      <div className="pointer-events-none absolute inset-y-0 left-0 hidden w-[40%] bg-navy lg:block" />
-      <div className="relative mx-auto grid min-h-screen max-w-6xl lg:grid-cols-[0.9fr_1.1fr]">
-        <section className="hidden flex-col justify-between bg-navy px-10 py-12 text-chalk lg:flex">
-          <div className="flex items-center gap-3">
-            <BrandMark className="bg-primary" />
-            <p className="text-sm font-medium text-chalk/70">Nguyên mẫu NCKH</p>
+      <div className="mx-auto grid min-h-screen max-w-5xl lg:grid-cols-2">
+        <section className="hidden flex-col justify-between border-r border-line px-10 py-12 lg:flex">
+          <div className="flex items-center gap-2">
+            <BrandMark />
+            <p className="text-sm text-muted">Nguyên mẫu NCKH</p>
           </div>
           <div>
-            <h1 className="text-pretty text-5xl font-semibold leading-[1.1]">Học toán với AI</h1>
-            <p className="mt-4 max-w-sm text-base leading-relaxed text-chalk/75">
-              Toán 12 — ứng dụng đạo hàm: tính đơn điệu và cực trị. Gia sư sửa bài và giảng, không đưa đáp án. Mọi bài qua cổng kiểm định ba tầng.
+            <h1 className="text-pretty text-4xl font-semibold leading-tight">Học toán với AI</h1>
+            <p className="mt-3 max-w-sm text-sm leading-relaxed text-muted">
+              Phiếu 5 bước cho đơn điệu và cực trị. Gia sư sửa bài, không đưa đáp án. Mọi bài qua cổng ba tầng.
             </p>
+            <ol className="mt-8 space-y-0">
+              {STEPS.map((ten, i) => (
+                <li key={ten} className="flex items-center gap-3 border-b border-line py-2.5 text-sm last:border-0">
+                  <span className="tabular w-6 font-mono text-muted">{i + 1}</span>
+                  {ten}
+                </li>
+              ))}
+            </ol>
           </div>
-          <p className="text-sm text-chalk/50">Tài khoản thử. Không có học sinh thật.</p>
+          <p className="text-sm text-muted">Tài khoản thử. Không có học sinh thật.</p>
         </section>
         <section className="flex flex-col justify-center px-5 py-12 sm:px-10">
-          <div className="mb-6 flex items-center gap-3 lg:hidden">
+          <div className="mb-6 flex items-center gap-2 lg:hidden">
             <BrandMark />
             <div>
-              <p className="text-sm font-medium text-primary">Nguyên mẫu NCKH</p>
-              <h1 className="text-pretty text-3xl font-semibold">Học toán với AI</h1>
+              <p className="text-sm text-muted">Nguyên mẫu NCKH</p>
+              <h1 className="text-pretty text-2xl font-semibold">Học toán với AI</h1>
             </div>
           </div>
           <p className="text-sm text-muted lg:hidden">Toán 12 — đơn điệu và cực trị. Tài khoản thử.</p>
-          <h2 className="hidden text-pretty text-3xl font-semibold lg:block">Vào lớp thử</h2>
-          <form id="form-dang-nhap" action={dangNhap} className="mt-6 max-w-md space-y-3 rounded-card bg-canvas p-6 shadow-lift ring-1 ring-line">
+          <h2 className="hidden text-pretty text-2xl font-semibold lg:block">Vào lớp thử</h2>
+          <form id="form-dang-nhap" action={dangNhap} className="mt-6 max-w-md space-y-3">
             <label className="block text-sm font-medium">
               Email
               <input
@@ -76,15 +85,12 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
                 className={`mt-1 ${fieldControl}`}
               />
             </label>
-            {sp.loi ? <p className="text-sm text-danger">Email hoặc mật khẩu chưa đúng. Thử lại với tài khoản bên dưới.</p> : null}
-            <button
-              className="w-full rounded-button bg-primary px-4 py-2.5 font-semibold text-white hover:bg-primary-hover"
-              type="submit"
-            >
+            {sp.loi ? <p className="text-sm text-mark">Email hoặc mật khẩu chưa đúng. Thử lại với tài khoản bên dưới.</p> : null}
+            <button className="w-full rounded-button bg-ink px-4 py-2.5 text-sm font-medium text-chalk hover:bg-primary-hover" type="submit">
               Vào học
             </button>
           </form>
-          <ul className="mt-4 max-w-md space-y-1 text-xs text-muted">
+          <ul className="mt-6 max-w-md space-y-1 text-xs text-muted">
             <li>Giáo viên: gv@demo.local / giaovien123</li>
             <li>Học sinh: hs.an@demo.local, hs.binh@demo.local, hs.chi@demo.local / hocsinh123</li>
           </ul>

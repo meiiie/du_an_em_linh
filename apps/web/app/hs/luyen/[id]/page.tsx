@@ -2,7 +2,6 @@ import Link from "next/link";
 import { eq } from "drizzle-orm";
 import { notFound } from "next/navigation";
 import { SolveClient } from "@/components/solve-client";
-import { Card } from "@/components/ui/card";
 import { requireRole } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { classSettings, problems, solutions } from "@/lib/db/schema";
@@ -19,19 +18,19 @@ export default async function LuyenPage({ params }: { params: Promise<{ id: stri
   if (!p) notFound();
   if (p.status === "CHO_GIAO_VIEN_DUYET") {
     return (
-      <Card>
+      <div className="border-y border-line py-6">
         <p>Bài này đang chờ thầy cô duyệt.</p>
-        <Link href="/hs" className="font-medium text-primary hover:underline">
+        <Link href="/hs" className="mt-2 inline-block text-sm underline underline-offset-2">
           Về lộ trình
         </Link>
-      </Card>
+      </div>
     );
   }
   if (p.status !== "DA_PHAT_HANH" || !p.hamSympy) {
     return (
-      <Card>
+      <div className="border-y border-line py-6">
         <p>Bài chưa mở để làm.</p>
-      </Card>
+      </div>
     );
   }
   const settings = await db.select().from(classSettings);
@@ -40,9 +39,11 @@ export default async function LuyenPage({ params }: { params: Promise<{ id: stri
   const loiGiai = showSolution ? loiGiaiHocSinh(sol?.baiLam, sol?.finalAnswer) : null;
   return (
     <main>
-      <p className="mb-3 text-sm text-muted">
+      <p className="mb-4 text-sm text-muted">
         Mức {LABEL4[p.mucDo4 as Muc4]} · Bloom {p.bloomLevel} · mã{" "}
-        <span translate="no">{p.code}</span>
+        <span className="font-mono" translate="no">
+          {p.code}
+        </span>
       </p>
       <SolveClient
         problemId={p.id}

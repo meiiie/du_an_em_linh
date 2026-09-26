@@ -53,17 +53,17 @@ export function AppShell({
   const title = role === "GV" ? "Cổng giáo viên" : "Phần học sinh";
 
   return (
-    <div className="min-h-screen bg-paper">
+    <div className="min-h-screen bg-canvas">
       <a href="#noi-dung" className="skip-link">
         Bỏ qua đến nội dung
       </a>
 
-      <header className="sticky top-0 z-30 border-b border-line bg-canvas pt-[env(safe-area-inset-top)]">
-        <div className="flex h-14 items-center gap-3 px-3 sm:px-4">
+      <header className="sticky top-0 z-30 border-b border-line bg-canvas pt-[env(safe-area-inset-top)] lg:hidden">
+        <div className="flex h-12 items-center gap-3 px-3">
           <button
             type="button"
             data-testid="mo-sidebar"
-            className="rounded-button p-1.5 text-ink hover:bg-paper lg:hidden"
+            className="rounded-button p-1.5 text-ink hover:bg-wash"
             onClick={() => setOpen(true)}
             aria-label="Mở menu"
           >
@@ -71,28 +71,19 @@ export function AppShell({
           </button>
           <Link href={role === "GV" ? "/gv" : "/hs"} className="flex min-w-0 items-center gap-2">
             <BrandMark />
-            <span className="min-w-0">
-              <span className="block truncate text-sm font-semibold text-ink">Học toán với AI</span>
-              <span className="hidden text-xs text-muted sm:block">{title}</span>
-            </span>
+            <span className="truncate text-sm font-medium">Học toán với AI</span>
           </Link>
-          <div className="ml-auto flex min-w-0 items-center gap-3">
-            <p className="hidden truncate text-sm text-ink sm:block">{name}</p>
-            <form action={dangXuat}>
-              <button
-                className="rounded-button px-2 py-1 text-sm font-medium text-primary hover:bg-paper"
-                type="submit"
-              >
-                Thoát
-              </button>
-            </form>
-          </div>
+          <form action={dangXuat} className="ml-auto">
+            <button className="text-sm text-muted hover:text-ink" type="submit">
+              Thoát
+            </button>
+          </form>
         </div>
       </header>
 
       {open ? (
         <button
-          className="fixed inset-0 z-30 bg-navy/40 lg:hidden"
+          className="fixed inset-0 z-30 bg-ink/40 lg:hidden"
           aria-label="Đóng menu"
           onClick={() => setOpen(false)}
         />
@@ -101,15 +92,13 @@ export function AppShell({
       <aside
         data-testid="sidebar"
         className={cn(
-          "fixed bottom-0 left-0 z-40 flex w-64 flex-col border-r border-line bg-canvas transition-transform duration-200",
-          "top-14 overscroll-contain",
-          open
-            ? "translate-x-0 shadow-xl"
-            : "-translate-x-full max-lg:invisible lg:translate-x-0",
+          "fixed bottom-0 left-0 z-40 flex w-[220px] flex-col bg-ink text-chalk transition-transform duration-200",
+          "overscroll-contain lg:top-0",
+          open ? "top-0 translate-x-0" : "top-12 -translate-x-full max-lg:invisible lg:translate-x-0",
         )}
       >
         <button
-          className="absolute right-3 top-3 text-muted hover:text-ink lg:hidden"
+          className="absolute right-3 top-3 text-chalk/60 hover:text-chalk lg:hidden"
           onClick={() => setOpen(false)}
           aria-label="Đóng"
           data-testid="dong-sidebar"
@@ -117,7 +106,14 @@ export function AppShell({
         >
           <X className="h-5 w-5" aria-hidden />
         </button>
-        <nav className="flex flex-1 flex-col gap-0.5 overflow-y-auto px-3 pb-3 pt-4" data-testid="sidebar-nav">
+        <div className="hidden items-center gap-2 px-4 pb-4 pt-5 lg:flex">
+          <BrandMark invert />
+          <div className="min-w-0">
+            <p className="truncate text-sm font-medium">Học toán với AI</p>
+            <p className="truncate text-xs text-chalk/55">{title}</p>
+          </div>
+        </div>
+        <nav className="flex flex-1 flex-col gap-0.5 overflow-y-auto px-2 pb-3 pt-4 lg:pt-1" data-testid="sidebar-nav">
           {items.map((item) => {
             const Icon = ICONS[item.icon];
             const active = navActive(pathname, item.href);
@@ -129,21 +125,14 @@ export function AppShell({
                 data-testid={item.testId}
                 onClick={() => setOpen(false)}
                 className={cn(
-                  "flex items-center gap-3 rounded-button px-3 py-2 text-sm transition-colors",
-                  active
-                    ? "bg-primary/10 font-semibold text-primary"
-                    : "text-ink/80 hover:bg-paper hover:text-ink",
+                  "flex items-center gap-2.5 rounded-button px-2.5 py-2 text-sm transition-colors",
+                  active ? "bg-white/10 font-medium text-chalk" : "text-chalk/70 hover:bg-white/5 hover:text-chalk",
                 )}
               >
                 <Icon className="h-4 w-4 shrink-0" aria-hidden />
                 <span className="min-w-0 flex-1 truncate">{item.label}</span>
                 {count > 0 ? (
-                  <span
-                    className={cn(
-                      "tabular rounded-md px-1.5 py-0.5 text-[11px] font-semibold",
-                      active ? "bg-primary text-white" : "bg-paper text-muted",
-                    )}
-                  >
+                  <span className="tabular rounded px-1.5 py-0.5 text-[11px] font-medium bg-white/10 text-chalk">
                     {count}
                   </span>
                 ) : null}
@@ -151,14 +140,19 @@ export function AppShell({
             );
           })}
         </nav>
-        <div className="mt-auto border-t border-line px-4 py-4">
-          <p className="truncate text-sm font-medium text-ink">{name}</p>
-          <p className="text-xs text-muted">Tài khoản thử · dữ liệu tổng hợp</p>
+        <div className="mt-auto border-t border-white/10 px-4 py-4">
+          <p className="truncate text-sm font-medium">{name}</p>
+          <p className="text-xs text-chalk/50">Tài khoản thử · dữ liệu tổng hợp</p>
+          <form action={dangXuat} className="mt-2 hidden lg:block">
+            <button className="text-xs text-chalk/70 hover:text-chalk" type="submit">
+              Thoát
+            </button>
+          </form>
         </div>
       </aside>
 
-      <div className="lg:pl-64">
-        <div id="noi-dung" className="mx-auto max-w-6xl px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
+      <div className="lg:pl-[220px]">
+        <div id="noi-dung" className="mx-auto max-w-5xl px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
           {children}
         </div>
       </div>

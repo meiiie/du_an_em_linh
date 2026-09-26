@@ -4,7 +4,7 @@ Nguyên mẫu nghiên cứu (NCKH) cho học sinh THPT, môn Toán 12, chủ đ�
 
 Học sinh làm bài theo năm bước (`B.DH.TXD`, `B.DH.DAOHAM`, `B.DH.NGHIEM`, `B.DH.XETDAU`, `B.DH.KETLUAN`). Gia sư sửa và giảng, không đưa đáp án. Mỗi bài phải qua cổng kiểm định ba tầng trước khi phát hành.
 
-Giao diện theo hệ thống thiết kế LMS: canvas trắng, Source Sans 3 (có tiếng Việt), CTA xanh `#0B5CAB`, panel bài giảng navy. Thanh trên xuyên ngang, thanh bên sáng cố định trên máy tính và ngăn kéo trên điện thoại. Token và nguyên tắc nằm ở `docs/DESIGN.md`. Đối chiếu sư phạm nằm ở `docs/doi-chieu-thiet-ke.md`.
+Giao diện theo **phiếu làm bài** (Khan / Classroom / Canvas / Brilliant — cấu trúc, không thương hiệu): ray mực, trang trắng, IBM Plex Sans + Mono, CTA mực, bút đỏ khi chấm. Token ở `docs/DESIGN.md`. Đối chiếu sư phạm ở `docs/doi-chieu-thiet-ke.md`.
 
 ## Sơ đồ
 

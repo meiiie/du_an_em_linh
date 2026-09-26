@@ -1,90 +1,64 @@
-# Hệ thống thiết kế — Học toán với AI
+# Hệ thống thiết kế — Phiếu làm bài
 
-Ngôn ngữ hình ảnh của một **lớp học số THPT**, không phải landing SaaS và không phải trang “AI slop”. Tham khảo cấu trúc chrome của các LMS hàng đầu (Coursera, edX, Khan Academy): canvas trắng, một sans humanist, CTA xanh học thuật, panel bài giảng navy. **Không** dùng logo, chữ, hay mã màu thương hiệu của họ.
+Không dùng kit Figma EduPlus / Eduva / EduTracker / EduFlow (Poppins, thẻ KPI, gradient). Đó chính là slop. Nghiên cứu **sản phẩm đang chạy**, lấy cấu trúc chứ không lấy thương hiệu.
 
-Coursera voltage blue `#0056D2` và dấu C bị khóa thương hiệu — không chép.
+## Nguồn đã xem
+
+| Sản phẩm | Việc lấy | Việc không lấy |
+| --- | --- | --- |
+| [Khan Academy Wonder Blocks](https://khan.github.io/wonder-blocks/) + [learner dashboard 2025](https://qasimbrown.design/projects/ai-powered-learner-dashboard) | Việc tiếp theo đứng trước catalog; thành thạo = hàng ô; mật độ chữ cao; ít kiểu chữ | Xanh `#1865f2`, Lato, logo |
+| [Brilliant solvables](https://www.paigeormiston.com/brilliant) | Một luồng bước; sai = banner ngay dưới bài; một CTA | Pear / CoFo / logo |
+| [Canvas InstUI](https://instructure.design/) | Ray điều hướng đặc, việc là danh sách/bảng | Electric brand, widget KPI |
+| [Google Classroom](https://support.google.com/chrome/a/answer/15210733) | Hàng việc 2 dòng (tên + meta), không lưới thẻ khóa học | Material purple |
+| Linear / Stripe Dashboard | CTA mực, kẻ 1 px, không bóng mềm dưới mọi thẻ | — |
+
+Coursera `#0056D2`, IBM `#0F62FE`, Khan blue, Canvas electric: không chép.
 
 ## Brief
 
-| Trục | Quyết định |
-| --- | --- |
-| Chủ đề | Toán 12, đạo hàm: đơn điệu và cực trị |
-| Người dùng | Học sinh và giáo viên Việt Nam |
-| Việc chính | Làm 5 bước / duyệt cổng 3 tầng / xem tiến độ |
-| Cảm giác | Lớp học nghiêm túc, sáng, dễ đọc công thức |
+Sản phẩm là **phiếu chấm đạo hàm**: học sinh đi 5 bước, giáo viên duyệt cổng. Cảm giác sổ điểm / phiếu thi, không phải landing khóa học.
 
 ## Token
 
 | Tên | Hex | Việc |
 | --- | --- | --- |
-| `canvas` | `#FFFFFF` | Thẻ, top bar, sidebar |
-| `paper` | `#F3F6FB` | Nền trang |
-| `ink` | `#1A1D26` | Chữ chính |
-| `muted` | `#5C6578` | Chữ phụ |
-| `line` | `#D5DCE8` | Đường kẻ 1 px |
-| `primary` | `#0B5CAB` | CTA, liên kết, mục đang mở |
-| `primary-hover` | `#094A8C` | Hover CTA |
-| `navy` / `board` | `#0A2540` | Panel bài giảng, cột đăng nhập |
-| `chalk` | `#F7FAFC` | Chữ trên navy |
-| `teal` | `#0F766E` | Thành công, gia sư (màu phụ) |
-| `warn` | `#B45309` | Chờ duyệt |
-| `danger` | `#B42318` | Sai / bác / kẹt |
-
-`clay` trong Tailwind là bí danh của `primary` — terracotta cũ đã bỏ vì trùng cụm cream + serif + đất nung.
+| `ink` / `board` | `#17181C` | Chữ, ray, CTA |
+| `canvas` / `paper` | `#FFFFFF` | Trang — không nền xanh xám |
+| `wash` | `#F6F6F7` | Hàng xen, ô nhập |
+| `muted` | `#5C5F66` | Chữ phụ |
+| `line` | `#E2E3E6` | Kẻ |
+| `chalk` | `#F4F4F5` | Chữ trên ray |
+| `mark` / `danger` | `#C81E1E` | Bút đỏ chấm — **một** màu nhớ |
+| `pass` / `teal` | `#1B7A4B` | Đạt / duyệt |
+| `wait` / `warn` | `#9A6700` | Chờ |
+| `primary` | `#17181C` | Bí danh ink — hết xanh học thuật |
 
 ## Chữ
 
-Một họ: **Source Sans 3** (`next/font/google`, `latin` + `latin-ext` + `vietnamese`, `display: swap`).
-
-Coursera dùng Source Sans Pro; Source Sans 3 là thế hệ sau và có subset tiếng Việt. Không thêm Literata / Be Vietnam Pro.
-
-| Bậc | Cỡ / nặng | Dùng |
-| --- | --- | --- |
-| Display | 32 / 600 | `h1` trang |
-| Title | 24 / 600 | `h2` khối |
-| Body | 16 / 400, leading 1.5 | Đoạn |
-| Small | 14 / 400 | Phụ, form |
-| Micro | 12 / 600 | Huy hiệu |
-
-Cột số dùng `tabular-nums`. Tiêu đề `text-pretty`. Không viết HOA giãn chữ cho kicker.
+- **IBM Plex Sans** (`latin` + `latin-ext` + `vietnamese`, 400/500/600/700). Carbon / InstUI-adjacent, có tiếng Việt, không phải Inter / Source Sans / Poppins.
+- **IBM Plex Mono** cho mã bài và số thành thạo.
 
 ## Bố cục
 
 ```
-+--------------------------------------------------+
-| TOP BAR trắng, cao 56px, kẻ dưới                 |
-| [menu] [mark] Học toán với AI     [tên] [Thoát]  |
-+--------+-----------------------------------------+
-| SIDE   | #noi-dung  max 72rem                    |
-| 256px  | nền paper, thẻ canvas                   |
-| trắng  |                                         |
-+--------+-----------------------------------------+
++--------+--------------------------------+
+| RAY    | trang trắng                    |
+| 220px  | phiếu / danh sách / bảng       |
+| mực    |                                |
++--------+--------------------------------+
 ```
 
-- Desktop: top bar xuyên ngang, sidebar dưới top bar, cố định trái.
-- Điện thoại: top bar + ngăn kéo; overlay `overscroll-contain`.
-- Căn trái. Lưới 8 px. Bán kính thẻ 16 px, nút 8 px.
-- Một chỗ đậm: panel navy (lời chào lộ trình, cột trái đăng nhập). Phần còn lại im.
+Desktop: không top bar. Điện thoại: top bar + ngăn kéo mực. Skip `#noi-dung`.
+
+Thẻ không còn là đơn vị mặc định. Việc = hàng (Classroom). Bài đang làm = một phiếu (Brilliant). Thành thạo = hàng ô (Khan).
 
 ## Thành phần
 
-- **Nút:** hình chữ nhật 8 px. Primary = `primary`. Secondary = canvas + kẻ. Destructive = `danger`.
-- **Chip bước 5 bước:** được đánh số vì đúng là chuỗi. Đang mở = primary; sai = danger.
-- **Huy hiệu trạng thái:** hình chữ nhật 6 px, không viên thuốc, không uppercase.
-- **Thẻ:** canvas, kẻ 1 px, không bóng xám đồng loạt.
-- **Ô form:** nhãn bọc control, `focus-visible` vòng primary 2 px.
+- Nút primary = mực đặc, bán kính 6 px.
+- Bước 5 bước = cột số bên trái phiếu, không chip viên thuốc.
+- Sai = viền `mark` + banner dưới bước.
+- Không hero navy, không số khổng lồ trên 3 thẻ giống nhau.
 
 ## A11y
 
-- Skip link → `#noi-dung`.
-- `:focus-visible` bắt buộc; không `outline: none` trần.
-- `prefers-reduced-motion`: tắt transition.
-- Nút chỉ icon có `aria-label`. Icon trang trí `aria-hidden`.
-- Thông báo chấm có `aria-live="polite"`.
-
-## Việc cố ý không làm
-
-- Không dark mode ở nguyên mẫu.
-- Không registry shadcn.
-- Không đổ gradient trang trí, không accent một từ trong tiêu đề.
-- Không đổi `data-testid` khi restyle.
+Skip link, `:focus-visible` mực, `prefers-reduced-motion`, `aria-live` khi chấm. Giữ `data-testid`.

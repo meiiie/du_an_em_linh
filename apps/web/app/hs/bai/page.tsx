@@ -1,8 +1,6 @@
-import Link from "next/link";
 import { eq } from "drizzle-orm";
-import { Badge } from "@/components/ui/badge";
-import { Card } from "@/components/ui/card";
 import { PageHeader } from "@/components/ui/page-header";
+import { WorkRow } from "@/components/work-row";
 import { requireRole } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { problems } from "@/lib/db/schema";
@@ -21,27 +19,21 @@ export default async function Page() {
         title="Ngân bài đã phát hành"
         description="Chỉ bài qua cổng ba tầng hoặc được giáo viên duyệt mới mở. Bài chờ duyệt không làm được."
       />
-      <ul className="space-y-3">
+      <div className="border-y border-line">
         {pubs.map((p) => (
-          <li key={p.id}>
-            <Card>
-              <div className="flex flex-wrap items-center gap-2">
-                <Badge tone="info">{LABEL4[p.mucDo4 as Muc4] || p.mucDo4}</Badge>
-                <span className="font-mono text-xs text-muted" translate="no">
-                  {p.code}
-                </span>
-              </div>
-              <Link
-                href={`/hs/luyen/${p.id}`}
-                className="mt-2 block font-medium text-primary hover:underline"
-                data-testid={`catalog-${p.code}`}
-              >
-                {p.statementText}
-              </Link>
-            </Card>
-          </li>
+          <WorkRow
+            key={p.id}
+            href={`/hs/luyen/${p.id}`}
+            testId={`catalog-${p.code}`}
+            kicker={
+              <>
+                {LABEL4[p.mucDo4 as Muc4] || p.mucDo4} · <span translate="no">{p.code}</span>
+              </>
+            }
+            title={p.statementText}
+          />
         ))}
-      </ul>
+      </div>
       {waiting.length ? <p className="mt-4 text-sm text-warn">{waiting.length} bài đang chờ thầy cô duyệt.</p> : null}
     </main>
   );

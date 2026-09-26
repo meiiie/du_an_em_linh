@@ -18,7 +18,7 @@
 - Cài đặt lớp: bật/tắt mở lời giải sau khi nộp xong cả năm bước.
 - Trích dẫn tầng 2/3 hiện bằng lời, không in JSON thô.
 - Sinh biến thể báo mã bài và trạng thái cổng.
-- Hệ thống thiết kế LMS (token, Source Sans 3, top bar + sidebar sáng) ghi ở `docs/DESIGN.md`. Không chép màu/logo Coursera.
+- Hệ thống thiết kế «phiếu làm bài» (IBM Plex, ray mực, danh sách thay thẻ, ô thành thạo) ghi ở `docs/DESIGN.md`. Lấy cấu trúc Khan/Classroom/Canvas/Brilliant; không chép màu/logo.
 
 ## Skill dùng khi chỉnh UI / API
 
