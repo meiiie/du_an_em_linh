@@ -21,6 +21,16 @@
   --warn: #9a6700;
   --mark: #c81e1e;
   --pass: #1b7a4b;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-8: 48px;
+  --control-h: 40px;
+  --target: 44px;
+  --radius: 6px;
 }
 
 html {
@@ -47,7 +57,7 @@ body {
   border-radius: 6px;
   background: var(--ink);
   color: var(--chalk);
-  padding: 8px 12px;
+  padding: var(--space-2) var(--space-3);
   font-size: 0.875rem;
   font-weight: 600;
 }
@@ -63,12 +73,18 @@ body {
 math-field {
   display: block;
   width: 100%;
-  min-height: 46px;
-  padding: 6px 10px;
-  border-radius: 6px;
+  min-height: var(--control-h);
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius);
   border: 1px solid var(--line);
   background: var(--wash);
   font-size: 1.05rem;
+}
+
+@media (pointer: coarse) {
+  math-field {
+    min-height: var(--target);
+  }
 }
 
 .cell-bad {

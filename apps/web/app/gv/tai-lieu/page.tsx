@@ -18,7 +18,7 @@ export default async function Page() {
         description="Tầng 2 chỉ dùng văn bản đã nạp có quyền rõ. Tài liệu «chưa rõ quyền» bị bỏ qua."
       />
       <div className="grid gap-8 lg:grid-cols-2">
-        <form action={taiTaiLieu} className="space-y-3 border-y border-line py-5">
+        <form action={taiTaiLieu} className="space-y-4 border-y border-line py-6">
           <h2 className="text-base font-semibold">Nạp tài liệu</h2>
           <Field label="Tên tài liệu">
             <input name="title" required placeholder="Ví dụ: Tóm tắt đơn điệu…" className={fieldControl} />
@@ -41,7 +41,7 @@ export default async function Page() {
             <textarea name="text" rows={6} placeholder="Dán văn bản…" className={fieldControl} />
           </Field>
           <Field label="Tệp đính kèm (tùy chọn)">
-            <input name="file" type="file" accept=".pdf,.txt,.md" className="text-sm" />
+            <input name="file" type="file" accept=".pdf,.txt,.md" className="min-h-10 text-sm [@media(pointer:coarse)]:min-h-11" />
           </Field>
           <Button type="submit">Lưu</Button>
         </form>

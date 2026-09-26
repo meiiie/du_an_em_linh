@@ -18,7 +18,8 @@
 - Cài đặt lớp: bật/tắt mở lời giải sau khi nộp xong cả năm bước.
 - Trích dẫn tầng 2/3 hiện bằng lời, không in JSON thô.
 - Sinh biến thể báo mã bài và trạng thái cổng.
-- Hệ thống thiết kế «phiếu làm bài» (IBM Plex, ray mực, danh sách thay thẻ, ô thành thạo) ghi ở `docs/DESIGN.md`. Lấy cấu trúc Khan/Classroom/Canvas/Brilliant; không chép màu/logo.
+- Hệ thống thiết kế «phiếu làm bài» (IBM Plex, ray mực, danh sách thay thẻ, ô thành thạo, lưới 8 px, nút 40/44) ghi ở `docs/DESIGN.md`. Lấy cấu trúc Khan/Classroom/Canvas/Brilliant; không chép màu/logo.
+- Harness agent: `AGENTS.md` + `CLAUDE.md` lớp theo thư mục, `.claude/settings.json`, `docs/CODEMAP.md`.
 
 ## Skill dùng khi chỉnh UI / API
 

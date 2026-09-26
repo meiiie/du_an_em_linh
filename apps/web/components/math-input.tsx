@@ -43,13 +43,13 @@ export function MathInput({
 
   return (
     <label className="block text-sm">
-      <span className="mb-1 block font-medium">{label}</span>
+      <span className="mb-2 block font-medium">{label}</span>
       <math-field ref={ref as never} data-testid={`mf-${testId}`} />
       <input
         data-testid={testId}
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="mt-1 w-full rounded-button border border-dashed border-line bg-wash px-2 py-1 font-mono text-xs"
+        className="mt-2 w-full min-h-8 rounded-button border border-dashed border-line bg-wash px-3 py-2 font-mono text-xs"
         placeholder="LaTeX"
         aria-label={`${label} dạng LaTeX`}
       />

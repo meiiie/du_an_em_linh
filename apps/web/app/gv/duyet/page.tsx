@@ -33,7 +33,7 @@ export default async function Page() {
         const run = runs.filter((r) => r.problemId === p.id).sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())[0];
         const ts = tiers.filter((t) => t.runId === run?.id).sort((a, b) => a.tier - b.tier);
         return (
-          <article key={p.id} data-testid={`duyet-${p.code}`} className="border-t border-line pt-5">
+          <article key={p.id} data-testid={`duyet-${p.code}`} className="border-t border-line pt-6">
             <div className="flex flex-wrap items-center gap-2">
               <p className="font-mono text-sm font-medium" translate="no">
                 {p.code}
@@ -45,7 +45,7 @@ export default async function Page() {
               {ts.map((t) => {
                 const cites = moTaTrichDan(t.citation);
                 return (
-                  <li key={t.id} className="bg-wash px-3 py-2">
+                  <li key={t.id} className="bg-wash px-4 py-3">
                     <span className="font-medium">Tầng {t.tier}:</span> {STATUS_LABEL[t.status] || t.status}
                     {t.reasonText ? ` — ${t.reasonText}` : ""}
                     {cites.length ? (
@@ -60,7 +60,7 @@ export default async function Page() {
               })}
             </ul>
             {p.status === "CHO_GIAO_VIEN_DUYET" ? (
-              <div className="mt-3 flex flex-wrap gap-2">
+              <div className="mt-4 flex flex-wrap gap-2">
                 <form
                   action={async (fd) => {
                     "use server";

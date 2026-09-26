@@ -23,7 +23,7 @@ export default async function Page() {
       />
       <section className="border-y border-line py-4">
         {stale.length ? (
-          <p className="mb-3 bg-amber-50 px-3 py-2 text-sm">
+          <p className="mb-4 bg-amber-50 px-4 py-3 text-sm">
             Đổi phiên bản làm {stale.length} lần kiểm định cũ. Cần kiểm lại khi sửa nội dung bài.
           </p>
         ) : null}
@@ -38,7 +38,7 @@ export default async function Page() {
           ))}
         </ul>
       </section>
-      <form action={themCongThuc} className="space-y-3 border-y border-line py-5">
+      <form action={themCongThuc} className="space-y-4 border-y border-line py-6">
         <h2 className="text-base font-semibold">Thêm công thức — tạo phiên bản mới</h2>
         <Field label="Tên">
           <input name="title" required placeholder="Tên công thức…" className={fieldControl} />

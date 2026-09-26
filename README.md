@@ -4,7 +4,7 @@ Nguyên mẫu nghiên cứu (NCKH) cho học sinh THPT, môn Toán 12, chủ đ�
 
 Học sinh làm bài theo năm bước (`B.DH.TXD`, `B.DH.DAOHAM`, `B.DH.NGHIEM`, `B.DH.XETDAU`, `B.DH.KETLUAN`). Gia sư sửa và giảng, không đưa đáp án. Mỗi bài phải qua cổng kiểm định ba tầng trước khi phát hành.
 
-Giao diện theo **phiếu làm bài** (Khan / Classroom / Canvas / Brilliant — cấu trúc, không thương hiệu): ray mực, trang trắng, IBM Plex Sans + Mono, CTA mực, bút đỏ khi chấm. Token ở `docs/DESIGN.md`. Đối chiếu sư phạm ở `docs/doi-chieu-thiet-ke.md`.
+Giao diện theo **phiếu làm bài** (Khan / Classroom / Canvas / Brilliant — cấu trúc, không thương hiệu): ray mực, trang trắng, IBM Plex Sans + Mono, CTA mực, bút đỏ khi chấm. Lưới 8 px, nút 40/44. Token ở `docs/DESIGN.md`. Đối chiếu sư phạm ở `docs/doi-chieu-thiet-ke.md`. Agent: `AGENTS.md` (Claude Code đọc `CLAUDE.md`). Bản đồ: `docs/CODEMAP.md`.
 
 ## Sơ đồ
 
@@ -102,7 +102,7 @@ Số liệu pytest và e2e ghi ở cuối phần này sau lần chạy trên má
 - Gia sư offline dùng câu mẫu cộng gợi ý đã kiểm. Có `LLM_API_KEY` thì gọi API tương thích OpenAI; bộ lọc vẫn chạy sau đó.
 - Chưa có cổng phụ huynh. Học sinh không đánh dấu tổng hợp sẽ bị chặn nếu thiếu bản ghi đồng ý.
 - Ô LaTeX MathLive kèm một ô gõ LaTeX thường. Chấm đọc ô thường đó.
-- Giao diện là Tailwind theo `docs/DESIGN.md`, chưa gắn registry shadcn/ui. Skill FE/BE nằm ở `.cursor/skills/`.
+- Giao diện là Tailwind theo `docs/DESIGN.md`, chưa gắn registry shadcn/ui. Skill FE/BE nằm ở `.cursor/skills/`. Harness agent: `AGENTS.md`, `.claude/`.
 - Mở lời giải sau khi nộp mặc định tắt và chưa có nút bật trên màn hình (cờ `class_settings.mo_loi_giai_sau_khi_nop`).
 - Ảnh chụp màn hình demo nằm trong mô tả pull request, không nằm trong git.
 

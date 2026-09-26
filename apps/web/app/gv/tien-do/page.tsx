@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { eq } from "drizzle-orm";
+import { buttonClasses } from "@/components/ui/button";
 import { PageHeader } from "@/components/ui/page-header";
 import { requireRole } from "@/lib/auth";
 import { ghiNhatKy } from "@/lib/actions/hs";
@@ -29,7 +30,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ m
           <Link
             data-testid="toggle-muc"
             href={view3 ? "/gv/tien-do" : "/gv/tien-do?muc=3"}
-            className="rounded-button px-3 py-1.5 text-sm font-medium ring-1 ring-line hover:bg-wash"
+            className={buttonClasses({ variant: "secondary" })}
           >
             {view3 ? "Xem 4 mức" : "Xem 3 mức Biết / Hiểu / Vận dụng"}
           </Link>

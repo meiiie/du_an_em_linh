@@ -4,7 +4,7 @@ export function BrandMark({ className, invert = false }: { className?: string; i
   return (
     <span
       className={cn(
-        "inline-flex h-7 w-7 items-center justify-center rounded-button",
+        "inline-flex size-8 items-center justify-center rounded-button",
         invert ? "bg-chalk text-ink" : "bg-ink text-chalk",
         className,
       )}

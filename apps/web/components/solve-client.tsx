@@ -3,8 +3,11 @@
 import { useMemo, useState } from "react";
 import { hoiGiaSu, nopBuoc, type StepPayload } from "@/lib/actions/hs";
 import { BUOC } from "@/lib/levels";
+import { Button, buttonClasses } from "./ui/button";
+import { fieldControl } from "./ui/field";
 import { MathInput } from "./math-input";
 import { Tex } from "./tex";
+import { cn } from "@/lib/cn";
 
 type Grade = {
   ket_qua: string;
@@ -155,7 +158,7 @@ export function SolveClient({
                 type="button"
                 data-testid={`step-${b.ma}`}
                 onClick={() => setStep(i)}
-                className={`flex w-full items-center gap-2 px-3 py-2 text-left text-sm ${
+                className={`flex min-h-11 w-full items-center gap-3 px-4 text-left text-sm ${
                   badStep === b.ma
                     ? "bg-red-50 font-medium text-mark"
                     : i === step
@@ -172,16 +175,16 @@ export function SolveClient({
           ))}
         </ol>
 
-        <div className="mt-4 space-y-3">
+        <div className="mt-6 space-y-4">
           {ma === "B.DH.TXD" && (
-            <div className={lineBad("B.DH.TXD", 0) ? "cell-bad rounded-xl p-2" : ""}>
+            <div className={lineBad("B.DH.TXD", 0) ? "cell-bad rounded-button p-2" : ""}>
               <MathInput testId="latex-txd" label="Tập xác định" value={txd} onChange={setTxd} />
             </div>
           )}
           {ma === "B.DH.DAOHAM" && (
             <div className="space-y-2">
               {dh.map((line, i) => (
-                <div key={i} className={lineBad("B.DH.DAOHAM", i) ? "cell-bad rounded-xl p-2" : ""}>
+                <div key={i} className={lineBad("B.DH.DAOHAM", i) ? "cell-bad rounded-button p-2" : ""}>
                   <MathInput
                     testId={i === 0 ? "latex-dh" : `latex-dh-${i}`}
                     label={`Dòng ${i + 1} của đạo hàm`}
@@ -190,15 +193,15 @@ export function SolveClient({
                   />
                 </div>
               ))}
-              <button type="button" className="text-sm underline underline-offset-2" onClick={() => setDh([...dh, ""])}>
+              <button type="button" className={cn(buttonClasses({ variant: "ghost", size: "sm" }), "px-0")} onClick={() => setDh([...dh, ""])}>
                 Thêm dòng biến đổi
               </button>
             </div>
           )}
           {ma === "B.DH.NGHIEM" && (
-            <div className={`space-y-2 ${badStep === "B.DH.NGHIEM" ? "cell-bad rounded-xl p-2" : ""}`} data-testid="nghiem-block">
+            <div className={`space-y-4 ${badStep === "B.DH.NGHIEM" ? "cell-bad rounded-button p-2" : ""}`} data-testid="nghiem-block">
               {roots.map((r, i) => (
-                <div key={i} className="flex flex-col gap-1 sm:flex-row sm:items-end">
+                <div key={i} className="flex flex-col gap-2 sm:flex-row sm:items-end">
                   <div className="flex-1">
                     <MathInput
                       testId={i === 0 ? "latex-nghiem" : `latex-nghiem-${i}`}
@@ -209,7 +212,7 @@ export function SolveClient({
                   </div>
                   <button
                     type="button"
-                    className="rounded-button border border-line px-2 py-1 text-xs hover:bg-paper"
+                    className={buttonClasses({ variant: "secondary", size: "sm" })}
                     onClick={() =>
                       setRoots(roots.map((x, j) => (j === i ? { ...x, loai: x.loai === "NGHIEM" ? "KHONG_XD" : "NGHIEM" } : x)))
                     }
@@ -218,7 +221,7 @@ export function SolveClient({
                   </button>
                 </div>
               ))}
-              <button type="button" data-testid="them-nghiem" className="text-sm underline underline-offset-2" onClick={() => setRoots([...roots, { latex: "", loai: "NGHIEM" }])}>
+              <button type="button" data-testid="them-nghiem" className={cn(buttonClasses({ variant: "ghost", size: "sm" }), "px-0")} onClick={() => setRoots([...roots, { latex: "", loai: "NGHIEM" }])}>
                 Thêm dòng nghiệm
               </button>
             </div>
@@ -228,19 +231,18 @@ export function SolveClient({
               <p className="text-sm text-muted">
                 Em tự ghi các mốc trên hàng x. Hai đầu −∞ và +∞ là khung bảng, không phải điểm tới hạn. Ứng dụng không thêm mốc và không báo đúng sai từng ô khi đang gõ.
               </p>
-              <div className="mt-2 flex gap-2">
+              <div className="mt-4 flex gap-2">
                 <input
                   data-testid="moc-nhap"
                   value={draftPoint}
                   onChange={(e) => setDraftPoint(e.target.value)}
-                  className="w-28 rounded-button border border-line px-2 py-1"
+                  className={`w-28 ${fieldControl}`}
                   placeholder="mốc x…"
                   aria-label="Mốc x"
                 />
-                <button
+                <Button
                   type="button"
                   data-testid="moc-them"
-                  className="rounded-button bg-ink px-3 py-1 text-sm text-chalk hover:bg-primary-hover"
                   onClick={() => {
                     const v = draftPoint.trim();
                     if (!v) return;
@@ -256,9 +258,9 @@ export function SolveClient({
                   }}
                 >
                   Thêm mốc
-                </button>
+                </Button>
               </div>
-              <div className="mt-3 overflow-x-auto">
+              <div className="mt-4 overflow-x-auto">
                 <table className="w-full min-w-[320px] border-collapse text-center text-sm">
                   <tbody>
                     <tr>
@@ -269,7 +271,11 @@ export function SolveClient({
                           return (
                             <td key={k} className="p-1 font-semibold">
                               {p}
-                              <button type="button" className="ml-1 text-xs text-danger hover:underline" onClick={() => setPoints(points.filter((x) => x !== p))}>
+                              <button
+                                type="button"
+                                className="ml-1 inline-flex min-h-8 min-w-8 items-center justify-center text-xs text-danger hover:underline"
+                                onClick={() => setPoints(points.filter((x) => x !== p))}
+                              >
                                 xóa
                               </button>
                             </td>
@@ -287,13 +293,13 @@ export function SolveClient({
                         const cur = signs[k];
                         return (
                           <td key={k} className={`p-1 ${cellBad("DAU_YPHAY", k) ? "cell-bad" : ""}`}>
-                            <div className="flex justify-center gap-0.5">
+                            <div className="flex justify-center gap-1">
                               {(pointCell ? ["0", "||"] : ["+", "−"]).map((opt) => (
                                 <button
                                   key={opt}
                                   type="button"
                                   data-testid={`dau-${k}-${opt === "−" ? "-" : opt}`}
-                                                  className={`rounded px-1.5 py-0.5 text-xs ${cur === (opt === "−" ? "-" : opt) ? "bg-ink text-chalk" : "bg-wash"}`}
+                                  className={`inline-flex min-h-8 min-w-8 items-center justify-center rounded text-xs ${cur === (opt === "−" ? "-" : opt) ? "bg-ink text-chalk" : "bg-wash"}`}
                                   onClick={() => {
                                     const val = opt === "−" ? "-" : opt;
                                     log({
@@ -321,7 +327,7 @@ export function SolveClient({
                           <td key={k} />
                         ) : (
                           <td key={k} className={`p-1 ${cellBad("BIEN_THIEN", k) ? "cell-bad" : ""}`}>
-                            <div className="flex justify-center gap-0.5">
+                            <div className="flex justify-center gap-1">
                               {[
                                 ["TANG", "↗"],
                                 ["GIAM", "↘"],
@@ -330,7 +336,7 @@ export function SolveClient({
                                   key={val}
                                   type="button"
                                   data-testid={`mui-${k}-${val}`}
-                                  className={`rounded px-1.5 py-0.5 text-xs ${arrows[k] === val ? "bg-pass text-white" : "bg-wash"}`}
+                                  className={`inline-flex min-h-8 min-w-8 items-center justify-center rounded text-xs ${arrows[k] === val ? "bg-pass text-white" : "bg-wash"}`}
                                   onClick={() => {
                                     log({
                                       ma_buoc: "B.DH.XETDAU",
@@ -356,7 +362,7 @@ export function SolveClient({
             </div>
           )}
           {ma === "B.DH.KETLUAN" && (
-            <div className={`space-y-2 ${badStep === "B.DH.KETLUAN" ? "cell-bad rounded-xl p-2" : ""}`}>
+            <div className={`space-y-4 ${badStep === "B.DH.KETLUAN" ? "cell-bad rounded-button p-2" : ""}`}>
               {(
                 [
                   ["db", "latex-db", "Đồng biến"],
@@ -366,12 +372,12 @@ export function SolveClient({
                 ] as const
               ).map(([key, id, label]) => (
                 <label key={key} className="block text-sm">
-                  <span className="font-medium">{label}</span>
+                  <span className="mb-2 block font-medium">{label}</span>
                   <input
                     data-testid={id}
                     value={kl[key]}
                     onChange={(e) => setKl({ ...kl, [key]: e.target.value })}
-                    className="mt-1 w-full rounded-button border border-line px-2 py-1.5"
+                    className={fieldControl}
                     placeholder={
                       key === "db"
                         ? "đồng biến trên (...; ...) và (...; ...)"
@@ -392,28 +398,22 @@ export function SolveClient({
           <p
             data-testid="cham-thong-bao"
             aria-live="polite"
-            className={`mt-4 px-3 py-2 text-sm ${grade.ket_qua === "DAT" ? "bg-pass/10 text-pass" : "bg-amber-50 text-amber-950"}`}
+            className={`mt-6 px-4 py-3 text-sm ${grade.ket_qua === "DAT" ? "bg-pass/10 text-pass" : "bg-amber-50 text-amber-950"}`}
           >
             {grade.finished ? "Em đã hoàn thành bài này." : grade.thong_bao}
           </p>
         ) : null}
 
         {grade?.finished && moLoiGiai && loiGiai ? (
-          <div data-testid="loi-giai-sau-nop" className="mt-3 rounded-xl bg-paper px-3 py-2 text-sm leading-relaxed">
+          <div data-testid="loi-giai-sau-nop" className="mt-4 rounded-button bg-paper px-4 py-3 text-sm leading-relaxed">
             <p className="font-semibold">Lời giải lớp cho phép xem sau khi nộp</p>
             <p className="mt-1">{loiGiai}</p>
           </div>
         ) : null}
 
-        <button
-          type="button"
-          data-testid="nop-buoc"
-          disabled={busy}
-          onClick={submit}
-          className="mt-4 w-full rounded-button bg-ink px-4 py-3 font-medium text-chalk hover:bg-primary-hover disabled:opacity-60"
-        >
+        <Button type="button" data-testid="nop-buoc" disabled={busy} onClick={submit} className="mt-8 w-full">
           {busy ? "Đang chấm…" : `Nộp bước ${BUOC[step].ten}`}
-        </button>
+        </Button>
       </section>
 
       <aside className={`border-t border-line pt-4 lg:border-t-0 lg:pt-0 ${openTutor ? "block" : "hidden lg:block"}`} data-testid="tutor-panel">
@@ -424,20 +424,20 @@ export function SolveClient({
           </div>
           <button
             type="button"
-            className="text-sm underline underline-offset-2 lg:hidden"
+            className={cn(buttonClasses({ variant: "ghost", size: "sm" }), "lg:hidden")}
             onClick={() => setOpenTutor(false)}
           >
             Đóng
           </button>
         </div>
-        <div data-testid="tutor-log" className="mt-3 max-h-80 space-y-2 overflow-y-auto">
+        <div data-testid="tutor-log" className="mt-4 max-h-80 space-y-2 overflow-y-auto">
           {chat.map((m, i) => (
-            <p key={i} className={`px-3 py-2 text-sm ${m.role === "hs" ? "bg-ink text-chalk" : "bg-wash"}`}>
+            <p key={i} className={`px-4 py-3 text-sm ${m.role === "hs" ? "bg-ink text-chalk" : "bg-wash"}`}>
               {m.text}
             </p>
           ))}
         </div>
-        <div className="mt-3 flex gap-2">
+        <div className="mt-4 flex gap-2">
           <label className="sr-only" htmlFor="tutor-input">
             Câu hỏi cho gia sư
           </label>
@@ -446,23 +446,23 @@ export function SolveClient({
             data-testid="tutor-input"
             value={ask}
             onChange={(e) => setAsk(e.target.value)}
-            className="min-w-0 flex-1 rounded-button border border-line px-2 py-2 text-sm"
+            className={`min-w-0 flex-1 ${fieldControl}`}
             placeholder="Hỏi gợi ý, không hỏi đáp án…"
           />
-          <button type="button" data-testid="tutor-send" className="rounded-button bg-ink px-3 text-sm font-medium text-chalk hover:bg-primary-hover" onClick={sendChat}>
+          <Button type="button" data-testid="tutor-send" onClick={sendChat}>
             Gửi
-          </button>
+          </Button>
         </div>
       </aside>
       {!openTutor ? (
-        <button
+        <Button
           type="button"
           data-testid="mo-gia-su"
-          className="fixed bottom-4 right-4 z-20 rounded-button bg-ink px-4 py-3 text-sm font-medium text-chalk shadow-lg lg:hidden"
+          className="fixed bottom-4 right-4 z-20 shadow-lg lg:hidden"
           onClick={() => setOpenTutor(true)}
         >
           Hỏi gia sư
-        </button>
+        </Button>
       ) : null}
     </div>
   );

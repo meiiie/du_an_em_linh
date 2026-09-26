@@ -1,8 +1,10 @@
 import Link from "next/link";
 import { eq } from "drizzle-orm";
 import { Badge } from "@/components/ui/badge";
+import { buttonClasses } from "@/components/ui/button";
 import { MasteryCells } from "@/components/mastery-cells";
 import { WorkRow } from "@/components/work-row";
+import { cn } from "@/lib/cn";
 import { requireRole } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { masteryStates, problems, skills } from "@/lib/db/schema";
@@ -20,21 +22,18 @@ export default async function HsHome() {
   const waiting = await db.select().from(problems).where(eq(problems.status, "CHO_GIAO_VIEN_DUYET"));
   const goi = await recommend(u.id);
   return (
-    <main className="space-y-10">
+    <main className="space-y-8">
       <header>
         <p className="text-sm text-muted">Lộ trình bốn mức · nhận biết đến vận dụng cao</p>
-        <h1 className="mt-1 text-pretty text-[1.75rem] font-semibold tracking-tight">Chào {u.displayName}</h1>
+        <h1 className="mt-2 text-pretty text-[1.75rem] font-semibold tracking-tight">Chào {u.displayName}</h1>
       </header>
 
       {goi ? (
-        <section className="border-y border-line py-5">
+        <section className="border-y border-line py-6">
           <p className="text-sm text-muted">Bài nên làm tiếp</p>
-          <p className="mt-1 text-lg font-medium leading-snug">{goi.problem.statementText}</p>
+          <p className="mt-2 text-lg font-medium leading-snug">{goi.problem.statementText}</p>
           <p className="mt-2 text-sm text-muted">{goi.lyDo}</p>
-          <Link
-            href={`/hs/luyen/${goi.problem.id}`}
-            className="mt-4 inline-flex rounded-button bg-ink px-4 py-2.5 text-sm font-medium text-chalk hover:bg-primary-hover"
-          >
+          <Link href={`/hs/luyen/${goi.problem.id}`} className={cn(buttonClasses(), "mt-4")}>
             Làm bước tiếp
           </Link>
         </section>

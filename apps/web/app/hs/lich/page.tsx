@@ -24,7 +24,7 @@ export default async function LichPage() {
         {slots.length === 0 ? <p className="mt-2 text-sm text-muted">Chưa có khung giờ.</p> : null}
         <ul className="mt-2 divide-y divide-line border-y border-line text-sm">
           {slots.map((sl) => (
-            <li key={sl.thu + sl.gio} className="flex justify-between gap-2 py-2.5">
+            <li key={sl.thu + sl.gio} className="flex min-h-11 justify-between gap-2 py-3">
               <span className="font-medium">{sl.thu}</span>
               <span className="tabular text-muted">{sl.gio}</span>
               <span className="text-muted">{sl.viec}</span>
@@ -37,7 +37,7 @@ export default async function LichPage() {
         {rems.length === 0 ? <p className="mt-2 text-sm text-muted">Không có lời nhắc.</p> : null}
         <ul className="mt-2 divide-y divide-line border-y border-line">
           {rems.map((r) => (
-            <li key={r.id} className="py-2.5 text-sm">
+            <li key={r.id} className="py-3 text-sm">
               <span className="font-medium">{r.title}</span> — {r.body}
               <span className="mt-1 block text-xs text-muted">
                 {r.sendAt} · kênh {r.channel}

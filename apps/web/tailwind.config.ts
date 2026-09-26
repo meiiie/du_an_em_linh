@@ -34,6 +34,14 @@ const config: Config = {
         button: "6px",
         card: "6px",
       },
+      minHeight: {
+        control: "var(--control-h)",
+        target: "var(--target)",
+      },
+      height: {
+        control: "var(--control-h)",
+        target: "var(--target)",
+      },
     },
   },
   plugins: [],

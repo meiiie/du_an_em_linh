@@ -33,7 +33,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ m
           "use server";
           await sinhBienThe(fd);
         }}
-        className="space-y-3 border-y border-line py-5"
+        className="space-y-4 border-y border-line py-6"
       >
         <Field label="Dạng hàm">
           <select name="dang" className={fieldControl} autoComplete="off">

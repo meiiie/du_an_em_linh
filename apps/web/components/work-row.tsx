@@ -18,7 +18,7 @@ export function WorkRow({
     <Link
       href={href}
       data-testid={testId}
-      className="flex items-start justify-between gap-4 border-b border-line py-3 last:border-0 hover:bg-wash"
+      className="flex min-h-11 items-start justify-between gap-4 border-b border-line py-3 last:border-0 hover:bg-wash focus-visible:bg-wash"
     >
       <span className="min-w-0">
         {kicker ? <span className="mb-0.5 block text-xs text-muted">{kicker}</span> : null}

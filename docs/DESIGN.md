@@ -52,13 +52,53 @@ Desktop: không top bar. Điện thoại: top bar + ngăn kéo mực. Skip `#noi
 
 Thẻ không còn là đơn vị mặc định. Việc = hàng (Classroom). Bài đang làm = một phiếu (Brilliant). Thành thạo = hàng ô (Khan).
 
+## Lưới và nhịp (SOTA 2026-09-27)
+
+Một lưới **8 px** — cùng hệ Apple HIG, Material 3, IBM Carbon. Bậc: 4 / 8 / 12 / 16 / 24 / 32 / 48 (`--space-1` … `--space-8`). Không `20`, `10`, `14` trừ khi là cỡ chữ.
+
+| Chỗ | Token | Lý do |
+| --- | --- | --- |
+| Nhãn → ô | 8 | NN/g form: đủ tách, vẫn một nhóm |
+| Ô ↔ ô trong form | 16 | Một trường, không dính hàng |
+| Khối trong phiếu | 16–24 | Hàng việc Classroom |
+| Mục trang | 32 | Nhịp section Carbon / Stripe |
+| Trang ↔ mép | 16 / 24 / 32 | `px-4` / `sm:px-6` / `lg:px-8` |
+
+`padding` nới mục tiêu chạm. `margin` chỉ đẩy bố cục, **không** nới hit (Smashing Magazine, *Hit Areas*, 2024; Fitts 1954).
+
+## Giải phẫu nút
+
+Không lấy viên thuốc Material Expressive. Giữ phiếu: chữ nhật, bán kính **6 px**.
+
+| Trục | Giá trị | Nguồn |
+| --- | --- | --- |
+| Cao thị giác | 40 px | Material 3 default button; Carbon productive |
+| Cao chạm (thô / AAA) | 44 px | [WCAG 2.2 SC 2.5.5](https://www.w3.org/WAI/WCAG22/Understanding/target-size-enhanced.html) 44×44; [Apple HIG](https://developer.apple.com/design/human-interface-guidelines/buttons) 44×44 pt (vẫn sau Liquid Glass, 12/2025) |
+| Tối thiểu AA | 24×24 | [WCAG 2.2 SC 2.5.8](https://www.w3.org/WAI/WCAG22/Understanding/target-size-minimum.html) |
+| Đệm ngang | 16 px | Material 3 Expressive (5/2025) khuyến 16 dp, không 24 |
+| Chỉ biểu tượng | 44×44 | Cùng HIG / 2.5.5 — không `p-1.5` |
+| Ô xét dấu trong bảng | 32×32 | Dày phiếu; trên 24 AA, dưới 44 để bảng không vỡ |
+
+Nút `md` = `min-h-10 px-4`. `@media (pointer: coarse)` → `min-h-11`. Dùng `Button` / `buttonClasses`.
+
+Thanh công cụ điện thoại 48 px (`h-12`) — Material touch 48 dp, cao hơn 44 một nấc lưới.
+
 ## Thành phần
 
-- Nút primary = mực đặc, bán kính 6 px.
-- Bước 5 bước = cột số bên trái phiếu, không chip viên thuốc.
-- Sai = viền `mark` + banner dưới bước.
+- Nút primary = mực đặc, bán kính 6 px, giải phẫu trên.
+- Bước 5 bước = cột số bên trái phiếu, không chip viên thuốc. Mỗi hàng bước `min-h-11`.
+- Sai = viền `mark` + banner dưới bước (`px-4 py-3`).
 - Không hero navy, không số khổng lồ trên 3 thẻ giống nhau.
 
 ## A11y
 
-Skip link, `:focus-visible` mực, `prefers-reduced-motion`, `aria-live` khi chấm. Giữ `data-testid`.
+Skip link, `:focus-visible` mực, `prefers-reduced-motion`, `aria-live` khi chấm. Giữ `data-testid`. `touch-action: manipulation`.
+
+## Nguồn khoảng cách (không chép thương hiệu)
+
+- W3C WCAG 2.2 Understanding 2.5.5 / 2.5.8 (2023, vẫn hiệu lực 2026).
+- Apple Human Interface Guidelines — Buttons, *iOS/iPadOS*, cập nhật Liquid Glass 12/2025.
+- Google Material 3 — Buttons; Material 3 Expressive (Google I/O / 5/2025) horizontal padding.
+- IBM Carbon — 8 px spacing, productive button 40 / 48.
+- Fitts, P. M. (1954). *The information capacity of the human motor system*.
+- Smashing Magazine (2024). *Designing Better Target Sizes*.

@@ -72,4 +72,4 @@ Keep the tone conversational: plain verbs, sentence case, no filler, with tone m
 
 ## This product
 
-This repo is a Vietnamese THPT math LMS prototype. Follow `docs/DESIGN.md`. Do not use the cream + Literata + terracotta cluster. Do not copy Coursera trademark hex `#0056D2` or logo. Use the documented tokens (primary `#0B5CAB`, navy `#0A2540`, Source Sans 3).
+This repo is a Vietnamese THPT math LMS prototype. Follow `docs/DESIGN.md` (phiếu / markbook). Do not use the cream + Literata + terracotta cluster. Do not copy Coursera `#0056D2`, Khan `#1865f2`, IBM `#0F62FE`, Canvas electric, or Brilliant pear. Tokens: ink/board `#17181C`, paper `#FFFFFF`, mark `#C81E1E`, IBM Plex Sans + Mono. 8 px grid; button 40 visual / 44 hit / 16 horizontal padding / 6 px radius.

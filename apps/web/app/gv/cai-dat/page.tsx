@@ -17,14 +17,14 @@ export default async function Page() {
         title="Cài đặt lớp"
         description="Mở lời giải sau khi nộp mặc định tắt. Gia sư không bao giờ đọc lời giải chuẩn trong lúc học sinh đang làm."
       />
-      <form action={luuCaiDatLop} className="space-y-3 border-y border-line py-5">
+      <form action={luuCaiDatLop} className="space-y-4 border-y border-line py-6">
         <p className="text-sm text-muted">Lớp {lop?.name || "—"}</p>
         <label className="flex items-start gap-3 text-sm">
           <input
             name="mo_loi_giai"
             type="checkbox"
             defaultChecked={setting?.moLoiGiaiSauKhiNop === true}
-            className="mt-1 h-4 w-4 accent-ink"
+            className="mt-1 size-6 accent-ink"
             data-testid="mo-loi-giai"
           />
           <span>

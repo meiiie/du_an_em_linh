@@ -59,11 +59,11 @@ export function AppShell({
       </a>
 
       <header className="sticky top-0 z-30 border-b border-line bg-canvas pt-[env(safe-area-inset-top)] lg:hidden">
-        <div className="flex h-12 items-center gap-3 px-3">
+        <div className="flex h-12 items-center gap-2 px-2">
           <button
             type="button"
             data-testid="mo-sidebar"
-            className="rounded-button p-1.5 text-ink hover:bg-wash"
+            className="inline-flex size-11 items-center justify-center rounded-button text-ink hover:bg-wash"
             onClick={() => setOpen(true)}
             aria-label="Mở menu"
           >
@@ -74,7 +74,7 @@ export function AppShell({
             <span className="truncate text-sm font-medium">Học toán với AI</span>
           </Link>
           <form action={dangXuat} className="ml-auto">
-            <button className="text-sm text-muted hover:text-ink" type="submit">
+            <button className="inline-flex min-h-11 items-center px-3 text-sm text-muted hover:text-ink" type="submit">
               Thoát
             </button>
           </form>
@@ -98,7 +98,7 @@ export function AppShell({
         )}
       >
         <button
-          className="absolute right-3 top-3 text-chalk/60 hover:text-chalk lg:hidden"
+          className="absolute right-2 top-2 inline-flex size-11 items-center justify-center text-chalk/60 hover:text-chalk lg:hidden"
           onClick={() => setOpen(false)}
           aria-label="Đóng"
           data-testid="dong-sidebar"
@@ -113,7 +113,7 @@ export function AppShell({
             <p className="truncate text-xs text-chalk/55">{title}</p>
           </div>
         </div>
-        <nav className="flex flex-1 flex-col gap-0.5 overflow-y-auto px-2 pb-3 pt-4 lg:pt-1" data-testid="sidebar-nav">
+        <nav className="flex flex-1 flex-col gap-1 overflow-y-auto px-2 pb-3 pt-4 lg:pt-1" data-testid="sidebar-nav">
           {items.map((item) => {
             const Icon = ICONS[item.icon];
             const active = navActive(pathname, item.href);
@@ -125,14 +125,14 @@ export function AppShell({
                 data-testid={item.testId}
                 onClick={() => setOpen(false)}
                 className={cn(
-                  "flex items-center gap-2.5 rounded-button px-2.5 py-2 text-sm transition-colors",
+                  "flex min-h-11 items-center gap-3 rounded-button px-3 text-sm transition-colors",
                   active ? "bg-white/10 font-medium text-chalk" : "text-chalk/70 hover:bg-white/5 hover:text-chalk",
                 )}
               >
                 <Icon className="h-4 w-4 shrink-0" aria-hidden />
                 <span className="min-w-0 flex-1 truncate">{item.label}</span>
                 {count > 0 ? (
-                  <span className="tabular rounded px-1.5 py-0.5 text-[11px] font-medium bg-white/10 text-chalk">
+                  <span className="tabular rounded px-2 py-0.5 text-[11px] font-medium bg-white/10 text-chalk">
                     {count}
                   </span>
                 ) : null}
@@ -144,7 +144,7 @@ export function AppShell({
           <p className="truncate text-sm font-medium">{name}</p>
           <p className="text-xs text-chalk/50">Tài khoản thử · dữ liệu tổng hợp</p>
           <form action={dangXuat} className="mt-2 hidden lg:block">
-            <button className="text-xs text-chalk/70 hover:text-chalk" type="submit">
+            <button className="inline-flex min-h-11 items-center text-sm text-chalk/70 hover:text-chalk" type="submit">
               Thoát
             </button>
           </form>

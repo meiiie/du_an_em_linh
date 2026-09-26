@@ -1,10 +1,11 @@
 import { eq } from "drizzle-orm";
 import { redirect } from "next/navigation";
 import { BrandMark } from "@/components/brand-mark";
+import { Button } from "@/components/ui/button";
+import { Field, fieldControl } from "@/components/ui/field";
 import { createSession, verifyPassword } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { userRoles, users } from "@/lib/db/schema";
-import { fieldControl } from "@/components/ui/field";
 
 async function dangNhap(formData: FormData) {
   "use server";
@@ -41,7 +42,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
             </p>
             <ol className="mt-8 space-y-0">
               {STEPS.map((ten, i) => (
-                <li key={ten} className="flex items-center gap-3 border-b border-line py-2.5 text-sm last:border-0">
+                <li key={ten} className="flex min-h-11 items-center gap-3 border-b border-line py-3 text-sm last:border-0">
                   <span className="tabular w-6 font-mono text-muted">{i + 1}</span>
                   {ten}
                 </li>
@@ -51,7 +52,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
           <p className="text-sm text-muted">Tài khoản thử. Không có học sinh thật.</p>
         </section>
         <section className="flex flex-col justify-center px-5 py-12 sm:px-10">
-          <div className="mb-6 flex items-center gap-2 lg:hidden">
+          <div className="mb-8 flex items-center gap-2 lg:hidden">
             <BrandMark />
             <div>
               <p className="text-sm text-muted">Nguyên mẫu NCKH</p>
@@ -60,9 +61,8 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
           </div>
           <p className="text-sm text-muted lg:hidden">Toán 12 — đơn điệu và cực trị. Tài khoản thử.</p>
           <h2 className="hidden text-pretty text-2xl font-semibold lg:block">Vào lớp thử</h2>
-          <form id="form-dang-nhap" action={dangNhap} className="mt-6 max-w-md space-y-3">
-            <label className="block text-sm font-medium">
-              Email
+          <form id="form-dang-nhap" action={dangNhap} className="mt-8 max-w-md space-y-4">
+            <Field label="Email">
               <input
                 name="email"
                 type="email"
@@ -70,27 +70,26 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
                 spellCheck={false}
                 required
                 data-testid="email"
-                className={`mt-1 ${fieldControl}`}
+                className={fieldControl}
                 placeholder="hs.an@demo.local"
               />
-            </label>
-            <label className="block text-sm font-medium">
-              Mật khẩu
+            </Field>
+            <Field label="Mật khẩu">
               <input
                 name="password"
                 type="password"
                 autoComplete="current-password"
                 required
                 data-testid="password"
-                className={`mt-1 ${fieldControl}`}
+                className={fieldControl}
               />
-            </label>
+            </Field>
             {sp.loi ? <p className="text-sm text-mark">Email hoặc mật khẩu chưa đúng. Thử lại với tài khoản bên dưới.</p> : null}
-            <button className="w-full rounded-button bg-ink px-4 py-2.5 text-sm font-medium text-chalk hover:bg-primary-hover" type="submit">
+            <Button className="w-full" type="submit">
               Vào học
-            </button>
+            </Button>
           </form>
-          <ul className="mt-6 max-w-md space-y-1 text-xs text-muted">
+          <ul className="mt-8 max-w-md space-y-2 text-xs text-muted">
             <li>Giáo viên: gv@demo.local / giaovien123</li>
             <li>Học sinh: hs.an@demo.local, hs.binh@demo.local, hs.chi@demo.local / hocsinh123</li>
           </ul>
