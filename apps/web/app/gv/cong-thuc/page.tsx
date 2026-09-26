@@ -1,9 +1,10 @@
 import { desc, eq } from "drizzle-orm";
 import { themCongThuc } from "@/lib/actions/gv";
 import { Tex } from "@/components/tex";
+import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Field, fieldControl } from "@/components/ui/field";
 import { PageHeader } from "@/components/ui/page-header";
-import { fieldControl } from "@/components/ui/field";
 import { db } from "@/lib/db";
 import { formulaSheets, formulas, verificationRuns } from "@/lib/db/schema";
 
@@ -27,6 +28,7 @@ export default async function Page() {
             Đổi phiên bản làm {stale.length} lần kiểm định cũ. Cần kiểm lại khi sửa nội dung bài.
           </p>
         ) : null}
+        {rows.length === 0 ? <p className="text-sm text-muted">Chưa có công thức.</p> : null}
         <ul className="space-y-4">
           {rows.map((f) => (
             <li key={f.id}>
@@ -38,14 +40,18 @@ export default async function Page() {
         </ul>
       </Card>
       <Card>
-        <form action={themCongThuc} className="space-y-2">
-          <h2 className="font-display text-xl">Thêm công thức — tạo phiên bản mới</h2>
-          <input name="title" required placeholder="Tên" className={fieldControl} />
-          <input name="latex" placeholder="LaTeX" className={fieldControl} />
-          <textarea name="noi_dung" required placeholder="Nội dung tiếng Việt" className={fieldControl} />
-          <button className="rounded-lg bg-clay px-4 py-2 font-semibold text-white" type="submit">
-            Khóa phiên bản mới
-          </button>
+        <form action={themCongThuc} className="space-y-3">
+          <h2 className="text-xl font-semibold">Thêm công thức — tạo phiên bản mới</h2>
+          <Field label="Tên">
+            <input name="title" required placeholder="Tên công thức…" className={fieldControl} />
+          </Field>
+          <Field label="LaTeX">
+            <input name="latex" placeholder="y' = …" className={fieldControl} autoComplete="off" />
+          </Field>
+          <Field label="Nội dung tiếng Việt">
+            <textarea name="noi_dung" required placeholder="Giải thích ngắn…" className={fieldControl} />
+          </Field>
+          <Button type="submit">Khóa phiên bản mới</Button>
         </form>
       </Card>
     </main>

@@ -19,4 +19,4 @@ export function Field({
 }
 
 export const fieldControl =
-  "w-full rounded-lg border border-line bg-white px-3 py-2 text-sm text-ink outline-none ring-ink/0 transition focus:border-ink focus:ring-2 focus:ring-ink/10";
+  "w-full rounded-button border border-line bg-canvas px-3 py-2 text-sm text-ink outline-none transition-colors focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/20";

@@ -30,7 +30,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ m
           <Link
             data-testid="toggle-muc"
             href={view3 ? "/gv/tien-do" : "/gv/tien-do?muc=3"}
-            className="rounded-full bg-white px-3 py-1.5 text-sm ring-1 ring-line"
+            className="rounded-button bg-canvas px-3 py-1.5 text-sm font-medium text-primary ring-1 ring-line hover:bg-paper"
           >
             {view3 ? "Xem 4 mức" : "Xem 3 mức Biết / Hiểu / Vận dụng"}
           </Link>
@@ -39,10 +39,10 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ m
       <Card className="overflow-x-auto p-0">
         <table className="min-w-full text-left text-xs">
           <thead>
-            <tr className="border-b border-line bg-paper/70">
-              <th className="p-3">Học sinh</th>
+            <tr className="border-b border-line bg-paper">
+              <th className="p-3 font-semibold">Học sinh</th>
               {skillRows.map((s) => (
-                <th key={s.code} className="p-3">
+                <th key={s.code} className="p-3 font-semibold" translate="no">
                   {s.code}
                 </th>
               ))}
@@ -65,7 +65,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ m
                   return (
                     <td key={s.code} className="p-3">
                       {label}
-                      <span className="block text-muted">{st.mastery.toFixed(2)}</span>
+                      <span className="tabular block text-muted">{st.mastery.toFixed(2)}</span>
                     </td>
                   );
                 })}

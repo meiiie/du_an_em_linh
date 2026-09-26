@@ -4,20 +4,57 @@
 
 :root {
   color-scheme: light;
-  --paper: #f3eee4;
-  --ink: #1c1712;
-  --muted: #6b6258;
-  --line: #d9d0c1;
-  --board: #1c1712;
-  --chalk: #f3ead8;
-  --teal: #0f5c56;
-  --clay: #b45309;
-  --navy: #1a365d;
+  --canvas: #ffffff;
+  --paper: #f3f6fb;
+  --ink: #1a1d26;
+  --muted: #5c6578;
+  --line: #d5dce8;
+  --board: #0a2540;
+  --chalk: #f7fafc;
+  --primary: #0b5cab;
+  --primary-hover: #094a8c;
+  --teal: #0f766e;
+  --clay: #0b5cab;
+  --navy: #0a2540;
+  --danger: #b42318;
+  --warn: #b45309;
+}
+
+html {
+  -webkit-tap-highlight-color: rgb(11 92 171 / 0.12);
 }
 
 body {
   background: var(--paper);
   color: var(--ink);
+  touch-action: manipulation;
+}
+
+:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+.skip-link {
+  position: absolute;
+  left: 12px;
+  top: 12px;
+  z-index: 80;
+  transform: translateY(-160%);
+  border-radius: 8px;
+  background: var(--navy);
+  color: var(--chalk);
+  padding: 8px 12px;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.skip-link:focus {
+  transform: translateY(0);
+}
+
+#noi-dung {
+  scroll-margin-top: 72px;
 }
 
 math-field {
@@ -25,15 +62,19 @@ math-field {
   width: 100%;
   min-height: 46px;
   padding: 6px 10px;
-  border-radius: 10px;
+  border-radius: 8px;
   border: 1px solid var(--line);
-  background: white;
+  background: var(--canvas);
   font-size: 1.05rem;
 }
 
 .cell-bad {
-  outline: 2px solid #9b2c2c;
+  outline: 2px solid var(--danger);
   background: #fde8e4;
+}
+
+.tabular {
+  font-variant-numeric: tabular-nums;
 }
 
 ::-webkit-scrollbar {
@@ -41,6 +82,17 @@ math-field {
   height: 10px;
 }
 ::-webkit-scrollbar-thumb {
-  background: #cfc4b2;
+  background: #b8c3d6;
   border-radius: 999px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

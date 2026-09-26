@@ -1,5 +1,6 @@
 import { eq } from "drizzle-orm";
 import { redirect } from "next/navigation";
+import { BrandMark } from "@/components/brand-mark";
 import { createSession, verifyPassword } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { userRoles, users } from "@/lib/db/schema";
@@ -21,35 +22,65 @@ async function dangNhap(formData: FormData) {
 export default async function LoginPage({ searchParams }: { searchParams: Promise<{ loi?: string }> }) {
   const sp = await searchParams;
   return (
-    <main className="relative min-h-screen overflow-hidden">
-      <div className="pointer-events-none absolute inset-y-0 left-0 hidden w-[38%] bg-board lg:block" />
+    <main className="relative min-h-screen overflow-hidden bg-paper">
+      <a href="#form-dang-nhap" className="skip-link">
+        Bỏ qua đến form đăng nhập
+      </a>
+      <div className="pointer-events-none absolute inset-y-0 left-0 hidden w-[40%] bg-navy lg:block" />
       <div className="relative mx-auto grid min-h-screen max-w-6xl lg:grid-cols-[0.9fr_1.1fr]">
-        <section className="hidden flex-col justify-between bg-board px-10 py-12 text-chalk lg:flex">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-chalk/60">Nguyên mẫu NCKH</p>
+        <section className="hidden flex-col justify-between bg-navy px-10 py-12 text-chalk lg:flex">
+          <div className="flex items-center gap-3">
+            <BrandMark className="bg-primary" />
+            <p className="text-sm font-medium text-chalk/70">Nguyên mẫu NCKH</p>
+          </div>
           <div>
-            <h1 className="font-display text-5xl leading-[1.05]">Học toán với AI</h1>
-            <p className="mt-4 max-w-sm text-sm leading-relaxed text-chalk/75">
+            <h1 className="text-pretty text-5xl font-semibold leading-[1.1]">Học toán với AI</h1>
+            <p className="mt-4 max-w-sm text-base leading-relaxed text-chalk/75">
               Toán 12 — ứng dụng đạo hàm: tính đơn điệu và cực trị. Gia sư sửa bài và giảng, không đưa đáp án. Mọi bài qua cổng kiểm định ba tầng.
             </p>
           </div>
-          <p className="text-xs text-chalk/50">Tài khoản thử. Không có học sinh thật.</p>
+          <p className="text-sm text-chalk/50">Tài khoản thử. Không có học sinh thật.</p>
         </section>
         <section className="flex flex-col justify-center px-5 py-12 sm:px-10">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-teal lg:hidden">Nguyên mẫu NCKH</p>
-          <h1 className="mt-1 font-display text-4xl lg:hidden">Học toán với AI</h1>
-          <p className="mt-2 text-sm text-muted lg:hidden">Toán 12 — đơn điệu và cực trị. Tài khoản thử.</p>
-          <h2 className="hidden font-display text-3xl lg:block">Vào lớp thử</h2>
-          <form action={dangNhap} className="mt-6 max-w-md space-y-3 rounded-2xl bg-white p-5 ring-1 ring-line">
+          <div className="mb-6 flex items-center gap-3 lg:hidden">
+            <BrandMark />
+            <div>
+              <p className="text-sm font-medium text-primary">Nguyên mẫu NCKH</p>
+              <h1 className="text-pretty text-3xl font-semibold">Học toán với AI</h1>
+            </div>
+          </div>
+          <p className="text-sm text-muted lg:hidden">Toán 12 — đơn điệu và cực trị. Tài khoản thử.</p>
+          <h2 className="hidden text-pretty text-3xl font-semibold lg:block">Vào lớp thử</h2>
+          <form id="form-dang-nhap" action={dangNhap} className="mt-6 max-w-md space-y-3 rounded-card bg-canvas p-6 shadow-lift ring-1 ring-line">
             <label className="block text-sm font-medium">
               Email
-              <input name="email" type="email" required data-testid="email" className={`mt-1 ${fieldControl}`} placeholder="hs.an@demo.local" />
+              <input
+                name="email"
+                type="email"
+                autoComplete="username"
+                spellCheck={false}
+                required
+                data-testid="email"
+                className={`mt-1 ${fieldControl}`}
+                placeholder="hs.an@demo.local"
+              />
             </label>
             <label className="block text-sm font-medium">
               Mật khẩu
-              <input name="password" type="password" required data-testid="password" className={`mt-1 ${fieldControl}`} />
+              <input
+                name="password"
+                type="password"
+                autoComplete="current-password"
+                required
+                data-testid="password"
+                className={`mt-1 ${fieldControl}`}
+              />
             </label>
-            {sp.loi ? <p className="text-sm text-rose-800">Email hoặc mật khẩu chưa đúng.</p> : null}
-            <button className="w-full rounded-lg bg-ink px-4 py-2.5 font-semibold text-paper" type="submit">
+            {sp.loi ? <p className="text-sm text-danger">Email hoặc mật khẩu chưa đúng. Thử lại với tài khoản bên dưới.</p> : null}
+            <button
+              className="w-full rounded-button bg-primary px-4 py-2.5 font-semibold text-white hover:bg-primary-hover"
+              type="submit"
+            >
               Vào học
             </button>
           </form>

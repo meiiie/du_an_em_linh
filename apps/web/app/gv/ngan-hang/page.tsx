@@ -23,7 +23,9 @@ export default async function Page() {
           <li key={p.id}>
             <Card>
               <div className="flex flex-wrap items-center gap-2">
-                <p className="font-mono text-sm font-semibold">{p.code}</p>
+                <p className="font-mono text-sm font-semibold" translate="no">
+                  {p.code}
+                </p>
                 <Badge>{LABEL4[p.mucDo4 as Muc4] || p.mucDo4}</Badge>
                 <Badge tone="neutral">3 mức {p.mucDoBo3}</Badge>
                 <Badge tone={tone(p.status)}>{STATUS_LABEL[p.status] || p.status}</Badge>

@@ -21,7 +21,7 @@ export default async function LuyenPage({ params }: { params: Promise<{ id: stri
     return (
       <Card>
         <p>Bài này đang chờ thầy cô duyệt.</p>
-        <Link href="/hs" className="text-navy">
+        <Link href="/hs" className="font-medium text-primary hover:underline">
           Về lộ trình
         </Link>
       </Card>
@@ -41,7 +41,8 @@ export default async function LuyenPage({ params }: { params: Promise<{ id: stri
   return (
     <main>
       <p className="mb-3 text-sm text-muted">
-        Mức {LABEL4[p.mucDo4 as Muc4]} · Bloom {p.bloomLevel} · mã {p.code}
+        Mức {LABEL4[p.mucDo4 as Muc4]} · Bloom {p.bloomLevel} · mã{" "}
+        <span translate="no">{p.code}</span>
       </p>
       <SolveClient
         problemId={p.id}

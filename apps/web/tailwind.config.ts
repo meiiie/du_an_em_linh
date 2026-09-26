@@ -5,19 +5,33 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        paper: "#f3eee4",
-        ink: "#1c1712",
-        muted: "#6b6258",
-        line: "#d9d0c1",
-        board: "#1c1712",
-        chalk: "#f3ead8",
-        teal: "#0f5c56",
-        clay: "#b45309",
-        navy: "#1a365d",
+        canvas: "#FFFFFF",
+        paper: "#F3F6FB",
+        ink: "#1A1D26",
+        muted: "#5C6578",
+        line: "#D5DCE8",
+        board: "#0A2540",
+        chalk: "#F7FAFC",
+        primary: {
+          DEFAULT: "#0B5CAB",
+          hover: "#094A8C",
+        },
+        teal: "#0F766E",
+        clay: "#0B5CAB",
+        navy: "#0A2540",
+        danger: "#B42318",
+        warn: "#B45309",
       },
       fontFamily: {
         sans: ["var(--font-sans)", "ui-sans-serif", "system-ui", "sans-serif"],
-        display: ["var(--font-display)", "var(--font-sans)", "ui-serif", "Georgia", "serif"],
+        display: ["var(--font-sans)", "ui-sans-serif", "system-ui", "sans-serif"],
+      },
+      borderRadius: {
+        button: "8px",
+        card: "16px",
+      },
+      boxShadow: {
+        lift: "0 1px 0 rgb(26 29 38 / 0.04)",
       },
     },
   },

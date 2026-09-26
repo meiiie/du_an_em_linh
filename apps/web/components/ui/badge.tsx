@@ -13,12 +13,12 @@ export function Badge({
   return (
     <span
       className={cn(
-        "inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-semibold uppercase tracking-wide",
-        tone === "neutral" && "bg-stone-100 text-stone-700",
-        tone === "ok" && "bg-emerald-50 text-emerald-800",
-        tone === "warn" && "bg-amber-50 text-amber-900",
-        tone === "bad" && "bg-rose-50 text-rose-800",
-        tone === "info" && "bg-sky-50 text-sky-800",
+        "inline-flex items-center rounded-md px-2 py-0.5 text-xs font-semibold",
+        tone === "neutral" && "bg-paper text-muted",
+        tone === "ok" && "bg-teal/10 text-teal",
+        tone === "warn" && "bg-amber-50 text-warn",
+        tone === "bad" && "bg-rose-50 text-danger",
+        tone === "info" && "bg-primary/10 text-primary",
         className,
       )}
     >

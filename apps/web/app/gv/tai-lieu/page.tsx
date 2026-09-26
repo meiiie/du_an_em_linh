@@ -1,8 +1,9 @@
 import { desc } from "drizzle-orm";
 import { taiTaiLieu } from "@/lib/actions/gv";
+import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Field, fieldControl } from "@/components/ui/field";
 import { PageHeader } from "@/components/ui/page-header";
-import { fieldControl } from "@/components/ui/field";
 import { db } from "@/lib/db";
 import { documents } from "@/lib/db/schema";
 
@@ -19,27 +20,36 @@ export default async function Page() {
       />
       <div className="grid gap-4 lg:grid-cols-2">
         <Card>
-          <form action={taiTaiLieu} className="space-y-2">
-            <h2 className="font-display text-xl">Nạp tài liệu</h2>
-            <input name="title" required placeholder="Tên tài liệu" className={fieldControl} />
-            <select name="kind" className={fieldControl}>
-              <option value="tu_soan">Tự soạn</option>
-              <option value="de_mau">Đề mẫu</option>
-              <option value="tham_khao">Tham khảo</option>
-            </select>
-            <select name="license" className={fieldControl}>
-              <option value="tu_soan">Tự soạn</option>
-              <option value="cong_khai">Công khai</option>
-              <option value="chua_ro">Chưa rõ quyền — không dùng ở tầng 2</option>
-            </select>
-            <textarea name="text" rows={6} placeholder="Dán văn bản" className={fieldControl} />
-            <input name="file" type="file" accept=".pdf,.txt,.md" className="text-sm" />
-            <button className="rounded-lg bg-clay px-4 py-2 font-semibold text-white" type="submit">
-              Lưu
-            </button>
+          <form action={taiTaiLieu} className="space-y-3">
+            <h2 className="text-xl font-semibold">Nạp tài liệu</h2>
+            <Field label="Tên tài liệu">
+              <input name="title" required placeholder="Ví dụ: Tóm tắt đơn điệu…" className={fieldControl} />
+            </Field>
+            <Field label="Loại">
+              <select name="kind" className={fieldControl} autoComplete="off">
+                <option value="tu_soan">Tự soạn</option>
+                <option value="de_mau">Đề mẫu</option>
+                <option value="tham_khao">Tham khảo</option>
+              </select>
+            </Field>
+            <Field label="Quyền">
+              <select name="license" className={fieldControl} autoComplete="off">
+                <option value="tu_soan">Tự soạn</option>
+                <option value="cong_khai">Công khai</option>
+                <option value="chua_ro">Chưa rõ quyền — không dùng ở tầng 2</option>
+              </select>
+            </Field>
+            <Field label="Văn bản">
+              <textarea name="text" rows={6} placeholder="Dán văn bản…" className={fieldControl} />
+            </Field>
+            <Field label="Tệp đính kèm (tùy chọn)">
+              <input name="file" type="file" accept=".pdf,.txt,.md" className="text-sm" />
+            </Field>
+            <Button type="submit">Lưu</Button>
           </form>
         </Card>
         <ul className="space-y-2">
+          {docs.length === 0 ? <li className="text-sm text-muted">Chưa có tài liệu.</li> : null}
           {docs.map((d) => (
             <li key={d.id}>
               <Card>

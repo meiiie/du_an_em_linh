@@ -1,17 +1,11 @@
 import type { Metadata } from "next";
-import { Be_Vietnam_Pro, Literata } from "next/font/google";
+import { Source_Sans_3 } from "next/font/google";
 import "./globals.css";
 
-const beVietnam = Be_Vietnam_Pro({
-  subsets: ["latin", "vietnamese"],
-  weight: ["400", "500", "600", "700"],
+const sourceSans = Source_Sans_3({
+  subsets: ["latin", "latin-ext", "vietnamese"],
   variable: "--font-sans",
-});
-
-const literata = Literata({
-  subsets: ["latin", "vietnamese"],
-  weight: ["500", "600", "700"],
-  variable: "--font-display",
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -21,8 +15,8 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="vi" className={`${beVietnam.variable} ${literata.variable}`}>
-      <body className="min-h-screen font-sans antialiased">{children}</body>
+    <html lang="vi" className={sourceSans.variable}>
+      <body className={`${sourceSans.className} min-h-screen antialiased`}>{children}</body>
     </html>
   );
 }

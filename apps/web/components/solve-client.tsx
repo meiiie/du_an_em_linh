@@ -142,10 +142,10 @@ export function SolveClient({
 
   return (
     <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px]">
-      <section className="rounded-2xl border border-stone-300 bg-white p-4 shadow-sm" data-testid="solve-screen">
-        <h1 className="text-lg font-bold">Làm bài theo 5 bước</h1>
+      <section className="rounded-card bg-canvas p-5 shadow-lift ring-1 ring-line" data-testid="solve-screen">
+        <h1 className="text-pretty text-xl font-semibold">Làm bài theo 5 bước</h1>
         <p className="mt-2 text-sm leading-relaxed">{title}</p>
-        <div className="mt-2 rounded-xl bg-stone-50 px-3 py-2">
+        <div className="mt-2 rounded-xl bg-paper px-3 py-2">
           <Tex tex={latex} />
         </div>
         <div className="mt-3 flex gap-1 overflow-x-auto pb-1">
@@ -155,8 +155,14 @@ export function SolveClient({
               type="button"
               data-testid={`step-${b.ma}`}
               onClick={() => setStep(i)}
-              className={`shrink-0 rounded-full px-3 py-1 text-xs font-semibold ${
-                badStep === b.ma ? "bg-red-700 text-white" : i === step ? "bg-navy text-white" : "bg-stone-100"
+              className={`shrink-0 rounded-button px-3 py-1.5 text-xs font-semibold transition-colors ${
+                badStep === b.ma
+                  ? "bg-danger text-white"
+                  : i === step
+                    ? "bg-primary text-white"
+                    : i < step
+                      ? "bg-primary/10 text-primary"
+                      : "bg-paper text-muted"
               }`}
             >
               {i + 1}. {b.ten}
@@ -182,7 +188,7 @@ export function SolveClient({
                   />
                 </div>
               ))}
-              <button type="button" className="text-sm text-navy" onClick={() => setDh([...dh, ""])}>
+              <button type="button" className="text-sm font-medium text-primary hover:underline" onClick={() => setDh([...dh, ""])}>
                 Thêm dòng biến đổi
               </button>
             </div>
@@ -201,7 +207,7 @@ export function SolveClient({
                   </div>
                   <button
                     type="button"
-                    className="rounded-lg border px-2 py-1 text-xs"
+                    className="rounded-button border border-line px-2 py-1 text-xs hover:bg-paper"
                     onClick={() =>
                       setRoots(roots.map((x, j) => (j === i ? { ...x, loai: x.loai === "NGHIEM" ? "KHONG_XD" : "NGHIEM" } : x)))
                     }
@@ -210,14 +216,14 @@ export function SolveClient({
                   </button>
                 </div>
               ))}
-              <button type="button" data-testid="them-nghiem" className="text-sm text-navy" onClick={() => setRoots([...roots, { latex: "", loai: "NGHIEM" }])}>
+              <button type="button" data-testid="them-nghiem" className="text-sm font-medium text-primary hover:underline" onClick={() => setRoots([...roots, { latex: "", loai: "NGHIEM" }])}>
                 Thêm dòng nghiệm
               </button>
             </div>
           )}
           {ma === "B.DH.XETDAU" && (
             <div data-testid="bang-xet-dau">
-              <p className="text-sm text-slate-600">
+              <p className="text-sm text-muted">
                 Em tự ghi các mốc trên hàng x. Hai đầu −∞ và +∞ là khung bảng, không phải điểm tới hạn. Ứng dụng không thêm mốc và không báo đúng sai từng ô khi đang gõ.
               </p>
               <div className="mt-2 flex gap-2">
@@ -225,13 +231,14 @@ export function SolveClient({
                   data-testid="moc-nhap"
                   value={draftPoint}
                   onChange={(e) => setDraftPoint(e.target.value)}
-                  className="w-28 rounded-lg border px-2 py-1"
-                  placeholder="mốc x"
+                  className="w-28 rounded-button border border-line px-2 py-1"
+                  placeholder="mốc x…"
+                  aria-label="Mốc x"
                 />
                 <button
                   type="button"
                   data-testid="moc-them"
-                  className="rounded-lg bg-stone-800 px-3 py-1 text-sm text-white"
+                  className="rounded-button bg-navy px-3 py-1 text-sm text-white hover:bg-navy/90"
                   onClick={() => {
                     const v = draftPoint.trim();
                     if (!v) return;
@@ -260,7 +267,7 @@ export function SolveClient({
                           return (
                             <td key={k} className="p-1 font-semibold">
                               {p}
-                              <button type="button" className="ml-1 text-xs text-red-700" onClick={() => setPoints(points.filter((x) => x !== p))}>
+                              <button type="button" className="ml-1 text-xs text-danger hover:underline" onClick={() => setPoints(points.filter((x) => x !== p))}>
                                 xóa
                               </button>
                             </td>
@@ -284,7 +291,7 @@ export function SolveClient({
                                   key={opt}
                                   type="button"
                                   data-testid={`dau-${k}-${opt === "−" ? "-" : opt}`}
-                                  className={`rounded px-1.5 py-0.5 text-xs ${cur === (opt === "−" ? "-" : opt) ? "bg-navy text-white" : "bg-stone-100"}`}
+                                  className={`rounded px-1.5 py-0.5 text-xs ${cur === (opt === "−" ? "-" : opt) ? "bg-primary text-white" : "bg-paper"}`}
                                   onClick={() => {
                                     const val = opt === "−" ? "-" : opt;
                                     log({
@@ -321,7 +328,7 @@ export function SolveClient({
                                   key={val}
                                   type="button"
                                   data-testid={`mui-${k}-${val}`}
-                                  className={`rounded px-1.5 py-0.5 text-xs ${arrows[k] === val ? "bg-teal text-white" : "bg-stone-100"}`}
+                                  className={`rounded px-1.5 py-0.5 text-xs ${arrows[k] === val ? "bg-teal text-white" : "bg-paper"}`}
                                   onClick={() => {
                                     log({
                                       ma_buoc: "B.DH.XETDAU",
@@ -362,7 +369,7 @@ export function SolveClient({
                     data-testid={id}
                     value={kl[key]}
                     onChange={(e) => setKl({ ...kl, [key]: e.target.value })}
-                    className="mt-1 w-full rounded-lg border px-2 py-1.5"
+                    className="mt-1 w-full rounded-button border border-line px-2 py-1.5"
                     placeholder={
                       key === "db"
                         ? "đồng biến trên (...; ...) và (...; ...)"
@@ -382,14 +389,15 @@ export function SolveClient({
         {grade ? (
           <p
             data-testid="cham-thong-bao"
-            className={`mt-4 rounded-xl px-3 py-2 text-sm ${grade.ket_qua === "DAT" ? "bg-emerald-50 text-emerald-900" : "bg-amber-50 text-amber-950"}`}
+            aria-live="polite"
+            className={`mt-4 rounded-xl px-3 py-2 text-sm ${grade.ket_qua === "DAT" ? "bg-teal/10 text-teal" : "bg-amber-50 text-amber-950"}`}
           >
             {grade.finished ? "Em đã hoàn thành bài này." : grade.thong_bao}
           </p>
         ) : null}
 
         {grade?.finished && moLoiGiai && loiGiai ? (
-          <div data-testid="loi-giai-sau-nop" className="mt-3 rounded-xl bg-stone-50 px-3 py-2 text-sm leading-relaxed">
+          <div data-testid="loi-giai-sau-nop" className="mt-3 rounded-xl bg-paper px-3 py-2 text-sm leading-relaxed">
             <p className="font-semibold">Lời giải lớp cho phép xem sau khi nộp</p>
             <p className="mt-1">{loiGiai}</p>
           </div>
@@ -400,31 +408,35 @@ export function SolveClient({
           data-testid="nop-buoc"
           disabled={busy}
           onClick={submit}
-          className="mt-4 w-full rounded-xl bg-navy px-4 py-3 font-semibold text-white disabled:opacity-60"
+          className="mt-4 w-full rounded-button bg-primary px-4 py-3 font-semibold text-white hover:bg-primary-hover disabled:opacity-60"
         >
-          {busy ? "Đang chấm..." : `Nộp bước ${BUOC[step].ten}`}
+          {busy ? "Đang chấm…" : `Nộp bước ${BUOC[step].ten}`}
         </button>
       </section>
 
-      <aside className={`rounded-2xl border border-stone-300 bg-white p-4 shadow-sm ${openTutor ? "block" : "hidden lg:block"}`} data-testid="tutor-panel">
-        <p className="text-xs font-semibold uppercase text-teal">Gia sư AI</p>
-        <p className="text-xs text-slate-500">Đang tương tác với AI, không phải giáo viên. Không có lời giải chuẩn trong hội thoại này.</p>
+      <aside className={`rounded-card bg-canvas p-5 shadow-lift ring-1 ring-line ${openTutor ? "block" : "hidden lg:block"}`} data-testid="tutor-panel">
+        <p className="text-sm font-semibold text-teal">Gia sư AI</p>
+        <p className="text-xs text-muted">Đang tương tác với AI, không phải giáo viên. Không có lời giải chuẩn trong hội thoại này.</p>
         <div data-testid="tutor-log" className="mt-3 max-h-80 space-y-2 overflow-y-auto">
           {chat.map((m, i) => (
-            <p key={i} className={`rounded-xl px-3 py-2 text-sm ${m.role === "hs" ? "bg-navy text-white" : "bg-stone-100"}`}>
+            <p key={i} className={`rounded-xl px-3 py-2 text-sm ${m.role === "hs" ? "bg-navy text-white" : "bg-paper"}`}>
               {m.text}
             </p>
           ))}
         </div>
         <div className="mt-3 flex gap-2">
+          <label className="sr-only" htmlFor="tutor-input">
+            Câu hỏi cho gia sư
+          </label>
           <input
+            id="tutor-input"
             data-testid="tutor-input"
             value={ask}
             onChange={(e) => setAsk(e.target.value)}
-            className="flex-1 rounded-xl border px-2 py-2 text-sm"
-            placeholder="Hỏi gợi ý, không hỏi đáp án"
+            className="min-w-0 flex-1 rounded-button border border-line px-2 py-2 text-sm"
+            placeholder="Hỏi gợi ý, không hỏi đáp án…"
           />
-          <button type="button" data-testid="tutor-send" className="rounded-xl bg-teal px-3 text-sm font-semibold text-white" onClick={sendChat}>
+          <button type="button" data-testid="tutor-send" className="rounded-button bg-teal px-3 text-sm font-semibold text-white hover:bg-teal/90" onClick={sendChat}>
             Gửi
           </button>
         </div>
@@ -432,7 +444,7 @@ export function SolveClient({
       <button
         type="button"
         data-testid="mo-gia-su"
-        className="fixed bottom-4 right-4 rounded-full bg-teal px-4 py-3 text-sm font-semibold text-white shadow-lg lg:hidden"
+        className="fixed bottom-4 right-4 rounded-button bg-teal px-4 py-3 text-sm font-semibold text-white shadow-lg lg:hidden"
         onClick={() => setOpenTutor((v) => !v)}
       >
         {openTutor ? "Đóng gia sư" : "Hỏi gia sư"}

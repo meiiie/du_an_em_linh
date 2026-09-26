@@ -27,18 +27,22 @@ export default async function Page() {
             <Card>
               <div className="flex flex-wrap items-center gap-2">
                 <Badge tone="info">{LABEL4[p.mucDo4 as Muc4] || p.mucDo4}</Badge>
-                <span className="font-mono text-xs text-muted">{p.code}</span>
+                <span className="font-mono text-xs text-muted" translate="no">
+                  {p.code}
+                </span>
               </div>
-              <Link href={`/hs/luyen/${p.id}`} className="mt-2 block font-medium text-navy hover:underline" data-testid={`catalog-${p.code}`}>
+              <Link
+                href={`/hs/luyen/${p.id}`}
+                className="mt-2 block font-medium text-primary hover:underline"
+                data-testid={`catalog-${p.code}`}
+              >
                 {p.statementText}
               </Link>
             </Card>
           </li>
         ))}
       </ul>
-      {waiting.length ? (
-        <p className="mt-4 text-sm text-amber-800">{waiting.length} bài đang chờ thầy cô duyệt.</p>
-      ) : null}
+      {waiting.length ? <p className="mt-4 text-sm text-warn">{waiting.length} bài đang chờ thầy cô duyệt.</p> : null}
     </main>
   );
 }

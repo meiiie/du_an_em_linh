@@ -49,7 +49,7 @@ export function MathInput({
         data-testid={testId}
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="mt-1 w-full rounded-lg border border-dashed border-stone-300 bg-stone-50 px-2 py-1 font-mono text-xs"
+        className="mt-1 w-full rounded-button border border-dashed border-line bg-paper px-2 py-1 font-mono text-xs"
         placeholder="LaTeX"
         aria-label={`${label} dạng LaTeX`}
       />

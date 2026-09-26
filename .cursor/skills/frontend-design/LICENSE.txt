@@ -1,0 +1,5 @@
+The frontend-design skill text is adapted from the public Anthropic skills
+repository (https://github.com/anthropics/skills). Use of that upstream
+material follows the license published in that repository.
+
+Product-specific notes at the end of SKILL.md are original to this project.

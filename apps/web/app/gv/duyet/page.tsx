@@ -1,5 +1,6 @@
 import { bacBai, duyetBai } from "@/lib/actions/gv";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { PageHeader } from "@/components/ui/page-header";
 import { fieldControl } from "@/components/ui/field";
@@ -36,7 +37,9 @@ export default async function Page() {
           <article key={p.id} data-testid={`duyet-${p.code}`}>
             <Card>
               <div className="flex flex-wrap items-center gap-2">
-                <p className="font-mono text-sm font-semibold">{p.code}</p>
+                <p className="font-mono text-sm font-semibold" translate="no">
+                  {p.code}
+                </p>
                 <Badge tone={tone(p.status)}>{STATUS_LABEL[p.status] || p.status}</Badge>
               </div>
               <p className="mt-2 text-sm">{p.statementText}</p>
@@ -44,7 +47,7 @@ export default async function Page() {
                 {ts.map((t) => {
                   const cites = moTaTrichDan(t.citation);
                   return (
-                    <li key={t.id} className="rounded-xl bg-paper/80 px-3 py-2">
+                    <li key={t.id} className="rounded-xl bg-paper px-3 py-2">
                       <span className="font-semibold">Tầng {t.tier}:</span> {STATUS_LABEL[t.status] || t.status}
                       {t.reasonText ? ` — ${t.reasonText}` : ""}
                       {cites.length ? (
@@ -67,10 +70,18 @@ export default async function Page() {
                     }}
                     className="flex flex-1 flex-wrap gap-2"
                   >
-                    <input name="note" defaultValue="Đã xem trích dẫn và lời giải, cho phát hành." className={`min-w-[220px] flex-1 ${fieldControl}`} />
-                    <button className="rounded-lg bg-teal px-3 py-2 text-sm font-semibold text-white" type="submit">
+                    <label className="sr-only" htmlFor={`note-${p.id}`}>
+                      Ghi chú duyệt
+                    </label>
+                    <input
+                      id={`note-${p.id}`}
+                      name="note"
+                      defaultValue="Đã xem trích dẫn và lời giải, cho phát hành."
+                      className={`min-w-[220px] flex-1 ${fieldControl}`}
+                    />
+                    <Button type="submit" variant="accent">
                       Duyệt
-                    </button>
+                    </Button>
                   </form>
                   <form
                     action={async () => {
@@ -78,9 +89,9 @@ export default async function Page() {
                       await bacBai(p.id, "Chưa đủ căn cứ");
                     }}
                   >
-                    <button className="rounded-lg bg-rose-800 px-3 py-2 text-sm font-semibold text-white" type="submit">
+                    <Button type="submit" variant="danger">
                       Bác
-                    </button>
+                    </Button>
                   </form>
                 </div>
               ) : null}

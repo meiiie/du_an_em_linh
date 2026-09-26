@@ -1,5 +1,6 @@
 import { eq } from "drizzle-orm";
 import { luuCaiDatLop } from "@/lib/actions/gv";
+import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { PageHeader } from "@/components/ui/page-header";
 import { db } from "@/lib/db";
@@ -25,7 +26,7 @@ export default async function Page() {
               name="mo_loi_giai"
               type="checkbox"
               defaultChecked={setting?.moLoiGiaiSauKhiNop === true}
-              className="mt-1"
+              className="mt-1 h-4 w-4 accent-primary"
               data-testid="mo-loi-giai"
             />
             <span>
@@ -35,9 +36,7 @@ export default async function Page() {
               </span>
             </span>
           </label>
-          <button className="rounded-lg bg-ink px-4 py-2 font-semibold text-paper" type="submit">
-            Lưu cài đặt
-          </button>
+          <Button type="submit">Lưu cài đặt</Button>
         </form>
       </Card>
     </main>

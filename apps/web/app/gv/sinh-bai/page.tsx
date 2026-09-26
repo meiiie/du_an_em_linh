@@ -1,8 +1,9 @@
 import { sinhBienThe } from "@/lib/actions/gv";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Field, fieldControl } from "@/components/ui/field";
 import { PageHeader } from "@/components/ui/page-header";
-import { fieldControl } from "@/components/ui/field";
 import { STATUS_LABEL } from "@/lib/levels";
 
 export const dynamic = "force-dynamic";
@@ -16,10 +17,13 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ m
         title="Sinh biến thể tham số"
         description="Bậc ba, trùng phương, hoặc phân thức bậc nhất. Lời giải do SymPy tính rồi đi qua cổng 3 tầng. Chưa đạt thì không phát hành."
       />
-      {sp.loi ? <Card className="mb-4 text-sm text-rose-800">{sp.loi}</Card> : null}
+      {sp.loi ? <Card className="mb-4 text-sm text-danger">{sp.loi}</Card> : null}
       {sp.ma && sp.trang ? (
         <Card className="mb-4 text-sm" data-testid="ket-sinh">
-          Đã sinh <span className="font-mono">{sp.ma}</span>{" "}
+          Đã sinh{" "}
+          <span className="font-mono" translate="no">
+            {sp.ma}
+          </span>{" "}
           <Badge tone={sp.trang === "DA_PHAT_HANH" ? "ok" : sp.trang === "BI_CHAN" ? "bad" : "warn"}>
             {STATUS_LABEL[sp.trang] || sp.trang}
           </Badge>
@@ -33,15 +37,17 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ m
           }}
           className="space-y-3"
         >
-          <select name="dang" className={fieldControl}>
-            <option value="bac_ba">Hàm bậc ba</option>
-            <option value="trung_phuong">Hàm trùng phương</option>
-            <option value="huu_ti">Phân thức bậc nhất</option>
-          </select>
-          <input name="seed" type="number" defaultValue={11} className={fieldControl} />
-          <button className="rounded-lg bg-clay px-4 py-2 font-semibold text-white" type="submit">
-            Sinh và kiểm định
-          </button>
+          <Field label="Dạng hàm">
+            <select name="dang" className={fieldControl} autoComplete="off">
+              <option value="bac_ba">Hàm bậc ba</option>
+              <option value="trung_phuong">Hàm trùng phương</option>
+              <option value="huu_ti">Phân thức bậc nhất</option>
+            </select>
+          </Field>
+          <Field label="Hạt giống số">
+            <input name="seed" type="number" defaultValue={11} className={fieldControl} autoComplete="off" />
+          </Field>
+          <Button type="submit">Sinh và kiểm định</Button>
         </form>
       </Card>
     </main>

@@ -17,6 +17,7 @@ import {
   Sparkles,
   X,
 } from "lucide-react";
+import { BrandMark } from "@/components/brand-mark";
 import { dangXuat } from "@/lib/actions/auth";
 import { cn } from "@/lib/cn";
 import { navActive, type NavItem } from "@/lib/nav";
@@ -53,9 +54,45 @@ export function AppShell({
 
   return (
     <div className="min-h-screen bg-paper">
+      <a href="#noi-dung" className="skip-link">
+        Bỏ qua đến nội dung
+      </a>
+
+      <header className="sticky top-0 z-30 border-b border-line bg-canvas pt-[env(safe-area-inset-top)]">
+        <div className="flex h-14 items-center gap-3 px-3 sm:px-4">
+          <button
+            type="button"
+            data-testid="mo-sidebar"
+            className="rounded-button p-1.5 text-ink hover:bg-paper lg:hidden"
+            onClick={() => setOpen(true)}
+            aria-label="Mở menu"
+          >
+            <Menu className="h-5 w-5" aria-hidden />
+          </button>
+          <Link href={role === "GV" ? "/gv" : "/hs"} className="flex min-w-0 items-center gap-2">
+            <BrandMark />
+            <span className="min-w-0">
+              <span className="block truncate text-sm font-semibold text-ink">Học toán với AI</span>
+              <span className="hidden text-xs text-muted sm:block">{title}</span>
+            </span>
+          </Link>
+          <div className="ml-auto flex min-w-0 items-center gap-3">
+            <p className="hidden truncate text-sm text-ink sm:block">{name}</p>
+            <form action={dangXuat}>
+              <button
+                className="rounded-button px-2 py-1 text-sm font-medium text-primary hover:bg-paper"
+                type="submit"
+              >
+                Thoát
+              </button>
+            </form>
+          </div>
+        </div>
+      </header>
+
       {open ? (
         <button
-          className="fixed inset-0 z-30 bg-ink/50 lg:hidden"
+          className="fixed inset-0 z-30 bg-navy/40 lg:hidden"
           aria-label="Đóng menu"
           onClick={() => setOpen(false)}
         />
@@ -64,24 +101,21 @@ export function AppShell({
       <aside
         data-testid="sidebar"
         className={cn(
-          "fixed inset-y-0 left-0 z-40 flex w-[272px] flex-col bg-board text-chalk transition-transform",
+          "fixed bottom-0 left-0 z-40 flex w-64 flex-col border-r border-line bg-canvas transition-transform duration-200",
+          "top-14 overscroll-contain",
           open ? "translate-x-0" : "-translate-x-full lg:translate-x-0",
         )}
       >
         <button
-          className="absolute right-3 top-3 text-chalk/70 lg:hidden"
+          className="absolute right-3 top-3 text-muted hover:text-ink lg:hidden"
           onClick={() => setOpen(false)}
           aria-label="Đóng"
           data-testid="dong-sidebar"
           type="button"
         >
-          <X className="h-5 w-5" />
+          <X className="h-5 w-5" aria-hidden />
         </button>
-        <div className="px-5 pb-4 pt-5">
-          <p className="font-display text-lg leading-none text-chalk">Học toán với AI</p>
-          <p className="mt-1 text-[11px] uppercase tracking-[0.16em] text-chalk/55">{title}</p>
-        </div>
-        <nav className="flex flex-1 flex-col gap-0.5 px-3" data-testid="sidebar-nav">
+        <nav className="flex flex-1 flex-col gap-0.5 overflow-y-auto px-3 pb-3 pt-4" data-testid="sidebar-nav">
           {items.map((item) => {
             const Icon = ICONS[item.icon];
             const active = navActive(pathname, item.href);
@@ -93,17 +127,19 @@ export function AppShell({
                 data-testid={item.testId}
                 onClick={() => setOpen(false)}
                 className={cn(
-                  "flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition",
-                  active ? "bg-chalk text-ink shadow-sm" : "text-chalk/80 hover:bg-white/5 hover:text-chalk",
+                  "flex items-center gap-3 rounded-button px-3 py-2 text-sm transition-colors",
+                  active
+                    ? "bg-primary/10 font-semibold text-primary"
+                    : "text-ink/80 hover:bg-paper hover:text-ink",
                 )}
               >
                 <Icon className="h-4 w-4 shrink-0" aria-hidden />
-                <span className="flex-1 font-medium">{item.label}</span>
+                <span className="min-w-0 flex-1 truncate">{item.label}</span>
                 {count > 0 ? (
                   <span
                     className={cn(
-                      "rounded-full px-1.5 py-0.5 text-[10px] font-semibold",
-                      active ? "bg-ink text-paper" : "bg-clay text-white",
+                      "tabular rounded-md px-1.5 py-0.5 text-[11px] font-semibold",
+                      active ? "bg-primary text-white" : "bg-paper text-muted",
                     )}
                   >
                     {count}
@@ -113,34 +149,16 @@ export function AppShell({
             );
           })}
         </nav>
-        <div className="mt-auto border-t border-white/10 px-4 py-4">
-          <p className="truncate text-sm font-medium text-chalk">{name}</p>
-          <p className="text-xs text-chalk/50">Tài khoản thử · dữ liệu tổng hợp</p>
-          <form action={dangXuat} className="mt-3">
-            <button className="text-xs text-chalk/70 underline-offset-2 hover:text-chalk hover:underline" type="submit">
-              Thoát
-            </button>
-          </form>
+        <div className="mt-auto border-t border-line px-4 py-4">
+          <p className="truncate text-sm font-medium text-ink">{name}</p>
+          <p className="text-xs text-muted">Tài khoản thử · dữ liệu tổng hợp</p>
         </div>
       </aside>
 
-      <div className="lg:pl-[272px]">
-        <header className="sticky top-0 z-20 flex items-center gap-3 border-b border-line/80 bg-paper/90 px-4 py-3 backdrop-blur lg:hidden">
-          <button
-            type="button"
-            data-testid="mo-sidebar"
-            className="rounded-lg p-1.5 ring-1 ring-line"
-            onClick={() => setOpen(true)}
-            aria-label="Mở menu"
-          >
-            <Menu className="h-5 w-5" />
-          </button>
-          <div>
-            <p className="font-display text-base leading-none">Học toán với AI</p>
-            <p className="text-[11px] text-muted">{name}</p>
-          </div>
-        </header>
-        <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6 lg:px-8 lg:py-8">{children}</div>
+      <div className="lg:pl-64">
+        <div id="noi-dung" className="mx-auto max-w-6xl px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
+          {children}
+        </div>
       </div>
     </div>
   );

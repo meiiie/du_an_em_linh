@@ -18,6 +18,13 @@
 - Cài đặt lớp: bật/tắt mở lời giải sau khi nộp xong cả năm bước.
 - Trích dẫn tầng 2/3 hiện bằng lời, không in JSON thô.
 - Sinh biến thể báo mã bài và trạng thái cổng.
+- Hệ thống thiết kế LMS (token, Source Sans 3, top bar + sidebar sáng) ghi ở `docs/DESIGN.md`. Không chép màu/logo Coursera.
+
+## Skill dùng khi chỉnh UI / API
+
+- `.cursor/skills/frontend-design` — tránh cụm cream + serif + terracotta.
+- `.cursor/skills/web-design-guidelines` — a11y, focus, form, motion.
+- `.cursor/skills/fastapi-routers` — router / Pydantic / không import SymPy ở process API.
 
 ## Cố ý chưa làm (ngoài phạm vi nguyên mẫu)
 
