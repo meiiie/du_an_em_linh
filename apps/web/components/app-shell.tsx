@@ -103,7 +103,9 @@ export function AppShell({
         className={cn(
           "fixed bottom-0 left-0 z-40 flex w-64 flex-col border-r border-line bg-canvas transition-transform duration-200",
           "top-14 overscroll-contain",
-          open ? "translate-x-0" : "-translate-x-full lg:translate-x-0",
+          open
+            ? "translate-x-0 shadow-xl"
+            : "-translate-x-full max-lg:invisible lg:translate-x-0",
         )}
       >
         <button

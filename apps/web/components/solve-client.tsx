@@ -415,8 +415,19 @@ export function SolveClient({
       </section>
 
       <aside className={`rounded-card bg-canvas p-5 shadow-lift ring-1 ring-line ${openTutor ? "block" : "hidden lg:block"}`} data-testid="tutor-panel">
-        <p className="text-sm font-semibold text-teal">Gia sư AI</p>
-        <p className="text-xs text-muted">Đang tương tác với AI, không phải giáo viên. Không có lời giải chuẩn trong hội thoại này.</p>
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <p className="text-sm font-semibold text-teal">Gia sư AI</p>
+            <p className="text-xs text-muted">Đang tương tác với AI, không phải giáo viên. Không có lời giải chuẩn trong hội thoại này.</p>
+          </div>
+          <button
+            type="button"
+            className="rounded-button px-2 py-1 text-sm font-medium text-primary hover:bg-paper lg:hidden"
+            onClick={() => setOpenTutor(false)}
+          >
+            Đóng
+          </button>
+        </div>
         <div data-testid="tutor-log" className="mt-3 max-h-80 space-y-2 overflow-y-auto">
           {chat.map((m, i) => (
             <p key={i} className={`rounded-xl px-3 py-2 text-sm ${m.role === "hs" ? "bg-navy text-white" : "bg-paper"}`}>
@@ -441,14 +452,16 @@ export function SolveClient({
           </button>
         </div>
       </aside>
-      <button
-        type="button"
-        data-testid="mo-gia-su"
-        className="fixed bottom-4 right-4 rounded-button bg-teal px-4 py-3 text-sm font-semibold text-white shadow-lg lg:hidden"
-        onClick={() => setOpenTutor((v) => !v)}
-      >
-        {openTutor ? "Đóng gia sư" : "Hỏi gia sư"}
-      </button>
+      {!openTutor ? (
+        <button
+          type="button"
+          data-testid="mo-gia-su"
+          className="fixed bottom-4 right-4 z-20 rounded-button bg-teal px-4 py-3 text-sm font-semibold text-white shadow-lg lg:hidden"
+          onClick={() => setOpenTutor(true)}
+        >
+          Hỏi gia sư
+        </button>
+      ) : null}
     </div>
   );
 }

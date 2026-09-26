@@ -18,9 +18,10 @@ test.describe("học sinh", () => {
     await expect(page.getByRole("heading", { name: "Chào An" })).toBeVisible();
     await expect(page.getByTestId("mo-sidebar")).toBeVisible();
     await page.getByTestId("mo-sidebar").click();
-    await expect(page.getByTestId("nav-hs-lo-trinh")).toBeVisible();
-    await page.screenshot({ path: `${SHOTS}/hs-sidebar-390.png`, fullPage: true });
+    await expect(page.getByTestId("nav-hs-lo-trinh")).toBeInViewport();
+    await page.screenshot({ path: `${SHOTS}/hs-sidebar-390.png` });
     await page.getByTestId("dong-sidebar").click();
+    await expect(page.getByTestId("nav-hs-lo-trinh")).not.toBeInViewport();
 
     await page.getByTestId("bai-DH12-03-VD-01").click();
     await expect(page.getByTestId("solve-screen")).toBeVisible();
@@ -46,6 +47,21 @@ test.describe("học sinh", () => {
   });
 });
 
+test.describe("học sinh máy tính", () => {
+  test.use({ viewport: { width: 1280, height: 800 } });
+
+  test("lộ trình có thanh bên sáng", async ({ page }) => {
+    await page.goto("/dang-nhap");
+    await page.getByTestId("email").fill("hs.an@demo.local");
+    await page.getByTestId("password").fill("hocsinh123");
+    await page.getByRole("button", { name: "Vào học" }).click();
+    await expect(page.getByRole("heading", { name: "Chào An" })).toBeVisible();
+    await expect(page.getByTestId("sidebar")).toBeVisible();
+    await expect(page.getByTestId("nav-hs-lo-trinh")).toBeVisible();
+    await page.screenshot({ path: `${SHOTS}/hs-lo-trinh-1280.png` });
+  });
+});
+
 test.describe("giáo viên", () => {
   test.use({ viewport: { width: 1280, height: 800 } });
 
@@ -59,6 +75,7 @@ test.describe("giáo viên", () => {
     await expect(page.getByTestId("sidebar")).toBeVisible();
     await expect(page.getByTestId("nav-gv-duyet")).toBeVisible();
     await expect(page.getByTestId("canh-bao-ket")).toContainText("Chi");
+    await page.screenshot({ path: `${SHOTS}/gv-tong-quan.png` });
 
     await page.goto("/gv/duyet");
     await expect(page.getByTestId("hang-doi")).toBeVisible();
