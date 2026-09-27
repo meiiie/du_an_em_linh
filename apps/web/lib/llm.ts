@@ -9,7 +9,8 @@ export function redact(text: string) {
   return text
     .replace(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi, "[email]")
     .replace(/\b0\d{8,10}\b/g, "[sdt]")
-    .replace(NAME_RE, "[ten]");
+    .replace(NAME_RE, "[ten]")
+    .replace(/(?:sk-|zai-|or-v1-)[A-Za-z0-9_\-]{16,}/gi, "[khoa]");
 }
 
 /** Prompt hệ thống giữ nguyên — chữ «giáo viên» là nghề, không phải tên học sinh. */

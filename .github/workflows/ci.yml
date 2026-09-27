@@ -49,7 +49,7 @@ jobs:
         with:
           node-version: 22
           cache: pnpm
-      - run: node scripts/kiem-phien-ban.mjs
+      - run: node scripts/kiem-phien-ban.mjs && node scripts/kiem-khoa.mjs
       - run: pnpm install --frozen-lockfile
       - run: pnpm typecheck
       - run: pnpm lint

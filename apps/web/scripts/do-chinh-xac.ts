@@ -146,6 +146,7 @@ async function chamZai() {
       tiengViet: cham.tiengViet,
       coTrich: cham.coTrich,
       xungCo: cham.xungCo,
+      gioiThieu: cham.gioiThieu,
       head: r.text.slice(0, 90).replace(/\s+/g, " "),
     });
   }
@@ -181,11 +182,12 @@ async function main() {
   const dir = process.env.PLAYWRIGHT_SHOTS || "/opt/cursor/artifacts";
   try {
     mkdirSync(dir, { recursive: true });
-    writeFileSync(`${dir}/do-chinh-xac.json`, JSON.stringify(kq, null, 2));
+    const an = JSON.stringify(kq, null, 2).replace(/(?:sk-|zai-|or-v1-)[A-Za-z0-9_\-]{16,}/gi, "[khoa]");
+    writeFileSync(`${dir}/do-chinh-xac.json`, an);
   } catch {
     /* artifacts có thể không ghi được */
   }
-  console.log(JSON.stringify(kq, null, 2));
+  console.log(JSON.stringify(kq, null, 2).replace(/(?:sk-|zai-|or-v1-)[A-Za-z0-9_\-]{16,}/gi, "[khoa]"));
   if (!kq.dat) process.exitCode = 1;
 }
 

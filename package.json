@@ -30,6 +30,7 @@
     "test:unit": "pnpm --filter web test:unit",
     "test:do": "pnpm --filter web test:do",
     "test:web": "pnpm typecheck && pnpm lint && pnpm test:unit",
-    "test:version": "node scripts/kiem-phien-ban.mjs"
+    "test:version": "node scripts/kiem-phien-ban.mjs && node scripts/kiem-khoa.mjs",
+    "test:khoa": "node scripts/kiem-khoa.mjs"
   }
 }

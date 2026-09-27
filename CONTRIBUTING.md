@@ -56,7 +56,7 @@ Chi tiết và release-please: [`docs/PHIEN-BAN.md`](docs/PHIEN-BAN.md).
 1. Nhánh mới từ `main` đã kéo mới nhất.
 2. Một ý, tiêu đề Conventional Commits, điền mẫu `.github/PULL_REQUEST_TEMPLATE.md`.
 3. CI `.github/workflows/ci.yml` phải xanh (`pnpm test:version` cùng số SemVer).
-4. Không dán khóa, `.env`, hay dữ liệu học sinh thật.
+4. Không dán khóa, `.env`, `zaiapikey.txt`, hay dữ liệu học sinh thật. CI `scripts/kiem-khoa.mjs` từ chối nếu git theo dõi file khóa.
 
 ## Báo lỗi / đề xuất
 

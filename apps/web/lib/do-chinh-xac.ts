@@ -52,6 +52,7 @@ export function chamLoiGiaSu(text: string) {
     tiengViet: /[ăâêôơưáàảãạéèẻẽẹíìỉĩịóòỏõọúùủũụýỳỷỹỵđ]|(\bem\b)/i.test(t),
     coTrich: /\[\d{1,2}\]/.test(t),
     xungCo: /(^|[\s.,;:!?…])cô\s+là|(^|[\s.,;:!?…])thầy\s+là/i.test(t),
+    gioiThieu: /mình là (ai )?gia sư|cô là ai/i.test(t),
   };
 }
 
@@ -75,7 +76,11 @@ export function chamDoChinhXac(): {
     {
       id: "he-thong-n",
       ten: "Prompt bắt [n], không phải giáo viên, xưng mình",
-      dat: /\[n\]/.test(HE_THONG_GIA_SU) && /không phải giáo viên/.test(HE_THONG_GIA_SU) && /xưng mình/i.test(HE_THONG_GIA_SU),
+      dat:
+        /\[n\]/.test(HE_THONG_GIA_SU) &&
+        /không phải giáo viên/.test(HE_THONG_GIA_SU) &&
+        /xưng mình/i.test(HE_THONG_GIA_SU) &&
+        /không tự giới thiệu/i.test(HE_THONG_GIA_SU),
     },
     { id: "loi-lo", ten: "Lời có khoảng số bị coi là lộ", dat: chamLoiGiaSu("Đồng biến trên (1; 3).").loRo },
     { id: "loi-goi", ten: "Gợi ý nguyên lý không bị coi là lộ", dat: !chamLoiGiaSu("Em tính $y'$ từng hạng tử, hằng số đạo hàm 0.").loRo },

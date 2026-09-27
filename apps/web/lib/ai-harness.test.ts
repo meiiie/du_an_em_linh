@@ -8,6 +8,7 @@ import {
   laNhaKhoa,
   laUrlCloudHopLe,
   luaChonNhaHocSinh,
+  maskKey,
   parseProvider,
   resolveProvider,
   thongBaoLoiNha,
@@ -43,6 +44,12 @@ test("parseProvider lạ thì về offline", () => {
   assert.equal(laNhaKhoa("openrouter"), true);
   assert.equal(laNhaKhoa("zai"), true);
   assert.equal(laNhaKhoa("offline"), false);
+});
+
+test("maskKey chỉ giữ 4 ký tự cuối, không lộ đầu khóa", () => {
+  assert.equal(maskKey("abcdefghijklmnop"), "••••mnop");
+  assert.doesNotMatch(maskKey("abcdefghijklmnop") || "", /abcd/);
+  assert.equal(maskKey(""), null);
 });
 
 test("loopback chỉ 127.0.0.1 / localhost / ::1", () => {
