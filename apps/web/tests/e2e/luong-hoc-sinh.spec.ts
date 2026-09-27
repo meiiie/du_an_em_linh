@@ -19,9 +19,9 @@ test.describe("trang chủ", () => {
     await page.getByTestId("password").fill("hocsinh1233");
     await page.getByRole("button", { name: "Vào học" }).click();
     await expect(page).toHaveURL(/loi=1/);
-    await expect(page.getByRole("alert")).toContainText("hocsinh123");
-    await expect(page.getByRole("alert")).toContainText("giaovien123");
-    await expect(page.getByRole("alert")).not.toContainText("nằm dưới");
+    await expect(page.getByTestId("loi-dang-nhap")).toContainText("hocsinh123");
+    await expect(page.getByTestId("loi-dang-nhap")).toContainText("giaovien123");
+    await expect(page.getByTestId("loi-dang-nhap")).not.toContainText("nằm dưới");
   });
 
   test("logo tab và tài sản SEO công khai", async ({ request }) => {

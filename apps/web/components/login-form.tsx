@@ -105,6 +105,7 @@ export function LoginForm({
       {loi ? (
         <p
           id="loi-dang-nhap"
+          data-testid="loi-dang-nhap"
           className="mt-6 w-full rounded-button bg-wash px-3 py-3 text-left text-[13px] leading-5 text-mark"
           role="alert"
         >
