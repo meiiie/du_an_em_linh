@@ -95,7 +95,7 @@ Số liệu lần dựng nguyên mẫu: [`docs/KIEM-THU.md`](docs/KIEM-THU.md). 
 
 Render free, không thẻ: một container Next + SymPy + Postgres. Chi tiết giữ thức, Neon, hạn 30 ngày: [`docs/TRIEN-KHAI.md`](docs/TRIEN-KHAI.md).
 
-[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/meiiie/du_an_em_linh/tree/cursor/chinh-trang-github-91a8)
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/meiiie/du_an_em_linh)
 
 ## Nhánh
 
