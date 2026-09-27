@@ -5,7 +5,7 @@ import { moSoBaiGiao, vaoLop } from "./vao-lop";
 test.describe("trang chủ", () => {
   test("công khai, không trắng, vào được đăng nhập", async ({ page }) => {
     await page.goto("/");
-    await expect(page.getByRole("heading", { name: "Học toán với AI" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Toán học mở ra những cách nhìn mới" })).toBeVisible();
     await expect(page.getByTestId("vao-hoc")).toBeVisible();
     await page.screenshot({ path: `${SHOTS}/trang-chu.png`, fullPage: true });
     await page.getByTestId("vao-hoc").click();

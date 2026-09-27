@@ -1,11 +1,17 @@
 import Link from "next/link";
-import { MinhHoaDaoHam } from "@/components/minh-hoa-dao-ham";
-import { buttonClasses } from "@/components/ui/button";
-import { cn } from "@/lib/cn";
-import { soBuoc, tenBuocTrang } from "@/lib/de-hoc-sinh";
+import { Newsreader } from "next/font/google";
+import { Search } from "lucide-react";
+import { HeroCanh } from "@/components/landing/hero-canh";
+import { TheTinhNang } from "@/components/landing/the-tinh-nang";
 import { SITE_DESC, SITE_NAME, SITE_VERSION, siteUrl } from "@/lib/site";
 
-const BUOC_TRANG = ["B.DH.TXD", "B.DH.DAOHAM", "B.DH.NGHIEM", "B.DH.XETDAU", "B.DH.KETLUAN"] as const;
+const display = Newsreader({
+  subsets: ["latin", "latin-ext", "vietnamese"],
+  weight: ["400", "500", "600"],
+  style: ["normal", "italic"],
+  variable: "--font-landing",
+  display: "swap",
+});
 
 const GOC = siteUrl().origin;
 
@@ -56,94 +62,163 @@ const jsonLd = {
   ],
 };
 
+const NAV = [
+  { href: "#kham-pha", label: "Khám phá" },
+  { href: "#lo-trinh", label: "Lộ trình" },
+  { href: "#bai-tap", label: "Bài tập" },
+  { href: "#tai-nguyen", label: "Tài nguyên" },
+  { href: "#ve-chung-toi", label: "Về chúng tôi" },
+];
+
+function NutDen({ href, children, testId }: { href: string; children: string; testId?: string }) {
+  return (
+    <Link
+      href={href}
+      data-testid={testId}
+      className="inline-flex min-h-11 items-center justify-center rounded-full bg-[#1c1c1c] px-5 text-sm font-medium text-white hover:bg-[#2a2a2a]"
+    >
+      {children}
+    </Link>
+  );
+}
+
 export default function TrangChu() {
   return (
-    <div className="min-h-screen bg-canvas">
+    <div className={`${display.variable} min-h-screen bg-[#f6f4f0] text-[#1c1c1c]`}>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <a href="#noi-dung" className="skip-link">
         Bỏ qua đến nội dung
       </a>
-      <header className="sticky top-0 z-30 border-b border-line bg-canvas">
-        <div className="mx-auto flex h-16 max-w-6xl items-center gap-6 px-5 sm:px-10">
-          <h1 className="min-w-0 truncate text-sm font-semibold tracking-tight">
-            <Link href="/">{SITE_NAME}</Link>
-          </h1>
-          <nav className="ml-auto hidden items-center gap-6 text-sm text-muted sm:flex" aria-label="Trang chủ">
-            <a href="#hinh" className="hover:text-ink">
-              Hình
-            </a>
-            <a href="#nam-buoc" className="hover:text-ink">
-              Năm bước
-            </a>
-          </nav>
-          <Link href="/dang-nhap" className={cn(buttonClasses(), "ml-auto sm:ml-0")} data-testid="vao-hoc">
-            Vào học
+
+      <header className="sticky top-0 z-30 border-b border-[#e6e1d8] bg-[#f6f4f0]/95 backdrop-blur-sm">
+        <div className="mx-auto flex max-w-7xl items-center gap-4 px-5 py-3 sm:px-8">
+          <Link href="/" className="shrink-0 text-lg font-semibold tracking-tight">
+            Học Toán
           </Link>
-        </div>
-      </header>
-      <main id="noi-dung">
-        <section className="mx-auto grid max-w-6xl items-center gap-12 px-5 py-16 sm:px-10 lg:grid-cols-[minmax(0,0.86fr)_minmax(0,1.14fr)] lg:gap-16 lg:py-24">
-          <div>
-            <p className="text-sm text-muted">Toán 12 · Đơn điệu và cực trị</p>
-            <p className="mt-6 text-pretty text-4xl font-semibold leading-[1.12] tracking-tight sm:text-5xl">
-              Nhìn tiếp tuyến,
-              <br />
-              đọc được đạo hàm.
-            </p>
-            <p className="mt-6 max-w-[36ch] text-base leading-relaxed text-muted">
-              Phiếu năm bước. Gia sư sửa bài, không đưa đáp án.
-            </p>
-            <Link href="/dang-nhap" className={cn(buttonClasses(), "mt-8")}>
-              Vào học
-            </Link>
-          </div>
-          <MinhHoaDaoHam />
-        </section>
-
-        <section className="border-y border-line" aria-label="Việc trang này làm">
-          <dl className="mx-auto grid max-w-6xl gap-8 px-5 py-12 sm:grid-cols-3 sm:px-10 sm:py-14">
-            <div>
-              <dt className="text-2xl font-semibold tracking-tight">Năm bước</dt>
-              <dd className="mt-2 text-sm leading-relaxed text-muted">Từ tập xác định tới kết luận.</dd>
-            </div>
-            <div>
-              <dt className="text-2xl font-semibold tracking-tight">Một chủ đề</dt>
-              <dd className="mt-2 text-sm leading-relaxed text-muted">Đơn điệu và cực trị, Toán 12.</dd>
-            </div>
-            <div>
-              <dt className="text-2xl font-semibold tracking-tight">Không đáp án</dt>
-              <dd className="mt-2 text-sm leading-relaxed text-muted">Gia sư chỉ sửa bài.</dd>
-            </div>
-          </dl>
-        </section>
-
-        <section id="nam-buoc" className="mx-auto grid max-w-6xl items-start gap-10 px-5 py-16 sm:px-10 lg:grid-cols-2 lg:gap-16 lg:py-24">
-          <div>
-            <h2 className="text-pretty text-3xl font-semibold tracking-tight">Làm trên phiếu</h2>
-            <p className="mt-4 max-w-[36ch] text-base leading-relaxed text-muted">
-              Học sinh viết từng bước. Đồ thị của bài không mở trước kết luận.
-            </p>
-          </div>
-          <ol>
-            {BUOC_TRANG.map((ma) => (
-              <li key={ma} className="flex min-h-12 items-baseline gap-4 border-b border-line">
-                <span className="w-8 font-mono text-xs tabular text-muted">{soBuoc(ma)}</span>
-                <span className="text-base">{tenBuocTrang(ma)}</span>
-              </li>
+          <nav className="hidden items-center gap-6 text-sm text-[#5c5954] lg:flex" aria-label="Trang chủ">
+            {NAV.map((item) => (
+              <a key={item.href} href={item.href} className="hover:text-[#1c1c1c]">
+                {item.label}
+              </a>
             ))}
-          </ol>
+          </nav>
+          <form action="/dang-nhap" role="search" className="ml-auto hidden items-center gap-2 rounded-full border border-[#e0dbd2] bg-white px-3 md:flex">
+            <Search className="size-4 text-[#8d877e]" aria-hidden />
+            <label className="sr-only" htmlFor="tim-landing">
+              Tìm kiếm
+            </label>
+            <input
+              id="tim-landing"
+              name="q"
+              placeholder="Tìm kiếm..."
+              className="h-10 w-36 bg-transparent text-sm outline-none placeholder:text-[#a39e94] lg:w-44"
+            />
+          </form>
+          <Link href="/dang-nhap" className="hidden text-sm text-[#3c3a36] hover:text-[#1c1c1c] sm:inline">
+            Đăng nhập
+          </Link>
+          <NutDen href="/dang-nhap" testId="vao-hoc">
+            Bắt đầu học
+          </NutDen>
+        </div>
+        <nav className="flex gap-4 overflow-x-auto px-5 pb-3 text-sm text-[#5c5954] lg:hidden" aria-label="Mục trang">
+          {NAV.map((item) => (
+            <a key={item.href} href={item.href} className="shrink-0">
+              {item.label}
+            </a>
+          ))}
+        </nav>
+      </header>
+
+      <main id="noi-dung">
+        <section id="kham-pha" className="lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)] lg:items-center">
+          <div className="px-5 py-14 sm:px-8 lg:py-20 lg:pl-10 xl:pl-16">
+            <p className="text-xs font-medium tracking-[0.22em] text-[#8d877e]">TOÁN HỌC · TƯ DUY · TƯƠNG LAI</p>
+            <h1 className="font-landing mt-6 max-w-[12ch] text-[2.75rem] font-medium leading-[1.08] tracking-tight sm:text-6xl lg:text-[4.25rem]">
+              Toán học mở ra những cách nhìn mới.
+            </h1>
+            <p className="mt-6 max-w-[38ch] text-base leading-relaxed text-[#5c5954] sm:text-lg">
+              Học toán với AI – lộ trình cá nhân hóa, bài tập phong phú và giải thích sâu sắc, giúp bạn hiểu bản chất, không chỉ làm được.
+            </p>
+            <div className="mt-8 flex flex-wrap items-center gap-6">
+              <NutDen href="/dang-nhap">Bắt đầu miễn phí →</NutDen>
+              <a href="#lo-trinh" className="text-sm font-medium underline decoration-[#1c1c1c] underline-offset-4">
+                Khám phá lộ trình
+              </a>
+            </div>
+          </div>
+          <HeroCanh />
+        </section>
+
+        <section className="mx-auto grid max-w-6xl gap-10 px-5 py-14 sm:grid-cols-3 sm:px-8 sm:py-16" aria-label="Con số minh họa">
+          <div>
+            <p className="font-landing text-4xl font-medium tracking-tight sm:text-5xl">50.000+</p>
+            <p className="mt-2 max-w-[18ch] text-sm leading-relaxed text-[#6d6962]">học sinh đang học cùng chúng tôi (dữ liệu mẫu)</p>
+          </div>
+          <div>
+            <p className="font-landing text-4xl font-medium tracking-tight sm:text-5xl">95%</p>
+            <p className="mt-2 max-w-[22ch] text-sm leading-relaxed text-[#6d6962]">học sinh cảm thấy hiểu bài hơn sau 4 tuần (khảo sát nội bộ)</p>
+          </div>
+          <div>
+            <p className="font-landing text-4xl font-medium tracking-tight sm:text-5xl">∞</p>
+            <p className="mt-2 max-w-[18ch] text-sm leading-relaxed text-[#6d6962]">Toán học vẫn luôn đầy điều thú vị</p>
+          </div>
+        </section>
+
+        <section id="trai-nghiem" className="mx-auto max-w-7xl px-5 pb-20 sm:px-8">
+          <div className="grid items-end gap-10 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.3fr)] lg:gap-12">
+            <div>
+              <p className="text-xs font-medium tracking-[0.2em] text-[#8d877e]">TRẢI NGHIỆM HỌC TOÁN KHÁC BIỆT</p>
+              <h2 className="font-landing mt-4 text-4xl font-medium leading-[1.12] tracking-tight sm:text-5xl">
+                Không chỉ là bài tập, mà là hành trình tư duy.
+              </h2>
+              <p className="mt-5 max-w-[40ch] text-base leading-relaxed text-[#5c5954]">
+                Chúng tôi kết hợp sức mạnh của AI, phương pháp sư phạm và thiết kế tối giản để giúp bạn học toán hiệu quả, chủ động và truyền cảm hứng.
+              </p>
+              <a href="#ve-chung-toi" className="mt-6 inline-block text-sm font-medium underline underline-offset-4">
+                Tìm hiểu thêm về chúng tôi →
+              </a>
+            </div>
+            <div id="lo-trinh">
+              <div id="bai-tap" />
+              <div id="tai-nguyen" />
+              <TheTinhNang />
+            </div>
+          </div>
         </section>
       </main>
-      <section className="bg-ink text-chalk">
-        <div className="mx-auto flex max-w-6xl flex-col items-start gap-6 px-5 py-16 sm:flex-row sm:items-center sm:justify-between sm:px-10 sm:py-20">
-          <p className="text-pretty text-3xl font-semibold tracking-tight">Vào làm một bài.</p>
-          <Link href="/dang-nhap" className={cn(buttonClasses(), "bg-chalk text-ink hover:bg-white")}>
-            Vào học
-          </Link>
+
+      <section id="ve-chung-toi" className="relative overflow-hidden bg-[#070b14] text-[#f4f1eb]">
+        <div
+          className="pointer-events-none absolute inset-0 opacity-80"
+          aria-hidden
+          style={{
+            backgroundImage:
+              "radial-gradient(1px 1px at 12% 30%, #fff 50%, transparent 51%), radial-gradient(1px 1px at 28% 70%, #fff 50%, transparent 51%), radial-gradient(1px 1px at 64% 24%, #fff 50%, transparent 51%), radial-gradient(1.5px 1.5px at 80% 60%, #fff 50%, transparent 51%), radial-gradient(1px 1px at 46% 48%, #fff 50%, transparent 51%), radial-gradient(circle at 8% 120%, #1d3358 0, #0c1424 28%, transparent 46%)",
+          }}
+        />
+        <div className="relative mx-auto grid max-w-7xl items-center gap-10 px-5 py-16 sm:px-8 lg:grid-cols-2 lg:py-20">
+          <blockquote>
+            <p className="font-landing text-2xl italic leading-snug sm:text-3xl">
+              “Những ý tưởng lớn thường bắt đầu từ những câu hỏi đơn giản.”
+            </p>
+            <footer className="mt-4 text-sm text-[#b7b2a8]">— Richard Feynman</footer>
+          </blockquote>
+          <div className="lg:text-right">
+            <p className="font-landing text-3xl font-medium sm:text-4xl">Sẵn sàng khám phá?</p>
+            <p className="mt-3 text-sm text-[#c8c2b6]">Hãy bắt đầu hành trình học toán của riêng bạn ngay hôm nay.</p>
+            <Link
+              href="/dang-nhap"
+              className="mt-6 inline-flex min-h-11 items-center rounded-full bg-white px-5 text-sm font-medium text-[#1c1c1c] hover:bg-[#f6f4f0]"
+            >
+              Bắt đầu học →
+            </Link>
+          </div>
         </div>
       </section>
-      <footer>
-        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-5 py-6 text-xs text-muted sm:px-10">
+
+      <footer className="bg-[#f6f4f0]">
+        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-5 py-6 text-xs text-[#8d877e] sm:px-8">
           <p>
             {SITE_NAME} · MIT · v{SITE_VERSION}
           </p>

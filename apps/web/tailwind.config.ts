@@ -29,6 +29,7 @@ const config: Config = {
         sans: ["var(--font-sans)", "ui-sans-serif", "system-ui", "sans-serif"],
         display: ["var(--font-sans)", "ui-sans-serif", "system-ui", "sans-serif"],
         mono: ["var(--font-mono)", "ui-monospace", "SFMono-Regular", "monospace"],
+        landing: ["var(--font-landing)", "Georgia", "serif"],
       },
       borderRadius: {
         button: "6px",
