@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState, type ReactNode } from "react";
 import {
+  BookMarked,
   BookOpen,
   CalendarDays,
   FileText,
@@ -12,6 +13,7 @@ import {
   LayoutDashboard,
   Library,
   Menu,
+  Plug,
   Settings,
   Sigma,
   Sparkles,
@@ -33,6 +35,8 @@ const ICONS = {
   sigma: Sigma,
   chart: LayoutDashboard,
   settings: Settings,
+  kho: BookMarked,
+  plug: Plug,
 };
 
 export function AppShell({

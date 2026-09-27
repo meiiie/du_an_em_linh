@@ -202,6 +202,9 @@ export const classSettings = pgTable("class_settings", {
   aiModel: text("ai_model"),
   aiAllowLocal: boolean("ai_allow_local").notNull().default(true),
   aiApiKey: text("ai_api_key"),
+  aiOpenaiSub: text("ai_openai_sub"),
+  aiOpenaiEmail: text("ai_openai_email"),
+  aiConnectedAt: timestamp("ai_connected_at", { withTimezone: true }),
 });
 
 export const assignments = pgTable("assignments", {

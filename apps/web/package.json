@@ -10,7 +10,7 @@
     "db:migrate": "tsx scripts/migrate.ts",
     "seed": "tsx scripts/seed.ts",
     "test:e2e": "playwright test",
-    "test:unit": "tsx --test lib/ai-harness.test.ts"
+    "test:unit": "tsx --test lib/ai-harness.test.ts lib/kien-thuc.test.ts"
   },
   "dependencies": {
     "clsx": "^2.1.1",

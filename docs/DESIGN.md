@@ -89,6 +89,7 @@ Thanh công cụ điện thoại 48 px (`h-12`) — Material touch 48 dp, cao h�
 - Bước 5 bước = cột số bên trái phiếu, không chip viên thuốc. Mỗi hàng bước `min-h-11`.
 - Sai = viền `mark` + banner dưới bước (`px-4 py-3`).
 - Composer gia sư: `textarea` tối thiểu 44, nút Gửi **luôn** 44×44 (PR #3 / WCAG 2.5.5), Enter gửi / Shift+Enter dòng, «Đang nghĩ…» thay vì stream. Lấy nhịp ChatGPT / Claude / Open WebUI — không lấy bong bóng gradient.
+- Kết nối tài khoản: hai bước như Notion/Linear (mở trang chính thức → dán một lần). Không nút xanh ChatGPT, không logo.
 - Không hero navy, không số khổng lồ trên 3 thẻ giống nhau.
 
 ## A11y

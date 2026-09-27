@@ -100,7 +100,7 @@ Số liệu pytest và e2e ghi ở cuối phần này sau lần chạy trên má
 
 - Chủ đề duy nhất là đơn điệu và cực trị của hàm một biến. Bài đúng/sai và bài tham số trong ngân hàng sư phạm không có lời giải 5 bước nên đứng ở hàng chờ, chưa làm được trên màn hình học sinh.
 - Tầng 2 là tìm cụm từ, không phải nhúng vector. Tài liệu «chưa rõ quyền» bị bỏ qua.
-- Gia sư mặc định thang gợi ý đã kiểm (`offline`). Giáo viên chọn khóa API chính thức hoặc Ollama/LM Studio trên loopback. Lỗi nhà không giả làm offline, không đăng nhập ChatGPT không chính thức. Xem `docs/AI-HARNESS.md`.
+- Gia sư mặc định thang gợi ý đã kiểm (`offline`). Giáo viên kết nối ChatGPT bằng khóa API chính thức một lần (`/gv/ket-noi-ai`); OAuth định danh chỉ khi có `client_id` OpenAI cấp. Không device-OAuth Codex. Gia sư đọc kho lớp, không đọc lời giải. Xem `docs/AI-HARNESS.md`.
 - Chưa có cổng phụ huynh. Học sinh không đánh dấu tổng hợp sẽ bị chặn nếu thiếu bản ghi đồng ý.
 - Ô LaTeX MathLive kèm một ô gõ LaTeX thường. Chấm đọc ô thường đó.
 - Giao diện là Tailwind theo `docs/DESIGN.md`, chưa gắn registry shadcn/ui. Skill FE/BE nằm ở `.cursor/skills/`. Harness agent: `AGENTS.md`, `.claude/`.
@@ -119,5 +119,5 @@ Chạy trên môi trường dựng nguyên mẫu này:
   - Sandbox: 5 hàm (API không import SymPy, quá hạn thì bị giết, chấm qua tiến trình, bộ lọc chặn và bộ lọc cho qua).
 - `pnpm --filter web typecheck`: `tsc --noEmit` đạt.
 - `pnpm --filter web lint`: `next lint` đạt, không cảnh báo.
-- `pnpm --filter web test:unit`: **12/12** harness (loopback, không fallback, một lần HTTP, probe chỉ GET /models).
-- Playwright (`pnpm --filter web test:e2e`): **8/8 đạt**. Ca học sinh 390: sai đạo hàm → chặn đáp án → chip gợi ý → sửa đạt → tải lại còn hội thoại. Ca 1280: lộ trình + Bloom + lịch tư vấn. Ca 768: phiếu cạnh gia sư, không tràn ngang. Ca giáo viên: hàng đợi và 3 mức. Hai ca khóa 40/44 (kèm nút Gửi gia sư ≥ 44). Hai ca harness: Enter gửi + Ollama lỗi không chuyển nhà; giáo viên thử offline / Ollama trên `/gv/cai-dat`.
+- `pnpm --filter web test:unit`: **15/15** (harness + kho: bỏ `chua_ro`, không nhét lời giải).
+- Playwright (`pnpm --filter web test:e2e`): chạy lại trên nhánh này; số liệu cập nhật sau khi đủ suite.

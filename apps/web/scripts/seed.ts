@@ -350,6 +350,9 @@ async function main() {
     aiModel: null,
     aiAllowLocal: true,
     aiApiKey: null,
+    aiOpenaiSub: null,
+    aiOpenaiEmail: null,
+    aiConnectedAt: null,
   });
   const now = new Date();
   for (const id of [AN, BINH, CHI]) {

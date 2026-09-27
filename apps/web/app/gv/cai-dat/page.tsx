@@ -3,9 +3,11 @@ import { luuCaiDatLop } from "@/lib/actions/gv";
 import { maskKey, NHA, parseProvider, type AiProviderId } from "@/lib/ai-catalog";
 import { docKhoaCloud } from "@/lib/ai-harness";
 import { KiemTraAi } from "@/components/kiem-tra-ai";
-import { Button } from "@/components/ui/button";
+import Link from "next/link";
+import { Button, buttonClasses } from "@/components/ui/button";
 import { fieldControl } from "@/components/ui/field";
 import { PageHeader } from "@/components/ui/page-header";
+import { cn } from "@/lib/cn";
 import { db } from "@/lib/db";
 import { classSettings, classes } from "@/lib/db/schema";
 
@@ -25,6 +27,11 @@ export default async function Page() {
         title="Cài đặt lớp"
         description="Mở lời giải sau khi nộp mặc định tắt. Gia sư không đọc lời giải chuẩn. Nhà AI do giáo viên chọn — không đăng nhập ChatGPT không chính thức."
       />
+      <p className="mb-6 text-sm">
+        <Link href="/gv/ket-noi-ai" className={cn(buttonClasses({ variant: "secondary" }))} data-testid="toi-ket-noi-ai">
+          Kết nối ChatGPT cho lớp
+        </Link>
+      </p>
       <form action={luuCaiDatLop} className="space-y-4 border-y border-line py-6">
         <p className="text-sm text-muted">Lớp {lop?.name || "—"}</p>
         <label className="flex items-start gap-3 text-sm">

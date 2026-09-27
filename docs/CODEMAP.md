@@ -27,13 +27,16 @@ Next.js 15. Server action nói chuyện với Postgres và `MATH_SERVICE_URL`.
 | --- | --- |
 | `app/dang-nhap/page.tsx` | Vào lớp thử |
 | `app/hs/` | Lộ trình, ngân bài, lịch, phiếu 5 bước |
-| `app/gv/` | Tổng quan, duyệt, ngân hàng, sinh bài, tài liệu, công thức, tiến độ, cài đặt |
+| `app/gv/` | Tổng quan, duyệt, ngân hàng, sinh bài, tài liệu, công thức, kết nối ChatGPT, tiến độ, cài đặt |
+| `app/hs/kho` | Kho kiến thức lớp (cùng nguồn gia sư đọc) |
 | `components/app-shell.tsx` | Ray mực 220 px / ngăn kéo |
 | `components/solve-client.tsx` | Phiếu 5 bước |
 | `components/tutor-panel.tsx` | Composer gia sư (44 px, Enter, nhà) |
 | `components/ui/` | Nút, ô, tiêu đề, hàng việc |
 | `lib/actions/` | `hs`, `gv`, `auth` |
 | `lib/ai-catalog.ts` / `lib/ai-harness.ts` | Chọn nhà + một lần HTTP |
+| `lib/kien-thuc.ts` / `lib/kho-lop.ts` | Truy hồi kho lớp, không lời giải |
+| `lib/openai-oauth.ts` | PKCE Sign in with ChatGPT (khi có client_id) |
 | `lib/db/schema.ts` | Drizzle |
 | `lib/tutor.ts` | Thang gợi ý; không đọc lời giải |
 | `lib/learning.ts` | BKT + gợi bài |

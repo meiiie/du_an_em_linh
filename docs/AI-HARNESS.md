@@ -52,6 +52,16 @@ Tham chiếu: [meiiie/lms-ibm-bob-hackathon#3](https://github.com/meiiie/lms-ibm
 | `apps/web/components/tutor-panel.tsx` | Composer |
 | `apps/web/app/gv/cai-dat/page.tsx` | Chọn nhà, khóa lớp, thử kết nối |
 
+## Kết nối ChatGPT (người không chuyên)
+
+Giáo viên vào `/gv/ket-noi-ai`. Hai bước: mở trang khóa OpenAI (cùng tài khoản ChatGPT) → dán một lần. Học sinh không thấy khóa.
+
+«Sign in with ChatGPT» chính thức (2026) chỉ là định danh. Bật khi có `OPENAI_OAUTH_CLIENT_ID` do OpenAI cấp. Không dùng client_id Codex/CLI.
+
+## Kho kiến thức
+
+`lib/kien-thuc.ts` + `lib/kho-lop.ts`: truy hồi tài liệu / công thức theo cụm từ (cùng luật tầng 2/3). Nhét vào prompt gia sư. Học sinh xem `/hs/kho`. Không lời giải.
+
 ```bash
 pnpm --filter web test:unit
 ```

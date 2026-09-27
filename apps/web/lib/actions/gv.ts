@@ -317,3 +317,53 @@ export async function kiemTraNhaCungCap(providerRaw: string) {
   return probeProvider({ provider, classApiKey: row?.aiApiKey });
 }
 
+export async function ketNoiBangKhoa(form: FormData) {
+  const user = await requireRole("GV");
+  const key = String(form.get("ai_api_key") || "").trim();
+  const model = String(form.get("ai_model") || "").trim() || null;
+  if (!key || key === "********") {
+    redirect("/gv/ket-noi-ai?loi=" + encodeURIComponent("Cần dán khóa API vừa tạo trên trang OpenAI."));
+  }
+  const rows = await db.select().from(classSettings);
+  if (!rows[0]) redirect("/gv/ket-noi-ai?loi=" + encodeURIComponent("Chưa có lớp."));
+  const probe = await probeProvider({ provider: "cloud", classApiKey: key });
+  if (!probe.ok) {
+    redirect("/gv/ket-noi-ai?loi=" + encodeURIComponent(probe.message));
+  }
+  await db
+    .update(classSettings)
+    .set({
+      aiProvider: "cloud",
+      aiApiKey: key,
+      aiModel: model,
+      aiConnectedAt: new Date(),
+    })
+    .where(eq(classSettings.classId, rows[0].classId));
+  await audit(user.id, "KET_NOI_CHATGPT", "class_settings", rows[0].classId, "khoa_chinh_thuc");
+  revalidatePath("/gv/ket-noi-ai");
+  revalidatePath("/gv/cai-dat");
+  revalidatePath("/hs");
+  redirect("/gv/ket-noi-ai?ok=1");
+}
+
+export async function ngatKetNoiAi() {
+  const user = await requireRole("GV");
+  const rows = await db.select().from(classSettings);
+  if (!rows[0]) return;
+  await db
+    .update(classSettings)
+    .set({
+      aiProvider: "offline",
+      aiApiKey: null,
+      aiOpenaiSub: null,
+      aiOpenaiEmail: null,
+      aiConnectedAt: null,
+    })
+    .where(eq(classSettings.classId, rows[0].classId));
+  await audit(user.id, "NGAT_KET_NOI_AI", "class_settings", rows[0].classId);
+  revalidatePath("/gv/ket-noi-ai");
+  revalidatePath("/gv/cai-dat");
+  revalidatePath("/hs");
+}
+
+

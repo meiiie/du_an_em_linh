@@ -8,7 +8,7 @@ import { Button, buttonClasses } from "./ui/button";
 import { fieldControl } from "./ui/field";
 import { cn } from "@/lib/cn";
 
-type Msg = { role: "hs" | "gia_su"; text: string; error?: boolean };
+type Msg = { role: "hs" | "gia_su"; text: string; error?: boolean; trichDan?: { loai: string; ten: string }[] };
 
 const LOI_CHAO: Msg = {
   role: "gia_su",
@@ -110,7 +110,10 @@ export function TutorPanel({
     if (res.ok) {
       setLastOffline(res.offline);
       setLastError(res.error);
-      setChat((c) => [...c, { role: "gia_su", text: res.tra_loi, error: Boolean(res.error) }]);
+      setChat((c) => [
+        ...c,
+        { role: "gia_su", text: res.tra_loi, error: Boolean(res.error), trichDan: res.ok ? res.trich_dan : [] },
+      ]);
     } else {
       setLastError(res.tra_loi);
       setChat((c) => [...c, { role: "gia_su", text: res.tra_loi, error: true }]);
@@ -178,14 +181,19 @@ export function TutorPanel({
 
       <div ref={log} data-testid="tutor-log" className="mt-4 max-h-80 space-y-2 overflow-y-auto overscroll-contain">
         {chat.map((m, i) => (
-          <p
+          <div
             key={i}
             className={`px-4 py-3 text-sm ${
               m.role === "hs" ? "bg-ink text-chalk" : m.error ? "bg-amber-50 text-amber-950" : "bg-wash"
             }`}
           >
-            {m.text}
-          </p>
+            <p>{m.text}</p>
+            {m.trichDan && m.trichDan.length ? (
+              <p className="mt-2 text-xs text-muted" data-testid={i === chat.length - 1 ? "tutor-trich-dan" : undefined}>
+                Đã đọc kho: {m.trichDan.map((t) => t.ten).join(" · ")}
+              </p>
+            ) : null}
+          </div>
         ))}
         {thinking ? (
           <p className="px-4 py-3 text-sm text-muted" data-testid="tutor-thinking" aria-live="polite">

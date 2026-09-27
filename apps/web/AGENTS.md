@@ -32,7 +32,7 @@ Dùng `Button` / `buttonClasses` trong `components/ui/button.tsx`. Đừng tự 
 
 ## Testid không đổi
 
-`sidebar`, `mo-sidebar`, `dong-sidebar`, `nav-*`, `solve-screen`, `latex-txd`, `latex-dh`, `nop-buoc`, `cham-thong-bao`, `mo-gia-su`, `tutor-input`, `tutor-send`, `tutor-log`, `tutor-provider`, `tutor-composer`, `bai-DH12-03-VD-01`, `hang-doi`, `duyet-*`, `tien-do`, `toggle-muc`, `mo-loi-giai`, `ai-provider`, `email`, `password`.
+`sidebar`, `mo-sidebar`, `dong-sidebar`, `nav-*`, `solve-screen`, `latex-txd`, `latex-dh`, `nop-buoc`, `cham-thong-bao`, `mo-gia-su`, `tutor-input`, `tutor-send`, `tutor-log`, `tutor-provider`, `tutor-composer`, `bai-DH12-03-VD-01`, `hang-doi`, `duyet-*`, `tien-do`, `toggle-muc`, `mo-loi-giai`, `ai-provider`, `ket-noi-chatgpt`, `kho-cong-thuc`, `email`, `password`.
 
 ## Cấu trúc
 

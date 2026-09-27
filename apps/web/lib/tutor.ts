@@ -55,9 +55,22 @@ export function goiYBuoc(ma: string, cap: number, daKiem?: string | null) {
   return hang[n - 1];
 }
 
-export function chinhSachXinDapAn(lan: number, goiY: string | null) {
+/** Aleven / Help Tutor: gợi ý nguyên lý, không operative bottom-out. */
+export function cauHoiXocratis(ma: string) {
+  const hang: Record<string, string> = {
+    "B.DH.TXD": "Em tự hỏi: chỗ nào của hàm có thể làm mất nghĩa?",
+    "B.DH.DAOHAM": "Em tự hỏi: mỗi hạng tử hạ bậc thế nào, hằng số đi đâu?",
+    "B.DH.NGHIEM": "Em tự hỏi: ngoài y′ = 0, còn điểm nào y′ mất nghĩa trên tập xác định?",
+    "B.DH.XETDAU": "Em tự hỏi: trên mỗi khoảng, một số thử cho dấu gì?",
+    "B.DH.KETLUAN": "Em tự hỏi: dấu đổi ở mốc nào, và có bị loại điểm không?",
+  };
+  return hang[ma] || hang["B.DH.DAOHAM"];
+}
+
+export function chinhSachXinDapAn(lan: number, goiY: string | null, chuaNop = false) {
+  const nop = chuaNop ? " Em nộp bước đang làm trước, mình mới tô được chỗ sai." : "";
   if (lan <= 1) {
-    return `Mình hiểu bài đang khó. Trong lúc làm bài, mình không đưa đáp án — em cần tự đi từng bước thì mới nhớ được. ${
+    return `Mình hiểu bài đang khó. Trong lúc làm bài, mình không đưa đáp án — em cần tự đi từng bước thì mới nhớ được.${nop} ${
       goiY ? `Gợi ý: ${goiY}` : "Em hãy đọc lại bước đang sai và nói mình em đang mắc ở đâu."
     }`;
   }
@@ -109,8 +122,9 @@ export function mauGiaSu(opts: {
 export const HE_THONG_GIA_SU =
   "Bạn là gia sư toán THPT tiếng Việt, gọi học sinh là em. Nói rõ đây là AI, không phải giáo viên. " +
   "Không nêu đáp án, khoảng đơn điệu cuối, điểm cực trị, hay giá trị cực trị. " +
-  "Không đọc lời giải chuẩn. Chỉ dùng gợi ý được mở và mô tả quy trình bước đang dở. Tối đa 4 câu. " +
-  "Nếu học sinh xin đáp án thì từ chối và giữ gợi ý quy trình.";
+  "Không đọc lời giải chuẩn. Chỉ dùng kho lớp được đưa (công thức + tài liệu đã duyệt) và gợi ý đã mở. " +
+  "Không bịa công thức ngoài kho. Có thể hỏi Socratic một câu về quy trình, không hỏi đáp án. " +
+  "Tối đa 4 câu. Nếu học sinh xin đáp án thì từ chối và giữ gợi ý quy trình.";
 
 export function moTaCheDo(arg: boolean | { provider?: string; offline: boolean; error?: string | null }) {
   const offline = typeof arg === "boolean" ? arg : arg.offline;

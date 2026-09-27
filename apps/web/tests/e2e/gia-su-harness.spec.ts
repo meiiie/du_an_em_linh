@@ -24,6 +24,7 @@ test.describe("harness gia sư", () => {
     await page.getByTestId("tutor-input").press("Enter");
     await expect(page.getByTestId("tutor-log")).toContainText("Gợi ý");
     await expect(page.getByTestId("tutor-che-do")).toContainText("Thang gợi ý");
+    await expect(page.getByTestId("tutor-trich-dan")).toContainText(/Đạo hàm|Cực trị|Đơn điệu|Ghi chú/);
 
     await page.getByTestId("tutor-provider").selectOption("ollama");
     await page.getByTestId("chip-goi-y").click();
@@ -53,5 +54,37 @@ test.describe("cài đặt nhà AI", () => {
     await page.getByTestId("ai-probe-chay").click();
     await expect(page.getByTestId("ai-probe-ket")).toContainText(/Không nối|không chuyển|loopback|hết giờ|trả/);
     await page.screenshot({ path: `${SHOTS}/gv-cai-dat-ai.png`, fullPage: true });
+  });
+
+  test("kết nối ChatGPT: hai bước khóa chính thức, không OAuth lậu", async ({ page }) => {
+    await page.goto("/dang-nhap");
+    await page.getByTestId("email").fill("gv@demo.local");
+    await page.getByTestId("password").fill("giaovien123");
+    await page.getByRole("button", { name: "Vào học" }).click();
+    await expect(page.getByRole("heading", { name: "Lớp 12A1 thử" })).toBeVisible();
+    await page.goto("/gv/ket-noi-ai");
+    await expect(page.getByRole("heading", { name: "Kết nối ChatGPT" })).toBeVisible();
+    await expect(page.getByTestId("ket-noi-chatgpt")).toBeVisible();
+    await expect(page.getByTestId("mo-trang-khoa-openai")).toHaveAttribute("href", /platform\.openai\.com\/api-keys/);
+    await expect(page.getByTestId("oauth-chua-dk")).toContainText("OPENAI_OAUTH_CLIENT_ID");
+    await expect(page.getByTestId("ket-noi-trang-thai")).toContainText("Chưa kết nối");
+    await page.screenshot({ path: `${SHOTS}/gv-ket-noi-chatgpt.png`, fullPage: true });
+  });
+});
+
+test.describe("kho kiến thức", () => {
+  test.use({ viewport: { width: 1280, height: 800 } });
+
+  test("học sinh xem cùng kho gia sư đọc", async ({ page }) => {
+    await page.goto("/dang-nhap");
+    await page.getByTestId("email").fill("hs.an@demo.local");
+    await page.getByTestId("password").fill("hocsinh123");
+    await page.getByRole("button", { name: "Vào học" }).click();
+    await expect(page.getByRole("heading", { name: "Chào An" })).toBeVisible();
+    await page.getByTestId("nav-hs-kho").click();
+    await expect(page.getByRole("heading", { name: "Kiến thức gia sư được đọc" })).toBeVisible();
+    await expect(page.getByTestId("kho-cong-thuc")).toContainText("Đạo hàm");
+    await expect(page.getByTestId("kho-tai-lieu")).toContainText("đơn điệu");
+    await page.screenshot({ path: `${SHOTS}/hs-kho-kien-thuc.png`, fullPage: true });
   });
 });

@@ -26,7 +26,9 @@ import { mathJob, type GradeResult } from "../math";
 import { resolveProvider, type AiPublicConfig } from "../ai-catalog";
 import { docKhoaCloud } from "../ai-harness";
 import { callLLM } from "../llm";
-import { chinhSachXinDapAn, goiYBuoc, HE_THONG_GIA_SU, mauGiaSu, xinDapAn, xinGoiY, xinSaiCho } from "../tutor";
+import { goiKhoChoBuoc, taiNguyenKhoLop } from "../kho-lop";
+import { chonKho, dongKhoChoPrompt, nhanTrichDan } from "../kien-thuc";
+import { cauHoiXocratis, chinhSachXinDapAn, goiYBuoc, HE_THONG_GIA_SU, mauGiaSu, xinDapAn, xinGoiY, xinSaiCho } from "../tutor";
 
 type Line = { dong: number; latex: string; loai?: string };
 type Cell = { hang: string; k: number; gia_tri: string };
@@ -207,7 +209,14 @@ export async function hoiGiaSu(
   await assertMayLearn(user);
   const prob = await db.select().from(problems).where(eq(problems.id, problemId)).limit(1);
   if (!prob[0] || prob[0].status !== "DA_PHAT_HANH") {
-    return { ok: false as const, tra_loi: "Bài chưa phát hành.", offline: true, provider: "offline" as const, error: null };
+    return {
+      ok: false as const,
+      tra_loi: "Bài chưa phát hành.",
+      offline: true,
+      provider: "offline" as const,
+      error: null,
+      trich_dan: [],
+    };
   }
   const sess = await sessionFor(user.id, problemId);
   const latestSub = await db
@@ -258,22 +267,30 @@ export async function hoiGiaSu(
   let nha: string = "offline";
   let llmError: string | null = null;
   let persistCap = true;
+  const kho = await goiKhoChoBuoc(buoc, text);
+  const trichDan = nhanTrichDan(kho);
   if (xin) {
-    draft = chinhSachXinDapAn(answerRequests, goiY);
+    draft = chinhSachXinDapAn(answerRequests, goiY, !grade);
   } else {
-    const offlineText = mauGiaSu({
-      state,
-      thongBao: grade?.thongBao || null,
-      loai: grade?.loaiKetQua || null,
-      maLoi: grade?.maLoi || null,
-      tenLoi: err?.name || null,
-      doTinCay: grade?.doTinCay ?? null,
-      nguong: cfg.nguong_tin_cay_ma_loi,
-      goiY,
-      cap: nextHintCap,
-      maBuoc: buoc,
-      xinSai: hoiSai,
-    });
+    const offlineText = [
+      mauGiaSu({
+        state,
+        thongBao: grade?.thongBao || null,
+        loai: grade?.loaiKetQua || null,
+        maLoi: grade?.maLoi || null,
+        tenLoi: err?.name || null,
+        doTinCay: grade?.doTinCay ?? null,
+        nguong: cfg.nguong_tin_cay_ma_loi,
+        goiY,
+        cap: nextHintCap,
+        maBuoc: buoc,
+        xinSai: hoiSai,
+      }),
+      kho.congThuc[0] ? `Em mở kho lớp, xem «${kho.congThuc[0].ten}» — quy trình, không chép kết quả.` : "",
+      cauHoiXocratis(buoc),
+    ]
+      .filter(Boolean)
+      .join(" ");
     const prior = await db
       .select()
       .from(tutorMessages)
@@ -298,7 +315,7 @@ export async function hoiGiaSu(
         ...history,
         {
           role: "user",
-          content: `Đề (không kèm lời giải): ${prob[0].statementText}\nBước: ${buoc}\nLoại: ${grade?.loaiKetQua || "chua_nop"}\nGợi ý được mở: ${goiY || "(chưa)"}\nHọc sinh: ${text}`,
+          content: `Đề (không kèm lời giải): ${prob[0].statementText}\nBước: ${buoc}\nLoại: ${grade?.loaiKetQua || "chua_nop"}\nGợi ý được mở: ${goiY || "(chưa)"}\nKho lớp (đã duyệt, không phải lời giải):\n${dongKhoChoPrompt(kho)}\nHọc sinh: ${text}`,
         },
       ],
     });
@@ -364,6 +381,20 @@ export async function hoiGiaSu(
     offline,
     provider: nha,
     error: llmError,
+    trich_dan: trichDan,
+  };
+}
+
+export async function khoLopCongKhai() {
+  await requireRole("HS");
+  const nguon = await taiNguyenKhoLop();
+  const kho = chonKho(nguon);
+  return {
+    congThuc: nguon.congThuc,
+    taiLieu: nguon.taiLieu
+      .filter((d) => d.licenseStatus !== "chua_ro")
+      .map((d) => ({ id: d.id, title: d.title, trich: d.text.slice(0, 280), licenseStatus: d.licenseStatus })),
+    goiYKhop: kho,
   };
 }
 
