@@ -1,10 +1,11 @@
 import { eq } from "drizzle-orm";
 import { PageHeader } from "@/components/ui/page-header";
+import { Tex } from "@/components/tex";
 import { WorkRow } from "@/components/work-row";
 import { requireRole } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { problems } from "@/lib/db/schema";
-import { LABEL4, type Muc4 } from "@/lib/levels";
+import { hamLatex, nhanMuc4 } from "@/lib/de-hoc-sinh";
 
 export const dynamic = "force-dynamic";
 
@@ -20,19 +21,19 @@ export default async function Page() {
         description="Chỉ bài qua cổng ba tầng hoặc được giáo viên duyệt mới mở. Bài chờ duyệt không làm được."
       />
       <div className="border-y border-line">
-        {pubs.map((p) => (
-          <WorkRow
-            key={p.id}
-            href={`/hs/luyen/${p.id}`}
-            testId={`catalog-${p.code}`}
-            kicker={
-              <>
-                {LABEL4[p.mucDo4 as Muc4] || p.mucDo4} · <span translate="no">{p.code}</span>
-              </>
-            }
-            title={p.statementText}
-          />
-        ))}
+        {pubs.map((p) => {
+          const ham = hamLatex(p.statementLatex);
+          return (
+            <WorkRow
+              key={p.id}
+              href={`/hs/luyen/${p.id}`}
+              testId={`catalog-${p.code}`}
+              kicker={<span translate="no">{p.code}</span>}
+              title={ham ? <Tex tex={ham} /> : p.statementText}
+              meta={nhanMuc4(p.mucDo4)}
+            />
+          );
+        })}
       </div>
       {waiting.length ? <p className="mt-4 text-sm text-warn">{waiting.length} bài đang chờ thầy cô duyệt.</p> : null}
     </main>

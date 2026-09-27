@@ -1,9 +1,7 @@
 import type { Metadata } from "next";
-import { eq } from "drizzle-orm";
 import { AppShell } from "@/components/app-shell";
 import { requireRole } from "@/lib/auth";
-import { db } from "@/lib/db";
-import { problems } from "@/lib/db/schema";
+import { demBaiChuaXong } from "@/lib/hs-du-lieu";
 import { HS_NAV } from "@/lib/nav";
 
 export const metadata: Metadata = {
@@ -12,9 +10,9 @@ export const metadata: Metadata = {
 
 export default async function Layout({ children }: { children: React.ReactNode }) {
   const u = await requireRole("HS");
-  const pubs = await db.select().from(problems).where(eq(problems.status, "DA_PHAT_HANH"));
+  const chuaXong = await demBaiChuaXong(u.id);
   return (
-    <AppShell role="HS" name={u.displayName} items={HS_NAV} badges={{ "/hs/bai": pubs.length }}>
+    <AppShell role="HS" name={u.displayName} items={HS_NAV} badges={{ "/hs/bai": chuaXong }}>
       {children}
     </AppShell>
   );

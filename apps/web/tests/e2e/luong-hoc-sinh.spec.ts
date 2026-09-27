@@ -91,7 +91,9 @@ test.describe("học sinh máy tính", () => {
     await expect(page.getByRole("heading", { name: "Chào An" })).toBeVisible();
     await expect(page.getByTestId("sidebar")).toBeVisible();
     await expect(page.getByTestId("nav-hs-lo-trinh")).toBeVisible();
-    await expect(page.getByText("thang Bloom", { exact: false })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Việc tiếp theo" })).toBeVisible();
+    await expect(page.getByText("12A1 thử")).toBeVisible();
+    await expect(page.getByText("đơn điệu và cực trị")).toBeVisible();
     await page.screenshot({ path: `${SHOTS}/hs-lo-trinh-1280.png` });
     await page.goto("/hs/lich");
     await expect(page.getByRole("heading", { name: "Thời gian biểu" })).toBeVisible();

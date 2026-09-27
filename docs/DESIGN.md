@@ -52,6 +52,27 @@ Desktop: không top bar. Điện thoại: top bar + ngăn kéo mực. Skip `#noi
 
 Thẻ không còn là đơn vị mặc định. Việc = hàng (Classroom). Bài đang làm = một phiếu (Brilliant). Thành thạo = hàng ô (Khan).
 
+## Lộ trình học sinh (`/hs`)
+
+Không dashboard thẻ. Chia như phiếu + sổ — gáy 5 bước là vật đặc trưng, không phải lời chào.
+
+```
++--------+---------------------------+------------------+
+| RAY    | Chào An                   |                  |
+| 220    | 12A1 thử                  |                  |
+|        | Toán 12, đơn điệu…        |                  |
+|        +---------------------------+------------------+
+|        | PHIẾU                     | SỔ               |
+|        | 1 TXĐ                     | kỹ năng yếu→mạnh |
+|        | 2 y′     đề KaTeX         | bài giao: mã+hàm |
+|        | 3 …      [Làm bước tiếp]  |                  |
++--------+---------------------------+------------------+
+```
+
+Desktop (`lg`, khi đã có ray): cột phiếu `1.25fr` | kẻ 1 px | cột sổ `16–20rem`. Điện thoại / máy tính bảng: xếp dọc phiếu → kỹ năng → bài giao.
+
+Đề = KaTeX từ `statementLatex`. Một thang 4 mức — không Bloom trên trang này (3 mức CV 7991 chỉ ở cổng GV). Thành thạo: tên ngắn, ô sát tên, hàng yếu lên trên, hàng đang gợi tô `wash`. Bài giao ≠ ngân bài: chỉ assignment chưa đạt.
+
 ## Lưới và nhịp (SOTA 2026-09-27)
 
 Một lưới **8 px** — cùng hệ Apple HIG, Material 3, IBM Carbon. Bậc: 4 / 8 / 12 / 16 / 24 / 32 / 48 (`--space-1` … `--space-8`). Không `20`, `10`, `14` trừ khi là cỡ chữ.

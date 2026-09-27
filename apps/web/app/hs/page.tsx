@@ -1,95 +1,115 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { eq } from "drizzle-orm";
-import { Badge } from "@/components/ui/badge";
-import { buttonClasses } from "@/components/ui/button";
-import { MasteryCells } from "@/components/mastery-cells";
+import { PhieuViecTiep } from "@/components/phieu-viec-tiep";
+import { SoKyNang } from "@/components/so-ky-nang";
+import { Tex } from "@/components/tex";
 import { WorkRow } from "@/components/work-row";
-import { cn } from "@/lib/cn";
 import { requireRole } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { assignments, masteryStates, problems, skills } from "@/lib/db/schema";
+import { masteryStates, problems, skills } from "@/lib/db/schema";
+import { hamLatex, nhanMuc4, tenKyNangNgan } from "@/lib/de-hoc-sinh";
+import { layBaiGiao, layIdBaiDaDat, layTenLopHs, trangThaiPhieu } from "@/lib/hs-du-lieu";
 import { recommend } from "@/lib/learning";
-import { LABEL4, labelBloom, type Muc4 } from "@/lib/levels";
+import { MUC4, type Muc4 } from "@/lib/levels";
 
 export const dynamic = "force-dynamic";
 
+export const metadata: Metadata = {
+  title: "Lộ trình",
+};
+
 export default async function HsHome() {
   const u = await requireRole("HS");
-  const states = await db.select().from(masteryStates).where(eq(masteryStates.studentId, u.id));
-  const skillRows = await db.select().from(skills);
-  const name = new Map(skillRows.map((s) => [s.code, s.name]));
-  const pubs = await db.select().from(problems).where(eq(problems.status, "DA_PHAT_HANH"));
-  const waiting = await db.select().from(problems).where(eq(problems.status, "CHO_GIAO_VIEN_DUYET"));
-  const giao = await db.select().from(assignments).where(eq(assignments.studentId, u.id));
+  const [states, skillRows, pubs, waiting, giao, tenLop, daDat] = await Promise.all([
+    db.select().from(masteryStates).where(eq(masteryStates.studentId, u.id)),
+    db.select().from(skills),
+    db.select().from(problems).where(eq(problems.status, "DA_PHAT_HANH")),
+    db.select().from(problems).where(eq(problems.status, "CHO_GIAO_VIEN_DUYET")),
+    layBaiGiao(u.id),
+    layTenLopHs(u.id),
+    layIdBaiDaDat(u.id),
+  ]);
+  const tenKn = new Map(skillRows.map((s) => [s.code, s.name]));
   const giaoIds = new Set(giao.map((a) => a.problemId));
-  const baiGiao = pubs.filter((p) => giaoIds.has(p.id));
-  const danhSach = baiGiao.length ? baiGiao : pubs;
+  const chuaXong = pubs.filter((p) => giaoIds.has(p.id) && !daDat.has(p.id));
   const goi = await recommend(u.id);
+  if (goi) {
+    chuaXong.sort((a, b) => {
+      if (a.id === goi.problem.id) return -1;
+      if (b.id === goi.problem.id) return 1;
+      return MUC4.indexOf(a.mucDo4 as Muc4) - MUC4.indexOf(b.mucDo4 as Muc4);
+    });
+  }
+  const knHang = [...states]
+    .sort((a, b) => a.mastery - b.mastery || b.stuckCounter - a.stuckCounter)
+    .map((s) => ({
+      skillCode: s.skillCode,
+      name: tenKn.get(s.skillCode),
+      mastery: s.mastery,
+      currentMucDo4: s.currentMucDo4,
+    }));
+  const buoc = goi ? await trangThaiPhieu(u.id, goi.problem.id) : { done: [], current: null, finished: false };
+  const knGoi = goi?.problem.skillCode ? tenKyNangNgan(goi.problem.skillCode, tenKn.get(goi.problem.skillCode)) : "";
+
   return (
-    <main className="space-y-8">
-      <header>
-        <p className="text-sm text-muted">Lộ trình bốn mức · thang Bloom trên từng bài · tới vận dụng cao</p>
-        <h1 className="mt-2 text-pretty text-[1.75rem] font-semibold tracking-tight">Chào {u.displayName}</h1>
+    <main>
+      <header className="mb-8 border-b border-line pb-6">
+        <h1 className="text-pretty text-[1.75rem] font-semibold tracking-tight">Chào {u.displayName}</h1>
+        {tenLop ? <p className="mt-2 text-sm text-muted">{tenLop}</p> : null}
+        <p className={tenLop ? "mt-1 text-sm text-muted" : "mt-2 text-sm text-muted"}>Toán 12, đơn điệu và cực trị</p>
       </header>
 
-      {goi ? (
-        <section className="border-y border-line py-6">
-          <p className="text-sm text-muted">Bài cho em — dạng yếu / cùng mức / nâng một nấc</p>
-          <p className="mt-2 text-lg font-medium leading-snug">{goi.problem.statementText}</p>
-          <p className="mt-2 text-sm text-muted">
-            {goi.lyDo} · Bloom {labelBloom(goi.problem.bloomLevel)}
-          </p>
-          <Link href={`/hs/luyen/${goi.problem.id}`} className={cn(buttonClasses(), "mt-4")}>
-            Làm bước tiếp
-          </Link>
-        </section>
-      ) : null}
-
-      <section>
-        <h2 className="text-base font-semibold">Thành thạo theo kỹ năng</h2>
-        <p className="mt-1 text-xs text-muted">Ô đặc = xác suất BKT, không phải điểm kiểm tra.</p>
-        <ul className="mt-4 divide-y divide-line border-y border-line">
-          {states.map((s) => (
-            <li key={s.skillCode} className="flex flex-wrap items-center justify-between gap-3 py-3">
-              <div className="min-w-0">
-                <p className="font-mono text-xs text-muted" translate="no">
-                  {s.skillCode}
-                </p>
-                <p className="text-sm">{name.get(s.skillCode)}</p>
-              </div>
-              <div className="flex items-center gap-3">
-                <MasteryCells value={s.mastery} />
-                <Badge>
-                  {LABEL4[s.currentMucDo4 as Muc4] || s.currentMucDo4} · {s.mastery.toFixed(2)}
-                </Badge>
-              </div>
-            </li>
-          ))}
-        </ul>
-      </section>
-
-      <section>
-        <div className="mb-1 flex items-end justify-between gap-2">
-          <h2 className="text-base font-semibold">Bài giao cho em</h2>
-          <Link href="/hs/bai" className="text-sm text-muted underline-offset-2 hover:text-ink hover:underline">
-            Xem ngân bài
-          </Link>
+      <div className="lg:grid lg:grid-cols-[minmax(0,1.25fr)_minmax(16rem,20rem)] lg:items-start">
+        <div className="min-w-0 lg:border-r lg:border-line lg:pr-8">
+          <PhieuViecTiep
+            problem={goi?.problem ?? null}
+            lyDo={goi?.lyDo ?? ""}
+            tenKn={knGoi}
+            buoc={buoc}
+          />
         </div>
-        <div className="border-y border-line">
-          {danhSach.map((p) => (
-            <WorkRow
-              key={p.id}
-              href={`/hs/luyen/${p.id}`}
-              testId={`bai-${p.code}`}
-              kicker={`${LABEL4[p.mucDo4 as Muc4] || p.mucDo4} · Bloom ${labelBloom(p.bloomLevel)}`}
-              title={p.statementText}
-            />
-          ))}
+
+        <div className="mt-8 min-w-0 space-y-8 lg:mt-0 lg:pl-8">
+          <SoKyNang rows={knHang} dangYeu={goi?.problem.skillCode} />
+
+          <section aria-labelledby="bai-giao">
+            <div className="mb-1 flex items-end justify-between gap-2">
+              <h2 id="bai-giao" className="text-base font-semibold">
+                Bài giao cho em
+              </h2>
+              <Link href="/hs/bai" className="text-sm text-muted underline-offset-2 hover:text-ink hover:underline">
+                Xem ngân bài
+              </Link>
+            </div>
+            {chuaXong.length === 0 ? (
+              <p className="mt-3 text-sm text-muted">Thầy cô chưa giao bài mới. Vào ngân bài để chọn bài đã phát hành.</p>
+            ) : (
+              <div className="mt-3 border-y border-line">
+                {chuaXong.map((p) => {
+                  const ham = hamLatex(p.statementLatex);
+                  return (
+                    <WorkRow
+                      key={p.id}
+                      href={`/hs/luyen/${p.id}`}
+                      testId={`bai-${p.code}`}
+                      mark={p.id === goi?.problem.id}
+                      kicker={<span translate="no">{p.code}</span>}
+                      title={ham ? <Tex tex={ham} /> : p.statementText}
+                      meta={nhanMuc4(p.mucDo4)}
+                    />
+                  );
+                })}
+              </div>
+            )}
+            {waiting.length ? (
+              <p className="mt-3 text-sm text-warn">
+                {waiting.length} bài đang chờ thầy cô duyệt, chưa mở để làm.
+              </p>
+            ) : null}
+          </section>
         </div>
-        {waiting.length ? (
-          <p className="mt-3 text-sm text-warn">{waiting.length} bài đang chờ thầy cô duyệt, chưa mở để làm.</p>
-        ) : null}
-      </section>
+      </div>
     </main>
   );
 }
