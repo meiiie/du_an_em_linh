@@ -5,8 +5,9 @@ import { useEffect, useRef, useState } from "react";
 import { guiThayCo } from "@/lib/actions/hs";
 import { luaChonNhaHocSinh, parseProvider, type AiProviderId, type AiPublicConfig } from "@/lib/ai-catalog";
 import type { TrichDanHien } from "@/lib/kien-thuc";
-import { chuTrangThaiGiaSu, docJsonSse, gomSse, type GiaSuBuocSse } from "@/lib/sse";
+import { docJsonSse, gomSse, type GiaSuBuocSse } from "@/lib/sse";
 import { moTaCheDo } from "@/lib/tutor";
+import { DangNghi } from "./dang-nghi";
 import { LoiVaNguon } from "./trich-dan-gia-su";
 import { Button, buttonClasses } from "./ui/button";
 import { fieldControl } from "./ui/field";
@@ -406,11 +407,7 @@ export function TutorPanel({
             )}
           </div>
         ))}
-        {thinking ? (
-          <p className="text-sm text-muted" data-testid="tutor-thinking" aria-live="polite">
-            {chuTrangThaiGiaSu(buocSse)}
-          </p>
-        ) : null}
+        {thinking ? <DangNghi buoc={buocSse} /> : null}
       </div>
 
       {hienXuong ? (

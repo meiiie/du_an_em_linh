@@ -82,6 +82,47 @@ body {
   }
 }
 
+/** Nhịp chờ gia sư — 3 ô SSE (kho / gọi / lọc). Không SVG, không stream token. */
+@keyframes gs-nhip {
+  0%,
+  100% {
+    opacity: 0.28;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+.gs-nhip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.gs-nhip-o {
+  width: 6px;
+  height: 6px;
+  border-radius: 1px;
+  background: var(--line);
+}
+
+.gs-nhip-o-xong {
+  background: var(--ink);
+}
+
+.gs-nhip-o-nay {
+  background: var(--ink);
+  animation: gs-nhip 1s ease-in-out infinite;
+}
+
+.gs-nhip-cho .gs-nhip-o-nay:nth-child(2) {
+  animation-delay: 0.16s;
+}
+
+.gs-nhip-cho .gs-nhip-o-nay:nth-child(3) {
+  animation-delay: 0.32s;
+}
+
 math-field {
   display: block;
   width: 100%;

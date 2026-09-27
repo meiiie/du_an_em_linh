@@ -27,9 +27,9 @@ test("docJsonSse bỏ event hỏng, không ném", () => {
 
 test("chữ trạng thái không nói đang stream token", () => {
   assert.equal(chuTrangThaiGiaSu(null), "Đang nghĩ…");
-  assert.equal(chuTrangThaiGiaSu("kho"), "Đang mở công thức và tài liệu lớp…");
+  assert.equal(chuTrangThaiGiaSu("kho"), "Đang mở công thức…");
   assert.equal(chuTrangThaiGiaSu("goi"), "Đang hỏi gia sư…");
-  assert.equal(chuTrangThaiGiaSu("loc"), "Đang lọc khỏi đáp án…");
+  assert.equal(chuTrangThaiGiaSu("loc"), "Đang kiểm lời…");
   for (const b of ["kho", "goi", "loc"] as const) {
     assert.equal(chuTrangThaiGiaSu(b).includes("token"), false);
   }
