@@ -26,7 +26,10 @@ export function SoKyNang({
             return (
               <li
                 key={s.skillCode}
-                className={cn("py-3", yeu && "bg-wash")}
+                className={cn(
+                  "border-l-2 py-3 pl-3",
+                  yeu ? "border-ink bg-wash" : "border-transparent",
+                )}
                 aria-current={yeu ? "true" : undefined}
               >
                 <div className="flex items-baseline justify-between gap-3">

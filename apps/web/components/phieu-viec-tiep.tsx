@@ -83,9 +83,9 @@ export function PhieuViecTiep({
           </p>
 
           {ham ? (
-            <div className="mt-4 max-w-[65ch] overflow-x-auto text-[1.15rem] leading-8" translate="no">
-              <Tex tex={ham} block />
-            </div>
+            <p className="mt-4 max-w-[65ch] overflow-x-auto text-[1.25rem] leading-8" translate="no">
+              <Tex tex={ham} />
+            </p>
           ) : (
             <p className="mt-4 max-w-[65ch] text-lg font-medium leading-snug">{problem.statementText}</p>
           )}

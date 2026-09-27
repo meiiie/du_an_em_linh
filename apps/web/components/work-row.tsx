@@ -23,7 +23,7 @@ export function WorkRow({
       data-testid={testId}
       className={cn(
         "flex min-h-11 items-start justify-between gap-4 border-b border-line py-3 last:border-0 hover:bg-wash focus-visible:bg-wash",
-        mark && "bg-wash",
+        mark && "border-l-2 border-l-ink bg-wash pl-3",
       )}
     >
       <span className="min-w-0">
