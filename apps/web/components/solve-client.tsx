@@ -225,10 +225,7 @@ export function SolveClient({
           )}
           {ma === "B.DH.XETDAU" && (
             <div data-testid="bang-xet-dau">
-              <p className="text-sm text-muted">
-                Em tự ghi các mốc trên hàng x. Hai đầu −∞ và +∞ là khung bảng, không phải điểm tới hạn. Ứng dụng không thêm mốc và không báo đúng sai từng ô khi đang gõ.
-              </p>
-              <div className="mt-4 flex gap-2">
+              <div className="flex gap-2">
                 <input
                   data-testid="moc-nhap"
                   value={draftPoint}
@@ -397,13 +394,13 @@ export function SolveClient({
             aria-live="polite"
             className={`mt-6 px-4 py-3 text-sm ${grade.ket_qua === "DAT" ? "bg-pass/10 text-pass" : "bg-amber-50 text-amber-950"}`}
           >
-            {grade.finished ? "Em đã hoàn thành bài này." : grade.thong_bao}
+            {grade.finished ? "Đã xong bài này." : grade.thong_bao}
           </p>
         ) : null}
 
         {grade?.finished && moLoiGiai && loiGiai ? (
           <div data-testid="loi-giai-sau-nop" className="mt-4 rounded-button bg-paper px-4 py-3 text-sm leading-relaxed">
-            <p className="font-semibold">Lời giải lớp cho phép xem sau khi nộp</p>
+            <p className="font-semibold">Lời giải</p>
             <p className="mt-1">{loiGiai}</p>
           </div>
         ) : null}

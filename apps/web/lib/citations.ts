@@ -20,11 +20,9 @@ export function moTaTrichDan(raw: unknown): string[] {
     .map((o) => {
       const bits: string[] = [];
       if (o.trich) bits.push(`«${o.trich}»`);
-      if (o.noi_dung && !o.trich) bits.push(o.noi_dung);
       if (o.ten) bits.push(o.ten);
-      if (o.cum_tu?.length) bits.push(`khớp: ${o.cum_tu.join(", ")}`);
-      if (o.phien_ban != null) bits.push(`phiên bản ${o.phien_ban}`);
-      return bits.join(" · ");
+      if (o.noi_dung && !o.trich) bits.push(o.noi_dung);
+      return bits.join(" — ");
     })
     .filter(Boolean);
 }

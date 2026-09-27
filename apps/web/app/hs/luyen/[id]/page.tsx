@@ -8,6 +8,7 @@ import { docKhoaCloud } from "@/lib/ai-harness";
 import { requireRole } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { classSettings, problems, solutions } from "@/lib/db/schema";
+import { hamLatex } from "@/lib/de-hoc-sinh";
 import { LABEL4, type Muc4 } from "@/lib/levels";
 import { loiGiaiHocSinh } from "@/lib/loi-giai";
 
@@ -53,15 +54,12 @@ export default async function LuyenPage({ params }: { params: Promise<{ id: stri
       <SolveClient
         problemId={p.id}
         title={p.statementText}
-        latex={p.statementLatex.startsWith("y") ? p.statementLatex : `y = ${p.statementLatex}`}
+        latex={hamLatex(p.statementLatex)}
         moLoiGiai={showSolution}
         loiGiai={loiGiai}
         initialChat={lichSu.messages}
         ai={ai}
       />
-      {showSolution ? (
-        <p className="mt-3 text-xs text-muted">Lời giải mở sau khi nộp đủ năm bước. Gia sư không đọc lời giải lúc làm.</p>
-      ) : null}
     </main>
   );
 }

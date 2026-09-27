@@ -49,6 +49,7 @@ async function currentCorpus() {
   return {
     tai_lieu: docs.map((d) => ({
       id: d.id,
+      ten: d.title,
       text: d.textContent,
       license_status: d.licenseStatus,
       phien_ban: d.version,

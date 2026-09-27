@@ -33,11 +33,11 @@ export function nhanMuc4(code: string | null | undefined) {
   return LABEL4[code as Muc4] || code;
 }
 
-/** Công thức để KaTeX — không in raw `x^{2}` ra UI. */
+/** Công thức để KaTeX — không in raw `x^{2}` ra UI. Đã có vế trái thì giữ nguyên. */
 export function hamLatex(statementLatex: string | null | undefined) {
   const raw = (statementLatex || "").trim();
   if (!raw) return "";
-  if (/^y\s*=/i.test(raw) || raw.startsWith("\\")) return raw;
+  if (raw.startsWith("\\") || raw.includes("=")) return raw;
   return `y = ${raw}`;
 }
 

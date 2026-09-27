@@ -6,11 +6,11 @@
 
 | Khối sơ đồ | Trong nguyên mẫu |
 | --- | --- |
-| GV: bài NB→TH→VD→VDC | 4 mức + Bloom trên bài; CV 7991 3 mức lúc xem |
-| GV: tài liệu / đề mẫu / công thức | Nạp tài liệu, bảng công thức khóa, cổng 3 tầng |
+| GV: bài NB→TH→VD→VDC | 4 mức trên bài; CV 7991 3 mức lúc xem `/gv/tien-do?muc=3` |
+| GV: tài liệu / đề mẫu / công thức | Nạp tài liệu, bảng công thức khóa, kiểm 3 tầng |
 | Kiểm 3 tầng | Máy SymPy · tìm trong tài liệu · đối chiếu bảng |
-| Bộ bài / ôn tập cho từng HS | `assignments` + gợi bài theo kỹ năng yếu / cùng mức / nâng 1 nấc |
-| HS: thang Bloom | `bloom_level` hiện trên lộ trình và phiếu |
+| Bộ bài / ôn tập cho từng HS | `assignments` + gợi bài theo kỹ năng yếu / cùng mức / chuyển mức khó hơn |
+| HS: thang Bloom | Không hiện. HS chỉ thấy 4 mức trên phiếu / đề |
 | Học với AI theo bước | Phiếu 5 bước + gia sư (luật → thang 3 cấp → API tùy chọn → lọc) |
 | Tư vấn phương pháp + lịch + nhắc | `/hs/lich` tính theo BKT; nhắc in-app |
 | Gọi API bên thứ 3 | Nhà lớp: offline / khóa chính thức / Ollama·LM Studio loopback; không fallback thầm |
@@ -28,15 +28,15 @@
 
 ## Đã bổ sung ở vòng giao diện
 
-- Thanh bên cố định (desktop) và ngăn kéo (điện thoại), có mục đang mở và số bài chờ.
+- Thanh bên cố định (desktop) và ngăn kéo (điện thoại), có mục đang mở. Số bài chưa làm chỉ trên tab Bài tập.
 - Cài đặt lớp: bật/tắt mở lời giải sau khi nộp xong cả năm bước.
-- Trích dẫn tầng 2/3 hiện bằng lời, không in JSON thô.
-- Sinh biến thể báo mã bài và trạng thái cổng.
+- Trích dẫn tầng 2/3 hiện đoạn tài liệu / tên công thức, không in cụm khớp hay JSON thô.
+- Tạo đề báo trạng thái Đã mở / Chờ duyệt / Bị chặn, không in mã bài.
 - Hệ thống thiết kế «phiếu làm bài» (IBM Plex, ray mực, danh sách thay thẻ, ô thành thạo, lưới 8 px, nút 40/44) ghi ở `docs/DESIGN.md`. Lấy cấu trúc Khan/Classroom/Canvas/Brilliant; không chép màu/logo.
 - Harness agent: `AGENTS.md` + `CLAUDE.md` lớp theo thư mục, `.claude/settings.json`, `docs/CODEMAP.md`.
 - Harness gia sư: bốn nhà tường minh, composer 44 px, khóa lớp tùy chọn, thử `GET /models`.
 - Kết nối ChatGPT cho giáo viên không chuyên: `/gv/ket-noi-ai` (hai bước; OAuth định danh nếu có client_id). Trang Lớp hiện trạng thái.
-- Kho kiến thức lớp: `/hs/kho` + xem trước theo 5 bước trên cổng GV; gia sư truy hồi cùng nguồn, không đọc lời giải.
+- Công thức và tài liệu: `/hs/kho` + xem trước theo 5 bước trên GV; gia sư truy hồi cùng nguồn, không đọc lời giải.
 
 ## Skill dùng khi chỉnh UI / API
 

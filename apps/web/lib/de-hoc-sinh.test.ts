@@ -5,6 +5,7 @@ import { hamLatex, loiGoiHocSinh, thanDe, tenKyNangNgan } from "./de-hoc-sinh";
 test("bọc latex hàm số", () => {
   assert.equal(hamLatex("x^{2}"), "y = x^{2}");
   assert.equal(hamLatex("y = x^3 - 6x^2"), "y = x^3 - 6x^2");
+  assert.equal(hamLatex("f'(x)=x^{2}(x-2)"), "f'(x)=x^{2}(x-2)");
   assert.equal(hamLatex(""), "");
 });
 

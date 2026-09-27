@@ -535,7 +535,7 @@ async function main() {
     });
   }
   const corpus = {
-    tai_lieu: [{ id: docId, text: docText, license_status: "tu_soan", phien_ban: 1 }],
+    tai_lieu: [{ id: docId, ten: "Ghi chú tự soạn: đơn điệu và cực trị", text: docText, license_status: "tu_soan", phien_ban: 1 }],
     cong_thuc: congThuc,
   };
 
@@ -745,7 +745,7 @@ async function main() {
     { thu: "Thứ Hai", gio: "19:00", viec: "Ôn công thức đạo hàm" },
     { thu: "Thứ Tư", gio: "19:00", viec: "Làm một bài cùng mức" },
     { thu: "Thứ Sáu", gio: "19:30", viec: "Sửa dạng đã sai" },
-    { thu: "Chủ Nhật", gio: "09:00", viec: "Một bài nhích một nấc nếu đủ ngưỡng" },
+    { thu: "Chủ Nhật", gio: "09:00", viec: "Một bài khó hơn nếu đã vững" },
   ];
   for (const id of [AN, BINH, CHI]) {
     const sid = crypto.randomUUID();

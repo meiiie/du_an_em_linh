@@ -14,7 +14,7 @@ export default async function Page() {
   const kho = await khoLopCongKhai();
   return (
     <main className="max-w-2xl">
-      <PageHeader title="Công thức và tài liệu" description="Gia sư chỉ đọc kho này, không đọc lời giải." />
+      <PageHeader title="Công thức và tài liệu" description="Gia sư chỉ đọc phần này, không đọc lời giải." />
       <section className="border-y border-line py-6" data-testid="kho-theo-buoc-hs">
         <h2 className="text-base font-semibold">Theo bước đang làm</h2>
         <div className="mt-3">

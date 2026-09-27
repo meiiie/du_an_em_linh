@@ -286,7 +286,7 @@ export async function hoiGiaSu(
         maBuoc: buoc,
         xinSai: hoiSai,
       }),
-      kho.congThuc[0] ? `Em mở kho lớp, xem «${kho.congThuc[0].ten}» — quy trình, không chép kết quả.` : "",
+      kho.congThuc[0] ? `Em mở «${kho.congThuc[0].ten}» — quy trình, không chép kết quả.` : "",
       cauHoiXocratis(buoc),
     ]
       .filter(Boolean)
@@ -315,7 +315,7 @@ export async function hoiGiaSu(
         ...history,
         {
           role: "user",
-          content: `Đề (không kèm lời giải): ${prob[0].statementText}\nBước: ${buoc}\nLoại: ${grade?.loaiKetQua || "chua_nop"}\nGợi ý được mở: ${goiY || "(chưa)"}\nKho lớp (đã duyệt, không phải lời giải — nếu dùng thì nhắc đúng tên):\n${dongKhoChoPrompt(kho)}\nHọc sinh: ${text}`,
+          content: `Đề (không kèm lời giải): ${prob[0].statementText}\nBước: ${buoc}\nLoại: ${grade?.loaiKetQua || "chua_nop"}\nGợi ý được mở: ${goiY || "(chưa)"}\nCông thức và tài liệu lớp (đã duyệt, không phải lời giải — nếu dùng thì nhắc đúng tên):\n${dongKhoChoPrompt(kho)}\nHọc sinh: ${text}`,
         },
       ],
     });
@@ -428,14 +428,14 @@ export async function guiThayCo(problemId: string) {
       id: crypto.randomUUID(),
       studentId: user.id,
       skillCode: skill,
-      reason: `Em nhờ thầy cô từ phiếu ${p.code}.`,
+      reason: "Em nhờ thầy cô.",
     });
   }
   await ghiNhatKy(user.id, "GUI_THAY_CO", "problem", problemId, skill);
   revalidatePath("/gv");
   return {
     ok: true as const,
-    tra_loi: "Mình đã gửi lời nhờ cho thầy cô trên cổng giáo viên. Em cứ sửa bước đang dở, mình không đưa đáp án.",
+    tra_loi: "Mình đã gửi lời nhờ thầy cô. Em cứ sửa bước đang dở.",
   };
 }
 

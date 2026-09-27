@@ -196,14 +196,14 @@ export function TutorPanel({
             <p>{m.text}</p>
             {m.trichDan && m.trichDan.length ? (
               <p className="mt-2 text-xs text-muted" data-testid={i === chat.length - 1 ? "tutor-trich-dan" : undefined}>
-                Đã đọc kho: {m.trichDan.map((t) => t.ten).join(" · ")}
+                Đã đọc: {m.trichDan.map((t) => t.ten).join(" · ")}
               </p>
             ) : null}
           </div>
         ))}
         {thinking ? (
           <p className="px-4 py-3 text-sm text-muted" data-testid="tutor-thinking" aria-live="polite">
-            Đang nghĩ… lọc đáp án sau khi có cả câu. Không phát luồng từng chữ.
+            Đang nghĩ…
           </p>
         ) : null}
       </div>
