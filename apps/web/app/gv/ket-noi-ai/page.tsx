@@ -149,7 +149,7 @@ export default async function Page({
                 <p className="font-medium">Dán khóa — một lần</p>
                 <FormDanKhoa
                   provider="cloud"
-                  mask={mask}
+                  mask={chatgptReady ? mask : null}
                   modelPlaceholder="gpt-4o-mini"
                   khoaTestId="ket-noi-khoa"
                   modelTestId="ket-noi-model"
@@ -223,7 +223,7 @@ export default async function Page({
                 <p className="font-medium">Dán khóa — một lần</p>
                 <FormDanKhoa
                   provider="openrouter"
-                  mask={mask}
+                  mask={openrouterReady ? mask : null}
                   modelPlaceholder={OPENROUTER_MODEL_MAC_DINH}
                   khoaTestId="ket-noi-openrouter-khoa"
                   modelTestId="ket-noi-openrouter-model"

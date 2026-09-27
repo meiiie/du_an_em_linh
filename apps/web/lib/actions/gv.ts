@@ -347,15 +347,19 @@ export async function ketNoiBangKhoa(form: FormData) {
   if (!probe.ok) {
     redirect("/gv/ket-noi-ai?loi=" + encodeURIComponent(probe.message));
   }
-  await db
-    .update(classSettings)
-    .set({
-      aiProvider: provider,
-      aiApiKey: key,
-      aiModel: model,
-      aiConnectedAt: new Date(),
-    })
-    .where(eq(classSettings.classId, rows[0].classId));
+  try {
+    await db
+      .update(classSettings)
+      .set({
+        aiProvider: provider,
+        aiApiKey: key,
+        aiModel: model,
+        aiConnectedAt: new Date(),
+      })
+      .where(eq(classSettings.classId, rows[0].classId));
+  } catch {
+    redirect("/gv/ket-noi-ai?loi=" + encodeURIComponent("Không lưu được khóa. Không giữ khóa trên form."));
+  }
   const viec = provider === "openrouter" ? "KET_NOI_OPENROUTER" : provider === "zai" ? "KET_NOI_ZAI" : "KET_NOI_CHATGPT";
   await audit(user.id, viec, "class_settings", rows[0].classId, "khoa_chinh_thuc");
   revalidatePath("/gv/ket-noi-ai");

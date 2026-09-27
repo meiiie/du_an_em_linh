@@ -29,7 +29,7 @@ Học sinh được chọn offline luôn; Ollama/LM Studio nếu lớp bật `ai
 Tham chiếu: [meiiie/lms-ibm-bob-hackathon#3](https://github.com/meiiie/lms-ibm-bob-hackathon/pull/3) (ChatGPT tùy chọn + Ollama/LM Studio), [Ollama OpenAI compat](https://github.com/ollama/ollama/blob/main/docs/openai.md), [LM Studio local server](https://lmstudio.ai/docs/app/api), [Open WebUI](https://github.com/open-webui/open-webui), [Continue](https://github.com/continuedev/continue), [LiteLLM](https://github.com/BerriAI/litellm).
 
 - **Không fallback thầm.** Lỗi cloud/local trả lời bằng chữ «không chuyển nhà / không gửi lại». Không lấy `offlineText` thay cho mô hình.
-- **Không phát lại** cùng một HTTP. Timeout 20 s (chat) / 8 s (probe). Không queue, không backoff.
+- **Không phát lại** cùng một HTTP. Timeout 20 s (chat) / 8 s (probe). `max_tokens` 1600 (FlashX/thinking hết 400 chỉ cho reasoning). Không queue, không backoff.
 - **Local = loopback.** `10.x`, `192.168.x`, metadata `169.254.169.254` bị từ chối. Không quét LAN, không mượn cookie LMS.
 - **Không device-OAuth ChatGPT.** PR #3 dùng `client_id` nội bộ (`app_EMoamEEZ73f0CkXaXp7hrann`) — ToS, vỡ im lặng, khóa máy. Ở đây chỉ khóa API chính thức.
 - **Lỗi nhà không đăng xuất**, không xóa phiếu, không gửi lại câu hỏi.
@@ -56,7 +56,7 @@ Tham chiếu: [meiiie/lms-ibm-bob-hackathon#3](https://github.com/meiiie/lms-ibm
 
 ## Kết nối ChatGPT (người không chuyên)
 
-Giáo viên vào `/gv/ket-noi-ai` (cũng từ tổng quan). Hai bước cho từng nhà khóa: mở trang khóa chính thức → dán một lần. ChatGPT / OpenRouter / Z.AI. Học sinh thấy «… của lớp», không thấy khóa. OpenRouter mặc định `qwen/qwen3-coder`; Z.AI mặc định `glm-5.2` trên endpoint coding. Không nhập URL.
+Giáo viên vào `/gv/ket-noi-ai` (cũng từ tổng quan). Hai bước cho từng nhà khóa: mở trang khóa chính thức → dán một lần. ChatGPT / OpenRouter / Z.AI. Học sinh thấy «… của lớp», không thấy khóa. OpenRouter mặc định `qwen/qwen3-coder`; Z.AI mặc định `glm-5.3-flashx` trên endpoint coding. Không nhập URL.
 
 «Sign in with ChatGPT» chính thức (help.openai.com, 2026) chỉ là định danh cho đối tác có `client_id`. Không cấp quyền gọi mô hình. Codex CLI «sign in with ChatGPT» dùng endpoint nội bộ — không sao chép.
 

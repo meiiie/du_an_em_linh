@@ -1,4 +1,5 @@
 import {
+  AI_MAX_TOKENS_CHAT,
   AI_TIMEOUT_CHAT_MS,
   AI_TIMEOUT_PROBE_MS,
   CLOUD_MAC_DINH,
@@ -152,6 +153,22 @@ function thatBai(provider: AiProviderId, kind: AiLoiKind, chiTiet?: string): Com
   };
 }
 
+function docNoiDung(msg: { content?: unknown }): string {
+  const c = msg.content;
+  if (typeof c === "string") return c.trim();
+  if (Array.isArray(c)) {
+    return c
+      .map((p) => {
+        if (typeof p === "string") return p;
+        if (p && typeof p === "object" && "text" in p) return String((p as { text?: string }).text || "");
+        return "";
+      })
+      .join("")
+      .trim();
+  }
+  return "";
+}
+
 function headerChat(provider: AiProviderId, key: string): Record<string, string> {
   const headers: Record<string, string> = {
     "content-type": "application/json",
@@ -217,7 +234,7 @@ export async function completeChat(opts: {
       body: JSON.stringify({
         model,
         temperature: 0.2,
-        max_tokens: 400,
+        max_tokens: AI_MAX_TOKENS_CHAT,
         stream: false,
         messages: opts.messages,
       }),
@@ -233,13 +250,13 @@ export async function completeChat(opts: {
     return thatBai(provider, "http", String(started.res.status));
   }
 
-  let data: { choices?: { message?: { content?: string } }[] };
+  let data: { choices?: { message?: { content?: unknown } }[] };
   try {
     data = (await started.res.json()) as typeof data;
   } catch {
     return thatBai(provider, "empty");
   }
-  const text = data.choices?.[0]?.message?.content?.trim() || "";
+  const text = docNoiDung(data.choices?.[0]?.message || {});
   if (!text) return thatBai(provider, "empty");
 
   return {

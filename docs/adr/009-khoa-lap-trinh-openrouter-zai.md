@@ -14,7 +14,7 @@ Tài liệu chính thức tới 2026-09-27:
 - Hai nhà mới: `openrouter`, `zai`. Cùng luật ADR 007 (một lần HTTP, không fallback, không stream).
 - Địa chỉ cứng trong mã. Không form URL. `LLM_BASE_URL` không đổi nhà này.
 - Một ô khóa lớp; nghĩa theo nhà đang chọn. Env: `OPENROUTER_API_KEY` / `ZAI_API_KEY`.
-- Mô hình mặc định lập trình / coding: `qwen/qwen3-coder` (OpenRouter), `glm-5.2` (Z.AI). Giáo viên đổi được.
+- Mô hình mặc định lập trình / coding: `qwen/qwen3-coder` (OpenRouter), `glm-5.3-flashx` (Z.AI). Giáo viên đổi được.
 - Màn Gia sư: hai bước như ChatGPT — mở trang khóa → dán một lần. Heading e2e «Kết nối ChatGPT» giữ.
 
 ## Hệ quả

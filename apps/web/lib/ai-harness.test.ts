@@ -201,6 +201,21 @@ test("HTTP lỗi: đúng một lần, không fallback text gợi ý", async () =
   assert.equal(r.text.includes("GỢI Ý"), false);
 });
 
+test("content mảng vẫn lấy được chữ", async () => {
+  process.env.OLLAMA_BASE_URL = "http://127.0.0.1:11434/v1";
+  const r = await completeChat({
+    provider: "ollama",
+    messages: [{ role: "user", content: "hi" }],
+    offlineText: "GỢI Ý",
+    fetchFn: async () =>
+      new Response(JSON.stringify({ choices: [{ message: { content: [{ type: "text", text: "Em viết y′." }] } }] }), {
+        status: 200,
+        headers: { "content-type": "application/json" },
+      }),
+  });
+  assert.equal(r.text, "Em viết y′.");
+});
+
 test("thành công: lấy content, đánh dấu online", async () => {
   process.env.OLLAMA_BASE_URL = "http://127.0.0.1:11434/v1";
   const r = await completeChat({
@@ -285,10 +300,10 @@ test("Z.AI dùng endpoint coding, không API chat tiêu dùng", async () => {
   assert.equal(url, `${ZAI_MAC_DINH}/chat/completions`);
   assert.equal(url.includes("/api/coding/paas/v4/"), true);
   assert.equal(url.includes("/api/paas/v4/chat"), false);
-  assert.equal(model, "glm-5.2");
+  assert.equal(model, "glm-5.3-flashx");
   assert.equal(r.provider, "zai");
   assert.equal(docBaseNhaKhoa("zai"), ZAI_MAC_DINH);
-  assert.equal(docModel("zai"), "glm-5.2");
+  assert.equal(docModel("zai"), "glm-5.3-flashx");
   assert.equal(docModel("openrouter"), "qwen/qwen3-coder");
 });
 
