@@ -450,6 +450,35 @@ async function main() {
     uploadedBy: GV,
     createdAt: now,
   });
+  await db.insert(documents).values({
+    id: crypto.randomUUID(),
+    title: "Đề mẫu tự soạn — cùng dạng đa thức bậc ba",
+    kind: "de_mau",
+    source: "giáo viên thử",
+    licenseStatus: "tu_soan",
+    textContent:
+      "Đề tự soạn, không chép sách. Dạng: tìm khoảng đồng biến, nghịch biến của y = ax^3 + bx^2 + cx + d với a khác 0. " +
+      "Học sinh đi đủ năm bước: tập xác định, đạo hàm, nghiệm y′, bảng xét dấu, kết luận. " +
+      "Yêu cầu cần đạt công khai (CT GDPT môn Toán 2018, TT 32/2018/TT-BGDĐT, lớp 12): nhận biết đơn điệu từ dấu y′; thể hiện trên bảng biến thiên. " +
+      "Không dùng làm lời giải chuẩn cho gia sư.",
+    version: 1,
+    uploadedBy: GV,
+    createdAt: now,
+  });
+  await db.insert(documents).values({
+    id: crypto.randomUUID(),
+    title: "Tham khảo phương pháp — ôn đơn điệu thế nào",
+    kind: "tham_khao",
+    source: "ghi chú lớp thử",
+    licenseStatus: "tu_soan",
+    textContent:
+      "Văn bản tự soạn. Ôn theo khoảng cách (spacing) và tự lấy lại (retrieval): mỗi buổi tự viết lại quy tắc đạo hàm rồi làm một bài, không mở đáp án trước. " +
+      "Gia sư chỉ gợi ý quy trình, không bottom-out kết quả (VanLehn 2006; Aleven — instrumental help). " +
+      "Khi kẹt cùng bước ba lần thì gửi thầy cô, chưa nâng mức vận dụng cao.",
+    version: 1,
+    uploadedBy: GV,
+    createdAt: now,
+  });
 
   const sheetId = crypto.randomUUID();
   await db.insert(formulaSheets).values({

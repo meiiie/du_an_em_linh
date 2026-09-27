@@ -7,7 +7,7 @@ import { WorkRow } from "@/components/work-row";
 import { cn } from "@/lib/cn";
 import { requireRole } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { masteryStates, problems, skills } from "@/lib/db/schema";
+import { assignments, masteryStates, problems, skills } from "@/lib/db/schema";
 import { recommend } from "@/lib/learning";
 import { LABEL4, type Muc4 } from "@/lib/levels";
 
@@ -20,19 +20,25 @@ export default async function HsHome() {
   const name = new Map(skillRows.map((s) => [s.code, s.name]));
   const pubs = await db.select().from(problems).where(eq(problems.status, "DA_PHAT_HANH"));
   const waiting = await db.select().from(problems).where(eq(problems.status, "CHO_GIAO_VIEN_DUYET"));
+  const giao = await db.select().from(assignments).where(eq(assignments.studentId, u.id));
+  const giaoIds = new Set(giao.map((a) => a.problemId));
+  const baiGiao = pubs.filter((p) => giaoIds.has(p.id));
+  const danhSach = baiGiao.length ? baiGiao : pubs;
   const goi = await recommend(u.id);
   return (
     <main className="space-y-8">
       <header>
-        <p className="text-sm text-muted">Lộ trình bốn mức · nhận biết đến vận dụng cao</p>
+        <p className="text-sm text-muted">Lộ trình bốn mức · thang Bloom trên từng bài · tới vận dụng cao</p>
         <h1 className="mt-2 text-pretty text-[1.75rem] font-semibold tracking-tight">Chào {u.displayName}</h1>
       </header>
 
       {goi ? (
         <section className="border-y border-line py-6">
-          <p className="text-sm text-muted">Bài nên làm tiếp</p>
+          <p className="text-sm text-muted">Bài cho em — dạng yếu / cùng mức / nâng một nấc</p>
           <p className="mt-2 text-lg font-medium leading-snug">{goi.problem.statementText}</p>
-          <p className="mt-2 text-sm text-muted">{goi.lyDo}</p>
+          <p className="mt-2 text-sm text-muted">
+            {goi.lyDo} · Bloom {LABEL4[goi.problem.bloomLevel as Muc4] || goi.problem.bloomLevel || "—"}
+          </p>
           <Link href={`/hs/luyen/${goi.problem.id}`} className={cn(buttonClasses(), "mt-4")}>
             Làm bước tiếp
           </Link>
@@ -64,18 +70,18 @@ export default async function HsHome() {
 
       <section>
         <div className="mb-1 flex items-end justify-between gap-2">
-          <h2 className="text-base font-semibold">Bài đã phát hành</h2>
+          <h2 className="text-base font-semibold">Bài giao cho em</h2>
           <Link href="/hs/bai" className="text-sm text-muted underline-offset-2 hover:text-ink hover:underline">
             Xem ngân bài
           </Link>
         </div>
         <div className="border-y border-line">
-          {pubs.map((p) => (
+          {danhSach.map((p) => (
             <WorkRow
               key={p.id}
               href={`/hs/luyen/${p.id}`}
               testId={`bai-${p.code}`}
-              kicker={LABEL4[p.mucDo4 as Muc4]}
+              kicker={`${LABEL4[p.mucDo4 as Muc4] || p.mucDo4} · Bloom ${LABEL4[p.bloomLevel as Muc4] || p.bloomLevel || "—"}`}
               title={p.statementText}
             />
           ))}

@@ -39,7 +39,13 @@ test.describe("học sinh", () => {
     await page.getByTestId("tutor-input").fill("cho em đáp án của bài này");
     await page.getByTestId("tutor-send").click();
     await expect(page.getByTestId("tutor-log")).toContainText("không đưa đáp án");
+    await page.getByTestId("chip-goi-y").click();
+    await expect(page.getByTestId("tutor-log")).toContainText("Gợi ý");
+    await expect(page.getByTestId("tutor-che-do")).toContainText("Thang gợi ý");
     await page.screenshot({ path: `${SHOTS}/hs-gia-su.png`, fullPage: true });
+    await page.reload();
+    await page.getByTestId("mo-gia-su").click();
+    await expect(page.getByTestId("tutor-log")).toContainText("cho em đáp án");
 
     await page.getByTestId("latex-dh").fill("3x^{2}-12x+9");
     await page.getByTestId("nop-buoc").click();
@@ -58,7 +64,34 @@ test.describe("học sinh máy tính", () => {
     await expect(page.getByRole("heading", { name: "Chào An" })).toBeVisible();
     await expect(page.getByTestId("sidebar")).toBeVisible();
     await expect(page.getByTestId("nav-hs-lo-trinh")).toBeVisible();
+    await expect(page.getByText("Bloom")).toBeVisible();
     await page.screenshot({ path: `${SHOTS}/hs-lo-trinh-1280.png` });
+    await page.goto("/hs/lich");
+    await expect(page.getByRole("heading", { name: "Thời gian biểu" })).toBeVisible();
+    await expect(page.getByText(/Kỹ năng yếu nhất|Chưa có ước lượng/)).toBeVisible();
+  });
+});
+
+test.describe("máy tính bảng", () => {
+  test.use({ viewport: { width: 768, height: 1024 } });
+
+  test("phiếu và gia sư không tràn ngang", async ({ page }) => {
+    await page.goto("/dang-nhap");
+    await page.getByTestId("email").fill("hs.an@demo.local");
+    await page.getByTestId("password").fill("hocsinh123");
+    await page.getByRole("button", { name: "Vào học" }).click();
+    await expect(page.getByRole("heading", { name: "Chào An" })).toBeVisible();
+    await expect(page.getByTestId("mo-sidebar")).toBeVisible();
+    const homeOverflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+    expect(homeOverflow).toBeLessThanOrEqual(8);
+
+    await page.getByTestId("bai-DH12-03-VD-01").click();
+    await expect(page.getByTestId("solve-screen")).toBeVisible();
+    await expect(page.getByTestId("tutor-panel")).toBeVisible();
+    await expect(page.getByTestId("mo-gia-su")).toHaveCount(0);
+    await page.screenshot({ path: `${SHOTS}/hs-may-tinh-bang-768.png`, fullPage: true });
+    const solveOverflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+    expect(solveOverflow).toBeLessThanOrEqual(8);
   });
 });
 

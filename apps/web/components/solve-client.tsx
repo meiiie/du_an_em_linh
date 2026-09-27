@@ -1,8 +1,9 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { hoiGiaSu, nopBuoc, type StepPayload } from "@/lib/actions/hs";
+import { guiThayCo, hoiGiaSu, nopBuoc, type StepPayload } from "@/lib/actions/hs";
 import { BUOC } from "@/lib/levels";
+import { moTaCheDo } from "@/lib/tutor";
 import { Button, buttonClasses } from "./ui/button";
 import { fieldControl } from "./ui/field";
 import { MathInput } from "./math-input";
@@ -22,18 +23,25 @@ type Ev = StepPayload["events"][number];
 
 const ORDER = BUOC.map((b) => b.ma);
 
+const LOI_CHAO = {
+  role: "gia_su" as const,
+  text: "Mình là gia sư AI. Mình sửa bài và giảng cho em hiểu, không đưa đáp án trong lúc làm.",
+};
+
 export function SolveClient({
   problemId,
   title,
   latex,
   moLoiGiai = false,
   loiGiai = null,
+  initialChat = [],
 }: {
   problemId: string;
   title: string;
   latex: string;
   moLoiGiai?: boolean;
   loiGiai?: string | null;
+  initialChat?: { role: "hs" | "gia_su"; text: string }[];
 }) {
   const [step, setStep] = useState(0);
   const [txd, setTxd] = useState("");
@@ -47,14 +55,12 @@ export function SolveClient({
   const [events, setEvents] = useState<Ev[]>([]);
   const [grade, setGrade] = useState<Grade | null>(null);
   const [busy, setBusy] = useState(false);
-  const [chat, setChat] = useState<{ role: "hs" | "gia_su"; text: string }[]>([
-    {
-      role: "gia_su",
-      text: "Mình là gia sư AI. Mình sửa bài và giảng cho em hiểu, không đưa đáp án trong lúc làm.",
-    },
-  ]);
+  const [chat, setChat] = useState<{ role: "hs" | "gia_su"; text: string }[]>(
+    initialChat.length ? initialChat : [LOI_CHAO],
+  );
   const [ask, setAsk] = useState("");
   const [openTutor, setOpenTutor] = useState(false);
+  const [tutorOffline, setTutorOffline] = useState(true);
 
   const sorted = useMemo(() => {
     return [...points].sort((a, b) => parseFloat(a.replace(",", ".")) - parseFloat(b.replace(",", ".")));
@@ -122,13 +128,20 @@ export function SolveClient({
     if (res.ket_qua === "DAT" && !res.finished && step < ORDER.length - 1) setStep(step + 1);
   }
 
-  async function sendChat() {
-    const text = ask.trim();
+  async function sendChat(raw?: string) {
+    const text = (raw ?? ask).trim();
     if (!text) return;
     setAsk("");
     setChat((c) => [...c, { role: "hs", text }]);
     const res = await hoiGiaSu(problemId, text);
-    setChat((c) => [...c, { role: "gia_su", text: res.ok ? res.tra_loi : res.tra_loi }]);
+    if (res.ok) setTutorOffline(res.offline);
+    setChat((c) => [...c, { role: "gia_su", text: res.tra_loi }]);
+  }
+
+  async function nhoThayCo() {
+    setChat((c) => [...c, { role: "hs", text: "Gửi thầy cô giúp em" }]);
+    const res = await guiThayCo(problemId);
+    setChat((c) => [...c, { role: "gia_su", text: res.tra_loi }]);
   }
 
   const badStep = grade?.ket_qua === "SAI" ? grade.buoc_sai?.ma_buoc : grade?.ket_qua === "KHONG_KIEM_DUOC" ? grade.buoc_sai?.ma_buoc : null;
@@ -144,7 +157,7 @@ export function SolveClient({
   const ma = ORDER[step];
 
   return (
-    <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_280px]">
+    <div className="grid gap-8 md:grid-cols-[minmax(0,1fr)_minmax(240px,280px)]">
       <section data-testid="solve-screen">
         <h1 className="text-pretty text-xl font-semibold">Làm bài theo 5 bước</h1>
         <p className="mt-2 text-sm leading-relaxed">{title}</p>
@@ -416,21 +429,37 @@ export function SolveClient({
         </Button>
       </section>
 
-      <aside className={`border-t border-line pt-4 lg:border-t-0 lg:pt-0 ${openTutor ? "block" : "hidden lg:block"}`} data-testid="tutor-panel">
+      <aside
+        className={`border-t border-line pt-4 md:border-t-0 md:pt-0 ${openTutor ? "block" : "hidden md:block"}`}
+        data-testid="tutor-panel"
+      >
         <div className="flex items-start justify-between gap-3">
           <div>
             <p className="text-sm font-semibold">Gia sư AI</p>
-            <p className="text-xs text-muted">Đang tương tác với AI, không phải giáo viên. Không có lời giải chuẩn trong hội thoại này.</p>
+            <p className="text-xs text-muted" data-testid="tutor-che-do">
+              {moTaCheDo(tutorOffline)}. Không phải giáo viên. Không đọc lời giải chuẩn.
+            </p>
           </div>
           <button
             type="button"
-            className={cn(buttonClasses({ variant: "ghost", size: "sm" }), "lg:hidden")}
+            className={cn(buttonClasses({ variant: "ghost", size: "sm" }), "md:hidden")}
             onClick={() => setOpenTutor(false)}
           >
             Đóng
           </button>
         </div>
-        <div data-testid="tutor-log" className="mt-4 max-h-80 space-y-2 overflow-y-auto">
+        <div className="mt-3 flex flex-wrap gap-2">
+          <Button type="button" variant="secondary" size="sm" data-testid="chip-goi-y" onClick={() => sendChat("Gợi ý bước này")}>
+            Gợi ý bước này
+          </Button>
+          <Button type="button" variant="secondary" size="sm" data-testid="chip-sai-cho" onClick={() => sendChat("Em sai chỗ nào?")}>
+            Em sai chỗ nào?
+          </Button>
+          <Button type="button" variant="ghost" size="sm" data-testid="chip-gui-gv" onClick={nhoThayCo}>
+            Gửi thầy cô
+          </Button>
+        </div>
+        <div data-testid="tutor-log" className="mt-4 max-h-80 space-y-2 overflow-y-auto overscroll-contain">
           {chat.map((m, i) => (
             <p key={i} className={`px-4 py-3 text-sm ${m.role === "hs" ? "bg-ink text-chalk" : "bg-wash"}`}>
               {m.text}
@@ -449,7 +478,7 @@ export function SolveClient({
             className={`min-w-0 flex-1 ${fieldControl}`}
             placeholder="Hỏi gợi ý, không hỏi đáp án…"
           />
-          <Button type="button" data-testid="tutor-send" onClick={sendChat}>
+          <Button type="button" data-testid="tutor-send" onClick={() => sendChat()}>
             Gửi
           </Button>
         </div>
@@ -458,7 +487,7 @@ export function SolveClient({
         <Button
           type="button"
           data-testid="mo-gia-su"
-          className="fixed bottom-4 right-4 z-20 shadow-lg lg:hidden"
+          className="fixed bottom-[calc(1rem+env(safe-area-inset-bottom))] right-4 z-20 shadow-lg md:hidden"
           onClick={() => setOpenTutor(true)}
         >
           Hỏi gia sư

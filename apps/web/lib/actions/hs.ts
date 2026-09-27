@@ -1,12 +1,13 @@
 "use server";
 
-import { and, desc, eq } from "drizzle-orm";
+import { and, asc, desc, eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { requireRole } from "../auth";
 import { db } from "../db";
 import {
   auditLogs,
   errorTypes,
+  escalations,
   gradingResults,
   hintLevels,
   inputEvents,
@@ -22,7 +23,7 @@ import {
 import { assertMayLearn, loadConfig, nghiDoanMo, applyMastery } from "../learning";
 import { mathJob, type GradeResult } from "../math";
 import { callLLM } from "../llm";
-import { chinhSachXinDapAn, mauGiaSu, xinDapAn } from "../tutor";
+import { chinhSachXinDapAn, goiYBuoc, HE_THONG_GIA_SU, mauGiaSu, xinDapAn, xinGoiY, xinSaiCho } from "../tutor";
 
 type Line = { dong: number; latex: string; loai?: string };
 type Cell = { hang: string; k: number; gia_tri: string };
@@ -194,35 +195,37 @@ export async function hoiGiaSu(problemId: string, text: string) {
   let hintCap = sess.hintCap;
   let answerRequests = sess.answerRequests;
   let state = sess.state;
-  const xin = xinDapAn(text) || /gợi ý|goi y/i.test(text);
-  if (xinDapAn(text)) {
+  const xin = xinDapAn(text);
+  const goi = xinGoiY(text);
+  const hoiSai = xinSaiCho(text);
+  if (xin) {
     answerRequests += 1;
     state = "GOI_Y";
     if (hintCap < 3) hintCap += 1;
-  } else if (/gợi ý|goi y/i.test(text)) {
+  } else if (goi) {
     if (hintCap < 3) hintCap += 1;
     state = `GOI_Y_${hintCap}`;
   } else if (grade?.ketQua === "DAT") {
     state = "TONG_KET";
   } else if (grade?.ketQua === "SAI") {
     state = hintCap > 0 ? `GOI_Y_${hintCap}` : "GIAI_THICH_LOI";
-    if (sess.lastBuoc === buoc) {
-      /* giữ cấp */
-    }
   }
   const hints = await db
     .select()
     .from(hintLevels)
     .where(and(eq(hintLevels.problemId, problemId), eq(hintLevels.maBuoc, buoc)));
-  const capRow = hints.find((h) => h.cap === Math.max(hintCap, xinDapAn(text) ? hintCap : 0));
-  const goiY = hintCap > 0 ? capRow?.noiDung || hints.find((h) => h.cap === hintCap)?.noiDung || null : null;
+  const capRow = hints.find((h) => h.cap === hintCap);
+  const goiY =
+    hintCap > 0 ? capRow?.noiDung || hints.find((h) => h.cap === hintCap)?.noiDung || goiYBuoc(buoc, hintCap) : null;
   const err = grade?.maLoi ? (await db.select().from(errorTypes).where(eq(errorTypes.code, grade.maLoi)).limit(1))[0] : null;
   const cfg = await loadConfig();
   let draft: string;
-  if (xinDapAn(text)) {
+  let offline = true;
+  let provider = "offline";
+  if (xin) {
     draft = chinhSachXinDapAn(answerRequests, goiY);
   } else {
-    const offline = mauGiaSu({
+    const offlineText = mauGiaSu({
       state,
       thongBao: grade?.thongBao || null,
       loai: grade?.loaiKetQua || null,
@@ -232,24 +235,37 @@ export async function hoiGiaSu(problemId: string, text: string) {
       nguong: cfg.nguong_tin_cay_ma_loi,
       goiY,
       cap: hintCap,
+      maBuoc: buoc,
+      xinSai: hoiSai,
     });
+    const prior = await db
+      .select()
+      .from(tutorMessages)
+      .where(eq(tutorMessages.sessionId, sess.id))
+      .orderBy(desc(tutorMessages.createdAt))
+      .limit(6);
+    const history = prior
+      .reverse()
+      .map((m) => ({
+        role: (m.role === "hs" ? "user" : "assistant") as "user" | "assistant",
+        content: m.redactedContent || m.content,
+      }));
     const llm = await callLLM({
       purpose: "tutor_turn",
       pseudonymId: user.pseudonymId,
-      offlineText: offline,
+      offlineText,
       messages: [
-        {
-          role: "system",
-          content:
-            "Bạn là gia sư toán THPT, nói tiếng Việt, gọi học sinh là em. Không nêu đáp án, khoảng đơn điệu cuối, hay giá trị cực trị. Chỉ dùng gợi ý được đưa. Tối đa 4 câu. Nói rõ đây là AI.",
-        },
+        { role: "system", content: HE_THONG_GIA_SU },
+        ...history,
         {
           role: "user",
-          content: `Đề: ${prob[0].statementText}\nBước: ${buoc}\nLoại: ${grade?.loaiKetQua || "chua_nop"}\nGợi ý được mở: ${goiY || "(chưa)"}\nHọc sinh: ${text}`,
+          content: `Đề (không kèm lời giải): ${prob[0].statementText}\nBước: ${buoc}\nLoại: ${grade?.loaiKetQua || "chua_nop"}\nGợi ý được mở: ${goiY || "(chưa)"}\nHọc sinh: ${text}`,
         },
       ],
     });
     draft = llm.text;
+    offline = llm.offline;
+    provider = llm.provider;
   }
   const facts = await db.select().from(solutions).where(eq(solutions.problemId, problemId)).limit(1);
   let blocked = false;
@@ -294,7 +310,49 @@ export async function hoiGiaSu(problemId: string, text: string) {
     .update(tutorSessions)
     .set({ state, hintCap, answerRequests, lastBuoc: buoc })
     .where(eq(tutorSessions.id, sess.id));
-  return { ok: true as const, tra_loi: draft, blocked, cap: hintCap };
+  return { ok: true as const, tra_loi: draft, blocked, cap: hintCap, offline, provider };
+}
+
+export async function lichSuGiaSu(problemId: string) {
+  const user = await requireRole("HS");
+  await assertMayLearn(user);
+  const sess = await sessionFor(user.id, problemId);
+  const rows = await db
+    .select()
+    .from(tutorMessages)
+    .where(eq(tutorMessages.sessionId, sess.id))
+    .orderBy(asc(tutorMessages.createdAt));
+  return {
+    messages: rows.map((r) => ({ role: r.role as "hs" | "gia_su", text: r.content })),
+    hintCap: sess.hintCap,
+  };
+}
+
+export async function guiThayCo(problemId: string) {
+  const user = await requireRole("HS");
+  await assertMayLearn(user);
+  const prob = await db.select().from(problems).where(eq(problems.id, problemId)).limit(1);
+  const p = prob[0];
+  if (!p) return { ok: false as const, tra_loi: "Không thấy bài." };
+  const skill = p.skillCode || "T12.DH.03";
+  const open = await db
+    .select()
+    .from(escalations)
+    .where(and(eq(escalations.studentId, user.id), eq(escalations.skillCode, skill)));
+  if (!open.some((e) => !e.handledAt)) {
+    await db.insert(escalations).values({
+      id: crypto.randomUUID(),
+      studentId: user.id,
+      skillCode: skill,
+      reason: `Em nhờ thầy cô từ phiếu ${p.code}.`,
+    });
+  }
+  await ghiNhatKy(user.id, "GUI_THAY_CO", "problem", problemId, skill);
+  revalidatePath("/gv");
+  return {
+    ok: true as const,
+    tra_loi: "Mình đã gửi lời nhờ cho thầy cô trên cổng giáo viên. Em cứ sửa bước đang dở, mình không đưa đáp án.",
+  };
 }
 
 export async function ghiNhatKy(actorId: string, action: string, entity: string, entityId: string, reason?: string) {

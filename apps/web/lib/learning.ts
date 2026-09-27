@@ -173,21 +173,24 @@ export async function recommend(studentId: string) {
   const states = await db.select().from(masteryStates).where(eq(masteryStates.studentId, studentId));
   const pubs = await db.select().from(problems).where(eq(problems.status, "DA_PHAT_HANH"));
   if (!pubs.length) return null;
-  const weak = [...states].sort((a, b) => a.mastery - b.mastery)[0];
+  const weak = [...states].sort((a, b) => a.mastery - b.mastery || b.stuckCounter - a.stuckCounter)[0];
   if (!weak) return { problem: pubs[0], lyDo: "Chưa có ước lượng thành thạo, bắt đầu bài đã phát hành." };
   const targetUp = nextNotch(weak.currentMucDo4);
-  const ready = weak.currentMucDo4 !== "VAN_DUNG_CAO" && weak.mastery >= cfg.nguong_muc[targetUp === "THONG_HIEU" ? "THONG_HIEU" : targetUp === "VAN_DUNG" ? "VAN_DUNG" : "VAN_DUNG_CAO"];
+  const need = targetUp === "NHAN_BIET" ? 0 : cfg.nguong_muc[targetUp];
+  const ready = weak.currentMucDo4 !== "VAN_DUNG_CAO" && weak.mastery >= need && weak.stuckCounter < 2;
   const pool = pubs.filter((p) => p.skillCode === weak.skillCode);
   const harder = pool.find((p) => p.mucDo4 === targetUp);
   const same = pool.find((p) => p.mucDo4 === weak.currentMucDo4);
-  const recent = ((weak.lastErrorCodes as string[]) || [])[0];
-  if (recent && same) {
-    return { problem: ready && harder ? harder : same, lyDo: ready && harder ? "Đủ ngưỡng nên nâng một nấc." : "Cùng dạng vừa sai, giữ mức hiện tại." };
+  if (weak.stuckCounter >= 2 && same) {
+    return { problem: same, lyDo: "Em đang kẹt — giữ cùng mức và cùng kỹ năng vừa yếu, chưa nâng nấc." };
   }
-  return {
-    problem: (ready && harder) || same || pool[0] || pubs[0],
-    lyDo: ready && harder ? "Nâng một nấc so với mức hiện tại." : "Bài cùng kỹ năng đang yếu.",
-  };
+  if (ready && harder) {
+    return { problem: harder, lyDo: "Đủ ngưỡng thành thạo nên nâng một nấc (sơ đồ: bài khó hơn một mức)." };
+  }
+  if (same) {
+    return { problem: same, lyDo: "Cùng mức hiện tại, cùng kỹ năng đang yếu — dạng cần ôn." };
+  }
+  return { problem: pool[0] || pubs[0], lyDo: "Bài đã phát hành cùng kỹ năng yếu nhất." };
 }
 
 export function mucLabel(code: string) {

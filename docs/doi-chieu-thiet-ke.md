@@ -2,6 +2,20 @@
 
 Đây không phải bản sản phẩm đầy đủ mọi khối lớp 10–12. Đây là nguyên mẫu NCKH đúng phạm vi đã khóa: một chủ đề, chạy được, demo được.
 
+## Khớp sơ đồ gốc (khối cam / xanh)
+
+| Khối sơ đồ | Trong nguyên mẫu |
+| --- | --- |
+| GV: bài NB→TH→VD→VDC | 4 mức + Bloom trên bài; CV 7991 3 mức lúc xem |
+| GV: tài liệu / đề mẫu / công thức | Nạp tài liệu, bảng công thức khóa, cổng 3 tầng |
+| Kiểm 3 tầng | Máy SymPy · tìm trong tài liệu · đối chiếu bảng |
+| Bộ bài / ôn tập cho từng HS | `assignments` + gợi bài theo kỹ năng yếu / cùng mức / nâng 1 nấc |
+| HS: thang Bloom | `bloom_level` hiện trên lộ trình và phiếu |
+| Học với AI theo bước | Phiếu 5 bước + gia sư (luật → thang 3 cấp → API tùy chọn → lọc) |
+| Tư vấn phương pháp + lịch + nhắc | `/hs/lich` tính theo BKT; nhắc in-app |
+| Gọi API bên thứ 3 | `LLM_API_KEY`; không khóa thì thang gợi ý offline |
+| Lặp tới vận dụng cao | BKT + recommend; kẹt thì giữ mức / gửi GV |
+
 ## Khớp thiết kế
 
 - Sơ đồ gốc: giáo viên nạp tài liệu / công thức / bài → cổng 3 tầng → học sinh làm với AI theo mức → bài cá nhân hóa → thời gian biểu → lặp đến vận dụng cao.

@@ -12,7 +12,7 @@ Nguyên mẫu NCKH: phần mềm học toán THPT, **một** chủ đề Toán 1
 
 - Khung 5 bước `B.DH.TXD` / `B.DH.DAOHAM` / `B.DH.NGHIEM` / `B.DH.XETDAU` / `B.DH.KETLUAN`. Chấm cả bước, không tô từng ô khi gõ.
 - Cổng 3 tầng: `DAT` | `SAI` | `KHONG_KIEM_DUOC` + `GV_DUYET`.
-- Gia sư **không** đọc lời giải chuẩn. Bộ lọc lộ đáp án chạy trên mọi câu trả lời.
+- Gia sư **không** đọc lời giải chuẩn. Thứ tự: luật xin đáp án → thang 3 cấp (không bottom-out) → API nếu có khóa → lọc SymPy.
 - 4 mức cho học sinh; 3 mức CV 7991 chỉ lúc **xem**.
 - Dữ liệu tổng hợp. Không neko-core. Không mở rộng chủ đề lớp 10–12.
 - `k` ô bảng sản phẩm 0-based; YAML kiểm định 1-based. Xem `docs/chi-so-o-bang.md`.

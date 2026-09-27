@@ -2,6 +2,7 @@ import Link from "next/link";
 import { eq } from "drizzle-orm";
 import { notFound } from "next/navigation";
 import { SolveClient } from "@/components/solve-client";
+import { lichSuGiaSu } from "@/lib/actions/hs";
 import { requireRole } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { classSettings, problems, solutions } from "@/lib/db/schema";
@@ -37,10 +38,11 @@ export default async function LuyenPage({ params }: { params: Promise<{ id: stri
   const showSolution = settings[0]?.moLoiGiaiSauKhiNop === true;
   const sol = showSolution ? (await db.select().from(solutions).where(eq(solutions.problemId, p.id)).limit(1))[0] : null;
   const loiGiai = showSolution ? loiGiaiHocSinh(sol?.baiLam, sol?.finalAnswer) : null;
+  const lichSu = await lichSuGiaSu(p.id);
   return (
     <main>
       <p className="mb-4 text-sm text-muted">
-        Mức {LABEL4[p.mucDo4 as Muc4]} · Bloom {p.bloomLevel} · mã{" "}
+        Mức {LABEL4[p.mucDo4 as Muc4]} · Bloom {LABEL4[p.bloomLevel as Muc4] || p.bloomLevel} · mã{" "}
         <span className="font-mono" translate="no">
           {p.code}
         </span>
@@ -51,6 +53,7 @@ export default async function LuyenPage({ params }: { params: Promise<{ id: stri
         latex={p.statementLatex.startsWith("y") ? p.statementLatex : `y = ${p.statementLatex}`}
         moLoiGiai={showSolution}
         loiGiai={loiGiai}
+        initialChat={lichSu.messages}
       />
       <p className="mt-3 text-xs text-muted">
         {showSolution
