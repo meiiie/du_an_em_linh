@@ -26,9 +26,6 @@ export default async function LichPage() {
       <section>
         <h2 className="text-base font-semibold">Cách học</h2>
         <p className="mt-2 whitespace-pre-line text-sm leading-relaxed text-ink">{live.loiKhuyen}</p>
-        {s?.methodAdvice && s.methodAdvice !== live.loiKhuyen ? (
-          <p className="mt-3 text-sm leading-relaxed text-muted">Ghi chú lớp: {s.methodAdvice}</p>
-        ) : null}
       </section>
       <section>
         <h2 className="text-base font-semibold">Tuần này</h2>
