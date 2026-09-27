@@ -36,7 +36,7 @@
 - Harness agent: `AGENTS.md` + `CLAUDE.md` lớp theo thư mục, `.claude/settings.json`, `docs/CODEMAP.md`.
 - Harness gia sư: bốn nhà tường minh, composer 44 px, khóa lớp tùy chọn, thử `GET /models`.
 - Kết nối ChatGPT cho giáo viên không chuyên: `/gv/ket-noi-ai` (hai bước; OAuth định danh nếu có client_id). Trang Lớp hiện trạng thái.
-- Công thức và tài liệu: `/hs/kho` + xem trước theo 5 bước trên GV; gia sư truy hồi cùng nguồn, không đọc lời giải.
+- Công thức và tài liệu: `/hs/kho` tab Công thức / Tài liệu; gia sư truy hồi cùng nguồn, không đọc lời giải.
 
 ## Skill dùng khi chỉnh UI / API
 

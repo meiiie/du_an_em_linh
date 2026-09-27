@@ -145,9 +145,9 @@ export function SolveClient({
     <div className="grid gap-8 md:grid-cols-[minmax(0,1fr)_minmax(280px,340px)]">
       <section data-testid="solve-screen">
         <h1 className="text-pretty text-xl font-semibold">{thanDe(title)}</h1>
-        <div className="mt-3 border-y border-line bg-wash px-3 py-2">
+        <p className="mt-4 max-w-[65ch] overflow-x-auto text-[1.25rem] leading-8" translate="no">
           <Tex tex={latex} />
-        </div>
+        </p>
         <ol className="mt-4 flex gap-0 overflow-x-auto border-y border-line lg:flex-col lg:border-0">
           {BUOC.map((b, i) => (
             <li key={b.ma} className="shrink-0 lg:shrink">

@@ -24,11 +24,13 @@ export default async function Page() {
         <p className="mb-4 bg-amber-50 px-4 py-3 text-sm">{stale.length} lần kiểm cũ — sửa đề thì kiểm lại.</p>
       ) : null}
       {rows.length === 0 ? <p className="text-sm text-muted">Chưa có công thức.</p> : null}
-      <ul className="divide-y divide-line border-y border-line">
-        {rows.map((f) => (
-          <HangCongThuc key={f.id} title={f.title} latex={f.latex} noiDung={f.noiDung} gon />
-        ))}
-      </ul>
+      {rows.length ? (
+          <ul className="divide-y divide-line border-y border-line">
+          {rows.map((f) => (
+            <HangCongThuc key={f.id} title={f.title} latex={f.latex} />
+          ))}
+        </ul>
+      ) : null}
       <details className="mt-8 border-t border-line pt-4">
         <summary className="min-h-11 cursor-pointer text-sm font-medium">Thêm công thức</summary>
         <div className="mt-4 max-w-xl">

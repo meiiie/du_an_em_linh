@@ -148,7 +148,6 @@ export function AppShell({
         </nav>
         <div className="mt-auto border-t border-white/10 px-4 py-4">
           <p className="truncate text-sm font-medium">{name}</p>
-          <p className="text-xs text-chalk/50">Tài khoản thử, dữ liệu mẫu.</p>
           <form action={dangXuat} className="mt-2 hidden lg:block">
             <button className="inline-flex min-h-11 items-center text-sm text-chalk/70 hover:text-chalk" type="submit">
               Thoát

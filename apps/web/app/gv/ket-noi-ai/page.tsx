@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { ketNoiBangKhoa, ngatKetNoiAi } from "@/lib/actions/gv";
 import { maskKey } from "@/lib/ai-catalog";
 import { docKhoaCloud } from "@/lib/ai-harness";
@@ -163,22 +162,9 @@ export default async function Page({
         ) : null}
       </section>
 
-      <section className="border-b border-line py-6">
-        <h2 className="text-base font-semibold">Gia sư đọc</h2>
-        <div className="mt-3">
-          <KhoTheoBuoc khung={khung} />
-        </div>
+      <section className="sr-only">
+        <KhoTheoBuoc khung={khung} />
       </section>
-
-      <p className="mt-6 text-sm text-muted">
-        <Link href="/gv/cai-dat" className="underline underline-offset-2">
-          Cài lớp
-        </Link>
-        {" · "}
-        <Link href="/gv/tai-lieu" className="underline underline-offset-2">
-          Tài liệu
-        </Link>
-      </p>
     </main>
   );
 }

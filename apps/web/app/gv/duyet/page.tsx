@@ -30,7 +30,7 @@ export default async function Page() {
   const tiers = await db.select().from(verificationTierResults);
   return (
     <main className="space-y-8" data-testid="hang-doi">
-      <PageHeader title="Duyệt bài" />
+      <PageHeader title="Duyệt" />
       {queue.length === 0 ? <p className="text-sm text-muted">Không còn bài chờ.</p> : null}
       {queue.map((p) => {
         const run = runs.filter((r) => r.problemId === p.id).sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())[0];
@@ -42,20 +42,25 @@ export default async function Page() {
               {ham ? <Tex tex={ham} className="text-sm" /> : <p className="text-sm font-medium">{p.statementText}</p>}
               <Badge tone={tone(p.status)}>{STATUS_LABEL[p.status] || p.status}</Badge>
             </div>
-            <ul className="mt-3 space-y-2 text-sm">
+            <ul className="mt-3 divide-y divide-line border-y border-line text-sm">
               {ts.map((t) => {
                 const cites = moTaTrichDan(t.citation);
                 return (
-                  <li key={t.id} className="bg-wash px-4 py-3">
-                    <span className="font-medium">Tầng {t.tier}:</span> {STATUS_LABEL[t.status] || t.status}
-                    {t.reasonText ? ` — ${t.reasonText}` : ""}
-                    {cites.length ? (
-                      <ul className="mt-1 list-disc space-y-0.5 pl-5 text-xs text-muted">
-                        {cites.map((c) => (
-                          <li key={c}>{c}</li>
-                        ))}
-                      </ul>
-                    ) : null}
+                  <li key={t.id} className="flex gap-3 py-3">
+                    <span className="tabular w-4 shrink-0 text-xs text-muted">{t.tier}</span>
+                    <div className="min-w-0">
+                      <p>
+                        <span className="font-medium">{STATUS_LABEL[t.status] || t.status}</span>
+                        {t.reasonText ? ` — ${t.reasonText}` : ""}
+                      </p>
+                      {cites.length ? (
+                        <ul className="mt-1 space-y-0.5 text-xs text-muted">
+                          {cites.map((c) => (
+                            <li key={c}>{c}</li>
+                          ))}
+                        </ul>
+                      ) : null}
+                    </div>
                   </li>
                 );
               })}

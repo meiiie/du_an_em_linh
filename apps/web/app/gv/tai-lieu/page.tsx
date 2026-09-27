@@ -23,9 +23,26 @@ export default async function Page() {
   return (
     <main>
       <PageHeader title="Tài liệu" />
-      <div className="grid gap-8 lg:grid-cols-2">
-        <form action={taiTaiLieu} className="space-y-4 border-y border-line py-6">
-          <h2 className="text-base font-semibold">Thêm tài liệu</h2>
+      {docs.length === 0 ? <p className="text-sm text-muted">Chưa có tài liệu.</p> : null}
+      {docs.length ? (
+        <ul className="divide-y divide-line border-y border-line">
+          {docs.map((d) => (
+            <li key={d.id} className="py-4">
+              <p className="font-medium">{d.title}</p>
+              <p className="mt-1">
+                {d.licenseStatus === "chua_ro" ? (
+                  <Badge tone="warn">Gia sư bỏ qua</Badge>
+                ) : (
+                  <Badge tone="ok">Gia sư được đọc</Badge>
+                )}
+              </p>
+            </li>
+          ))}
+        </ul>
+      ) : null}
+      <details className="mt-8 border-t border-line pt-4">
+        <summary className="min-h-11 cursor-pointer text-sm font-medium">Thêm tài liệu</summary>
+        <form action={taiTaiLieu} className="mt-4 max-w-xl space-y-4">
           <Field label="Tên">
             <input name="title" required placeholder="Tóm tắt đơn điệu…" className={fieldControl} />
           </Field>
@@ -51,27 +68,9 @@ export default async function Page() {
           </Field>
           <Button type="submit">Lưu</Button>
         </form>
-        <ul className="divide-y divide-line border-y border-line">
-          {docs.length === 0 ? <li className="py-3 text-sm text-muted">Chưa có tài liệu.</li> : null}
-          {docs.map((d) => (
-            <li key={d.id} className="py-3">
-              <p className="font-medium">{d.title}</p>
-              <p className="mt-1">
-                {d.licenseStatus === "chua_ro" ? (
-                  <Badge tone="warn">Gia sư bỏ qua</Badge>
-                ) : (
-                  <Badge tone="ok">Gia sư được đọc</Badge>
-                )}
-              </p>
-            </li>
-          ))}
-        </ul>
-      </div>
-      <section className="mt-8 border-y border-line py-6" data-testid="gia-su-doc-kho">
-        <h2 className="text-base font-semibold">Gia sư đọc theo bước</h2>
-        <div className="mt-3 max-w-xl">
-          <KhoTheoBuoc khung={khung} />
-        </div>
+      </details>
+      <section className="sr-only" data-testid="gia-su-doc-kho">
+        <KhoTheoBuoc khung={khung} />
       </section>
     </main>
   );

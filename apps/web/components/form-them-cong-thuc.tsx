@@ -25,9 +25,9 @@ export function FormThemCongThuc() {
         />
       </Field>
       {latex.trim() ? (
-        <div className="overflow-x-auto border-y border-line bg-wash px-3 py-2" translate="no" aria-live="polite">
-          <Tex tex={latex} block />
-        </div>
+        <p className="max-w-[65ch] overflow-x-auto text-[1.25rem] leading-8" translate="no" aria-live="polite">
+          <Tex tex={latex} />
+        </p>
       ) : null}
       <Field label="Giải thích">
         <textarea name="noi_dung" required rows={3} placeholder="Hàm đồng biến khi…" className={fieldControl} />
