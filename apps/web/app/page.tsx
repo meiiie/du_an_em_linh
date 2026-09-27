@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { buttonClasses } from "@/components/ui/button";
-import { SITE_DESC, SITE_NAME, siteUrl } from "@/lib/site";
+import { SITE_DESC, SITE_NAME, SITE_VERSION, siteUrl } from "@/lib/site";
 
 const BUOC = ["Tập xác định", "Đạo hàm", "Nghiệm y′", "Xét dấu", "Kết luận"];
 const GOC = siteUrl().origin;
@@ -39,7 +39,7 @@ const jsonLd = {
       inLanguage: "vi",
       description: SITE_DESC,
       url: `${GOC}/`,
-      softwareVersion: "0.1.0",
+      softwareVersion: SITE_VERSION,
       isAccessibleForFree: true,
       image: `${GOC}/icon-512.png`,
       publisher: { "@id": `${GOC}/#to-chuc` },
@@ -112,7 +112,9 @@ export default function TrangChu() {
       </main>
       <footer className="border-t border-line">
         <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-3 px-5 py-6 text-xs text-muted sm:px-10">
-          <p>{SITE_NAME} · MIT · v0.1.0</p>
+          <p>
+            {SITE_NAME} · MIT · v{SITE_VERSION}
+          </p>
           <nav className="flex gap-4" aria-label="Chân trang">
             <a href="https://github.com/meiiie/du_an_em_linh">GitHub</a>
             <Link href="/dang-nhap">Đăng nhập</Link>

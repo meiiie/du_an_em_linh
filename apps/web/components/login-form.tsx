@@ -36,6 +36,7 @@ export function LoginForm({
   const [hienMatKhau, setHienMatKhau] = useState(false);
   const emailRef = useRef<HTMLInputElement>(null);
   const matKhauRef = useRef<HTMLInputElement>(null);
+  const lanDau = useRef(true);
 
   useEffect(() => {
     if (typeof sessionStorage === "undefined") return;
@@ -48,7 +49,12 @@ export function LoginForm({
 
   useEffect(() => {
     const o = buoc === "email" ? emailRef.current : matKhauRef.current;
-    o?.focus();
+    if (!o) return;
+    if (lanDau.current) {
+      lanDau.current = false;
+      if (!window.matchMedia("(pointer: fine)").matches) return;
+    }
+    o.focus();
   }, [buoc]);
 
   function luuEmail(v: string) {
@@ -194,16 +200,16 @@ export function LoginForm({
       <ul className="mt-8 flex w-full flex-wrap justify-center gap-2" aria-label="Tài khoản thử">
         {TAI.map((t) => (
           <li key={t.email}>
-            <button
-              type="button"
-              className="min-h-10 rounded-button px-3 text-xs font-medium text-ink ring-1 ring-line hover:bg-wash focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink"
+            <Button
+              variant="secondary"
+              className="text-xs font-medium"
               onClick={() => {
                 luuEmail(t.email);
                 setBuoc("mat-khau");
               }}
             >
               {t.nhan}
-            </button>
+            </Button>
           </li>
         ))}
       </ul>
