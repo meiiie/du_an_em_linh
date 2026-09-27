@@ -63,6 +63,20 @@ pnpm dev:web
 
 Mở http://127.0.0.1:3000 . `pnpm seed` gọi SymPy trong `.venv` (hoặc `MATH_SERVICE_URL` nếu đặt) và ghi trạng thái cổng của từng bài.
 
+## Deploy miễn phí (Render)
+
+Chỗ free đáng tin còn nhận Docker + Postgres, **không thẻ**: [Render](https://render.com/docs/free). Hugging Face Docker Spaces (2026) đã đòi PRO.
+
+Một service web (Next + SymPy trong cùng container) + Postgres free. Lần đầu build + seed khoảng vài phút. Web ngủ sau 15 phút không ai vào; lần mở lại ~1 phút. Postgres free của Render **hết hạn 30 ngày** — trước hạn, tạo [Neon](https://neon.tech) (free lâu, không thẻ) rồi dán `DATABASE_URL` vào service.
+
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/meiiie/du_an_em_linh/tree/cursor/deploy-free-render-91a8)
+
+1. Bấm nút, đăng nhập Render bằng GitHub (không thẻ).
+2. Deploy Blueprint. Đợi web `hoc-toan-ai` hiện URL `*.onrender.com`.
+3. Vào bằng `gv@demo.local` / `giaovien123` hoặc `hs.an@demo.local` / `hocsinh123`.
+
+File: `render.yaml`, `Dockerfile`, `scripts/start-free.sh`.
+
 ## Chạy với Docker
 
 ```bash

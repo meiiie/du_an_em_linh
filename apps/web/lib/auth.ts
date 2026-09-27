@@ -31,7 +31,13 @@ export async function createSession(userId: string) {
   const expires = new Date(Date.now() + 1000 * 60 * 60 * 24 * 14);
   await db.insert(sessions).values({ tokenHash: tokenHash(token), userId, expiresAt: expires });
   const jar = await cookies();
-  jar.set(COOKIE, token, { httpOnly: true, sameSite: "lax", path: "/", expires });
+  jar.set(COOKIE, token, {
+    httpOnly: true,
+    sameSite: "lax",
+    path: "/",
+    expires,
+    secure: process.env.NODE_ENV === "production",
+  });
 }
 
 export async function clearSession() {

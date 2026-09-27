@@ -18,6 +18,7 @@ Harness (Anthropic 2026): tệp này là mục lục để agent biết chỗ m�
 | `docs/chi-so-o-bang.md` | `k` 0-based vs YAML 1-based |
 | `data/supham/` | Ngân hàng sư phạm (JSON) |
 | `docker-compose.yml` | web :3000, math :8000, Postgres :5432 |
+| `Dockerfile` / `render.yaml` | Deploy free một container trên Render |
 
 ## apps/web
 

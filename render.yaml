@@ -1,0 +1,32 @@
+# Render free: không thẻ. Web ngủ sau 15 phút; Postgres free hết hạn 30 ngày
+# (sau đó dán DATABASE_URL Neon — free lâu dài, không thẻ).
+# Một service web (Next + SymPy trong cùng container) để không x2 giờ free.
+
+services:
+  - type: web
+    name: hoc-toan-ai
+    runtime: docker
+    plan: free
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    healthCheckPath: /dang-nhap
+    autoDeployTrigger: commit
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: hoc-toan-pg
+          property: connectionString
+      - key: MATH_SERVICE_URL
+        value: http://127.0.0.1:8000
+      - key: NODE_ENV
+        value: production
+      - key: SEED_IF_EMPTY
+        value: "1"
+      - key: HOSTNAME
+        value: "0.0.0.0"
+
+databases:
+  - name: hoc-toan-pg
+    plan: free
+    databaseName: hoc_toan
+    user: hoc_toan

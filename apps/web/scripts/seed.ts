@@ -250,6 +250,19 @@ async function napBai(opts: {
 }
 
 async function main() {
+  if (process.env.SEED_IF_EMPTY === "1") {
+    try {
+      const rows = await sql<{ n: number }[]>`select count(*)::int as n from users`;
+      if ((rows[0]?.n || 0) > 0) {
+        console.log("Đã có dữ liệu — bỏ qua seed (SEED_IF_EMPTY=1).");
+        await sql.end();
+        return;
+      }
+    } catch {
+      /* bảng chưa có thì migrate phải chạy trước */
+    }
+  }
+
   const root = repoRoot();
   const catalog = JSON.parse(readFileSync(path.join(root, "data/supham/danh-muc-ky-nang-DH.json"), "utf8")) as {
     ky_nang: {
