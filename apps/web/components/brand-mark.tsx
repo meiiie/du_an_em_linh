@@ -10,14 +10,15 @@ export function BrandMark({ className, invert = false }: { className?: string; i
       )}
       aria-hidden
     >
-      <svg viewBox="0 0 32 32" className="h-4 w-4" fill="none">
+      <svg viewBox="0 0 32 32" className="h-4 w-4" fill="none" aria-hidden>
         <path
-          d="M4 22C10 22 12 8 16 8s6 16 12 2"
+          d="M4 20C7 20 8 8 11.5 8s3.7 14 7 14 3.5-8 6.5-12"
           stroke="currentColor"
           strokeWidth="2.2"
           strokeLinecap="round"
+          strokeLinejoin="round"
         />
-        <path d="M6 26h20" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" opacity="0.4" />
+        <path d="M4 25h20" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" opacity="0.4" />
       </svg>
     </span>
   );

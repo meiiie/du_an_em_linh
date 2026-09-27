@@ -11,6 +11,28 @@ test.describe("trang chủ", () => {
     await expect(page.getByTestId("email")).toBeVisible();
     await expect(page.getByRole("button", { name: "Vào học" })).toBeVisible();
   });
+
+  test("logo tab và tài sản SEO công khai", async ({ request }) => {
+    const paths = [
+      "/favicon.ico",
+      "/icon.svg",
+      "/icon-48.png",
+      "/icon-96.png",
+      "/icon-192.png",
+      "/icon-512.png",
+      "/icon-maskable.png",
+      "/apple-touch-icon.png",
+      "/robots.txt",
+      "/sitemap.xml",
+      "/manifest.webmanifest",
+      "/llms.txt",
+      "/.well-known/security.txt",
+    ];
+    for (const path of paths) {
+      const res = await request.get(path);
+      expect(res.status(), path).toBe(200);
+    }
+  });
 });
 
 test.describe("học sinh", () => {

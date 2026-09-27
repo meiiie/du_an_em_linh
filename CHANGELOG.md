@@ -8,6 +8,11 @@ Phát hành tự động: [release-please](https://github.com/googleapis/release
 
 ## [Unreleased]
 
+### Added
+
+- Logo tab: SVG, ICO 16/32/48, PNG 48/96/180/192/512 và bản maskable (Google Search favicon, 2026-08-28)
+- 404, `llms.txt`, `security.txt`, JSON-LD Organization / WebSite / WebApplication (không rating giả, không FAQPage)
+
 ## [0.1.0] - 2026-09-27
 
 Nguyên mẫu NCKH đầu tiên — một chủ đề Toán 12 (đơn điệu và cực trị).
