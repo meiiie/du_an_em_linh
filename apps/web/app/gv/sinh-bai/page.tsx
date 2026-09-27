@@ -40,7 +40,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ m
             <option value="huu_ti">Phân thức bậc nhất</option>
           </select>
         </Field>
-        <Field label="Số gốc">
+        <Field label="Số tạo">
           <input name="seed" type="number" defaultValue={11} className={fieldControl} autoComplete="off" />
         </Field>
         <Button type="submit">Tạo đề</Button>

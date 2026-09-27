@@ -29,7 +29,7 @@ export default async function Page() {
   const runs = await db.select().from(verificationRuns);
   const tiers = await db.select().from(verificationTierResults);
   return (
-    <main className="space-y-8" data-testid="hang-doi">
+    <main className="space-y-6" data-testid="hang-doi">
       <PageHeader title="Duyệt" />
       {queue.length === 0 ? <p className="text-sm text-muted">Không còn bài chờ.</p> : null}
       {queue.map((p) => {

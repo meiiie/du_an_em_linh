@@ -27,15 +27,13 @@ export default async function Page() {
       {docs.length ? (
         <ul className="divide-y divide-line border-y border-line">
           {docs.map((d) => (
-            <li key={d.id} className="py-4">
+            <li key={d.id} className="flex min-h-11 flex-wrap items-center justify-between gap-3 py-4">
               <p className="font-medium">{d.title}</p>
-              <p className="mt-1">
-                {d.licenseStatus === "chua_ro" ? (
-                  <Badge tone="warn">Gia sư bỏ qua</Badge>
-                ) : (
-                  <Badge tone="ok">Gia sư được đọc</Badge>
-                )}
-              </p>
+              {d.licenseStatus === "chua_ro" ? (
+                <Badge tone="warn">Gia sư bỏ qua</Badge>
+              ) : (
+                <Badge tone="ok">Gia sư được đọc</Badge>
+              )}
             </li>
           ))}
         </ul>

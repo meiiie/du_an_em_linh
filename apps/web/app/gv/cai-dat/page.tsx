@@ -1,14 +1,13 @@
 import type { Metadata } from "next";
 import { eq } from "drizzle-orm";
 import { luuCaiDatLop } from "@/lib/actions/gv";
-import { laNhaKhoa, maskKey, NHA, parseProvider, type AiProviderId } from "@/lib/ai-catalog";
+import { laNhaKhoa, NHA, parseProvider, type AiProviderId } from "@/lib/ai-catalog";
 import { docKhoaNha } from "@/lib/ai-harness";
 import { KiemTraAi } from "@/components/kiem-tra-ai";
 import Link from "next/link";
-import { Button, buttonClasses } from "@/components/ui/button";
+import { Button } from "@/components/ui/button";
 import { fieldControl } from "@/components/ui/field";
 import { PageHeader } from "@/components/ui/page-header";
-import { cn } from "@/lib/cn";
 import { chamDoChinhXac } from "@/lib/do-chinh-xac";
 import { db } from "@/lib/db";
 import { classSettings, classes } from "@/lib/db/schema";
@@ -24,17 +23,12 @@ export default async function Page() {
   const setting = lop ? (await db.select().from(classSettings).where(eq(classSettings.classId, lop.id)))[0] : null;
   const provider = parseProvider(setting?.aiProvider);
   const hasEnv = laNhaKhoa(provider) && Boolean(docKhoaNha(provider, null));
-  const mask = maskKey(setting?.aiApiKey);
   const khoaLop = Boolean((setting?.aiApiKey || "").trim());
   const the = chamDoChinhXac();
+  const coKhoa = hasEnv || khoaLop;
   return (
     <main className="max-w-xl">
       <PageHeader title="Cài đặt lớp" />
-      <p className="mb-6 text-sm">
-        <Link href="/gv/ket-noi-ai" className={cn(buttonClasses({ variant: "secondary" }))} data-testid="toi-ket-noi-ai">
-          Gia sư
-        </Link>
-      </p>
       <form action={luuCaiDatLop} className="space-y-4 border-y border-line py-6">
         <p className="text-sm text-muted">Lớp {lop?.name || "—"}</p>
         <label className="flex items-start gap-3 text-sm">
@@ -45,9 +39,7 @@ export default async function Page() {
             className="mt-1 size-6 accent-ink"
             data-testid="mo-loi-giai"
           />
-          <span>
-            <span className="font-medium">Mở lời giải sau khi nộp xong năm bước</span>
-          </span>
+          <span className="font-medium">Mở lời giải sau khi nộp xong năm bước</span>
         </label>
 
         <fieldset className="space-y-2" data-testid="ai-provider">
@@ -89,33 +81,15 @@ export default async function Page() {
             className="mt-1 size-6 accent-ink"
             data-testid="ai-allow-local"
           />
-          <span>
-            <span className="font-medium">Cho học sinh dùng Ollama / LM Studio trên máy mình</span>
-          </span>
+          <span className="font-medium">Cho học sinh dùng Ollama / LM Studio trên máy mình</span>
         </label>
 
-        <label className="block text-sm">
-          <span className="mb-2 block font-medium">Khóa API lớp</span>
-          <input
-            name="ai_api_key"
-            type="password"
-            autoComplete="off"
-            data-testid="ai-api-key"
-            className={fieldControl}
-            placeholder={mask ? `${mask} — để trống để giữ` : "dán khóa — không hiện lại đủ"}
-          />
-          <span className="mt-2 block text-muted">
-            {hasEnv
-              ? `Máy chủ đang có ${NHA[provider].envKhoa} — dùng khóa đó.`
-              : khoaLop
-                ? "Đang dùng khóa lớp đã lưu."
-                : "Chưa có khóa."}
-          </span>
-        </label>
-        <label className="flex items-start gap-3 text-sm">
-          <input name="xoa_ai_api_key" type="checkbox" className="mt-1 size-6 accent-ink" data-testid="xoa-ai-api-key" />
-          <span>Xóa khóa lớp đã lưu</span>
-        </label>
+        <p className="text-sm">
+          {coKhoa ? "Đã có khóa." : "Chưa có khóa."}{" "}
+          <Link href="/gv/ket-noi-ai" className="underline underline-offset-2" data-testid="toi-ket-noi-ai">
+            Dán khóa
+          </Link>
+        </p>
 
         <Button type="submit">Lưu cài đặt</Button>
       </form>
