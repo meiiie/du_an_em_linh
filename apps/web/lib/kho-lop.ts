@@ -25,7 +25,7 @@ export async function taiNguyenKhoLop(): Promise<{ taiLieu: MauTaiLieu[]; congTh
   };
 }
 
-export async function goiKhoChoBuoc(maBuoc: string, cauHoi?: string) {
+export async function goiKhoChoBuoc(maBuoc: string, cauHoi?: string, nhoId?: string[]) {
   const nguon = await taiNguyenKhoLop();
-  return chonKho({ ...nguon, maBuoc, cauHoi });
+  return chonKho({ ...nguon, maBuoc, cauHoi, nhoId });
 }

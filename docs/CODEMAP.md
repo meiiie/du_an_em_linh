@@ -61,7 +61,7 @@ Next.js 15. Server action nói chuyện với Postgres và `MATH_SERVICE_URL`.
 | `components/ui/` | Nút, ô, tiêu đề, hàng việc |
 | `lib/actions/` | `hs`, `gv`, `auth` |
 | `lib/ai-catalog.ts` / `lib/ai-harness.ts` | Chọn nhà + một lần HTTP |
-| `lib/kien-thuc.ts` / `lib/kho-lop.ts` | Truy hồi kho lớp, không lời giải |
+| `lib/kien-thuc.ts` / `lib/kho-lop.ts` | Truy hồi kho lớp, số [n], nhớ id lượt trước, không lời giải |
 | `lib/openai-oauth.ts` | PKCE Sign in with ChatGPT (khi có client_id) |
 | `lib/db/schema.ts` | Drizzle |
 | `lib/tutor.ts` | Thang gợi ý; không đọc lời giải |

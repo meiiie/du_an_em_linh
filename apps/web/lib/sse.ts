@@ -33,7 +33,7 @@ export function gomSse(raw: string): { events: SseKhung[]; leftover: string } {
 }
 
 export function chuTrangThaiGiaSu(buoc: GiaSuBuocSse | null): string {
-  if (buoc === "kho") return "Đang mở công thức lớp…";
+  if (buoc === "kho") return "Đang mở công thức và tài liệu lớp…";
   if (buoc === "goi") return "Đang hỏi gia sư…";
   if (buoc === "loc") return "Đang lọc khỏi đáp án…";
   return "Đang nghĩ…";

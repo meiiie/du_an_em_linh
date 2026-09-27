@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { HangCongThuc } from "@/components/hang-cong-thuc";
 import { KhoTheoBuoc } from "@/components/kho-theo-buoc";
+import { NeoKho } from "@/components/neo-kho";
 import { soTabClass } from "@/components/so-nav";
 import { khoLopCongKhai } from "@/lib/actions/hs";
 import { tenTaiLieuNgan, thanTrich } from "@/lib/de-hoc-sinh";
@@ -17,6 +18,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ m
   const kho = await khoLopCongKhai();
   return (
     <main>
+      <NeoKho />
       <header className="mb-6">
         <h1 className="text-pretty text-[1.75rem] font-semibold tracking-tight">Công thức và tài liệu</h1>
         <nav aria-label="Công thức và tài liệu" className="mt-4 flex items-end border-b border-line">
@@ -63,7 +65,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ m
         {kho.taiLieu.length ? (
           <ul className="divide-y divide-line border-b border-line">
             {kho.taiLieu.map((d) => (
-              <li id={`tl-${d.id}`} key={d.id} className="scroll-mt-6 py-6">
+              <li id={`tl-${d.id}`} key={d.id} className="scroll-mt-6 py-6 target:bg-wash">
                 <p className="text-sm font-medium">{tenTaiLieuNgan(d.title)}</p>
                 <p className="mt-2 text-sm leading-relaxed text-muted">{thanTrich(d.trich)}</p>
               </li>

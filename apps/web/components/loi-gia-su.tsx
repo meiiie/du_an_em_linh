@@ -6,6 +6,7 @@ import remarkBreaks from "remark-breaks";
 import remarkGfm from "remark-gfm";
 import remarkMath from "remark-math";
 import type { Components } from "react-markdown";
+import { ganNeoTrongLoi, type TrichDanHien } from "@/lib/kien-thuc";
 import { chuanHoaLatexGiaSu } from "@/lib/loi-gia-su";
 import { cn } from "@/lib/cn";
 import "katex/dist/katex.min.css";
@@ -30,7 +31,11 @@ const md: Components = {
   ),
   hr: () => <hr className="border-line" />,
   a: ({ href, children }) =>
-    href && /^https?:\/\//i.test(href) ? (
+    href && href.startsWith("/hs/kho") ? (
+      <a href={href} className="ml-0.5 text-[11px] font-medium underline underline-offset-2">
+        {children}
+      </a>
+    ) : href && /^https?:\/\//i.test(href) ? (
       <a href={href} className="underline underline-offset-2" target="_blank" rel="noreferrer">
         {children}
       </a>
@@ -58,7 +63,16 @@ const md: Components = {
 
 const katex = { throwOnError: false, strict: false as const, errorColor: "#5C5F66" };
 
-export function LoiGiaSu({ text, className }: { text: string; className?: string }) {
+export function LoiGiaSu({
+  text,
+  trichDan,
+  className,
+}: {
+  text: string;
+  trichDan?: TrichDanHien[];
+  className?: string;
+}) {
+  const mdText = ganNeoTrongLoi(chuanHoaLatexGiaSu(text), trichDan || []);
   return (
     <div
       data-testid="tutor-md"
@@ -75,7 +89,7 @@ export function LoiGiaSu({ text, className }: { text: string; className?: string
         disallowedElements={["img", "iframe", "script"]}
         components={md}
       >
-        {chuanHoaLatexGiaSu(text)}
+        {mdText}
       </Markdown>
     </div>
   );

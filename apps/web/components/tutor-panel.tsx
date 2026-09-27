@@ -144,8 +144,10 @@ export function TutorPanel({
   }, [ask]);
 
   useEffect(() => {
-    if (!ganDay.current) return;
-    log.current?.scrollTo({ top: log.current.scrollHeight });
+    if (!ganDay.current || !log.current) return;
+    const moi = log.current.querySelector("[data-testid=tutor-thinking], [data-testid=tutor-md]:last-of-type");
+    if (moi instanceof HTMLElement) moi.scrollIntoView({ block: "start", inline: "nearest" });
+    else log.current.scrollTo({ top: log.current.scrollHeight });
   }, [chat, thinking, buocSse]);
 
   useEffect(() => {
@@ -349,7 +351,7 @@ export function TutorPanel({
             )}
           >
             {m.role === "gia_su" && !m.error ? (
-              <LoiGiaSu text={m.text} />
+              <LoiGiaSu text={m.text} trichDan={m.trichDan} />
             ) : (
               <p className="whitespace-pre-wrap leading-relaxed">{m.text}</p>
             )}

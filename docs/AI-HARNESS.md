@@ -67,11 +67,18 @@ Giáo viên vào `/gv/ket-noi-ai` (cũng từ tổng quan). Hai bước cho từ
 
 «Sign in with ChatGPT» chính thức (help.openai.com, 2026) chỉ là định danh cho đối tác có `client_id`. Không cấp quyền gọi mô hình. Codex CLI «sign in with ChatGPT» dùng endpoint nội bộ — không sao chép.
 
-## Kho kiến thức
+## Kho kiến thức — đọc và trích dẫn
 
-`lib/kien-thuc.ts` + `lib/kho-lop.ts`: truy hồi theo cụm từ mỗi lượt (câu hỏi + bước), khớp không dấu. Nhét `[n] «tên»: đoạn` vào prompt. Mặt An: **Đã đọc** + đoạn + neo `#ct-` / `#tl-`. Lưu `tutor_messages.citation` để còn sau tải lại.
+`lib/kien-thuc.ts` + `lib/kho-lop.ts`. Mỗi lượt: truy hồi cụm từ (câu hỏi + bước, không dấu) → đánh số `[n]` **cùng một tập** cho prompt, lời, chip. Tối đa 2 công thức + 1 tài liệu. Lượt sau cộng điểm mục vừa mở (`nhoId`). Mặt An: `[n]` trong lời (nếu Z.AI viết) + **Đã đọc** chip + một đoạn «…» + neo `#ct-` / `#tl-`. Lưu `tutor_messages.citation`. Xin đáp án / lỗi nhà: không gắn nguồn.
 
-Không làm: pgvector (ADR 008), bộ nhớ ngoài, tóm tắt hội thoại, chỉ hiện mục model nhắc (dễ sót). Trích dẫn = tập đã mở, An kiểm được.
+| Cách | Việc | Quyết định |
+| --- | --- | --- |
+| pgvector / embedding | RAG vector | Không — ADR 008 |
+| Mem0 / Zep | bộ nhớ hội thoại ngoài | Không — không phải sản phẩm chat |
+| Tóm tắt 4 tin | nhớ chủ đề | Không — không chỉ được đoạn lớp |
+| Chỉ hiện mục model nhắc tên | dễ sót khi FlashX quên «» | Không làm một mình |
+| Đổ hết tập truy hồi | 5–6 đoạn che lời | Không |
+| **Cùng `[n]` + lọc lời + chip gọn + nhớ id lượt trước** | An thấy đúng đoạn đã mở, bấm về kho | **Chọn** |
 
 ```bash
 pnpm --filter web test:unit

@@ -6,6 +6,8 @@ import {
   docTrichDanLuu,
   dongKhoChoPrompt,
   duongKhoTrichDan,
+  ganNeoTrongLoi,
+  locTrichDanTheoLoi,
   nhanTrichDan,
   trichDoan,
   vanBanKhop,
@@ -59,7 +61,11 @@ test("kho bỏ tài liệu chưa rõ quyền và lấy công thức đơn điệ
   assert.equal(dongKhoChoPrompt(kho).includes("lời giải"), false);
   const dan = nhanTrichDan(kho);
   assert.equal(dan[0]?.id, "c1");
+  assert.equal(dan[0]?.so, 1);
   assert.match(dan[0]?.trich || "", /cực đại/);
+  assert.equal(dan.some((x) => x.loai === "tai_lieu" && x.id === "a"), true);
+  assert.match(dongKhoChoPrompt(kho), /Tài liệu «Ghi chú»/);
+  assert.equal((dongKhoChoPrompt(kho).match(/^\[/gm) || []).length, dan.length);
 });
 
 test("câu hỏi nâng công thức khớp, neo kho đúng loại", () => {
@@ -77,6 +83,72 @@ test("câu hỏi nâng công thức khớp, neo kho đúng loại", () => {
   assert.equal(duongKhoTrichDan({ loai: "tai_lieu", id: "a" }), "/hs/kho?muc=lieu#tl-a");
   assert.deepEqual(docTrichDanLuu([{ loai: "cong_thuc", id: "luy", ten: "Đạo hàm lũy thừa", trich: "x mũ n" }])[0]?.ten, "Đạo hàm lũy thừa");
   assert.deepEqual(docTrichDanLuu("hỏng"), []);
+});
+
+test("cùng số [n] trên prompt và mặt An; lọc theo lời; neo không đụng $$", () => {
+  const kho = chonKho({
+    maBuoc: "B.DH.DAOHAM",
+    cauHoi: "Nhắc nguyên lý đạo hàm lũy thừa trong ghi chú lớp",
+    taiLieu: [
+      {
+        id: "ghi",
+        title: "Ghi chú: đơn điệu",
+        licenseStatus: "tu_soan",
+        version: 1,
+        text: "Lập bảng xét dấu của đạo hàm. Đồng biến khi đạo hàm không âm. Đạo hàm lũy thừa hạ bậc.",
+      },
+    ],
+    congThuc: [
+      { id: "luy", title: "Đạo hàm lũy thừa", latex: "(x^n)'", noiDung: "Đạo hàm của x mũ n là n nhân x mũ n trừ 1." },
+      { id: "tong", title: "Đạo hàm tổng", latex: "(u+v)'", noiDung: "Đạo hàm của tổng bằng tổng các đạo hàm." },
+      { id: "thuong", title: "Đạo hàm thương", latex: "(u/v)'", noiDung: "Thương: tử u'v trừ uv', mẫu v bình." },
+    ],
+  });
+  const dan = nhanTrichDan(kho);
+  assert.ok(dan.length >= 2 && dan.length <= 3);
+  assert.equal(dan.filter((x) => x.loai === "cong_thuc").length <= 2, true);
+  assert.equal(dan.filter((x) => x.loai === "tai_lieu").length, 1);
+  assert.equal(dongKhoChoPrompt(kho), dan.map((x) => `[${x.so}] ${x.loai === "tai_lieu" ? "Tài liệu" : "Công thức"} «${x.ten}»: ${x.trich}`).join("\n"));
+
+  const dung = locTrichDanTheoLoi("Em nhớ «Đạo hàm lũy thừa» [1].", dan);
+  assert.equal(dung.length, 1);
+  assert.equal(dung[0]?.so, 1);
+  assert.equal(dung[0]?.dung, true);
+
+  const mo = locTrichDanTheoLoi("Chỉ hỏi quy trình, chưa mở số.", dan);
+  assert.equal(mo.length, dan.length);
+  assert.equal(mo.every((x) => x.dung === false), true);
+
+  const neo = ganNeoTrongLoi("Nhớ [1] rồi $$[1]$$.", dan);
+  assert.match(neo, /\[1\]\(\/hs\/kho#ct-/);
+  assert.match(neo, /\$\$\[1\]\$\$/);
+  assert.equal(ganNeoTrongLoi("[1](/hs/kho#ct-x)", dan).includes("[1](/hs/kho#ct-x)"), true);
+});
+
+test("lượt trước nhớ tài liệu kém khớp hơn ít từ khóa", () => {
+  const kho = chonKho({
+    maBuoc: "B.DH.TXD",
+    cauHoi: "Tập xác định đa thức",
+    nhoId: ["on"],
+    taiLieu: [
+      {
+        id: "on",
+        title: "Ôn thế nào",
+        licenseStatus: "tu_soan",
+        version: 1,
+        text: "Mỗi buổi tự viết lại quy tắc rồi làm một bài.",
+      },
+      {
+        id: "ghi",
+        title: "Ghi chú",
+        licenseStatus: "tu_soan",
+        version: 1,
+        text: "Tập xác định của đa thức là R. Đồng biến khi đạo hàm không âm.",
+      },
+    ],
+    congThuc: [],
+  });
+  assert.equal(kho.taiLieu.some((d) => d.id === "on"), true);
 });
 
 test("khung năm bước không đọc tài liệu chưa rõ quyền", () => {

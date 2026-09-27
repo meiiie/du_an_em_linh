@@ -15,7 +15,7 @@ import {
   tutorSessions,
 } from "./db/schema";
 import { goiKhoChoBuoc } from "./kho-lop";
-import { dongKhoChoPrompt, nhanTrichDan } from "./kien-thuc";
+import { docTrichDanLuu, dongKhoChoPrompt, locTrichDanTheoLoi, nhanTrichDan, type TrichDanHien } from "./kien-thuc";
 import { assertMayLearn, loadConfig } from "./learning";
 import { BUOC } from "./levels";
 import { callLLM } from "./llm";
@@ -32,7 +32,7 @@ export type HoiGiaSuKet =
       offline: boolean;
       provider: string;
       error: string | null;
-      trich_dan: { loai: string; id: string; ten: string; trich: string }[];
+      trich_dan: TrichDanHien[];
     }
   | {
       ok: false;
@@ -167,10 +167,19 @@ export async function chayHoiGiaSu(opts: {
   let nha: string = "offline";
   let llmError: string | null = null;
   let persistCap = true;
+  const prior = await db
+    .select()
+    .from(tutorMessages)
+    .where(eq(tutorMessages.sessionId, sess.id))
+    .orderBy(desc(tutorMessages.createdAt))
+    .limit(4);
+  const nhoId = [
+    ...new Set(prior.flatMap((m) => docTrichDanLuu(m.citation).map((x) => x.id).filter(Boolean))),
+  ];
   await bao("kho");
   if (daDung(signal)) return dung();
-  const kho = await goiKhoChoBuoc(buoc, text);
-  const trichDan = nhanTrichDan(kho);
+  const kho = xin ? { taiLieu: [], congThuc: [] } : await goiKhoChoBuoc(buoc, text, nhoId);
+  const mo = nhanTrichDan(kho);
   if (xin) {
     draft = chinhSachXinDapAn(answerRequests, goiY, !grade);
   } else {
@@ -188,17 +197,11 @@ export async function chayHoiGiaSu(opts: {
         maBuoc: buoc,
         xinSai: hoiSai,
       }),
-      kho.congThuc[0] ? `Em mở «${kho.congThuc[0].ten}» — quy trình, không chép kết quả.` : "",
+      mo[0] ? `Em mở «${mo[0].ten}» — quy trình, không chép kết quả.` : "",
       cauHoiXocratis(buoc),
     ]
       .filter(Boolean)
       .join("\n\n");
-    const prior = await db
-      .select()
-      .from(tutorMessages)
-      .where(eq(tutorMessages.sessionId, sess.id))
-      .orderBy(desc(tutorMessages.createdAt))
-      .limit(4);
     const history = prior
       .reverse()
       .map((m) => ({
@@ -221,7 +224,7 @@ export async function chayHoiGiaSu(opts: {
         ...history,
         {
           role: "user",
-          content: `Đề (không kèm lời giải): ${prob[0].statementText}\nBước đang làm: ${BUOC.find((b) => b.ma === buoc)?.ten || "bước này"}\nTình trạng: ${grade ? "đã nộp" : "chưa nộp"}\nGợi ý được mở: ${goiY || "(chưa)"}\nCông thức và tài liệu lớp (đã duyệt, không phải lời giải — nếu dùng thì nhắc đúng tên):\n${dongKhoChoPrompt(kho)}\nHọc sinh: ${text}\nTrình bày: đoạn ngắn, danh sách, $...$ / $$...$$. Không mã bước, không chữ Phiếu, không nhắc lại đề.`,
+          content: `Đề (không kèm lời giải): ${prob[0].statementText}\nBước đang làm: ${BUOC.find((b) => b.ma === buoc)?.ten || "bước này"}\nTình trạng: ${grade ? "đã nộp" : "chưa nộp"}\nGợi ý được mở: ${goiY || "(chưa)"}\nCông thức và tài liệu lớp (đã duyệt, không phải lời giải). Mỗi mục có số [n]. Nếu dùng thì viết [n] ngay sau ý đó và nhắc tên trong «»:\n${dongKhoChoPrompt(kho)}\nHọc sinh: ${text}\nTrình bày: đoạn ngắn, danh sách, $...$ / $$...$$. Không mã bước, không chữ Phiếu, không nhắc lại đề.`,
         },
       ],
     });
@@ -258,6 +261,7 @@ export async function chayHoiGiaSu(opts: {
     draft = "Gia sư đang bận. Em cứ sửa bước được tô và nộp lại.";
   }
   if (daDung(signal)) return dung();
+  const trichDan = xin || llmError || blocked ? [] : locTrichDanTheoLoi(draft, mo);
   await db.insert(tutorMessages).values({
     id: crypto.randomUUID(),
     sessionId: sess.id,

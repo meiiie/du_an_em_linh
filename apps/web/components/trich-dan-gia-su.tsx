@@ -2,7 +2,7 @@ import Link from "next/link";
 import { tenTaiLieuNgan, thanTrich } from "@/lib/de-hoc-sinh";
 import { duongKhoTrichDan, type TrichDanHien } from "@/lib/kien-thuc";
 
-/** Đoạn Z.AI đã mở — An kiểm được, bấm về đúng mục kho. */
+/** Chip tên + một đoạn — An kiểm được, bấm về đúng mục. */
 export function TrichDanGiaSu({
   items,
   testId,
@@ -11,19 +11,22 @@ export function TrichDanGiaSu({
   testId?: string;
 }) {
   if (!items.length) return null;
+  const trich = items.find((t) => t.dung && t.trich) || items.find((t) => t.trich);
   return (
-    <div className="mt-2 space-y-2 text-xs" data-testid={testId}>
+    <div className="mt-2 text-xs" data-testid={testId}>
       <p className="text-muted">Đã đọc</p>
-      <ul className="space-y-2">
+      <ul className="mt-1 flex flex-wrap gap-x-3 gap-y-1">
         {items.map((t) => (
           <li key={`${t.loai}-${t.id || t.ten}`}>
             <Link href={duongKhoTrichDan(t)} className="underline underline-offset-2">
+              {t.so != null ? `[${t.so}] ` : null}
+              {t.loai === "tai_lieu" ? "Tài liệu · " : null}
               {tenTaiLieuNgan(t.ten)}
             </Link>
-            {t.trich ? <p className="mt-1 leading-relaxed text-muted">«{thanTrich(t.trich)}»</p> : null}
           </li>
         ))}
       </ul>
+      {trich?.trich ? <p className="mt-1 leading-relaxed text-muted">«{thanTrich(trich.trich)}»</p> : null}
     </div>
   );
 }
