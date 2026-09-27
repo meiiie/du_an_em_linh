@@ -20,10 +20,12 @@ export default async function Page() {
       </header>
 
       <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(18rem,24rem)] lg:items-start">
-        <section className="min-w-0 lg:border-r lg:border-line lg:pr-8" data-testid="kho-cong-thuc">
-          <h2 className="text-base font-semibold">Công thức</h2>
-          {kho.congThuc.length === 0 ? <p className="mt-3 text-sm text-muted">Chưa có công thức.</p> : null}
-          <ul className="mt-1 divide-y divide-line border-y border-line">
+        <section className="min-w-0 lg:border-r lg:border-line lg:pr-8" data-testid="kho-cong-thuc" aria-labelledby="kho-cong-thuc-tieu">
+          <h2 id="kho-cong-thuc-tieu" className="sr-only">
+            Công thức
+          </h2>
+          {kho.congThuc.length === 0 ? <p className="text-sm text-muted">Chưa có công thức.</p> : null}
+          <ul className="divide-y divide-line border-y border-line">
             {kho.congThuc.map((c) => (
               <HangCongThuc key={c.id} title={c.title} latex={c.latex} noiDung={c.noiDung} />
             ))}

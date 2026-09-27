@@ -51,12 +51,15 @@ export function thanDe(statementText: string) {
   return gon || "Xét tính đơn điệu của hàm số";
 }
 
-/** Một câu trích tài liệu — không để nguyên khối chú thích nghiên cứu. */
+/** Một câu trích tài liệu — bỏ câu khung «tự soạn» và ngoặc năm nghiên cứu. */
 export function thanTrich(text: string) {
   const gon = (text || "").replace(/\s+/g, " ").trim();
   if (!gon) return "";
   const sach = gon.replace(/\s*\([^)]*\d{4}[^)]*\)/g, "").replace(/\s+/g, " ").trim() || gon;
-  const cau = sach.match(/^.+?[.!?…](?:\s|$)/)?.[0]?.trim() || sach;
+  const cau =
+    sach.split(/(?<=[.!?…])\s+/).find((c) => !/tự soạn|không chép sách/i.test(c))?.trim() ||
+    sach.match(/^.+?[.!?…](?:\s|$)/)?.[0]?.trim() ||
+    sach;
   if (cau.length <= 160) return cau;
   return `${cau.slice(0, 157).replace(/\s+\S*$/, "")}…`;
 }

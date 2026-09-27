@@ -42,6 +42,10 @@ test("trích tài liệu một câu, bỏ ngoặc năm nghiên cứu", () => {
     thanTrich("Mỗi buổi tự viết lại quy tắc. Không mở đáp án trước."),
     "Mỗi buổi tự viết lại quy tắc.",
   );
+  assert.match(
+    thanTrich("Ghi chú tự soạn cho lớp 12A1 thử, không chép sách. Với hàm số xác định trên một khoảng thì xét dấu y′."),
+    /xét dấu y′/,
+  );
   assert.doesNotMatch(
     thanTrich("Gia sư chỉ gợi ý quy trình, không đưa kết quả (VanLehn 2006; Aleven). Khi kẹt thì gửi thầy cô."),
     /VanLehn|Aleven|2006/,
