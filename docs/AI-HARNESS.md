@@ -57,6 +57,7 @@ Tham chiếu: [meiiie/lms-ibm-bob-hackathon#3](https://github.com/meiiie/lms-ibm
 | `apps/web/app/api/hs/gia-su/route.ts` | SSE: `trang_thai` rồi `xong` |
 | `apps/web/lib/llm.ts` | Xóa PII + ghi `llm_calls` |
 | `apps/web/components/tutor-panel.tsx` | Cột phải, composer đáy |
+| `apps/web/components/loi-gia-su.tsx` | Markdown + KaTeX flush trái — `\[ \]`, align, hàng rào latex |
 | `apps/web/app/gv/cai-dat/page.tsx` | Chọn nhà, khóa lớp, thử kết nối |
 
 ## Kết nối ChatGPT (người không chuyên)

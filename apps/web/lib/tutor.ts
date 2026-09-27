@@ -126,7 +126,8 @@ export const HE_THONG_GIA_SU =
   "Không bịa công thức ngoài danh sách đã cho. Nếu dùng, nhắc đúng tên công thức hoặc tài liệu. " +
   "Hỏi Socratic đúng một câu về quy trình, không hỏi đáp án (KITE 2026: gợi ý / chỗ sai / quy trình). " +
   "Xin chỗ sai: chỉ tô bước đang sai, không sửa hộ số. Xin gợi ý: nguyên lý, không bottom-out (Aleven). " +
-  "Tối đa 4 câu. Nếu học sinh xin đáp án thì từ chối và giữ gợi ý quy trình.";
+  "Tối đa 4 câu. Nếu học sinh xin đáp án thì từ chối và giữ gợi ý quy trình. " +
+  "Trình bày như phiếu: mỗi ý một đoạn hoặc một dòng danh sách. Công thức $...$ cùng dòng, $$...$$ một mình một dòng. Không # tiêu đề, không hàng rào mã. Câu hỏi để đoạn cuối.";
 
 export function moTaCheDo(arg: boolean | { provider?: string; offline: boolean; error?: string | null }) {
   const offline = typeof arg === "boolean" ? arg : arg.offline;

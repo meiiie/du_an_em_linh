@@ -6,6 +6,7 @@ import { guiThayCo, hoiGiaSu } from "@/lib/actions/hs";
 import { luaChonNhaHocSinh, parseProvider, type AiProviderId, type AiPublicConfig } from "@/lib/ai-catalog";
 import { chuTrangThaiGiaSu, gomSse, type GiaSuBuocSse } from "@/lib/sse";
 import { moTaCheDo } from "@/lib/tutor";
+import { LoiGiaSu } from "./loi-gia-su";
 import { Button, buttonClasses } from "./ui/button";
 import { fieldControl } from "./ui/field";
 import { cn } from "@/lib/cn";
@@ -274,16 +275,24 @@ export function TutorPanel({
         </Button>
       </div>
 
-      <div ref={log} data-testid="tutor-log" className="mt-4 min-h-40 flex-1 space-y-2 overflow-y-auto overscroll-contain md:min-h-0">
+      <div ref={log} data-testid="tutor-log" className="mt-4 min-h-40 flex-1 space-y-4 overflow-y-auto overscroll-contain md:min-h-0">
         {chat.map((m, i) => (
           <div
             key={i}
             className={cn(
-              "max-w-[92%] px-4 py-3 text-sm",
-              m.role === "hs" ? "ml-auto bg-ink text-chalk" : m.error ? "bg-amber-50 text-amber-950" : "bg-wash",
+              "min-w-0 text-sm",
+              m.role === "hs"
+                ? "ml-auto max-w-[85%] bg-ink px-4 py-3 text-chalk"
+                : m.error
+                  ? "border-l-2 border-warn bg-amber-50 px-4 py-3 text-amber-950"
+                  : "",
             )}
           >
-            <p>{m.text}</p>
+            {m.role === "gia_su" && !m.error ? (
+              <LoiGiaSu text={m.text} />
+            ) : (
+              <p className="whitespace-pre-wrap leading-relaxed">{m.text}</p>
+            )}
             {m.trichDan && m.trichDan.length ? (
               <p className="mt-2 text-xs text-muted" data-testid={i === chat.length - 1 ? "tutor-trich-dan" : undefined}>
                 Đã đọc: {m.trichDan.map((t) => t.ten).join(" · ")}
@@ -292,7 +301,7 @@ export function TutorPanel({
           </div>
         ))}
         {thinking ? (
-          <p className="bg-wash px-4 py-3 text-sm text-muted" data-testid="tutor-thinking" aria-live="polite">
+          <p className="text-sm text-muted" data-testid="tutor-thinking" aria-live="polite">
             {chuTrangThaiGiaSu(buocSse)}
           </p>
         ) : null}
