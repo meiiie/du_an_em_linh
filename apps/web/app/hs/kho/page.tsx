@@ -49,7 +49,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ m
         {kho.congThuc.length ? (
           <ul className="divide-y divide-line border-b border-line">
             {kho.congThuc.map((c) => (
-              <HangCongThuc key={c.id} title={c.title} latex={c.latex} />
+              <HangCongThuc key={c.id} id={c.id} title={c.title} latex={c.latex} />
             ))}
           </ul>
         ) : null}
@@ -63,7 +63,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ m
         {kho.taiLieu.length ? (
           <ul className="divide-y divide-line border-b border-line">
             {kho.taiLieu.map((d) => (
-              <li key={d.id} className="py-6">
+              <li id={`tl-${d.id}`} key={d.id} className="scroll-mt-6 py-6">
                 <p className="text-sm font-medium">{tenTaiLieuNgan(d.title)}</p>
                 <p className="mt-2 text-sm leading-relaxed text-muted">{thanTrich(d.trich)}</p>
               </li>

@@ -32,7 +32,7 @@ export type HoiGiaSuKet =
       offline: boolean;
       provider: string;
       error: string | null;
-      trich_dan: { loai: string; ten: string }[];
+      trich_dan: { loai: string; id: string; ten: string; trich: string }[];
     }
   | {
       ok: false;
@@ -273,6 +273,7 @@ export async function chayHoiGiaSu(opts: {
     content: draft,
     redactedContent: draft,
     blockedByFilter: blocked,
+    citation: trichDan.length ? trichDan : null,
   });
   await db
     .update(tutorSessions)

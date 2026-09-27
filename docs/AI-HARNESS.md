@@ -69,7 +69,9 @@ Giáo viên vào `/gv/ket-noi-ai` (cũng từ tổng quan). Hai bước cho từ
 
 ## Kho kiến thức
 
-`lib/kien-thuc.ts` + `lib/kho-lop.ts`: truy hồi theo cụm từ, cộng trọng số bước, khớp không dấu (cùng luật tầng 2/3). Nhét vào prompt; nhắc tên mục đã lấy (Kong IJCAI 2026 D2; KITE BEA 2026). Giáo viên xem trước trên `/gv/ket-noi-ai` và `/gv/tai-lieu`. Học sinh xem `/hs/kho`. Không lời giải.
+`lib/kien-thuc.ts` + `lib/kho-lop.ts`: truy hồi theo cụm từ mỗi lượt (câu hỏi + bước), khớp không dấu. Nhét `[n] «tên»: đoạn` vào prompt. Mặt An: **Đã đọc** + đoạn + neo `#ct-` / `#tl-`. Lưu `tutor_messages.citation` để còn sau tải lại.
+
+Không làm: pgvector (ADR 008), bộ nhớ ngoài, tóm tắt hội thoại, chỉ hiện mục model nhắc (dễ sót). Trích dẫn = tập đã mở, An kiểm được.
 
 ```bash
 pnpm --filter web test:unit

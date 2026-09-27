@@ -4,14 +4,16 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { guiThayCo } from "@/lib/actions/hs";
 import { luaChonNhaHocSinh, parseProvider, type AiProviderId, type AiPublicConfig } from "@/lib/ai-catalog";
+import type { TrichDanHien } from "@/lib/kien-thuc";
 import { chuTrangThaiGiaSu, docJsonSse, gomSse, type GiaSuBuocSse } from "@/lib/sse";
 import { moTaCheDo } from "@/lib/tutor";
 import { LoiGiaSu } from "./loi-gia-su";
+import { TrichDanGiaSu } from "./trich-dan-gia-su";
 import { Button, buttonClasses } from "./ui/button";
 import { fieldControl } from "./ui/field";
 import { cn } from "@/lib/cn";
 
-type Msg = { role: "hs" | "gia_su"; text: string; error?: boolean; trichDan?: { loai: string; ten: string }[] };
+type Msg = { role: "hs" | "gia_su"; text: string; error?: boolean; trichDan?: TrichDanHien[] };
 
 type KetHoi = {
   ok: boolean;
@@ -19,7 +21,7 @@ type KetHoi = {
   offline?: boolean;
   provider?: string;
   error?: string | null;
-  trich_dan?: { loai: string; ten: string }[];
+  trich_dan?: TrichDanHien[];
 };
 
 const LOI_CHAO: Msg = {
@@ -104,7 +106,7 @@ export function TutorPanel({
   onClose,
 }: {
   problemId: string;
-  initialChat: { role: "hs" | "gia_su"; text: string }[];
+  initialChat: { role: "hs" | "gia_su"; text: string; trichDan?: TrichDanHien[] }[];
   ai: AiPublicConfig;
   open: boolean;
   onClose: () => void;
@@ -352,20 +354,7 @@ export function TutorPanel({
               <p className="whitespace-pre-wrap leading-relaxed">{m.text}</p>
             )}
             {m.trichDan && m.trichDan.length ? (
-              <p className="mt-2 text-xs text-muted" data-testid={i === chat.length - 1 ? "tutor-trich-dan" : undefined}>
-                Đã đọc:{" "}
-                {m.trichDan.map((t, k) => (
-                  <span key={`${t.loai}-${t.ten}`}>
-                    {k ? " · " : null}
-                    <Link
-                      href={t.loai === "tai_lieu" ? "/hs/kho?muc=lieu" : "/hs/kho"}
-                      className="underline underline-offset-2"
-                    >
-                      {t.ten}
-                    </Link>
-                  </span>
-                ))}
-              </p>
+              <TrichDanGiaSu items={m.trichDan} testId={i === chat.length - 1 ? "tutor-trich-dan" : undefined} />
             ) : null}
           </div>
         ))}

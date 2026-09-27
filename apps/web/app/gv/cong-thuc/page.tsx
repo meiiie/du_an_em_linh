@@ -27,7 +27,7 @@ export default async function Page() {
       {rows.length ? (
           <ul className="divide-y divide-line border-y border-line">
           {rows.map((f) => (
-            <HangCongThuc key={f.id} title={f.title} latex={f.latex} />
+            <HangCongThuc key={f.id} id={f.id} title={f.title} latex={f.latex} />
           ))}
         </ul>
       ) : null}

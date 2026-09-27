@@ -21,7 +21,7 @@ import { mathJob, type GradeResult } from "../math";
 import type { AiPublicConfig } from "../ai-catalog";
 import { caiDatGiaSuCongKhaiCho, chayHoiGiaSu, sessionFor } from "../gia-su-luot";
 import { taiNguyenKhoLop } from "../kho-lop";
-import { xemKhoTheoKhung } from "../kien-thuc";
+import { docTrichDanLuu, xemKhoTheoKhung } from "../kien-thuc";
 
 type Line = { dong: number; latex: string; loai?: string };
 type Cell = { hang: string; k: number; gia_tri: string };
@@ -187,7 +187,11 @@ export async function lichSuGiaSu(problemId: string) {
     .where(eq(tutorMessages.sessionId, sess.id))
     .orderBy(asc(tutorMessages.createdAt));
   return {
-    messages: rows.map((r) => ({ role: r.role as "hs" | "gia_su", text: r.content })),
+    messages: rows.map((r) => ({
+      role: r.role as "hs" | "gia_su",
+      text: r.content,
+      trichDan: r.role === "gia_su" ? docTrichDanLuu(r.citation) : undefined,
+    })),
     hintCap: sess.hintCap,
   };
 }

@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { nopBuoc, type StepPayload } from "@/lib/actions/hs";
 import type { AiPublicConfig } from "@/lib/ai-catalog";
+import type { TrichDanHien } from "@/lib/kien-thuc";
 import { thanDe } from "@/lib/de-hoc-sinh";
 import { BUOC } from "@/lib/levels";
 import { Button, buttonClasses } from "./ui/button";
@@ -48,7 +49,7 @@ export function SolveClient({
   latex: string;
   moLoiGiai?: boolean;
   loiGiai?: string | null;
-  initialChat?: { role: "hs" | "gia_su"; text: string }[];
+  initialChat?: { role: "hs" | "gia_su"; text: string; trichDan?: TrichDanHien[] }[];
   ai?: AiPublicConfig;
 }) {
   const [step, setStep] = useState(0);

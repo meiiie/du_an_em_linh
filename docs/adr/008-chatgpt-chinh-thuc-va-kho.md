@@ -14,7 +14,8 @@ Kong et al., IJCAI 2026: LLM-ITS cần truy hồi kho (D2) trước khi sinh, đ
 
 - Màn «Kết nối ChatGPT»: hai bước (mở ChatGPT/trang khóa → dán một lần). Học sinh không thấy khóa. Trạng thái đã kết nối ẩn form.
 - OAuth PKCE chỉ chạy khi có `OPENAI_OAUTH_CLIENT_ID` do OpenAI cấp. Lưu email/sub, không lấy client_id nội bộ / Codex.
-- Gia sư đọc kho lớp (tài liệu quyền rõ + công thức khóa) bằng cụm từ tầng 2/3, ưu tiên từ khóa bước (Kong D2; KITE 2026: nhét đoạn đã truy hồi). Không đọc `solutions` / `protected_facts`. Không pgvector.
+- Gia sư đọc kho lớp (tài liệu quyền rõ + công thức khóa) bằng cụm từ tầng 2/3, ưu tiên từ khóa bước và câu hỏi (Kong D2; KITE 2026: nhét đoạn đã truy hồi). Không đọc `solutions` / `protected_facts`. Không pgvector.
+- Trích dẫn trên mặt học sinh: tên + đoạn + neo `/hs/kho#ct-` / `#tl-`. Lưu JSON trên `tutor_messages.citation`.
 - Giáo viên và học sinh xem cùng bản đồ «gia sư đọc theo 5 bước».
 
 ## Hệ quả

@@ -1,6 +1,16 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { chamDiemVanBan, chonKho, dongKhoChoPrompt, trichDoan, vanBanKhop, xemKhoTheoKhung } from "./kien-thuc";
+import {
+  chamDiemVanBan,
+  chonKho,
+  docTrichDanLuu,
+  dongKhoChoPrompt,
+  duongKhoTrichDan,
+  nhanTrichDan,
+  trichDoan,
+  vanBanKhop,
+  xemKhoTheoKhung,
+} from "./kien-thuc";
 
 test("trích đoạn quanh từ khóa", () => {
   const t = "aaa đạo hàm của tổng bbb";
@@ -45,7 +55,28 @@ test("kho bỏ tài liệu chưa rõ quyền và lấy công thức đơn điệ
   assert.equal(kho.taiLieu.some((d) => d.id === "a"), true);
   assert.equal(kho.congThuc.some((c) => c.ten === "Cực trị"), true);
   assert.match(dongKhoChoPrompt(kho), /Cực trị/);
+  assert.match(dongKhoChoPrompt(kho), /\[1\]/);
   assert.equal(dongKhoChoPrompt(kho).includes("lời giải"), false);
+  const dan = nhanTrichDan(kho);
+  assert.equal(dan[0]?.id, "c1");
+  assert.match(dan[0]?.trich || "", /cực đại/);
+});
+
+test("câu hỏi nâng công thức khớp, neo kho đúng loại", () => {
+  const kho = chonKho({
+    maBuoc: "B.DH.DAOHAM",
+    cauHoi: "Nhắc nguyên lý đạo hàm lũy thừa",
+    taiLieu: [],
+    congThuc: [
+      { id: "luy", title: "Đạo hàm lũy thừa", latex: "(x^n)'", noiDung: "Đạo hàm của x mũ n là n nhân x mũ n trừ 1." },
+      { id: "tong", title: "Đạo hàm tổng", latex: "(u+v)'", noiDung: "Đạo hàm của tổng bằng tổng các đạo hàm." },
+    ],
+  });
+  assert.equal(kho.congThuc[0]?.id, "luy");
+  assert.equal(duongKhoTrichDan({ loai: "cong_thuc", id: "luy" }), "/hs/kho#ct-luy");
+  assert.equal(duongKhoTrichDan({ loai: "tai_lieu", id: "a" }), "/hs/kho?muc=lieu#tl-a");
+  assert.deepEqual(docTrichDanLuu([{ loai: "cong_thuc", id: "luy", ten: "Đạo hàm lũy thừa", trich: "x mũ n" }])[0]?.ten, "Đạo hàm lũy thừa");
+  assert.deepEqual(docTrichDanLuu("hỏng"), []);
 });
 
 test("khung năm bước không đọc tài liệu chưa rõ quyền", () => {
