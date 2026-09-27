@@ -11,7 +11,7 @@ Harness (Anthropic 2026): tệp này là mục lục để agent biết chỗ m�
 | `.claude/settings.json` | `permissions.deny` bí mật |
 | `.claude/rules/` | Luật theo đường dẫn |
 | `.cursor/skills/` | Skill on-demand (FE, a11y, FastAPI) |
-| `docs/DESIGN.md` | Token, lưới, giải phẫu nút |
+| `docs/DESIGN.md` | Token, lưới, nút, tâm quang học (46% / 3:2) |
 | `docs/doi-chieu-thiet-ke.md` | Khớp / cố ý chưa làm |
 | `docs/adr/` | Quyết định đã khóa |
 | `docs/AI-HARNESS.md` | Nhà AI, loopback, không fallback |
@@ -41,10 +41,13 @@ Next.js 15. Server action nói chuyện với Postgres và `MATH_SERVICE_URL`.
 
 | Đường | Việc |
 | --- | --- |
-| `app/page.tsx` | Trang chủ công khai (SEO, không DB) |
+| `app/page.tsx` | Trang chủ công khai (SEO, JSON-LD, không DB) |
+| `app/not-found.tsx` | 404 noindex |
+| `public/favicon.ico` + `icon.svg` + PNG | Logo tab ổn định (không đặt ICO trong `app/` — xung đột Next) |
+| `public/llms.txt` / `public/.well-known/security.txt` | Máy AI / security.txt |
 | `lib/site.ts` | URL / tên / mô tả chuẩn hóa |
 | `app/sitemap.ts` / `robots.ts` / `manifest.ts` | SEO máy tìm kiếm |
-| `app/dang-nhap/page.tsx` | Vào lớp thử (noindex) |
+| `app/dang-nhap/page.tsx` + `components/login-form.tsx` | Đăng nhập 2 bước (noindex), tham chiếu Neko Đoàn |
 | `app/api/suc-khoe/route.ts` | GET JSON giữ thức Render — không đụng DB |
 | `app/hs/` | Lộ trình, ngân bài, lịch, phiếu 5 bước |
 | `app/gv/` | Tổng quan (trạng thái ChatGPT + kho), duyệt, ngân hàng, sinh bài, tài liệu, công thức, kết nối ChatGPT, tiến độ, cài đặt |

@@ -1,9 +1,7 @@
 import type { Metadata } from "next";
 import { eq } from "drizzle-orm";
 import { redirect } from "next/navigation";
-import { BrandMark } from "@/components/brand-mark";
-import { Button } from "@/components/ui/button";
-import { Field, fieldControl } from "@/components/ui/field";
+import { LoginForm } from "@/components/login-form";
 import { createSession, verifyPassword } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { userRoles, users } from "@/lib/db/schema";
@@ -26,80 +24,25 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-const STEPS = ["Tập xác định", "Đạo hàm", "Nghiệm y′", "Xét dấu", "Kết luận"];
-
 export default async function LoginPage({ searchParams }: { searchParams: Promise<{ loi?: string }> }) {
   const sp = await searchParams;
   return (
-    <main className="min-h-screen bg-canvas">
+    <main className="min-h-dvh bg-canvas pb-[env(safe-area-inset-bottom)]">
       <a href="#form-dang-nhap" className="skip-link">
         Bỏ qua đến form đăng nhập
       </a>
-      <div className="mx-auto grid min-h-screen max-w-5xl lg:grid-cols-2">
-        <section className="hidden flex-col justify-between border-r border-line px-10 py-12 lg:flex">
-          <div className="flex items-center gap-2">
-            <BrandMark />
-            <p className="text-sm text-muted">Nguyên mẫu NCKH</p>
-          </div>
-          <div>
-            <h1 className="text-pretty text-4xl font-semibold leading-tight">Học toán với AI</h1>
-            <p className="mt-3 max-w-sm text-sm leading-relaxed text-muted">
-              Phiếu 5 bước cho đơn điệu và cực trị. Gia sư sửa bài, không đưa đáp án. Mọi bài qua cổng ba tầng.
-            </p>
-            <ol className="mt-8 space-y-0">
-              {STEPS.map((ten, i) => (
-                <li key={ten} className="flex min-h-11 items-center gap-3 border-b border-line py-3 text-sm last:border-0">
-                  <span className="tabular w-6 font-mono text-muted">{i + 1}</span>
-                  {ten}
-                </li>
-              ))}
-            </ol>
-          </div>
-          <p className="text-sm text-muted">Tài khoản thử. Không có học sinh thật.</p>
-        </section>
-        <section className="flex flex-col justify-center px-5 py-12 sm:px-10">
-          <div className="mb-8 flex items-center gap-2 lg:hidden">
-            <BrandMark />
-            <div>
-              <p className="text-sm text-muted">Nguyên mẫu NCKH</p>
-              <h1 className="text-pretty text-2xl font-semibold">Học toán với AI</h1>
-            </div>
-          </div>
-          <p className="text-sm text-muted lg:hidden">Toán 12 — đơn điệu và cực trị. Tài khoản thử.</p>
-          <h2 className="hidden text-pretty text-2xl font-semibold lg:block">Vào lớp thử</h2>
-          <form id="form-dang-nhap" action={dangNhap} className="mt-8 max-w-md space-y-4">
-            <Field label="Email">
-              <input
-                name="email"
-                type="email"
-                autoComplete="username"
-                spellCheck={false}
-                required
-                data-testid="email"
-                className={fieldControl}
-                placeholder="hs.an@demo.local"
-              />
-            </Field>
-            <Field label="Mật khẩu">
-              <input
-                name="password"
-                type="password"
-                autoComplete="current-password"
-                required
-                data-testid="password"
-                className={fieldControl}
-              />
-            </Field>
-            {sp.loi ? <p className="text-sm text-mark">Email hoặc mật khẩu chưa đúng. Thử lại với tài khoản bên dưới.</p> : null}
-            <Button className="w-full" type="submit">
-              Vào học
-            </Button>
-          </form>
-          <ul className="mt-8 max-w-md space-y-2 text-xs text-muted">
-            <li>Giáo viên: gv@demo.local / giaovien123</li>
-            <li>Học sinh: hs.an@demo.local, hs.binh@demo.local, hs.chi@demo.local / hocsinh123</li>
-          </ul>
-        </section>
+      <div className="mx-auto flex min-h-dvh max-w-5xl flex-col px-6 py-6 sm:px-8 sm:py-8">
+        {/* Tâm quang học — docs/DESIGN.md */}
+        <div className="flex min-h-0 flex-1 flex-col">
+          <div className="min-h-0 flex-[2_1_0]" aria-hidden />
+          <LoginForm loi={sp.loi === "1"} dangNhap={dangNhap} />
+          <div className="min-h-0 flex-[3_1_0]" aria-hidden />
+        </div>
+        <footer className="flex flex-wrap items-center justify-center gap-2 text-center text-xs leading-[18px] text-muted">
+          <span>Toán 12 · đơn điệu và cực trị</span>
+          <span aria-hidden>·</span>
+          <span>Tài khoản thử — không có học sinh thật</span>
+        </footer>
       </div>
     </main>
   );

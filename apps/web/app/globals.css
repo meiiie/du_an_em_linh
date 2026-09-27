@@ -66,8 +66,20 @@ body {
   transform: translateY(0);
 }
 
-#noi-dung {
+#noi-dung,
+#form-dang-nhap {
   scroll-margin-top: 72px;
+}
+
+@keyframes login-vao {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
 }
 
 math-field {

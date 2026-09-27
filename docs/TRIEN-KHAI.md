@@ -18,6 +18,8 @@ CD: `.github/workflows/cd.yml` chạy sau khi CI **Kiểm thử** xanh trên `ma
 
 `/` là trang chủ tĩnh (SEO), không đọc database. `/dang-nhap` mới vào lớp thử.
 
+Logo tab: `/favicon.ico` (ICO 16/32/48) + `/icon-48.png` (Google Search, ≥48px, không dùng SVG cho SERP) + `/icon.svg` (tab trình duyệt). PWA: `/icon-192.png`, `/icon-512.png`, `/icon-maskable.png`. iOS: `/apple-touch-icon.png`.
+
 ## Postgres 30 ngày
 
 Postgres free của Render hết hạn 30 ngày. Trước hạn: tạo [Neon](https://neon.tech) (free lâu, không thẻ) rồi dán `DATABASE_URL` vào service.

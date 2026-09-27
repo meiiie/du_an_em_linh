@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { vaoLop } from "./vao-lop";
 
 async function box(page: import("@playwright/test").Page, sel: string) {
   const loc = page.locator(sel).first();
@@ -19,13 +20,18 @@ test("giải phẫu nút 40/44 và ô 40", async ({ page }) => {
   await page.setViewportSize({ width: 1280, height: 800 });
   await page.goto("/dang-nhap");
   const email = await box(page, '[data-testid="email"]');
-  const submit = await box(page, 'button:has-text("Vào học")');
+  const tiep = await box(page, 'button:has-text("Tiếp tục")');
   expect(email.h).toBeGreaterThanOrEqual(40);
+  expect(tiep.h).toBeGreaterThanOrEqual(40);
+  expect(tiep.px).toBeGreaterThanOrEqual(16);
+  expect(tiep.radius).toBe(6);
+
+  await page.getByTestId("email").fill("hs.an@demo.local");
+  await page.getByRole("button", { name: "Tiếp tục" }).click();
+  const submit = await box(page, 'button:has-text("Vào học")');
   expect(submit.h).toBeGreaterThanOrEqual(40);
   expect(submit.px).toBeGreaterThanOrEqual(16);
   expect(submit.radius).toBe(6);
-
-  await page.getByTestId("email").fill("hs.an@demo.local");
   await page.getByTestId("password").fill("hocsinh123");
   await page.getByRole("button", { name: "Vào học" }).click();
   await expect(page.getByRole("heading", { name: "Chào An" })).toBeVisible();
@@ -49,9 +55,7 @@ test("giải phẫu nút 40/44 và ô 40", async ({ page }) => {
 test("nút icon điện thoại 44", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/dang-nhap");
-  await page.getByTestId("email").fill("hs.an@demo.local");
-  await page.getByTestId("password").fill("hocsinh123");
-  await page.getByRole("button", { name: "Vào học" }).click();
+  await vaoLop(page, "hs.an@demo.local", "hocsinh123");
   await expect(page.getByRole("heading", { name: "Chào An" })).toBeVisible();
   const burger = await box(page, '[data-testid="mo-sidebar"]');
   expect(burger.h).toBe(44);

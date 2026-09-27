@@ -30,6 +30,8 @@ Nguồn: `docs/DESIGN.md`, biến CSS trong `app/globals.css`.
 
 Dùng `Button` / `buttonClasses` trong `components/ui/button.tsx`. Đừng tự `px-4 py-2.5` rời.
 
+`/dang-nhap`: tâm quang học ≈ 46% `dvh`, dư 3:2 (`docs/DESIGN.md`). Một logo giữa form. Không header trùng, không `-Nvh`.
+
 ## Testid không đổi
 
 `sidebar`, `mo-sidebar`, `dong-sidebar`, `nav-*`, `solve-screen`, `latex-txd`, `latex-dh`, `nop-buoc`, `cham-thong-bao`, `mo-gia-su`, `tutor-input`, `tutor-send`, `tutor-log`, `tutor-provider`, `tutor-composer`, `bai-DH12-03-VD-01`, `hang-doi`, `duyet-*`, `tien-do`, `toggle-muc`, `mo-loi-giai`, `ai-provider`, `ket-noi-chatgpt`, `kho-cong-thuc`, `kho-theo-buoc`, `san-sang-ai`, `email`, `password`.

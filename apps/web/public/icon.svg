@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="Học toán với AI">
+  <rect width="32" height="32" rx="8" fill="#17181C"/>
+  <path d="M5 23.5h20.2" stroke="#F4F4F5" stroke-width="1" stroke-linecap="round" opacity="0.35"/>
+  <path d="M25.2 23.5h2l-1-.8m1 .8-1 .8" stroke="#F4F4F5" stroke-width="1" stroke-linecap="round" opacity="0.35"/>
+  <path d="M6 20C9 20 10 8 13.5 8s3.7 14 7 14 3.5-8 6.5-12" fill="none" stroke="#F4F4F5" stroke-width="1.85" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
