@@ -1,3 +1,11 @@
+/** Bỏ mã bước khỏi mặt phiếu — An không cần B.DH.DAOHAM. */
+export function locMatHienThi(raw: string): string {
+  return (raw || "")
+    .replace(/\bB\.DH\.[A-Z]+\b/g, "")
+    .replace(/[ \t]+\n/g, "\n")
+    .replace(/[ \t]{2,}/g, " ");
+}
+
 /** Chuẩn hóa công thức để remark-math + KaTeX đọc — không đụng chữ thường. */
 
 const HANG_RAO =
@@ -11,7 +19,7 @@ function namTrongTien(s: string, offset: number) {
 }
 
 export function chuanHoaLatexGiaSu(raw: string): string {
-  let s = (raw || "").replace(/\r\n/g, "\n").trim();
+  let s = locMatHienThi(raw).replace(/\r\n/g, "\n").trim();
 
   s = s.replace(/\\\[\s*([\s\S]+?)\s*\\\]/g, (_m, t: string) => `\n\n$$\n${t.trim()}\n$$\n\n`);
   s = s.replace(/\\\(\s*([\s\S]+?)\s*\\\)/g, (_m, t: string) => `$${t.trim()}$`);

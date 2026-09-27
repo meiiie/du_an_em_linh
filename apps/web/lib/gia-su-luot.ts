@@ -20,6 +20,7 @@ import { assertMayLearn, loadConfig } from "./learning";
 import { callLLM } from "./llm";
 import { mathJob } from "./math";
 import type { GiaSuBuocSse } from "./sse";
+import { BUOC } from "./levels";
 import { cauHoiXocratis, chinhSachXinDapAn, goiYBuoc, HE_THONG_GIA_SU, mauGiaSu, xinDapAn, xinGoiY, xinSaiCho } from "./tutor";
 
 export type HoiGiaSuKet =
@@ -220,7 +221,7 @@ export async function chayHoiGiaSu(opts: {
         ...history,
         {
           role: "user",
-          content: `Đề (không kèm lời giải): ${prob[0].statementText}\nBước: ${buoc}\nLoại: ${grade?.loaiKetQua || "chua_nop"}\nGợi ý được mở: ${goiY || "(chưa)"}\nCông thức và tài liệu lớp (đã duyệt, không phải lời giải — nếu dùng thì nhắc đúng tên):\n${dongKhoChoPrompt(kho)}\nHọc sinh: ${text}\nTrình bày như phiếu: đoạn ngắn, danh sách, $...$ / $$...$$.`,
+          content: `Đề (không kèm lời giải): ${prob[0].statementText}\nBước đang làm: ${BUOC.find((b) => b.ma === buoc)?.ten || "bước này"}\nTình trạng: ${grade ? "đã nộp" : "chưa nộp"}\nGợi ý được mở: ${goiY || "(chưa)"}\nCông thức và tài liệu lớp (đã duyệt, không phải lời giải — nếu dùng thì nhắc đúng tên):\n${dongKhoChoPrompt(kho)}\nHọc sinh: ${text}\nTrình bày như phiếu: đoạn ngắn, danh sách, $...$ / $$...$$. Không viết mã bước.`,
         },
       ],
     });

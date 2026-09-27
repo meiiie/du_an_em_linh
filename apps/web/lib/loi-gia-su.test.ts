@@ -10,6 +10,12 @@ test("đổi \\[ \\] và \\( \\) sang $ cho KaTeX", () => {
   assert.equal(ra.includes("\\["), false);
 });
 
+test("bỏ mã bước trên mặt phiếu", () => {
+  const s = chuanHoaLatexGiaSu("Bước B.DH.DAOHAM: nhớ $(x^n)' = n x^{n-1}$.");
+  assert.equal(s.includes("B.DH.DAOHAM"), false);
+  assert.match(s, /\$\(x\^n\)'/);
+});
+
 test("chữ thường và «tên công thức» giữ nguyên", () => {
   const s = chuanHoaLatexGiaSu("Em mở «Đạo hàm lũy thừa». Không nêu đáp án.");
   assert.match(s, /«Đạo hàm lũy thừa»/);
