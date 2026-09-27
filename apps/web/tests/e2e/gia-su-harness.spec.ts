@@ -75,7 +75,7 @@ test.describe("kho kiến thức", () => {
     await vaoLop(page, "hs.an@demo.local", "hocsinh123");
     await expect(page.getByRole("heading", { name: "Chào An" })).toBeVisible();
     await page.getByTestId("nav-hs-kho").click();
-    await expect(page.getByRole("heading", { name: "Kiến thức gia sư được đọc" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Công thức và tài liệu" })).toBeVisible();
     await expect(page.getByTestId("kho-theo-buoc")).toContainText("Kết luận");
     await expect(page.getByTestId("kho-cong-thuc")).toContainText("Đạo hàm");
     await expect(page.getByTestId("kho-tai-lieu")).toContainText("đơn điệu");
