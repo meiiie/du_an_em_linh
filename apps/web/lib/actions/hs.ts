@@ -24,7 +24,7 @@ import {
 import { assertMayLearn, loadConfig, nghiDoanMo, applyMastery } from "../learning";
 import { mathJob, type GradeResult } from "../math";
 import { resolveProvider, type AiPublicConfig } from "../ai-catalog";
-import { docKhoaCloud } from "../ai-harness";
+import { cauHinhCongKhai } from "../ai-harness";
 import { callLLM } from "../llm";
 import { goiKhoChoBuoc, taiNguyenKhoLop } from "../kho-lop";
 import { dongKhoChoPrompt, nhanTrichDan, xemKhoTheoKhung } from "../kien-thuc";
@@ -192,12 +192,7 @@ async function caiDatAiLop() {
 export async function caiDatGiaSuCongKhai(): Promise<AiPublicConfig> {
   await requireRole("HS");
   const lop = await caiDatAiLop();
-  return {
-    classProvider: lop.classProvider,
-    classModel: lop.classModel,
-    allowLocal: lop.allowLocal,
-    cloudReady: Boolean(docKhoaCloud(lop.classApiKey)),
-  };
+  return cauHinhCongKhai(lop);
 }
 
 export async function hoiGiaSu(

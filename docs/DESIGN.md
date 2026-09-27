@@ -76,7 +76,7 @@ Desktop (`lg`): cột phiếu `1fr` | kẻ 1 px | cột sổ `18–24rem`. Đi�
 
 **Chữ học sinh:** tiêu đề phiếu `Bài tiếp theo`. Tab `Bài tập`. CTA khóa: `Làm bước tiếp`. Heading khóa: `Chào An`. `/hs/kho`: một letterhead + tab `Công thức` / `Tài liệu`. Hàng công thức = KaTeX rồi tên; không hộp xám, không câu nói lại công thức, không cột 5 bước trên mặt. `/hs/lich`: **bảng tuần** T2–CN × giờ (thời khóa biểu). Cột hôm nay tô `wash`. Ô buổi = việc, bấm về `/hs`. Không danh sách giả lịch, không hàng «Buổi tối nay» giữa các thứ.
 
-**Chữ giáo viên:** ray `Lớp` / `Duyệt` / `Đề bài` / `Tạo đề` / `Tài liệu` / `Công thức` / `Mức` / `Gia sư` / `Cài lớp` (testid `nav-gv-*` giữ nguyên). Heading khóa: `Lớp 12A1 thử`, `Cài đặt lớp`, `Kết nối ChatGPT`. Trạng thái bài: `Đã mở` / `Chờ duyệt` / `Bị chặn`. Cổng 3 tầng giữ `Đạt` / `Sai` / `Không kiểm được`. 3 mức CV 7991 chỉ ở `/gv/tien-do?muc=3`.
+**Chữ giáo viên:** ray `Lớp` / `Duyệt` / `Đề bài` / `Tạo đề` / `Tài liệu` / `Công thức` / `Mức` / `Gia sư` / `Cài lớp` (testid `nav-gv-*` giữ nguyên). Heading khóa: `Lớp 12A1 thử`, `Cài đặt lớp`, `Kết nối ChatGPT`. Gia sư: dán khóa ChatGPT / OpenRouter / Z.AI (coding) — không nhập URL. Trạng thái bài: `Đã mở` / `Chờ duyệt` / `Bị chặn`. Cổng 3 tầng giữ `Đạt` / `Sai` / `Không kiểm được`. 3 mức CV 7991 chỉ ở `/gv/tien-do?muc=3`.
 
 ## Lưới và nhịp (SOTA 2026-09-27)
 

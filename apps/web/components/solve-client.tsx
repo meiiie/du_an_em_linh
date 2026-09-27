@@ -30,6 +30,8 @@ const AI_MAC_DINH: AiPublicConfig = {
   classModel: null,
   allowLocal: true,
   cloudReady: false,
+  openrouterReady: false,
+  zaiReady: false,
 };
 
 export function SolveClient({

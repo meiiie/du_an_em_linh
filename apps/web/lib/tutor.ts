@@ -136,10 +136,14 @@ export function moTaCheDo(arg: boolean | { provider?: string; offline: boolean; 
     if (provider === "ollama") return "Ollama · lỗi · không chuyển nhà khác";
     if (provider === "lmstudio") return "LM Studio · lỗi · không chuyển nhà khác";
     if (provider === "cloud") return "ChatGPT của lớp · lỗi · không chuyển nhà khác";
+    if (provider === "openrouter") return "OpenRouter của lớp · lỗi · không chuyển nhà khác";
+    if (provider === "zai") return "Z.AI của lớp · lỗi · không chuyển nhà khác";
     return "Thang gợi ý đã kiểm · không gọi API";
   }
   if (provider === "offline" || offline) return "Thang gợi ý đã kiểm · không gọi API";
   if (provider === "ollama") return "Ollama trên máy này · vẫn lọc lộ đáp án";
   if (provider === "lmstudio") return "LM Studio trên máy này · vẫn lọc lộ đáp án";
+  if (provider === "openrouter") return "OpenRouter của lớp · vẫn lọc lộ đáp án";
+  if (provider === "zai") return "Z.AI của lớp · vẫn lọc lộ đáp án";
   return "ChatGPT của lớp · vẫn lọc lộ đáp án";
 }

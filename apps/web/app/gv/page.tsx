@@ -3,7 +3,8 @@ import Link from "next/link";
 import { desc, eq, isNull } from "drizzle-orm";
 import { requireRole } from "@/lib/auth";
 import { ghiNhatKy } from "@/lib/actions/hs";
-import { docKhoaCloud } from "@/lib/ai-harness";
+import { laNhaKhoa, parseProvider } from "@/lib/ai-catalog";
+import { docKhoaNha } from "@/lib/ai-harness";
 import { tenKyNangNgan } from "@/lib/de-hoc-sinh";
 import { db } from "@/lib/db";
 import { classSettings, documents, escalations, formulaSheets, formulas, problems, skills, users } from "@/lib/db/schema";
@@ -26,7 +27,8 @@ export default async function GvHome() {
   const blocked = await db.select().from(problems).where(eq(problems.status, "BI_CHAN"));
   const published = await db.select().from(problems).where(eq(problems.status, "DA_PHAT_HANH"));
   const setting = (await db.select().from(classSettings).limit(1))[0];
-  const chatgpt = Boolean(docKhoaCloud(setting?.aiApiKey));
+  const nha = parseProvider(setting?.aiProvider);
+  const daKetNoi = laNhaKhoa(nha) && Boolean(docKhoaNha(nha, setting?.aiApiKey));
   const nTaiLieu = (await db.select().from(documents)).filter((d) => d.licenseStatus !== "chua_ro").length;
   const latestSheet = (await db.select().from(formulaSheets).orderBy(desc(formulaSheets.version)))[0];
   const nCongThuc = latestSheet
@@ -41,7 +43,7 @@ export default async function GvHome() {
 
       <section className="border-b border-line py-4" data-testid="san-sang-ai">
         <h2 className="text-sm font-semibold">Gia sư</h2>
-        <p className="mt-2 text-sm">{chatgpt ? "Đã kết nối" : "Chưa kết nối"}</p>
+        <p className="mt-2 text-sm">{daKetNoi ? "Đã kết nối" : "Chưa kết nối"}</p>
         <p className="mt-1 text-sm text-muted">
           {nTaiLieu} tài liệu, {nCongThuc} công thức
         </p>

@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import { eq } from "drizzle-orm";
 import { luuCaiDatLop } from "@/lib/actions/gv";
-import { maskKey, NHA, parseProvider, type AiProviderId } from "@/lib/ai-catalog";
-import { docKhoaCloud } from "@/lib/ai-harness";
+import { laNhaKhoa, maskKey, NHA, parseProvider, type AiProviderId } from "@/lib/ai-catalog";
+import { docKhoaNha } from "@/lib/ai-harness";
 import { KiemTraAi } from "@/components/kiem-tra-ai";
 import Link from "next/link";
 import { Button, buttonClasses } from "@/components/ui/button";
@@ -22,9 +22,9 @@ export default async function Page() {
   const lop = (await db.select().from(classes))[0];
   const setting = lop ? (await db.select().from(classSettings).where(eq(classSettings.classId, lop.id)))[0] : null;
   const provider = parseProvider(setting?.aiProvider);
-  const hasEnv = Boolean((process.env.LLM_API_KEY || "").trim());
+  const hasEnv = laNhaKhoa(provider) && Boolean(docKhoaNha(provider, null));
   const mask = maskKey(setting?.aiApiKey);
-  const cloudReady = Boolean(docKhoaCloud(setting?.aiApiKey));
+  const khoaLop = Boolean((setting?.aiApiKey || "").trim());
   return (
     <main className="max-w-xl">
       <PageHeader title="Cài đặt lớp" />
@@ -62,12 +62,7 @@ export default async function Page() {
               />
               <span>
                 <span className="font-medium">{NHA[id].ten}</span>
-                <span className="mt-1 block text-muted">
-                  {id === "offline" && "Chạy hết không cần khóa."}
-                  {id === "cloud" && "Khóa API chính thức — LLM_API_KEY hoặc ô dưới."}
-                  {id === "ollama" && "Chỉ máy này, cổng 11434."}
-                  {id === "lmstudio" && "Chỉ máy này, cổng 1234."}
-                </span>
+                <span className="mt-1 block text-muted">{NHA[id].moTa}</span>
               </span>
             </label>
           ))}
@@ -80,7 +75,7 @@ export default async function Page() {
             data-testid="ai-model"
             defaultValue={setting?.aiModel || ""}
             className={fieldControl}
-            placeholder="gpt-4o-mini · llama3.2 · local-model"
+            placeholder="gpt-4o-mini · qwen/qwen3-coder · glm-5.2 · llama3.2"
           />
         </label>
 
@@ -105,12 +100,12 @@ export default async function Page() {
             autoComplete="off"
             data-testid="ai-api-key"
             className={fieldControl}
-            placeholder={mask ? `${mask} — để trống để giữ` : "sk-… không bao giờ hiện lại đủ"}
+            placeholder={mask ? `${mask} — để trống để giữ` : "dán khóa — không hiện lại đủ"}
           />
           <span className="mt-2 block text-muted">
             {hasEnv
-              ? "Máy chủ đang có LLM_API_KEY — dùng khóa đó."
-              : cloudReady
+              ? `Máy chủ đang có ${NHA[provider].envKhoa} — dùng khóa đó.`
+              : khoaLop
                 ? "Đang dùng khóa lớp đã lưu."
                 : "Chưa có khóa."}
           </span>

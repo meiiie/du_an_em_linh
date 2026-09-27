@@ -14,7 +14,7 @@ Harness (Anthropic 2026): tệp này là mục lục để agent biết chỗ m�
 | `docs/DESIGN.md` | Token, lưới, nút, tâm quang học (46% / 3:2) |
 | `docs/doi-chieu-thiet-ke.md` | Khớp / cố ý chưa làm |
 | `docs/adr/` | Quyết định đã khóa |
-| `docs/AI-HARNESS.md` | Nhà AI, loopback, không fallback |
+| `docs/AI-HARNESS.md` | Nhà AI, loopback, không fallback; khóa OpenRouter / Z.AI |
 | `docs/chi-so-o-bang.md` | `k` 0-based vs YAML 1-based |
 | `data/supham/` | Ngân hàng sư phạm (JSON) |
 | `docker-compose.yml` | web :3000, math :8000, Postgres :5432 |

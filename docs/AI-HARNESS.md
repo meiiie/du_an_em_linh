@@ -17,10 +17,12 @@ Demo mặc định `offline`. Không khóa API vẫn làm bài được.
 | --- | --- | --- | --- |
 | `offline` | Câu mẫu + thang gợi ý | không gọi mạng | không |
 | `cloud` | OpenAI-compatible chính thức | `LLM_BASE_URL` (https, hoặc http loopback) | `LLM_API_KEY` hoặc khóa lớp |
+| `openrouter` | Khóa lập trình OpenRouter | `https://openrouter.ai/api/v1` (cứng) | `OPENROUTER_API_KEY` hoặc khóa lớp |
+| `zai` | Khóa coding Z.AI | `https://api.z.ai/api/coding/paas/v4` (cứng, không `/api/paas/v4`) | `ZAI_API_KEY` hoặc khóa lớp |
 | `ollama` | Máy này | `127.0.0.1:11434/v1` | dummy `ollama` |
 | `lmstudio` | Máy này | `127.0.0.1:1234/v1` | dummy `lm-studio` |
 
-Học sinh được chọn offline luôn; Ollama/LM Studio nếu lớp bật `ai_allow_local`; cloud chỉ khi lớp chọn cloud.
+Học sinh được chọn offline luôn; Ollama/LM Studio nếu lớp bật `ai_allow_local`; nhà khóa (ChatGPT / OpenRouter / Z.AI) chỉ khi lớp chọn đúng nhà đó.
 
 ## Luật an toàn (học từ PR nội bộ + phần mềm mở)
 
@@ -54,7 +56,7 @@ Tham chiếu: [meiiie/lms-ibm-bob-hackathon#3](https://github.com/meiiie/lms-ibm
 
 ## Kết nối ChatGPT (người không chuyên)
 
-Giáo viên vào `/gv/ket-noi-ai` (cũng từ tổng quan). Hai bước: mở ChatGPT / trang khóa OpenAI (cùng tài khoản) → dán một lần. Học sinh thấy «ChatGPT của lớp», không thấy khóa.
+Giáo viên vào `/gv/ket-noi-ai` (cũng từ tổng quan). Hai bước cho từng nhà khóa: mở trang khóa chính thức → dán một lần. ChatGPT / OpenRouter / Z.AI. Học sinh thấy «… của lớp», không thấy khóa. OpenRouter mặc định `qwen/qwen3-coder`; Z.AI mặc định `glm-5.2` trên endpoint coding. Không nhập URL.
 
 «Sign in with ChatGPT» chính thức (help.openai.com, 2026) chỉ là định danh cho đối tác có `client_id`. Không cấp quyền gọi mô hình. Codex CLI «sign in with ChatGPT» dùng endpoint nội bộ — không sao chép.
 
