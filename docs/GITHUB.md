@@ -8,7 +8,7 @@ Các mục này nằm trên dashboard, không nằm trong git. Vào **Settings**
 - **Website:** `https://hoc-toan-ai.onrender.com`
 - **Topics:** `education`, `nckh`, `nextjs`, `fastapi`, `sympy`, `vietnamese`
 - Tắt **Wikis** và **Projects** (không dùng).
-- Giữ **Issues**. Tắt **Allow merge commits** nếu muốn chỉ squash — khuyến nghị **Allow squash merging** + xóa nhánh nguồn sau khi gộp.
+- Giữ **Issues**. Chỉ **Allow squash merging** + xóa nhánh nguồn sau khi gộp (lịch sử tuyến tính — release-please đọc squash title).
 
 ## Security
 
@@ -23,7 +23,12 @@ Các mục này nằm trên dashboard, không nằm trong git. Vào **Settings**
 
 ## Actions
 
-- Workflow `Kiểm thử` và `Giữ thức Render` đã trong repo.
+- Workflow `Kiểm thử`, `Phát hành` (release-please), `Giữ thức Render` đã trong repo.
+- **Allow GitHub Actions to create and approve pull requests** (Settings → Actions → General) — để release-please mở PR cắt bản.
 - Biến tùy chọn: `KEEP_AWAKE_URL` (Settings → Secrets and variables → Actions → Variables)
 
-Sau khi gộp PR vào `main`: trên Render đặt nhánh deploy = `main`; cron giữ thức sẽ tự chạy.
+Sau khi gộp PR vào `main`:
+
+1. Render: nhánh deploy = `main`.
+2. Tạo GitHub Release **v0.1.0** một lần (tag từ `main`). Các bản sau: gộp PR do workflow **Phát hành** mở.
+3. Cron giữ thức tự chạy trên `main`.

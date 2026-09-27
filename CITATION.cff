@@ -7,6 +7,7 @@ authors:
 repository-code: "https://github.com/meiiie/du_an_em_linh"
 url: "https://hoc-toan-ai.onrender.com"
 license: MIT
+version: "0.1.0" # x-release-please-version
 date-released: "2026-09-27"
 keywords:
   - nckh

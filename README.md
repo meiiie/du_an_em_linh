@@ -1,7 +1,9 @@
 # Học toán với AI
 
 [![Kiểm thử](https://github.com/meiiie/du_an_em_linh/actions/workflows/ci.yml/badge.svg)](https://github.com/meiiie/du_an_em_linh/actions/workflows/ci.yml)
+[![Phiên bản](https://img.shields.io/github/v/release/meiiie/du_an_em_linh?include_prereleases&sort=semver&label=phiên%20bản)](https://github.com/meiiie/du_an_em_linh/releases)
 [![Giấy phép MIT](https://img.shields.io/badge/giấy%20phép-MIT-1F2328)](LICENSE)
+[![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-fe5196.svg)](https://www.conventionalcommits.org/)
 
 Nguyên mẫu NCKH: phần mềm học Toán THPT, **một** chủ đề Toán 12 — ứng dụng đạo hàm để xét đơn điệu và cực trị. Mọi chữ trên màn hình là tiếng Việt. Demo chạy hết khi không có khóa API mô hình ngôn ngữ.
 
@@ -97,13 +99,21 @@ Render free, không thẻ: một container Next + SymPy + Postgres. Chi tiết g
 
 ## Nhánh
 
-GitHub Flow: **`main`** là mã phát hành. Mỗi việc một nhánh ngắn, một PR vào `main`. Không chồng PR. Xem [`CONTRIBUTING.md`](CONTRIBUTING.md). Chủ repo bật bảo vệ nhánh và mô tả repo: [`docs/GITHUB.md`](docs/GITHUB.md).
+GitHub Flow: **`main`** là mã phát hành. Mỗi việc một nhánh ngắn, một PR vào `main`. Không chồng PR. Xem [`CONTRIBUTING.md`](CONTRIBUTING.md).
+
+**Phiên bản:** SemVer `0.1.0` (nguyên mẫu). Changelog: [`CHANGELOG.md`](CHANGELOG.md). Cách cắt bản: [`docs/PHIEN-BAN.md`](docs/PHIEN-BAN.md).
+
+Chủ repo bật bảo vệ nhánh và mô tả repo: [`docs/GITHUB.md`](docs/GITHUB.md).
 
 ## Tài liệu
 
 | Tài liệu | Nội dung |
 | --- | --- |
+| [`CHANGELOG.md`](CHANGELOG.md) | Nhật ký phiên bản |
+| [`docs/PHIEN-BAN.md`](docs/PHIEN-BAN.md) | SemVer, Conventional Commits, release-please |
 | [`CONTRIBUTING.md`](CONTRIBUTING.md) | Nhánh, PR, lệnh |
+| [`SUPPORT.md`](SUPPORT.md) | Chỗ hỏi / mở issue |
+| [`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md) | Contributor Covenant 2.1 |
 | [`docs/DESIGN.md`](docs/DESIGN.md) | Token, lưới 8 px, nút 40/44 |
 | [`docs/AI-HARNESS.md`](docs/AI-HARNESS.md) | Nhà AI, không fallback, không lộ đáp án |
 | [`docs/adr/`](docs/adr/) | Quyết định đã khóa |
@@ -119,4 +129,4 @@ GitHub Flow: **`main`** là mã phát hành. Mỗi việc một nhánh ngắn, m
 
 ## Giấy phép
 
-[MIT](LICENSE). Báo cáo lỗ hổng: [`SECURITY.md`](SECURITY.md).
+[MIT](LICENSE). Ứng xử: [`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md). Hỗ trợ: [`SUPPORT.md`](SUPPORT.md). Lỗ hổng: [`SECURITY.md`](SECURITY.md).

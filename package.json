@@ -1,6 +1,20 @@
 {
   "name": "hoc-toan-ai",
+  "version": "0.1.0",
   "private": true,
+  "description": "Nguyên mẫu NCKH — học Toán 12 (đơn điệu và cực trị) với gia sư AI",
+  "license": "MIT",
+  "homepage": "https://hoc-toan-ai.onrender.com",
+  "bugs": {
+    "url": "https://github.com/meiiie/du_an_em_linh/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/meiiie/du_an_em_linh.git"
+  },
+  "engines": {
+    "node": ">=22"
+  },
   "packageManager": "pnpm@10.33.3",
   "pnpm": {
     "onlyBuiltDependencies": ["esbuild", "unrs-resolver"]
@@ -14,6 +28,7 @@
     "lint": "pnpm --filter web lint",
     "typecheck": "pnpm --filter web typecheck",
     "test:unit": "pnpm --filter web test:unit",
-    "test:web": "pnpm typecheck && pnpm lint && pnpm test:unit"
+    "test:web": "pnpm typecheck && pnpm lint && pnpm test:unit",
+    "test:version": "node scripts/kiem-phien-ban.mjs"
   }
 }

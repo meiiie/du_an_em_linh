@@ -1,0 +1,20 @@
+# Ghi chú phát hành khi tạo Release trên GitHub UI.
+changelog:
+  exclude:
+    labels:
+      - ignore-for-release
+    authors:
+      - dependabot
+  categories:
+    - title: Tính năng
+      labels:
+        - enhancement
+    - title: Sửa lỗi
+      labels:
+        - bug
+    - title: Tài liệu
+      labels:
+        - documentation
+    - title: Khác
+      labels:
+        - "*"

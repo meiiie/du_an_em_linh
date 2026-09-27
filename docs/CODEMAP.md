@@ -20,12 +20,18 @@ Harness (Anthropic 2026): tệp này là mục lục để agent biết chỗ m�
 | `docker-compose.yml` | web :3000, math :8000, Postgres :5432 |
 | `Dockerfile` / `render.yaml` | Deploy free một container trên Render |
 | `CONTRIBUTING.md` | GitHub Flow: `main` + nhánh ngắn, không chồng PR |
+| `CHANGELOG.md` / `docs/PHIEN-BAN.md` | SemVer + Keep a Changelog + release-please |
+| `CODE_OF_CONDUCT.md` / `SUPPORT.md` | Community health (GitHub Insights) |
+| `release-please-config.json` | Một sản phẩm, extra-files web + math + CITATION |
 | `docs/TRIEN-KHAI.md` | Render, Neon, giữ thức |
 | `docs/KIEM-THU.md` | Số liệu lần dựng nguyên mẫu |
-| `.github/workflows/ci.yml` | pytest + typecheck/lint/unit + Playwright e2e |
+| `.github/workflows/ci.yml` | phiên bản + pytest + typecheck/lint/unit + Playwright e2e |
+| `.github/workflows/phat-hanh.yml` | release-please trên `main` |
 | `.github/workflows/giu-thuc.yml` | Cron 10 phút ping `/api/suc-khoe` (chỉ chạy trên `main`) |
 | `.github/ISSUE_TEMPLATE/` / `PULL_REQUEST_TEMPLATE.md` | Mẫu issue / PR |
 | `.github/dependabot.yml` | npm, pip, GitHub Actions |
+| `.github/release.yml` | Nhóm ghi chú Release trên GitHub UI |
+| `scripts/kiem-phien-ban.mjs` | Một SemVer trên root / web / math / CITATION |
 | `docs/GITHUB.md` | Checklist Settings (mô tả, topic, bảo vệ `main`) |
 
 ## apps/web

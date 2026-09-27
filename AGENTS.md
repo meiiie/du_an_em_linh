@@ -29,7 +29,7 @@ pnpm test:web           # typecheck + lint + unit
 pnpm --filter web test:e2e
 ```
 
-Quy ước và lệnh cục bộ nằm ở `apps/web/AGENTS.md` và `services/math/AGENTS.md`. Nhánh: `CONTRIBUTING.md` (GitHub Flow, PR vào `main`, không chồng). Deploy: `docs/TRIEN-KHAI.md`. CI: `.github/workflows/ci.yml`.
+Quy ước và lệnh cục bộ nằm ở `apps/web/AGENTS.md` và `services/math/AGENTS.md`. Nhánh: `CONTRIBUTING.md` (GitHub Flow, PR vào `main`, không chồng). Phiên bản: `docs/PHIEN-BAN.md` (một SemVer, Conventional Commits). Deploy: `docs/TRIEN-KHAI.md`. CI: `.github/workflows/ci.yml`.
 
 ## Giao diện
 

@@ -1,0 +1,23 @@
+# Google release-please: Conventional Commits → SemVer + CHANGELOG + GitHub Release.
+# Chỉ chạy trên main. Lần đầu: tạo Release v0.1.0 trên GitHub (xem docs/PHIEN-BAN.md).
+name: Phát hành
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+
+jobs:
+  release-please:
+    name: release-please
+    runs-on: ubuntu-latest
+    steps:
+      - uses: googleapis/release-please-action@v4
+        with:
+          config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json

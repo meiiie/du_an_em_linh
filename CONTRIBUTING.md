@@ -40,11 +40,22 @@ pnpm --filter web test:e2e
 
 Sửa UI → `apps/web`. Sửa CAS / cổng / bộ lọc → `services/math` (sandbox). Bản đồ: `docs/CODEMAP.md`.
 
+## Commit / tiêu đề PR
+
+[Conventional Commits](https://www.conventionalcommits.org/) (như Angular / repo Google). Squash merge lấy **một** tiêu đề:
+
+- `feat:` tính năng → SemVer MINOR
+- `fix:` sửa lỗi → PATCH
+- `docs:` / `chore:` / `ci:` / `test:` không tăng số
+- `feat!:` hoặc footer `BREAKING CHANGE:` → breaking
+
+Chi tiết và release-please: [`docs/PHIEN-BAN.md`](docs/PHIEN-BAN.md).
+
 ## Pull request
 
 1. Nhánh mới từ `main` đã kéo mới nhất.
-2. Một ý, mô tả tiếng Việt, điền mẫu `.github/PULL_REQUEST_TEMPLATE.md`.
-3. CI `.github/workflows/ci.yml` phải xanh.
+2. Một ý, tiêu đề Conventional Commits, điền mẫu `.github/PULL_REQUEST_TEMPLATE.md`.
+3. CI `.github/workflows/ci.yml` phải xanh (`pnpm test:version` cùng số SemVer).
 4. Không dán khóa, `.env`, hay dữ liệu học sinh thật.
 
 ## Báo lỗi / đề xuất
