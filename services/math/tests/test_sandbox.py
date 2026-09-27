@@ -46,3 +46,27 @@ def test_filter_goi_y_an_toan():
     })
     assert r["cho_phep"] is True
     assert "khop" not in json.dumps(r)
+
+
+def test_filter_khong_chan_luy_thua_di_1():
+    """M2 chặn nhầm số 1 trong «giảm số mũ đi 1» khi đề có nghiệm / cực tại 1."""
+    su_kien = [
+        {"loai": "DB", "gia_tri": "(-oo;1)"},
+        {"loai": "NB", "gia_tri": "(1;3)"},
+        {"loai": "DCD", "gia_tri": "1"},
+        {"loai": "DCT", "gia_tri": "3"},
+        {"loai": "GTCD", "gia_tri": "6"},
+        {"loai": "GTCT", "gia_tri": "2"},
+        {"loai": "NGHIEM", "gia_tri": "1"},
+        {"loai": "NGHIEM", "gia_tri": "3"},
+    ]
+    an = run_sympy_job("filter", {
+        "ban_nhap": "Nguyên lý lũy thừa: (xⁿ)′ = n·xⁿ⁻¹, nghĩa là nhân hệ số với số mũ rồi giảm số mũ đi 1.",
+        "su_kien": su_kien,
+    })
+    assert an["cho_phep"] is True
+    lo = run_sympy_job("filter", {
+        "ban_nhap": "Cực đại tại x = 1, cực tiểu tại x = 3, đồng biến trên (3;+∞).",
+        "su_kien": su_kien,
+    })
+    assert lo["cho_phep"] is False

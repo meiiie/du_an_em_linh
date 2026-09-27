@@ -7,7 +7,7 @@ Quyết định: `docs/adr/007-ai-providers.md`. Sư phạm: `docs/adr/003-gia-s
 1. Luật xin đáp án / gợi ý / sai chỗ (`lib/tutor.ts`).
 2. Thang 3 cấp đã kiểm — không bottom-out (VanLehn, Aleven).
 3. Nhà đã **chọn tường minh** — không đoán.
-4. Lọc SymPy (`POST /v1/filter`) trên **cả câu**. Vì thế không phát luồng từng token.
+4. Lọc SymPy (`POST /v1/filter`) trên **cả câu**. Vì thế không phát luồng từng token. Lớp chính M3 (số phải dính ngữ cảnh đáp án), lớp phụ M1 (chuỗi LaTeX). Không dùng M2 giá trị trần — tránh chặn «giảm số mũ đi 1».
 
 Demo mặc định `offline`. Không khóa API vẫn làm bài được.
 

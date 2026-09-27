@@ -1,5 +1,9 @@
 # -*- coding: utf-8 -*-
-"""Bộ lọc đầu ra. Lớp chính: tương đương SymPy (M2 của Kiểm định). Lớp phụ: so chuỗi LaTeX (M1).
+"""Bộ lọc đầu ra.
+
+Lớp chính: SymPy theo ngữ cảnh (M3 của Kiểm định) — số phải dính đồng biến / cực / nghiệm.
+Không dùng M2 (chỉ so giá trị): «giảm số mũ đi 1» bị chặn nhầm khi đề có nghiệm 1.
+Lớp phụ: so chuỗi LaTeX (M1), ví dụ ``x=1``, ``(1;3)``.
 
 Không trả về phần khớp — chỉ cho_phep, để gia sư không nhận lại đáp án.
 """
@@ -17,11 +21,9 @@ def _L():
 
 def loc_ban_nhap(ban_nhap, su_kien):
     L = _L()
-    bai = {"su_kien": [(a, b) if not isinstance(a, (list, tuple)) else (a[0] if False else a, b) for a, b in _pairs(su_kien)]}
-    # chuẩn hoá cặp
     bai = {"su_kien": _pairs(su_kien)}
     try:
-        sympy_hits = L.m23(ban_nhap, bai, False)
+        sympy_hits = L.m23(ban_nhap, bai, True)
     except Exception:
         sympy_hits = []
     try:
