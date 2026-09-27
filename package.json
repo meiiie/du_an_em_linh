@@ -13,6 +13,7 @@
     "test:math": "cd services/math && .venv/bin/pytest",
     "lint": "pnpm --filter web lint",
     "typecheck": "pnpm --filter web typecheck",
-    "test:unit": "pnpm --filter web test:unit"
+    "test:unit": "pnpm --filter web test:unit",
+    "ci": "pnpm typecheck && pnpm lint && pnpm test:unit"
   }
 }

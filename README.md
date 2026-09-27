@@ -83,6 +83,12 @@ Một service web (Next + SymPy trong cùng container) + Postgres free. Lần đ
 
 File: `render.yaml`, `Dockerfile`, `scripts/start-free.sh`.
 
+## CI/CD
+
+- **CI:** `.github/workflows/ci.yml` — mỗi push/PR chạy pytest toán, typecheck, lint, unit, Playwright e2e (Postgres 16 + SymPy, không cần khóa LLM).
+- **CD:** Render `autoDeployTrigger: commit` trên service `hoc-toan-ai`. Không cần token GitHub. Sau khi gộp vào `main`, đổi nhánh deploy trên Render sang `main`.
+- **Giữ thức:** `.github/workflows/giu-thuc.yml` (lịch chỉ chạy trên `main`) + UptimeRobot / cron-job.org.
+
 ## Chạy với Docker
 
 ```bash
@@ -108,9 +114,7 @@ Web ở cổng 3000, dịch vụ toán ở cổng 8000, Postgres ở cổng 5432
 
 ```bash
 pnpm test:math          # pytest trong services/math
-pnpm --filter web typecheck
-pnpm --filter web lint
-pnpm --filter web test:unit
+pnpm ci                 # typecheck + lint + unit
 pnpm --filter web test:e2e
 ```
 

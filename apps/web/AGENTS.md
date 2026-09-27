@@ -14,7 +14,7 @@ pnpm --filter web seed
 pnpm --filter web dev
 ```
 
-E2E cần `pnpm dev:math` + web + Postgres đã seed. Playwright ghi ảnh vào `/opt/cursor/artifacts/screenshots` khi chạy trên máy nguyên mẫu.
+E2E cần `pnpm dev:math` + web + Postgres đã seed. Ảnh: `/opt/cursor/artifacts/screenshots` trên máy nguyên mẫu, hoặc `PLAYWRIGHT_SHOTS`. CI: `.github/workflows/ci.yml`.
 
 ## Token
 

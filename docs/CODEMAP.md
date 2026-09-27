@@ -19,6 +19,7 @@ Harness (Anthropic 2026): tệp này là mục lục để agent biết chỗ m�
 | `data/supham/` | Ngân hàng sư phạm (JSON) |
 | `docker-compose.yml` | web :3000, math :8000, Postgres :5432 |
 | `Dockerfile` / `render.yaml` | Deploy free một container trên Render |
+| `.github/workflows/ci.yml` | pytest + typecheck/lint/unit + Playwright e2e |
 | `.github/workflows/giu-thuc.yml` | Cron 10 phút ping `/api/suc-khoe` (chỉ chạy trên `main`) |
 
 ## apps/web

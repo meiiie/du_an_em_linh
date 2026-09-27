@@ -1,0 +1,116 @@
+# Chạy trên mọi push / PR. Không cần khóa API — demo mặc định offline.
+name: Kiểm thử
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: kiem-thu-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  CI: true
+  NEXT_TELEMETRY_DISABLED: "1"
+
+jobs:
+  toan:
+    name: Dịch vụ toán
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: services/math
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: services/math/pyproject.toml
+      - name: Cài và pytest
+        run: |
+          python -m pip install -U pip
+          python -m pip install -e ".[dev]"
+          python -m pytest
+
+  web:
+    name: Web — typecheck lint unit
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm typecheck
+      - run: pnpm lint
+      - run: pnpm test:unit
+
+  e2e:
+    name: Playwright e2e
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: hoc_toan
+          POSTGRES_PASSWORD: hoc_toan
+          POSTGRES_DB: hoc_toan
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U hoc_toan -d hoc_toan"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+    env:
+      DATABASE_URL: postgres://hoc_toan:hoc_toan@127.0.0.1:5432/hoc_toan
+      PLAYWRIGHT_SHOTS: ${{ github.workspace }}/pw-shots
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: services/math/pyproject.toml
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - name: Cài SymPy
+        working-directory: services/math
+        run: |
+          python -m venv .venv
+          .venv/bin/pip install -U pip
+          .venv/bin/pip install -e ".[dev]"
+      - run: pnpm install --frozen-lockfile
+      - name: Cache trình duyệt Playwright
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('apps/web/package.json') }}
+      - name: Cài Chromium
+        run: pnpm --filter web exec playwright install --with-deps chromium
+      - name: Migrate và seed
+        run: |
+          pnpm db:migrate
+          pnpm seed
+      - name: E2E
+        run: pnpm --filter web test:e2e
+      - name: Ảnh khi thất bại
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-shots
+          path: pw-shots
+          if-no-files-found: ignore

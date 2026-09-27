@@ -1,11 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { mkdir } from "fs/promises";
-
-const SHOTS = "/opt/cursor/artifacts/screenshots";
-
-test.beforeAll(async () => {
-  await mkdir(SHOTS, { recursive: true });
-});
+import { SHOTS } from "./anh";
 
 test.describe("học sinh", () => {
   test.use({ viewport: { width: 390, height: 844 } });
