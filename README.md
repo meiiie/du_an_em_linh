@@ -75,6 +75,12 @@ Một service web (Next + SymPy trong cùng container) + Postgres free. Lần đ
 2. Deploy Blueprint. Đợi web `hoc-toan-ai` hiện URL `*.onrender.com`.
 3. Vào bằng `gv@demo.local` / `giaovien123` hoặc `hs.an@demo.local` / `hocsinh123`.
 
+Để **không ngủ** (Render tắt sau 15 phút không ai vào): ping HTTP mỗi 5–10 phút. Một service thức cả tháng ≈ 720/750 giờ free — vừa đủ. Render cron job là gói trả phí; dùng cron HTTP bên ngoài.
+
+- Cách chắc, làm ngay: [UptimeRobot](https://uptimerobot.com) (free, không thẻ) → Add Monitor → HTTP(s) → 5 phút → `https://hoc-toan-ai.onrender.com/api/suc-khoe` (nếu 404 thì dùng `/dang-nhap` đến khi deploy bản có endpoint).
+- Cron HTTP khác: [cron-job.org](https://cron-job.org) mỗi 5–10 phút, cùng URL.
+- Trong repo: `.github/workflows/giu-thuc.yml` (mỗi 10 phút). **Chỉ chạy khi file đã ở `main`.** Cron GitHub hay trễ, nên UptimeRobot vẫn nên bật. Có thể bấm **Run workflow** thủ công trên nhánh này. Đổi URL: biến repo `KEEP_AWAKE_URL`.
+
 File: `render.yaml`, `Dockerfile`, `scripts/start-free.sh`.
 
 ## Chạy với Docker

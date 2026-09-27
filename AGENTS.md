@@ -31,7 +31,7 @@ pnpm --filter web test:unit
 pnpm --filter web test:e2e
 ```
 
-Quy ước và lệnh cục bộ nằm ở `apps/web/AGENTS.md` và `services/math/AGENTS.md`. Deploy free: `render.yaml` + `Dockerfile` (Render, không thẻ).
+Quy ước và lệnh cục bộ nằm ở `apps/web/AGENTS.md` và `services/math/AGENTS.md`. Deploy free: `render.yaml` + `Dockerfile` (Render, không thẻ). Giữ thức: `.github/workflows/giu-thuc.yml` (chỉ chạy trên `main`; chắc hơn thì UptimeRobot 5 phút).
 
 ## Giao diện
 

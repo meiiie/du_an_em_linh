@@ -19,6 +19,7 @@ Harness (Anthropic 2026): tệp này là mục lục để agent biết chỗ m�
 | `data/supham/` | Ngân hàng sư phạm (JSON) |
 | `docker-compose.yml` | web :3000, math :8000, Postgres :5432 |
 | `Dockerfile` / `render.yaml` | Deploy free một container trên Render |
+| `.github/workflows/giu-thuc.yml` | Cron 10 phút ping `/api/suc-khoe` (chỉ chạy trên `main`) |
 
 ## apps/web
 
@@ -27,6 +28,7 @@ Next.js 15. Server action nói chuyện với Postgres và `MATH_SERVICE_URL`.
 | Đường | Việc |
 | --- | --- |
 | `app/dang-nhap/page.tsx` | Vào lớp thử |
+| `app/api/suc-khoe/route.ts` | GET JSON giữ thức Render — không đụng DB |
 | `app/hs/` | Lộ trình, ngân bài, lịch, phiếu 5 bước |
 | `app/gv/` | Tổng quan (trạng thái ChatGPT + kho), duyệt, ngân hàng, sinh bài, tài liệu, công thức, kết nối ChatGPT, tiến độ, cài đặt |
 | `app/hs/kho` | Kho kiến thức lớp (cùng nguồn gia sư đọc) |

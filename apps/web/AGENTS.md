@@ -36,7 +36,7 @@ Dùng `Button` / `buttonClasses` trong `components/ui/button.tsx`. Đừng tự 
 
 ## Cấu trúc
 
-- Trang: `app/hs`, `app/gv`, `app/dang-nhap`.
+- Trang: `app/hs`, `app/gv`, `app/dang-nhap`. Ping giữ thức: `app/api/suc-khoe`.
 - Nguyên thủy: `components/ui/*`. Vỏ: `components/app-shell.tsx`.
 - Server action: `lib/actions/{hs,gv,auth}.ts`. Schema: `lib/db/schema.ts`.
 - Gia sư: `lib/tutor.ts` + `lib/ai-harness.ts` + `lib/llm.ts` + `components/tutor-panel.tsx`. Không đưa lời giải vào prompt. Không fallback thầm.

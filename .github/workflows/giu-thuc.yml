@@ -1,0 +1,40 @@
+# Render free ngủ sau 15 phút không có HTTP vào.
+# Lịch GitHub chỉ chạy khi file này nằm trên nhánh mặc định (main).
+# Cron GitHub hay trễ vài phút — muốn chắc hơn: UptimeRobot 5 phút cùng URL.
+name: Giữ thức Render
+
+on:
+  schedule:
+    - cron: "*/10 * * * *"
+  workflow_dispatch:
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - name: Ping
+        env:
+          KEEP_AWAKE_URL: ${{ vars.KEEP_AWAKE_URL }}
+        run: |
+          set -euo pipefail
+          URL="${KEEP_AWAKE_URL:-https://hoc-toan-ai.onrender.com}"
+          URL="${URL%/}"
+          ping() {
+            curl -fsSL --max-time 90 -o /tmp/giu-thuc.body -w "%{http_code}" "$1" || true
+          }
+          for i in 1 2 3; do
+            code="$(ping "${URL}/api/suc-khoe")"
+            if [ "$code" = "200" ]; then
+              echo "thức: /api/suc-khoe"
+              exit 0
+            fi
+            code="$(ping "${URL}/dang-nhap")"
+            if [ "$code" = "200" ]; then
+              echo "thức: /dang-nhap"
+              exit 0
+            fi
+            sleep 15
+          done
+          echo "không ping được ${URL}" >&2
+          exit 1
