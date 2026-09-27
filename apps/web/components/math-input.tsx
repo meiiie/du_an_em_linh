@@ -7,11 +7,14 @@ export function MathInput({
   onChange,
   testId,
   label,
+  nhe = false,
 }: {
   value: string;
   onChange: (v: string) => void;
   testId: string;
   label: string;
+  /** Nhãn là ký hiệu toán, không phải tiêu đề form. */
+  nhe?: boolean;
 }) {
   const ref = useRef<HTMLElement | null>(null);
   const onChangeRef = useRef(onChange);
@@ -48,7 +51,7 @@ export function MathInput({
 
   return (
     <label className="block text-sm">
-      <span className="mb-2 block font-medium">{label}</span>
+      <span className={nhe ? "mb-2 block font-mono text-sm text-muted" : "mb-2 block font-medium"}>{label}</span>
       <math-field ref={ref as never} data-testid={`mf-${testId}`} />
       <input
         data-testid={testId}

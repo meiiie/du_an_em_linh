@@ -1,12 +1,19 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { chuanHoaLatexCongThuc, gonLyDoDuyet, hamLatex, loiGoiHocSinh, thanDe, thanTrich, tenCuaTang, tenKyNangNgan, tenTaiLieuNgan } from "./de-hoc-sinh";
+import { chuanHoaLatexCongThuc, gonLyDoDuyet, hamLatex, loiBuoc, loiGoiHocSinh, soBuoc, tenBuocTrang, thanDe, thanTrich, tenCuaTang, tenKyNangNgan, tenTaiLieuNgan } from "./de-hoc-sinh";
 
 test("bọc latex hàm số", () => {
   assert.equal(hamLatex("x^{2}"), "y = x^{2}");
   assert.equal(hamLatex("y = x^3 - 6x^2"), "y = x^3 - 6x^2");
   assert.equal(hamLatex("f'(x)=x^{2}(x-2)"), "f'(x)=x^{2}(x-2)");
   assert.equal(hamLatex(""), "");
+});
+
+test("trang bước đạo hàm có số và lời khớp tên", () => {
+  assert.equal(soBuoc("B.DH.DAOHAM"), "02");
+  assert.equal(tenBuocTrang("B.DH.DAOHAM"), "Đạo hàm");
+  assert.equal(loiBuoc("B.DH.DAOHAM"), "Tính đạo hàm của hàm số");
+  assert.equal(tenBuocTrang("B.DH.XETDAU"), "Xét dấu");
 });
 
 test("tách thân đề khỏi công thức", () => {

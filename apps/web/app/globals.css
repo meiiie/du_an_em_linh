@@ -163,6 +163,34 @@ math-field::part(virtual-keyboard-toggle) {
   display: none;
 }
 
+.cong-thuc .katex-display {
+  margin: 0.25em 0;
+  text-align: left;
+}
+
+/* Trang làm bài: dòng viết, không hộp form. */
+.sach-toan math-field {
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  border-radius: 0;
+  background: transparent;
+  padding-left: 0;
+  font-size: 1.35rem;
+}
+
+.sach-toan input[data-testid^="latex-"] {
+  border: 0;
+  border-bottom: 1px dashed var(--line);
+  border-radius: 0;
+  background: transparent;
+  padding-left: 0;
+}
+
+.thanh-x {
+  accent-color: var(--ink);
+  height: 44px;
+}
+
 @media (pointer: coarse) {
   math-field {
     min-height: var(--target);

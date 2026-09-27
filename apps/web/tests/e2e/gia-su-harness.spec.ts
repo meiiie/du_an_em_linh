@@ -10,6 +10,7 @@ test.describe("harness gia sư", () => {
     await vaoLop(page, "hs.an@demo.local", "hocsinh123");
     await moSoBaiGiao(page);
     await page.getByTestId("bai-DH12-03-VD-01").click();
+    await page.getByTestId("mo-gia-su").click();
     await expect(page.getByTestId("tutor-panel")).toBeVisible();
     await expect(page.getByTestId("tutor-composer")).toBeVisible();
     await expect(page.getByTestId("tutor-provider")).toHaveValue("offline");

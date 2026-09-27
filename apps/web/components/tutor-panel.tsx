@@ -166,7 +166,7 @@ export function TutorPanel({
         dung();
         return;
       }
-      if (open && window.matchMedia("(max-width: 767px)").matches) onClose();
+      if (open) onClose();
     }
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
@@ -174,7 +174,7 @@ export function TutorPanel({
 
   useEffect(() => {
     if (!open || typeof window === "undefined") return;
-    if (window.matchMedia("(min-width: 768px)").matches) return;
+    if (window.matchMedia("(min-width: 1024px)").matches) return;
     const prev = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     const el = to.current;
@@ -305,17 +305,17 @@ export function TutorPanel({
     <aside
       ref={to}
       className={cn(
-        "flex min-h-0 flex-col bg-paper",
-        "max-md:fixed max-md:inset-0 max-md:z-50 max-md:h-dvh max-md:overflow-hidden max-md:px-4 max-md:pt-[max(1rem,env(safe-area-inset-top))] max-md:pb-[max(0.75rem,env(safe-area-inset-bottom))]",
-        "md:sticky md:top-4 md:h-[calc(100dvh-6.5rem)] md:border-l md:border-line md:pl-6",
-        open ? "flex max-md:motion-safe:animate-[to-len_200ms_ease-out]" : "hidden md:flex",
+        "min-h-0 flex-col bg-paper",
+        "fixed inset-0 z-50 h-dvh overflow-hidden px-4 pt-[max(1rem,env(safe-area-inset-top))] pb-[max(0.75rem,env(safe-area-inset-bottom))]",
+        "lg:inset-y-6 lg:left-auto lg:right-6 lg:h-auto lg:w-[24rem] lg:border lg:border-line",
+        open ? "flex max-lg:motion-safe:animate-[to-len_200ms_ease-out]" : "hidden",
       )}
       data-testid="tutor-panel"
       aria-busy={thinking}
     >
       <div className="flex shrink-0 items-start justify-between gap-3">
         <div className="min-w-0">
-          <p className="text-sm font-semibold">Gia sư AI</p>
+          <p className="text-sm font-semibold">Gợi ý</p>
           <p className="truncate text-xs text-muted md:whitespace-normal" data-testid="tutor-che-do">
             {moTaCheDo({ provider, offline: lastOffline, error: lastError })}
           </p>
@@ -328,7 +328,7 @@ export function TutorPanel({
         <button
           type="button"
           data-testid="dong-gia-su"
-          className={cn(buttonClasses({ variant: "ghost", size: "sm" }), "shrink-0 min-h-11 min-w-11 md:hidden")}
+          className={cn(buttonClasses({ variant: "ghost", size: "sm" }), "shrink-0 min-h-11 min-w-11")}
           onClick={onClose}
         >
           Đóng

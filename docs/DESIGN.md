@@ -16,7 +16,7 @@ Coursera `#0056D2`, IBM `#0F62FE`, Khan blue, Canvas electric: không chép.
 
 ## Brief
 
-Sản phẩm là **phiếu chấm đạo hàm**: học sinh đi 5 bước, giáo viên duyệt cổng. Cảm giác sổ điểm / phiếu thi, không phải landing khóa học.
+Sản phẩm là **một trang toán**: công thức là điểm nhìn, năm bước là mục lục, gia sư chỉ mở khi được hỏi. Chữ giao diện tiết chế; biểu thức mang sự biểu đạt. Không landing phần mềm (khẩu hiệu lớn, khung trình duyệt, ba thẻ tính năng).
 
 ## Token
 
@@ -54,7 +54,7 @@ Thẻ không còn là đơn vị mặc định. Việc = hàng (Classroom). Bài
 
 ## Lộ trình học sinh (`/hs`)
 
-Không dashboard thẻ. Chia như phiếu + sổ — gáy 5 bước là vật đặc trưng, không phải lời chào.
+Không dashboard thẻ. Phiếu là bài kế: thân đề, công thức lớn, một dòng `02 / Đạo hàm` của bước đang làm, rồi `Làm bước tiếp`. Không năm ô tròn bằng nhau.
 
 ```
 +--------+---------------------------+------------------+
@@ -62,15 +62,16 @@ Không dashboard thẻ. Chia như phiếu + sổ — gáy 5 bước là vật đ
 | 220    | Đơn điệu và cực trị       |                  |
 |        +---------------------------+------------------+
 |        | PHIẾU                     | SỔ (tab gạch)    |
-|        | 1 TXĐ                     | Kỹ năng | Bài tập |
-|        | 2 y′     đề KaTeX         | (một panel)      |
-|        | 3 …      [Làm bước tiếp]  |                  |
+|        | đề                        | Kỹ năng | Bài tập |
+|        | công thức lớn             | (một panel)      |
+|        | 02 / Đạo hàm              |                  |
+|        | [Làm bước tiếp]           |                  |
 +--------+---------------------------+------------------+
 ```
 
 Desktop (`lg`): cột phiếu `1fr` | kẻ 1 px | cột sổ `18–24rem`. Điện thoại / máy tính bảng: phiếu rồi sổ. Sổ là **tab gạch chân mực** (Carbon / InstUI) — `Kỹ năng` mặc định, `?so=giao` cho bài tập. Không viên thuốc. Tab trình duyệt ngắn: `Học` / `Đề bài` / `Lịch` / `Công thức` (template `· Học toán với AI`). Ray HS cùng bốn chữ đó (testid `nav-hs-*` giữ nguyên).
 
-Đề = KaTeX từ `statementLatex`. Một thang 4 mức — không Bloom trên mặt học sinh (3 mức CV 7991 chỉ ở cổng GV). Sổ kỹ năng: tên + mức 4 + ô vững; không câu giải thích UI. Hàng yếu lên trên, hàng đang gợi tô `wash`. Tab Bài tập ≠ Đề bài: chỉ bài thầy cô giao chưa đạt. Số chưa làm chỉ trên tab Bài tập. Gáy điện thoại / máy tính bảng: TXĐ · y′ · Nghiệm · Xét dấu · Kết luận; desktop `lg+` mới đủ tên. Nút nộp trên điện thoại: `Nộp · TXĐ` (không «Nộp bước Bảng xét dấu» cạnh Hỏi).
+Đề = KaTeX từ `statementLatex`. Một thang 4 mức — không Bloom trên mặt học sinh (3 mức CV 7991 chỉ ở cổng GV). Sổ kỹ năng: tên + mức 4 + ô vững; không câu giải thích UI. Hàng yếu lên trên, hàng đang gợi tô `wash`. Tab Bài tập ≠ Đề bài: chỉ bài thầy cô giao chưa đạt. Số chưa làm chỉ trên tab Bài tập. Mục lục đủ tên năm bước nằm trên trang làm bài, không trên phiếu. Nút trên điện thoại: `Kiểm tra` cạnh `Cần gợi ý?`.
 
 **Quy tắc chữ và UI (khóa):** mỗi câu, mỗi chữ, mỗi ô một việc — không việc thì bỏ. Áp dụng **học sinh và giáo viên**. Tiếng lớp 12 / phòng giáo viên, không calque LMS/NCKH (`ngân bài`, `ngân hàng`, `hàng đợi`, `sinh biến thể`, `cổng`, `kho` trừ khi là kho thật, `phát hành`, `duyệt cổng`, `ngưỡng`, `nấc`, `Em` trên chrome, Bloom, mã `T12`/`DH12` trên UI). Không câu giải thích UI. Không lặp cùng một số ở hai chỗ. Tên mục = việc của trang.
 
@@ -78,7 +79,9 @@ Desktop (`lg`): cột phiếu `1fr` | kẻ 1 px | cột sổ `18–24rem`. Đi�
 
 **Chữ giáo viên:** ray `Lớp` / `Duyệt` / `Đề bài` / `Tạo đề` / `Tài liệu` / `Công thức` / `Mức` / `Gia sư` / `Cài lớp` (testid `nav-gv-*` giữ nguyên). Heading khóa: `Lớp 12A1 thử`, `Cài đặt lớp`, `Kết nối ChatGPT`. `/gv` = letterhead + hàng việc (Gia sư, kẹt, chờ, chặn, đã mở) — không nút trùng ray. Hàng kẹt dẫn `Mức`. Gia sư: dán khóa ChatGPT / OpenRouter / Z.AI (coding) — không nhập URL; khối đầu ghi `ChatGPT`, không «Lớp»; ba nhà cùng chữ «Tạo một khóa, sao chép.»; **Cài lớp không dán khóa**, không lặp «Dán ở Gia sư», không điểm 9/9 trên mặt, mô hình trong `details`. Duyệt: không liệt kê công thức khi Không kiểm được; một căn cứ khi Đạt/Sai; lý do thôi «có trích dẫn». Trạng thái bài: `Đã mở` / `Chờ duyệt` / `Bị chặn`. Cổng 3 tầng giữ `Đạt` / `Sai` / `Không kiểm được`; lý do không calque «máy tự kiểm». Banner GV vào bằng `phieu-vao`. 3 mức CV 7991 chỉ ở `/gv/tien-do?muc=3`. Mức trên điện thoại = danh sách từng em; `md+` mới bảng.
 
-**Trang công khai:** `/` = heading + một câu + **một** Vào học trên header. Không nút trùng chân trang, không SymPy, không email, không liệt kê 5 bước. `/dang-nhap`: không câu «tài khoản thử» dưới tiêu đề; mật khẩu thử chỉ khi sai.
+**Trang công khai:** `/` chia như một trang mở: chữ trái, hình `y = x^3 - 3x` phải (kéo `x`, tiếp tuyến và `y′` đổi theo). Heading khóa `Học toán với AI` ở đầu trang. Dưới là ba việc có thật (năm bước, một chủ đề, không đáp án) và mục lục năm bước — không thẻ icon giống nhau, không số học sinh giả, không ảnh kiến trúc. Dải mực cuối: một câu và Vào học. `data-testid=vao-hoc` chỉ một nút trên header. Không khung trình duyệt, không SymPy, không email, không gắn nhãn cực trị trên hình. `/dang-nhap`: không câu «tài khoản thử» dưới tiêu đề; mật khẩu thử chỉ khi sai.
+
+**Trang làm bài** (`/hs/luyen`): từ `sm` mục lục trái — số mono, tên bước, vạch trái 2 px ở bước đang làm (bút đỏ nếu sai). Dưới `sm` cùng mục lục thành một dòng phía trên, vạch dưới, tên ngắn, để công thức lấy hết chiều ngang. Không nền mực cho cả hàng. Trang: `02 / Đạo hàm`, một câu việc của bước, công thức lớn căn trái, chỗ viết ngay dưới. Phản hồi một câu ngay dưới chỗ viết (vạch `mark` hoặc `pass`), không thẻ màu. Nút chính `Kiểm tra` / `Kiểm tra lại`; `Cần gợi ý?` là phụ và mới mở tờ gia sư. Không đồ thị bài đang chấm. Không cột gia sư khi chưa hỏi.
 
 ## Lưới và nhịp (SOTA 2026-09-27)
 
@@ -114,9 +117,9 @@ Thanh công cụ điện thoại 48 px (`h-12`) — Material touch 48 dp, cao h�
 ## Thành phần
 
 - Nút primary = mực đặc, bán kính 6 px, giải phẫu trên.
-- Bước 5 bước = cột số bên trái phiếu, không chip viên thuốc. Mỗi hàng bước `min-h-11`.
-- Sai = viền `mark` + banner dưới bước (`px-4 py-3`).
-- Composer gia sư: cột phải dính (`sticky`), nhật ký `flex-1`, composer đáy. Điện thoại: thanh đáy **Nộp + Hỏi gia sư** (không FAB đè Nộp); nhãn Nộp ngắn (`Nộp · TXĐ`); chip «Sai chỗ nào?» (gửi vẫn «Em sai chỗ nào?»); bấm Hỏi thì **tờ full màn** (`fixed inset-0`, `visualViewport` khi bàn phím, composer đáy, Đóng 44), không đẩy gia sư xuống dưới phiếu. `textarea` tối thiểu 44, nút Gửi **luôn** 44×44, Enter gửi / Shift+Enter dòng / Escape Dừng. Ô vẫn gõ được lúc đang nghĩ. Cuộn theo đáy (Open WebUI); kéo lên thì giữ chỗ, có «Xuống». Lỗi: «Hỏi lại» đổ câu vào ô — không tự gửi. SSE `trang_thai` kho/gọi/lọc rồi `xong` — **không** xả token. Chờ = 3 ô CSS (bước đang làm nhịp, scale 0,85↔1) + chữ `Đang nghĩ…` / `Đang mở công thức…` / `Đang hỏi gia sư…` / `Đang kiểm lời…`. Câu mới và banner chấm vào bằng `phieu-vao` (180 ms, 6 px); tờ gia sư điện thoại `to-len` (200 ms, 16 px). Không khối SVG, không bong bóng gradient, không gọi lại model khi SSE lỗi.
+- Bước 5 bước = mục lục tên + số mono, vạch 2 px ở bước hiện tại. Mỗi hàng `min-h-11`. Không chip viên thuốc, không nền mực cả hàng.
+- Sai = vạch `mark` trên mục và dòng phản hồi ngay dưới chỗ viết. Ô sai trong bảng vẫn `cell-bad`.
+- Composer gia sư: chỉ khi bấm `Cần gợi ý?`. Dưới `lg` là tờ full màn; `lg+` là tờ phải 24 rem, có Đóng. Không chiếm cột khi đóng. Thanh đáy điện thoại: **Kiểm tra + Cần gợi ý?** Chip «Sai chỗ nào?» (gửi vẫn «Em sai chỗ nào?»). `visualViewport` khi bàn phím, composer đáy, Đóng 44. `textarea` tối thiểu 44, nút Gửi **luôn** 44×44, Enter gửi / Shift+Enter dòng / Escape Dừng hoặc đóng tờ. Ô vẫn gõ được lúc đang nghĩ. Cuộn theo đáy (Open WebUI); kéo lên thì giữ chỗ, có «Xuống». Lỗi: «Hỏi lại» đổ câu vào ô — không tự gửi. SSE `trang_thai` kho/gọi/lọc rồi `xong` — **không** xả token. Chờ = 3 ô CSS (bước đang làm nhịp, scale 0,85↔1) + chữ `Đang nghĩ…` / `Đang mở công thức…` / `Đang hỏi gia sư…` / `Đang kiểm lời…`. Câu mới và dòng chấm vào bằng `phieu-vao` (180 ms, 6 px); tờ dưới `lg` dùng `to-len` (200 ms, 16 px). Không khối SVG trang trí, không bong bóng gradient, không gọi lại model khi SSE lỗi. Hình trang chủ là đồ thị của hàm minh họa, không phải họa tiết.
 - Lời gia sư: Markdown + KaTeX (nhịp Claude / assistant-ui / Open WebUI — flush trái trên giấy, học sinh mới có bong bóng mực). Cột hẹp: đoạn ngắn, danh sách, công thức căn trái cuộn ngang. Chuẩn hóa `\[ \]`, `\(...\)`, `align` trần, hàng rào `latex`. KaTeX lỗi thì chữ mờ, không hộp đỏ. Tiêu đề `#` thành chữ đậm cùng cỡ. Không HTML thô, không bong bóng wash. Trích dẫn: số `[n]` trong lời là badge (không lẫn số danh sách). Bấm số / chip = xem đúng đoạn trên phiếu. **Mở công thức** / **Mở tài liệu** mới về `#ct-` / `#tl-`. Một đoạn, không chồng 5–6.
 - Kết nối tài khoản: hai bước như Notion/Linear (mở trang chính thức → dán một lần). Không nút xanh ChatGPT, không logo.
 - Không hero navy, không số khổng lồ trên 3 thẻ giống nhau.

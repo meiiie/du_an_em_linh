@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import { nopBuoc, type StepPayload } from "@/lib/actions/hs";
 import type { AiPublicConfig } from "@/lib/ai-catalog";
 import type { TrichDanHien } from "@/lib/kien-thuc";
-import { tenBuocNgan, thanDe } from "@/lib/de-hoc-sinh";
+import { loiBuoc, soBuoc, tenBuocNgan, tenBuocTrang } from "@/lib/de-hoc-sinh";
 import { BUOC } from "@/lib/levels";
 import { Button, buttonClasses } from "./ui/button";
 import { fieldControl } from "./ui/field";
@@ -143,52 +143,73 @@ export function SolveClient({
   }
 
   const ma = ORDER[step];
+  const ten = tenBuocTrang(ma);
+  const loi = loiBuoc(ma);
+  const dat = grade?.ket_qua === "DAT";
 
   return (
-    <div className="grid items-start gap-8 md:grid-cols-[minmax(0,1fr)_minmax(300px,380px)]">
-      <section data-testid="solve-screen" className="pb-[calc(5.5rem+env(safe-area-inset-bottom))] md:pb-0">
-        <h1 className="text-pretty text-xl font-semibold">{thanDe(title)}</h1>
-        <p className="mt-4 max-w-[65ch] overflow-x-auto text-[1.25rem] leading-8" translate="no">
-          <Tex tex={latex} />
-        </p>
-        <ol className="mt-4 flex gap-0 overflow-x-auto border-y border-line lg:flex-col lg:border-0">
-          {BUOC.map((b, i) => (
-            <li key={b.ma} className="min-w-0 flex-1 lg:flex-none">
-              <button
-                type="button"
-                data-testid={`step-${b.ma}`}
-                onClick={() => setStep(i)}
-                className={`flex min-h-11 w-full items-center gap-1.5 px-2 text-left text-[13px] transition-colors duration-150 lg:gap-3 lg:px-4 lg:text-sm ${
-                  badStep === b.ma
-                    ? "bg-red-50 font-medium text-mark"
-                    : i === step
-                      ? "bg-ink text-chalk"
-                      : i < step
-                        ? "text-ink"
-                        : "text-muted"
-                }`}
-              >
-                <span className="tabular font-mono text-xs">{i + 1}</span>
-                <span className="whitespace-nowrap lg:hidden">{tenBuocNgan(b.ma)}</span>
-                <span className="hidden lg:inline">{b.ten}</span>
-              </button>
-            </li>
-          ))}
+    <>
+    <div className="sm:grid sm:grid-cols-[11rem_minmax(0,1fr)] sm:items-start sm:gap-8">
+      <nav aria-label="Năm bước" className="mb-6 min-w-0 sm:sticky sm:top-8 sm:mb-0">
+        <ol className="flex min-w-0 gap-1 overflow-x-auto sm:block sm:overflow-visible">
+          {BUOC.map((b, i) => {
+            const dang = i === step;
+            const sai = badStep === b.ma;
+            const xong = i < step && !sai;
+            return (
+              <li key={b.ma} className="shrink-0 sm:shrink">
+                <button
+                  type="button"
+                  data-testid={`step-${b.ma}`}
+                  aria-current={dang ? "step" : undefined}
+                  onClick={() => setStep(i)}
+                  className={cn(
+                    "flex min-h-11 items-center gap-2 border-b-2 bg-transparent px-2 text-left text-sm leading-5 transition-colors duration-150 sm:grid sm:w-full sm:grid-cols-[1.25rem_minmax(0,1fr)] sm:border-b-0 sm:border-l-2 sm:px-3",
+                    sai
+                      ? "border-mark font-medium text-mark"
+                      : dang
+                        ? "border-ink font-medium text-ink"
+                        : xong
+                          ? "border-transparent text-ink"
+                          : "border-transparent text-muted",
+                  )}
+                >
+                  <span className="font-mono text-xs tabular text-muted">{soBuoc(b.ma)}</span>
+                  <span className="sm:hidden">{tenBuocNgan(b.ma)}</span>
+                  <span className="hidden sm:inline">{tenBuocTrang(b.ma)}</span>
+                </button>
+              </li>
+            );
+          })}
         </ol>
+      </nav>
 
-        <div className="mt-6 space-y-4">
+      <section data-testid="solve-screen" className="sach-toan min-w-0 pb-[calc(5.5rem+env(safe-area-inset-bottom))] md:pb-0">
+        <p className="sr-only">{title}</p>
+        <h1 className="text-pretty text-xl font-semibold tracking-tight">
+          <span className="font-mono text-sm font-normal tabular text-muted">{soBuoc(ma)}</span>
+          <span className="mx-2 font-normal text-line">/</span>
+          {ten}
+        </h1>
+        {loi ? <p className="mt-2 max-w-[42ch] text-sm leading-relaxed text-muted">{loi}</p> : null}
+        <p className="cong-thuc mt-8 max-w-[65ch] overflow-x-auto text-[1.5rem] leading-tight sm:text-[2.25rem]" translate="no">
+          <Tex tex={latex} block />
+        </p>
+
+        <div className="mt-8 space-y-4">
           {ma === "B.DH.TXD" && (
-            <div className={lineBad("B.DH.TXD", 0) ? "cell-bad rounded-button p-2" : ""}>
-              <MathInput testId="latex-txd" label="Tập xác định" value={txd} onChange={setTxd} />
+            <div className={lineBad("B.DH.TXD", 0) ? "cell-bad p-2" : ""}>
+              <MathInput testId="latex-txd" label="D" nhe value={txd} onChange={setTxd} />
             </div>
           )}
           {ma === "B.DH.DAOHAM" && (
-            <div className="space-y-2">
+            <div className="space-y-4">
               {dh.map((line, i) => (
-                <div key={i} className={lineBad("B.DH.DAOHAM", i) ? "cell-bad rounded-button p-2" : ""}>
+                <div key={i} className={lineBad("B.DH.DAOHAM", i) ? "cell-bad p-2" : ""}>
                   <MathInput
                     testId={i === 0 ? "latex-dh" : `latex-dh-${i}`}
-                    label={i === 0 ? "Đạo hàm" : `Dòng ${i + 1}`}
+                    label={i === 0 ? "y′" : `Dòng ${i + 1}`}
+                    nhe={i === 0}
                     value={line}
                     onChange={(v) => setDh(dh.map((x, j) => (j === i ? v : x)))}
                   />
@@ -336,7 +357,7 @@ export function SolveClient({
                                   key={val}
                                   type="button"
                                   data-testid={`mui-${k}-${val}`}
-                                  className={`inline-flex min-h-8 min-w-8 items-center justify-center rounded text-xs ${arrows[k] === val ? "bg-pass text-white" : "bg-wash"}`}
+                                  className={`inline-flex min-h-8 min-w-8 items-center justify-center rounded text-xs ${arrows[k] === val ? "bg-ink text-chalk" : "bg-wash"}`}
                                   onClick={() => {
                                     log({
                                       ma_buoc: "B.DH.XETDAU",
@@ -402,60 +423,51 @@ export function SolveClient({
             key={`${grade.ket_qua}-${grade.thong_bao}`}
             data-testid="cham-thong-bao"
             aria-live="polite"
-            className={`mt-6 px-4 py-3 text-sm motion-safe:animate-[phieu-vao_180ms_ease-out] ${grade.ket_qua === "DAT" ? "bg-pass/10 text-pass" : "bg-amber-50 text-amber-950"}`}
+            className={cn(
+              "mt-4 border-l-2 pl-3 text-sm leading-relaxed motion-safe:animate-[phieu-vao_180ms_ease-out]",
+              dat ? "border-pass" : "border-mark",
+            )}
           >
             {grade.finished ? "Đã xong bài này." : grade.thong_bao}
           </p>
         ) : null}
 
         {grade?.finished && moLoiGiai && loiGiai ? (
-          <div data-testid="loi-giai-sau-nop" className="mt-4 rounded-button bg-paper px-4 py-3 text-sm leading-relaxed">
-            <p className="font-semibold">Lời giải</p>
+          <div data-testid="loi-giai-sau-nop" className="mt-4 border-l-2 border-line pl-3 text-sm leading-relaxed">
+            <p className="font-medium">Lời giải</p>
             <p className="mt-1">{loiGiai}</p>
           </div>
         ) : null}
 
         <div
           data-testid="thanh-nop"
-          className="max-md:fixed max-md:inset-x-0 max-md:bottom-0 max-md:z-20 max-md:flex max-md:items-stretch max-md:gap-2 max-md:border-t max-md:border-line max-md:bg-canvas max-md:px-4 max-md:pt-3 max-md:pb-[max(0.75rem,env(safe-area-inset-bottom))]"
+          className="mt-6 flex items-center gap-3 max-md:fixed max-md:inset-x-0 max-md:bottom-0 max-md:z-20 max-md:mt-0 max-md:border-t max-md:border-line max-md:bg-canvas max-md:px-4 max-md:pt-3 max-md:pb-[max(0.75rem,env(safe-area-inset-bottom))]"
         >
           <Button
             type="button"
             data-testid="nop-buoc"
             disabled={busy}
             onClick={submit}
-            className="mt-8 w-full max-md:mt-0 max-md:min-w-0 max-md:flex-1"
+            className="max-md:min-w-0 max-md:flex-1"
           >
-            {busy ? (
-              "Đang chấm…"
-            ) : (
-              <>
-                <span className="md:hidden">{`Nộp · ${tenBuocNgan(ma)}`}</span>
-                <span className="hidden md:inline">{`Nộp bước ${BUOC[step].ten}`}</span>
-              </>
-            )}
+            {busy ? "Đang kiểm…" : grade ? "Kiểm tra lại" : "Kiểm tra"}
           </Button>
           {!openTutor ? (
-            <Button
-              type="button"
-              data-testid="mo-gia-su"
-              variant="secondary"
-              className="max-md:shrink-0 md:hidden"
-              onClick={() => setOpenTutor(true)}
-            >
-              Hỏi gia sư
+            <Button type="button" data-testid="mo-gia-su" variant="ghost" className="shrink-0" onClick={() => setOpenTutor(true)}>
+              Cần gợi ý?
             </Button>
           ) : null}
         </div>
       </section>
 
-      <TutorPanel
-        problemId={problemId}
-        initialChat={initialChat}
-        ai={ai}
-        open={openTutor}
-        onClose={() => setOpenTutor(false)}
-      />
     </div>
+    <TutorPanel
+      problemId={problemId}
+      initialChat={initialChat}
+      ai={ai}
+      open={openTutor}
+      onClose={() => setOpenTutor(false)}
+    />
+    </>
   );
 }
