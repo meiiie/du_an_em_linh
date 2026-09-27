@@ -86,7 +86,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="vi" className={`${plexSans.variable} ${plexMono.variable}`}>
+    <html lang="vi" translate="no" className={`${plexSans.variable} ${plexMono.variable}`}>
       <body className={`${plexSans.className} min-h-screen antialiased`}>{children}</body>
     </html>
   );
