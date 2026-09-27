@@ -3,9 +3,11 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { useFormStatus } from "react-dom";
 import { Eye, EyeOff, Pencil } from "lucide-react";
+import Link from "next/link";
 import { BrandMark } from "@/components/brand-mark";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/cn";
+import { SITE_NAME } from "@/lib/site";
 
 const TAI = [
   { nhan: "Học sinh An", email: "hs.an@demo.local" },
@@ -86,7 +88,13 @@ export function LoginForm({
       <p className="sr-only" aria-live="polite">
         Bước {buoc === "email" ? "1" : "2"} / 2
       </p>
-      <BrandMark size="lg" />
+      <Link
+        href="/"
+        className="rounded-button focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink"
+        aria-label={`Về trang chủ ${SITE_NAME}`}
+      >
+        <BrandMark size="lg" />
+      </Link>
       <h1 id="tieu-de-dang-nhap" className="mt-5 text-pretty text-[1.75rem] font-semibold leading-9 tracking-tight">
         Đăng nhập
       </h1>

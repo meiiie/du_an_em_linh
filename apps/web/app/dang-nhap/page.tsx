@@ -1,12 +1,9 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { eq } from "drizzle-orm";
 import { redirect } from "next/navigation";
-import { BrandMark } from "@/components/brand-mark";
 import { LoginForm } from "@/components/login-form";
 import { createSession, verifyPassword } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { SITE_NAME } from "@/lib/site";
 import { userRoles, users } from "@/lib/db/schema";
 
 async function dangNhap(formData: FormData) {
@@ -34,14 +31,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
       <a href="#form-dang-nhap" className="skip-link">
         Bỏ qua đến form đăng nhập
       </a>
-      <div className="mx-auto grid min-h-dvh max-w-5xl grid-rows-[auto_1fr_auto] px-6 py-6 sm:px-8 sm:py-8">
-        <header className="flex min-h-10 items-center justify-between gap-4">
-          <Link href="/" className="inline-flex items-center gap-3 text-ink">
-            <BrandMark />
-            <strong className="text-base font-semibold tracking-tight">{SITE_NAME}</strong>
-          </Link>
-          <span className="hidden text-xs font-semibold text-muted min-[380px]:inline">Nguyên mẫu NCKH</span>
-        </header>
+      <div className="mx-auto grid min-h-dvh max-w-5xl grid-rows-[1fr_auto] px-6 py-6 sm:px-8 sm:py-8">
         <LoginForm loi={sp.loi === "1"} dangNhap={dangNhap} />
         <footer className="flex flex-wrap items-center justify-center gap-2 text-center text-xs leading-[18px] text-muted">
           <span>Toán 12 · đơn điệu và cực trị</span>
