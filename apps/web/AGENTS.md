@@ -34,6 +34,8 @@ Dùng `Button` / `buttonClasses` trong `components/ui/button.tsx`. Đừng tự 
 
 `/hs`: phiếu + sổ tab. Desktop `lg`: cột phiếu | kẻ 1 px | cột sổ (`Kỹ năng` / `?so=giao`). Tab gạch chân mực, không viên thuốc. Ray / title: `Học`, `Đề bài`, `Lịch`, `Công thức` — không «ngân bài», không «kho» trên UI học sinh. Đề = `statementLatex`. Không Bloom, không mã bài/kỹ năng. **Mỗi chữ/ô một việc** (xem `docs/DESIGN.md` quy tắc chữ và UI). Giữ heading «Chào An» và CTA «Làm bước tiếp».
 
+`/gv`: cùng quy tắc chữ. Ray `Lớp` / `Duyệt` / `Đề bài` / `Tạo đề` / `Tài liệu` / `Công thức` / `Mức` / `Gia sư` / `Cài lớp`. Giữ heading «Lớp 12A1 thử», «Cài đặt lớp», «Kết nối ChatGPT». Không mã `DH12`/`T12` trên mặt. 3 mức chỉ khi `?muc=3`.
+
 ## Testid không đổi
 
 `sidebar`, `mo-sidebar`, `dong-sidebar`, `nav-*`, `solve-screen`, `latex-txd`, `latex-dh`, `nop-buoc`, `cham-thong-bao`, `mo-gia-su`, `tutor-input`, `tutor-send`, `tutor-log`, `tutor-provider`, `tutor-composer`, `bai-DH12-03-VD-01`, `hang-doi`, `duyet-*`, `tien-do`, `toggle-muc`, `mo-loi-giai`, `ai-provider`, `ket-noi-chatgpt`, `kho-cong-thuc`, `kho-theo-buoc`, `san-sang-ai`, `email`, `password`.

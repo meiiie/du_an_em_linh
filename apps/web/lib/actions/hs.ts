@@ -51,7 +51,7 @@ export async function nopBuoc(problemId: string, body: StepPayload) {
   const prob = await db.select().from(problems).where(eq(problems.id, problemId)).limit(1);
   const p = prob[0];
   if (!p || p.status !== "DA_PHAT_HANH" || !p.hamSympy) {
-    return { ok: false as const, thong_bao: "Bài chưa phát hành hoặc không chấm được bằng khung 5 bước." };
+    return { ok: false as const, thong_bao: "Bài chưa mở hoặc không chấm được." };
   }
   const cfg = await loadConfig();
   const lyDo = nghiDoanMo(body.events || [], cfg.nguong_doan_mo_so_lan_doi_o);
@@ -211,7 +211,7 @@ export async function hoiGiaSu(
   if (!prob[0] || prob[0].status !== "DA_PHAT_HANH") {
     return {
       ok: false as const,
-      tra_loi: "Bài chưa phát hành.",
+      tra_loi: "Bài chưa mở.",
       offline: true,
       provider: "offline" as const,
       error: null,

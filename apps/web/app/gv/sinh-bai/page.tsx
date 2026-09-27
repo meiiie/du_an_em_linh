@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { sinhBienThe } from "@/lib/actions/gv";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -7,22 +8,19 @@ import { STATUS_LABEL } from "@/lib/levels";
 
 export const dynamic = "force-dynamic";
 
+export const metadata: Metadata = {
+  title: "Tạo đề",
+};
+
 export default async function Page({ searchParams }: { searchParams: Promise<{ ma?: string; trang?: string; loi?: string }> }) {
   const sp = await searchParams;
   return (
     <main className="max-w-xl">
-      <PageHeader
-        kicker="Sinh bài"
-        title="Sinh biến thể tham số"
-        description="Bậc ba, trùng phương, hoặc phân thức bậc nhất. Lời giải do SymPy tính rồi đi qua cổng 3 tầng. Chưa đạt thì không phát hành."
-      />
+      <PageHeader title="Tạo đề" />
       {sp.loi ? <p className="mb-4 text-sm text-mark">{sp.loi}</p> : null}
       {sp.ma && sp.trang ? (
         <p className="mb-4 text-sm" data-testid="ket-sinh">
-          Đã sinh{" "}
-          <span className="font-mono" translate="no">
-            {sp.ma}
-          </span>{" "}
+          Đã tạo{" "}
           <Badge tone={sp.trang === "DA_PHAT_HANH" ? "ok" : sp.trang === "BI_CHAN" ? "bad" : "warn"}>
             {STATUS_LABEL[sp.trang] || sp.trang}
           </Badge>
@@ -42,10 +40,10 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ m
             <option value="huu_ti">Phân thức bậc nhất</option>
           </select>
         </Field>
-        <Field label="Hạt giống số">
+        <Field label="Số gốc">
           <input name="seed" type="number" defaultValue={11} className={fieldControl} autoComplete="off" />
         </Field>
-        <Button type="submit">Sinh và kiểm định</Button>
+        <Button type="submit">Tạo đề</Button>
       </form>
     </main>
   );

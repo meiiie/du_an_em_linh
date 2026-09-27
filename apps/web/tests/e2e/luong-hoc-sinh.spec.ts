@@ -13,6 +13,17 @@ test.describe("trang chủ", () => {
     await expect(page.getByRole("button", { name: "Tiếp tục" })).toBeVisible();
   });
 
+  test("sai mật khẩu thì hiện đúng mật khẩu thử", async ({ page }) => {
+    await page.goto("/dang-nhap");
+    await page.getByRole("button", { name: "Học sinh An" }).click();
+    await page.getByTestId("password").fill("hocsinh1233");
+    await page.getByRole("button", { name: "Vào học" }).click();
+    await expect(page).toHaveURL(/loi=1/);
+    await expect(page.getByRole("alert")).toContainText("hocsinh123");
+    await expect(page.getByRole("alert")).toContainText("giaovien123");
+    await expect(page.getByRole("alert")).not.toContainText("nằm dưới");
+  });
+
   test("logo tab và tài sản SEO công khai", async ({ request }) => {
     const paths = [
       "/favicon.ico",
@@ -130,13 +141,16 @@ test.describe("máy tính bảng", () => {
 test.describe("giáo viên", () => {
   test.use({ viewport: { width: 1280, height: 800 } });
 
-  test("hàng đợi kiểm định và tiến độ 4 mức / 3 mức", async ({ page }) => {
+  test("duyệt bài và mức lớp 4 / 3 mức", async ({ page }) => {
     await page.goto("/dang-nhap");
     await page.screenshot({ path: `${SHOTS}/dang-nhap.png`, fullPage: true });
     await vaoLop(page, "gv@demo.local", "giaovien123");
     await expect(page.getByRole("heading", { name: "Lớp 12A1 thử" })).toBeVisible();
     await expect(page.getByTestId("sidebar")).toBeVisible();
-    await expect(page.getByTestId("nav-gv-duyet")).toBeVisible();
+    await expect(page.getByTestId("nav-gv-tong-quan")).toContainText("Lớp");
+    await expect(page.getByTestId("nav-gv-duyet")).toContainText("Duyệt");
+    await expect(page.getByTestId("nav-gv-ngan-hang")).toContainText("Đề bài");
+    await expect(page.getByTestId("nav-gv-sinh-bai")).toContainText("Tạo đề");
     await expect(page.getByTestId("san-sang-ai")).toContainText("Chưa kết nối");
     await expect(page.getByTestId("san-sang-ai")).toContainText("công thức");
     await expect(page.getByTestId("canh-bao-ket")).toContainText("Chi");

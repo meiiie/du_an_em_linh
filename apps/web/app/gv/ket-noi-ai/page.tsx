@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { ketNoiBangKhoa, ngatKetNoiAi } from "@/lib/actions/gv";
 import { maskKey } from "@/lib/ai-catalog";
@@ -15,6 +16,10 @@ import { cn } from "@/lib/cn";
 
 export const dynamic = "force-dynamic";
 
+export const metadata: Metadata = {
+  title: "Gia sư",
+};
+
 export default async function Page({
   searchParams,
 }: {
@@ -28,11 +33,7 @@ export default async function Page({
   const khung = xemKhoTheoKhung(await taiNguyenKhoLop());
   return (
     <main className="max-w-xl">
-      <PageHeader
-        kicker="Gia sư"
-        title="Kết nối ChatGPT"
-        description="Thầy cô làm một lần. Học sinh chỉ thấy gia sư — không thấy khóa, không cài phần mềm."
-      />
+      <PageHeader title="Kết nối ChatGPT" />
 
       {q.loi ? (
         <p className="mb-6 bg-amber-50 px-4 py-3 text-sm text-amber-950" data-testid="ket-noi-loi">
@@ -41,7 +42,7 @@ export default async function Page({
       ) : null}
       {q.ok ? (
         <p className="mb-6 bg-pass/10 px-4 py-3 text-sm text-pass" data-testid="ket-noi-ok">
-          Đã kết nối. Học sinh hỏi gia sư là dùng ChatGPT của lớp. Vẫn lọc lộ đáp án.
+          Đã kết nối. Học sinh hỏi gia sư là dùng ChatGPT của lớp.
         </p>
       ) : null}
       {q.oauth ? (
@@ -51,17 +52,17 @@ export default async function Page({
       ) : null}
 
       <section className="border-y border-line py-6" data-testid="ket-noi-chatgpt">
-        <p className="text-sm font-medium">Trạng thái lớp</p>
+        <p className="text-sm font-medium">Lớp</p>
         <p className="mt-2 text-sm text-muted" data-testid="ket-noi-trang-thai">
           {ready
-            ? `Đã kết nối khóa chính thức${mask ? ` · ${mask}` : ""}${setting?.aiOpenaiEmail ? ` · ${setting.aiOpenaiEmail}` : ""}.`
+            ? `Đã kết nối${mask ? ` · ${mask}` : ""}${setting?.aiOpenaiEmail ? ` · ${setting.aiOpenaiEmail}` : ""}.`
             : setting?.aiOpenaiEmail
-              ? `Đã đăng nhập ChatGPT (${setting.aiOpenaiEmail}) — chưa có khóa gọi mô hình.`
-              : "Chưa kết nối. Lớp đang dùng thang gợi ý đã kiểm."}
+              ? `Đã vào ChatGPT (${setting.aiOpenaiEmail}) — chưa có khóa.`
+              : "Chưa kết nối. Lớp đang dùng thang gợi ý."}
         </p>
 
         {ready ? (
-          <p className="mt-3 text-sm">Học sinh không làm việc kỹ thuật. Gia sư vẫn chỉ đọc kho đã duyệt, không đọc lời giải.</p>
+          <p className="mt-3 text-sm">Gia sư chỉ đọc tài liệu và công thức đã mở, không đọc lời giải.</p>
         ) : (
           <ol className="mt-6 space-y-6 text-sm">
             <li className="flex gap-4">
@@ -70,9 +71,7 @@ export default async function Page({
               </span>
               <div className="min-w-0 flex-1">
                 <p className="font-medium">Mở ChatGPT</p>
-                <p className="mt-1 text-muted">
-                  Tài khoản ChatGPT và OpenAI là một. Thầy cô đăng nhập như vào ChatGPT, tạo một khóa, sao chép.
-                </p>
+                <p className="mt-1 text-muted">Tạo một khóa trên ChatGPT, sao chép.</p>
                 <a
                   href={OPENAI_KEYS_PAGE}
                   target="_blank"
@@ -100,7 +99,7 @@ export default async function Page({
                       required
                       data-testid="ket-noi-khoa"
                       className={fieldControl}
-                      placeholder={mask ? `${mask} — dán khóa mới để thay` : "Dán khóa vừa sao chép — không gửi cho học sinh"}
+                      placeholder={mask ? `${mask} — dán khóa mới` : "Dán khóa vừa sao chép"}
                     />
                   </label>
                   <details className="text-sm">
@@ -142,17 +141,15 @@ export default async function Page({
         ) : null}
 
         <div className="mt-8 border-t border-line pt-6">
-          <p className="text-sm font-medium">Đăng nhập ChatGPT (chỉ tên và email)</p>
-          <p className="mt-2 text-sm text-muted">
-            «Sign in with ChatGPT» chính thức (2026) là định danh — không thay khóa để gọi mô hình, không phải đăng nhập Codex.
-          </p>
+          <p className="text-sm font-medium">Đăng nhập ChatGPT</p>
+          <p className="mt-2 text-sm text-muted">Chỉ lấy tên và email — không thay khóa gọi mô hình.</p>
           {oauthSanSang ? (
             <a href="/gv/ket-noi-ai/oauth" className={cn(buttonClasses({ variant: "secondary" }), "mt-3")} data-testid="oauth-chatgpt">
               Tiếp tục với ChatGPT
             </a>
           ) : (
             <p className="mt-3 text-sm text-muted" data-testid="oauth-chua-dk">
-              Trường chưa có <span className="font-mono">OPENAI_OAUTH_CLIENT_ID</span>. Hai bước trên là đường chính thức cho lớp thử.
+              Trường chưa có <span className="font-mono">OPENAI_OAUTH_CLIENT_ID</span>. Dùng hai bước trên.
             </p>
           )}
         </div>
@@ -167,8 +164,7 @@ export default async function Page({
       </section>
 
       <section className="border-b border-line py-6">
-        <h2 className="text-base font-semibold">Gia sư sẽ đọc kho lớp</h2>
-        <p className="mt-2 text-sm text-muted">Cùng nguồn tầng 2/3. Không đọc lời giải chuẩn. Kong IJCAI 2026: truy hồi rồi mới sinh.</p>
+        <h2 className="text-base font-semibold">Gia sư đọc</h2>
         <div className="mt-3">
           <KhoTheoBuoc khung={khung} />
         </div>
@@ -176,7 +172,7 @@ export default async function Page({
 
       <p className="mt-6 text-sm text-muted">
         <Link href="/gv/cai-dat" className="underline underline-offset-2">
-          Về cài đặt lớp
+          Cài lớp
         </Link>
         {" · "}
         <Link href="/gv/tai-lieu" className="underline underline-offset-2">

@@ -9,7 +9,7 @@ import { userRoles, users } from "@/lib/db/schema";
 async function dangNhap(formData: FormData) {
   "use server";
   const email = String(formData.get("email") || "").trim().toLowerCase();
-  const password = String(formData.get("password") || "");
+  const password = String(formData.get("password") || "").trim();
   const found = await db.select().from(users).where(eq(users.email, email)).limit(1);
   if (!found[0] || !verifyPassword(password, found[0].passwordHash)) {
     redirect("/dang-nhap?loi=1");

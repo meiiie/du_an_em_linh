@@ -21,10 +21,7 @@ export function KiemTraAi({ macDinh }: { macDinh: AiProviderId }) {
 
   return (
     <div className="space-y-3 border-t border-line pt-6" data-testid="ai-probe">
-      <p className="text-sm font-medium">Kiểm tra kết nối</p>
-      <p className="text-sm text-muted">
-        Một lần GET /models. Không gửi lại, không quét LAN, không chuyển nhà nếu lỗi.
-      </p>
+      <p className="text-sm font-medium">Thử kết nối</p>
       <div className="flex flex-col gap-2 sm:flex-row sm:items-end">
         <label className="block flex-1 text-sm">
           <span className="mb-2 block font-medium">Nhà cần thử</span>

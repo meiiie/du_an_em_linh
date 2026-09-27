@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { desc, eq } from "drizzle-orm";
 import { themCongThuc } from "@/lib/actions/gv";
 import { Tex } from "@/components/tex";
@@ -9,6 +10,10 @@ import { formulaSheets, formulas, verificationRuns } from "@/lib/db/schema";
 
 export const dynamic = "force-dynamic";
 
+export const metadata: Metadata = {
+  title: "Công thức",
+};
+
 export default async function Page() {
   const sheets = await db.select().from(formulaSheets).orderBy(desc(formulaSheets.version));
   const latest = sheets[0];
@@ -16,15 +21,11 @@ export default async function Page() {
   const stale = await db.select().from(verificationRuns).where(eq(verificationRuns.stale, true));
   return (
     <main className="space-y-8">
-      <PageHeader
-        kicker="Nội dung"
-        title={`Bảng công thức phiên bản ${latest?.version ?? 0}`}
-        description="Thêm công thức sẽ khóa phiên bản mới. Gia sư chỉ đọc bảng khóa này. Bài đã phát hành không bị gỡ; lần kiểm cũ được đánh dấu cũ."
-      />
+      <PageHeader title="Công thức" />
       <section className="border-y border-line py-4">
         {stale.length ? (
           <p className="mb-4 bg-amber-50 px-4 py-3 text-sm">
-            Đổi phiên bản làm {stale.length} lần kiểm định cũ. Cần kiểm lại khi sửa nội dung bài.
+            {stale.length} lần kiểm cũ — cần kiểm lại khi sửa đề.
           </p>
         ) : null}
         {rows.length === 0 ? <p className="text-sm text-muted">Chưa có công thức.</p> : null}
@@ -39,17 +40,17 @@ export default async function Page() {
         </ul>
       </section>
       <form action={themCongThuc} className="space-y-4 border-y border-line py-6">
-        <h2 className="text-base font-semibold">Thêm công thức — tạo phiên bản mới</h2>
+        <h2 className="text-base font-semibold">Thêm công thức</h2>
         <Field label="Tên">
           <input name="title" required placeholder="Tên công thức…" className={fieldControl} />
         </Field>
         <Field label="LaTeX">
           <input name="latex" placeholder="y' = …" className={fieldControl} autoComplete="off" />
         </Field>
-        <Field label="Nội dung tiếng Việt">
-          <textarea name="noi_dung" required placeholder="Giải thích ngắn…" className={fieldControl} />
+        <Field label="Tiếng Việt">
+          <textarea name="noi_dung" required placeholder="Nội dung ngắn…" className={fieldControl} />
         </Field>
-        <Button type="submit">Khóa phiên bản mới</Button>
+        <Button type="submit">Thêm</Button>
       </form>
     </main>
   );

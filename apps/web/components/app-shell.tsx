@@ -54,7 +54,7 @@ export function AppShell({
 }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
-  const title = role === "GV" ? "Cổng giáo viên" : "Học sinh";
+  const title = role === "GV" ? "Giáo viên" : "Học sinh";
 
   return (
     <div className="min-h-screen bg-canvas">
