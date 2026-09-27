@@ -18,7 +18,13 @@ export function LichTuan({
   const o = new Map(slots.map((s) => [`${s.thu}|${s.gio}`, s]));
   return (
     <div className="overflow-x-auto" data-testid="lich-tuan">
-      <table className="w-full min-w-[40rem] border-collapse text-left">
+      <table className="w-full min-w-[40rem] table-fixed border-collapse text-left">
+        <colgroup>
+          <col className="w-14" />
+          {ngay.map((d) => (
+            <col key={d.ma} />
+          ))}
+        </colgroup>
         <thead>
           <tr className="border-b border-line">
             <th className="w-14 py-3 pr-2" scope="col">
