@@ -10,6 +10,6 @@ export async function vaoLop(page: Page, email: string, password: string) {
 
 /** Sổ mặc định là kỹ năng — mở tab bài giao trước khi bấm hàng `bai-*`. */
 export async function moSoBaiGiao(page: Page) {
-  const tab = page.getByTestId("tab-bai-giao");
-  if (await tab.count()) await tab.click();
+  await page.getByTestId("tab-bai-giao").click();
+  await page.waitForURL(/so=giao/);
 }
