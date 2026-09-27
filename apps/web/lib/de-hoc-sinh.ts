@@ -51,6 +51,13 @@ export function thanDe(statementText: string) {
   return gon || "Xét tính đơn điệu của hàm số";
 }
 
+/** Tên tài liệu: phần sau dấu hai chấm / gạch. */
+export function tenTaiLieuNgan(title: string) {
+  const gon = (title || "").replace(/^[^:—\-]+[:—\-]\s*/, "").trim();
+  const ten = gon || title;
+  return ten.charAt(0).toLocaleUpperCase("vi-VN") + ten.slice(1);
+}
+
 /** Một câu trích tài liệu — bỏ câu khung «tự soạn» và ngoặc năm nghiên cứu. */
 export function thanTrich(text: string) {
   const gon = (text || "").replace(/\s+/g, " ").trim();

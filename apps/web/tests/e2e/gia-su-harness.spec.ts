@@ -78,7 +78,7 @@ test.describe("kho kiến thức", () => {
     await expect(page.getByRole("heading", { name: "Công thức và tài liệu" })).toBeVisible();
     await expect(page.getByTestId("kho-theo-buoc")).toContainText("Kết luận");
     await expect(page.getByTestId("kho-cong-thuc")).toContainText("Đạo hàm");
-    await expect(page.getByTestId("kho-tai-lieu")).toContainText("đơn điệu");
+    await expect(page.getByTestId("kho-tai-lieu")).toContainText(/đơn điệu/i);
     await page.screenshot({ path: `${SHOTS}/hs-kho-kien-thuc.png`, fullPage: true });
   });
 });

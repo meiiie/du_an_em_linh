@@ -9,8 +9,7 @@ import { Tex } from "@/components/tex";
 export function FormThemCongThuc() {
   const [latex, setLatex] = useState("");
   return (
-    <form action={themCongThuc} className="space-y-4 border-y border-line py-6">
-      <h2 className="text-base font-semibold">Thêm công thức</h2>
+    <form action={themCongThuc} className="space-y-4">
       <Field label="Tên">
         <input name="title" required placeholder="Đạo hàm lũy thừa…" className={fieldControl} />
       </Field>

@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { hamLatex, loiGoiHocSinh, thanDe, thanTrich, tenKyNangNgan } from "./de-hoc-sinh";
+import { hamLatex, loiGoiHocSinh, thanDe, thanTrich, tenKyNangNgan, tenTaiLieuNgan } from "./de-hoc-sinh";
 
 test("bọc latex hàm số", () => {
   assert.equal(hamLatex("x^{2}"), "y = x^{2}");
@@ -50,6 +50,12 @@ test("trích tài liệu một câu, bỏ ngoặc năm nghiên cứu", () => {
     thanTrich("Gia sư chỉ gợi ý quy trình, không đưa kết quả (VanLehn 2006; Aleven). Khi kẹt thì gửi thầy cô."),
     /VanLehn|Aleven|2006/,
   );
+});
+
+test("rút tên tài liệu sau dấu hai chấm", () => {
+  assert.equal(tenTaiLieuNgan("Ghi chú tự soạn: đơn điệu và cực trị"), "Đơn điệu và cực trị");
+  assert.equal(tenTaiLieuNgan("Tham khảo phương pháp — ôn đơn điệu thế nào"), "Ôn đơn điệu thế nào");
+  assert.equal(tenTaiLieuNgan("Công thức đạo hàm"), "Công thức đạo hàm");
 });
 
 test("rút tên kỹ năng", () => {
