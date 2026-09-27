@@ -181,8 +181,14 @@ export function TutorPanel({
     const vv = window.visualViewport;
     const sync = () => {
       if (!el || !vv) return;
-      el.style.height = `${vv.height}px`;
-      el.style.top = `${vv.offsetTop}px`;
+      const banPhim = window.innerHeight - vv.height > 40;
+      if (banPhim) {
+        el.style.height = `${vv.height}px`;
+        el.style.top = `${vv.offsetTop}px`;
+      } else {
+        el.style.height = "";
+        el.style.top = "";
+      }
     };
     sync();
     vv?.addEventListener("resize", sync);
