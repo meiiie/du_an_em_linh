@@ -158,7 +158,7 @@ export function SolveClient({
                 type="button"
                 data-testid={`step-${b.ma}`}
                 onClick={() => setStep(i)}
-                className={`flex min-h-11 w-full items-center gap-1.5 px-2 text-left text-[13px] lg:gap-3 lg:px-4 lg:text-sm ${
+                className={`flex min-h-11 w-full items-center gap-1.5 px-2 text-left text-[13px] transition-colors duration-150 lg:gap-3 lg:px-4 lg:text-sm ${
                   badStep === b.ma
                     ? "bg-red-50 font-medium text-mark"
                     : i === step
@@ -188,14 +188,14 @@ export function SolveClient({
                 <div key={i} className={lineBad("B.DH.DAOHAM", i) ? "cell-bad rounded-button p-2" : ""}>
                   <MathInput
                     testId={i === 0 ? "latex-dh" : `latex-dh-${i}`}
-                    label={`Dòng ${i + 1} của đạo hàm`}
+                    label={i === 0 ? "Đạo hàm" : `Dòng ${i + 1}`}
                     value={line}
                     onChange={(v) => setDh(dh.map((x, j) => (j === i ? v : x)))}
                   />
                 </div>
               ))}
               <button type="button" className={cn(buttonClasses({ variant: "ghost", size: "sm" }), "px-0")} onClick={() => setDh([...dh, ""])}>
-                Thêm dòng biến đổi
+                Thêm dòng
               </button>
             </div>
           )}
@@ -219,7 +219,7 @@ export function SolveClient({
                     }
                     aria-label={r.loai === "NGHIEM" ? "Đổi thành điểm không xác định" : "Đổi thành nghiệm"}
                   >
-                    <span className="sm:hidden">{r.loai === "NGHIEM" ? "Không XD" : "Nghiệm"}</span>
+                    <span className="sm:hidden">{r.loai === "NGHIEM" ? "Không xác định" : "Nghiệm"}</span>
                     <span className="hidden sm:inline">
                       {r.loai === "NGHIEM" ? "Đổi thành điểm không xác định" : "Đổi thành nghiệm"}
                     </span>
@@ -324,7 +324,7 @@ export function SolveClient({
                       })}
                     </tr>
                     <tr>
-                      <th className="p-1 text-left">chiều</th>
+                      <th className="p-1 text-left">y</th>
                       {Array.from({ length: sorted.length * 2 + 1 }, (_, k) =>
                         k % 2 === 1 ? (
                           <td key={k} />
@@ -402,9 +402,10 @@ export function SolveClient({
 
         {grade ? (
           <p
+            key={`${grade.ket_qua}-${grade.thong_bao}`}
             data-testid="cham-thong-bao"
             aria-live="polite"
-            className={`mt-6 px-4 py-3 text-sm ${grade.ket_qua === "DAT" ? "bg-pass/10 text-pass" : "bg-amber-50 text-amber-950"}`}
+            className={`mt-6 px-4 py-3 text-sm motion-safe:animate-[phieu-vao_180ms_ease-out] ${grade.ket_qua === "DAT" ? "bg-pass/10 text-pass" : "bg-amber-50 text-amber-950"}`}
           >
             {grade.finished ? "Đã xong bài này." : grade.thong_bao}
           </p>

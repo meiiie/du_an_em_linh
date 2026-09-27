@@ -39,7 +39,7 @@ export const NHA: Record<
 > = {
   offline: {
     id: "offline",
-    ten: "Thang gợi ý đã kiểm",
+    ten: "Thang gợi ý",
     ngan: "Thang gợi ý",
     local: false,
     canKhoa: false,

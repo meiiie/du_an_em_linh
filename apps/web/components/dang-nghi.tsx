@@ -7,7 +7,7 @@ const BUOC: GiaSuBuocSse[] = ["kho", "goi", "loc"];
 export function DangNghi({ buoc }: { buoc: GiaSuBuocSse | null }) {
   const idx = buoc ? BUOC.indexOf(buoc) : -1;
   return (
-    <p className="flex items-center gap-3 text-sm text-muted" data-testid="tutor-thinking" aria-live="polite">
+    <p className="flex items-center gap-3 text-sm text-muted motion-safe:animate-[phieu-vao_180ms_ease-out]" data-testid="tutor-thinking" aria-live="polite">
       <span className={cn("gs-nhip", buoc == null && "gs-nhip-cho")} aria-hidden>
         {BUOC.map((b, i) => (
           <span

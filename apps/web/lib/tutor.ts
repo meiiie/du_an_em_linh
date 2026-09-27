@@ -148,9 +148,9 @@ export function moTaCheDo(arg: boolean | { provider?: string; offline: boolean; 
     if (provider === "cloud") return "ChatGPT của lớp · lỗi · không chuyển nhà khác";
     if (provider === "openrouter") return "OpenRouter của lớp · lỗi · không chuyển nhà khác";
     if (provider === "zai") return "Z.AI của lớp · lỗi · không chuyển nhà khác";
-    return "Thang gợi ý đã kiểm";
+    return "Thang gợi ý";
   }
-  if (provider === "offline" || offline) return "Thang gợi ý đã kiểm";
+  if (provider === "offline" || offline) return "Thang gợi ý";
   if (provider === "ollama") return "Ollama trên máy này";
   if (provider === "lmstudio") return "LM Studio trên máy này";
   if (provider === "openrouter") return "OpenRouter của lớp";
