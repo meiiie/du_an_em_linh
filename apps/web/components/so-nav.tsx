@@ -2,7 +2,7 @@ import Link from "next/link";
 import { cn } from "@/lib/cn";
 
 const TAB =
-  "inline-flex min-h-10 items-center border-b-2 px-3 text-sm -mb-px [@media(pointer:coarse)]:min-h-11";
+  "inline-flex min-h-10 shrink-0 items-center whitespace-nowrap border-b-2 px-3 text-sm -mb-px [@media(pointer:coarse)]:min-h-11";
 
 export function SoNav({
   active,
