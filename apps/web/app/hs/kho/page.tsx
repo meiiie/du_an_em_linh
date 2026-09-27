@@ -16,8 +16,7 @@ export default async function Page() {
     <main className="max-w-2xl">
       <PageHeader title="Công thức và tài liệu" description="Gia sư chỉ đọc kho này, không đọc lời giải." />
       <section className="border-y border-line py-6" data-testid="kho-theo-buoc-hs">
-        <h2 className="text-base font-semibold">Gia sư đọc theo bước</h2>
-        <p className="mt-2 text-sm text-muted">Khi hỏi, lấy đúng đoạn khớp bước đang làm.</p>
+        <h2 className="text-base font-semibold">Theo bước đang làm</h2>
         <div className="mt-3">
           <KhoTheoBuoc khung={kho.khung} />
         </div>

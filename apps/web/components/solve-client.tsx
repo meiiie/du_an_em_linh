@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { nopBuoc, type StepPayload } from "@/lib/actions/hs";
 import type { AiPublicConfig } from "@/lib/ai-catalog";
+import { thanDe } from "@/lib/de-hoc-sinh";
 import { BUOC } from "@/lib/levels";
 import { Button, buttonClasses } from "./ui/button";
 import { fieldControl } from "./ui/field";
@@ -143,8 +144,7 @@ export function SolveClient({
   return (
     <div className="grid gap-8 md:grid-cols-[minmax(0,1fr)_minmax(280px,340px)]">
       <section data-testid="solve-screen">
-        <h1 className="text-pretty text-xl font-semibold">Làm bài theo 5 bước</h1>
-        <p className="mt-2 text-sm leading-relaxed">{title}</p>
+        <h1 className="text-pretty text-xl font-semibold">{thanDe(title)}</h1>
         <div className="mt-3 border-y border-line bg-wash px-3 py-2">
           <Tex tex={latex} />
         </div>

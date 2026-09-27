@@ -59,7 +59,7 @@ Không dashboard thẻ. Chia như phiếu + sổ — gáy 5 bước là vật đ
 ```
 +--------+---------------------------+------------------+
 | RAY    | Chào An                   | 12A1 thử         |
-| 220    | Toán 12, đơn điệu…        |                  |
+| 220    | Đơn điệu và cực trị       |                  |
 |        +---------------------------+------------------+
 |        | PHIẾU                     | SỔ (tab gạch)    |
 |        | 1 TXĐ                     | Kỹ năng | Bài tập |
@@ -70,9 +70,9 @@ Không dashboard thẻ. Chia như phiếu + sổ — gáy 5 bước là vật đ
 
 Desktop (`lg`): cột phiếu `1fr` | kẻ 1 px | cột sổ `18–24rem`. Điện thoại / máy tính bảng: phiếu rồi sổ. Sổ là **tab gạch chân mực** (Carbon / InstUI) — `Kỹ năng` mặc định, `?so=giao` cho bài tập. Không viên thuốc. Tab trình duyệt ngắn: `Lộ trình` / `Ngân bài` / `Lịch` / `Kho` (template `· Học toán với AI`). Ray HS: Lộ trình, Ngân bài, Lịch, Kho.
 
-Đề = KaTeX từ `statementLatex`. Một thang 4 mức — không Bloom trên mặt học sinh (3 mức CV 7991 chỉ ở cổng GV). Mức vững: tên ngắn, ô sát tên, hàng yếu lên trên, hàng đang gợi tô `wash`. Bài tập ≠ ngân bài: chỉ bài thầy cô giao chưa đạt.
+Đề = KaTeX từ `statementLatex`. Một thang 4 mức — không Bloom trên mặt học sinh (3 mức CV 7991 chỉ ở cổng GV). Sổ kỹ năng: tên + mức 4 + ô vững; không câu giải thích UI. Hàng yếu lên trên, hàng đang gợi tô `wash`. Bài tập ≠ ngân bài: chỉ bài thầy cô giao chưa đạt. Số chưa làm chỉ trên tab Bài tập — không lặp trên ray Ngân bài. Gáy điện thoại vẫn ghi tên bước.
 
-**Chữ học sinh:** tiếng lớp 12. Tiêu đề phiếu `Bài tiếp theo`. Tab `Bài tập`. Không mã `T12.DH.*` / `DH12-*` trên UI (testid giữ mã). Không *phát hành*, *duyệt cổng*, *ước lượng*, *ngưỡng*, *nấc*, *Em* trên chrome. Không xác suất BKT. CTA khóa: `Làm bước tiếp`. Heading khóa: `Chào An`.
+**Chữ học sinh:** tiếng lớp 12. Mỗi câu một việc. Tiêu đề phiếu `Bài tiếp theo`. Tab `Bài tập`. Không mã `T12.DH.*` / `DH12-*` trên UI (testid giữ mã). Không *phát hành*, *duyệt cổng*, *ước lượng*, *ngưỡng*, *nấc*, *Em* trên chrome. Không xác suất BKT. CTA khóa: `Làm bước tiếp`. Heading khóa: `Chào An`.
 
 ## Lưới và nhịp (SOTA 2026-09-27)
 

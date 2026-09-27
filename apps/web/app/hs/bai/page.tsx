@@ -20,7 +20,7 @@ export default async function Page() {
   const waiting = await db.select().from(problems).where(eq(problems.status, "CHO_GIAO_VIEN_DUYET"));
   return (
     <main>
-      <PageHeader title="Ngân bài" description="Bài thầy cô đã mở. Bài chưa mở thì chưa làm được." />
+      <PageHeader title="Ngân bài" />
       <div className="border-y border-line">
         {pubs.map((p) => {
           const ham = hamLatex(p.statementLatex);

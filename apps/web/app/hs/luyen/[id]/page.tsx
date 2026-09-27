@@ -59,11 +59,9 @@ export default async function LuyenPage({ params }: { params: Promise<{ id: stri
         initialChat={lichSu.messages}
         ai={ai}
       />
-      <p className="mt-3 text-xs text-muted">
-        {showSolution
-          ? "Lời giải mở sau khi nộp đủ năm bước. Gia sư không đọc lời giải lúc làm."
-          : "Chưa xem được lời giải."}
-      </p>
+      {showSolution ? (
+        <p className="mt-3 text-xs text-muted">Lời giải mở sau khi nộp đủ năm bước. Gia sư không đọc lời giải lúc làm.</p>
+      ) : null}
     </main>
   );
 }

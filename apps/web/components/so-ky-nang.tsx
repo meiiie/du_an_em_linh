@@ -14,11 +14,10 @@ export function SoKyNang({
       <h2 id="ky-nang" className="sr-only">
         Kỹ năng
       </h2>
-      <p className="mt-3 text-xs text-muted">Ô đặc là mức vững, không phải điểm.</p>
       {rows.length === 0 ? (
-        <p className="mt-4 text-sm text-muted">Chưa làm bài. Làm một bài để hiện kỹ năng.</p>
+        <p className="mt-3 text-sm text-muted">Chưa làm bài — làm một bài để hiện kỹ năng.</p>
       ) : (
-        <ul className="mt-4 divide-y divide-line border-y border-line">
+        <ul className="mt-3 divide-y divide-line border-y border-line">
           {rows.map((s) => {
             const yeu = s.skillCode === dangYeu;
             const ten = tenKyNangNgan(s.skillCode, s.name);
@@ -28,6 +27,7 @@ export function SoKyNang({
                 key={s.skillCode}
                 className={cn("border-l-2 py-3 pl-3", yeu ? "border-ink bg-wash" : "border-transparent")}
                 aria-current={yeu ? "true" : undefined}
+                aria-label={`${ten}, ${muc}`}
               >
                 <div className="flex items-baseline justify-between gap-3">
                   <p className="text-sm">{ten}</p>
@@ -35,9 +35,6 @@ export function SoKyNang({
                 </div>
                 <div className="mt-2">
                   <MasteryCells value={s.mastery} />
-                  <span className="sr-only">
-                    {ten}, {muc}
-                  </span>
                 </div>
               </li>
             );

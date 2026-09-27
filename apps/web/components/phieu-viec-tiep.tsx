@@ -86,12 +86,13 @@ export function PhieuViecTiep({
             <p className="mt-4 max-w-[65ch] text-lg font-medium leading-snug">{problem.statementText}</p>
           )}
 
-          <ol className="mt-4 flex gap-2 sm:hidden" aria-label="Năm bước làm bài">
+          <ol className="mt-4 flex gap-3 overflow-x-auto sm:hidden" aria-label="Năm bước làm bài">
             {BUOC.map((b, i) => {
               const xong = buoc.done.includes(b.ma);
               const dang = buoc.current === b.ma && !buoc.finished;
+              const ten = tenBuocNgan(b.ma);
               return (
-                <li key={b.ma}>
+                <li key={b.ma} className="flex shrink-0 flex-col items-center gap-1">
                   <span
                     className={cn(
                       "grid size-8 place-items-center rounded-button text-xs font-medium",
@@ -99,10 +100,12 @@ export function PhieuViecTiep({
                       dang && "text-ink ring-1 ring-ink",
                       !xong && !dang && "text-muted ring-1 ring-line",
                     )}
-                    aria-label={`${i + 1}. ${tenBuocNgan(b.ma)}${xong ? ", đã xong" : dang ? ", đang làm" : ""}`}
+                    aria-current={dang ? "step" : undefined}
+                    aria-label={`${i + 1}. ${ten}${xong ? ", đã xong" : dang ? ", đang làm" : ""}`}
                   >
                     {i + 1}
                   </span>
+                  <span className={cn("text-[11px] leading-4", dang || xong ? "text-ink" : "text-muted")}>{ten}</span>
                 </li>
               );
             })}

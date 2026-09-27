@@ -22,7 +22,7 @@ export default async function LichPage() {
   const slots = live.slots;
   return (
     <main className="space-y-8">
-      <PageHeader title="Lịch học" description="Khung giờ tuần này. Nhắc trong ứng dụng." />
+      <PageHeader title="Lịch học" />
       <section>
         <h2 className="text-base font-semibold">Cách học</h2>
         <p className="mt-2 whitespace-pre-line text-sm leading-relaxed text-ink">{live.loiKhuyen}</p>
