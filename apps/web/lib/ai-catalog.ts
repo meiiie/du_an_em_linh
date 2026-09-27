@@ -22,7 +22,7 @@ export const ZAI_MODEL_MAC_DINH = "glm-5.3-flashx";
 
 export const AI_TIMEOUT_CHAT_MS = 30_000;
 export const AI_TIMEOUT_PROBE_MS = 8_000;
-/** FlashX hay hết token cho reasoning — tắt thinking, 1600 cho câu. */
+/** 1600 cho câu. Z.AI GLM-5.3: thinking enabled + reasoning_effort low — không tắt được. */
 export const AI_MAX_TOKENS_CHAT = 1_600;
 
 export const NHA: Record<

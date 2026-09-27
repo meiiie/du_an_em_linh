@@ -146,7 +146,7 @@ export function SolveClient({
 
   return (
     <div className="grid items-start gap-8 md:grid-cols-[minmax(0,1fr)_minmax(300px,380px)]">
-      <section data-testid="solve-screen" className="pb-20 md:pb-0">
+      <section data-testid="solve-screen" className="pb-[calc(5.5rem+env(safe-area-inset-bottom))] md:pb-0">
         <h1 className="text-pretty text-xl font-semibold">{thanDe(title)}</h1>
         <p className="mt-4 max-w-[65ch] overflow-x-auto text-[1.25rem] leading-8" translate="no">
           <Tex tex={latex} />
@@ -408,9 +408,31 @@ export function SolveClient({
           </div>
         ) : null}
 
-        <Button type="button" data-testid="nop-buoc" disabled={busy} onClick={submit} className="mt-8 w-full">
-          {busy ? "Đang chấm…" : `Nộp bước ${BUOC[step].ten}`}
-        </Button>
+        <div
+          data-testid="thanh-nop"
+          className="max-md:fixed max-md:inset-x-0 max-md:bottom-0 max-md:z-20 max-md:flex max-md:items-stretch max-md:gap-2 max-md:border-t max-md:border-line max-md:bg-canvas max-md:px-4 max-md:pt-3 max-md:pb-[max(0.75rem,env(safe-area-inset-bottom))]"
+        >
+          <Button
+            type="button"
+            data-testid="nop-buoc"
+            disabled={busy}
+            onClick={submit}
+            className="mt-8 w-full max-md:mt-0 max-md:min-w-0 max-md:flex-1"
+          >
+            {busy ? "Đang chấm…" : `Nộp bước ${BUOC[step].ten}`}
+          </Button>
+          {!openTutor ? (
+            <Button
+              type="button"
+              data-testid="mo-gia-su"
+              variant="secondary"
+              className="max-md:shrink-0 md:hidden"
+              onClick={() => setOpenTutor(true)}
+            >
+              Hỏi gia sư
+            </Button>
+          ) : null}
+        </div>
       </section>
 
       <TutorPanel
@@ -420,16 +442,6 @@ export function SolveClient({
         open={openTutor}
         onClose={() => setOpenTutor(false)}
       />
-      {!openTutor ? (
-        <Button
-          type="button"
-          data-testid="mo-gia-su"
-          className="fixed bottom-[calc(1rem+env(safe-area-inset-bottom))] right-4 z-20 shadow-lg md:hidden"
-          onClick={() => setOpenTutor(true)}
-        >
-          Hỏi gia sư
-        </Button>
-      ) : null}
     </div>
   );
 }

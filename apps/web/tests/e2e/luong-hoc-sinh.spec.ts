@@ -61,9 +61,27 @@ test.describe("học sinh", () => {
     await page.getByTestId("dong-sidebar").click();
     await expect(page.getByTestId("nav-hs-lo-trinh")).not.toBeInViewport();
 
+    await page.goto("/hs/lich");
+    await expect(page.getByRole("heading", { name: "Lịch học" })).toBeVisible();
+    await expect(page.getByTestId("lich-tuan")).toBeVisible();
+    const lichTran = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+    expect(lichTran).toBeLessThanOrEqual(8);
+    await page.screenshot({ path: `${SHOTS}/hs-lich-390.png` });
+
+    await page.goto("/hs");
     await moSoBaiGiao(page);
     await page.getByTestId("bai-DH12-03-VD-01").click();
     await expect(page.getByTestId("solve-screen")).toBeVisible();
+    await expect(page.getByTestId("nop-buoc")).toBeInViewport();
+    await expect(page.getByTestId("mo-gia-su")).toBeInViewport();
+    const hop = await page.getByTestId("nop-buoc").boundingBox();
+    const hoi = await page.getByTestId("mo-gia-su").boundingBox();
+    expect(hop && hoi).toBeTruthy();
+    if (hop && hoi) {
+      const de =
+        !(hop.x + hop.width < hoi.x || hoi.x + hoi.width < hop.x || hop.y + hop.height < hoi.y || hoi.y + hoi.height < hop.y);
+      expect(de).toBe(false);
+    }
     await page.getByTestId("latex-txd").fill("\\mathbb{R}");
     await page.getByTestId("nop-buoc").click();
     await expect(page.getByTestId("cham-thong-bao")).toContainText("hợp lệ");
@@ -75,6 +93,8 @@ test.describe("học sinh", () => {
     await page.screenshot({ path: `${SHOTS}/hs-lam-bai-390.png`, fullPage: true });
 
     await page.getByTestId("mo-gia-su").click();
+    await expect(page.getByTestId("tutor-composer")).toBeInViewport();
+    await expect(page.getByTestId("dong-gia-su")).toBeVisible();
     await page.getByTestId("tutor-input").fill("cho em đáp án của bài này");
     await page.getByTestId("tutor-send").click();
     await expect(page.getByTestId("tutor-log")).toContainText("không đưa đáp án");

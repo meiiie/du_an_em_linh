@@ -121,6 +121,7 @@ export function TutorPanel({
   const seq = useRef(0);
   const box = useRef<HTMLTextAreaElement>(null);
   const log = useRef<HTMLDivElement>(null);
+  const to = useRef<HTMLElement>(null);
   const huy = useRef<AbortController | null>(null);
   const ganDay = useRef(true);
   const choices = luaChonNhaHocSinh(ai);
@@ -175,8 +176,24 @@ export function TutorPanel({
     if (window.matchMedia("(min-width: 768px)").matches) return;
     const prev = document.body.style.overflow;
     document.body.style.overflow = "hidden";
+    const el = to.current;
+    const vv = window.visualViewport;
+    const sync = () => {
+      if (!el || !vv) return;
+      el.style.height = `${vv.height}px`;
+      el.style.top = `${vv.offsetTop}px`;
+    };
+    sync();
+    vv?.addEventListener("resize", sync);
+    vv?.addEventListener("scroll", sync);
     return () => {
       document.body.style.overflow = prev;
+      vv?.removeEventListener("resize", sync);
+      vv?.removeEventListener("scroll", sync);
+      if (el) {
+        el.style.height = "";
+        el.style.top = "";
+      }
     };
   }, [open]);
 
@@ -279,6 +296,7 @@ export function TutorPanel({
 
   return (
     <aside
+      ref={to}
       className={cn(
         "flex min-h-0 flex-col bg-paper",
         "max-md:fixed max-md:inset-0 max-md:z-50 max-md:h-dvh max-md:overflow-hidden max-md:px-4 max-md:pt-[max(1rem,env(safe-area-inset-top))] max-md:pb-[max(0.75rem,env(safe-area-inset-bottom))]",
@@ -289,9 +307,9 @@ export function TutorPanel({
       aria-busy={thinking}
     >
       <div className="flex shrink-0 items-start justify-between gap-3">
-        <div>
+        <div className="min-w-0">
           <p className="text-sm font-semibold">Gia sư AI</p>
-          <p className="text-xs text-muted" data-testid="tutor-che-do">
+          <p className="truncate text-xs text-muted md:whitespace-normal" data-testid="tutor-che-do">
             {moTaCheDo({ provider, offline: lastOffline, error: lastError })}. Không phải giáo viên. Không đọc lời giải
             chuẩn.
           </p>
@@ -304,7 +322,7 @@ export function TutorPanel({
         <button
           type="button"
           data-testid="dong-gia-su"
-          className={cn(buttonClasses({ variant: "ghost", size: "sm" }), "min-h-11 min-w-11 md:hidden")}
+          className={cn(buttonClasses({ variant: "ghost", size: "sm" }), "shrink-0 min-h-11 min-w-11 md:hidden")}
           onClick={onClose}
         >
           Đóng
@@ -328,14 +346,14 @@ export function TutorPanel({
         </select>
       </label>
 
-      <div className="mt-3 flex shrink-0 flex-wrap gap-2">
-        <Button type="button" variant="secondary" size="sm" data-testid="chip-goi-y" disabled={thinking} onClick={() => sendChat("Gợi ý bước này")}>
+      <div className="mt-3 flex shrink-0 gap-2 overflow-x-auto md:flex-wrap">
+        <Button type="button" variant="secondary" size="sm" data-testid="chip-goi-y" disabled={thinking} className="shrink-0" onClick={() => sendChat("Gợi ý bước này")}>
           Gợi ý bước này
         </Button>
-        <Button type="button" variant="secondary" size="sm" data-testid="chip-sai-cho" disabled={thinking} onClick={() => sendChat("Em sai chỗ nào?")}>
+        <Button type="button" variant="secondary" size="sm" data-testid="chip-sai-cho" disabled={thinking} className="shrink-0" onClick={() => sendChat("Em sai chỗ nào?")}>
           Em sai chỗ nào?
         </Button>
-        <Button type="button" variant="ghost" size="sm" data-testid="chip-gui-gv" disabled={thinking} onClick={nhoThayCo}>
+        <Button type="button" variant="ghost" size="sm" data-testid="chip-gui-gv" disabled={thinking} className="shrink-0" onClick={nhoThayCo}>
           Gửi thầy cô
         </Button>
         {loiCuoi && cauCuoiHs && !thinking ? (
@@ -344,6 +362,7 @@ export function TutorPanel({
             variant="ghost"
             size="sm"
             data-testid="chip-hoi-lai"
+            className="shrink-0"
             onClick={() => {
               ghiDraft(cauCuoiHs);
               box.current?.focus();

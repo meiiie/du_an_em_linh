@@ -383,9 +383,15 @@ test("probe cloud không lấy khóa Z.AI của lớp", async () => {
   assert.match(r.message, /Chưa có khóa/);
 });
 
-test("Z.AI tắt thinking, 1600 token, không đọc reasoning_content", async () => {
+test("Z.AI thinking enabled + low, 1600 token, không đọc reasoning_content", async () => {
   process.env.ZAI_API_KEY = "zai-test";
-  let body: { model?: string; max_tokens?: number; thinking?: { type?: string }; stream?: boolean } = {};
+  let body: {
+    model?: string;
+    max_tokens?: number;
+    thinking?: { type?: string };
+    reasoning_effort?: string;
+    stream?: boolean;
+  } = {};
   const r = await completeChat({
     provider: "zai",
     messages: [{ role: "user", content: "hi" }],
@@ -402,7 +408,8 @@ test("Z.AI tắt thinking, 1600 token, không đọc reasoning_content", async (
   assert.equal(body.max_tokens, AI_MAX_TOKENS_CHAT);
   assert.equal(body.max_tokens, 1600);
   assert.equal(body.stream, false);
-  assert.deepEqual(body.thinking, { type: "disabled" });
+  assert.deepEqual(body.thinking, { type: "enabled" });
+  assert.equal(body.reasoning_effort, "low");
   assert.equal(r.errorKind, "empty");
   assert.equal(r.text.includes("BÍ MẬT"), false);
   assert.equal(r.text.includes("y′=0"), false);

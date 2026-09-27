@@ -254,8 +254,11 @@ export async function completeChat(opts: {
     messages: opts.messages,
   };
   if (provider === "zai") {
-    // Tắt thinking: FlashX hay hết token cho reasoning, content rỗng. Lớp không xem CoT.
-    body.thinking = { type: "disabled" };
+    // GLM-5.3 / Flash không tắt thinking (docs 2026-09). disabled trên coding plan
+    // vẫn nghĩ, hết 1600 token cho reasoning_content, content rỗng.
+    // low = thay cho «tắt»: câu vào content, lớp không xem CoT.
+    body.thinking = { type: "enabled" };
+    body.reasoning_effort = "low";
   }
   const started = await motLan(
     fetchFn,
