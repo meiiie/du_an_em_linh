@@ -12,7 +12,7 @@
     "db:migrate": "tsx scripts/migrate.ts",
     "seed": "tsx scripts/seed.ts",
     "test:e2e": "playwright test",
-    "test:unit": "tsx --test lib/ai-harness.test.ts lib/kien-thuc.test.ts lib/de-hoc-sinh.test.ts lib/counsel.test.ts"
+    "test:unit": "tsx --test lib/ai-harness.test.ts lib/llm.test.ts lib/sse.test.ts lib/loi-gia-su.test.ts lib/tutor.test.ts lib/kien-thuc.test.ts lib/de-hoc-sinh.test.ts lib/counsel.test.ts lib/citations.test.ts lib/lich.test.ts lib/sota-gia-su.test.ts"
   },
   "dependencies": {
     "clsx": "^2.1.1",
@@ -24,6 +24,11 @@
     "postgres": "^3.4.7",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
+    "react-markdown": "^10.1.0",
+    "rehype-katex": "^7.0.1",
+    "remark-breaks": "^4.0.0",
+    "remark-gfm": "^4.0.1",
+    "remark-math": "^6.0.0",
     "tailwind-merge": "^3.3.1",
     "tsx": "^4.20.5",
     "zod": "^4.1.8"

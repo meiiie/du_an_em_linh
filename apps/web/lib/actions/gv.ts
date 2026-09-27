@@ -7,7 +7,7 @@ import path from "path";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { requireRole } from "../auth";
-import { parseProvider } from "../ai-catalog";
+import { laNhaKhoa, parseProvider } from "../ai-catalog";
 import { probeProvider } from "../ai-harness";
 import { db, sql } from "../db";
 import {
@@ -49,6 +49,7 @@ async function currentCorpus() {
   return {
     tai_lieu: docs.map((d) => ({
       id: d.id,
+      ten: d.title,
       text: d.textContent,
       license_status: d.licenseStatus,
       phien_ban: d.version,
@@ -320,32 +321,47 @@ export async function kiemTraNhaCungCap(providerRaw: string) {
   await requireRole("GV");
   const provider = parseProvider(providerRaw);
   const row = (await db.select().from(classSettings).limit(1))[0];
-  return probeProvider({ provider, classApiKey: row?.aiApiKey });
+  return probeProvider({ provider, classApiKey: row?.aiApiKey, classProvider: row?.aiProvider });
+}
+
+function loiDanKhoa(provider: ReturnType<typeof parseProvider>): string {
+  if (provider === "openrouter") return "Cần dán khóa vừa tạo trên OpenRouter.";
+  if (provider === "zai") return "Cần dán khóa vừa tạo trên Z.AI.";
+  return "Cần dán khóa API vừa tạo trên trang OpenAI.";
 }
 
 export async function ketNoiBangKhoa(form: FormData) {
   const user = await requireRole("GV");
   const key = String(form.get("ai_api_key") || "").trim();
   const model = String(form.get("ai_model") || "").trim() || null;
+  const provider = parseProvider(form.get("ai_provider") || "cloud");
+  if (!laNhaKhoa(provider)) {
+    redirect("/gv/ket-noi-ai?loi=" + encodeURIComponent("Nhà này không dùng khóa API."));
+  }
   if (!key || key === "********") {
-    redirect("/gv/ket-noi-ai?loi=" + encodeURIComponent("Cần dán khóa API vừa tạo trên trang OpenAI."));
+    redirect("/gv/ket-noi-ai?loi=" + encodeURIComponent(loiDanKhoa(provider)));
   }
   const rows = await db.select().from(classSettings);
   if (!rows[0]) redirect("/gv/ket-noi-ai?loi=" + encodeURIComponent("Chưa có lớp."));
-  const probe = await probeProvider({ provider: "cloud", classApiKey: key });
+  const probe = await probeProvider({ provider, classApiKey: key });
   if (!probe.ok) {
     redirect("/gv/ket-noi-ai?loi=" + encodeURIComponent(probe.message));
   }
-  await db
-    .update(classSettings)
-    .set({
-      aiProvider: "cloud",
-      aiApiKey: key,
-      aiModel: model,
-      aiConnectedAt: new Date(),
-    })
-    .where(eq(classSettings.classId, rows[0].classId));
-  await audit(user.id, "KET_NOI_CHATGPT", "class_settings", rows[0].classId, "khoa_chinh_thuc");
+  try {
+    await db
+      .update(classSettings)
+      .set({
+        aiProvider: provider,
+        aiApiKey: key,
+        aiModel: model,
+        aiConnectedAt: new Date(),
+      })
+      .where(eq(classSettings.classId, rows[0].classId));
+  } catch {
+    redirect("/gv/ket-noi-ai?loi=" + encodeURIComponent("Không lưu được khóa. Không giữ khóa trên form."));
+  }
+  const viec = provider === "openrouter" ? "KET_NOI_OPENROUTER" : provider === "zai" ? "KET_NOI_ZAI" : "KET_NOI_CHATGPT";
+  await audit(user.id, viec, "class_settings", rows[0].classId, "khoa_chinh_thuc");
   revalidatePath("/gv/ket-noi-ai");
   revalidatePath("/gv/cai-dat");
   revalidatePath("/gv");

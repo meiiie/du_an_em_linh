@@ -3,11 +3,12 @@ import { eq } from "drizzle-orm";
 import { notFound } from "next/navigation";
 import { SolveClient } from "@/components/solve-client";
 import { lichSuGiaSu } from "@/lib/actions/hs";
-import { resolveProvider, type AiPublicConfig } from "@/lib/ai-catalog";
-import { docKhoaCloud } from "@/lib/ai-harness";
+import type { AiPublicConfig } from "@/lib/ai-catalog";
+import { cauHinhCongKhai } from "@/lib/ai-harness";
 import { requireRole } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { classSettings, problems, solutions } from "@/lib/db/schema";
+import { hamLatex } from "@/lib/de-hoc-sinh";
 import { LABEL4, type Muc4 } from "@/lib/levels";
 import { loiGiaiHocSinh } from "@/lib/loi-giai";
 
@@ -38,12 +39,12 @@ export default async function LuyenPage({ params }: { params: Promise<{ id: stri
   }
   const settings = await db.select().from(classSettings);
   const showSolution = settings[0]?.moLoiGiaiSauKhiNop === true;
-  const ai: AiPublicConfig = {
-    classProvider: resolveProvider({ classProvider: settings[0]?.aiProvider }),
-    classModel: settings[0]?.aiModel || null,
-    allowLocal: settings[0]?.aiAllowLocal !== false,
-    cloudReady: Boolean(docKhoaCloud(settings[0]?.aiApiKey)),
-  };
+  const ai: AiPublicConfig = cauHinhCongKhai({
+    classProvider: settings[0]?.aiProvider,
+    classModel: settings[0]?.aiModel,
+    allowLocal: settings[0]?.aiAllowLocal,
+    classApiKey: settings[0]?.aiApiKey,
+  });
   const sol = showSolution ? (await db.select().from(solutions).where(eq(solutions.problemId, p.id)).limit(1))[0] : null;
   const loiGiai = showSolution ? loiGiaiHocSinh(sol?.baiLam, sol?.finalAnswer) : null;
   const lichSu = await lichSuGiaSu(p.id);
@@ -53,15 +54,12 @@ export default async function LuyenPage({ params }: { params: Promise<{ id: stri
       <SolveClient
         problemId={p.id}
         title={p.statementText}
-        latex={p.statementLatex.startsWith("y") ? p.statementLatex : `y = ${p.statementLatex}`}
+        latex={hamLatex(p.statementLatex)}
         moLoiGiai={showSolution}
         loiGiai={loiGiai}
         initialChat={lichSu.messages}
         ai={ai}
       />
-      {showSolution ? (
-        <p className="mt-3 text-xs text-muted">Lời giải mở sau khi nộp đủ năm bước. Gia sư không đọc lời giải lúc làm.</p>
-      ) : null}
     </main>
   );
 }

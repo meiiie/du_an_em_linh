@@ -6,8 +6,9 @@
 
 ## Quyết định
 
-- Bốn nhà: `offline` (mặc định) · `cloud` · `ollama` · `lmstudio`.
+- Sáu nhà: `offline` (mặc định) · `cloud` · `openrouter` · `zai` · `ollama` · `lmstudio`.
 - Cloud = khóa API chính thức (env hoặc khóa lớp). Không đăng nhập chatgpt.com.
+- OpenRouter / Z.AI = khóa lập trình / coding, địa chỉ HTTPS cứng (không nhập URL). Chi tiết ADR 009.
 - Local chỉ `127.0.0.1` / `localhost` / `::1`, cổng mặc định Ollama 11434 và LM Studio 1234 (env được ghi đè nếu vẫn loopback).
 - Một lần gọi, không retry, không fallback nhà khác, không stream (cần cả câu cho bộ lọc).
 - Giáo viên đặt nhà lớp; học sinh được chọn offline và local nếu cửa lớp mở.

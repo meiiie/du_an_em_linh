@@ -41,6 +41,15 @@ export type TrichDanKho = {
   trich: string;
 };
 
+export type TrichDanHien = Pick<TrichDanKho, "loai" | "id" | "ten" | "trich"> & {
+  so?: number;
+  dung?: boolean;
+};
+
+export function duongKhoTrichDan(t: Pick<TrichDanHien, "loai" | "id">) {
+  return t.loai === "tai_lieu" ? `/hs/kho?muc=lieu#tl-${t.id}` : `/hs/kho#ct-${t.id}`;
+}
+
 export type KhoGoi = {
   taiLieu: TrichDanKho[];
   congThuc: TrichDanKho[];
@@ -99,62 +108,132 @@ export function chonKho(opts: {
   congThuc: MauCongThuc[];
   maBuoc?: string;
   cauHoi?: string;
+  nhoId?: string[];
 }): KhoGoi {
   const buoc = TU_KHOA_BUOC[opts.maBuoc || ""] || [];
   const hoi = tuKhoaHoi(opts.cauHoi);
+  const nho = new Set((opts.nhoId || []).filter(Boolean));
   const extraTai = [...TU_KHOA_TAI_LIEU, ...buoc, ...hoi];
 
   const docs = opts.taiLieu
     .filter((d) => d.licenseStatus !== "chua_ro")
     .map((d) => {
-      const score = chamDiemVanBan(d.text, TU_KHOA_TAI_LIEU) + chamDiemVanBan(d.text, buoc) * 2 + chamDiemVanBan(d.text, hoi);
+      const score =
+        chamDiemVanBan(d.text, TU_KHOA_TAI_LIEU) +
+        chamDiemVanBan(d.text, buoc) * 2 +
+        chamDiemVanBan(d.text, hoi) +
+        (nho.has(d.id) ? 2 : 0);
       return {
         score,
         item: {
           loai: "tai_lieu" as const,
           id: d.id,
           ten: d.title,
-          trich: trichDoan(d.text, chonHit(d.text, extraTai)),
+          trich: trichDoan(d.text, chonHit(d.text, extraTai), 120),
         },
       };
     })
     .filter((x) => x.score >= 2)
     .sort((a, b) => b.score - a.score)
-    .slice(0, 3)
+    .slice(0, 2)
     .map((x) => x.item);
 
+  const extraCt = [...TU_KHOA_CONG_THUC, ...buoc, ...hoi];
   const cts = opts.congThuc
     .map((c) => {
       const blob = `${c.title} ${c.latex} ${c.noiDung}`;
-      const score = chamDiemVanBan(blob, [...TU_KHOA_CONG_THUC]) + chamDiemVanBan(blob, buoc) * 2;
+      const score =
+        chamDiemVanBan(blob, TU_KHOA_CONG_THUC) +
+        chamDiemVanBan(blob, buoc) * 2 +
+        chamDiemVanBan(blob, hoi) +
+        (nho.has(c.id) ? 2 : 0);
       return {
         score,
         item: {
           loai: "cong_thuc" as const,
           id: c.id,
           ten: c.title,
-          trich: c.noiDung.slice(0, 180),
+          trich: trichDoan(c.noiDung || c.title, chonHit(blob, extraCt)),
         },
       };
     })
     .filter((x) => x.score >= 1)
     .sort((a, b) => b.score - a.score)
-    .slice(0, 4)
+    .slice(0, 2)
     .map((x) => x.item);
 
   return { taiLieu: docs, congThuc: cts };
 }
 
-export function dongKhoChoPrompt(kho: KhoGoi) {
-  const dong: string[] = [];
-  for (const c of kho.congThuc) dong.push(`Công thức «${c.ten}»: ${c.trich}`);
-  for (const d of kho.taiLieu) dong.push(`Tài liệu «${d.ten}»: ${d.trich}`);
-  if (!dong.length) return "(Kho lớp chưa khớp đoạn nào — chỉ dùng thang gợi ý, không bịa công thức.)";
-  return dong.join("\n").slice(0, 1200);
+/** Cùng thứ tự và số [n] với prompt — tối đa 2 công thức + 1 tài liệu. */
+export function nhanTrichDan(kho: KhoGoi): TrichDanHien[] {
+  return [...kho.congThuc.slice(0, 2), ...kho.taiLieu.slice(0, 1)].slice(0, 3).map((x, i) => ({
+    loai: x.loai,
+    id: x.id,
+    ten: x.ten,
+    trich: x.trich,
+    so: i + 1,
+  }));
 }
 
-export function nhanTrichDan(kho: KhoGoi) {
-  return [...kho.congThuc, ...kho.taiLieu].map((x) => ({ loai: x.loai, ten: x.ten }));
+export function dongKhoChoPrompt(kho: KhoGoi) {
+  const dan = nhanTrichDan(kho);
+  if (!dan.length) return "(Kho lớp chưa khớp đoạn nào — chỉ dùng thang gợi ý, không bịa công thức.)";
+  return dan
+    .map((x) => `[${x.so}] ${x.loai === "tai_lieu" ? "Tài liệu" : "Công thức"} «${x.ten}»: ${x.trich}`)
+    .join("\n");
+}
+
+export function soTrichDanTrongLoi(loi: string) {
+  return [...String(loi || "").matchAll(/\[(\d{1,2})\]/g)].map((m) => Number(m[1]));
+}
+
+/** Ưu tiên mục model viết [n] hoặc nhắc tên; không có thì giữ tập đã mở. */
+export function locTrichDanTheoLoi(loi: string, dan: TrichDanHien[]): TrichDanHien[] {
+  if (!dan.length) return [];
+  const so = new Set(soTrichDanTrongLoi(loi));
+  const theoSo = dan.filter((x) => x.so != null && so.has(x.so));
+  if (theoSo.length) return theoSo.map((x) => ({ ...x, dung: true }));
+  const fold = khongDau(loi);
+  const theoTen = dan.filter((x) => x.ten && fold.includes(khongDau(x.ten)));
+  if (theoTen.length) return theoTen.map((x) => ({ ...x, dung: true }));
+  return dan.map((x) => ({ ...x, dung: false }));
+}
+
+/** [n] → liên kết kho; không đụng $$ và không đụng [n](url) đã có. */
+export function ganNeoTrongLoi(loi: string, dan: TrichDanHien[]) {
+  if (!dan.length) return loi || "";
+  const bySo = new Map(dan.filter((x) => x.so != null).map((x) => [x.so as number, x]));
+  return String(loi || "")
+    .split("$$")
+    .map((part, i) => {
+      if (i % 2 === 1) return part;
+      return part.replace(/\[(\d{1,2})\](?!\()/g, (m, n: string) => {
+        const t = bySo.get(Number(n));
+        return t ? `[${n}](${duongKhoTrichDan(t)})` : m;
+      });
+    })
+    .join("$$");
+}
+
+export function docTrichDanLuu(raw: unknown): TrichDanHien[] {
+  if (!Array.isArray(raw)) return [];
+  return raw
+    .filter((x) => x && typeof x === "object")
+    .map((x) => {
+      const o = x as Partial<TrichDanHien>;
+      const loai: TrichDanHien["loai"] = o.loai === "tai_lieu" ? "tai_lieu" : "cong_thuc";
+      const so = typeof o.so === "number" && o.so >= 1 && o.so <= 9 ? o.so : undefined;
+      return {
+        loai,
+        id: String(o.id || ""),
+        ten: String(o.ten || ""),
+        trich: String(o.trich || ""),
+        so,
+        dung: o.dung === true,
+      };
+    })
+    .filter((x) => x.ten);
 }
 
 export function xemKhoTheoKhung(nguon: { taiLieu: MauTaiLieu[]; congThuc: MauCongThuc[] }) {

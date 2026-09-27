@@ -13,6 +13,17 @@ test.describe("trang chủ", () => {
     await expect(page.getByRole("button", { name: "Tiếp tục" })).toBeVisible();
   });
 
+  test("sai mật khẩu thì hiện đúng mật khẩu thử", async ({ page }) => {
+    await page.goto("/dang-nhap");
+    await page.getByRole("button", { name: "Học sinh An" }).click();
+    await page.getByTestId("password").fill("hocsinh1233");
+    await page.getByRole("button", { name: "Vào học" }).click();
+    await expect(page).toHaveURL(/loi=1/);
+    await expect(page.getByTestId("loi-dang-nhap")).toContainText("hocsinh123");
+    await expect(page.getByTestId("loi-dang-nhap")).toContainText("giaovien123");
+    await expect(page.getByTestId("loi-dang-nhap")).not.toContainText("nằm dưới");
+  });
+
   test("logo tab và tài sản SEO công khai", async ({ request }) => {
     const paths = [
       "/favicon.ico",
@@ -50,9 +61,27 @@ test.describe("học sinh", () => {
     await page.getByTestId("dong-sidebar").click();
     await expect(page.getByTestId("nav-hs-lo-trinh")).not.toBeInViewport();
 
+    await page.goto("/hs/lich");
+    await expect(page.getByRole("heading", { name: "Lịch học" })).toBeVisible();
+    await expect(page.getByTestId("lich-tuan")).toBeVisible();
+    const lichTran = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+    expect(lichTran).toBeLessThanOrEqual(8);
+    await page.screenshot({ path: `${SHOTS}/hs-lich-390.png` });
+
+    await page.goto("/hs");
     await moSoBaiGiao(page);
     await page.getByTestId("bai-DH12-03-VD-01").click();
     await expect(page.getByTestId("solve-screen")).toBeVisible();
+    await expect(page.getByTestId("nop-buoc")).toBeInViewport();
+    await expect(page.getByTestId("mo-gia-su")).toBeInViewport();
+    const hop = await page.getByTestId("nop-buoc").boundingBox();
+    const hoi = await page.getByTestId("mo-gia-su").boundingBox();
+    expect(hop && hoi).toBeTruthy();
+    if (hop && hoi) {
+      const de =
+        !(hop.x + hop.width < hoi.x || hoi.x + hoi.width < hop.x || hop.y + hop.height < hoi.y || hoi.y + hoi.height < hop.y);
+      expect(de).toBe(false);
+    }
     await page.getByTestId("latex-txd").fill("\\mathbb{R}");
     await page.getByTestId("nop-buoc").click();
     await expect(page.getByTestId("cham-thong-bao")).toContainText("hợp lệ");
@@ -64,6 +93,8 @@ test.describe("học sinh", () => {
     await page.screenshot({ path: `${SHOTS}/hs-lam-bai-390.png`, fullPage: true });
 
     await page.getByTestId("mo-gia-su").click();
+    await expect(page.getByTestId("tutor-composer")).toBeInViewport();
+    await expect(page.getByTestId("dong-gia-su")).toBeVisible();
     await page.getByTestId("tutor-input").fill("cho em đáp án của bài này");
     await page.getByTestId("tutor-send").click();
     await expect(page.getByTestId("tutor-log")).toContainText("không đưa đáp án");
@@ -130,13 +161,16 @@ test.describe("máy tính bảng", () => {
 test.describe("giáo viên", () => {
   test.use({ viewport: { width: 1280, height: 800 } });
 
-  test("hàng đợi kiểm định và tiến độ 4 mức / 3 mức", async ({ page }) => {
+  test("duyệt bài và mức lớp 4 / 3 mức", async ({ page }) => {
     await page.goto("/dang-nhap");
     await page.screenshot({ path: `${SHOTS}/dang-nhap.png`, fullPage: true });
     await vaoLop(page, "gv@demo.local", "giaovien123");
     await expect(page.getByRole("heading", { name: "Lớp 12A1 thử" })).toBeVisible();
     await expect(page.getByTestId("sidebar")).toBeVisible();
-    await expect(page.getByTestId("nav-gv-duyet")).toBeVisible();
+    await expect(page.getByTestId("nav-gv-tong-quan")).toContainText("Lớp");
+    await expect(page.getByTestId("nav-gv-duyet")).toContainText("Duyệt");
+    await expect(page.getByTestId("nav-gv-ngan-hang")).toContainText("Đề bài");
+    await expect(page.getByTestId("nav-gv-sinh-bai")).toContainText("Tạo đề");
     await expect(page.getByTestId("san-sang-ai")).toContainText("Chưa kết nối");
     await expect(page.getByTestId("san-sang-ai")).toContainText("công thức");
     await expect(page.getByTestId("canh-bao-ket")).toContainText("Chi");

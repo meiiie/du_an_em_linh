@@ -59,6 +59,12 @@ test.describe("cài đặt nhà AI", () => {
     await expect(page.getByTestId("mo-trang-khoa-openai")).toContainText("Mở ChatGPT");
     await expect(page.getByTestId("oauth-chua-dk")).toContainText("OPENAI_OAUTH_CLIENT_ID");
     await expect(page.getByTestId("ket-noi-trang-thai")).toContainText("Chưa kết nối");
+    await expect(page.getByTestId("ket-noi-openrouter")).toBeVisible();
+    await expect(page.getByTestId("mo-trang-khoa-openrouter")).toHaveAttribute("href", /openrouter\.ai\/keys/);
+    await expect(page.getByTestId("ket-noi-openrouter-khoa")).toBeVisible();
+    await expect(page.getByTestId("ket-noi-zai")).toBeVisible();
+    await expect(page.getByTestId("mo-trang-khoa-zai")).toHaveAttribute("href", /z\.ai\/manage-apikey/);
+    await expect(page.getByTestId("ket-noi-zai-khoa")).toBeVisible();
     await expect(page.getByTestId("kho-theo-buoc")).toContainText("Đạo hàm");
     await page.screenshot({ path: `${SHOTS}/gv-ket-noi-chatgpt.png`, fullPage: true });
     await page.goto("/gv/tai-lieu");
@@ -78,7 +84,7 @@ test.describe("kho kiến thức", () => {
     await expect(page.getByRole("heading", { name: "Công thức và tài liệu" })).toBeVisible();
     await expect(page.getByTestId("kho-theo-buoc")).toContainText("Kết luận");
     await expect(page.getByTestId("kho-cong-thuc")).toContainText("Đạo hàm");
-    await expect(page.getByTestId("kho-tai-lieu")).toContainText("đơn điệu");
+    await expect(page.getByTestId("kho-tai-lieu")).toContainText(/đơn điệu/i);
     await page.screenshot({ path: `${SHOTS}/hs-kho-kien-thuc.png`, fullPage: true });
   });
 });

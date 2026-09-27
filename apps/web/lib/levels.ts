@@ -65,11 +65,11 @@ export const BUOC = [
 ] as const;
 
 export const STATUS_LABEL: Record<string, string> = {
-  DA_PHAT_HANH: "Đã phát hành",
-  CHO_GIAO_VIEN_DUYET: "Chờ giáo viên duyệt",
+  DA_PHAT_HANH: "Đã mở",
+  CHO_GIAO_VIEN_DUYET: "Chờ duyệt",
   BI_CHAN: "Bị chặn",
   NHAP: "Nháp",
-  GV_DUYET: "Giáo viên đã duyệt",
+  GV_DUYET: "Đã duyệt",
   DAT: "Đạt",
   SAI: "Sai",
   KHONG_KIEM_DUOC: "Không kiểm được",

@@ -12,7 +12,7 @@ Nguyên mẫu NCKH: phần mềm học toán THPT, **một** chủ đề Toán 1
 
 - Khung 5 bước `B.DH.TXD` / `B.DH.DAOHAM` / `B.DH.NGHIEM` / `B.DH.XETDAU` / `B.DH.KETLUAN`. Chấm cả bước, không tô từng ô khi gõ.
 - Cổng 3 tầng: `DAT` | `SAI` | `KHONG_KIEM_DUOC` + `GV_DUYET`.
-- Gia sư **không** đọc lời giải chuẩn. Thứ tự: luật xin đáp án → thang 3 cấp (không bottom-out) → kho lớp (tài liệu + công thức) → nhà đã chọn → lọc SymPy. Kết nối ChatGPT = khóa chính thức một lần (hoặc OAuth định danh nếu có `client_id` OpenAI cấp). Không device-OAuth Codex. Chi tiết: `docs/AI-HARNESS.md`.
+- Gia sư **không** đọc lời giải chuẩn. Thứ tự: luật xin đáp án → thang 3 cấp (không bottom-out) → kho lớp (tài liệu + công thức) → nhà đã chọn → lọc SymPy. Kết nối = khóa chính thức một lần: ChatGPT, OpenRouter (lập trình) hoặc Z.AI (coding) — hoặc OAuth định danh nếu có `client_id` OpenAI cấp. Không device-OAuth Codex. Không nhập URL nhà. Chi tiết: `docs/AI-HARNESS.md`.
 - 4 mức cho học sinh; 3 mức CV 7991 chỉ lúc **xem**.
 - Dữ liệu tổng hợp. Không neko-core. Không mở rộng chủ đề lớp 10–12.
 - `k` ô bảng sản phẩm 0-based; YAML kiểm định 1-based. Xem `docs/chi-so-o-bang.md`.

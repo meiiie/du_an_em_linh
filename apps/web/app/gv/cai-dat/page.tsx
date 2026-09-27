@@ -1,7 +1,8 @@
+import type { Metadata } from "next";
 import { eq } from "drizzle-orm";
 import { luuCaiDatLop } from "@/lib/actions/gv";
-import { maskKey, NHA, parseProvider, type AiProviderId } from "@/lib/ai-catalog";
-import { docKhoaCloud } from "@/lib/ai-harness";
+import { laNhaKhoa, maskKey, NHA, parseProvider, type AiProviderId } from "@/lib/ai-catalog";
+import { docKhoaNha } from "@/lib/ai-harness";
 import { KiemTraAi } from "@/components/kiem-tra-ai";
 import Link from "next/link";
 import { Button, buttonClasses } from "@/components/ui/button";
@@ -13,23 +14,23 @@ import { classSettings, classes } from "@/lib/db/schema";
 
 export const dynamic = "force-dynamic";
 
+export const metadata: Metadata = {
+  title: "Cài lớp",
+};
+
 export default async function Page() {
   const lop = (await db.select().from(classes))[0];
   const setting = lop ? (await db.select().from(classSettings).where(eq(classSettings.classId, lop.id)))[0] : null;
   const provider = parseProvider(setting?.aiProvider);
-  const hasEnv = Boolean((process.env.LLM_API_KEY || "").trim());
+  const hasEnv = laNhaKhoa(provider) && Boolean(docKhoaNha(provider, null));
   const mask = maskKey(setting?.aiApiKey);
-  const cloudReady = Boolean(docKhoaCloud(setting?.aiApiKey));
+  const khoaLop = Boolean((setting?.aiApiKey || "").trim());
   return (
     <main className="max-w-xl">
-      <PageHeader
-        kicker="Lớp"
-        title="Cài đặt lớp"
-        description="Mở lời giải sau khi nộp mặc định tắt. Gia sư không đọc lời giải chuẩn. Kết nối ChatGPT cho lớp ở trang riêng — không đăng nhập Codex."
-      />
+      <PageHeader title="Cài đặt lớp" />
       <p className="mb-6 text-sm">
         <Link href="/gv/ket-noi-ai" className={cn(buttonClasses({ variant: "secondary" }))} data-testid="toi-ket-noi-ai">
-          Kết nối ChatGPT cho lớp
+          Kết nối ChatGPT
         </Link>
       </p>
       <form action={luuCaiDatLop} className="space-y-4 border-y border-line py-6">
@@ -43,15 +44,12 @@ export default async function Page() {
             data-testid="mo-loi-giai"
           />
           <span>
-            <span className="font-medium">Mở lời giải sau khi nộp xong cả năm bước</span>
-            <span className="mt-1 block text-muted">
-              Chỉ hiện khi học sinh đã đạt bước kết luận. Không hiện trong hội thoại gia sư.
-            </span>
+            <span className="font-medium">Mở lời giải sau khi nộp xong năm bước</span>
           </span>
         </label>
 
         <fieldset className="space-y-2" data-testid="ai-provider">
-          <legend className="mb-2 text-sm font-medium">Nhà gia sư của lớp</legend>
+          <legend className="mb-2 text-sm font-medium">Nhà gia sư</legend>
           {(Object.keys(NHA) as AiProviderId[]).map((id) => (
             <label key={id} className="flex items-start gap-3 text-sm">
               <input
@@ -64,26 +62,20 @@ export default async function Page() {
               />
               <span>
                 <span className="font-medium">{NHA[id].ten}</span>
-                <span className="mt-1 block text-muted">
-                  {id === "offline" && "Mặc định. Demo chạy hết không cần khóa."}
-                  {id === "cloud" &&
-                    "Khóa API chính thức (OpenAI / Azure / OpenRouter) qua LLM_API_KEY hoặc ô dưới. Không dùng device-OAuth ChatGPT."}
-                  {id === "ollama" && "Chỉ http://127.0.0.1:11434/v1. Không quét LAN, không fallback đám mây."}
-                  {id === "lmstudio" && "Chỉ http://127.0.0.1:1234/v1. Không quét LAN, không fallback đám mây."}
-                </span>
+                <span className="mt-1 block text-muted">{NHA[id].moTa}</span>
               </span>
             </label>
           ))}
         </fieldset>
 
         <label className="block text-sm">
-          <span className="mb-2 block font-medium">Mô hình (để trống = mặc định env)</span>
+          <span className="mb-2 block font-medium">Mô hình</span>
           <input
             name="ai_model"
             data-testid="ai-model"
             defaultValue={setting?.aiModel || ""}
             className={fieldControl}
-            placeholder="gpt-4o-mini · llama3.2 · local-model"
+            placeholder="gpt-4o-mini · qwen/qwen3-coder · glm-5.3-flashx · llama3.2"
           />
         </label>
 
@@ -96,29 +88,26 @@ export default async function Page() {
             data-testid="ai-allow-local"
           />
           <span>
-            <span className="font-medium">Cho học sinh chọn Ollama / LM Studio trên máy mình</span>
-            <span className="mt-1 block text-muted">
-              Local vẫn bị harness khóa loopback. Lỗi local không chuyển sang khóa lớp.
-            </span>
+            <span className="font-medium">Cho học sinh dùng Ollama / LM Studio trên máy mình</span>
           </span>
         </label>
 
         <label className="block text-sm">
-          <span className="mb-2 block font-medium">Khóa API lớp (tùy chọn)</span>
+          <span className="mb-2 block font-medium">Khóa API lớp</span>
           <input
             name="ai_api_key"
             type="password"
             autoComplete="off"
             data-testid="ai-api-key"
             className={fieldControl}
-            placeholder={mask ? `${mask} — để trống để giữ` : "sk-… không bao giờ hiện lại đủ"}
+            placeholder={mask ? `${mask} — để trống để giữ` : "dán khóa — không hiện lại đủ"}
           />
           <span className="mt-2 block text-muted">
             {hasEnv
-              ? "Biến LLM_API_KEY trên máy chủ đang có — được ưu tiên hơn khóa lớp."
-              : cloudReady
-                ? "Đang dùng khóa lớp đã lưu. Không ghi khóa vào nhật ký."
-                : "Chưa có khóa env hay khóa lớp. Nhà API sẽ báo lỗi rõ, không giả làm thang gợi ý."}
+              ? `Máy chủ đang có ${NHA[provider].envKhoa} — dùng khóa đó.`
+              : khoaLop
+                ? "Đang dùng khóa lớp đã lưu."
+                : "Chưa có khóa."}
           </span>
         </label>
         <label className="flex items-start gap-3 text-sm">

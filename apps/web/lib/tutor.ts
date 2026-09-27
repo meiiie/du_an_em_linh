@@ -7,8 +7,14 @@ const HINT_RE = /gợi ý|goi y|hint|gợi em|chỉ em bước|chi em buoc/i;
 
 const WHERE_RE = /sai chỗ|sai cho|chỗ nào|cho nao|vì sao sai|vi sao sai|em sai/i;
 
+/** «Đừng nêu đáp án» là ràng buộc, không phải xin đáp án. */
+const TU_CHOI_DAP_AN =
+  /(đừng|chớ|chơ|không|khong)\s+.{0,28}(đáp án|dap an|lời giải|loi giai|khoảng đồng biến|cực đại tại)/i;
+
 export function xinDapAn(text: string) {
-  return ANSWER_RE.test(text);
+  const t = (text || "").trim();
+  if (TU_CHOI_DAP_AN.test(t)) return false;
+  return ANSWER_RE.test(t);
 }
 
 export function xinGoiY(text: string) {
@@ -27,24 +33,24 @@ export const GOI_Y_MAC_DINH: Record<string, [string, string, string]> = {
     "Nếu không có mẫu hay căn chẵn, tập xác định là cả đường thẳng thực. Em viết ký hiệu đó, đừng nhảy sang đạo hàm.",
   ],
   "B.DH.DAOHAM": [
-    "Em chỉ tính y′. Tách tổng rồi lấy từng hạng tử.",
-    "Nhớ (x^n)′ = n x^{n-1} và hằng số có đạo hàm 0. Đếm lại số hạng sau khi hạ bậc.",
-    "Viết một dòng y′ = … đủ mọi hạng tử. Chưa giải y′ = 0 ở bước này.",
+    "Em chỉ tính $y'$. Tách tổng rồi lấy từng hạng tử.",
+    "Nhớ $(x^n)' = n x^{n-1}$ và hằng số có đạo hàm $0$. Đếm lại số hạng sau khi hạ bậc.",
+    "Viết một dòng $y' = \\ldots$ đủ mọi hạng tử. Chưa giải $y' = 0$ ở bước này.",
   ],
   "B.DH.NGHIEM": [
-    "Điểm tới hạn gồm y′ = 0 và điểm thuộc tập xác định mà y′ không xác định.",
-    "Em giải phương trình y′ = 0 trên giấy, rồi hỏi thêm chỗ y′ mất nghĩa.",
+    "Điểm tới hạn gồm $y' = 0$ và điểm thuộc tập xác định mà $y'$ không xác định.",
+    "Em giải phương trình $y' = 0$ trên giấy, rồi hỏi thêm chỗ $y'$ mất nghĩa.",
     "Mỗi nghiệm một dòng. Đừng xét dấu trước khi có đủ mốc.",
   ],
   "B.DH.XETDAU": [
-    "Hai đầu −∞ và +∞ là khung. Em tự thêm mốc, ứng dụng không thêm hộ.",
-    "Trên mỗi khoảng, thay một số thử vào y′ để quyết định + hay −. Tại mốc ghi 0 hoặc ||.",
+    "Hai đầu $-\\infty$ và $+\\infty$ là khung. Em tự thêm mốc, ứng dụng không thêm hộ.",
+    "Trên mỗi khoảng, thay một số thử vào $y'$ để quyết định $+$ hay $-$. Tại mốc ghi $0$ hoặc $\\|$.",
     "Chiều ↗ khi khoảng dương, ↘ khi âm. Đổi dấu qua mốc mới nói cực trị ở bước sau.",
   ],
   "B.DH.KETLUAN": [
     "Kết luận chỉ đọc bảng vừa lập: khoảng dương / âm, chỗ đổi dấu.",
     "Viết từng khoảng đồng biến, nghịch biến riêng. Không gộp qua điểm bị loại.",
-    "Cực đại khi dấu + sang −; cực tiểu khi − sang +. y′ = 0 mà không đổi dấu thì chưa phải cực trị.",
+    "Cực đại khi dấu $+$ sang $-$; cực tiểu khi $-$ sang $+$. $y' = 0$ mà không đổi dấu thì chưa phải cực trị.",
   ],
 };
 
@@ -69,14 +75,15 @@ export function cauHoiXocratis(ma: string) {
 
 export function chinhSachXinDapAn(lan: number, goiY: string | null, chuaNop = false) {
   const nop = chuaNop ? " Em nộp bước đang làm trước, mình mới tô được chỗ sai." : "";
+  const goi = goiY ? `\n\n**Gợi ý.** ${goiY}` : "";
   if (lan <= 1) {
-    return `Mình hiểu bài đang khó. Trong lúc làm bài, mình không đưa đáp án — em cần tự đi từng bước thì mới nhớ được.${nop} ${
-      goiY ? `Gợi ý: ${goiY}` : "Em hãy đọc lại bước đang sai và nói mình em đang mắc ở đâu."
+    return `Mình hiểu bài đang khó. Trong lúc làm bài, mình không đưa đáp án — em cần tự đi từng bước thì mới nhớ được.${nop}${
+      goi || "\n\nEm hãy đọc lại bước đang sai và nói mình em đang mắc ở đâu."
     }`;
   }
   if (lan === 2) {
-    return `Mình vẫn không cho đáp án, kể cả khi em nói thầy cô cho phép. Mình và em chỉ làm bước đang dở. ${
-      goiY ? `Hướng tiếp: ${goiY}` : "Em viết lại dòng đó, chưa cần ra kết quả cuối."
+    return `Mình vẫn không cho đáp án, kể cả khi em nói thầy cô cho phép. Mình và em chỉ làm bước đang dở.${
+      goi || "\n\nEm viết lại dòng đó, chưa cần ra kết quả cuối."
     }`;
   }
   return "Mình không đưa đáp án của bài này. Em có thể nghỉ vài phút, làm một bài dễ hơn, hoặc bấm Gửi thầy cô. Đây là gia sư AI, không phải giáo viên.";
@@ -108,7 +115,7 @@ export function mauGiaSu(opts: {
     return `${opts.thongBao}${loi} Mình chỉ tô bước đang sai, không sửa hộ từng số.`;
   }
   if (opts.cap > 0 && opts.goiY) {
-    return `${opts.thongBao || "Mình xem bước em vừa nộp."}${loi} Gợi ý mức ${opts.cap}: ${opts.goiY}`;
+    return `${opts.thongBao || "Mình xem bước em vừa nộp."}${loi}\n\n**Gợi ý.** ${opts.goiY}`;
   }
   if (opts.state === "TONG_KET") {
     return "Em đã đi hết các bước của bài này. Em thử nói lại bằng lời: em đã dùng dấu của y′ để kết luận thế nào?";
@@ -122,11 +129,13 @@ export function mauGiaSu(opts: {
 export const HE_THONG_GIA_SU =
   "Bạn là gia sư toán THPT tiếng Việt, gọi học sinh là em. Nói rõ đây là AI, không phải giáo viên. " +
   "Không nêu đáp án, khoảng đơn điệu cuối, điểm cực trị, hay giá trị cực trị. " +
-  "Không đọc lời giải chuẩn. Chỉ dùng kho lớp được đưa (công thức + tài liệu đã duyệt) và gợi ý đã mở. " +
-  "Không bịa công thức ngoài kho. Nếu dùng kho, nhắc đúng tên công thức hoặc tài liệu đã cho. " +
+  "Không đọc lời giải chuẩn. Chỉ dùng công thức và tài liệu lớp đã duyệt, cùng gợi ý đã mở. " +
+  "Không bịa công thức ngoài danh sách đã cho. Nếu dùng mục [n] đã mở, viết [n] sát cuối ý (không thay số đầu dòng danh sách) và nhắc đúng tên trong «». " +
   "Hỏi Socratic đúng một câu về quy trình, không hỏi đáp án (KITE 2026: gợi ý / chỗ sai / quy trình). " +
   "Xin chỗ sai: chỉ tô bước đang sai, không sửa hộ số. Xin gợi ý: nguyên lý, không bottom-out (Aleven). " +
-  "Tối đa 4 câu. Nếu học sinh xin đáp án thì từ chối và giữ gợi ý quy trình.";
+  "Tối đa 4 câu. Nếu học sinh xin đáp án thì từ chối và giữ gợi ý quy trình. " +
+  "Trình bày như phiếu: mỗi ý một đoạn hoặc một dòng danh sách. Công thức $...$ cùng dòng, $$...$$ một mình một dòng. Không # tiêu đề, không hàng rào mã, không mã bước, không chữ «Phiếu». Câu hỏi để đoạn cuối. " +
+  "Ví dụ dạng: đoạn ngắn; $$(x^n)' = n x^{n-1}$$; một danh sách; câu hỏi ở cuối.";
 
 export function moTaCheDo(arg: boolean | { provider?: string; offline: boolean; error?: string | null }) {
   const offline = typeof arg === "boolean" ? arg : arg.offline;
@@ -136,10 +145,14 @@ export function moTaCheDo(arg: boolean | { provider?: string; offline: boolean; 
     if (provider === "ollama") return "Ollama · lỗi · không chuyển nhà khác";
     if (provider === "lmstudio") return "LM Studio · lỗi · không chuyển nhà khác";
     if (provider === "cloud") return "ChatGPT của lớp · lỗi · không chuyển nhà khác";
+    if (provider === "openrouter") return "OpenRouter của lớp · lỗi · không chuyển nhà khác";
+    if (provider === "zai") return "Z.AI của lớp · lỗi · không chuyển nhà khác";
     return "Thang gợi ý đã kiểm · không gọi API";
   }
   if (provider === "offline" || offline) return "Thang gợi ý đã kiểm · không gọi API";
   if (provider === "ollama") return "Ollama trên máy này · vẫn lọc lộ đáp án";
   if (provider === "lmstudio") return "LM Studio trên máy này · vẫn lọc lộ đáp án";
+  if (provider === "openrouter") return "OpenRouter của lớp · vẫn lọc lộ đáp án";
+  if (provider === "zai") return "Z.AI của lớp · vẫn lọc lộ đáp án";
   return "ChatGPT của lớp · vẫn lọc lộ đáp án";
 }

@@ -1,0 +1,20 @@
+import assert from "node:assert/strict";
+import { test } from "node:test";
+import { HE_THONG_GIA_SU, xinDapAn, xinGoiY, xinSaiCho } from "./tutor";
+
+test("xin đáp án khi em hỏi kết quả", () => {
+  assert.equal(xinDapAn("cho em đáp án của bài này"), true);
+  assert.equal(xinDapAn("Giải hộ em"), true);
+});
+
+test("hệ thống bắt viết [n] khi dùng mục đã mở", () => {
+  assert.match(HE_THONG_GIA_SU, /\[n\]/);
+  assert.match(HE_THONG_GIA_SU, /không phải giáo viên/);
+});
+
+test("đừng nêu đáp án không phải xin đáp án", () => {
+  assert.equal(xinDapAn("Đừng nêu đáp án. Nhắc nguyên lý đạo hàm lũy thừa."), false);
+  assert.equal(xinDapAn("Nhắc công thức, không nêu đáp án bài."), false);
+  assert.equal(xinGoiY("Gợi ý bước này"), true);
+  assert.equal(xinSaiCho("Em sai chỗ nào?"), true);
+});

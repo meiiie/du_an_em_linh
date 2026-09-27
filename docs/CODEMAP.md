@@ -14,7 +14,7 @@ Harness (Anthropic 2026): tệp này là mục lục để agent biết chỗ m�
 | `docs/DESIGN.md` | Token, lưới, nút, tâm quang học (46% / 3:2) |
 | `docs/doi-chieu-thiet-ke.md` | Khớp / cố ý chưa làm |
 | `docs/adr/` | Quyết định đã khóa |
-| `docs/AI-HARNESS.md` | Nhà AI, loopback, không fallback |
+| `docs/AI-HARNESS.md` | Nhà AI, loopback, không fallback; khóa OpenRouter / Z.AI |
 | `docs/chi-so-o-bang.md` | `k` 0-based vs YAML 1-based |
 | `data/supham/` | Ngân hàng sư phạm (JSON) |
 | `docker-compose.yml` | web :3000, math :8000, Postgres :5432 |
@@ -50,7 +50,7 @@ Next.js 15. Server action nói chuyện với Postgres và `MATH_SERVICE_URL`.
 | `app/dang-nhap/page.tsx` + `components/login-form.tsx` | Đăng nhập 2 bước (noindex), tham chiếu Neko Đoàn |
 | `app/api/suc-khoe/route.ts` | GET JSON giữ thức Render — không đụng DB |
 | `app/hs/` | Học (phiếu + sổ), đề bài, lịch, phiếu 5 bước |
-| `app/gv/` | Tổng quan (trạng thái ChatGPT + kho), duyệt, ngân hàng, sinh bài, tài liệu, công thức, kết nối ChatGPT, tiến độ, cài đặt |
+| `app/gv/` | Lớp, duyệt, đề bài, tạo đề, tài liệu, công thức, gia sư, mức, cài lớp |
 | `app/hs/kho` | Kho kiến thức lớp (cùng nguồn gia sư đọc) |
 | `components/app-shell.tsx` | Ray mực 220 px / ngăn kéo |
 | `components/phieu-viec-tiep.tsx` / `so-nav.tsx` | Bài tiếp theo + tab sổ `/hs` |
@@ -61,7 +61,7 @@ Next.js 15. Server action nói chuyện với Postgres và `MATH_SERVICE_URL`.
 | `components/ui/` | Nút, ô, tiêu đề, hàng việc |
 | `lib/actions/` | `hs`, `gv`, `auth` |
 | `lib/ai-catalog.ts` / `lib/ai-harness.ts` | Chọn nhà + một lần HTTP |
-| `lib/kien-thuc.ts` / `lib/kho-lop.ts` | Truy hồi kho lớp, không lời giải |
+| `lib/kien-thuc.ts` / `lib/kho-lop.ts` | Truy hồi kho lớp, số [n], nhớ id lượt trước, không lời giải |
 | `lib/openai-oauth.ts` | PKCE Sign in with ChatGPT (khi có client_id) |
 | `lib/db/schema.ts` | Drizzle |
 | `lib/tutor.ts` | Thang gợi ý; không đọc lời giải |

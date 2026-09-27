@@ -1,8 +1,8 @@
 # Học toán với AI
 
-> Nguyên mẫu NCKH: phần mềm học Toán 12 (đơn điệu và cực trị) với gia sư AI. Gia sư không đưa đáp án. Demo không cần khóa API.
+> Nguyên mẫu: phần mềm học Toán 12 (đơn điệu và cực trị) với gia sư AI. Gia sư không đưa đáp án. Demo không cần khóa API.
 
-- [Trang chủ](https://hoc-toan-ai.onrender.com/): mô tả sản phẩm, phiếu 5 bước, cổng ba tầng
+- [Trang chủ](https://hoc-toan-ai.onrender.com/): mô tả sản phẩm, phiếu 5 bước, bài được mở khi đạt ba lần kiểm
 - [Đăng nhập thử](https://hoc-toan-ai.onrender.com/dang-nhap): tài khoản tổng hợp trong README (noindex)
 - [Mã nguồn](https://github.com/meiiie/du_an_em_linh)
 - [Nhật ký phiên bản](https://github.com/meiiie/du_an_em_linh/blob/main/CHANGELOG.md)

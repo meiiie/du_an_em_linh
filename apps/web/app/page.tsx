@@ -65,7 +65,7 @@ export default function TrangChu() {
             {/* SVG tĩnh = logo tab; next/image không cần cho file public 32px */}
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/icon.svg" alt="" width={32} height={32} className="size-8" aria-hidden />
-            <p className="text-sm text-muted">Nguyên mẫu NCKH</p>
+            <p className="text-sm text-muted">Nguyên mẫu</p>
           </div>
           <Link href="/dang-nhap" className={buttonClasses()} data-testid="vao-hoc">
             Vào học
@@ -100,10 +100,10 @@ export default function TrangChu() {
             </li>
           ))}
         </ol>
-        <h2 className="mt-12 text-lg font-semibold">Cổng ba tầng</h2>
+        <h2 className="mt-12 text-lg font-semibold">Bài được mở khi</h2>
         <p className="mt-3 max-w-2xl text-sm leading-relaxed text-muted">
-          Máy tự kiểm bằng SymPy, đối chiếu tài liệu lớp đã nạp, rồi bảng công thức. Bài đạt hoặc giáo viên duyệt mới
-          phát hành. Gia sư không đọc lời giải chuẩn.
+          Máy chấm bằng SymPy, đối chiếu tài liệu lớp, rồi bảng công thức. Đạt cả ba hoặc thầy cô duyệt thì học sinh mới
+          làm được. Gia sư không đọc lời giải chuẩn.
         </p>
         <p className="mt-6 max-w-2xl text-sm leading-relaxed text-muted">
           Dữ liệu thử tổng hợp — không có học sinh thật. Giáo viên <span className="font-mono">gv@demo.local</span>, học

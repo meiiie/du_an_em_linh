@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
 import { eq } from "drizzle-orm";
-import { PageHeader } from "@/components/ui/page-header";
+import { LichTuan } from "@/components/lich-tuan";
 import { tuVanHocTap } from "@/lib/counsel";
 import { requireRole } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { masteryStates, reminders, studySchedules } from "@/lib/db/schema";
+import { ghepNhacVaoSlot, thuBuoiTiep, thuHomNay } from "@/lib/lich";
 
 export const dynamic = "force-dynamic";
 
@@ -19,39 +20,26 @@ export default async function LichPage() {
   const rems = s ? await db.select().from(reminders).where(eq(reminders.scheduleId, s.id)) : [];
   const states = await db.select().from(masteryStates).where(eq(masteryStates.studentId, u.id));
   const live = tuVanHocTap(states);
-  const slots = live.slots;
+  const homNay = thuHomNay();
+  const { slots, roi } = ghepNhacVaoSlot(
+    live.slots,
+    rems.map((r) => ({ id: r.id, title: r.title, body: r.body, sendAt: r.sendAt || "" })),
+    homNay,
+  );
+  const buoiTiep = thuBuoiTiep(live.slots, homNay);
   return (
-    <main className="space-y-8">
-      <PageHeader title="Lịch học" />
-      <section>
-        <h2 className="text-base font-semibold">Cách học</h2>
-        <p className="mt-2 whitespace-pre-line text-sm leading-relaxed text-ink">{live.loiKhuyen}</p>
-      </section>
-      <section>
-        <h2 className="text-base font-semibold">Tuần này</h2>
-        {slots.length === 0 ? <p className="mt-2 text-sm text-muted">Chưa có khung giờ.</p> : null}
-        <ul className="mt-2 divide-y divide-line border-y border-line text-sm">
-          {slots.map((sl) => (
-            <li key={sl.thu + sl.gio} className="flex min-h-11 justify-between gap-2 py-3">
-              <span className="font-medium">{sl.thu}</span>
-              <span className="tabular text-muted">{sl.gio}</span>
-              <span className="text-muted">{sl.viec}</span>
-            </li>
-          ))}
-        </ul>
-      </section>
-      <section>
-        <h2 className="text-base font-semibold">Lời nhắc</h2>
-        {rems.length === 0 ? <p className="mt-2 text-sm text-muted">Không có lời nhắc.</p> : null}
-        <ul className="mt-2 divide-y divide-line border-y border-line">
-          {rems.map((r) => (
-            <li key={r.id} className="py-3 text-sm">
-              <span className="font-medium">{r.title}</span> — {r.body}
-              <span className="mt-1 block text-xs text-muted">{r.sendAt}</span>
-            </li>
-          ))}
-        </ul>
-      </section>
+    <main>
+      <header className="mb-6">
+        <h1 className="text-pretty text-[1.75rem] font-semibold tracking-tight">Lịch học</h1>
+        <p className="mt-2 max-w-[65ch] text-sm leading-relaxed text-muted">{live.loiKhuyen}</p>
+        {roi.map((r) => (
+          <p key={r.id} className="mt-2 max-w-[65ch] text-sm leading-relaxed text-muted">
+            {r.body}
+          </p>
+        ))}
+      </header>
+      {slots.length === 0 ? <p className="text-sm text-muted">Chưa có khung giờ.</p> : null}
+      {slots.length ? <LichTuan slots={slots} homNay={homNay} buoiTiep={buoiTiep} /> : null}
     </main>
   );
 }

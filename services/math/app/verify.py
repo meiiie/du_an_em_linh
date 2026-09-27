@@ -14,9 +14,13 @@ TU_KHOA_CONG_THUC = ("đồng biến", "nghịch biến", "cực đại", "cực
 def _excerpt(text, term, radius=80):
     i = text.lower().find(term.lower())
     if i < 0:
-        return text[:160]
+        return text[:160].strip()
     a = max(0, i - radius)
     b = min(len(text), i + len(term) + radius)
+    if a:
+        sp = text.find(" ", a)
+        if 0 <= sp < i:
+            a = sp + 1
     return text[a:b].strip()
 
 
@@ -30,8 +34,8 @@ def tang_2(tai_lieu):
         if len(found) >= 2:
             hits.append({
                 "document_id": doc.get("id"),
+                "ten": doc.get("title") or doc.get("ten"),
                 "phien_ban": doc.get("phien_ban") or doc.get("version") or 1,
-                "cum_tu": found,
                 "trich": _excerpt(text, found[0]),
             })
     if not hits:
@@ -50,7 +54,11 @@ def tang_3(cong_thuc, ket_qua_tang_1):
         blob = " ".join([ct.get("latex") or "", ct.get("noi_dung") or "", ct.get("ten") or ""]).lower()
         found = [t for t in TU_KHOA_CONG_THUC if t in blob]
         if found:
-            khop.append({"formula_id": ct.get("id"), "cum_tu": found})
+            khop.append({
+                "formula_id": ct.get("id"),
+                "ten": ct.get("ten"),
+                "noi_dung": ct.get("noi_dung"),
+            })
     if not khop:
         return {
             "tang": 3,

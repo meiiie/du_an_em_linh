@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { nopBuoc, type StepPayload } from "@/lib/actions/hs";
 import type { AiPublicConfig } from "@/lib/ai-catalog";
+import type { TrichDanHien } from "@/lib/kien-thuc";
 import { thanDe } from "@/lib/de-hoc-sinh";
 import { BUOC } from "@/lib/levels";
 import { Button, buttonClasses } from "./ui/button";
@@ -30,6 +31,8 @@ const AI_MAC_DINH: AiPublicConfig = {
   classModel: null,
   allowLocal: true,
   cloudReady: false,
+  openrouterReady: false,
+  zaiReady: false,
 };
 
 export function SolveClient({
@@ -46,7 +49,7 @@ export function SolveClient({
   latex: string;
   moLoiGiai?: boolean;
   loiGiai?: string | null;
-  initialChat?: { role: "hs" | "gia_su"; text: string }[];
+  initialChat?: { role: "hs" | "gia_su"; text: string; trichDan?: TrichDanHien[] }[];
   ai?: AiPublicConfig;
 }) {
   const [step, setStep] = useState(0);
@@ -142,12 +145,12 @@ export function SolveClient({
   const ma = ORDER[step];
 
   return (
-    <div className="grid gap-8 md:grid-cols-[minmax(0,1fr)_minmax(280px,340px)]">
-      <section data-testid="solve-screen">
+    <div className="grid items-start gap-8 md:grid-cols-[minmax(0,1fr)_minmax(300px,380px)]">
+      <section data-testid="solve-screen" className="pb-[calc(5.5rem+env(safe-area-inset-bottom))] md:pb-0">
         <h1 className="text-pretty text-xl font-semibold">{thanDe(title)}</h1>
-        <div className="mt-3 border-y border-line bg-wash px-3 py-2">
+        <p className="mt-4 max-w-[65ch] overflow-x-auto text-[1.25rem] leading-8" translate="no">
           <Tex tex={latex} />
-        </div>
+        </p>
         <ol className="mt-4 flex gap-0 overflow-x-auto border-y border-line lg:flex-col lg:border-0">
           {BUOC.map((b, i) => (
             <li key={b.ma} className="shrink-0 lg:shrink">
@@ -225,10 +228,7 @@ export function SolveClient({
           )}
           {ma === "B.DH.XETDAU" && (
             <div data-testid="bang-xet-dau">
-              <p className="text-sm text-muted">
-                Em tự ghi các mốc trên hàng x. Hai đầu −∞ và +∞ là khung bảng, không phải điểm tới hạn. Ứng dụng không thêm mốc và không báo đúng sai từng ô khi đang gõ.
-              </p>
-              <div className="mt-4 flex gap-2">
+              <div className="flex gap-2">
                 <input
                   data-testid="moc-nhap"
                   value={draftPoint}
@@ -397,20 +397,42 @@ export function SolveClient({
             aria-live="polite"
             className={`mt-6 px-4 py-3 text-sm ${grade.ket_qua === "DAT" ? "bg-pass/10 text-pass" : "bg-amber-50 text-amber-950"}`}
           >
-            {grade.finished ? "Em đã hoàn thành bài này." : grade.thong_bao}
+            {grade.finished ? "Đã xong bài này." : grade.thong_bao}
           </p>
         ) : null}
 
         {grade?.finished && moLoiGiai && loiGiai ? (
           <div data-testid="loi-giai-sau-nop" className="mt-4 rounded-button bg-paper px-4 py-3 text-sm leading-relaxed">
-            <p className="font-semibold">Lời giải lớp cho phép xem sau khi nộp</p>
+            <p className="font-semibold">Lời giải</p>
             <p className="mt-1">{loiGiai}</p>
           </div>
         ) : null}
 
-        <Button type="button" data-testid="nop-buoc" disabled={busy} onClick={submit} className="mt-8 w-full">
-          {busy ? "Đang chấm…" : `Nộp bước ${BUOC[step].ten}`}
-        </Button>
+        <div
+          data-testid="thanh-nop"
+          className="max-md:fixed max-md:inset-x-0 max-md:bottom-0 max-md:z-20 max-md:flex max-md:items-stretch max-md:gap-2 max-md:border-t max-md:border-line max-md:bg-canvas max-md:px-4 max-md:pt-3 max-md:pb-[max(0.75rem,env(safe-area-inset-bottom))]"
+        >
+          <Button
+            type="button"
+            data-testid="nop-buoc"
+            disabled={busy}
+            onClick={submit}
+            className="mt-8 w-full max-md:mt-0 max-md:min-w-0 max-md:flex-1"
+          >
+            {busy ? "Đang chấm…" : `Nộp bước ${BUOC[step].ten}`}
+          </Button>
+          {!openTutor ? (
+            <Button
+              type="button"
+              data-testid="mo-gia-su"
+              variant="secondary"
+              className="max-md:shrink-0 md:hidden"
+              onClick={() => setOpenTutor(true)}
+            >
+              Hỏi gia sư
+            </Button>
+          ) : null}
+        </div>
       </section>
 
       <TutorPanel
@@ -420,16 +442,6 @@ export function SolveClient({
         open={openTutor}
         onClose={() => setOpenTutor(false)}
       />
-      {!openTutor ? (
-        <Button
-          type="button"
-          data-testid="mo-gia-su"
-          className="fixed bottom-[calc(1rem+env(safe-area-inset-bottom))] right-4 z-20 shadow-lg md:hidden"
-          onClick={() => setOpenTutor(true)}
-        >
-          Hỏi gia sư
-        </Button>
-      ) : null}
     </div>
   );
 }

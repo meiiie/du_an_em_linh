@@ -33,11 +33,11 @@ export function nhanMuc4(code: string | null | undefined) {
   return LABEL4[code as Muc4] || code;
 }
 
-/** Công thức để KaTeX — không in raw `x^{2}` ra UI. */
+/** Công thức để KaTeX — không in raw `x^{2}` ra UI. Đã có vế trái thì giữ nguyên. */
 export function hamLatex(statementLatex: string | null | undefined) {
   const raw = (statementLatex || "").trim();
   if (!raw) return "";
-  if (/^y\s*=/i.test(raw) || raw.startsWith("\\")) return raw;
+  if (raw.startsWith("\\") || raw.includes("=")) return raw;
   return `y = ${raw}`;
 }
 
@@ -49,6 +49,33 @@ export function thanDe(statementText: string) {
     .replace(/\s+$/g, "")
     .replace(/[.,;:]+$/g, "");
   return gon || "Xét tính đơn điệu của hàm số";
+}
+
+/** Tên tài liệu: phần sau dấu hai chấm / gạch. */
+export function tenTaiLieuNgan(title: string) {
+  const gon = (title || "").replace(/^[^:—\-]+[:—\-]\s*/, "").trim();
+  const ten = gon || title;
+  return ten.charAt(0).toLocaleUpperCase("vi-VN") + ten.slice(1);
+}
+
+/** Một câu trích tài liệu — bỏ câu khung «tự soạn» và ngoặc năm nghiên cứu. */
+export function thanTrich(text: string) {
+  const gon = (text || "").replace(/\s+/g, " ").trim();
+  if (!gon) return "";
+  const sach = gon.replace(/\s*\([^)]*\d{4}[^)]*\)/g, "").replace(/\s+/g, " ").trim() || gon;
+  const cau =
+    sach.split(/(?<=[.!?…;])\s+/).find((c) => !/tự soạn|không chép sách/i.test(c))?.trim() ||
+    sach.match(/^.+?[.!?…](?:\s|$)/)?.[0]?.trim() ||
+    sach;
+  if (cau.length <= 120) return cau;
+  return `${cau.slice(0, 117).replace(/\s+\S*$/, "")}…`;
+}
+
+/** Lý do duyệt: bỏ calque «Tầng n» — số tầng đã đứng riêng trên hàng. */
+export function gonLyDoDuyet(text: string) {
+  const gon = (text || "").replace(/Tầng\s*\d+\s*/gi, "").replace(/\s+/g, " ").trim();
+  if (!gon) return "";
+  return gon.charAt(0).toLocaleUpperCase("vi-VN") + gon.slice(1);
 }
 
 /** Lời trên phiếu — tiếng lớp 12, không mã, không ngưỡng/nấc/phát hành. */

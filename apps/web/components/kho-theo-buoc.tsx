@@ -10,17 +10,12 @@ export type HangKhoBuoc = {
 export function KhoTheoBuoc({ khung }: { khung: HangKhoBuoc[] }) {
   return (
     <ol className="divide-y divide-line" data-testid="kho-theo-buoc">
-      {khung.map((b) => {
-        const ten = [...b.congThuc.map((c) => c.ten), ...b.taiLieu.map((d) => d.ten)];
-        return (
-          <li key={b.ma} className="py-3" data-testid={`kho-buoc-${b.ma}`}>
-            <p className="text-sm font-medium">{b.ten}</p>
-            <p className="mt-1 text-sm text-muted">
-              {ten.length ? ten.join(", ") : "Chưa có đoạn cho bước này."}
-            </p>
-          </li>
-        );
-      })}
+      {khung.map((b, i) => (
+        <li key={b.ma} className="flex min-h-11 items-center gap-3" data-testid={`kho-buoc-${b.ma}`}>
+          <span className="tabular w-6 font-mono text-xs text-muted">{i + 1}</span>
+          <p className="text-sm">{b.ten}</p>
+        </li>
+      ))}
     </ol>
   );
 }

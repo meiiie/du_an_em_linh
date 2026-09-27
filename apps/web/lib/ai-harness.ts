@@ -1,23 +1,32 @@
 import {
+  AI_MAX_TOKENS_CHAT,
   AI_TIMEOUT_CHAT_MS,
   AI_TIMEOUT_PROBE_MS,
   CLOUD_MAC_DINH,
   LMSTUDIO_MAC_DINH,
   NHA,
   OLLAMA_MAC_DINH,
+  OPENROUTER_MAC_DINH,
+  OPENROUTER_MODEL_MAC_DINH,
+  ZAI_MAC_DINH,
+  ZAI_MODEL_MAC_DINH,
   chuanHoaBase,
   laDiaChiLoopback,
+  laNhaKhoa,
   laUrlCloudHopLe,
   parseProvider,
+  resolveProvider,
   thongBaoLoiNha,
   urlChat,
   urlModels,
   type AiLoiKind,
+  type AiNhaKhoaId,
   type AiProviderId,
+  type AiPublicConfig,
   type ChatMessage,
 } from "./ai-catalog";
 
-export type { AiLoiKind, AiProviderId, ChatMessage };
+export type { AiLoiKind, AiNhaKhoaId, AiProviderId, ChatMessage };
 export {
   AI_TIMEOUT_CHAT_MS,
   AI_TIMEOUT_PROBE_MS,
@@ -25,7 +34,10 @@ export {
   LMSTUDIO_MAC_DINH,
   NHA,
   OLLAMA_MAC_DINH,
+  OPENROUTER_MAC_DINH,
+  ZAI_MAC_DINH,
   laDiaChiLoopback,
+  laNhaKhoa,
   parseProvider,
   thongBaoLoiNha,
 } from "./ai-catalog";
@@ -67,17 +79,60 @@ export function docBaseCloud(): string {
   return chuanHoaBase(env("LLM_BASE_URL", CLOUD_MAC_DINH) || CLOUD_MAC_DINH);
 }
 
+/** OpenRouter / Z.AI: chỉ địa chỉ cứng. Cloud mới đọc LLM_BASE_URL. */
+export function docBaseNhaKhoa(provider: AiNhaKhoaId): string {
+  if (provider === "openrouter") return OPENROUTER_MAC_DINH;
+  if (provider === "zai") return ZAI_MAC_DINH;
+  return docBaseCloud();
+}
+
 export function docModel(provider: AiProviderId, override?: string | null): string {
   const tuChon = (override || "").trim();
   if (tuChon) return tuChon;
   if (provider === "ollama") return env("OLLAMA_MODEL", "llama3.2") || "llama3.2";
   if (provider === "lmstudio") return env("LMSTUDIO_MODEL", "local-model") || "local-model";
   if (provider === "cloud") return env("LLM_MODEL", "gpt-4o-mini") || "gpt-4o-mini";
+  if (provider === "openrouter") return env("OPENROUTER_MODEL", OPENROUTER_MODEL_MAC_DINH) || OPENROUTER_MODEL_MAC_DINH;
+  if (provider === "zai") return env("ZAI_MODEL", ZAI_MODEL_MAC_DINH) || ZAI_MODEL_MAC_DINH;
   return "";
 }
 
-export function docKhoaCloud(classKey?: string | null): string | null {
-  return env("LLM_API_KEY") || (classKey || "").trim() || null;
+/**
+ * Env của đúng nhà, hoặc khóa lớp khi lớp đang chọn nhà đó.
+ * Không có classProvider (form dán khóa / probe nhà đang nối) thì khóa dán dùng cho nhà đang gọi.
+ */
+export function docKhoaNha(
+  provider: AiNhaKhoaId,
+  classKey?: string | null,
+  classProvider?: string | null,
+): string | null {
+  const fromEnv = env(NHA[provider].envKhoa || "LLM_API_KEY");
+  if (fromEnv) return fromEnv;
+  const pasted = (classKey || "").trim();
+  if (!pasted) return null;
+  if (classProvider == null) return pasted;
+  return parseProvider(classProvider) === provider ? pasted : null;
+}
+
+export function docKhoaCloud(classKey?: string | null, classProvider?: string | null): string | null {
+  return docKhoaNha("cloud", classKey, classProvider);
+}
+
+export function cauHinhCongKhai(opts: {
+  classProvider?: string | null;
+  classModel?: string | null;
+  allowLocal?: boolean;
+  classApiKey?: string | null;
+}): AiPublicConfig {
+  const lop = resolveProvider({ classProvider: opts.classProvider });
+  return {
+    classProvider: lop,
+    classModel: (opts.classModel || "").trim() || null,
+    allowLocal: opts.allowLocal !== false,
+    cloudReady: Boolean(docKhoaNha("cloud", opts.classApiKey, lop)),
+    openrouterReady: Boolean(docKhoaNha("openrouter", opts.classApiKey, lop)),
+    zaiReady: Boolean(docKhoaNha("zai", opts.classApiKey, lop)),
+  };
 }
 
 async function motLan(
@@ -85,18 +140,24 @@ async function motLan(
   url: string,
   init: RequestInit,
   timeoutMs: number,
+  ngoai?: AbortSignal,
 ): Promise<{ res?: Response; kind?: "timeout" | "network" | "aborted" }> {
   const ac = new AbortController();
   const t = setTimeout(() => ac.abort(), timeoutMs);
+  const theoNgoai = () => ac.abort();
+  ngoai?.addEventListener("abort", theoNgoai);
   try {
+    if (ngoai?.aborted) return { kind: "aborted" };
     const res = await fetchFn(url, { ...init, signal: ac.signal, cache: "no-store" });
     return { res };
   } catch (e) {
+    if (ngoai?.aborted) return { kind: "aborted" };
     if (ac.signal.aborted) return { kind: "timeout" };
     if (e instanceof Error && e.name === "AbortError") return { kind: "aborted" };
     return { kind: "network" };
   } finally {
     clearTimeout(t);
+    ngoai?.removeEventListener("abort", theoNgoai);
   }
 }
 
@@ -111,17 +172,50 @@ function thatBai(provider: AiProviderId, kind: AiLoiKind, chiTiet?: string): Com
   };
 }
 
+function docNoiDung(msg: { content?: unknown }): string {
+  const c = msg.content;
+  if (typeof c === "string") return c.trim();
+  if (Array.isArray(c)) {
+    return c
+      .map((p) => {
+        if (typeof p === "string") return p;
+        if (p && typeof p === "object" && "text" in p) return String((p as { text?: string }).text || "");
+        return "";
+      })
+      .join("")
+      .trim();
+  }
+  return "";
+}
+
+function headerChat(provider: AiProviderId, key: string): Record<string, string> {
+  const headers: Record<string, string> = {
+    "content-type": "application/json",
+    authorization: `Bearer ${key}`,
+  };
+  if (provider === "openrouter") {
+    headers["HTTP-Referer"] = env("APP_URL") || "https://hoc-toan-ai.onrender.com";
+    headers["X-OpenRouter-Title"] = "Học toán với AI";
+  }
+  if (provider === "zai") {
+    headers["Accept-Language"] = "vi-VN,vi";
+  }
+  return headers;
+}
+
 /**
  * Một lần HTTP. Không retry, không queue, không fallback nhà khác.
- * Local chỉ loopback. Cloud chỉ khóa chính thức (env hoặc khóa lớp).
+ * Local chỉ loopback. Nhà khóa: địa chỉ cứng / env https, khóa chính thức (env hoặc khóa lớp).
  */
 export async function completeChat(opts: {
   provider: AiProviderId;
   model?: string | null;
   classApiKey?: string | null;
+  classProvider?: string | null;
   messages: ChatMessage[];
   offlineText: string;
   fetchFn?: FetchLike;
+  signal?: AbortSignal;
 }): Promise<CompleteChatResult> {
   const provider = parseProvider(opts.provider);
   const fetchFn = opts.fetchFn || fetch;
@@ -140,10 +234,10 @@ export async function completeChat(opts: {
   let base: string;
   let key: string | null = null;
 
-  if (provider === "cloud") {
-    base = docBaseCloud();
+  if (laNhaKhoa(provider)) {
+    base = docBaseNhaKhoa(provider);
     if (!laUrlCloudHopLe(base)) return thatBai(provider, "bad_cloud_url", base);
-    key = docKhoaCloud(opts.classApiKey);
+    key = docKhoaNha(provider, opts.classApiKey, opts.classProvider);
     if (!key) return thatBai(provider, "no_key");
   } else {
     base = docBaseLocal(provider);
@@ -152,24 +246,30 @@ export async function completeChat(opts: {
   }
 
   const model = docModel(provider, opts.model);
+  const body: Record<string, unknown> = {
+    model,
+    temperature: 0.2,
+    max_tokens: AI_MAX_TOKENS_CHAT,
+    stream: false,
+    messages: opts.messages,
+  };
+  if (provider === "zai") {
+    // GLM-5.3 / Flash không tắt thinking (docs 2026-09). disabled trên coding plan
+    // vẫn nghĩ, hết 1600 token cho reasoning_content, content rỗng.
+    // low = thay cho «tắt»: câu vào content, lớp không xem CoT.
+    body.thinking = { type: "enabled" };
+    body.reasoning_effort = "low";
+  }
   const started = await motLan(
     fetchFn,
     urlChat(base),
     {
       method: "POST",
-      headers: {
-        "content-type": "application/json",
-        authorization: `Bearer ${key}`,
-      },
-      body: JSON.stringify({
-        model,
-        temperature: 0.2,
-        max_tokens: 400,
-        stream: false,
-        messages: opts.messages,
-      }),
+      headers: headerChat(provider, key),
+      body: JSON.stringify(body),
     },
     AI_TIMEOUT_CHAT_MS,
+    opts.signal,
   );
 
   if (started.kind === "timeout") return thatBai(provider, "timeout", base);
@@ -180,13 +280,13 @@ export async function completeChat(opts: {
     return thatBai(provider, "http", String(started.res.status));
   }
 
-  let data: { choices?: { message?: { content?: string } }[] };
+  let data: { choices?: { message?: { content?: unknown } }[] };
   try {
     data = (await started.res.json()) as typeof data;
   } catch {
     return thatBai(provider, "empty");
   }
-  const text = data.choices?.[0]?.message?.content?.trim() || "";
+  const text = docNoiDung(data.choices?.[0]?.message || {});
   if (!text) return thatBai(provider, "empty");
 
   return {
@@ -202,6 +302,7 @@ export async function completeChat(opts: {
 export async function probeProvider(opts: {
   provider: AiProviderId;
   classApiKey?: string | null;
+  classProvider?: string | null;
   fetchFn?: FetchLike;
 }): Promise<ProbeResult> {
   const provider = parseProvider(opts.provider);
@@ -219,12 +320,12 @@ export async function probeProvider(opts: {
   let base: string;
   let key: string;
 
-  if (provider === "cloud") {
-    base = docBaseCloud();
+  if (laNhaKhoa(provider)) {
+    base = docBaseNhaKhoa(provider);
     if (!laUrlCloudHopLe(base)) {
       return { ok: false, provider, message: thongBaoLoiNha("bad_cloud_url", provider, base), models: [], base };
     }
-    const k = docKhoaCloud(opts.classApiKey);
+    const k = docKhoaNha(provider, opts.classApiKey, opts.classProvider);
     if (!k) {
       return { ok: false, provider, message: thongBaoLoiNha("no_key", provider), models: [], base };
     }

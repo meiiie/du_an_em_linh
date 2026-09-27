@@ -293,6 +293,7 @@ export const tutorMessages = pgTable("tutor_messages", {
   content: text("content").notNull(),
   redactedContent: text("redacted_content"),
   blockedByFilter: boolean("blocked_by_filter").notNull(),
+  citation: jsonb("citation"),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
 });
 
