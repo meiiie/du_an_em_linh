@@ -96,7 +96,7 @@ jobs:
           .venv/bin/pip install -e ".[dev]"
       - run: pnpm install --frozen-lockfile
       - name: Cache trình duyệt Playwright
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: ~/.cache/ms-playwright
           key: playwright-${{ runner.os }}-${{ hashFiles('apps/web/package.json') }}
