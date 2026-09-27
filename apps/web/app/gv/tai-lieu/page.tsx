@@ -8,6 +8,7 @@ import { KhoTheoBuoc } from "@/components/kho-theo-buoc";
 import { PageHeader } from "@/components/ui/page-header";
 import { taiNguyenKhoLop } from "@/lib/kho-lop";
 import { xemKhoTheoKhung } from "@/lib/kien-thuc";
+import { tenTaiLieuNgan } from "@/lib/de-hoc-sinh";
 import { db } from "@/lib/db";
 import { documents } from "@/lib/db/schema";
 
@@ -28,7 +29,7 @@ export default async function Page() {
         <ul className="divide-y divide-line border-y border-line">
           {docs.map((d) => (
             <li key={d.id} className="flex min-h-11 flex-wrap items-center justify-between gap-3 py-4">
-              <p className="font-medium">{d.title}</p>
+              <p className="font-medium">{tenTaiLieuNgan(d.title)}</p>
               {d.licenseStatus === "chua_ro" ? (
                 <Badge tone="warn">Gia sư bỏ qua</Badge>
               ) : (

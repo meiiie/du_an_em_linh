@@ -84,6 +84,8 @@ export function gonLyDoDuyet(text: string) {
   const gon = (text || "")
     .replace(/Tầng\s*\d+\s*/gi, "")
     .replace(/lời giải cấu trúc 5 bước để máy tự kiểm/gi, "lời giải đủ 5 bước để máy chấm")
+    .replace(/Có trích dẫn tài liệu\.?/gi, "")
+    .replace(/chưa kết luận được nên chưa đối chiếu quy tắc\.?/gi, "chưa đối chiếu được công thức.")
     .replace(/\s+/g, " ")
     .trim();
   if (!gon) return "";

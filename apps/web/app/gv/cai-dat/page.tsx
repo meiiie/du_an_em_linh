@@ -30,7 +30,6 @@ export default async function Page() {
     <main className="max-w-xl">
       <PageHeader title="Cài đặt lớp" />
       <form action={luuCaiDatLop} className="space-y-4 border-y border-line py-6">
-        <p className="text-sm text-muted">Lớp {lop?.name || "—"}</p>
         <label className="flex items-start gap-3 text-sm">
           <input
             name="mo_loi_giai"
@@ -62,16 +61,16 @@ export default async function Page() {
           ))}
         </fieldset>
 
-        <label className="block text-sm">
-          <span className="mb-2 block font-medium">Mô hình</span>
+        <details className="text-sm">
+          <summary className="min-h-11 cursor-pointer font-medium">Mô hình</summary>
           <input
             name="ai_model"
             data-testid="ai-model"
             defaultValue={setting?.aiModel || ""}
-            className={fieldControl}
+            className={`${fieldControl} mt-2`}
             placeholder="Để trống nếu dùng mặc định"
           />
-        </label>
+        </details>
 
         <label className="flex items-start gap-3 text-sm">
           <input
@@ -94,7 +93,7 @@ export default async function Page() {
         <Button type="submit">Lưu cài đặt</Button>
       </form>
       <KiemTraAi macDinh={provider} />
-      <p className="mt-6 text-sm text-muted" data-testid="do-chinh-xac-tom-tat">
+      <p className="sr-only" data-testid="do-chinh-xac-tom-tat">
         Gia sư {the.diem}/{the.toiDa}
       </p>
     </main>

@@ -34,7 +34,7 @@ function Hang({
       <Link
         href={href}
         data-testid={testId}
-        className="flex min-h-11 items-center justify-between gap-4 py-3 hover:bg-wash"
+        className="flex min-h-11 items-center justify-between gap-4 py-3 transition-colors duration-150 hover:bg-wash"
       >
         <span className="text-sm">{label}</span>
         <span className={cn("tabular text-sm", mark && "text-mark", !mark && meta === "Đã kết nối" && "text-pass")}>
@@ -76,7 +76,7 @@ export default async function GvHome() {
           <Link
             href="/gv/ket-noi-ai"
             data-testid="san-sang-ai"
-            className="flex min-h-11 items-center justify-between gap-4 py-3 hover:bg-wash"
+            className="flex min-h-11 items-center justify-between gap-4 py-3 transition-colors duration-150 hover:bg-wash"
           >
             <span className="text-sm">Gia sư</span>
             <span className="text-right text-sm">
@@ -95,7 +95,9 @@ export default async function GvHome() {
         <ul className="mt-2 space-y-1 text-sm">
           {stuck.map((e) => (
             <li key={e.id}>
-              {name.get(e.studentId)} — {tenKn.get(e.skillCode) || e.skillCode}
+              <Link href="/gv/tien-do" className="underline-offset-2 hover:underline">
+                {name.get(e.studentId)} — {tenKn.get(e.skillCode) || e.skillCode}
+              </Link>
             </li>
           ))}
         </ul>

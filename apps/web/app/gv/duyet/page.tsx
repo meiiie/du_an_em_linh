@@ -37,7 +37,11 @@ export default async function Page() {
         const ts = tiers.filter((t) => t.runId === run?.id).sort((a, b) => a.tier - b.tier);
         const ham = hamLatex(p.statementLatex);
         return (
-          <article key={p.id} data-testid={`duyet-${p.code}`} className="border-t border-line pt-6">
+          <article
+            key={p.id}
+            data-testid={`duyet-${p.code}`}
+            className="border-t border-line pt-6 motion-safe:animate-[phieu-vao_180ms_ease-out]"
+          >
             <div className="flex flex-wrap items-center gap-3">
               {ham ? <Tex tex={ham} className="text-sm" /> : <p className="text-sm font-medium">{p.statementText}</p>}
               <Badge tone={tone(p.status)}>{STATUS_LABEL[p.status] || p.status}</Badge>
@@ -45,13 +49,14 @@ export default async function Page() {
             <ul className="mt-3 divide-y divide-line border-y border-line text-sm">
               {ts.map((t) => {
                 const cites = moTaTrichDanDuyet(t.citation, t.status);
+                const lyDo = gonLyDoDuyet(t.reasonText || "");
                 return (
                   <li key={t.id} className="flex gap-3 py-3">
                     <span className="w-20 shrink-0 text-xs text-muted">{tenCuaTang(t.tier)}</span>
                     <div className="min-w-0">
                       <p>
                         <span className="font-medium">{STATUS_LABEL[t.status] || t.status}</span>
-                        {t.reasonText ? ` — ${gonLyDoDuyet(t.reasonText)}` : ""}
+                        {lyDo ? ` — ${lyDo}` : ""}
                       </p>
                       {cites.length ? (
                         <ul className="mt-1 space-y-0.5 text-xs text-muted">

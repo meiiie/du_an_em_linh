@@ -59,7 +59,8 @@ test("rút tên tài liệu sau dấu hai chấm", () => {
 });
 
 test("lý do duyệt bỏ chữ tầng", () => {
-  assert.equal(gonLyDoDuyet("Tầng 1 chưa kết luận được nên chưa đối chiếu quy tắc."), "Chưa kết luận được nên chưa đối chiếu quy tắc.");
+  assert.equal(gonLyDoDuyet("Tầng 1 chưa kết luận được nên chưa đối chiếu quy tắc."), "Chưa đối chiếu được công thức.");
+  assert.equal(gonLyDoDuyet("Có trích dẫn tài liệu."), "");
   assert.equal(gonLyDoDuyet("Chưa có lời giải cấu trúc 5 bước để máy tự kiểm."), "Chưa có lời giải đủ 5 bước để máy chấm.");
   assert.equal(tenCuaTang(1), "Chấm máy");
   assert.equal(tenCuaTang(2), "Tài liệu");

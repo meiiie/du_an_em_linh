@@ -185,17 +185,17 @@ export default async function Page({
       <p className="mb-6 text-sm text-muted">Chỉ đọc tài liệu và công thức đã mở — không đọc lời giải.</p>
 
       {q.loi ? (
-        <p className="mb-6 bg-amber-50 px-4 py-3 text-sm text-amber-950" data-testid="ket-noi-loi">
+        <p className="mb-6 bg-amber-50 px-4 py-3 text-sm text-amber-950 motion-safe:animate-[phieu-vao_180ms_ease-out]" data-testid="ket-noi-loi">
           {q.loi}
         </p>
       ) : null}
       {q.ok ? (
-        <p className="mb-6 bg-pass/10 px-4 py-3 text-sm text-pass" data-testid="ket-noi-ok">
+        <p className="mb-6 bg-pass/10 px-4 py-3 text-sm text-pass motion-safe:animate-[phieu-vao_180ms_ease-out]" data-testid="ket-noi-ok">
           Đã kết nối. Học sinh hỏi gia sư là dùng {tenNhaLop(provider)}.
         </p>
       ) : null}
       {q.oauth ? (
-        <p className="mb-6 bg-pass/10 px-4 py-3 text-sm text-pass" data-testid="ket-noi-oauth">
+        <p className="mb-6 bg-pass/10 px-4 py-3 text-sm text-pass motion-safe:animate-[phieu-vao_180ms_ease-out]" data-testid="ket-noi-oauth">
           Đã xác nhận tài khoản ChatGPT. Còn dán khóa cùng tài khoản.
         </p>
       ) : null}
@@ -252,7 +252,7 @@ export default async function Page({
           moHref={OPENROUTER_KEYS_PAGE}
           moTestId="mo-trang-khoa-openrouter"
           moNhan="Mở OpenRouter"
-          moPhu="Tạo khóa lập trình, sao chép."
+          moPhu="Tạo một khóa, sao chép."
           nutMo="Mở OpenRouter để lấy khóa"
           provider="openrouter"
           mask={mask}
@@ -271,7 +271,7 @@ export default async function Page({
           moHref={ZAI_KEYS_PAGE}
           moTestId="mo-trang-khoa-zai"
           moNhan="Mở Z.AI"
-          moPhu="Tạo khóa coding, sao chép."
+          moPhu="Tạo một khóa, sao chép."
           nutMo="Mở Z.AI để lấy khóa"
           provider="zai"
           mask={mask}

@@ -60,7 +60,7 @@ export const NHA: Record<
     ngan: "OpenRouter",
     local: false,
     canKhoa: true,
-    moTa: "Khóa lập trình.",
+    moTa: "Khóa OpenRouter.",
     envKhoa: "OPENROUTER_API_KEY",
   },
   zai: {
@@ -69,7 +69,7 @@ export const NHA: Record<
     ngan: "Z.AI",
     local: false,
     canKhoa: true,
-    moTa: "Khóa coding.",
+    moTa: "Khóa Z.AI.",
     envKhoa: "ZAI_API_KEY",
   },
   ollama: {
@@ -78,7 +78,7 @@ export const NHA: Record<
     ngan: "Ollama",
     local: true,
     canKhoa: false,
-    moTa: "Chạy trên máy này.",
+    moTa: "Cần Ollama đang chạy.",
   },
   lmstudio: {
     id: "lmstudio",
@@ -86,7 +86,7 @@ export const NHA: Record<
     ngan: "LM Studio",
     local: true,
     canKhoa: false,
-    moTa: "Chạy trên máy này.",
+    moTa: "Cần LM Studio đang chạy.",
   },
 };
 
