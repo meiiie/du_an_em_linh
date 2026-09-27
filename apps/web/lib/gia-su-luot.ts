@@ -191,7 +191,7 @@ export async function chayHoiGiaSu(opts: {
       cauHoiXocratis(buoc),
     ]
       .filter(Boolean)
-      .join(" ");
+      .join("\n\n");
     const prior = await db
       .select()
       .from(tutorMessages)
@@ -220,7 +220,7 @@ export async function chayHoiGiaSu(opts: {
         ...history,
         {
           role: "user",
-          content: `Đề (không kèm lời giải): ${prob[0].statementText}\nBước: ${buoc}\nLoại: ${grade?.loaiKetQua || "chua_nop"}\nGợi ý được mở: ${goiY || "(chưa)"}\nCông thức và tài liệu lớp (đã duyệt, không phải lời giải — nếu dùng thì nhắc đúng tên):\n${dongKhoChoPrompt(kho)}\nHọc sinh: ${text}`,
+          content: `Đề (không kèm lời giải): ${prob[0].statementText}\nBước: ${buoc}\nLoại: ${grade?.loaiKetQua || "chua_nop"}\nGợi ý được mở: ${goiY || "(chưa)"}\nCông thức và tài liệu lớp (đã duyệt, không phải lời giải — nếu dùng thì nhắc đúng tên):\n${dongKhoChoPrompt(kho)}\nHọc sinh: ${text}\nTrình bày như phiếu: đoạn ngắn, danh sách, $...$ / $$...$$.`,
         },
       ],
     });
