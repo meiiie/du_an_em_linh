@@ -43,8 +43,7 @@ Next.js 15. Server action nói chuyện với Postgres và `MATH_SERVICE_URL`.
 | --- | --- |
 | `app/page.tsx` | Trang chủ công khai (SEO, JSON-LD, không DB) |
 | `app/not-found.tsx` | 404 noindex |
-| `app/favicon.ico` / `app/apple-icon.png` | Logo tab Next (ổn định `/favicon.ico`) |
-| `public/icon.svg` + PNG/ICO | Favicon Google (≥48px ICO/PNG) + PWA |
+| `public/favicon.ico` + `icon.svg` + PNG | Logo tab ổn định (không đặt ICO trong `app/` — xung đột Next) |
 | `public/llms.txt` / `public/.well-known/security.txt` | Máy AI / security.txt |
 | `lib/site.ts` | URL / tên / mô tả chuẩn hóa |
 | `app/sitemap.ts` / `robots.ts` / `manifest.ts` | SEO máy tìm kiếm |
