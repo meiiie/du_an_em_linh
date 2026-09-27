@@ -1,0 +1,46 @@
+name: Báo lỗi
+description: Hành vi sai so với nguyên mẫu đã khóa.
+title: "[lỗi] "
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Tìm issue trùng trước. **Không** dán khóa API, cookie, hay dữ liệu học sinh.
+  - type: dropdown
+    id: noi
+    attributes:
+      label: Chỗ lỗi
+      options:
+        - Học sinh / phiếu 5 bước
+        - Gia sư
+        - Giáo viên / duyệt / ngân hàng
+        - Dịch vụ toán
+        - Đăng nhập / triển khai / CI
+        - Khác
+    validations:
+      required: true
+  - type: textarea
+    id: lam
+    attributes:
+      label: Làm gì
+      placeholder: Vào hs.an@demo.local, mở bài …, nộp …
+    validations:
+      required: true
+  - type: textarea
+    id: mong-doi
+    attributes:
+      label: Kỳ vọng
+    validations:
+      required: true
+  - type: textarea
+    id: thuc-te
+    attributes:
+      label: Thực tế
+    validations:
+      required: true
+  - type: input
+    id: moi-truong
+    attributes:
+      label: Môi trường
+      placeholder: "local / Render, trình duyệt, cỡ màn"

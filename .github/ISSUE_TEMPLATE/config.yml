@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Bản thử online
+    url: https://hoc-toan-ai.onrender.com
+    about: Thử demo (tài khoản trong README) trước khi mở issue.
+  - name: Quyết định đã khóa
+    url: https://github.com/meiiie/du_an_em_linh/tree/main/docs/adr
+    about: Đọc ADR trước khi đề xuất đổi khung 5 bước, cổng 3 tầng, hoặc phạm vi chủ đề.

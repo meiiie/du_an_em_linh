@@ -8,8 +8,15 @@ __pycache__/
 .pytest_cache/
 .env
 .env.local
+.env*.local
 data/uploads/
 playwright-report/
 test-results/
+pw-shots/
+coverage/
 *.tsbuildinfo
+*.log
 .DS_Store
+.idea/
+.vscode/
+!.vscode/extensions.json

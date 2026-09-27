@@ -1,0 +1,30 @@
+name: Đề xuất
+description: Ý trong phạm vi nguyên mẫu (đơn điệu và cực trị).
+title: "[đề xuất] "
+labels: [enhancement]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Chủ đề hiện tại **chỉ** đơn điệu và cực trị. Không đề xuất mở lớp 10–12 hay login ChatGPT unofficial.
+  - type: textarea
+    id: van-de
+    attributes:
+      label: Việc cần giải quyết
+    validations:
+      required: true
+  - type: textarea
+    id: de-xuat
+    attributes:
+      label: Đề xuất
+    validations:
+      required: true
+  - type: dropdown
+    id: pham-vi
+    attributes:
+      label: Có đụng quyết định đã khóa?
+      options:
+        - Không
+        - Có — cần ADR mới (nêu rõ ADR nào)
+    validations:
+      required: true
