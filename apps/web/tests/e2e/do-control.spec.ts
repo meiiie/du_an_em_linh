@@ -46,6 +46,7 @@ test("giải phẫu nút 40/44 và ô 40", async ({ page }) => {
   await page.getByTestId("bai-DH12-03-VD-01").click();
   const step = await box(page, '[data-testid="step-B.DH.TXD"]');
   const nop = await box(page, '[data-testid="nop-buoc"]');
+  await page.getByTestId("mo-gia-su").click();
   const send = await box(page, '[data-testid="tutor-send"]');
   expect(step.h).toBeGreaterThanOrEqual(44);
   expect(nop.h).toBeGreaterThanOrEqual(40);

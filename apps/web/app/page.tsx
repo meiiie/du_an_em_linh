@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { MinhHoaDaoHam } from "@/components/minh-hoa-dao-ham";
 import { buttonClasses } from "@/components/ui/button";
 import { SITE_DESC, SITE_NAME, SITE_VERSION, siteUrl } from "@/lib/site";
 
@@ -71,10 +72,11 @@ export default function TrangChu() {
           </Link>
         </div>
       </header>
-      <main id="noi-dung" className="mx-auto max-w-5xl px-5 py-16 sm:px-10">
-        <p className="text-sm text-muted">Đơn điệu và cực trị</p>
-        <h1 className="mt-2 text-pretty text-4xl font-semibold leading-tight sm:text-5xl">{SITE_NAME}</h1>
-        <p className="mt-4 max-w-2xl text-base leading-relaxed text-muted">{SITE_DESC}</p>
+      <main id="noi-dung" className="mx-auto max-w-5xl px-5 py-12 sm:px-10 sm:py-16">
+        <p className="text-sm text-muted">Toán 12 · Đơn điệu và cực trị</p>
+        <h1 className="mt-2 text-pretty text-2xl font-semibold tracking-tight">{SITE_NAME}</h1>
+        <p className="mt-3 max-w-[42ch] text-sm leading-relaxed text-muted">{SITE_DESC}</p>
+        <MinhHoaDaoHam />
       </main>
       <footer className="border-t border-line">
         <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-3 px-5 py-6 text-xs text-muted sm:px-10">

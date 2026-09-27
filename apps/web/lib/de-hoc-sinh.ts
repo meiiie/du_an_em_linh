@@ -28,6 +28,36 @@ export function tenBuocNgan(ma: string) {
   return BUOC_NGAN[ma] || ma;
 }
 
+/** Tên bước trên trang làm bài — cùng thứ tự quy trình, không rút thành chip. */
+const TEN_TRANG: Record<string, string> = {
+  "B.DH.TXD": "Tập xác định",
+  "B.DH.DAOHAM": "Đạo hàm",
+  "B.DH.NGHIEM": "Nghiệm y′",
+  "B.DH.XETDAU": "Xét dấu",
+  "B.DH.KETLUAN": "Kết luận",
+};
+
+const LOI_BUOC: Record<string, string> = {
+  "B.DH.TXD": "Viết tập xác định của hàm số",
+  "B.DH.DAOHAM": "Tính đạo hàm của hàm số",
+  "B.DH.NGHIEM": "Tìm nghiệm y′ = 0 và điểm y′ không xác định",
+  "B.DH.XETDAU": "Xét dấu y′ và chiều biến thiên",
+  "B.DH.KETLUAN": "Kết luận khoảng đơn điệu và cực trị",
+};
+
+export function tenBuocTrang(ma: string) {
+  return TEN_TRANG[ma] || tenBuocNgan(ma);
+}
+
+export function soBuoc(ma: string) {
+  const i = Object.keys(TEN_TRANG).indexOf(ma);
+  return i < 0 ? "" : String(i + 1).padStart(2, "0");
+}
+
+export function loiBuoc(ma: string) {
+  return LOI_BUOC[ma] || "";
+}
+
 export function nhanMuc4(code: string | null | undefined) {
   if (!code) return "—";
   return LABEL4[code as Muc4] || code;

@@ -150,8 +150,10 @@ test.describe("máy tính bảng", () => {
     await moSoBaiGiao(page);
     await page.getByTestId("bai-DH12-03-VD-01").click();
     await expect(page.getByTestId("solve-screen")).toBeVisible();
+    await expect(page.getByTestId("tutor-panel")).toBeHidden();
+    await expect(page.getByTestId("mo-gia-su")).toBeVisible();
+    await page.getByTestId("mo-gia-su").click();
     await expect(page.getByTestId("tutor-panel")).toBeVisible();
-    await expect(page.getByTestId("mo-gia-su")).toBeHidden();
     await page.screenshot({ path: `${SHOTS}/hs-may-tinh-bang-768.png`, fullPage: true });
     const solveOverflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
     expect(solveOverflow).toBeLessThanOrEqual(8);
