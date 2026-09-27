@@ -64,11 +64,11 @@ export function thanTrich(text: string) {
   if (!gon) return "";
   const sach = gon.replace(/\s*\([^)]*\d{4}[^)]*\)/g, "").replace(/\s+/g, " ").trim() || gon;
   const cau =
-    sach.split(/(?<=[.!?…])\s+/).find((c) => !/tự soạn|không chép sách/i.test(c))?.trim() ||
+    sach.split(/(?<=[.!?…;])\s+/).find((c) => !/tự soạn|không chép sách/i.test(c))?.trim() ||
     sach.match(/^.+?[.!?…](?:\s|$)/)?.[0]?.trim() ||
     sach;
-  if (cau.length <= 160) return cau;
-  return `${cau.slice(0, 157).replace(/\s+\S*$/, "")}…`;
+  if (cau.length <= 120) return cau;
+  return `${cau.slice(0, 117).replace(/\s+\S*$/, "")}…`;
 }
 
 /** Lời trên phiếu — tiếng lớp 12, không mã, không ngưỡng/nấc/phát hành. */
