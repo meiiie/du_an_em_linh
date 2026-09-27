@@ -1,4 +1,5 @@
 import { khoLopCongKhai } from "@/lib/actions/hs";
+import { KhoTheoBuoc } from "@/components/kho-theo-buoc";
 import { PageHeader } from "@/components/ui/page-header";
 import { Tex } from "@/components/tex";
 
@@ -13,7 +14,14 @@ export default async function Page() {
         title="Kiến thức gia sư được đọc"
         description="Cùng kho tầng 2/3: tài liệu đã nạp (quyền rõ) và bảng công thức khóa. Gia sư không đọc lời giải chuẩn."
       />
-      <section className="border-y border-line py-6" data-testid="kho-cong-thuc">
+      <section className="border-y border-line py-6" data-testid="kho-theo-buoc-hs">
+        <h2 className="text-base font-semibold">Gia sư đọc theo bước</h2>
+        <p className="mt-2 text-sm text-muted">Khi em hỏi, hệ thống lấy đoạn khớp bước đang làm — không bịa công thức ngoài kho.</p>
+        <div className="mt-3">
+          <KhoTheoBuoc khung={kho.khung} />
+        </div>
+      </section>
+      <section className="border-b border-line py-6" data-testid="kho-cong-thuc">
         <h2 className="text-base font-semibold">Công thức</h2>
         {kho.congThuc.length === 0 ? <p className="mt-3 text-sm text-muted">Chưa có công thức.</p> : null}
         <ul className="mt-3 divide-y divide-line">

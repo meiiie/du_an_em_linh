@@ -1,4 +1,4 @@
-/** Kho lớp cho gia sư: truy hồi có trích dẫn, không lời giải. Kong et al. IJCAI 2026 D2; Lewis et al. 2020. */
+/** Kho lớp cho gia sư: truy hồi có trích dẫn, không lời giải. Kong et al. IJCAI 2026 D2; Lewis et al. 2020; KITE BEA 2026. */
 
 export const TU_KHOA_TAI_LIEU = ["đồng biến", "nghịch biến", "cực trị", "đạo hàm", "xét dấu"] as const;
 export const TU_KHOA_CONG_THUC = ["đồng biến", "nghịch biến", "cực đại", "cực tiểu", "đạo hàm"] as const;
@@ -10,6 +10,14 @@ export const TU_KHOA_BUOC: Record<string, string[]> = {
   "B.DH.XETDAU": ["xét dấu", "bảng", "khoảng", "thay số"],
   "B.DH.KETLUAN": ["đồng biến", "nghịch biến", "cực đại", "cực tiểu", "đổi dấu"],
 };
+
+export const KHUNG_NAM_BUOC = [
+  { ma: "B.DH.TXD", ten: "Tập xác định" },
+  { ma: "B.DH.DAOHAM", ten: "Đạo hàm" },
+  { ma: "B.DH.NGHIEM", ten: "Nghiệm y′" },
+  { ma: "B.DH.XETDAU", ten: "Xét dấu" },
+  { ma: "B.DH.KETLUAN", ten: "Kết luận" },
+] as const;
 
 export type MauTaiLieu = {
   id: string;
@@ -38,7 +46,7 @@ export type KhoGoi = {
   congThuc: TrichDanKho[];
 };
 
-function khongDau(s: string) {
+export function khongDau(s: string) {
   return s
     .toLowerCase()
     .normalize("NFD")
@@ -46,24 +54,44 @@ function khongDau(s: string) {
     .replace(/đ/g, "d");
 }
 
+export function vanBanKhop(text: string, term: string) {
+  return text.toLowerCase().includes(term.toLowerCase()) || khongDau(text).includes(khongDau(term));
+}
+
+function tuKhoaHoi(cauHoi?: string) {
+  return String(cauHoi || "")
+    .toLowerCase()
+    .split(/[^\p{L}\p{N}']+/u)
+    .filter((w) => w.length >= 4)
+    .slice(0, 8);
+}
+
 export function trichDoan(text: string, term: string, radius = 90) {
   const hay = text.toLowerCase();
   const needle = term.toLowerCase();
-  const i = hay.indexOf(needle);
-  if (i < 0) return text.slice(0, 160).trim();
+  let i = hay.indexOf(needle);
+  if (i < 0) {
+    const fold = khongDau(text);
+    const j = fold.indexOf(khongDau(term));
+    if (j < 0) return text.slice(0, 160).trim();
+    const ratio = text.length / Math.max(fold.length, 1);
+    i = Math.min(Math.max(0, text.length - 1), Math.round(j * ratio));
+  }
   const a = Math.max(0, i - radius);
-  const b = Math.min(text.length, i + term.length + radius);
+  const b = Math.min(text.length, i + Math.max(term.length, 1) + radius);
   return text.slice(a, b).trim();
 }
 
-export function chamDiemVanBan(text: string, terms: string[]) {
-  const hay = text.toLowerCase();
-  const fold = khongDau(text);
+export function chamDiemVanBan(text: string, terms: readonly string[]) {
   let n = 0;
   for (const t of terms) {
-    if (hay.includes(t.toLowerCase()) || fold.includes(khongDau(t))) n += 1;
+    if (vanBanKhop(text, t)) n += 1;
   }
   return n;
+}
+
+function chonHit(text: string, terms: readonly string[]) {
+  return terms.find((t) => vanBanKhop(text, t)) || terms[0] || "";
 }
 
 export function chonKho(opts: {
@@ -72,27 +100,21 @@ export function chonKho(opts: {
   maBuoc?: string;
   cauHoi?: string;
 }): KhoGoi {
-  const extra = [
-    ...TU_KHOA_TAI_LIEU,
-    ...(TU_KHOA_BUOC[opts.maBuoc || ""] || []),
-    ...String(opts.cauHoi || "")
-      .toLowerCase()
-      .split(/[^\p{L}\p{N}']+/u)
-      .filter((w) => w.length >= 4)
-      .slice(0, 8),
-  ];
+  const buoc = TU_KHOA_BUOC[opts.maBuoc || ""] || [];
+  const hoi = tuKhoaHoi(opts.cauHoi);
+  const extraTai = [...TU_KHOA_TAI_LIEU, ...buoc, ...hoi];
+
   const docs = opts.taiLieu
     .filter((d) => d.licenseStatus !== "chua_ro")
     .map((d) => {
-      const score = chamDiemVanBan(d.text, extra);
-      const hit = extra.find((t) => d.text.toLowerCase().includes(t.toLowerCase())) || extra[0];
+      const score = chamDiemVanBan(d.text, TU_KHOA_TAI_LIEU) + chamDiemVanBan(d.text, buoc) * 2 + chamDiemVanBan(d.text, hoi);
       return {
         score,
         item: {
           loai: "tai_lieu" as const,
           id: d.id,
           ten: d.title,
-          trich: trichDoan(d.text, hit),
+          trich: trichDoan(d.text, chonHit(d.text, extraTai)),
         },
       };
     })
@@ -104,7 +126,7 @@ export function chonKho(opts: {
   const cts = opts.congThuc
     .map((c) => {
       const blob = `${c.title} ${c.latex} ${c.noiDung}`;
-      const score = chamDiemVanBan(blob, [...TU_KHOA_CONG_THUC, ...(TU_KHOA_BUOC[opts.maBuoc || ""] || [])]);
+      const score = chamDiemVanBan(blob, [...TU_KHOA_CONG_THUC]) + chamDiemVanBan(blob, buoc) * 2;
       return {
         score,
         item: {
@@ -133,4 +155,11 @@ export function dongKhoChoPrompt(kho: KhoGoi) {
 
 export function nhanTrichDan(kho: KhoGoi) {
   return [...kho.congThuc, ...kho.taiLieu].map((x) => ({ loai: x.loai, ten: x.ten }));
+}
+
+export function xemKhoTheoKhung(nguon: { taiLieu: MauTaiLieu[]; congThuc: MauCongThuc[] }) {
+  return KHUNG_NAM_BUOC.map((b) => {
+    const kho = chonKho({ ...nguon, maBuoc: b.ma });
+    return { ma: b.ma, ten: b.ten, congThuc: kho.congThuc, taiLieu: kho.taiLieu };
+  });
 }

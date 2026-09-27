@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { guiThayCo, hoiGiaSu } from "@/lib/actions/hs";
 import { luaChonNhaHocSinh, parseProvider, type AiProviderId, type AiPublicConfig } from "@/lib/ai-catalog";
@@ -12,7 +13,7 @@ type Msg = { role: "hs" | "gia_su"; text: string; error?: boolean; trichDan?: { 
 
 const LOI_CHAO: Msg = {
   role: "gia_su",
-  text: "Mình là gia sư AI. Mình sửa bài và giảng cho em hiểu, không đưa đáp án trong lúc làm.",
+  text: "Mình là gia sư AI. Mình đọc kho lớp (công thức và tài liệu đã duyệt), sửa bài và giảng, không đưa đáp án.",
 };
 
 function khoaDraft(problemId: string) {
@@ -143,6 +144,11 @@ export function TutorPanel({
           <p className="text-xs text-muted" data-testid="tutor-che-do">
             {moTaCheDo({ provider, offline: lastOffline, error: lastError })}. Không phải giáo viên. Không đọc lời giải
             chuẩn.
+          </p>
+          <p className="mt-1 text-xs">
+            <Link href="/hs/kho" className="underline underline-offset-2" data-testid="tutor-toi-kho">
+              Kho kiến thức gia sư được đọc
+            </Link>
           </p>
         </div>
         <button type="button" className={cn(buttonClasses({ variant: "ghost", size: "sm" }), "md:hidden")} onClick={onClose}>

@@ -97,6 +97,9 @@ export async function taiTaiLieu(form: FormData) {
   });
   await audit(user.id, "NAP_TAI_LIEU", "document", title);
   revalidatePath("/gv/tai-lieu");
+  revalidatePath("/hs/kho");
+  revalidatePath("/gv/ket-noi-ai");
+  revalidatePath("/gv");
 }
 
 export async function themCongThuc(form: FormData) {
@@ -140,6 +143,9 @@ export async function themCongThuc(form: FormData) {
   await sql`update verification_runs set stale = true where stale = false`;
   await audit(user.id, "SUA_BANG_CONG_THUC", "formula_sheet", sheetId, `version ${version}`);
   revalidatePath("/gv/cong-thuc");
+  revalidatePath("/hs/kho");
+  revalidatePath("/gv/ket-noi-ai");
+  revalidatePath("/gv");
 }
 
 export async function duyetBai(problemId: string, note: string) {
@@ -342,6 +348,7 @@ export async function ketNoiBangKhoa(form: FormData) {
   await audit(user.id, "KET_NOI_CHATGPT", "class_settings", rows[0].classId, "khoa_chinh_thuc");
   revalidatePath("/gv/ket-noi-ai");
   revalidatePath("/gv/cai-dat");
+  revalidatePath("/gv");
   revalidatePath("/hs");
   redirect("/gv/ket-noi-ai?ok=1");
 }
@@ -363,6 +370,7 @@ export async function ngatKetNoiAi() {
   await audit(user.id, "NGAT_KET_NOI_AI", "class_settings", rows[0].classId);
   revalidatePath("/gv/ket-noi-ai");
   revalidatePath("/gv/cai-dat");
+  revalidatePath("/gv");
   revalidatePath("/hs");
 }
 

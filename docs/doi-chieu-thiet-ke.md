@@ -35,8 +35,8 @@
 - Hệ thống thiết kế «phiếu làm bài» (IBM Plex, ray mực, danh sách thay thẻ, ô thành thạo, lưới 8 px, nút 40/44) ghi ở `docs/DESIGN.md`. Lấy cấu trúc Khan/Classroom/Canvas/Brilliant; không chép màu/logo.
 - Harness agent: `AGENTS.md` + `CLAUDE.md` lớp theo thư mục, `.claude/settings.json`, `docs/CODEMAP.md`.
 - Harness gia sư: bốn nhà tường minh, composer 44 px, khóa lớp tùy chọn, thử `GET /models`.
-- Kết nối ChatGPT cho giáo viên không chuyên: `/gv/ket-noi-ai` (khóa chính thức một lần; OAuth định danh nếu có client_id).
-- Kho kiến thức lớp: `/hs/kho`; gia sư truy hồi cùng nguồn, không đọc lời giải.
+- Kết nối ChatGPT cho giáo viên không chuyên: `/gv/ket-noi-ai` (hai bước; OAuth định danh nếu có client_id). Tổng quan hiện trạng thái.
+- Kho kiến thức lớp: `/hs/kho` + xem trước theo 5 bước trên cổng GV; gia sư truy hồi cùng nguồn, không đọc lời giải.
 
 ## Skill dùng khi chỉnh UI / API
 

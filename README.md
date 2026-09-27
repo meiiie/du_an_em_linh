@@ -119,5 +119,5 @@ Chạy trên môi trường dựng nguyên mẫu này:
   - Sandbox: 5 hàm (API không import SymPy, quá hạn thì bị giết, chấm qua tiến trình, bộ lọc chặn và bộ lọc cho qua).
 - `pnpm --filter web typecheck`: `tsc --noEmit` đạt.
 - `pnpm --filter web lint`: `next lint` đạt, không cảnh báo.
-- `pnpm --filter web test:unit`: **15/15** (harness + kho: bỏ `chua_ro`, không nhét lời giải).
-- Playwright (`pnpm --filter web test:e2e`): chạy lại trên nhánh này; số liệu cập nhật sau khi đủ suite.
+- `pnpm --filter web test:unit`: **18/18** (harness + kho: không dấu, khung 5 bước, nhãn ChatGPT của lớp).
+- Playwright (`pnpm --filter web test:e2e`): **10/10**. Kết nối ChatGPT, kho theo bước, trạng thái tổng quan.

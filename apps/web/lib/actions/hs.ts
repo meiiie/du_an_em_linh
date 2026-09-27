@@ -27,7 +27,7 @@ import { resolveProvider, type AiPublicConfig } from "../ai-catalog";
 import { docKhoaCloud } from "../ai-harness";
 import { callLLM } from "../llm";
 import { goiKhoChoBuoc, taiNguyenKhoLop } from "../kho-lop";
-import { chonKho, dongKhoChoPrompt, nhanTrichDan } from "../kien-thuc";
+import { dongKhoChoPrompt, nhanTrichDan, xemKhoTheoKhung } from "../kien-thuc";
 import { cauHoiXocratis, chinhSachXinDapAn, goiYBuoc, HE_THONG_GIA_SU, mauGiaSu, xinDapAn, xinGoiY, xinSaiCho } from "../tutor";
 
 type Line = { dong: number; latex: string; loai?: string };
@@ -315,7 +315,7 @@ export async function hoiGiaSu(
         ...history,
         {
           role: "user",
-          content: `Đề (không kèm lời giải): ${prob[0].statementText}\nBước: ${buoc}\nLoại: ${grade?.loaiKetQua || "chua_nop"}\nGợi ý được mở: ${goiY || "(chưa)"}\nKho lớp (đã duyệt, không phải lời giải):\n${dongKhoChoPrompt(kho)}\nHọc sinh: ${text}`,
+          content: `Đề (không kèm lời giải): ${prob[0].statementText}\nBước: ${buoc}\nLoại: ${grade?.loaiKetQua || "chua_nop"}\nGợi ý được mở: ${goiY || "(chưa)"}\nKho lớp (đã duyệt, không phải lời giải — nếu dùng thì nhắc đúng tên):\n${dongKhoChoPrompt(kho)}\nHọc sinh: ${text}`,
         },
       ],
     });
@@ -388,13 +388,12 @@ export async function hoiGiaSu(
 export async function khoLopCongKhai() {
   await requireRole("HS");
   const nguon = await taiNguyenKhoLop();
-  const kho = chonKho(nguon);
   return {
     congThuc: nguon.congThuc,
     taiLieu: nguon.taiLieu
       .filter((d) => d.licenseStatus !== "chua_ro")
       .map((d) => ({ id: d.id, title: d.title, trich: d.text.slice(0, 280), licenseStatus: d.licenseStatus })),
-    goiYKhop: kho,
+    khung: xemKhoTheoKhung(nguon),
   };
 }
 

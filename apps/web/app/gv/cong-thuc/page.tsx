@@ -19,7 +19,7 @@ export default async function Page() {
       <PageHeader
         kicker="Nội dung"
         title={`Bảng công thức phiên bản ${latest?.version ?? 0}`}
-        description="Thêm công thức sẽ khóa phiên bản mới. Bài đã phát hành không bị gỡ; lần kiểm cũ được đánh dấu cũ."
+        description="Thêm công thức sẽ khóa phiên bản mới. Gia sư chỉ đọc bảng khóa này. Bài đã phát hành không bị gỡ; lần kiểm cũ được đánh dấu cũ."
       />
       <section className="border-y border-line py-4">
         {stale.length ? (

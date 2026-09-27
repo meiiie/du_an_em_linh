@@ -54,13 +54,13 @@ Tham chiếu: [meiiie/lms-ibm-bob-hackathon#3](https://github.com/meiiie/lms-ibm
 
 ## Kết nối ChatGPT (người không chuyên)
 
-Giáo viên vào `/gv/ket-noi-ai`. Hai bước: mở trang khóa OpenAI (cùng tài khoản ChatGPT) → dán một lần. Học sinh không thấy khóa.
+Giáo viên vào `/gv/ket-noi-ai` (cũng từ tổng quan). Hai bước: mở ChatGPT / trang khóa OpenAI (cùng tài khoản) → dán một lần. Học sinh thấy «ChatGPT của lớp», không thấy khóa.
 
-«Sign in with ChatGPT» chính thức (2026) chỉ là định danh. Bật khi có `OPENAI_OAUTH_CLIENT_ID` do OpenAI cấp. Không dùng client_id Codex/CLI.
+«Sign in with ChatGPT» chính thức (help.openai.com, 2026) chỉ là định danh cho đối tác có `client_id`. Không cấp quyền gọi mô hình. Codex CLI «sign in with ChatGPT» dùng endpoint nội bộ — không sao chép.
 
 ## Kho kiến thức
 
-`lib/kien-thuc.ts` + `lib/kho-lop.ts`: truy hồi tài liệu / công thức theo cụm từ (cùng luật tầng 2/3). Nhét vào prompt gia sư. Học sinh xem `/hs/kho`. Không lời giải.
+`lib/kien-thuc.ts` + `lib/kho-lop.ts`: truy hồi theo cụm từ, cộng trọng số bước, khớp không dấu (cùng luật tầng 2/3). Nhét vào prompt; nhắc tên mục đã lấy (Kong IJCAI 2026 D2; KITE BEA 2026). Giáo viên xem trước trên `/gv/ket-noi-ai` và `/gv/tai-lieu`. Học sinh xem `/hs/kho`. Không lời giải.
 
 ```bash
 pnpm --filter web test:unit

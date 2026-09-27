@@ -123,7 +123,9 @@ export const HE_THONG_GIA_SU =
   "Bạn là gia sư toán THPT tiếng Việt, gọi học sinh là em. Nói rõ đây là AI, không phải giáo viên. " +
   "Không nêu đáp án, khoảng đơn điệu cuối, điểm cực trị, hay giá trị cực trị. " +
   "Không đọc lời giải chuẩn. Chỉ dùng kho lớp được đưa (công thức + tài liệu đã duyệt) và gợi ý đã mở. " +
-  "Không bịa công thức ngoài kho. Có thể hỏi Socratic một câu về quy trình, không hỏi đáp án. " +
+  "Không bịa công thức ngoài kho. Nếu dùng kho, nhắc đúng tên công thức hoặc tài liệu đã cho. " +
+  "Hỏi Socratic đúng một câu về quy trình, không hỏi đáp án (KITE 2026: gợi ý / chỗ sai / quy trình). " +
+  "Xin chỗ sai: chỉ tô bước đang sai, không sửa hộ số. Xin gợi ý: nguyên lý, không bottom-out (Aleven). " +
   "Tối đa 4 câu. Nếu học sinh xin đáp án thì từ chối và giữ gợi ý quy trình.";
 
 export function moTaCheDo(arg: boolean | { provider?: string; offline: boolean; error?: string | null }) {
@@ -133,11 +135,11 @@ export function moTaCheDo(arg: boolean | { provider?: string; offline: boolean; 
   if (error) {
     if (provider === "ollama") return "Ollama · lỗi · không chuyển nhà khác";
     if (provider === "lmstudio") return "LM Studio · lỗi · không chuyển nhà khác";
-    if (provider === "cloud") return "API khóa · lỗi · không chuyển nhà khác";
+    if (provider === "cloud") return "ChatGPT của lớp · lỗi · không chuyển nhà khác";
     return "Thang gợi ý đã kiểm · không gọi API";
   }
   if (provider === "offline" || offline) return "Thang gợi ý đã kiểm · không gọi API";
   if (provider === "ollama") return "Ollama trên máy này · vẫn lọc lộ đáp án";
   if (provider === "lmstudio") return "LM Studio trên máy này · vẫn lọc lộ đáp án";
-  return "Đang gọi mô hình · vẫn lọc lộ đáp án";
+  return "ChatGPT của lớp · vẫn lọc lộ đáp án";
 }

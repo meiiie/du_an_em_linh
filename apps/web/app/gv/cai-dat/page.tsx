@@ -25,7 +25,7 @@ export default async function Page() {
       <PageHeader
         kicker="Lớp"
         title="Cài đặt lớp"
-        description="Mở lời giải sau khi nộp mặc định tắt. Gia sư không đọc lời giải chuẩn. Nhà AI do giáo viên chọn — không đăng nhập ChatGPT không chính thức."
+        description="Mở lời giải sau khi nộp mặc định tắt. Gia sư không đọc lời giải chuẩn. Kết nối ChatGPT cho lớp ở trang riêng — không đăng nhập Codex."
       />
       <p className="mb-6 text-sm">
         <Link href="/gv/ket-noi-ai" className={cn(buttonClasses({ variant: "secondary" }))} data-testid="toi-ket-noi-ai">

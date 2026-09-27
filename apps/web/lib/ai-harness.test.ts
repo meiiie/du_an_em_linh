@@ -52,6 +52,17 @@ test("resolveProvider: offline luôn thắng; local cần cửa lớp; cloud kh�
   assert.equal(resolveProvider({ classProvider: "cloud", sessionProvider: "cloud" }), "cloud");
 });
 
+test("học sinh thấy ChatGPT của lớp khi lớp bật cloud", () => {
+  const rows = luaChonNhaHocSinh({
+    classProvider: "cloud",
+    classModel: null,
+    allowLocal: false,
+    cloudReady: true,
+  });
+  assert.equal(rows.find((r) => r.id === "cloud")?.ten, "ChatGPT của lớp");
+  assert.equal(rows.some((r) => r.id === "ollama"), false);
+});
+
 test("học sinh không thấy cloud khi lớp không bật", () => {
   const rows = luaChonNhaHocSinh({
     classProvider: "offline",

@@ -127,7 +127,7 @@ export function luaChonNhaHocSinh(cfg: AiPublicConfig): { id: AiProviderId; ten:
   if (cfg.classProvider === "cloud") {
     rows.push({
       id: "cloud",
-      ten: cfg.cloudReady ? NHA.cloud.ten : `${NHA.cloud.ten} — chưa có khóa`,
+      ten: cfg.cloudReady ? "ChatGPT của lớp" : "ChatGPT của lớp — chưa có khóa",
       disabled: !cfg.cloudReady,
     });
   }

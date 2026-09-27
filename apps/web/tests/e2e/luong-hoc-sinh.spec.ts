@@ -109,6 +109,8 @@ test.describe("giáo viên", () => {
     await expect(page.getByRole("heading", { name: "Lớp 12A1 thử" })).toBeVisible();
     await expect(page.getByTestId("sidebar")).toBeVisible();
     await expect(page.getByTestId("nav-gv-duyet")).toBeVisible();
+    await expect(page.getByTestId("san-sang-ai")).toContainText("Chưa kết nối");
+    await expect(page.getByTestId("san-sang-ai")).toContainText("công thức");
     await expect(page.getByTestId("canh-bao-ket")).toContainText("Chi");
     await page.screenshot({ path: `${SHOTS}/gv-tong-quan.png` });
 
