@@ -11,7 +11,7 @@ Harness (Anthropic 2026): tệp này là mục lục để agent biết chỗ m�
 | `.claude/settings.json` | `permissions.deny` bí mật |
 | `.claude/rules/` | Luật theo đường dẫn |
 | `.cursor/skills/` | Skill on-demand (FE, a11y, FastAPI) |
-| `docs/DESIGN.md` | Token, lưới, giải phẫu nút |
+| `docs/DESIGN.md` | Token, lưới, nút, tâm quang học (46% / 3:2) |
 | `docs/doi-chieu-thiet-ke.md` | Khớp / cố ý chưa làm |
 | `docs/adr/` | Quyết định đã khóa |
 | `docs/AI-HARNESS.md` | Nhà AI, loopback, không fallback |

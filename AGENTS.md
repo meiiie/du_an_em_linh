@@ -35,7 +35,9 @@ Quy ước và lệnh cục bộ nằm ở `apps/web/AGENTS.md` và `services/ma
 
 Phiếu làm bài. Không kit Figma Edu*, không cream + Literata + terracotta, không chép hex Coursera `#0056D2`, Khan `#1865f2`, IBM `#0F62FE`, Canvas electric, Brilliant pear.
 
-Lưới **8 px**. Nút: cao thị giác **40**, mục tiêu chạm **44**, đệm ngang **16**, bán kính **6**. `padding` nới hit; `margin` không. Chi tiết và nguồn: `docs/DESIGN.md`.
+Lưới **8 px**. Nút: cao thị giác **40**, mục tiêu chạm **44**, đệm ngang **16**, bán kính **6**. `padding` nới hit; `margin` không.
+
+Khối đứng (login, hero giữa trang): **tâm quang học ≈ 46%** từ đỉnh, không giữa hình học 50%. Dư dưới : dư trên = **3 : 2**. Không `translateY(-Nvh)`. Chi tiết và nguồn: `docs/DESIGN.md`.
 
 Skill khi đụng UI/API (nạp khi cần, không nhét vào mọi phiên): `.cursor/skills/frontend-design`, `.cursor/skills/web-design-guidelines`, `.cursor/skills/fastapi-routers`.
 
