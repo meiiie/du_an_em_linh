@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import { nopBuoc, type StepPayload } from "@/lib/actions/hs";
 import type { AiPublicConfig } from "@/lib/ai-catalog";
 import type { TrichDanHien } from "@/lib/kien-thuc";
-import { thanDe } from "@/lib/de-hoc-sinh";
+import { tenBuocNgan, thanDe } from "@/lib/de-hoc-sinh";
 import { BUOC } from "@/lib/levels";
 import { Button, buttonClasses } from "./ui/button";
 import { fieldControl } from "./ui/field";
@@ -169,7 +169,8 @@ export function SolveClient({
                 }`}
               >
                 <span className="tabular font-mono text-xs">{i + 1}</span>
-                {b.ten}
+                <span className="lg:hidden">{tenBuocNgan(b.ma)}</span>
+                <span className="hidden lg:inline">{b.ten}</span>
               </button>
             </li>
           ))}
