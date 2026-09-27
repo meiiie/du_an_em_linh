@@ -14,7 +14,7 @@ test("trích dẫn hiện đoạn và tên, không dump cụm khớp", () => {
     { formula_id: "ct-cu", cum_tu: ["đồng biến", "đạo hàm"] },
   ]);
   assert.deepEqual(dong, [
-    "«nếu đạo hàm không âm trên khoảng đó thì hàm đồng biến» — Ghi chú tự soạn: đơn điệu và cực trị",
+    "«nếu đạo hàm không âm trên khoảng đó thì hàm đồng biến» — Đơn điệu và cực trị",
     "Cực trị",
   ]);
   assert.doesNotMatch(dong.join(" "), /khớp|đồng biến, đạo hàm/);

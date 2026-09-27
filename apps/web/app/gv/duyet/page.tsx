@@ -8,7 +8,7 @@ import { Tex } from "@/components/tex";
 import { db } from "@/lib/db";
 import { problems, verificationRuns, verificationTierResults } from "@/lib/db/schema";
 import { moTaTrichDan } from "@/lib/citations";
-import { hamLatex } from "@/lib/de-hoc-sinh";
+import { gonLyDoDuyet, hamLatex } from "@/lib/de-hoc-sinh";
 import { STATUS_LABEL } from "@/lib/levels";
 
 export const dynamic = "force-dynamic";
@@ -51,7 +51,7 @@ export default async function Page() {
                     <div className="min-w-0">
                       <p>
                         <span className="font-medium">{STATUS_LABEL[t.status] || t.status}</span>
-                        {t.reasonText ? ` — ${t.reasonText}` : ""}
+                        {t.reasonText ? ` — ${gonLyDoDuyet(t.reasonText)}` : ""}
                       </p>
                       {cites.length ? (
                         <ul className="mt-1 space-y-0.5 text-xs text-muted">

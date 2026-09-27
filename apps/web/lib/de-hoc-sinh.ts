@@ -71,6 +71,13 @@ export function thanTrich(text: string) {
   return `${cau.slice(0, 117).replace(/\s+\S*$/, "")}…`;
 }
 
+/** Lý do duyệt: bỏ calque «Tầng n» — số tầng đã đứng riêng trên hàng. */
+export function gonLyDoDuyet(text: string) {
+  const gon = (text || "").replace(/Tầng\s*\d+\s*/gi, "").replace(/\s+/g, " ").trim();
+  if (!gon) return "";
+  return gon.charAt(0).toLocaleUpperCase("vi-VN") + gon.slice(1);
+}
+
 /** Lời trên phiếu — tiếng lớp 12, không mã, không ngưỡng/nấc/phát hành. */
 export function loiGoiHocSinh(lyDo: string, tenKn: string) {
   const kn = tenKn.trim();

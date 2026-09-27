@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { hamLatex, loiGoiHocSinh, thanDe, thanTrich, tenKyNangNgan, tenTaiLieuNgan } from "./de-hoc-sinh";
+import { gonLyDoDuyet, hamLatex, loiGoiHocSinh, thanDe, thanTrich, tenKyNangNgan, tenTaiLieuNgan } from "./de-hoc-sinh";
 
 test("bọc latex hàm số", () => {
   assert.equal(hamLatex("x^{2}"), "y = x^{2}");
@@ -56,6 +56,11 @@ test("rút tên tài liệu sau dấu hai chấm", () => {
   assert.equal(tenTaiLieuNgan("Ghi chú tự soạn: đơn điệu và cực trị"), "Đơn điệu và cực trị");
   assert.equal(tenTaiLieuNgan("Tham khảo phương pháp — ôn đơn điệu thế nào"), "Ôn đơn điệu thế nào");
   assert.equal(tenTaiLieuNgan("Công thức đạo hàm"), "Công thức đạo hàm");
+});
+
+test("lý do duyệt bỏ chữ tầng", () => {
+  assert.equal(gonLyDoDuyet("Tầng 1 chưa kết luận được nên chưa đối chiếu quy tắc."), "Chưa kết luận được nên chưa đối chiếu quy tắc.");
+  assert.equal(gonLyDoDuyet("Chưa có lời giải cấu trúc 5 bước để máy tự kiểm."), "Chưa có lời giải cấu trúc 5 bước để máy tự kiểm.");
 });
 
 test("rút tên kỹ năng", () => {

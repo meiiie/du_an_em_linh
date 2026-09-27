@@ -31,7 +31,7 @@ export default async function LichPage() {
           {slots.map((sl) => (
             <li
               key={sl.thu + sl.gio}
-              className="grid min-h-11 grid-cols-[6.5rem_4rem_minmax(0,1fr)] items-center gap-3 py-3"
+              className="grid min-h-11 grid-cols-[6.5rem_8rem_minmax(0,1fr)] items-center gap-3 py-3"
             >
               <span className="font-medium">{sl.thu}</span>
               <span className="tabular text-muted">{sl.gio}</span>
@@ -39,10 +39,13 @@ export default async function LichPage() {
             </li>
           ))}
           {rems.map((r) => (
-            <li key={r.id} className="py-3">
-              <p className="font-medium">{r.title}</p>
-              <p className="mt-1 text-muted">{r.body}</p>
-              <p className="mt-1 text-xs text-muted">{r.sendAt}</p>
+            <li
+              key={r.id}
+              className="grid min-h-11 grid-cols-[6.5rem_8rem_minmax(0,1fr)] items-center gap-3 py-3"
+            >
+              <span className="font-medium">{r.title}</span>
+              <span className="tabular text-muted">{r.sendAt}</span>
+              <span className="min-w-0 text-muted">{r.body}</span>
             </li>
           ))}
         </ul>
