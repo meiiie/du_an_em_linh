@@ -25,7 +25,7 @@ export function SoBaiGiao({
         Bài tập
       </h2>
       {danhSach.length === 0 ? (
-        <p className="mt-3 text-sm text-muted">Thầy cô chưa giao bài. Vào Ngân bài để chọn.</p>
+        <p className="mt-3 text-sm text-muted">Thầy cô chưa giao bài. Vào Đề bài mà chọn.</p>
       ) : (
         <div className="border-b border-line">
           {danhSach.map((p) => {

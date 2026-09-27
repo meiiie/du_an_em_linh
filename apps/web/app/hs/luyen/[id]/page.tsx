@@ -24,7 +24,7 @@ export default async function LuyenPage({ params }: { params: Promise<{ id: stri
       <div className="border-y border-line py-6">
         <p>Bài này thầy cô chưa mở.</p>
         <Link href="/hs" className="mt-2 inline-block text-sm underline underline-offset-2">
-          Về lộ trình
+          Về trang học
         </Link>
       </div>
     );

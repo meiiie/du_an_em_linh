@@ -49,7 +49,7 @@ Next.js 15. Server action nói chuyện với Postgres và `MATH_SERVICE_URL`.
 | `app/sitemap.ts` / `robots.ts` / `manifest.ts` | SEO máy tìm kiếm |
 | `app/dang-nhap/page.tsx` + `components/login-form.tsx` | Đăng nhập 2 bước (noindex), tham chiếu Neko Đoàn |
 | `app/api/suc-khoe/route.ts` | GET JSON giữ thức Render — không đụng DB |
-| `app/hs/` | Lộ trình (phiếu + sổ), ngân bài, lịch, phiếu 5 bước |
+| `app/hs/` | Học (phiếu + sổ), đề bài, lịch, phiếu 5 bước |
 | `app/gv/` | Tổng quan (trạng thái ChatGPT + kho), duyệt, ngân hàng, sinh bài, tài liệu, công thức, kết nối ChatGPT, tiến độ, cài đặt |
 | `app/hs/kho` | Kho kiến thức lớp (cùng nguồn gia sư đọc) |
 | `components/app-shell.tsx` | Ray mực 220 px / ngăn kéo |

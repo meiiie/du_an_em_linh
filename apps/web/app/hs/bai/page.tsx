@@ -11,7 +11,7 @@ import { hamLatex, nhanMuc4 } from "@/lib/de-hoc-sinh";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Ngân bài",
+  title: "Đề bài",
 };
 
 export default async function Page() {
@@ -20,7 +20,7 @@ export default async function Page() {
   const waiting = await db.select().from(problems).where(eq(problems.status, "CHO_GIAO_VIEN_DUYET"));
   return (
     <main>
-      <PageHeader title="Ngân bài" />
+      <PageHeader title="Đề bài" />
       <div className="border-y border-line">
         {pubs.map((p) => {
           const ham = hamLatex(p.statementLatex);

@@ -68,11 +68,13 @@ Không dashboard thẻ. Chia như phiếu + sổ — gáy 5 bước là vật đ
 +--------+---------------------------+------------------+
 ```
 
-Desktop (`lg`): cột phiếu `1fr` | kẻ 1 px | cột sổ `18–24rem`. Điện thoại / máy tính bảng: phiếu rồi sổ. Sổ là **tab gạch chân mực** (Carbon / InstUI) — `Kỹ năng` mặc định, `?so=giao` cho bài tập. Không viên thuốc. Tab trình duyệt ngắn: `Lộ trình` / `Ngân bài` / `Lịch` / `Kho` (template `· Học toán với AI`). Ray HS: Lộ trình, Ngân bài, Lịch, Kho.
+Desktop (`lg`): cột phiếu `1fr` | kẻ 1 px | cột sổ `18–24rem`. Điện thoại / máy tính bảng: phiếu rồi sổ. Sổ là **tab gạch chân mực** (Carbon / InstUI) — `Kỹ năng` mặc định, `?so=giao` cho bài tập. Không viên thuốc. Tab trình duyệt ngắn: `Học` / `Đề bài` / `Lịch` / `Công thức` (template `· Học toán với AI`). Ray HS cùng bốn chữ đó (testid `nav-hs-*` giữ nguyên).
 
-Đề = KaTeX từ `statementLatex`. Một thang 4 mức — không Bloom trên mặt học sinh (3 mức CV 7991 chỉ ở cổng GV). Sổ kỹ năng: tên + mức 4 + ô vững; không câu giải thích UI. Hàng yếu lên trên, hàng đang gợi tô `wash`. Bài tập ≠ ngân bài: chỉ bài thầy cô giao chưa đạt. Số chưa làm chỉ trên tab Bài tập — không lặp trên ray Ngân bài. Gáy điện thoại vẫn ghi tên bước.
+Đề = KaTeX từ `statementLatex`. Một thang 4 mức — không Bloom trên mặt học sinh (3 mức CV 7991 chỉ ở cổng GV). Sổ kỹ năng: tên + mức 4 + ô vững; không câu giải thích UI. Hàng yếu lên trên, hàng đang gợi tô `wash`. Tab Bài tập ≠ Đề bài: chỉ bài thầy cô giao chưa đạt. Số chưa làm chỉ trên tab Bài tập. Gáy điện thoại vẫn ghi tên bước.
 
-**Chữ học sinh:** tiếng lớp 12. Mỗi câu một việc. Tiêu đề phiếu `Bài tiếp theo`. Tab `Bài tập`. Không mã `T12.DH.*` / `DH12-*` trên UI (testid giữ mã). Không *phát hành*, *duyệt cổng*, *ước lượng*, *ngưỡng*, *nấc*, *Em* trên chrome. Không xác suất BKT. CTA khóa: `Làm bước tiếp`. Heading khóa: `Chào An`.
+**Quy tắc chữ và UI (khóa):** mỗi câu, mỗi chữ, mỗi ô một việc — không việc thì bỏ. Tiếng lớp 12, không calque LMS/NCKH (`ngân bài`, `kho` trừ khi là kho thật, `phát hành`, `duyệt cổng`, `ngưỡng`, `nấc`, `Em` trên chrome, Bloom, mã `T12`/`DH12` trên UI). Không câu giải thích UI. Không lặp cùng một số ở hai chỗ. Tên mục = việc của trang.
+
+**Chữ học sinh:** tiêu đề phiếu `Bài tiếp theo`. Tab `Bài tập`. CTA khóa: `Làm bước tiếp`. Heading khóa: `Chào An`.
 
 ## Lưới và nhịp (SOTA 2026-09-27)
 

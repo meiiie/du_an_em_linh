@@ -15,7 +15,7 @@ import { MUC4, type Muc4 } from "@/lib/levels";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Lộ trình",
+  title: "Học",
 };
 
 export default async function HsHome({ searchParams }: { searchParams: Promise<{ so?: string }> }) {

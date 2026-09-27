@@ -147,7 +147,7 @@ export function TutorPanel({
           </p>
           <p className="mt-1 text-xs">
             <Link href="/hs/kho" className="underline underline-offset-2" data-testid="tutor-toi-kho">
-              Kho kiến thức gia sư được đọc
+              Công thức và tài liệu lớp
             </Link>
           </p>
         </div>
@@ -157,7 +157,7 @@ export function TutorPanel({
       </div>
 
       <label className="mt-3 block text-sm">
-        <span className="mb-2 block font-medium">Nhà trên phiên này</span>
+        <span className="mb-2 block font-medium">Gia sư lần này</span>
         <select
           data-testid="tutor-provider"
           value={provider}

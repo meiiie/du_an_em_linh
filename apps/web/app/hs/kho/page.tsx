@@ -7,7 +7,7 @@ import { Tex } from "@/components/tex";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Kho",
+  title: "Công thức",
 };
 
 export default async function Page() {
