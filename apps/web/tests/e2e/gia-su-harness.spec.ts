@@ -42,7 +42,10 @@ test.describe("cài đặt nhà AI", () => {
     await page.getByTestId("email").fill("gv@demo.local");
     await page.getByTestId("password").fill("giaovien123");
     await page.getByRole("button", { name: "Vào học" }).click();
+    await expect(page.getByRole("heading", { name: "Lớp 12A1 thử" })).toBeVisible();
     await page.goto("/gv/cai-dat");
+    await expect(page.getByRole("heading", { name: "Cài đặt lớp" })).toBeVisible();
+    await expect(page.getByTestId("ai-probe")).toBeVisible();
     await page.getByTestId("ai-probe-provider").selectOption("offline");
     await page.getByTestId("ai-probe-chay").click();
     await expect(page.getByTestId("ai-probe-ket")).toContainText("không gọi mạng");

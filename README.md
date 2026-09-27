@@ -119,4 +119,5 @@ Chạy trên môi trường dựng nguyên mẫu này:
   - Sandbox: 5 hàm (API không import SymPy, quá hạn thì bị giết, chấm qua tiến trình, bộ lọc chặn và bộ lọc cho qua).
 - `pnpm --filter web typecheck`: `tsc --noEmit` đạt.
 - `pnpm --filter web lint`: `next lint` đạt, không cảnh báo.
-- Playwright (`pnpm --filter web test:e2e`): **6/6 đạt**. Ca học sinh 390: sai đạo hàm → chặn đáp án → chip gợi ý → sửa đạt → tải lại còn hội thoại. Ca 1280: lộ trình + Bloom + lịch tư vấn. Ca 768: phiếu cạnh gia sư, không tràn ngang. Ca giáo viên: hàng đợi và 3 mức. Hai ca khóa 40/44.
+- `pnpm --filter web test:unit`: **12/12** harness (loopback, không fallback, một lần HTTP, probe chỉ GET /models).
+- Playwright (`pnpm --filter web test:e2e`): **8/8 đạt**. Ca học sinh 390: sai đạo hàm → chặn đáp án → chip gợi ý → sửa đạt → tải lại còn hội thoại. Ca 1280: lộ trình + Bloom + lịch tư vấn. Ca 768: phiếu cạnh gia sư, không tràn ngang. Ca giáo viên: hàng đợi và 3 mức. Hai ca khóa 40/44 (kèm nút Gửi gia sư ≥ 44). Hai ca harness: Enter gửi + Ollama lỗi không chuyển nhà; giáo viên thử offline / Ollama trên `/gv/cai-dat`.

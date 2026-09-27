@@ -141,7 +141,7 @@ export function SolveClient({
   const ma = ORDER[step];
 
   return (
-    <div className="grid gap-8 md:grid-cols-[minmax(0,1fr)_minmax(240px,280px)]">
+    <div className="grid gap-8 md:grid-cols-[minmax(0,1fr)_minmax(280px,340px)]">
       <section data-testid="solve-screen">
         <h1 className="text-pretty text-xl font-semibold">Làm bài theo 5 bước</h1>
         <p className="mt-2 text-sm leading-relaxed">{title}</p>
