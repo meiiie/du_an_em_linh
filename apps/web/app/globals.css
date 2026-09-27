@@ -163,6 +163,11 @@ math-field::part(virtual-keyboard-toggle) {
   display: none;
 }
 
+.cong-thuc .katex-display {
+  margin: 0.25em 0;
+  text-align: left;
+}
+
 /* Trang làm bài: dòng viết, không hộp form. */
 .sach-toan math-field {
   border: 0;

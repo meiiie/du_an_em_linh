@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import { nopBuoc, type StepPayload } from "@/lib/actions/hs";
 import type { AiPublicConfig } from "@/lib/ai-catalog";
 import type { TrichDanHien } from "@/lib/kien-thuc";
-import { loiBuoc, soBuoc, tenBuocTrang } from "@/lib/de-hoc-sinh";
+import { loiBuoc, soBuoc, tenBuocNgan, tenBuocTrang } from "@/lib/de-hoc-sinh";
 import { BUOC } from "@/lib/levels";
 import { Button, buttonClasses } from "./ui/button";
 import { fieldControl } from "./ui/field";
@@ -149,22 +149,22 @@ export function SolveClient({
 
   return (
     <>
-    <div className="grid grid-cols-[7.25rem_minmax(0,1fr)] items-start gap-4 sm:grid-cols-[11rem_minmax(0,1fr)] sm:gap-8">
-      <nav aria-label="Năm bước" className="sticky top-16 lg:top-8">
-        <ol>
+    <div className="sm:grid sm:grid-cols-[11rem_minmax(0,1fr)] sm:items-start sm:gap-8">
+      <nav aria-label="Năm bước" className="mb-6 min-w-0 sm:sticky sm:top-8 sm:mb-0">
+        <ol className="flex min-w-0 gap-1 overflow-x-auto sm:block sm:overflow-visible">
           {BUOC.map((b, i) => {
             const dang = i === step;
             const sai = badStep === b.ma;
             const xong = i < step && !sai;
             return (
-              <li key={b.ma}>
+              <li key={b.ma} className="shrink-0 sm:shrink">
                 <button
                   type="button"
                   data-testid={`step-${b.ma}`}
                   aria-current={dang ? "step" : undefined}
                   onClick={() => setStep(i)}
                   className={cn(
-                    "grid min-h-11 w-full grid-cols-[1.25rem_minmax(0,1fr)] items-center gap-2 border-l-2 px-2 text-left text-sm leading-5 transition-colors duration-150 sm:px-3",
+                    "flex min-h-11 items-center gap-2 border-b-2 bg-transparent px-2 text-left text-sm leading-5 transition-colors duration-150 sm:grid sm:w-full sm:grid-cols-[1.25rem_minmax(0,1fr)] sm:border-b-0 sm:border-l-2 sm:px-3",
                     sai
                       ? "border-mark font-medium text-mark"
                       : dang
@@ -175,7 +175,8 @@ export function SolveClient({
                   )}
                 >
                   <span className="font-mono text-xs tabular text-muted">{soBuoc(b.ma)}</span>
-                  <span>{tenBuocTrang(b.ma)}</span>
+                  <span className="sm:hidden">{tenBuocNgan(b.ma)}</span>
+                  <span className="hidden sm:inline">{tenBuocTrang(b.ma)}</span>
                 </button>
               </li>
             );
@@ -191,7 +192,7 @@ export function SolveClient({
           {ten}
         </h1>
         {loi ? <p className="mt-2 max-w-[42ch] text-sm leading-relaxed text-muted">{loi}</p> : null}
-        <p className="mt-8 max-w-[65ch] overflow-x-auto text-[1.75rem] leading-tight sm:text-[2.25rem]" translate="no">
+        <p className="cong-thuc mt-8 max-w-[65ch] overflow-x-auto text-[1.5rem] leading-tight sm:text-[2.25rem]" translate="no">
           <Tex tex={latex} block />
         </p>
 

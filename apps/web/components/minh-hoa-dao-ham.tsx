@@ -42,8 +42,7 @@ export function MinhHoaDaoHam() {
 
   return (
     <figure className="mt-12 max-w-xl">
-      <p className="font-mono text-xs text-muted">Hình</p>
-      <div className="mt-4 overflow-x-auto text-[1.75rem] leading-tight sm:text-[2.25rem]" translate="no">
+      <div className="cong-thuc overflow-x-auto text-[1.75rem] leading-tight sm:text-[2.25rem]" translate="no">
         <Tex tex="y = x^{3} - 3x" />
       </div>
       <svg

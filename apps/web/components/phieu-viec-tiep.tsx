@@ -53,7 +53,7 @@ export function PhieuViecTiep({
       <p className="mt-2 max-w-[65ch] text-sm leading-relaxed">{thanDe(problem.statementText)}</p>
 
       {ham ? (
-        <p className="mt-6 max-w-[65ch] overflow-x-auto text-[1.75rem] leading-tight sm:text-[2rem]" translate="no">
+        <p className="cong-thuc mt-6 max-w-[65ch] overflow-x-auto text-[1.75rem] leading-tight sm:text-[2rem]" translate="no">
           <Tex tex={ham} block />
         </p>
       ) : (

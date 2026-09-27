@@ -81,7 +81,7 @@ Desktop (`lg`): cột phiếu `1fr` | kẻ 1 px | cột sổ `18–24rem`. Đi�
 
 **Trang công khai:** `/` = heading vừa, một câu, **một** Vào học trên header, rồi một hình `y = x^3 - 3x`: kéo `x`, tiếp tuyến và `y′` đổi theo. Không khung trình duyệt, không ba thẻ, không nút trùng chân trang, không SymPy, không email, không liệt kê 5 bước, không gắn nhãn cực trị trên hình. `/dang-nhap`: không câu «tài khoản thử» dưới tiêu đề; mật khẩu thử chỉ khi sai.
 
-**Trang làm bài** (`/hs/luyen`): mục lục trái — số mono, tên bước, vạch 2 px ở bước đang làm (bút đỏ nếu sai). Không nền mực cho cả hàng. Giữa trang: `02 / Đạo hàm`, một câu việc của bước, công thức lớn, chỗ viết ngay dưới. Phản hồi một câu ngay dưới chỗ viết (vạch `mark` hoặc `pass`), không thẻ màu. Nút chính `Kiểm tra` / `Kiểm tra lại`; `Cần gợi ý?` là phụ và mới mở tờ gia sư. Không đồ thị bài đang chấm. Không cột gia sư khi chưa hỏi.
+**Trang làm bài** (`/hs/luyen`): từ `sm` mục lục trái — số mono, tên bước, vạch trái 2 px ở bước đang làm (bút đỏ nếu sai). Dưới `sm` cùng mục lục thành một dòng phía trên, vạch dưới, tên ngắn, để công thức lấy hết chiều ngang. Không nền mực cho cả hàng. Trang: `02 / Đạo hàm`, một câu việc của bước, công thức lớn căn trái, chỗ viết ngay dưới. Phản hồi một câu ngay dưới chỗ viết (vạch `mark` hoặc `pass`), không thẻ màu. Nút chính `Kiểm tra` / `Kiểm tra lại`; `Cần gợi ý?` là phụ và mới mở tờ gia sư. Không đồ thị bài đang chấm. Không cột gia sư khi chưa hỏi.
 
 ## Lưới và nhịp (SOTA 2026-09-27)
 
