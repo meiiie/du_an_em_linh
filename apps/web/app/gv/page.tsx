@@ -49,7 +49,7 @@ export default async function GvHome() {
         </p>
         <p className="mt-3 text-sm">
           <Link href="/gv/ket-noi-ai" className="underline underline-offset-2" data-testid="toi-ket-noi-ai-tong-quan">
-            Kết nối ChatGPT
+            Gia sư
           </Link>
         </p>
       </section>

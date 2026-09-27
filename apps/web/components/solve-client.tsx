@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import { nopBuoc, type StepPayload } from "@/lib/actions/hs";
 import type { AiPublicConfig } from "@/lib/ai-catalog";
 import type { TrichDanHien } from "@/lib/kien-thuc";
-import { thanDe } from "@/lib/de-hoc-sinh";
+import { tenBuocNgan, thanDe } from "@/lib/de-hoc-sinh";
 import { BUOC } from "@/lib/levels";
 import { Button, buttonClasses } from "./ui/button";
 import { fieldControl } from "./ui/field";
@@ -169,7 +169,8 @@ export function SolveClient({
                 }`}
               >
                 <span className="tabular font-mono text-xs">{i + 1}</span>
-                {b.ten}
+                <span className="lg:hidden">{tenBuocNgan(b.ma)}</span>
+                <span className="hidden lg:inline">{b.ten}</span>
               </button>
             </li>
           ))}
@@ -216,8 +217,12 @@ export function SolveClient({
                     onClick={() =>
                       setRoots(roots.map((x, j) => (j === i ? { ...x, loai: x.loai === "NGHIEM" ? "KHONG_XD" : "NGHIEM" } : x)))
                     }
+                    aria-label={r.loai === "NGHIEM" ? "Đổi thành điểm không xác định" : "Đổi thành nghiệm"}
                   >
-                    {r.loai === "NGHIEM" ? "Đổi thành điểm không xác định" : "Đổi thành nghiệm"}
+                    <span className="sm:hidden">{r.loai === "NGHIEM" ? "Không XD" : "Nghiệm"}</span>
+                    <span className="hidden sm:inline">
+                      {r.loai === "NGHIEM" ? "Đổi thành điểm không xác định" : "Đổi thành nghiệm"}
+                    </span>
                   </button>
                 </div>
               ))}
@@ -272,8 +277,9 @@ export function SolveClient({
                                 type="button"
                                 className="ml-1 inline-flex min-h-8 min-w-8 items-center justify-center text-xs text-danger hover:underline"
                                 onClick={() => setPoints(points.filter((x) => x !== p))}
+                                aria-label={`Xóa mốc ${p}`}
                               >
-                                xóa
+                                ×
                               </button>
                             </td>
                           );
@@ -376,6 +382,9 @@ export function SolveClient({
                     onChange={(e) => setKl({ ...kl, [key]: e.target.value })}
                     className={fieldControl}
                     placeholder={
+                      key === "db" || key === "nb" ? "(…; …) và (…; …)" : "x = …, y = …"
+                    }
+                    title={
                       key === "db"
                         ? "đồng biến trên (...; ...) và (...; ...)"
                         : key === "nb"
@@ -419,7 +428,14 @@ export function SolveClient({
             onClick={submit}
             className="mt-8 w-full max-md:mt-0 max-md:min-w-0 max-md:flex-1"
           >
-            {busy ? "Đang chấm…" : `Nộp bước ${BUOC[step].ten}`}
+            {busy ? (
+              "Đang chấm…"
+            ) : (
+              <>
+                <span className="md:hidden">{`Nộp · ${tenBuocNgan(ma)}`}</span>
+                <span className="hidden md:inline">{`Nộp bước ${BUOC[step].ten}`}</span>
+              </>
+            )}
           </Button>
           {!openTutor ? (
             <Button

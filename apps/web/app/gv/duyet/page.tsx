@@ -8,7 +8,7 @@ import { Tex } from "@/components/tex";
 import { db } from "@/lib/db";
 import { problems, verificationRuns, verificationTierResults } from "@/lib/db/schema";
 import { moTaTrichDan } from "@/lib/citations";
-import { gonLyDoDuyet, hamLatex } from "@/lib/de-hoc-sinh";
+import { gonLyDoDuyet, hamLatex, tenCuaTang } from "@/lib/de-hoc-sinh";
 import { STATUS_LABEL } from "@/lib/levels";
 
 export const dynamic = "force-dynamic";
@@ -47,7 +47,7 @@ export default async function Page() {
                 const cites = moTaTrichDan(t.citation);
                 return (
                   <li key={t.id} className="flex gap-3 py-3">
-                    <span className="tabular w-4 shrink-0 text-xs text-muted">{t.tier}</span>
+                    <span className="w-20 shrink-0 text-xs text-muted">{tenCuaTang(t.tier)}</span>
                     <div className="min-w-0">
                       <p>
                         <span className="font-medium">{STATUS_LABEL[t.status] || t.status}</span>

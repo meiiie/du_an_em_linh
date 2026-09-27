@@ -310,8 +310,7 @@ export function TutorPanel({
         <div className="min-w-0">
           <p className="text-sm font-semibold">Gia sư AI</p>
           <p className="truncate text-xs text-muted md:whitespace-normal" data-testid="tutor-che-do">
-            {moTaCheDo({ provider, offline: lastOffline, error: lastError })}. Không phải giáo viên. Không đọc lời giải
-            chuẩn.
+            {moTaCheDo({ provider, offline: lastOffline, error: lastError })}
           </p>
           <p className="mt-1 text-xs">
             <Link href="/hs/kho" className="underline underline-offset-2" data-testid="tutor-toi-kho">
@@ -351,7 +350,7 @@ export function TutorPanel({
           Gợi ý bước này
         </Button>
         <Button type="button" variant="secondary" size="sm" data-testid="chip-sai-cho" disabled={thinking} className="shrink-0" onClick={() => sendChat("Em sai chỗ nào?")}>
-          Em sai chỗ nào?
+          Sai chỗ nào?
         </Button>
         <Button type="button" variant="ghost" size="sm" data-testid="chip-gui-gv" disabled={thinking} className="shrink-0" onClick={nhoThayCo}>
           Gửi thầy cô

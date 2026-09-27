@@ -11,11 +11,17 @@ export function siteUrl(): URL {
   }
 }
 
-import { version as PHIEN_BAN } from "../package.json";
+import pkg from "../package.json";
 
 export const SITE_NAME = "Học toán với AI";
 /** Một SemVer — cùng số với `apps/web/package.json` / release-please. */
-export const SITE_VERSION = PHIEN_BAN;
+export const SITE_VERSION = pkg.version;
+/** 7 ký tự commit trên Render / Actions — để biết pod đang chạy bản nào. */
+export function siteBan() {
+  const raw = process.env.RENDER_GIT_COMMIT || process.env.GITHUB_SHA || "";
+  const gon = raw.replace(/[^0-9a-f]/gi, "");
+  return gon.slice(0, 7) || null;
+}
 export const SITE_DESC =
   "Nguyên mẫu: gia sư Toán 12 — xét đơn điệu và cực trị theo phiếu 5 bước. Gia sư sửa bài, không đưa đáp án. Demo chạy khi không có khóa API.";
 export const SITE_LOCALE = "vi_VN";

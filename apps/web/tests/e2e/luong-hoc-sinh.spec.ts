@@ -194,6 +194,8 @@ test.describe("giáo viên", () => {
     await expect(page.getByTestId("mo-loi-giai")).toBeVisible();
     await expect(page.getByTestId("ai-provider-offline")).toBeVisible();
     await expect(page.getByTestId("ai-probe")).toBeVisible();
+    await expect(page.getByTestId("do-chinh-xac-tom-tat")).toContainText(/\d+\/\d+/);
+    await expect(page.getByTestId("phien-ban")).toContainText("v0.1.0");
     await page.screenshot({ path: `${SHOTS}/gv-cai-dat.png`, fullPage: true });
   });
 });

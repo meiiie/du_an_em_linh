@@ -9,6 +9,7 @@ import { Button, buttonClasses } from "@/components/ui/button";
 import { fieldControl } from "@/components/ui/field";
 import { PageHeader } from "@/components/ui/page-header";
 import { cn } from "@/lib/cn";
+import { chamDoChinhXac } from "@/lib/do-chinh-xac";
 import { db } from "@/lib/db";
 import { classSettings, classes } from "@/lib/db/schema";
 
@@ -25,12 +26,13 @@ export default async function Page() {
   const hasEnv = laNhaKhoa(provider) && Boolean(docKhoaNha(provider, null));
   const mask = maskKey(setting?.aiApiKey);
   const khoaLop = Boolean((setting?.aiApiKey || "").trim());
+  const the = chamDoChinhXac();
   return (
     <main className="max-w-xl">
       <PageHeader title="Cài đặt lớp" />
       <p className="mb-6 text-sm">
         <Link href="/gv/ket-noi-ai" className={cn(buttonClasses({ variant: "secondary" }))} data-testid="toi-ket-noi-ai">
-          Kết nối ChatGPT
+          Gia sư
         </Link>
       </p>
       <form action={luuCaiDatLop} className="space-y-4 border-y border-line py-6">
@@ -118,6 +120,9 @@ export default async function Page() {
         <Button type="submit">Lưu cài đặt</Button>
       </form>
       <KiemTraAi macDinh={provider} />
+      <p className="mt-6 text-sm text-muted" data-testid="do-chinh-xac-tom-tat">
+        Luật gia sư {the.diem}/{the.toiDa} · nguồn {the.sota.diem}/{the.sota.toiDa}
+      </p>
     </main>
   );
 }

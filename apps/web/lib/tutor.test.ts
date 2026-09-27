@@ -10,6 +10,7 @@ test("xin đáp án khi em hỏi kết quả", () => {
 test("hệ thống bắt viết [n] khi dùng mục đã mở", () => {
   assert.match(HE_THONG_GIA_SU, /\[n\]/);
   assert.match(HE_THONG_GIA_SU, /không phải giáo viên/);
+  assert.match(HE_THONG_GIA_SU, /xưng mình/i);
 });
 
 test("đừng nêu đáp án không phải xin đáp án", () => {
