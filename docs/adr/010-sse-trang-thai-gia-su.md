@@ -10,8 +10,9 @@ Tham khảo (không copy mã AGPL): [meiiie/wiii](https://github.com/meiiie/wiii
 
 - `POST /api/hs/gia-su` trả `text/event-stream`: `trang_thai` (`kho`|`goi`|`loc`) rồi `xong`.
 - Cùng `chayHoiGiaSu` với server action — không lệch lọc.
-- Dừng = `AbortController` trên fetch và trên `completeChat`.
+- Dừng = `AbortController` trên fetch và trên `completeChat`. Escape cùng việc đó.
 - Cột phải dính, nhật ký co, composer đáy. Không bong bóng gradient.
+- SSE 401/lỗi/`!body`: trả chữ lỗi. Không fallback thầm sang server action (tránh gọi model lần hai).
 
 ## Hệ quả
 

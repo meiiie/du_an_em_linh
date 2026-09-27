@@ -198,7 +198,7 @@ export async function chayHoiGiaSu(opts: {
       .from(tutorMessages)
       .where(eq(tutorMessages.sessionId, sess.id))
       .orderBy(desc(tutorMessages.createdAt))
-      .limit(6);
+      .limit(4);
     const history = prior
       .reverse()
       .map((m) => ({
@@ -221,7 +221,7 @@ export async function chayHoiGiaSu(opts: {
         ...history,
         {
           role: "user",
-          content: `Đề (không kèm lời giải): ${prob[0].statementText}\nBước đang làm: ${BUOC.find((b) => b.ma === buoc)?.ten || "bước này"}\nTình trạng: ${grade ? "đã nộp" : "chưa nộp"}\nGợi ý được mở: ${goiY || "(chưa)"}\nCông thức và tài liệu lớp (đã duyệt, không phải lời giải — nếu dùng thì nhắc đúng tên):\n${dongKhoChoPrompt(kho)}\nHọc sinh: ${text}\nTrình bày như phiếu: đoạn ngắn, danh sách, $...$ / $$...$$. Không viết mã bước.`,
+          content: `Đề (không kèm lời giải): ${prob[0].statementText}\nBước đang làm: ${BUOC.find((b) => b.ma === buoc)?.ten || "bước này"}\nTình trạng: ${grade ? "đã nộp" : "chưa nộp"}\nGợi ý được mở: ${goiY || "(chưa)"}\nCông thức và tài liệu lớp (đã duyệt, không phải lời giải — nếu dùng thì nhắc đúng tên):\n${dongKhoChoPrompt(kho)}\nHọc sinh: ${text}\nTrình bày: đoạn ngắn, danh sách, $...$ / $$...$$. Không mã bước, không chữ Phiếu, không nhắc lại đề.`,
         },
       ],
     });

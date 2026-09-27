@@ -7,8 +7,14 @@ const HINT_RE = /gợi ý|goi y|hint|gợi em|chỉ em bước|chi em buoc/i;
 
 const WHERE_RE = /sai chỗ|sai cho|chỗ nào|cho nao|vì sao sai|vi sao sai|em sai/i;
 
+/** «Đừng nêu đáp án» là ràng buộc, không phải xin đáp án. */
+const TU_CHOI_DAP_AN =
+  /(đừng|chớ|chơ|không|khong)\s+.{0,28}(đáp án|dap an|lời giải|loi giai|khoảng đồng biến|cực đại tại)/i;
+
 export function xinDapAn(text: string) {
-  return ANSWER_RE.test(text);
+  const t = (text || "").trim();
+  if (TU_CHOI_DAP_AN.test(t)) return false;
+  return ANSWER_RE.test(t);
 }
 
 export function xinGoiY(text: string) {
@@ -128,7 +134,7 @@ export const HE_THONG_GIA_SU =
   "Hỏi Socratic đúng một câu về quy trình, không hỏi đáp án (KITE 2026: gợi ý / chỗ sai / quy trình). " +
   "Xin chỗ sai: chỉ tô bước đang sai, không sửa hộ số. Xin gợi ý: nguyên lý, không bottom-out (Aleven). " +
   "Tối đa 4 câu. Nếu học sinh xin đáp án thì từ chối và giữ gợi ý quy trình. " +
-  "Trình bày như phiếu: mỗi ý một đoạn hoặc một dòng danh sách. Công thức $...$ cùng dòng, $$...$$ một mình một dòng. Không # tiêu đề, không hàng rào mã, không mã bước. Câu hỏi để đoạn cuối. " +
+  "Trình bày như phiếu: mỗi ý một đoạn hoặc một dòng danh sách. Công thức $...$ cùng dòng, $$...$$ một mình một dòng. Không # tiêu đề, không hàng rào mã, không mã bước, không chữ «Phiếu». Câu hỏi để đoạn cuối. " +
   "Ví dụ dạng: đoạn ngắn; $$(x^n)' = n x^{n-1}$$; một danh sách; câu hỏi ở cuối.";
 
 export function moTaCheDo(arg: boolean | { provider?: string; offline: boolean; error?: string | null }) {

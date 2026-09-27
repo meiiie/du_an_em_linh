@@ -2,9 +2,9 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
-import { guiThayCo, hoiGiaSu } from "@/lib/actions/hs";
+import { guiThayCo } from "@/lib/actions/hs";
 import { luaChonNhaHocSinh, parseProvider, type AiProviderId, type AiPublicConfig } from "@/lib/ai-catalog";
-import { chuTrangThaiGiaSu, gomSse, type GiaSuBuocSse } from "@/lib/sse";
+import { chuTrangThaiGiaSu, docJsonSse, gomSse, type GiaSuBuocSse } from "@/lib/sse";
 import { moTaCheDo } from "@/lib/tutor";
 import { LoiGiaSu } from "./loi-gia-su";
 import { Button, buttonClasses } from "./ui/button";
@@ -27,6 +27,8 @@ const LOI_CHAO: Msg = {
   text: "Mình là gia sư AI. Mình đọc công thức và tài liệu lớp, sửa bài và giảng, không đưa đáp án.",
 };
 
+const LOI_KHONG_NOI: KetHoi = { ok: false, tra_loi: "Không nối được gia sư. Không gửi lại.", offline: true };
+
 function khoaDraft(problemId: string) {
   return `gs-draft:${problemId}`;
 }
@@ -37,6 +39,10 @@ function khoaNha(problemId: string) {
 function fitTextarea(el: HTMLTextAreaElement) {
   el.style.height = "0px";
   el.style.height = `${Math.min(Math.max(el.scrollHeight, 44), 160)}px`;
+}
+
+function dangGanDay(el: HTMLDivElement) {
+  return el.scrollHeight - el.scrollTop - el.clientHeight < 48;
 }
 
 async function docSseHoi(opts: {
@@ -58,9 +64,16 @@ async function docSseHoi(opts: {
     }),
     signal: opts.signal,
   });
-  if (!res.ok || !res.body) {
-    return hoiGiaSu(opts.problemId, opts.text, { provider: opts.provider, model: opts.model });
+  if (res.status === 401) return { ok: false, tra_loi: "Chưa vào lớp.", offline: true };
+  if (!res.ok) {
+    try {
+      const j = (await res.json()) as { tra_loi?: string };
+      return { ok: false, tra_loi: j.tra_loi || LOI_KHONG_NOI.tra_loi, offline: true };
+    } catch {
+      return LOI_KHONG_NOI;
+    }
   }
+  if (!res.body) return LOI_KHONG_NOI;
   const reader = res.body.getReader();
   const dec = new TextDecoder();
   let leftover = "";
@@ -73,10 +86,10 @@ async function docSseHoi(opts: {
     leftover = gom.leftover;
     for (const ev of gom.events) {
       if (ev.event === "trang_thai") {
-        const buoc = (JSON.parse(ev.data) as { buoc?: GiaSuBuocSse }).buoc;
+        const buoc = docJsonSse<{ buoc?: GiaSuBuocSse }>(ev.data)?.buoc;
         if (buoc) opts.onBuoc(buoc);
       } else if (ev.event === "xong" || ev.event === "loi") {
-        ket = JSON.parse(ev.data) as KetHoi;
+        ket = docJsonSse<KetHoi>(ev.data);
       }
     }
   }
@@ -103,11 +116,15 @@ export function TutorPanel({
   const [buocSse, setBuocSse] = useState<GiaSuBuocSse | null>(null);
   const [lastOffline, setLastOffline] = useState(ai.classProvider === "offline");
   const [lastError, setLastError] = useState<string | null>(null);
+  const [hienXuong, setHienXuong] = useState(false);
   const seq = useRef(0);
   const box = useRef<HTMLTextAreaElement>(null);
   const log = useRef<HTMLDivElement>(null);
   const huy = useRef<AbortController | null>(null);
+  const ganDay = useRef(true);
   const choices = luaChonNhaHocSinh(ai);
+  const cauCuoiHs = [...chat].reverse().find((m) => m.role === "hs")?.text;
+  const loiCuoi = Boolean(chat[chat.length - 1]?.error);
 
   useEffect(() => {
     try {
@@ -125,8 +142,19 @@ export function TutorPanel({
   }, [ask]);
 
   useEffect(() => {
+    if (!ganDay.current) return;
     log.current?.scrollTo({ top: log.current.scrollHeight });
   }, [chat, thinking, buocSse]);
+
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      if (e.key !== "Escape" || !huy.current) return;
+      e.preventDefault();
+      dung();
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  });
 
   function ghiDraft(v: string) {
     setAsk(v);
@@ -155,6 +183,7 @@ export function TutorPanel({
     setBuocSse(null);
     setChat((c) => [...c, { role: "gia_su", text: "Đã dừng. Không gửi lại câu hỏi.", error: true }]);
     setLastError("aborted");
+    queueMicrotask(() => box.current?.focus());
   }
 
   function nhanKet(res: KetHoi) {
@@ -176,6 +205,8 @@ export function TutorPanel({
     if (!text || thinking) return;
     const my = ++seq.current;
     if (!raw) ghiDraft("");
+    ganDay.current = true;
+    setHienXuong(false);
     setChat((c) => [...c, { role: "hs", text }]);
     setThinking(true);
     setBuocSse(null);
@@ -204,6 +235,7 @@ export function TutorPanel({
         setThinking(false);
         setBuocSse(null);
         huy.current = null;
+        queueMicrotask(() => box.current?.focus());
       }
     }
   }
@@ -211,12 +243,14 @@ export function TutorPanel({
   async function nhoThayCo() {
     if (thinking) return;
     const my = ++seq.current;
+    ganDay.current = true;
     setChat((c) => [...c, { role: "hs", text: "Gửi thầy cô giúp em" }]);
     setThinking(true);
     const res = await guiThayCo(problemId);
     if (my !== seq.current) return;
     setThinking(false);
     setChat((c) => [...c, { role: "gia_su", text: res.tra_loi }]);
+    queueMicrotask(() => box.current?.focus());
   }
 
   return (
@@ -273,9 +307,33 @@ export function TutorPanel({
         <Button type="button" variant="ghost" size="sm" data-testid="chip-gui-gv" disabled={thinking} onClick={nhoThayCo}>
           Gửi thầy cô
         </Button>
+        {loiCuoi && cauCuoiHs && !thinking ? (
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            data-testid="chip-hoi-lai"
+            onClick={() => {
+              ghiDraft(cauCuoiHs);
+              box.current?.focus();
+            }}
+          >
+            Hỏi lại
+          </Button>
+        ) : null}
       </div>
 
-      <div ref={log} data-testid="tutor-log" className="mt-4 min-h-40 flex-1 space-y-4 overflow-y-auto overscroll-contain md:min-h-0">
+      <div
+        ref={log}
+        data-testid="tutor-log"
+        onScroll={() => {
+          const el = log.current;
+          if (!el) return;
+          ganDay.current = dangGanDay(el);
+          setHienXuong(!ganDay.current);
+        }}
+        className="mt-4 min-h-40 flex-1 space-y-4 overflow-y-auto overscroll-contain [overflow-anchor:auto] md:min-h-0"
+      >
         {chat.map((m, i) => (
           <div
             key={i}
@@ -295,7 +353,18 @@ export function TutorPanel({
             )}
             {m.trichDan && m.trichDan.length ? (
               <p className="mt-2 text-xs text-muted" data-testid={i === chat.length - 1 ? "tutor-trich-dan" : undefined}>
-                Đã đọc: {m.trichDan.map((t) => t.ten).join(" · ")}
+                Đã đọc:{" "}
+                {m.trichDan.map((t, k) => (
+                  <span key={`${t.loai}-${t.ten}`}>
+                    {k ? " · " : null}
+                    <Link
+                      href={t.loai === "tai_lieu" ? "/hs/kho?muc=lieu" : "/hs/kho"}
+                      className="underline underline-offset-2"
+                    >
+                      {t.ten}
+                    </Link>
+                  </span>
+                ))}
               </p>
             ) : null}
           </div>
@@ -307,6 +376,21 @@ export function TutorPanel({
         ) : null}
       </div>
 
+      {hienXuong ? (
+        <button
+          type="button"
+          data-testid="tutor-xuong"
+          className="mt-2 self-start text-xs underline underline-offset-2"
+          onClick={() => {
+            ganDay.current = true;
+            setHienXuong(false);
+            log.current?.scrollTo({ top: log.current.scrollHeight });
+          }}
+        >
+          Xuống
+        </button>
+      ) : null}
+
       <div className="mt-4 flex shrink-0 items-end gap-2 border-t border-line pt-3" data-testid="tutor-composer">
         <label className="sr-only" htmlFor="tutor-input">
           Câu hỏi cho gia sư
@@ -317,13 +401,12 @@ export function TutorPanel({
           data-testid="tutor-input"
           rows={1}
           value={ask}
-          disabled={thinking}
           onChange={(e) => ghiDraft(e.target.value)}
           onKeyDown={(e) => {
             if (e.nativeEvent.isComposing || e.repeat) return;
             if (e.key === "Enter" && !e.shiftKey) {
               e.preventDefault();
-              void sendChat();
+              if (!thinking) void sendChat();
             }
           }}
           className={`min-h-11 min-w-0 flex-1 resize-none ${fieldControl}`}

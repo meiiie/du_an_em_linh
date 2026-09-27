@@ -8,6 +8,14 @@ export function vietSse(event: string, data: unknown): string {
   return `event: ${event}\ndata: ${JSON.stringify(data)}\n\n`;
 }
 
+export function docJsonSse<T>(data: string): T | null {
+  try {
+    return JSON.parse(data) as T;
+  } catch {
+    return null;
+  }
+}
+
 export function gomSse(raw: string): { events: SseKhung[]; leftover: string } {
   const parts = raw.split("\n\n");
   const leftover = parts.pop() ?? "";

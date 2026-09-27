@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { chuTrangThaiGiaSu, gomSse, vietSse } from "./sse";
+import { chuTrangThaiGiaSu, docJsonSse, gomSse, vietSse } from "./sse";
 
 test("vietSse / gomSse một event một việc", () => {
   const raw = vietSse("trang_thai", { buoc: "kho" }) + vietSse("xong", { ok: true, tra_loi: "Em xét dấu." });
@@ -18,6 +18,11 @@ test("gomSse giữ mảnh dở — không bịa câu", () => {
   assert.equal(events.length, 1);
   assert.equal(events[0].event, "trang_thai");
   assert.match(leftover, /xong/);
+});
+
+test("docJsonSse bỏ event hỏng, không ném", () => {
+  assert.equal(docJsonSse("không phải json"), null);
+  assert.deepEqual(docJsonSse<{ buoc: string }>('{"buoc":"loc"}'), { buoc: "loc" });
 });
 
 test("chữ trạng thái không nói đang stream token", () => {
