@@ -114,7 +114,7 @@ Web ở cổng 3000, dịch vụ toán ở cổng 8000, Postgres ở cổng 5432
 
 ```bash
 pnpm test:math          # pytest trong services/math
-pnpm ci                 # typecheck + lint + unit
+pnpm test:web           # typecheck + lint + unit
 pnpm --filter web test:e2e
 ```
 

@@ -25,7 +25,7 @@ pnpm dev:math
 pnpm dev:web
 pnpm db:migrate && pnpm seed
 pnpm test:math
-pnpm ci                 # typecheck + lint + unit
+pnpm test:web           # typecheck + lint + unit
 pnpm --filter web test:e2e
 ```
 
