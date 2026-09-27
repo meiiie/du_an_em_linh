@@ -14,9 +14,13 @@ TU_KHOA_CONG_THUC = ("đồng biến", "nghịch biến", "cực đại", "cực
 def _excerpt(text, term, radius=80):
     i = text.lower().find(term.lower())
     if i < 0:
-        return text[:160]
+        return text[:160].strip()
     a = max(0, i - radius)
     b = min(len(text), i + len(term) + radius)
+    if a:
+        sp = text.find(" ", a)
+        if 0 <= sp < i:
+            a = sp + 1
     return text[a:b].strip()
 
 

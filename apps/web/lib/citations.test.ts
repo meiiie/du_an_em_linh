@@ -15,7 +15,7 @@ test("trích dẫn hiện đoạn và tên, không dump cụm khớp", () => {
   ]);
   assert.deepEqual(dong, [
     "«nếu đạo hàm không âm trên khoảng đó thì hàm đồng biến» — Ghi chú tự soạn: đơn điệu và cực trị",
-    "Cực trị — Đạo hàm đổi từ dương sang âm thì cực đại.",
+    "Cực trị",
   ]);
   assert.doesNotMatch(dong.join(" "), /khớp|đồng biến, đạo hàm/);
 });

@@ -21,7 +21,7 @@ export function moTaTrichDan(raw: unknown): string[] {
       const bits: string[] = [];
       if (o.trich) bits.push(`«${o.trich}»`);
       if (o.ten) bits.push(o.ten);
-      if (o.noi_dung && !o.trich) bits.push(o.noi_dung);
+      else if (o.noi_dung) bits.push(o.noi_dung);
       return bits.join(" — ");
     })
     .filter(Boolean);
