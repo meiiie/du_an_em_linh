@@ -25,7 +25,7 @@ Các mục này nằm trên dashboard, không nằm trong git. Vào **Settings**
 
 - Workflow `Kiểm thử`, `Triển khai` (CD sau CI xanh), `Phát hành` (release-please), `Giữ thức Render` đã trong repo.
 - **Allow GitHub Actions to create and approve pull requests** (Settings → Actions → General) — để release-please mở PR cắt bản.
-- Biến tùy chọn: `KEEP_AWAKE_URL`. Secret tùy chọn: `RENDER_DEPLOY_HOOK` (Deploy Hook của service `hoc-toan-ai`).
+- Biến tùy chọn: `KEEP_AWAKE_URL`. Secret bắt buộc để CD deploy: `RENDER_DEPLOY_HOOK` (Deploy Hook của service `hoc-toan-ai`).
 - Render: Branch = **`main`**, autoDeploy bật.
 
 Sau khi gộp PR vào `main`:

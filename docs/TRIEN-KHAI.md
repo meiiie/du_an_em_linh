@@ -14,7 +14,7 @@ Bản đang chạy: https://hoc-toan-ai.onrender.com
 
 **Nhánh deploy phải là `main`.** Service cũ nếu còn trỏ nhánh `cursor/*` đã xóa sẽ build hỏng hoặc treo — Dashboard → `hoc-toan-ai` → Settings → Branch = `main` → Manual Deploy.
 
-CD: `.github/workflows/cd.yml` chạy sau khi CI **Kiểm thử** xanh trên `main`. Tùy chọn: secret `RENDER_DEPLOY_HOOK` (Render → service → Deploy Hook) để GitHub gọi deploy; không có hook thì vẫn ping https://hoc-toan-ai.onrender.com (autoDeploy nếu đã bật).
+CD: `.github/workflows/cd.yml` chạy sau khi CI **Kiểm thử** xanh trên `main`. Bắt buộc secret `RENDER_DEPLOY_HOOK` (Render → `hoc-toan-ai` → Deploy Hook). Workflow POST hook rồi đợi `GET /api/suc-khoe` có `ban` trùng 7 ký tự commit. Không có hook, hoặc trang cũ còn 200, thì job fail.
 
 `/` là trang chủ tĩnh (SEO), không đọc database. `/dang-nhap` mới vào lớp thử.
 
