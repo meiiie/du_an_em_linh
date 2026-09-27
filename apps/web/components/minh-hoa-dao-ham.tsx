@@ -1,14 +1,15 @@
 "use client";
 
 import { useState } from "react";
+import { cn } from "@/lib/cn";
 import { Tex } from "./tex";
 
 const X0 = -2.2;
 const X1 = 2.2;
-const Y0 = -3;
-const Y1 = 3;
+const Y0 = -3.4;
+const Y1 = 3.4;
 const W = 360;
-const H = 220;
+const H = 280;
 
 function sx(x: number) {
   return ((x - X0) / (X1 - X0)) * W;
@@ -27,7 +28,7 @@ function so(n: number) {
 }
 
 /** Hình minh họa trên trang chủ — hàm khác bài đang chấm, không gắn nhãn cực trị. */
-export function MinhHoaDaoHam() {
+export function MinhHoaDaoHam({ className }: { className?: string }) {
   const [x, setX] = useState(1);
   const y = f(x);
   const yp = fp(x);
@@ -41,13 +42,13 @@ export function MinhHoaDaoHam() {
   const x2 = x + span;
 
   return (
-    <figure className="mt-12 max-w-xl">
-      <div className="cong-thuc overflow-x-auto text-[1.75rem] leading-tight sm:text-[2.25rem]" translate="no">
+    <figure id="hinh" className={cn("min-w-0", className)}>
+      <div className="cong-thuc overflow-x-auto text-[1.75rem] leading-tight sm:text-[2.5rem]" translate="no">
         <Tex tex="y = x^{3} - 3x" />
       </div>
       <svg
         viewBox={`0 0 ${W} ${H}`}
-        className="mt-6 w-full max-w-md"
+        className="mt-6 w-full"
         role="img"
         aria-label={`Đồ thị y = x^3 − 3x tại x = ${so(x)}, đạo hàm ${so(yp)}`}
       >
@@ -74,7 +75,7 @@ export function MinhHoaDaoHam() {
           <span className="font-mono tabular">{so(yp)}</span>
         </p>
       </div>
-      <label className="mt-3 block max-w-md">
+      <label className="mt-3 block">
         <span className="sr-only">Vị trí x trên đường cong</span>
         <input
           type="range"
