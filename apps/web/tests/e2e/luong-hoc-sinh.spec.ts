@@ -1,5 +1,6 @@
 import { expect, test } from "@playwright/test";
 import { SHOTS } from "./anh";
+import { vaoLop } from "./vao-lop";
 
 test.describe("trang chủ", () => {
   test("công khai, không trắng, vào được đăng nhập", async ({ page }) => {
@@ -9,7 +10,7 @@ test.describe("trang chủ", () => {
     await page.screenshot({ path: `${SHOTS}/trang-chu.png`, fullPage: true });
     await page.getByTestId("vao-hoc").click();
     await expect(page.getByTestId("email")).toBeVisible();
-    await expect(page.getByRole("button", { name: "Vào học" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Tiếp tục" })).toBeVisible();
   });
 
   test("logo tab và tài sản SEO công khai", async ({ request }) => {
@@ -40,9 +41,7 @@ test.describe("học sinh", () => {
 
   test("đăng nhập, nộp bước sai, bị chặn xin đáp án, sửa rồi đạt", async ({ page }) => {
     await page.goto("/dang-nhap");
-    await page.getByTestId("email").fill("hs.an@demo.local");
-    await page.getByTestId("password").fill("hocsinh123");
-    await page.getByRole("button", { name: "Vào học" }).click();
+    await vaoLop(page, "hs.an@demo.local", "hocsinh123");
     await expect(page.getByRole("heading", { name: "Chào An" })).toBeVisible();
     await expect(page.getByTestId("mo-sidebar")).toBeVisible();
     await page.getByTestId("mo-sidebar").click();
@@ -88,9 +87,7 @@ test.describe("học sinh máy tính", () => {
 
   test("lộ trình có thanh bên mực", async ({ page }) => {
     await page.goto("/dang-nhap");
-    await page.getByTestId("email").fill("hs.an@demo.local");
-    await page.getByTestId("password").fill("hocsinh123");
-    await page.getByRole("button", { name: "Vào học" }).click();
+    await vaoLop(page, "hs.an@demo.local", "hocsinh123");
     await expect(page.getByRole("heading", { name: "Chào An" })).toBeVisible();
     await expect(page.getByTestId("sidebar")).toBeVisible();
     await expect(page.getByTestId("nav-hs-lo-trinh")).toBeVisible();
@@ -107,9 +104,7 @@ test.describe("máy tính bảng", () => {
 
   test("phiếu và gia sư không tràn ngang", async ({ page }) => {
     await page.goto("/dang-nhap");
-    await page.getByTestId("email").fill("hs.an@demo.local");
-    await page.getByTestId("password").fill("hocsinh123");
-    await page.getByRole("button", { name: "Vào học" }).click();
+    await vaoLop(page, "hs.an@demo.local", "hocsinh123");
     await expect(page.getByRole("heading", { name: "Chào An" })).toBeVisible();
     await expect(page.getByTestId("mo-sidebar")).toBeVisible();
     const homeOverflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
@@ -131,9 +126,7 @@ test.describe("giáo viên", () => {
   test("hàng đợi kiểm định và tiến độ 4 mức / 3 mức", async ({ page }) => {
     await page.goto("/dang-nhap");
     await page.screenshot({ path: `${SHOTS}/dang-nhap.png`, fullPage: true });
-    await page.getByTestId("email").fill("gv@demo.local");
-    await page.getByTestId("password").fill("giaovien123");
-    await page.getByRole("button", { name: "Vào học" }).click();
+    await vaoLop(page, "gv@demo.local", "giaovien123");
     await expect(page.getByRole("heading", { name: "Lớp 12A1 thử" })).toBeVisible();
     await expect(page.getByTestId("sidebar")).toBeVisible();
     await expect(page.getByTestId("nav-gv-duyet")).toBeVisible();

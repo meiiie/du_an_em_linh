@@ -1,14 +1,13 @@
 import { expect, test } from "@playwright/test";
 import { SHOTS } from "./anh";
+import { vaoLop } from "./vao-lop";
 
 test.describe("harness gia sư", () => {
   test.use({ viewport: { width: 1280, height: 800 } });
 
   test("composer Enter, nhà local lỗi không chuyển đám mây", async ({ page }) => {
     await page.goto("/dang-nhap");
-    await page.getByTestId("email").fill("hs.an@demo.local");
-    await page.getByTestId("password").fill("hocsinh123");
-    await page.getByRole("button", { name: "Vào học" }).click();
+    await vaoLop(page, "hs.an@demo.local", "hocsinh123");
     await page.getByTestId("bai-DH12-03-VD-01").click();
     await expect(page.getByTestId("tutor-panel")).toBeVisible();
     await expect(page.getByTestId("tutor-composer")).toBeVisible();
@@ -34,9 +33,7 @@ test.describe("cài đặt nhà AI", () => {
 
   test("giáo viên thử offline và thấy Ollama từ chối không fallback", async ({ page }) => {
     await page.goto("/dang-nhap");
-    await page.getByTestId("email").fill("gv@demo.local");
-    await page.getByTestId("password").fill("giaovien123");
-    await page.getByRole("button", { name: "Vào học" }).click();
+    await vaoLop(page, "gv@demo.local", "giaovien123");
     await expect(page.getByRole("heading", { name: "Lớp 12A1 thử" })).toBeVisible();
     await page.goto("/gv/cai-dat");
     await expect(page.getByRole("heading", { name: "Cài đặt lớp" })).toBeVisible();
@@ -52,9 +49,7 @@ test.describe("cài đặt nhà AI", () => {
 
   test("kết nối ChatGPT: hai bước khóa chính thức, không OAuth lậu", async ({ page }) => {
     await page.goto("/dang-nhap");
-    await page.getByTestId("email").fill("gv@demo.local");
-    await page.getByTestId("password").fill("giaovien123");
-    await page.getByRole("button", { name: "Vào học" }).click();
+    await vaoLop(page, "gv@demo.local", "giaovien123");
     await expect(page.getByRole("heading", { name: "Lớp 12A1 thử" })).toBeVisible();
     await page.goto("/gv/ket-noi-ai");
     await expect(page.getByRole("heading", { name: "Kết nối ChatGPT" })).toBeVisible();
@@ -76,9 +71,7 @@ test.describe("kho kiến thức", () => {
 
   test("học sinh xem cùng kho gia sư đọc", async ({ page }) => {
     await page.goto("/dang-nhap");
-    await page.getByTestId("email").fill("hs.an@demo.local");
-    await page.getByTestId("password").fill("hocsinh123");
-    await page.getByRole("button", { name: "Vào học" }).click();
+    await vaoLop(page, "hs.an@demo.local", "hocsinh123");
     await expect(page.getByRole("heading", { name: "Chào An" })).toBeVisible();
     await page.getByTestId("nav-hs-kho").click();
     await expect(page.getByRole("heading", { name: "Kiến thức gia sư được đọc" })).toBeVisible();
