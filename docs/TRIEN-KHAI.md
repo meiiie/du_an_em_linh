@@ -34,7 +34,7 @@ Render free tắt web sau ~15 phút không có HTTP. Ping mỗi 5–10 phút. Th
 
 `GET /api/suc-khoe` trả JSON `{ ok, service, phien, ban }`, không đụng database. `phien` = SemVer web; `ban` = 7 ký tự `RENDER_GIT_COMMIT` khi chạy trên Render. Ray HS/GV có `v{phien}` đáy sidebar.
 
-**Không** dán `ZAI_API_KEY` / `OPENROUTER_API_KEY` vào `render.yaml`, commit, hay secret repo. Gia sư live: giáo viên dán khóa trên `/gv/ket-noi-ai` sau khi pod chạy.
+**Không** dán `ZAI_API_KEY` / `OPENROUTER_API_KEY` vào `render.yaml`, commit, secret repo, log, hay artifact. Khóa lớp nằm ở DB sau khi giáo viên dán trên `/gv/ket-noi-ai` — không đưa lên git. `GET /api/suc-khoe` không trả khóa. CI `scripts/kiem-khoa.mjs` từ chối file/chuỗi khóa.
 
 ## File
 

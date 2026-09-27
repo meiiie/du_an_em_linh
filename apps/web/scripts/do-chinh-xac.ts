@@ -2,8 +2,10 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { anKhoa } from "../lib/an-khoa";
 import { chamDoChinhXac, chamLoiGiaSu, khopCongBo } from "../lib/do-chinh-xac";
 import { completeChat } from "../lib/ai-harness";
+import { locBanGiaSu } from "../lib/loi-gia-su";
 import { HE_THONG_GIA_SU } from "../lib/tutor";
 import { mathJob } from "../lib/math";
 
@@ -134,12 +136,13 @@ async function chamZai() {
       ],
       offlineText: "GỢI Ý",
     });
-    const cham = chamLoiGiaSu(r.text);
+    const sach = locBanGiaSu(r.text);
+    const cham = chamLoiGiaSu(sach);
     luot.push({
       ms: Date.now() - t0,
       offline: r.offline,
       errorKind: r.errorKind,
-      len: r.text.length,
+      len: sach.length,
       rong: cham.rong,
       maBuoc: cham.maBuoc,
       loRo: cham.loRo,
@@ -147,10 +150,12 @@ async function chamZai() {
       coTrich: cham.coTrich,
       xungCo: cham.xungCo,
       gioiThieu: cham.gioiThieu,
-      head: r.text.slice(0, 90).replace(/\s+/g, " "),
+      head: anKhoa(sach.slice(0, 90).replace(/\s+/g, " ")),
     });
   }
-  const dat = luot.filter((l) => !l.offline && !l.rong && !l.maBuoc && !l.loRo && l.tiengViet);
+  const dat = luot.filter(
+    (l) => !l.offline && !l.rong && !l.maBuoc && !l.loRo && l.tiengViet && !l.gioiThieu && !l.xungCo,
+  );
   return { bo: false, ly: "", luot, dat: dat.length, toiDa: luot.length };
 }
 
@@ -182,12 +187,11 @@ async function main() {
   const dir = process.env.PLAYWRIGHT_SHOTS || "/opt/cursor/artifacts";
   try {
     mkdirSync(dir, { recursive: true });
-    const an = JSON.stringify(kq, null, 2).replace(/(?:sk-|zai-|or-v1-)[A-Za-z0-9_\-]{16,}/gi, "[khoa]");
-    writeFileSync(`${dir}/do-chinh-xac.json`, an);
+    writeFileSync(`${dir}/do-chinh-xac.json`, anKhoa(JSON.stringify(kq, null, 2)));
   } catch {
     /* artifacts có thể không ghi được */
   }
-  console.log(JSON.stringify(kq, null, 2).replace(/(?:sk-|zai-|or-v1-)[A-Za-z0-9_\-]{16,}/gi, "[khoa]"));
+  console.log(anKhoa(JSON.stringify(kq, null, 2)));
   if (!kq.dat) process.exitCode = 1;
 }
 

@@ -18,6 +18,7 @@ test("chamLoiGiaSu: rỗng, mã bước, tiếng Việt, [n]", () => {
   assert.equal(chamLoiGiaSu("Cô là AI gia sư.").xungCo, true);
   assert.equal(chamLoiGiaSu("Em nhớ đạo hàm lũy thừa.").xungCo, false);
   assert.equal(chamLoiGiaSu("Mình là AI gia sư, không phải giáo viên nhé.").gioiThieu, true);
+  assert.equal(chamLoiGiaSu("Chào em, mình là AI gợi ý.").gioiThieu, true);
   assert.equal(chamLoiGiaSu("Em nhớ đạo hàm lũy thừa [1].").gioiThieu, false);
 });
 

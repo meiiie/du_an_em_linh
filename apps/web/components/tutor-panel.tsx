@@ -25,7 +25,7 @@ type KetHoi = {
 
 const LOI_CHAO: Msg = {
   role: "gia_su",
-  text: "Mình là gia sư AI. Mình đọc công thức và tài liệu lớp, sửa bài và giảng, không đưa đáp án.",
+  text: "Mình đọc công thức và tài liệu lớp. Sửa bài và giảng, không đưa đáp án.",
 };
 
 const LOI_KHONG_NOI: KetHoi = { ok: false, tra_loi: "Không nối được gia sư. Không gửi lại.", offline: true };

@@ -18,6 +18,7 @@ import { goiKhoChoBuoc } from "./kho-lop";
 import { docTrichDanLuu, dongKhoChoPrompt, locTrichDanTheoLoi, nhanTrichDan, type TrichDanHien } from "./kien-thuc";
 import { assertMayLearn, loadConfig } from "./learning";
 import { BUOC } from "./levels";
+import { locBanGiaSu } from "./loi-gia-su";
 import { callLLM } from "./llm";
 import { mathJob } from "./math";
 import type { GiaSuBuocSse } from "./sse";
@@ -224,12 +225,12 @@ export async function chayHoiGiaSu(opts: {
         ...history,
         {
           role: "user",
-          content: `Đề (không kèm lời giải): ${prob[0].statementText}\nBước đang làm: ${BUOC.find((b) => b.ma === buoc)?.ten || "bước này"}\nTình trạng: ${grade ? "đã nộp" : "chưa nộp"}\nGợi ý được mở: ${goiY || "(chưa)"}\nCông thức và tài liệu lớp (đã duyệt, không phải lời giải). Mỗi mục có số [n]. Nếu dùng thì viết [n] ngay sau ý đó và nhắc tên trong «»:\n${dongKhoChoPrompt(kho)}\nHọc sinh: ${text}\nTrình bày: đoạn ngắn, danh sách, $...$ / $$...$$. Không mã bước, không chữ Phiếu, không nhắc lại đề.`,
+          content: `Đề (không kèm lời giải): ${prob[0].statementText}\nBước đang làm: ${BUOC.find((b) => b.ma === buoc)?.ten || "bước này"}\nTình trạng: ${grade ? "đã nộp" : "chưa nộp"}\nGợi ý được mở: ${goiY || "(chưa)"}\nCông thức và tài liệu lớp (đã duyệt, không phải lời giải). Mỗi mục có số [n]. Nếu dùng thì viết [n] ngay sau ý đó và nhắc tên trong «»:\n${dongKhoChoPrompt(kho)}\nHọc sinh: ${text}\nTrình bày: đoạn ngắn, danh sách, $...$ / $$...$$. Không mã bước, không chữ Phiếu, không nhắc lại đề. Không chào, không tự giới thiệu — vào thẳng gợi ý hoặc một câu hỏi.`,
         },
       ],
     });
     if (daDung(signal)) return dung();
-    draft = llm.text;
+    draft = locBanGiaSu(llm.text);
     offline = llm.offline;
     nha = llm.provider;
     llmError = llm.error;
@@ -260,6 +261,7 @@ export async function chayHoiGiaSu(opts: {
   } catch {
     draft = "Gia sư đang bận. Em cứ sửa bước được tô và nộp lại.";
   }
+  draft = locBanGiaSu(draft);
   if (daDung(signal)) return dung();
   const trichDan = xin || llmError || blocked ? [] : locTrichDanTheoLoi(draft, mo);
   await db.insert(tutorMessages).values({

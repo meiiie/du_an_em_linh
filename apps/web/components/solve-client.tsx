@@ -275,7 +275,7 @@ export function SolveClient({
                               {p}
                               <button
                                 type="button"
-                                className="ml-1 inline-flex min-h-8 min-w-8 items-center justify-center text-xs text-danger hover:underline"
+                                className="ml-1 inline-flex min-h-8 min-w-8 items-center justify-center text-xs text-danger hover:underline [@media(pointer:coarse)]:min-h-11 [@media(pointer:coarse)]:min-w-11"
                                 onClick={() => setPoints(points.filter((x) => x !== p))}
                                 aria-label={`Xóa mốc ${p}`}
                               >
@@ -302,7 +302,7 @@ export function SolveClient({
                                   key={opt}
                                   type="button"
                                   data-testid={`dau-${k}-${opt === "−" ? "-" : opt}`}
-                                  className={`inline-flex min-h-8 min-w-8 items-center justify-center rounded text-xs ${cur === (opt === "−" ? "-" : opt) ? "bg-ink text-chalk" : "bg-wash"}`}
+                                  className={`inline-flex min-h-8 min-w-8 items-center justify-center rounded text-xs [@media(pointer:coarse)]:min-h-11 [@media(pointer:coarse)]:min-w-11 ${cur === (opt === "−" ? "-" : opt) ? "bg-ink text-chalk" : "bg-wash"}`}
                                   onClick={() => {
                                     const val = opt === "−" ? "-" : opt;
                                     log({
@@ -339,7 +339,7 @@ export function SolveClient({
                                   key={val}
                                   type="button"
                                   data-testid={`mui-${k}-${val}`}
-                                  className={`inline-flex min-h-8 min-w-8 items-center justify-center rounded text-xs ${arrows[k] === val ? "bg-pass text-white" : "bg-wash"}`}
+                                  className={`inline-flex min-h-8 min-w-8 items-center justify-center rounded text-xs [@media(pointer:coarse)]:min-h-11 [@media(pointer:coarse)]:min-w-11 ${arrows[k] === val ? "bg-pass text-white" : "bg-wash"}`}
                                   onClick={() => {
                                     log({
                                       ma_buoc: "B.DH.XETDAU",

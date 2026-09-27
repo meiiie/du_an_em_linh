@@ -43,7 +43,7 @@ Skill khi đụng UI/API (nạp khi cần, không nhét vào mọi phiên): `.cu
 
 ## Bảo mật
 
-Không đọc `.env`, `.env.local`, khóa, `*.pem`. Mẫu biến: `.env.example`. Deny theo phiên: `.claude/settings.json`.
+Không đọc `.env`, `.env.local`, khóa, `*.pem`. Không commit hay đẩy `zaiapikey.txt`, `ZAI_API_KEY`, khóa lớp. Mẫu biến: `.env.example`. CI `scripts/kiem-khoa.mjs`. Deny theo phiên: `.claude/settings.json`.
 
 ## Tài khoản thử
 

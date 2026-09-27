@@ -22,7 +22,7 @@ if (tenCam.length) {
 
 const lech = [];
 for (const f of files) {
-  if (!/\.(ts|tsx|js|mjs|md|json|yml|yaml|env|txt|sh|toml|cff)$/i.test(f)) continue;
+  if (!/\.(ts|tsx|js|mjs|md|json|yml|yaml|env|txt|sh|toml|cff|sql)$/i.test(f)) continue;
   let raw;
   try {
     raw = readFileSync(f, "utf8");

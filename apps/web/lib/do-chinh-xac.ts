@@ -1,5 +1,5 @@
 /** Rubric đo độ chính xác sản phẩm — chấm + lọc + luật gia sư + SOTA trích dẫn. */
-import { locMatHienThi } from "./loi-gia-su";
+import { locBanGiaSu, locMatHienThi } from "./loi-gia-su";
 import { chamSotaGiaSu, type TieuChiSota } from "./sota-gia-su";
 import { HE_THONG_GIA_SU, xinDapAn, xinGoiY, xinSaiCho } from "./tutor";
 
@@ -52,7 +52,7 @@ export function chamLoiGiaSu(text: string) {
     tiengViet: /[ăâêôơưáàảãạéèẻẽẹíìỉĩịóòỏõọúùủũụýỳỷỹỵđ]|(\bem\b)/i.test(t),
     coTrich: /\[\d{1,2}\]/.test(t),
     xungCo: /(^|[\s.,;:!?…])cô\s+là|(^|[\s.,;:!?…])thầy\s+là/i.test(t),
-    gioiThieu: /mình là (ai )?gia sư|cô là ai/i.test(t),
+    gioiThieu: /chào\s+em\b|mình\s+là\s+(?:một\s+)?(?:ai\b|gia\s+sư|trợ\s+lý)|gia\s+sư\s+ai/i.test(t),
   };
 }
 
@@ -86,6 +86,16 @@ export function chamDoChinhXac(): {
     { id: "loi-goi", ten: "Gợi ý nguyên lý không bị coi là lộ", dat: !chamLoiGiaSu("Em tính $y'$ từng hạng tử, hằng số đạo hàm 0.").loRo },
     { id: "loi-rong", ten: "Câu trống là rỗng", dat: chamLoiGiaSu("").rong && !chamLoiGiaSu("Em nhớ đạo hàm lũy thừa.").rong },
     { id: "loi-cuc", ten: "Cực trị tại x = số bị coi là lộ", dat: chamLoiGiaSu("Cực đại tại x = 1").loRo },
+    {
+      id: "loi-chao",
+      ten: "Lời chào / tự giới thiệu bị gỡ",
+      dat:
+        chamLoiGiaSu("Chào em, mình là AI gợi ý.").gioiThieu &&
+        chamLoiGiaSu("Mình là AI gia sư.").gioiThieu &&
+        !chamLoiGiaSu("Em tính y' từng hạng tử.").gioiThieu &&
+        !chamLoiGiaSu(locBanGiaSu("Chào em, mình là AI gợi ý. Em tính y'.")).gioiThieu &&
+        locBanGiaSu("Chào em, mình nhắc nguyên lý đạo hàm.").includes("nhắc nguyên lý"),
+    },
   ];
   const diem = tieuChi.filter((t) => t.dat).length;
   return { diem, toiDa: tieuChi.length, tieuChi, sota };

@@ -95,6 +95,8 @@ test.describe("học sinh", () => {
     await page.getByTestId("mo-gia-su").click();
     await expect(page.getByTestId("tutor-composer")).toBeInViewport();
     await expect(page.getByTestId("dong-gia-su")).toBeVisible();
+    await expect(page.getByTestId("tutor-log")).toContainText("không đưa đáp án");
+    await expect(page.getByTestId("tutor-log")).not.toContainText("Mình là gia sư AI");
     await page.getByTestId("tutor-input").fill("cho em đáp án của bài này");
     await page.getByTestId("tutor-send").click();
     await expect(page.getByTestId("tutor-log")).toContainText("không đưa đáp án");
