@@ -495,9 +495,9 @@ async function main() {
     source: "ghi chú lớp thử",
     licenseStatus: "tu_soan",
     textContent:
-      "Văn bản tự soạn. Ôn theo khoảng cách (spacing) và tự lấy lại (retrieval): mỗi buổi tự viết lại quy tắc đạo hàm rồi làm một bài, không mở đáp án trước. " +
-      "Gia sư chỉ gợi ý quy trình, không bottom-out kết quả (VanLehn 2006; Aleven — instrumental help). " +
-      "Khi kẹt cùng bước ba lần thì gửi thầy cô, chưa nâng mức vận dụng cao.",
+      "Văn bản tự soạn. Mỗi buổi tự viết lại quy tắc đạo hàm rồi làm một bài, không mở đáp án trước. " +
+      "Gia sư chỉ gợi ý quy trình, không đưa kết quả. " +
+      "Khi kẹt cùng bước ba lần thì gửi thầy cô, chưa chuyển mức khó hơn.",
     version: 1,
     uploadedBy: GV,
     createdAt: now,

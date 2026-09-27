@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { hamLatex, loiGoiHocSinh, thanDe, tenKyNangNgan } from "./de-hoc-sinh";
+import { hamLatex, loiGoiHocSinh, thanDe, thanTrich, tenKyNangNgan } from "./de-hoc-sinh";
 
 test("bọc latex hàm số", () => {
   assert.equal(hamLatex("x^{2}"), "y = x^{2}");
@@ -35,6 +35,17 @@ test("đổi lời gợi sang tiếng học sinh", () => {
   );
   assert.equal(loiGoiHocSinh("Chưa có ước lượng thành thạo, bắt đầu bài đã phát hành.", ""), "Chưa làm bài nào — bắt đầu từ bài này.");
   assert.doesNotMatch(loiGoiHocSinh("Đủ ngưỡng thành thạo nên nâng một nấc.", "xét dấu"), /ngưỡng|nấc|phát hành|Em /);
+});
+
+test("trích tài liệu một câu, bỏ ngoặc năm nghiên cứu", () => {
+  assert.equal(
+    thanTrich("Mỗi buổi tự viết lại quy tắc. Không mở đáp án trước."),
+    "Mỗi buổi tự viết lại quy tắc.",
+  );
+  assert.doesNotMatch(
+    thanTrich("Gia sư chỉ gợi ý quy trình, không đưa kết quả (VanLehn 2006; Aleven). Khi kẹt thì gửi thầy cô."),
+    /VanLehn|Aleven|2006/,
+  );
 });
 
 test("rút tên kỹ năng", () => {

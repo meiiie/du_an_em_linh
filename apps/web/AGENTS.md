@@ -32,7 +32,7 @@ Dùng `Button` / `buttonClasses` trong `components/ui/button.tsx`. Đừng tự 
 
 `/dang-nhap`: tâm quang học ≈ 46% `dvh`, dư 3:2 (`docs/DESIGN.md`). Một logo giữa form. Không header trùng, không `-Nvh`.
 
-`/hs`: phiếu + sổ tab. Desktop `lg`: cột phiếu | kẻ 1 px | cột sổ (`Kỹ năng` / `?so=giao`). Tab gạch chân mực, không viên thuốc. Ray / title: `Học`, `Đề bài`, `Lịch`, `Công thức` — không «ngân bài», không «kho» trên UI học sinh. Đề = `statementLatex`. Không Bloom, không mã bài/kỹ năng. **Mỗi chữ/ô một việc** (xem `docs/DESIGN.md` quy tắc chữ và UI). Giữ heading «Chào An» và CTA «Làm bước tiếp».
+`/hs`: phiếu + sổ tab. Desktop `lg`: cột phiếu | kẻ 1 px | cột sổ (`Kỹ năng` / `?so=giao`). Tab gạch chân mực, không viên thuốc. Ray / title: `Học`, `Đề bài`, `Lịch`, `Công thức` — không «ngân bài», không «kho» trên UI học sinh. Đề = `statementLatex`. `/hs/kho`: cột công thức KaTeX (nền `wash`) | gáy 5 bước + tài liệu một câu. Không Bloom, không mã bài/kỹ năng. **Mỗi chữ/ô một việc** (xem `docs/DESIGN.md` quy tắc chữ và UI). Giữ heading «Chào An» và CTA «Làm bước tiếp».
 
 `/gv`: cùng quy tắc chữ. Ray `Lớp` / `Duyệt` / `Đề bài` / `Tạo đề` / `Tài liệu` / `Công thức` / `Mức` / `Gia sư` / `Cài lớp`. Giữ heading «Lớp 12A1 thử», «Cài đặt lớp», «Kết nối ChatGPT». Không mã `DH12`/`T12` trên mặt. 3 mức chỉ khi `?muc=3`.
 
