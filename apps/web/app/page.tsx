@@ -75,21 +75,13 @@ export default function TrangChu() {
         <p className="text-sm text-muted">Đơn điệu và cực trị</p>
         <h1 className="mt-2 text-pretty text-4xl font-semibold leading-tight sm:text-5xl">{SITE_NAME}</h1>
         <p className="mt-4 max-w-2xl text-base leading-relaxed text-muted">{SITE_DESC}</p>
-        <div className="mt-8">
-          <Link href="/dang-nhap" className={buttonClasses()}>
-            Vào lớp thử
-          </Link>
-        </div>
       </main>
       <footer className="border-t border-line">
         <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-3 px-5 py-6 text-xs text-muted sm:px-10">
           <p>
             {SITE_NAME} · MIT · v{SITE_VERSION}
           </p>
-          <nav className="flex gap-4" aria-label="Chân trang">
-            <a href="https://github.com/meiiie/du_an_em_linh">GitHub</a>
-            <Link href="/dang-nhap">Đăng nhập</Link>
-          </nav>
+          <a href="https://github.com/meiiie/du_an_em_linh">GitHub</a>
         </div>
       </footer>
     </div>

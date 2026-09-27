@@ -28,3 +28,11 @@ export function moTaTrichDan(raw: unknown): string[] {
     })
     .filter(Boolean);
 }
+
+/** Duyệt: một căn cứ khi có; không liệt kê công thức khi máy chưa kiểm được. */
+export function moTaTrichDanDuyet(raw: unknown, status: string): string[] {
+  if (status === "KHONG_KIEM_DUOC") return [];
+  const all = moTaTrichDan(raw);
+  const trich = all.filter((s) => s.includes("«"));
+  return (trich.length ? trich : all).slice(0, 1);
+}

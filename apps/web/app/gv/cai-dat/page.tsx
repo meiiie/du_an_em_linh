@@ -95,7 +95,7 @@ export default async function Page() {
       </form>
       <KiemTraAi macDinh={provider} />
       <p className="mt-6 text-sm text-muted" data-testid="do-chinh-xac-tom-tat">
-        Luật gia sư {the.diem}/{the.toiDa} · nguồn {the.sota.diem}/{the.sota.toiDa}
+        Gia sư {the.diem}/{the.toiDa}
       </p>
     </main>
   );

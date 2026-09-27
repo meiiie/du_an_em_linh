@@ -7,7 +7,7 @@ import { fieldControl } from "@/components/ui/field";
 import { Tex } from "@/components/tex";
 import { db } from "@/lib/db";
 import { problems, verificationRuns, verificationTierResults } from "@/lib/db/schema";
-import { moTaTrichDan } from "@/lib/citations";
+import { moTaTrichDanDuyet } from "@/lib/citations";
 import { gonLyDoDuyet, hamLatex, tenCuaTang } from "@/lib/de-hoc-sinh";
 import { STATUS_LABEL } from "@/lib/levels";
 
@@ -44,7 +44,7 @@ export default async function Page() {
             </div>
             <ul className="mt-3 divide-y divide-line border-y border-line text-sm">
               {ts.map((t) => {
-                const cites = moTaTrichDan(t.citation);
+                const cites = moTaTrichDanDuyet(t.citation, t.status);
                 return (
                   <li key={t.id} className="flex gap-3 py-3">
                     <span className="w-20 shrink-0 text-xs text-muted">{tenCuaTang(t.tier)}</span>

@@ -40,8 +40,14 @@ export default async function Page() {
             const ham = hamLatex(p.statementLatex);
             return (
               <li key={p.id} className="py-4">
-                <div className="flex flex-wrap items-center gap-2">
-                  {ham ? <Tex tex={ham} className="text-sm font-medium" /> : <p className="text-sm font-medium">{p.statementText}</p>}
+                <div className="flex min-w-0 flex-wrap items-center gap-2">
+                  {ham ? (
+                    <span className="min-w-0 max-w-full overflow-x-auto">
+                      <Tex tex={ham} className="text-sm font-medium" />
+                    </span>
+                  ) : (
+                    <p className="text-sm font-medium">{p.statementText}</p>
+                  )}
                   <Badge>{LABEL4[p.mucDo4 as Muc4] || nhanMuc4(p.mucDo4)}</Badge>
                   <Badge tone={tone(p.status)}>{STATUS_LABEL[p.status] || p.status}</Badge>
                 </div>
