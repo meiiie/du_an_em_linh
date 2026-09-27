@@ -12,7 +12,11 @@ Một service web: Next.js + FastAPI/SymPy trong cùng container — tránh hai 
 
 Bản đang chạy: https://hoc-toan-ai.onrender.com
 
-Sau khi gộp vào `main`, trên dashboard Render đặt nhánh deploy = `main`.
+**Nhánh deploy phải là `main`.** Service cũ nếu còn trỏ nhánh `cursor/*` đã xóa sẽ build hỏng hoặc treo — Dashboard → `hoc-toan-ai` → Settings → Branch = `main` → Manual Deploy.
+
+CD: `.github/workflows/cd.yml` chạy sau khi CI **Kiểm thử** xanh trên `main`. Tùy chọn: secret `RENDER_DEPLOY_HOOK` (Render → service → Deploy Hook) để GitHub gọi deploy; không có hook thì vẫn ping https://hoc-toan-ai.onrender.com (autoDeploy nếu đã bật).
+
+`/` là trang chủ tĩnh (SEO), không đọc database. `/dang-nhap` mới vào lớp thử.
 
 ## Postgres 30 ngày
 

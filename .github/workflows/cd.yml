@@ -1,0 +1,56 @@
+# CD: sau khi CI «Kiểm thử» xanh trên main → gọi Render (nếu có hook) rồi ping bản chạy.
+# Render dashboard: nhánh service = main. Hook: Settings → Actions → Secrets → RENDER_DEPLOY_HOOK.
+name: Triển khai
+
+on:
+  workflow_run:
+    workflows: [Kiểm thử]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: trien-khai-main
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  render:
+    name: Render + sức khỏe
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Gọi deploy hook
+        env:
+          HOOK: ${{ secrets.RENDER_DEPLOY_HOOK }}
+        run: |
+          set -euo pipefail
+          if [ -z "${HOOK:-}" ]; then
+            echo "Chưa có RENDER_DEPLOY_HOOK — dùng autoDeploy Render (nhánh phải là main)."
+            exit 0
+          fi
+          curl -fsS -X POST "$HOOK"
+          echo "đã gọi hook"
+      - name: Ping bản chạy
+        env:
+          KEEP_AWAKE_URL: ${{ vars.KEEP_AWAKE_URL }}
+        run: |
+          set -euo pipefail
+          URL="${KEEP_AWAKE_URL:-https://hoc-toan-ai.onrender.com}"
+          URL="${URL%/}"
+          for i in 1 2 3 4 5 6 7 8; do
+            code="$(curl -sS -o /tmp/cd-home.html -w "%{http_code}" --max-time 90 "$URL/" || true)"
+            if [ "$code" = "200" ] && grep -q "Học toán với AI" /tmp/cd-home.html; then
+              echo "trang chủ 200"
+              curl -fsS --max-time 30 "$URL/api/suc-khoe"
+              echo
+              exit 0
+            fi
+            echo "lần $i: HTTP $code — đợi deploy"
+            sleep 20
+          done
+          echo "trang chủ chưa 200 hoặc thiếu tiêu đề" >&2
+          exit 1

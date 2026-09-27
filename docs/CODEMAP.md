@@ -27,6 +27,7 @@ Harness (Anthropic 2026): tệp này là mục lục để agent biết chỗ m�
 | `docs/KIEM-THU.md` | Số liệu lần dựng nguyên mẫu |
 | `.github/workflows/ci.yml` | phiên bản + pytest + typecheck/lint/unit + Playwright e2e |
 | `.github/workflows/phat-hanh.yml` | release-please trên `main` |
+| `.github/workflows/cd.yml` | Sau CI xanh → hook Render + ping trang chủ |
 | `.github/workflows/giu-thuc.yml` | Cron 10 phút ping `/api/suc-khoe` (chỉ chạy trên `main`) |
 | `.github/ISSUE_TEMPLATE/` / `PULL_REQUEST_TEMPLATE.md` | Mẫu issue / PR |
 | `.github/dependabot.yml` | npm, pip, GitHub Actions |
@@ -40,7 +41,10 @@ Next.js 15. Server action nói chuyện với Postgres và `MATH_SERVICE_URL`.
 
 | Đường | Việc |
 | --- | --- |
-| `app/dang-nhap/page.tsx` | Vào lớp thử |
+| `app/page.tsx` | Trang chủ công khai (SEO, không DB) |
+| `lib/site.ts` | URL / tên / mô tả chuẩn hóa |
+| `app/sitemap.ts` / `robots.ts` / `manifest.ts` | SEO máy tìm kiếm |
+| `app/dang-nhap/page.tsx` | Vào lớp thử (noindex) |
 | `app/api/suc-khoe/route.ts` | GET JSON giữ thức Render — không đụng DB |
 | `app/hs/` | Lộ trình, ngân bài, lịch, phiếu 5 bước |
 | `app/gv/` | Tổng quan (trạng thái ChatGPT + kho), duyệt, ngân hàng, sinh bài, tài liệu, công thức, kết nối ChatGPT, tiến độ, cài đặt |

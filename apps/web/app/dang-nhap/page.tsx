@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { eq } from "drizzle-orm";
 import { redirect } from "next/navigation";
 import { BrandMark } from "@/components/brand-mark";
@@ -19,6 +20,11 @@ async function dangNhap(formData: FormData) {
   await createSession(found[0].id);
   redirect(roles.some((r) => r.roleCode === "GV") ? "/gv" : "/hs");
 }
+
+export const metadata: Metadata = {
+  title: "Đăng nhập",
+  robots: { index: false, follow: false },
+};
 
 const STEPS = ["Tập xác định", "Đạo hàm", "Nghiệm y′", "Xét dấu", "Kết luận"];
 

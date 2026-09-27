@@ -1,6 +1,18 @@
 import { expect, test } from "@playwright/test";
 import { SHOTS } from "./anh";
 
+test.describe("trang chủ", () => {
+  test("công khai, không trắng, vào được đăng nhập", async ({ page }) => {
+    await page.goto("/");
+    await expect(page.getByRole("heading", { name: "Học toán với AI" })).toBeVisible();
+    await expect(page.getByTestId("vao-hoc")).toBeVisible();
+    await page.screenshot({ path: `${SHOTS}/trang-chu.png`, fullPage: true });
+    await page.getByTestId("vao-hoc").click();
+    await expect(page.getByTestId("email")).toBeVisible();
+    await expect(page.getByRole("button", { name: "Vào học" })).toBeVisible();
+  });
+});
+
 test.describe("học sinh", () => {
   test.use({ viewport: { width: 390, height: 844 } });
 

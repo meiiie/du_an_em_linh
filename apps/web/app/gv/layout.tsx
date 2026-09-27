@@ -1,9 +1,14 @@
+import type { Metadata } from "next";
 import { eq, isNull } from "drizzle-orm";
 import { AppShell } from "@/components/app-shell";
 import { requireRole } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { escalations, problems } from "@/lib/db/schema";
 import { GV_NAV } from "@/lib/nav";
+
+export const metadata: Metadata = {
+  robots: { index: false, follow: false },
+};
 
 export default async function Layout({ children }: { children: React.ReactNode }) {
   const u = await requireRole("GV");

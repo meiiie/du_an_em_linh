@@ -23,12 +23,13 @@ Các mục này nằm trên dashboard, không nằm trong git. Vào **Settings**
 
 ## Actions
 
-- Workflow `Kiểm thử`, `Phát hành` (release-please), `Giữ thức Render` đã trong repo.
+- Workflow `Kiểm thử`, `Triển khai` (CD sau CI xanh), `Phát hành` (release-please), `Giữ thức Render` đã trong repo.
 - **Allow GitHub Actions to create and approve pull requests** (Settings → Actions → General) — để release-please mở PR cắt bản.
-- Biến tùy chọn: `KEEP_AWAKE_URL` (Settings → Secrets and variables → Actions → Variables)
+- Biến tùy chọn: `KEEP_AWAKE_URL`. Secret tùy chọn: `RENDER_DEPLOY_HOOK` (Deploy Hook của service `hoc-toan-ai`).
+- Render: Branch = **`main`**, autoDeploy bật.
 
 Sau khi gộp PR vào `main`:
 
-1. Render: nhánh deploy = `main`.
-2. Tạo GitHub Release **v0.1.0** một lần (tag từ `main`). Các bản sau: gộp PR do workflow **Phát hành** mở.
+1. Render: nhánh deploy = `main` (bắt buộc — nhánh cũ đã xóa).
+2. Tag **v0.1.0** đã có. Các bản sau: gộp PR do workflow **Phát hành** mở.
 3. Cron giữ thức tự chạy trên `main`.

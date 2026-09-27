@@ -7,7 +7,7 @@
 
 Nguyên mẫu NCKH: phần mềm học Toán THPT, **một** chủ đề Toán 12 — ứng dụng đạo hàm để xét đơn điệu và cực trị. Mọi chữ trên màn hình là tiếng Việt. Demo chạy hết khi không có khóa API mô hình ngôn ngữ.
 
-**Bản thử:** [hoc-toan-ai.onrender.com](https://hoc-toan-ai.onrender.com)
+**Bản thử:** [hoc-toan-ai.onrender.com](https://hoc-toan-ai.onrender.com) — trang chủ công khai; vào lớp ở `/dang-nhap`.
 
 Học sinh làm bài theo năm bước (`B.DH.TXD` → `B.DH.DAOHAM` → `B.DH.NGHIEM` → `B.DH.XETDAU` → `B.DH.KETLUAN`). Gia sư sửa và giảng, **không đưa đáp án**. Mỗi bài phải qua cổng kiểm định ba tầng trước khi phát hành.
 
