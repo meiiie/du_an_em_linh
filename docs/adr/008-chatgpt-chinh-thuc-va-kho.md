@@ -15,7 +15,7 @@ Kong et al., IJCAI 2026: LLM-ITS cần truy hồi kho (D2) trước khi sinh, đ
 - Màn «Kết nối ChatGPT»: hai bước (mở ChatGPT/trang khóa → dán một lần). Học sinh không thấy khóa. Trạng thái đã kết nối ẩn form.
 - OAuth PKCE chỉ chạy khi có `OPENAI_OAUTH_CLIENT_ID` do OpenAI cấp. Lưu email/sub, không lấy client_id nội bộ / Codex.
 - Gia sư đọc kho lớp (tài liệu quyền rõ + công thức khóa) bằng cụm từ tầng 2/3, ưu tiên từ khóa bước và câu hỏi (Kong D2; KITE 2026: nhét đoạn đã truy hồi). Không đọc `solutions` / `protected_facts`. Không pgvector.
-- Trích dẫn trên mặt học sinh: cùng số `[n]` với prompt, chip tên + một đoạn + neo `/hs/kho#ct-` / `#tl-`. Lọc theo `[n]` / tên nếu gia sư viết; không thì hiện tập đã mở. Lượt sau nhớ id vừa mở. Lưu JSON trên `tutor_messages.citation`.
+- Trích dẫn trên mặt học sinh: cùng số `[n]` với prompt; badge trong lời bấm xem đoạn (không rời phiếu); chip + một đoạn; **Mở công thức/tài liệu** về `/hs/kho#ct-` / `#tl-`. Lượt sau nhớ id vừa mở. Lưu JSON trên `tutor_messages.citation`. Đo `lib/sota-gia-su.test.ts`.
 - Giáo viên và học sinh xem cùng bản đồ «gia sư đọc theo 5 bước».
 
 ## Hệ quả

@@ -69,7 +69,9 @@ Giáo viên vào `/gv/ket-noi-ai` (cũng từ tổng quan). Hai bước cho từ
 
 ## Kho kiến thức — đọc và trích dẫn
 
-`lib/kien-thuc.ts` + `lib/kho-lop.ts`. Mỗi lượt: truy hồi cụm từ (câu hỏi + bước, không dấu) → đánh số `[n]` **cùng một tập** cho prompt, lời, chip. Tối đa 2 công thức + 1 tài liệu. Lượt sau cộng điểm mục vừa mở (`nhoId`). Mặt An: `[n]` trong lời (nếu Z.AI viết) + **Đã đọc** chip + một đoạn «…» + neo `#ct-` / `#tl-`. Lưu `tutor_messages.citation`. Xin đáp án / lỗi nhà: không gắn nguồn.
+`lib/kien-thuc.ts` + `lib/kho-lop.ts`. Mỗi lượt: truy hồi cụm từ (câu hỏi + bước, không dấu) → đánh số `[n]` **cùng một tập** cho prompt, lời, chip. Tối đa 2 công thức + 1 tài liệu. Lượt sau cộng điểm mục vừa mở (`nhoId`). Mặt An: badge số trong lời (bấm không rời phiếu) + **Đã đọc** chip + một đoạn «…» + **Mở công thức/tài liệu** về `#ct-` / `#tl-`. Lưu `tutor_messages.citation`. Xin đáp án / lỗi nhà: không gắn nguồn.
+
+Đo: `pnpm --filter web exec tsx --test lib/sota-gia-su.test.ts` — 12 tiêu chí (cùng số, trần 3, có tài liệu, lọc `[n]`, nhớ id, neo kho, một đoạn, nút Mở…). Bắt buộc đủ điểm.
 
 | Cách | Việc | Quyết định |
 | --- | --- | --- |

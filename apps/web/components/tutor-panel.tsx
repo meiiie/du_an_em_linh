@@ -7,8 +7,7 @@ import { luaChonNhaHocSinh, parseProvider, type AiProviderId, type AiPublicConfi
 import type { TrichDanHien } from "@/lib/kien-thuc";
 import { chuTrangThaiGiaSu, docJsonSse, gomSse, type GiaSuBuocSse } from "@/lib/sse";
 import { moTaCheDo } from "@/lib/tutor";
-import { LoiGiaSu } from "./loi-gia-su";
-import { TrichDanGiaSu } from "./trich-dan-gia-su";
+import { LoiVaNguon } from "./trich-dan-gia-su";
 import { Button, buttonClasses } from "./ui/button";
 import { fieldControl } from "./ui/field";
 import { cn } from "@/lib/cn";
@@ -357,13 +356,14 @@ export function TutorPanel({
             )}
           >
             {m.role === "gia_su" && !m.error ? (
-              <LoiGiaSu text={m.text} trichDan={m.trichDan} />
+              <LoiVaNguon
+                text={m.text}
+                trichDan={m.trichDan}
+                testId={i === chat.length - 1 ? "tutor-trich-dan" : undefined}
+              />
             ) : (
               <p className="whitespace-pre-wrap leading-relaxed">{m.text}</p>
             )}
-            {m.trichDan && m.trichDan.length ? (
-              <TrichDanGiaSu items={m.trichDan} testId={i === chat.length - 1 ? "tutor-trich-dan" : undefined} />
-            ) : null}
           </div>
         ))}
         {thinking ? (
