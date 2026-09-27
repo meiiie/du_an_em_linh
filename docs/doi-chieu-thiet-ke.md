@@ -13,7 +13,7 @@
 | HS: thang Bloom | `bloom_level` hiện trên lộ trình và phiếu |
 | Học với AI theo bước | Phiếu 5 bước + gia sư (luật → thang 3 cấp → API tùy chọn → lọc) |
 | Tư vấn phương pháp + lịch + nhắc | `/hs/lich` tính theo BKT; nhắc in-app |
-| Gọi API bên thứ 3 | `LLM_API_KEY`; không khóa thì thang gợi ý offline |
+| Gọi API bên thứ 3 | Nhà lớp: offline / khóa chính thức / Ollama·LM Studio loopback; không fallback thầm |
 | Lặp tới vận dụng cao | BKT + recommend; kẹt thì giữ mức / gửi GV |
 
 ## Khớp thiết kế
@@ -24,7 +24,7 @@
 - 4 mức cho học sinh; 3 mức CV 7991 chỉ lúc xem tiến độ.
 - Cổng phát hành: cả 3 tầng Đạt hoặc GV duyệt; Sai thì chặn; Không kiểm được thì chờ.
 - Dữ liệu tổng hợp. Có `consent_records` và `audit_logs`. Không có cổng phụ huynh.
-- Offline khi không có `LLM_API_KEY`.
+- Offline là nhà mặc định. Cloud cần khóa chính thức. Local chỉ loopback. Xem `docs/AI-HARNESS.md`.
 
 ## Đã bổ sung ở vòng giao diện
 
@@ -34,6 +34,7 @@
 - Sinh biến thể báo mã bài và trạng thái cổng.
 - Hệ thống thiết kế «phiếu làm bài» (IBM Plex, ray mực, danh sách thay thẻ, ô thành thạo, lưới 8 px, nút 40/44) ghi ở `docs/DESIGN.md`. Lấy cấu trúc Khan/Classroom/Canvas/Brilliant; không chép màu/logo.
 - Harness agent: `AGENTS.md` + `CLAUDE.md` lớp theo thư mục, `.claude/settings.json`, `docs/CODEMAP.md`.
+- Harness gia sư: bốn nhà tường minh, composer 44 px, khóa lớp tùy chọn, thử `GET /models`.
 
 ## Skill dùng khi chỉnh UI / API
 

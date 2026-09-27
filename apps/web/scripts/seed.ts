@@ -343,7 +343,14 @@ async function main() {
     { classId: LOP, userId: BINH, roleInClass: "HS" },
     { classId: LOP, userId: CHI, roleInClass: "HS" },
   ]);
-  await db.insert(classSettings).values({ classId: LOP, moLoiGiaiSauKhiNop: false });
+  await db.insert(classSettings).values({
+    classId: LOP,
+    moLoiGiaiSauKhiNop: false,
+    aiProvider: "offline",
+    aiModel: null,
+    aiAllowLocal: true,
+    aiApiKey: null,
+  });
   const now = new Date();
   for (const id of [AN, BINH, CHI]) {
     await db.insert(consentRecords).values({

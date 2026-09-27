@@ -112,8 +112,18 @@ export const HE_THONG_GIA_SU =
   "Không đọc lời giải chuẩn. Chỉ dùng gợi ý được mở và mô tả quy trình bước đang dở. Tối đa 4 câu. " +
   "Nếu học sinh xin đáp án thì từ chối và giữ gợi ý quy trình.";
 
-export function moTaCheDo(offline: boolean) {
-  return offline
-    ? "Thang gợi ý đã kiểm · không gọi API"
-    : "Đang gọi mô hình · vẫn lọc lộ đáp án";
+export function moTaCheDo(arg: boolean | { provider?: string; offline: boolean; error?: string | null }) {
+  const offline = typeof arg === "boolean" ? arg : arg.offline;
+  const provider = typeof arg === "boolean" ? (arg ? "offline" : "cloud") : arg.provider || (arg.offline ? "offline" : "cloud");
+  const error = typeof arg === "boolean" ? null : arg.error;
+  if (error) {
+    if (provider === "ollama") return "Ollama · lỗi · không chuyển nhà khác";
+    if (provider === "lmstudio") return "LM Studio · lỗi · không chuyển nhà khác";
+    if (provider === "cloud") return "API khóa · lỗi · không chuyển nhà khác";
+    return "Thang gợi ý đã kiểm · không gọi API";
+  }
+  if (provider === "offline" || offline) return "Thang gợi ý đã kiểm · không gọi API";
+  if (provider === "ollama") return "Ollama trên máy này · vẫn lọc lộ đáp án";
+  if (provider === "lmstudio") return "LM Studio trên máy này · vẫn lọc lộ đáp án";
+  return "Đang gọi mô hình · vẫn lọc lộ đáp án";
 }

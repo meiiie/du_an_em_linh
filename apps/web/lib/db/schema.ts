@@ -198,6 +198,10 @@ export const contentReviews = pgTable("content_reviews", {
 export const classSettings = pgTable("class_settings", {
   classId: uuid("class_id").primaryKey(),
   moLoiGiaiSauKhiNop: boolean("mo_loi_giai_sau_khi_nop").notNull(),
+  aiProvider: text("ai_provider").notNull().default("offline"),
+  aiModel: text("ai_model"),
+  aiAllowLocal: boolean("ai_allow_local").notNull().default(true),
+  aiApiKey: text("ai_api_key"),
 });
 
 export const assignments = pgTable("assignments", {

@@ -90,6 +90,7 @@ Web ở cổng 3000, dịch vụ toán ở cổng 8000, Postgres ở cổng 5432
 pnpm test:math          # pytest trong services/math
 pnpm --filter web typecheck
 pnpm --filter web lint
+pnpm --filter web test:unit
 pnpm --filter web test:e2e
 ```
 
@@ -99,11 +100,11 @@ Số liệu pytest và e2e ghi ở cuối phần này sau lần chạy trên má
 
 - Chủ đề duy nhất là đơn điệu và cực trị của hàm một biến. Bài đúng/sai và bài tham số trong ngân hàng sư phạm không có lời giải 5 bước nên đứng ở hàng chờ, chưa làm được trên màn hình học sinh.
 - Tầng 2 là tìm cụm từ, không phải nhúng vector. Tài liệu «chưa rõ quyền» bị bỏ qua.
-- Gia sư offline dùng câu mẫu cộng gợi ý đã kiểm. Có `LLM_API_KEY` thì gọi API tương thích OpenAI; bộ lọc vẫn chạy sau đó.
+- Gia sư mặc định thang gợi ý đã kiểm (`offline`). Giáo viên chọn khóa API chính thức hoặc Ollama/LM Studio trên loopback. Lỗi nhà không giả làm offline, không đăng nhập ChatGPT không chính thức. Xem `docs/AI-HARNESS.md`.
 - Chưa có cổng phụ huynh. Học sinh không đánh dấu tổng hợp sẽ bị chặn nếu thiếu bản ghi đồng ý.
 - Ô LaTeX MathLive kèm một ô gõ LaTeX thường. Chấm đọc ô thường đó.
 - Giao diện là Tailwind theo `docs/DESIGN.md`, chưa gắn registry shadcn/ui. Skill FE/BE nằm ở `.cursor/skills/`. Harness agent: `AGENTS.md`, `.claude/`.
-- Mở lời giải sau khi nộp mặc định tắt và chưa có nút bật trên màn hình (cờ `class_settings.mo_loi_giai_sau_khi_nop`).
+- Mở lời giải sau khi nộp mặc định tắt; giáo viên bật ở `/gv/cai-dat`. Gia sư vẫn không đọc lời giải.
 - Ảnh chụp màn hình demo nằm trong mô tả pull request, không nằm trong git.
 
 ## Kết quả kiểm thử lần xây nguyên mẫu

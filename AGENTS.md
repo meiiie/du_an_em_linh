@@ -6,13 +6,13 @@ Tệp này là nguồn chuẩn cho Cursor, Claude Code và các agent khác. Cla
 
 ## Đây là gì
 
-Nguyên mẫu NCKH: phần mềm học toán THPT, **một** chủ đề Toán 12 — đơn điệu và cực trị. Mọi chữ trên màn hình là tiếng Việt. Demo chạy khi không có `LLM_API_KEY`.
+Nguyên mẫu NCKH: phần mềm học toán THPT, **một** chủ đề Toán 12 — đơn điệu và cực trị. Mọi chữ trên màn hình là tiếng Việt. Demo mặc định nhà `offline` — chạy khi không có `LLM_API_KEY`.
 
 ## Không mở lại
 
 - Khung 5 bước `B.DH.TXD` / `B.DH.DAOHAM` / `B.DH.NGHIEM` / `B.DH.XETDAU` / `B.DH.KETLUAN`. Chấm cả bước, không tô từng ô khi gõ.
 - Cổng 3 tầng: `DAT` | `SAI` | `KHONG_KIEM_DUOC` + `GV_DUYET`.
-- Gia sư **không** đọc lời giải chuẩn. Thứ tự: luật xin đáp án → thang 3 cấp (không bottom-out) → API nếu có khóa → lọc SymPy.
+- Gia sư **không** đọc lời giải chuẩn. Thứ tự: luật xin đáp án → thang 3 cấp (không bottom-out) → nhà đã chọn (offline / khóa API chính thức / Ollama·LM Studio loopback) → lọc SymPy. Không fallback thầm, không device-OAuth ChatGPT. Chi tiết: `docs/AI-HARNESS.md`.
 - 4 mức cho học sinh; 3 mức CV 7991 chỉ lúc **xem**.
 - Dữ liệu tổng hợp. Không neko-core. Không mở rộng chủ đề lớp 10–12.
 - `k` ô bảng sản phẩm 0-based; YAML kiểm định 1-based. Xem `docs/chi-so-o-bang.md`.
@@ -27,6 +27,7 @@ pnpm db:migrate && pnpm seed
 pnpm test:math
 pnpm --filter web typecheck
 pnpm --filter web lint
+pnpm --filter web test:unit
 pnpm --filter web test:e2e
 ```
 

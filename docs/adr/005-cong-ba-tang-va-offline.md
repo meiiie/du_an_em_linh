@@ -4,4 +4,4 @@ Phát hành chỉ khi cả ba tầng Đạt, hoặc giáo viên duyệt các t�
 
 Tầng 2 của nguyên mẫu là tìm cụm từ trên văn bản đã nạp, bắt buộc có trích dẫn, bỏ qua tài liệu `chua_ro`. Không dùng pgvector. Không có trích dẫn thì Không kiểm được.
 
-Cổng LLM nhận `LLM_BASE_URL`, `LLM_API_KEY`, `LLM_MODEL`. Không có khóa thì dùng câu mẫu tiếng Việt dựng từ thang gợi ý. Mọi lời gửi ra ngoài bị xóa email, số điện thoại và tên demo. Demo chạy hết không cần khóa.
+Cổng LLM nhận `LLM_BASE_URL`, `LLM_API_KEY`, `LLM_MODEL`. Nhà mặc định là `offline` (câu mẫu + thang gợi ý). Cloud và local đi qua harness tường minh — xem ADR 007. Mọi lời gửi ra ngoài bị xóa email, số điện thoại và tên demo. Demo chạy hết không cần khóa.

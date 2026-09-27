@@ -7,6 +7,8 @@ import path from "path";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { requireRole } from "../auth";
+import { parseProvider } from "../ai-catalog";
+import { probeProvider } from "../ai-harness";
 import { db, sql } from "../db";
 import {
   auditLogs,
@@ -279,12 +281,39 @@ export async function sinhBienThe(form: FormData) {
 }
 
 export async function luuCaiDatLop(form: FormData) {
-  await requireRole("GV");
+  const user = await requireRole("GV");
   const mo = form.get("mo_loi_giai") === "on";
+  const provider = parseProvider(form.get("ai_provider"));
+  const model = String(form.get("ai_model") || "").trim() || null;
+  const allowLocal = form.get("ai_allow_local") === "on";
+  const keyRaw = String(form.get("ai_api_key") || "").trim();
+  const xoaKey = form.get("xoa_ai_api_key") === "on";
   const rows = await db.select().from(classSettings);
-  if (rows[0]) {
-    await db.update(classSettings).set({ moLoiGiaiSauKhiNop: mo }).where(eq(classSettings.classId, rows[0].classId));
-  }
+  if (!rows[0]) return;
+  const patch: {
+    moLoiGiaiSauKhiNop: boolean;
+    aiProvider: string;
+    aiModel: string | null;
+    aiAllowLocal: boolean;
+    aiApiKey?: string | null;
+  } = {
+    moLoiGiaiSauKhiNop: mo,
+    aiProvider: provider,
+    aiModel: model,
+    aiAllowLocal: allowLocal,
+  };
+  if (xoaKey) patch.aiApiKey = null;
+  else if (keyRaw && keyRaw !== "********") patch.aiApiKey = keyRaw;
+  await db.update(classSettings).set(patch).where(eq(classSettings.classId, rows[0].classId));
+  await audit(user.id, "LUU_CAI_DAT_AI", "class_settings", rows[0].classId, provider);
   revalidatePath("/gv/cai-dat");
   revalidatePath("/hs");
 }
+
+export async function kiemTraNhaCungCap(providerRaw: string) {
+  await requireRole("GV");
+  const provider = parseProvider(providerRaw);
+  const row = (await db.select().from(classSettings).limit(1))[0];
+  return probeProvider({ provider, classApiKey: row?.aiApiKey });
+}
+

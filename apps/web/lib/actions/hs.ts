@@ -6,6 +6,7 @@ import { requireRole } from "../auth";
 import { db } from "../db";
 import {
   auditLogs,
+  classSettings,
   errorTypes,
   escalations,
   gradingResults,
@@ -22,6 +23,8 @@ import {
 } from "../db/schema";
 import { assertMayLearn, loadConfig, nghiDoanMo, applyMastery } from "../learning";
 import { mathJob, type GradeResult } from "../math";
+import { resolveProvider, type AiPublicConfig } from "../ai-catalog";
+import { docKhoaCloud } from "../ai-harness";
 import { callLLM } from "../llm";
 import { chinhSachXinDapAn, goiYBuoc, HE_THONG_GIA_SU, mauGiaSu, xinDapAn, xinGoiY, xinSaiCho } from "../tutor";
 
@@ -174,12 +177,37 @@ async function sessionFor(studentId: string, problemId: string) {
   return (await db.select().from(tutorSessions).where(eq(tutorSessions.id, id)))[0];
 }
 
-export async function hoiGiaSu(problemId: string, text: string) {
+async function caiDatAiLop() {
+  const row = (await db.select().from(classSettings).limit(1))[0];
+  return {
+    classProvider: resolveProvider({ classProvider: row?.aiProvider }),
+    classModel: row?.aiModel || null,
+    allowLocal: row?.aiAllowLocal !== false,
+    classApiKey: row?.aiApiKey || null,
+  };
+}
+
+export async function caiDatGiaSuCongKhai(): Promise<AiPublicConfig> {
+  await requireRole("HS");
+  const lop = await caiDatAiLop();
+  return {
+    classProvider: lop.classProvider,
+    classModel: lop.classModel,
+    allowLocal: lop.allowLocal,
+    cloudReady: Boolean(docKhoaCloud(lop.classApiKey)),
+  };
+}
+
+export async function hoiGiaSu(
+  problemId: string,
+  text: string,
+  tuyChon?: { provider?: string; model?: string },
+) {
   const user = await requireRole("HS");
   await assertMayLearn(user);
   const prob = await db.select().from(problems).where(eq(problems.id, problemId)).limit(1);
   if (!prob[0] || prob[0].status !== "DA_PHAT_HANH") {
-    return { ok: false as const, tra_loi: "Bài chưa phát hành." };
+    return { ok: false as const, tra_loi: "Bài chưa phát hành.", offline: true, provider: "offline" as const, error: null };
   }
   const sess = await sessionFor(user.id, problemId);
   const latestSub = await db
@@ -192,36 +220,44 @@ export async function hoiGiaSu(problemId: string, text: string) {
     ? (await db.select().from(gradingResults).where(eq(gradingResults.submissionId, latestSub[0].id)).limit(1))[0]
     : null;
   const buoc = (grade?.buocSai as { ma_buoc?: string } | null)?.ma_buoc || sess.lastBuoc || "B.DH.DAOHAM";
-  let hintCap = sess.hintCap;
-  let answerRequests = sess.answerRequests;
-  let state = sess.state;
   const xin = xinDapAn(text);
   const goi = xinGoiY(text);
   const hoiSai = xinSaiCho(text);
+  let nextHintCap = sess.hintCap;
+  let answerRequests = sess.answerRequests;
+  let state = sess.state;
   if (xin) {
     answerRequests += 1;
     state = "GOI_Y";
-    if (hintCap < 3) hintCap += 1;
+    if (nextHintCap < 3) nextHintCap += 1;
   } else if (goi) {
-    if (hintCap < 3) hintCap += 1;
-    state = `GOI_Y_${hintCap}`;
+    if (nextHintCap < 3) nextHintCap += 1;
+    state = `GOI_Y_${nextHintCap}`;
   } else if (grade?.ketQua === "DAT") {
     state = "TONG_KET";
   } else if (grade?.ketQua === "SAI") {
-    state = hintCap > 0 ? `GOI_Y_${hintCap}` : "GIAI_THICH_LOI";
+    state = nextHintCap > 0 ? `GOI_Y_${nextHintCap}` : "GIAI_THICH_LOI";
   }
   const hints = await db
     .select()
     .from(hintLevels)
     .where(and(eq(hintLevels.problemId, problemId), eq(hintLevels.maBuoc, buoc)));
-  const capRow = hints.find((h) => h.cap === hintCap);
+  const capRow = hints.find((h) => h.cap === nextHintCap);
   const goiY =
-    hintCap > 0 ? capRow?.noiDung || hints.find((h) => h.cap === hintCap)?.noiDung || goiYBuoc(buoc, hintCap) : null;
+    nextHintCap > 0 ? capRow?.noiDung || hints.find((h) => h.cap === nextHintCap)?.noiDung || goiYBuoc(buoc, nextHintCap) : null;
   const err = grade?.maLoi ? (await db.select().from(errorTypes).where(eq(errorTypes.code, grade.maLoi)).limit(1))[0] : null;
   const cfg = await loadConfig();
+  const lop = await caiDatAiLop();
+  const provider = resolveProvider({
+    classProvider: lop.classProvider,
+    sessionProvider: tuyChon?.provider,
+    allowLocal: lop.allowLocal,
+  });
   let draft: string;
   let offline = true;
-  let provider = "offline";
+  let nha: string = "offline";
+  let llmError: string | null = null;
+  let persistCap = true;
   if (xin) {
     draft = chinhSachXinDapAn(answerRequests, goiY);
   } else {
@@ -234,7 +270,7 @@ export async function hoiGiaSu(problemId: string, text: string) {
       doTinCay: grade?.doTinCay ?? null,
       nguong: cfg.nguong_tin_cay_ma_loi,
       goiY,
-      cap: hintCap,
+      cap: nextHintCap,
       maBuoc: buoc,
       xinSai: hoiSai,
     });
@@ -253,6 +289,9 @@ export async function hoiGiaSu(problemId: string, text: string) {
     const llm = await callLLM({
       purpose: "tutor_turn",
       pseudonymId: user.pseudonymId,
+      provider,
+      model: tuyChon?.model || lop.classModel,
+      classApiKey: lop.classApiKey,
       offlineText,
       messages: [
         { role: "system", content: HE_THONG_GIA_SU },
@@ -265,7 +304,9 @@ export async function hoiGiaSu(problemId: string, text: string) {
     });
     draft = llm.text;
     offline = llm.offline;
-    provider = llm.provider;
+    nha = llm.provider;
+    llmError = llm.error;
+    if (llm.error) persistCap = false;
   }
   const facts = await db.select().from(solutions).where(eq(solutions.problemId, problemId)).limit(1);
   let blocked = false;
@@ -308,9 +349,22 @@ export async function hoiGiaSu(problemId: string, text: string) {
   });
   await db
     .update(tutorSessions)
-    .set({ state, hintCap, answerRequests, lastBuoc: buoc })
+    .set({
+      state,
+      hintCap: persistCap ? nextHintCap : sess.hintCap,
+      answerRequests,
+      lastBuoc: buoc,
+    })
     .where(eq(tutorSessions.id, sess.id));
-  return { ok: true as const, tra_loi: draft, blocked, cap: hintCap, offline, provider };
+  return {
+    ok: true as const,
+    tra_loi: draft,
+    blocked,
+    cap: persistCap ? nextHintCap : sess.hintCap,
+    offline,
+    provider: nha,
+    error: llmError,
+  };
 }
 
 export async function lichSuGiaSu(problemId: string) {

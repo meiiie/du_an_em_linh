@@ -7,6 +7,7 @@ Next.js 15 App Router, React 19, Tailwind, KaTeX, MathLive. Chữ UI tiếng Vi�
 ```bash
 pnpm --filter web typecheck
 pnpm --filter web lint
+pnpm --filter web test:unit
 pnpm --filter web test:e2e
 pnpm --filter web db:migrate
 pnpm --filter web seed
@@ -31,14 +32,14 @@ Dùng `Button` / `buttonClasses` trong `components/ui/button.tsx`. Đừng tự 
 
 ## Testid không đổi
 
-`sidebar`, `mo-sidebar`, `dong-sidebar`, `nav-*`, `solve-screen`, `latex-txd`, `latex-dh`, `nop-buoc`, `cham-thong-bao`, `mo-gia-su`, `tutor-input`, `tutor-send`, `tutor-log`, `bai-DH12-03-VD-01`, `hang-doi`, `duyet-*`, `tien-do`, `toggle-muc`, `mo-loi-giai`, `email`, `password`.
+`sidebar`, `mo-sidebar`, `dong-sidebar`, `nav-*`, `solve-screen`, `latex-txd`, `latex-dh`, `nop-buoc`, `cham-thong-bao`, `mo-gia-su`, `tutor-input`, `tutor-send`, `tutor-log`, `tutor-provider`, `tutor-composer`, `bai-DH12-03-VD-01`, `hang-doi`, `duyet-*`, `tien-do`, `toggle-muc`, `mo-loi-giai`, `ai-provider`, `email`, `password`.
 
 ## Cấu trúc
 
 - Trang: `app/hs`, `app/gv`, `app/dang-nhap`.
 - Nguyên thủy: `components/ui/*`. Vỏ: `components/app-shell.tsx`.
 - Server action: `lib/actions/{hs,gv,auth}.ts`. Schema: `lib/db/schema.ts`.
-- Gia sư: `lib/tutor.ts` + `lib/llm.ts`. Không đưa lời giải vào prompt.
+- Gia sư: `lib/tutor.ts` + `lib/ai-harness.ts` + `lib/llm.ts` + `components/tutor-panel.tsx`. Không đưa lời giải vào prompt. Không fallback thầm.
 
 ## Skill
 

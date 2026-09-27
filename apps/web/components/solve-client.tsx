@@ -1,13 +1,14 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { guiThayCo, hoiGiaSu, nopBuoc, type StepPayload } from "@/lib/actions/hs";
+import { nopBuoc, type StepPayload } from "@/lib/actions/hs";
+import type { AiPublicConfig } from "@/lib/ai-catalog";
 import { BUOC } from "@/lib/levels";
-import { moTaCheDo } from "@/lib/tutor";
 import { Button, buttonClasses } from "./ui/button";
 import { fieldControl } from "./ui/field";
 import { MathInput } from "./math-input";
 import { Tex } from "./tex";
+import { TutorPanel } from "./tutor-panel";
 import { cn } from "@/lib/cn";
 
 type Grade = {
@@ -23,9 +24,11 @@ type Ev = StepPayload["events"][number];
 
 const ORDER = BUOC.map((b) => b.ma);
 
-const LOI_CHAO = {
-  role: "gia_su" as const,
-  text: "Mình là gia sư AI. Mình sửa bài và giảng cho em hiểu, không đưa đáp án trong lúc làm.",
+const AI_MAC_DINH: AiPublicConfig = {
+  classProvider: "offline",
+  classModel: null,
+  allowLocal: true,
+  cloudReady: false,
 };
 
 export function SolveClient({
@@ -35,6 +38,7 @@ export function SolveClient({
   moLoiGiai = false,
   loiGiai = null,
   initialChat = [],
+  ai = AI_MAC_DINH,
 }: {
   problemId: string;
   title: string;
@@ -42,6 +46,7 @@ export function SolveClient({
   moLoiGiai?: boolean;
   loiGiai?: string | null;
   initialChat?: { role: "hs" | "gia_su"; text: string }[];
+  ai?: AiPublicConfig;
 }) {
   const [step, setStep] = useState(0);
   const [txd, setTxd] = useState("");
@@ -55,12 +60,7 @@ export function SolveClient({
   const [events, setEvents] = useState<Ev[]>([]);
   const [grade, setGrade] = useState<Grade | null>(null);
   const [busy, setBusy] = useState(false);
-  const [chat, setChat] = useState<{ role: "hs" | "gia_su"; text: string }[]>(
-    initialChat.length ? initialChat : [LOI_CHAO],
-  );
-  const [ask, setAsk] = useState("");
   const [openTutor, setOpenTutor] = useState(false);
-  const [tutorOffline, setTutorOffline] = useState(true);
 
   const sorted = useMemo(() => {
     return [...points].sort((a, b) => parseFloat(a.replace(",", ".")) - parseFloat(b.replace(",", ".")));
@@ -126,22 +126,6 @@ export function SolveClient({
     }
     setGrade(res);
     if (res.ket_qua === "DAT" && !res.finished && step < ORDER.length - 1) setStep(step + 1);
-  }
-
-  async function sendChat(raw?: string) {
-    const text = (raw ?? ask).trim();
-    if (!text) return;
-    setAsk("");
-    setChat((c) => [...c, { role: "hs", text }]);
-    const res = await hoiGiaSu(problemId, text);
-    if (res.ok) setTutorOffline(res.offline);
-    setChat((c) => [...c, { role: "gia_su", text: res.tra_loi }]);
-  }
-
-  async function nhoThayCo() {
-    setChat((c) => [...c, { role: "hs", text: "Gửi thầy cô giúp em" }]);
-    const res = await guiThayCo(problemId);
-    setChat((c) => [...c, { role: "gia_su", text: res.tra_loi }]);
   }
 
   const badStep = grade?.ket_qua === "SAI" ? grade.buoc_sai?.ma_buoc : grade?.ket_qua === "KHONG_KIEM_DUOC" ? grade.buoc_sai?.ma_buoc : null;
@@ -429,60 +413,13 @@ export function SolveClient({
         </Button>
       </section>
 
-      <aside
-        className={`border-t border-line pt-4 md:border-t-0 md:pt-0 ${openTutor ? "block" : "hidden md:block"}`}
-        data-testid="tutor-panel"
-      >
-        <div className="flex items-start justify-between gap-3">
-          <div>
-            <p className="text-sm font-semibold">Gia sư AI</p>
-            <p className="text-xs text-muted" data-testid="tutor-che-do">
-              {moTaCheDo(tutorOffline)}. Không phải giáo viên. Không đọc lời giải chuẩn.
-            </p>
-          </div>
-          <button
-            type="button"
-            className={cn(buttonClasses({ variant: "ghost", size: "sm" }), "md:hidden")}
-            onClick={() => setOpenTutor(false)}
-          >
-            Đóng
-          </button>
-        </div>
-        <div className="mt-3 flex flex-wrap gap-2">
-          <Button type="button" variant="secondary" size="sm" data-testid="chip-goi-y" onClick={() => sendChat("Gợi ý bước này")}>
-            Gợi ý bước này
-          </Button>
-          <Button type="button" variant="secondary" size="sm" data-testid="chip-sai-cho" onClick={() => sendChat("Em sai chỗ nào?")}>
-            Em sai chỗ nào?
-          </Button>
-          <Button type="button" variant="ghost" size="sm" data-testid="chip-gui-gv" onClick={nhoThayCo}>
-            Gửi thầy cô
-          </Button>
-        </div>
-        <div data-testid="tutor-log" className="mt-4 max-h-80 space-y-2 overflow-y-auto overscroll-contain">
-          {chat.map((m, i) => (
-            <p key={i} className={`px-4 py-3 text-sm ${m.role === "hs" ? "bg-ink text-chalk" : "bg-wash"}`}>
-              {m.text}
-            </p>
-          ))}
-        </div>
-        <div className="mt-4 flex gap-2">
-          <label className="sr-only" htmlFor="tutor-input">
-            Câu hỏi cho gia sư
-          </label>
-          <input
-            id="tutor-input"
-            data-testid="tutor-input"
-            value={ask}
-            onChange={(e) => setAsk(e.target.value)}
-            className={`min-w-0 flex-1 ${fieldControl}`}
-            placeholder="Hỏi gợi ý, không hỏi đáp án…"
-          />
-          <Button type="button" data-testid="tutor-send" onClick={() => sendChat()}>
-            Gửi
-          </Button>
-        </div>
-      </aside>
+      <TutorPanel
+        problemId={problemId}
+        initialChat={initialChat}
+        ai={ai}
+        open={openTutor}
+        onClose={() => setOpenTutor(false)}
+      />
       {!openTutor ? (
         <Button
           type="button"

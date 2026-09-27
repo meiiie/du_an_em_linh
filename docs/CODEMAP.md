@@ -14,6 +14,7 @@ Harness (Anthropic 2026): tệp này là mục lục để agent biết chỗ m�
 | `docs/DESIGN.md` | Token, lưới, giải phẫu nút |
 | `docs/doi-chieu-thiet-ke.md` | Khớp / cố ý chưa làm |
 | `docs/adr/` | Quyết định đã khóa |
+| `docs/AI-HARNESS.md` | Nhà AI, loopback, không fallback |
 | `docs/chi-so-o-bang.md` | `k` 0-based vs YAML 1-based |
 | `data/supham/` | Ngân hàng sư phạm (JSON) |
 | `docker-compose.yml` | web :3000, math :8000, Postgres :5432 |
@@ -28,9 +29,11 @@ Next.js 15. Server action nói chuyện với Postgres và `MATH_SERVICE_URL`.
 | `app/hs/` | Lộ trình, ngân bài, lịch, phiếu 5 bước |
 | `app/gv/` | Tổng quan, duyệt, ngân hàng, sinh bài, tài liệu, công thức, tiến độ, cài đặt |
 | `components/app-shell.tsx` | Ray mực 220 px / ngăn kéo |
-| `components/solve-client.tsx` | Phiếu + gia sư |
+| `components/solve-client.tsx` | Phiếu 5 bước |
+| `components/tutor-panel.tsx` | Composer gia sư (44 px, Enter, nhà) |
 | `components/ui/` | Nút, ô, tiêu đề, hàng việc |
 | `lib/actions/` | `hs`, `gv`, `auth` |
+| `lib/ai-catalog.ts` / `lib/ai-harness.ts` | Chọn nhà + một lần HTTP |
 | `lib/db/schema.ts` | Drizzle |
 | `lib/tutor.ts` | Thang gợi ý; không đọc lời giải |
 | `lib/learning.ts` | BKT + gợi bài |
@@ -49,7 +52,7 @@ GV nạp tài liệu / công thức / bài
         → DA_PHAT_HANH | CHO_GIAO_VIEN_DUYET | BI_CHAN
 HS làm 5 bước (solve-client → grader)
         → BKT (learning.ts)
-        → gia sư (tutor + leakfilter)
+        → gia sư (tutor + harness + leakfilter)
 ```
 
 ## Cổng hợp đồng

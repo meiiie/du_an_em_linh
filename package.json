@@ -12,6 +12,7 @@
     "db:migrate": "pnpm --filter web db:migrate",
     "test:math": "cd services/math && .venv/bin/pytest",
     "lint": "pnpm --filter web lint",
-    "typecheck": "pnpm --filter web typecheck"
+    "typecheck": "pnpm --filter web typecheck",
+    "test:unit": "pnpm --filter web test:unit"
   }
 }
