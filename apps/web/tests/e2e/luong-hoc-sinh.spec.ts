@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 import { SHOTS } from "./anh";
-import { vaoLop } from "./vao-lop";
+import { moSoBaiGiao, vaoLop } from "./vao-lop";
 
 test.describe("trang chủ", () => {
   test("công khai, không trắng, vào được đăng nhập", async ({ page }) => {
@@ -50,6 +50,7 @@ test.describe("học sinh", () => {
     await page.getByTestId("dong-sidebar").click();
     await expect(page.getByTestId("nav-hs-lo-trinh")).not.toBeInViewport();
 
+    await moSoBaiGiao(page);
     await page.getByTestId("bai-DH12-03-VD-01").click();
     await expect(page.getByTestId("solve-screen")).toBeVisible();
     await page.getByTestId("latex-txd").fill("\\mathbb{R}");
@@ -91,11 +92,16 @@ test.describe("học sinh máy tính", () => {
     await expect(page.getByRole("heading", { name: "Chào An" })).toBeVisible();
     await expect(page.getByTestId("sidebar")).toBeVisible();
     await expect(page.getByTestId("nav-hs-lo-trinh")).toBeVisible();
-    await expect(page.getByText("thang Bloom", { exact: false })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Bài tiếp theo" })).toBeVisible();
+    await expect(page.getByText("12A1 thử")).toBeVisible();
+    await expect(page.getByText("đơn điệu và cực trị")).toBeVisible();
+    await expect(page.getByTestId("tab-ky-nang")).toBeVisible();
+    await expect(page.getByTestId("tab-bai-giao")).toBeVisible();
+    await expect(page.getByTestId("tab-bai-giao")).toHaveText(/Bài tập/);
     await page.screenshot({ path: `${SHOTS}/hs-lo-trinh-1280.png` });
     await page.goto("/hs/lich");
-    await expect(page.getByRole("heading", { name: "Thời gian biểu" })).toBeVisible();
-    await expect(page.getByText(/Kỹ năng yếu nhất|Chưa có ước lượng/)).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Lịch học" })).toBeVisible();
+    await expect(page.getByText(/Yếu nhất|Chưa làm bài/)).toBeVisible();
   });
 });
 
@@ -110,6 +116,7 @@ test.describe("máy tính bảng", () => {
     const homeOverflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
     expect(homeOverflow).toBeLessThanOrEqual(8);
 
+    await moSoBaiGiao(page);
     await page.getByTestId("bai-DH12-03-VD-01").click();
     await expect(page.getByTestId("solve-screen")).toBeVisible();
     await expect(page.getByTestId("tutor-panel")).toBeVisible();

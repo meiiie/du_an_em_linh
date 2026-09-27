@@ -761,7 +761,7 @@ async function main() {
         scheduleId: sid,
         channel: "in_app",
         title: "Buổi tối nay",
-        body: "Mở một bài đã phát hành và nộp từng bước. Đừng hỏi đáp án.",
+        body: "Mở một bài và nộp từng bước. Đừng hỏi đáp án.",
         sendAt: "19:00",
         status: "pending",
       },

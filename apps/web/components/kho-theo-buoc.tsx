@@ -16,7 +16,7 @@ export function KhoTheoBuoc({ khung }: { khung: HangKhoBuoc[] }) {
           <li key={b.ma} className="py-3" data-testid={`kho-buoc-${b.ma}`}>
             <p className="text-sm font-medium">{b.ten}</p>
             <p className="mt-1 text-sm text-muted">
-              {ten.length ? ten.join(" · ") : "Chưa khớp đoạn — gia sư chỉ dùng thang gợi ý, không bịa công thức."}
+              {ten.length ? ten.join(", ") : "Chưa có đoạn cho bước này."}
             </p>
           </li>
         );

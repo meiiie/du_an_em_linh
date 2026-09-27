@@ -13,7 +13,7 @@ type Msg = { role: "hs" | "gia_su"; text: string; error?: boolean; trichDan?: { 
 
 const LOI_CHAO: Msg = {
   role: "gia_su",
-  text: "Mình là gia sư AI. Mình đọc kho lớp (công thức và tài liệu đã duyệt), sửa bài và giảng, không đưa đáp án.",
+  text: "Mình là gia sư AI. Mình đọc công thức và tài liệu lớp, sửa bài và giảng, không đưa đáp án.",
 };
 
 function khoaDraft(problemId: string) {
@@ -147,7 +147,7 @@ export function TutorPanel({
           </p>
           <p className="mt-1 text-xs">
             <Link href="/hs/kho" className="underline underline-offset-2" data-testid="tutor-toi-kho">
-              Kho kiến thức gia sư được đọc
+              Công thức và tài liệu lớp
             </Link>
           </p>
         </div>
@@ -157,7 +157,7 @@ export function TutorPanel({
       </div>
 
       <label className="mt-3 block text-sm">
-        <span className="mb-2 block font-medium">Nhà trên phiên này</span>
+        <span className="mb-2 block font-medium">Gia sư lần này</span>
         <select
           data-testid="tutor-provider"
           value={provider}
