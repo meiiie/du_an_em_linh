@@ -45,7 +45,7 @@ Dùng `Button` / `buttonClasses` trong `components/ui/button.tsx`. Đừng tự 
 - Trang: `app/hs`, `app/gv`, `app/dang-nhap`. Ping giữ thức: `app/api/suc-khoe`.
 - Nguyên thủy: `components/ui/*`. Vỏ: `components/app-shell.tsx`.
 - Server action: `lib/actions/{hs,gv,auth}.ts`. Schema: `lib/db/schema.ts`.
-- Gia sư: `lib/tutor.ts` + `lib/gia-su-luot.ts` + `lib/ai-harness.ts` + `lib/llm.ts` + `POST /api/hs/gia-su` (SSE trạng thái) + `components/tutor-panel.tsx` + `loi-gia-su.tsx` + `trich-dan-gia-su.tsx`. Không đưa lời giải vào prompt. Không stream token. Không fallback thầm. Escape Dừng; không gọi lại model khi SSE lỗi. Điện thoại: thanh Nộp+Hỏi, tờ full màn, Đóng 44. Z.AI `thinking.enabled` + `reasoning_effort: low`. Trích dẫn = badge `[n]`, chip, Mở về kho. Đo `lib/sota-gia-su.test.ts` + `lib/do-chinh-xac.test.ts` (`tsx scripts/do-chinh-xac.ts` khi có khóa).
+- Gia sư: `lib/tutor.ts` + `lib/gia-su-luot.ts` + `lib/ai-harness.ts` + `lib/llm.ts` + `POST /api/hs/gia-su` (SSE trạng thái) + `components/tutor-panel.tsx` + `loi-gia-su.tsx` + `trich-dan-gia-su.tsx`. Không đưa lời giải vào prompt. Không stream token. Không fallback thầm. Escape Dừng; không gọi lại model khi SSE lỗi. Điện thoại: thanh Nộp+Hỏi, tờ full màn, Đóng 44. Z.AI `thinking.enabled` + `reasoning_effort: low`. Trích dẫn = badge `[n]`, chip, Mở về kho. Đo `lib/sota-gia-su.test.ts` + `lib/do-chinh-xac.test.ts` (`pnpm test:do` khi có khóa và dịch vụ toán). Cài lớp hiện `do-chinh-xac-tom-tat`. `/api/suc-khoe` trả `phien` + `ban`.
 
 ## Skill
 

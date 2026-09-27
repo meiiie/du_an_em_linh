@@ -5,6 +5,7 @@ import { requireRole } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { escalations, problems } from "@/lib/db/schema";
 import { GV_NAV } from "@/lib/nav";
+import { SITE_VERSION } from "@/lib/site";
 
 export const metadata: Metadata = {
   robots: { index: false, follow: false },
@@ -20,6 +21,7 @@ export default async function Layout({ children }: { children: React.ReactNode }
       name={u.displayName}
       items={GV_NAV}
       badges={{ "/gv/duyet": queue.length, "/gv": stuck.length }}
+      phien={SITE_VERSION}
     >
       {children}
     </AppShell>

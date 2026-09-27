@@ -71,6 +71,14 @@ export function thanTrich(text: string) {
   return `${cau.slice(0, 117).replace(/\s+\S*$/, "")}…`;
 }
 
+/** Tên cổng duyệt — không viết «Tầng» trên mặt. */
+export function tenCuaTang(tier: number) {
+  if (tier === 1) return "Chấm máy";
+  if (tier === 2) return "Tài liệu";
+  if (tier === 3) return "Công thức";
+  return String(tier);
+}
+
 /** Lý do duyệt: bỏ calque «Tầng n» — số tầng đã đứng riêng trên hàng. */
 export function gonLyDoDuyet(text: string) {
   const gon = (text || "").replace(/Tầng\s*\d+\s*/gi, "").replace(/\s+/g, " ").trim();

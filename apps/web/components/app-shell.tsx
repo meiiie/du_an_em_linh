@@ -44,12 +44,14 @@ export function AppShell({
   name,
   items,
   badges,
+  phien,
   children,
 }: {
   role: "HS" | "GV";
   name: string;
   items: NavItem[];
   badges?: Record<string, number>;
+  phien?: string;
   children: ReactNode;
 }) {
   const pathname = usePathname();
@@ -148,6 +150,11 @@ export function AppShell({
         </nav>
         <div className="mt-auto border-t border-white/10 px-4 py-4">
           <p className="truncate text-sm font-medium">{name}</p>
+          {phien ? (
+            <p className="mt-1 truncate text-xs text-chalk/45" data-testid="phien-ban">
+              v{phien}
+            </p>
+          ) : null}
           <form action={dangXuat} className="mt-2 hidden lg:block">
             <button className="inline-flex min-h-11 items-center text-sm text-chalk/70 hover:text-chalk" type="submit">
               Thoát

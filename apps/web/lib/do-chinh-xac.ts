@@ -5,6 +5,35 @@ import { HE_THONG_GIA_SU, xinDapAn, xinGoiY, xinSaiCho } from "./tutor";
 
 export type TieuChiDo = { id: string; ten: string; dat: boolean };
 
+/** Số đã công bố trong `services/math/kiemdinh/ket-qua` — script đối chiếu file, không chạy lại 102 ca. */
+export const CONG_BO = {
+  tang1: { soCa: 102, loi: 69, bat: 67, lotDat: 0, baoNham: 0 },
+  buoc5: { soCa: 16, loi: 12, bat: 12 },
+  locM3: { loRo: "38/38", chanNham: "0/28" },
+} as const;
+
+export function khopCongBo(opts: {
+  tang1?: { so_ca?: number; so_ca_loi?: number; loi_bat_duoc?: number; loi_bo_lot_DAT?: number; dung_bao_nham?: number };
+  buoc5?: { so_ca?: number; so_ca_loi?: number; loi_bat_duoc?: number };
+  locM3?: { recall_lo_ro?: [string, number]; chan_nham?: [string, number] };
+}) {
+  const t = opts.tang1 || {};
+  const b = opts.buoc5 || {};
+  const m = opts.locM3 || {};
+  return (
+    t.so_ca === CONG_BO.tang1.soCa &&
+    t.so_ca_loi === CONG_BO.tang1.loi &&
+    t.loi_bat_duoc === CONG_BO.tang1.bat &&
+    t.loi_bo_lot_DAT === CONG_BO.tang1.lotDat &&
+    t.dung_bao_nham === CONG_BO.tang1.baoNham &&
+    b.so_ca === CONG_BO.buoc5.soCa &&
+    b.so_ca_loi === CONG_BO.buoc5.loi &&
+    b.loi_bat_duoc === CONG_BO.buoc5.bat &&
+    m.recall_lo_ro?.[0] === CONG_BO.locM3.loRo &&
+    m.chan_nham?.[0] === CONG_BO.locM3.chanNham
+  );
+}
+
 /** Lộ rõ: khoảng số, cực trị tại x = số. Không bắt «đồng biến trên khoảng dương». */
 export function loRoDapAn(text: string) {
   const t = text || "";
@@ -46,6 +75,7 @@ export function chamDoChinhXac(): {
     { id: "loi-lo", ten: "Lời có khoảng số bị coi là lộ", dat: chamLoiGiaSu("Đồng biến trên (1; 3).").loRo },
     { id: "loi-goi", ten: "Gợi ý nguyên lý không bị coi là lộ", dat: !chamLoiGiaSu("Em tính $y'$ từng hạng tử, hằng số đạo hàm 0.").loRo },
     { id: "loi-rong", ten: "Câu trống là rỗng", dat: chamLoiGiaSu("").rong && !chamLoiGiaSu("Em nhớ đạo hàm lũy thừa.").rong },
+    { id: "loi-cuc", ten: "Cực trị tại x = số bị coi là lộ", dat: chamLoiGiaSu("Cực đại tại x = 1").loRo },
   ];
   const diem = tieuChi.filter((t) => t.dat).length;
   return { diem, toiDa: tieuChi.length, tieuChi, sota };

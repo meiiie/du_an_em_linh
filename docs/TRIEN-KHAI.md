@@ -32,7 +32,7 @@ Render free tắt web sau ~15 phút không có HTTP. Ping mỗi 5–10 phút. Th
 - Cron HTTP: [cron-job.org](https://cron-job.org)
 - Trong repo: `.github/workflows/giu-thuc.yml` mỗi 10 phút — **chỉ tự chạy trên `main`**. Đổi URL: biến repo `KEEP_AWAKE_URL`.
 
-`GET /api/suc-khoe` trả JSON, không đụng database.
+`GET /api/suc-khoe` trả JSON `{ ok, service, phien, ban }`, không đụng database. `phien` = SemVer web; `ban` = 7 ký tự `RENDER_GIT_COMMIT` khi chạy trên Render. Ray HS/GV có `v{phien}` đáy sidebar.
 
 ## File
 

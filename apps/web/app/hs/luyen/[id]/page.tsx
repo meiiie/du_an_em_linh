@@ -9,7 +9,6 @@ import { requireRole } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { classSettings, problems, solutions } from "@/lib/db/schema";
 import { hamLatex } from "@/lib/de-hoc-sinh";
-import { LABEL4, type Muc4 } from "@/lib/levels";
 import { loiGiaiHocSinh } from "@/lib/loi-giai";
 
 export const dynamic = "force-dynamic";
@@ -50,7 +49,6 @@ export default async function LuyenPage({ params }: { params: Promise<{ id: stri
   const lichSu = await lichSuGiaSu(p.id);
   return (
     <main>
-      <p className="mb-4 text-sm text-muted">Mức {LABEL4[p.mucDo4 as Muc4]}</p>
       <SolveClient
         problemId={p.id}
         title={p.statementText}
