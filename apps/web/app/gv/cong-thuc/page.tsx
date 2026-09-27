@@ -21,7 +21,7 @@ export default async function Page() {
     <main>
       <PageHeader title="Công thức" />
       {stale.length ? (
-        <p className="mb-4 bg-amber-50 px-4 py-3 text-sm">{stale.length} lần kiểm cũ — sửa đề thì kiểm lại.</p>
+        <p className="mb-4 bg-amber-50 px-4 py-3 text-sm motion-safe:animate-[phieu-vao_180ms_ease-out]">{stale.length} bài cần kiểm lại.</p>
       ) : null}
       {rows.length === 0 ? <p className="text-sm text-muted">Chưa có công thức.</p> : null}
       {rows.length ? (

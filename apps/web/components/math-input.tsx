@@ -19,11 +19,16 @@ export function MathInput({
 
   useEffect(() => {
     let dead = false;
-    const el = ref.current as (HTMLElement & { value?: string; mathVirtualKeyboardPolicy?: string }) | null;
+    const el = ref.current as (HTMLElement & {
+      value?: string;
+      mathVirtualKeyboardPolicy?: string;
+      menuItems?: unknown[];
+    }) | null;
     import("mathlive")
       .then(() => {
         if (dead || !el) return;
         el.mathVirtualKeyboardPolicy = "manual";
+        el.menuItems = [];
         el.value = value;
         const handler = () => onChangeRef.current(el.value || "");
         el.addEventListener("input", handler);
@@ -50,7 +55,7 @@ export function MathInput({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         className="mt-2 w-full min-h-8 rounded-button border border-dashed border-line bg-wash px-3 py-2 font-mono text-xs"
-        placeholder="LaTeX"
+        placeholder="biểu thức"
         aria-label={`${label} dạng LaTeX`}
       />
     </label>

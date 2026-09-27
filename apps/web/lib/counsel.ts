@@ -20,7 +20,7 @@ export function tuVanHocTap(states: MucState[]) {
   const weak = [...states].sort((a, b) => a.mastery - b.mastery || b.stuckCounter - a.stuckCounter)[0];
   if (!weak) {
     return {
-      loiKhuyen: "Chưa làm bài nào. Mỗi buổi một bài, nộp đủ năm bước, đừng hỏi đáp án.",
+      loiKhuyen: "Chưa làm bài nào. Mỗi buổi một bài, nộp đủ năm bước.",
       slots: [
         { thu: "Thứ Hai", gio: "19:00", viec: "Một bài nhận biết — viết đủ 5 bước" },
         { thu: "Thứ Tư", gio: "19:00", viec: "Ôn quy tắc đạo hàm trên giấy" },
@@ -33,19 +33,19 @@ export function tuVanHocTap(states: MucState[]) {
   const muc = LABEL4[weak.currentMucDo4 as Muc4] || weak.currentMucDo4;
   const ket = weak.stuckCounter >= 2;
   const loiKhuyen = ket
-    ? `Yếu nhất: ${ten} (${muc}). Tuần này ôn đúng dạng này, cùng mức, chưa tăng độ khó. Sai thì viết lại quy tắc rồi nộp.`
-    : `Yếu nhất: ${ten} (${muc}). Mỗi buổi: ôn công thức, làm một bài cùng mức, sửa bước bị tô. Vững rồi mới chuyển mức khó hơn.`;
+    ? `Yếu nhất: ${ten} (${muc}). Tuần này ôn đúng dạng này, chưa tăng độ khó.`
+    : `Yếu nhất: ${ten} (${muc}). Mỗi buổi một bài.`;
 
   const slots = ket
     ? [
-        { thu: "Thứ Hai", gio: "19:00", viec: `Ôn ${ten} — bài ngắn cùng mức` },
+        { thu: "Thứ Hai", gio: "19:00", viec: `Ôn ${ten} — bài ngắn` },
         { thu: "Thứ Tư", gio: "19:00", viec: "Viết lại bước bị tô, không mở bài mới" },
         { thu: "Thứ Sáu", gio: "19:30", viec: "Hỏi gia sư gợi ý quy trình, rồi tự nộp" },
-        { thu: "Chủ Nhật", gio: "09:00", viec: "Nếu hết kẹt: một bài cùng mức khác" },
+        { thu: "Chủ Nhật", gio: "09:00", viec: "Nếu hết kẹt: một bài khác cùng dạng" },
       ]
     : [
         { thu: "Thứ Hai", gio: "19:00", viec: "Ôn công thức đạo hàm / xét dấu" },
-        { thu: "Thứ Tư", gio: "19:00", viec: "Một bài cùng mức kỹ năng yếu" },
+        { thu: "Thứ Tư", gio: "19:00", viec: "Một bài kỹ năng đang yếu" },
         { thu: "Thứ Sáu", gio: "19:30", viec: "Sửa dạng đã sai trong tuần" },
         { thu: "Chủ Nhật", gio: "09:00", viec: "Một bài khó hơn nếu đã vững" },
       ];

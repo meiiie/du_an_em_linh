@@ -21,10 +21,9 @@ export function KiemTraAi({ macDinh }: { macDinh: AiProviderId }) {
 
   return (
     <div className="space-y-3 border-t border-line pt-6" data-testid="ai-probe">
-      <p className="text-sm font-medium">Thử kết nối</p>
       <div className="flex flex-col gap-2 sm:flex-row sm:items-end">
         <label className="block flex-1 text-sm">
-          <span className="mb-2 block font-medium">Nhà cần thử</span>
+          <span className="mb-2 block font-medium">Nhà</span>
           <select
             data-testid="ai-probe-provider"
             value={provider}
@@ -43,9 +42,12 @@ export function KiemTraAi({ macDinh }: { macDinh: AiProviderId }) {
         </Button>
       </div>
       {ket ? (
-        <p data-testid="ai-probe-ket" className={`px-4 py-3 text-sm ${ket.ok ? "bg-pass/10 text-pass" : "bg-amber-50 text-amber-950"}`}>
+        <p
+          key={ket.message}
+          data-testid="ai-probe-ket"
+          className={`px-4 py-3 text-sm motion-safe:animate-[phieu-vao_180ms_ease-out] ${ket.ok ? "bg-pass/10 text-pass" : "bg-amber-50 text-amber-950"}`}
+        >
           {ket.message}
-          {ket.models.length ? ` ${ket.models.slice(0, 6).join(", ")}` : ""}
         </p>
       ) : null}
     </div>

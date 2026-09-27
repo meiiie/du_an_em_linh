@@ -5,6 +5,7 @@ import { requireRole } from "@/lib/auth";
 import { ghiNhatKy } from "@/lib/actions/hs";
 import { laNhaKhoa, parseProvider } from "@/lib/ai-catalog";
 import { docKhoaNha } from "@/lib/ai-harness";
+import { cn } from "@/lib/cn";
 import { tenKyNangNgan } from "@/lib/de-hoc-sinh";
 import { db } from "@/lib/db";
 import { classSettings, documents, escalations, formulaSheets, formulas, problems, skills, users } from "@/lib/db/schema";
@@ -14,6 +15,35 @@ export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
   title: "Lớp",
 };
+
+function Hang({
+  href,
+  label,
+  meta,
+  mark,
+  testId,
+}: {
+  href: string;
+  label: string;
+  meta: string;
+  mark?: boolean;
+  testId?: string;
+}) {
+  return (
+    <li>
+      <Link
+        href={href}
+        data-testid={testId}
+        className="flex min-h-11 items-center justify-between gap-4 py-3 transition-colors duration-150 hover:bg-wash"
+      >
+        <span className="text-sm">{label}</span>
+        <span className={cn("tabular text-sm", mark && "text-mark", !mark && meta === "Đã kết nối" && "text-pass")}>
+          {meta}
+        </span>
+      </Link>
+    </li>
+  );
+}
 
 export default async function GvHome() {
   const u = await requireRole("GV");
@@ -41,50 +71,42 @@ export default async function GvHome() {
         <p className="mt-1 text-sm text-muted">Đơn điệu và cực trị</p>
       </header>
 
-      <section className="border-b border-line py-4" data-testid="san-sang-ai">
-        <h2 className="text-sm font-semibold">Gia sư</h2>
-        <p className="mt-2 text-sm">{daKetNoi ? "Đã kết nối" : "Chưa kết nối"}</p>
-        <p className="mt-1 text-sm text-muted">
-          {nTaiLieu} tài liệu, {nCongThuc} công thức
-        </p>
-        <p className="mt-3 text-sm">
-          <Link href="/gv/ket-noi-ai" className="underline underline-offset-2" data-testid="toi-ket-noi-ai-tong-quan">
-            Gia sư
+      <ul className="divide-y divide-line border-b border-line">
+        <li>
+          <Link
+            href="/gv/ket-noi-ai"
+            data-testid="san-sang-ai"
+            className="flex min-h-11 items-center justify-between gap-4 py-3 transition-colors duration-150 hover:bg-wash"
+          >
+            <span className="text-sm">Gia sư</span>
+            <span className="text-right text-sm">
+              <span className={daKetNoi ? "text-pass" : undefined}>{daKetNoi ? "Đã kết nối" : "Chưa kết nối"}</span>
+              <span className="mt-1 block text-xs text-muted">
+                {nTaiLieu} tài liệu · {nCongThuc} công thức
+              </span>
+            </span>
           </Link>
-        </p>
-      </section>
+        </li>
+      </ul>
 
       <section className="border-b border-line py-4" data-testid="canh-bao-ket">
         <h2 className="text-sm font-semibold text-mark">Đang kẹt</h2>
-        {stuck.length === 0 ? <p className="mt-1 text-sm text-muted">Không ai kẹt.</p> : null}
+        {stuck.length === 0 ? <p className="mt-2 text-sm text-muted">Không ai kẹt.</p> : null}
         <ul className="mt-2 space-y-1 text-sm">
           {stuck.map((e) => (
             <li key={e.id}>
-              {name.get(e.studentId)} — {tenKn.get(e.skillCode) || e.skillCode}
+              <Link href="/gv/tien-do" className="underline-offset-2 hover:underline">
+                {name.get(e.studentId)} — {tenKn.get(e.skillCode) || e.skillCode}
+              </Link>
             </li>
           ))}
         </ul>
       </section>
 
       <ul className="divide-y divide-line border-b border-line">
-        <li>
-          <Link href="/gv/duyet" className="flex min-h-11 items-center justify-between gap-4 py-3 hover:bg-wash">
-            <span className="text-sm">Chờ duyệt</span>
-            <span className="tabular text-sm">{queue.length}</span>
-          </Link>
-        </li>
-        <li>
-          <Link href="/gv/ngan-hang" className="flex min-h-11 items-center justify-between gap-4 py-3 hover:bg-wash">
-            <span className="text-sm">Bị chặn</span>
-            <span className="tabular text-sm text-mark">{blocked.length}</span>
-          </Link>
-        </li>
-        <li>
-          <Link href="/gv/ngan-hang" className="flex min-h-11 items-center justify-between gap-4 py-3 hover:bg-wash">
-            <span className="text-sm">Đã mở</span>
-            <span className="tabular text-sm text-pass">{published.length}</span>
-          </Link>
-        </li>
+        <Hang href="/gv/duyet" label="Chờ duyệt" meta={String(queue.length)} />
+        <Hang href="/gv/ngan-hang" label="Bị chặn" meta={String(blocked.length)} mark={blocked.length > 0} />
+        <Hang href="/gv/ngan-hang" label="Đã mở" meta={String(published.length)} />
       </ul>
     </main>
   );

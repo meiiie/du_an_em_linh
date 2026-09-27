@@ -21,11 +21,10 @@ export const metadata: Metadata = {
 export default async function HsHome({ searchParams }: { searchParams: Promise<{ so?: string }> }) {
   const so = (await searchParams).so === "giao" ? "giao" : "ky-nang";
   const u = await requireRole("HS");
-  const [states, skillRows, pubs, waiting, giao, tenLop, daDat] = await Promise.all([
+  const [states, skillRows, pubs, giao, tenLop, daDat] = await Promise.all([
     db.select().from(masteryStates).where(eq(masteryStates.studentId, u.id)),
     db.select().from(skills),
     db.select().from(problems).where(eq(problems.status, "DA_PHAT_HANH")),
-    db.select().from(problems).where(eq(problems.status, "CHO_GIAO_VIEN_DUYET")),
     layBaiGiao(u.id),
     layTenLopHs(u.id),
     layIdBaiDaDat(u.id),
@@ -75,7 +74,7 @@ export default async function HsHome({ searchParams }: { searchParams: Promise<{
         <div className="mt-6 min-w-0 lg:mt-0 lg:pl-8">
           <SoNav active={so} nGiao={chuaXong.length} />
           {so === "giao" ? (
-            <SoBaiGiao danhSach={chuaXong} idGoi={goi?.problem.id} waiting={waiting.length} />
+            <SoBaiGiao danhSach={chuaXong} idGoi={goi?.problem.id} />
           ) : (
             <SoKyNang rows={knHang} dangYeu={goi?.problem.skillCode} />
           )}

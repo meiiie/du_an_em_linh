@@ -1,4 +1,5 @@
 import { Tex } from "@/components/tex";
+import { chuanHoaLatexCongThuc } from "@/lib/de-hoc-sinh";
 
 /** Hàng phiếu: KaTeX là việc; tên chỉ chú. Không nói lại công thức bằng lời. */
 export function HangCongThuc({
@@ -12,7 +13,7 @@ export function HangCongThuc({
   noiDung?: string | null;
   gon?: boolean;
 }) {
-  const ham = (latex || "").trim();
+  const ham = chuanHoaLatexCongThuc(latex || "");
   return (
     <li id={id ? `ct-${id}` : undefined} className="scroll-mt-6 py-6 target:bg-wash">
       {ham ? (

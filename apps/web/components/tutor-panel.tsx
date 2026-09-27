@@ -5,8 +5,9 @@ import { useEffect, useRef, useState } from "react";
 import { guiThayCo } from "@/lib/actions/hs";
 import { luaChonNhaHocSinh, parseProvider, type AiProviderId, type AiPublicConfig } from "@/lib/ai-catalog";
 import type { TrichDanHien } from "@/lib/kien-thuc";
-import { chuTrangThaiGiaSu, docJsonSse, gomSse, type GiaSuBuocSse } from "@/lib/sse";
+import { docJsonSse, gomSse, type GiaSuBuocSse } from "@/lib/sse";
 import { moTaCheDo } from "@/lib/tutor";
+import { DangNghi } from "./dang-nghi";
 import { LoiVaNguon } from "./trich-dan-gia-su";
 import { Button, buttonClasses } from "./ui/button";
 import { fieldControl } from "./ui/field";
@@ -25,7 +26,7 @@ type KetHoi = {
 
 const LOI_CHAO: Msg = {
   role: "gia_su",
-  text: "Mình là gia sư AI. Mình đọc công thức và tài liệu lớp, sửa bài và giảng, không đưa đáp án.",
+  text: "Mình đọc công thức và tài liệu lớp. Sửa bài, không đưa đáp án.",
 };
 
 const LOI_KHONG_NOI: KetHoi = { ok: false, tra_loi: "Không nối được gia sư. Không gửi lại.", offline: true };
@@ -180,8 +181,14 @@ export function TutorPanel({
     const vv = window.visualViewport;
     const sync = () => {
       if (!el || !vv) return;
-      el.style.height = `${vv.height}px`;
-      el.style.top = `${vv.offsetTop}px`;
+      const banPhim = window.innerHeight - vv.height > 40;
+      if (banPhim) {
+        el.style.height = `${vv.height}px`;
+        el.style.top = `${vv.offsetTop}px`;
+      } else {
+        el.style.height = "";
+        el.style.top = "";
+      }
     };
     sync();
     vv?.addEventListener("resize", sync);
@@ -301,7 +308,7 @@ export function TutorPanel({
         "flex min-h-0 flex-col bg-paper",
         "max-md:fixed max-md:inset-0 max-md:z-50 max-md:h-dvh max-md:overflow-hidden max-md:px-4 max-md:pt-[max(1rem,env(safe-area-inset-top))] max-md:pb-[max(0.75rem,env(safe-area-inset-bottom))]",
         "md:sticky md:top-4 md:h-[calc(100dvh-6.5rem)] md:border-l md:border-line md:pl-6",
-        open ? "flex" : "hidden md:flex",
+        open ? "flex max-md:motion-safe:animate-[to-len_200ms_ease-out]" : "hidden md:flex",
       )}
       data-testid="tutor-panel"
       aria-busy={thinking}
@@ -329,7 +336,7 @@ export function TutorPanel({
       </div>
 
       <label className="mt-3 block shrink-0 text-sm">
-        <span className="mb-2 block font-medium">Gia sư lần này</span>
+        <span className="sr-only">Gia sư lần này</span>
         <select
           data-testid="tutor-provider"
           value={provider}
@@ -388,6 +395,7 @@ export function TutorPanel({
             key={i}
             className={cn(
               "min-w-0 text-sm",
+              i === chat.length - 1 && "motion-safe:animate-[phieu-vao_180ms_ease-out]",
               m.role === "hs"
                 ? "ml-auto max-w-[85%] bg-ink px-4 py-3 text-chalk"
                 : m.error
@@ -406,11 +414,7 @@ export function TutorPanel({
             )}
           </div>
         ))}
-        {thinking ? (
-          <p className="text-sm text-muted" data-testid="tutor-thinking" aria-live="polite">
-            {chuTrangThaiGiaSu(buocSse)}
-          </p>
-        ) : null}
+        {thinking ? <DangNghi buoc={buocSse} /> : null}
       </div>
 
       {hienXuong ? (

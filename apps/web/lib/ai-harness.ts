@@ -349,7 +349,7 @@ export async function probeProvider(opts: {
     return {
       ok: false,
       provider,
-      message: `${NHA[provider].ten} hết giờ khi GET /models. Không thử lại, không chuyển nhà.`,
+      message: `${NHA[provider].ten} hết giờ. Không thử lại, không chuyển nhà.`,
       models: [],
       base,
     };
@@ -384,9 +384,7 @@ export async function probeProvider(opts: {
   return {
     ok: true,
     provider,
-    message: names.length
-      ? `${NHA[provider].ten} trả lời /models (${names.length} mô hình).`
-      : `${NHA[provider].ten} trả lời /models.`,
+    message: `${NHA[provider].ten} sẵn sàng.`,
     models: names,
     base,
   };

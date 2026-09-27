@@ -12,7 +12,7 @@ test("lịch học không lộ xác suất hay giọng nghiên cứu", () => {
   ]);
   assert.match(yeu.loiKhuyen, /Yếu nhất: xét dấu/);
   assert.match(yeu.loiKhuyen, /Nhận biết/);
-  assert.doesNotMatch(yeu.loiKhuyen, /0\.41|xác suất|T12\.DH|nấc|ngưỡng|sơ đồ/);
+  assert.doesNotMatch(yeu.loiKhuyen, /0\.41|xác suất|T12\.DH|nấc|ngưỡng|sơ đồ|cùng mức/);
 
   const ket = tuVanHocTap([
     { skillCode: "T12.DH.02", mastery: 0.2, currentMucDo4: "THONG_HIEU", stuckCounter: 3 },

@@ -39,37 +39,37 @@ export const NHA: Record<
 > = {
   offline: {
     id: "offline",
-    ten: "Thang gợi ý đã kiểm",
+    ten: "Thang gợi ý",
     ngan: "Thang gợi ý",
     local: false,
     canKhoa: false,
-    moTa: "Chạy hết không cần khóa.",
+    moTa: "Không cần khóa.",
   },
   cloud: {
     id: "cloud",
-    ten: "API OpenAI tương thích (khóa chính thức)",
-    ngan: "API khóa",
+    ten: "ChatGPT",
+    ngan: "ChatGPT",
     local: false,
     canKhoa: true,
-    moTa: "Khóa API chính thức — LLM_API_KEY hoặc ô dưới.",
+    moTa: "Khóa chính thức.",
     envKhoa: "LLM_API_KEY",
   },
   openrouter: {
     id: "openrouter",
-    ten: "OpenRouter (khóa lập trình)",
+    ten: "OpenRouter",
     ngan: "OpenRouter",
     local: false,
     canKhoa: true,
-    moTa: "Khóa lập trình — OPENROUTER_API_KEY hoặc ô dưới.",
+    moTa: "Khóa OpenRouter.",
     envKhoa: "OPENROUTER_API_KEY",
   },
   zai: {
     id: "zai",
-    ten: "Z.AI (khóa coding)",
+    ten: "Z.AI",
     ngan: "Z.AI",
     local: false,
     canKhoa: true,
-    moTa: "Khóa coding — ZAI_API_KEY hoặc ô dưới.",
+    moTa: "Khóa Z.AI.",
     envKhoa: "ZAI_API_KEY",
   },
   ollama: {
@@ -78,7 +78,7 @@ export const NHA: Record<
     ngan: "Ollama",
     local: true,
     canKhoa: false,
-    moTa: "Chỉ máy này, cổng 11434.",
+    moTa: "Cần Ollama đang chạy.",
   },
   lmstudio: {
     id: "lmstudio",
@@ -86,7 +86,7 @@ export const NHA: Record<
     ngan: "LM Studio",
     local: true,
     canKhoa: false,
-    moTa: "Chỉ máy này, cổng 1234.",
+    moTa: "Cần LM Studio đang chạy.",
   },
 };
 
@@ -178,8 +178,8 @@ export function resolveProvider(opts: {
 export function luaChonNhaHocSinh(cfg: AiPublicConfig): { id: AiProviderId; ten: string; disabled?: boolean }[] {
   const rows: { id: AiProviderId; ten: string; disabled?: boolean }[] = [{ id: "offline", ten: NHA.offline.ten }];
   if (cfg.allowLocal) {
-    rows.push({ id: "ollama", ten: `${NHA.ollama.ten} · 127.0.0.1:11434` });
-    rows.push({ id: "lmstudio", ten: `${NHA.lmstudio.ten} · 127.0.0.1:1234` });
+    rows.push({ id: "ollama", ten: NHA.ollama.ten });
+    rows.push({ id: "lmstudio", ten: NHA.lmstudio.ten });
   }
   if (cfg.classProvider === "cloud") {
     rows.push({
@@ -207,20 +207,19 @@ export function luaChonNhaHocSinh(cfg: AiPublicConfig): { id: AiProviderId; ten:
 
 export function thongBaoLoiNha(kind: AiLoiKind, nha: AiProviderId, chiTiet?: string): string {
   const ten = NHA[nha].ten;
-  const envKhoa = NHA[nha].envKhoa || "LLM_API_KEY";
   switch (kind) {
     case "no_key":
-      return `Chưa có khóa API chính thức (${envKhoa} hoặc khóa lớp). Không chuyển sang Ollama, LM Studio hay thang gợi ý tự động. Giáo viên đặt nhà «${NHA.offline.ten}» nếu lớp muốn chạy không API.`;
+      return `Chưa có khóa. Không chuyển sang Ollama, LM Studio hay thang gợi ý tự động.`;
     case "not_loopback":
-      return `${ten}: địa chỉ không phải loopback (127.0.0.1 / localhost). Harness từ chối — không quét mạng lớp, không gọi đám mây.`;
+      return `${ten}: địa chỉ máy không đúng. Không chuyển nhà khác.`;
     case "bad_cloud_url":
-      return `${ten}: địa chỉ nhà không hợp lệ (cần https, hoặc http trên loopback). Không gọi.`;
+      return `${ten}: địa chỉ nhà không hợp lệ. Không gọi.`;
     case "timeout":
-      return `${ten} hết giờ ${AI_TIMEOUT_CHAT_MS / 1000} giây${chiTiet ? ` tại ${chiTiet}` : ""}. Không gửi lại câu hỏi, không chuyển nhà khác.`;
+      return `${ten} hết giờ ${AI_TIMEOUT_CHAT_MS / 1000} giây. Không gửi lại câu hỏi, không chuyển nhà khác.`;
     case "http":
-      return `${ten} trả ${chiTiet || "lỗi HTTP"}. Không gửi lại, không chuyển đám mây.`;
+      return `${ten} trả ${chiTiet || "lỗi"}. Không gửi lại, không chuyển đám mây.`;
     case "network":
-      return `Không nối được ${ten}${chiTiet ? ` tại ${chiTiet}` : ""}. Không chuyển đám mây, không xếp hàng, không gửi lại.`;
+      return `Không nối được ${ten}. Không chuyển đám mây, không xếp hàng, không gửi lại.`;
     case "empty":
       return `${ten} trả lời trống. Không chuyển nhà khác.`;
     case "aborted":

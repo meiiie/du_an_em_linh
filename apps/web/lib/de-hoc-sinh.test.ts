@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { gonLyDoDuyet, hamLatex, loiGoiHocSinh, thanDe, thanTrich, tenCuaTang, tenKyNangNgan, tenTaiLieuNgan } from "./de-hoc-sinh";
+import { chuanHoaLatexCongThuc, gonLyDoDuyet, hamLatex, loiGoiHocSinh, thanDe, thanTrich, tenCuaTang, tenKyNangNgan, tenTaiLieuNgan } from "./de-hoc-sinh";
 
 test("bọc latex hàm số", () => {
   assert.equal(hamLatex("x^{2}"), "y = x^{2}");
@@ -23,18 +23,18 @@ test("tách thân đề khỏi công thức", () => {
 test("đổi lời gợi sang tiếng học sinh", () => {
   assert.equal(
     loiGoiHocSinh("Em đang kẹt — giữ cùng mức và cùng kỹ năng vừa yếu, chưa nâng nấc.", "xét dấu"),
-    "Đang kẹt ở xét dấu — làm lại cùng mức.",
+    "Đang kẹt ở xét dấu — làm lại bài này.",
   );
   assert.equal(
     loiGoiHocSinh("Đủ ngưỡng thành thạo nên nâng một nấc (sơ đồ: bài khó hơn một mức).", "điểm tới hạn"),
-    "Đã vững điểm tới hạn — chuyển mức khó hơn.",
+    "Đã vững điểm tới hạn — chuyển bài khó hơn.",
   );
   assert.equal(
     loiGoiHocSinh("Cùng mức hiện tại, cùng kỹ năng đang yếu — dạng cần ôn.", "cực trị"),
-    "Ôn cực trị, cùng mức đang yếu.",
+    "Ôn cực trị.",
   );
   assert.equal(loiGoiHocSinh("Chưa có ước lượng thành thạo, bắt đầu bài đã phát hành.", ""), "Chưa làm bài nào — bắt đầu từ bài này.");
-  assert.doesNotMatch(loiGoiHocSinh("Đủ ngưỡng thành thạo nên nâng một nấc.", "xét dấu"), /ngưỡng|nấc|phát hành|Em /);
+  assert.doesNotMatch(loiGoiHocSinh("Đủ ngưỡng thành thạo nên nâng một nấc.", "xét dấu"), /ngưỡng|nấc|phát hành|Em |mức/);
 });
 
 test("trích tài liệu một câu, bỏ ngoặc năm nghiên cứu", () => {
@@ -59,12 +59,20 @@ test("rút tên tài liệu sau dấu hai chấm", () => {
 });
 
 test("lý do duyệt bỏ chữ tầng", () => {
-  assert.equal(gonLyDoDuyet("Tầng 1 chưa kết luận được nên chưa đối chiếu quy tắc."), "Chưa kết luận được nên chưa đối chiếu quy tắc.");
-  assert.equal(gonLyDoDuyet("Chưa có lời giải cấu trúc 5 bước để máy tự kiểm."), "Chưa có lời giải cấu trúc 5 bước để máy tự kiểm.");
+  assert.equal(gonLyDoDuyet("Tầng 1 chưa kết luận được nên chưa đối chiếu quy tắc."), "Chưa đối chiếu được công thức.");
+  assert.equal(gonLyDoDuyet("Có trích dẫn tài liệu."), "");
+  assert.equal(gonLyDoDuyet("Chưa có lời giải cấu trúc 5 bước để máy tự kiểm."), "Chưa có lời giải đủ 5 bước để máy chấm.");
   assert.equal(tenCuaTang(1), "Chấm máy");
   assert.equal(tenCuaTang(2), "Tài liệu");
   assert.equal(tenCuaTang(3), "Công thức");
   assert.doesNotMatch(tenCuaTang(1), /Tầng|cổng/i);
+});
+
+test("công thức: tiếng Việt vào \\text", () => {
+  assert.equal(chuanHoaLatexCongThuc("y' \\ge 0 \\Rightarrow đồng biến"), "y' \\ge 0 \\Rightarrow \\text{đồng biến}");
+  assert.equal(chuanHoaLatexCongThuc("+ \\to - : cực đại"), "+ \\to - : \\text{cực đại}");
+  assert.equal(chuanHoaLatexCongThuc("(x^n)' = n x^{n-1}"), "(x^n)' = n x^{n-1}");
+  assert.equal(chuanHoaLatexCongThuc("y' = 0 \\text{ hoặc } y' \\text{ không xác định}"), "y' = 0 \\text{ hoặc } y' \\text{ không xác định}");
 });
 
 test("rút tên kỹ năng", () => {

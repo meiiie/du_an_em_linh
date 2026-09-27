@@ -7,7 +7,7 @@ import { fieldControl } from "@/components/ui/field";
 import { Tex } from "@/components/tex";
 import { db } from "@/lib/db";
 import { problems, verificationRuns, verificationTierResults } from "@/lib/db/schema";
-import { moTaTrichDan } from "@/lib/citations";
+import { moTaTrichDanDuyet } from "@/lib/citations";
 import { gonLyDoDuyet, hamLatex, tenCuaTang } from "@/lib/de-hoc-sinh";
 import { STATUS_LABEL } from "@/lib/levels";
 
@@ -29,7 +29,7 @@ export default async function Page() {
   const runs = await db.select().from(verificationRuns);
   const tiers = await db.select().from(verificationTierResults);
   return (
-    <main className="space-y-8" data-testid="hang-doi">
+    <main className="space-y-6" data-testid="hang-doi">
       <PageHeader title="Duyệt" />
       {queue.length === 0 ? <p className="text-sm text-muted">Không còn bài chờ.</p> : null}
       {queue.map((p) => {
@@ -37,21 +37,26 @@ export default async function Page() {
         const ts = tiers.filter((t) => t.runId === run?.id).sort((a, b) => a.tier - b.tier);
         const ham = hamLatex(p.statementLatex);
         return (
-          <article key={p.id} data-testid={`duyet-${p.code}`} className="border-t border-line pt-6">
+          <article
+            key={p.id}
+            data-testid={`duyet-${p.code}`}
+            className="border-t border-line pt-6 motion-safe:animate-[phieu-vao_180ms_ease-out]"
+          >
             <div className="flex flex-wrap items-center gap-3">
               {ham ? <Tex tex={ham} className="text-sm" /> : <p className="text-sm font-medium">{p.statementText}</p>}
               <Badge tone={tone(p.status)}>{STATUS_LABEL[p.status] || p.status}</Badge>
             </div>
             <ul className="mt-3 divide-y divide-line border-y border-line text-sm">
               {ts.map((t) => {
-                const cites = moTaTrichDan(t.citation);
+                const cites = moTaTrichDanDuyet(t.citation, t.status);
+                const lyDo = gonLyDoDuyet(t.reasonText || "");
                 return (
                   <li key={t.id} className="flex gap-3 py-3">
                     <span className="w-20 shrink-0 text-xs text-muted">{tenCuaTang(t.tier)}</span>
                     <div className="min-w-0">
                       <p>
                         <span className="font-medium">{STATUS_LABEL[t.status] || t.status}</span>
-                        {t.reasonText ? ` — ${gonLyDoDuyet(t.reasonText)}` : ""}
+                        {lyDo ? ` — ${lyDo}` : ""}
                       </p>
                       {cites.length ? (
                         <ul className="mt-1 space-y-0.5 text-xs text-muted">
@@ -70,7 +75,7 @@ export default async function Page() {
                 <form
                   action={async (fd) => {
                     "use server";
-                    await duyetBai(p.id, String(fd.get("note") || "Đã xem, cho học."));
+                    await duyetBai(p.id, String(fd.get("note") || "").trim() || "Đã xem, cho học.");
                   }}
                   className="flex flex-1 flex-wrap gap-2"
                 >
@@ -80,7 +85,7 @@ export default async function Page() {
                   <input
                     id={`note-${p.id}`}
                     name="note"
-                    defaultValue="Đã xem, cho học."
+                    placeholder="Ghi chú"
                     className={`min-w-[220px] flex-1 ${fieldControl}`}
                   />
                   <Button type="submit" variant="accent">

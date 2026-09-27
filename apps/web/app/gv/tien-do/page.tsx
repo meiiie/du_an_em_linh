@@ -40,8 +40,28 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ m
           </Link>
         }
       />
-      <div className="overflow-x-auto border-y border-line">
-        <table className="min-w-full text-left text-xs">
+      <ul className="divide-y divide-line border-y border-line md:hidden">
+        {ens.map((e) => (
+          <li key={e.userId} className="py-4">
+            <p className="text-sm font-medium">{name.get(e.userId)}</p>
+            <ul className="mt-2 space-y-1 text-sm">
+              {skillRows.map((s) => {
+                const st = states.find((x) => x.studentId === e.userId && x.skillCode === s.code);
+                const muc4 = st?.currentMucDo4 as Muc4 | undefined;
+                const label = muc4 ? (view3 ? LABEL3[TO3[muc4]] : LABEL4[muc4]) : "—";
+                return (
+                  <li key={s.code} className="flex justify-between gap-4">
+                    <span className="text-muted">{tenKyNangNgan(s.code, s.name)}</span>
+                    <span>{label}</span>
+                  </li>
+                );
+              })}
+            </ul>
+          </li>
+        ))}
+      </ul>
+      <div className="hidden overflow-x-auto border-y border-line md:block">
+        <table className="min-w-full text-left text-sm">
           <thead>
             <tr className="border-b border-line bg-wash">
               <th className="p-3 font-medium">Học sinh</th>

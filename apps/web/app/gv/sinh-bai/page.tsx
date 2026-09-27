@@ -17,9 +17,9 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ m
   return (
     <main className="max-w-xl">
       <PageHeader title="Tạo đề" />
-      {sp.loi ? <p className="mb-4 text-sm text-mark">{sp.loi}</p> : null}
+      {sp.loi ? <p className="mb-4 text-sm text-mark motion-safe:animate-[phieu-vao_180ms_ease-out]">{sp.loi}</p> : null}
       {sp.ma && sp.trang ? (
-        <p className="mb-4 text-sm" data-testid="ket-sinh">
+        <p className="mb-4 text-sm motion-safe:animate-[phieu-vao_180ms_ease-out]" data-testid="ket-sinh">
           Đã tạo{" "}
           <Badge tone={sp.trang === "DA_PHAT_HANH" ? "ok" : sp.trang === "BI_CHAN" ? "bad" : "warn"}>
             {STATUS_LABEL[sp.trang] || sp.trang}
@@ -40,7 +40,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ m
             <option value="huu_ti">Phân thức bậc nhất</option>
           </select>
         </Field>
-        <Field label="Số gốc">
+        <Field label="Mã số">
           <input name="seed" type="number" defaultValue={11} className={fieldControl} autoComplete="off" />
         </Field>
         <Button type="submit">Tạo đề</Button>

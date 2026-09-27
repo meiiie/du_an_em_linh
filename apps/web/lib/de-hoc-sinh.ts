@@ -81,18 +81,34 @@ export function tenCuaTang(tier: number) {
 
 /** Lý do duyệt: bỏ calque «Tầng n» — số tầng đã đứng riêng trên hàng. */
 export function gonLyDoDuyet(text: string) {
-  const gon = (text || "").replace(/Tầng\s*\d+\s*/gi, "").replace(/\s+/g, " ").trim();
+  const gon = (text || "")
+    .replace(/Tầng\s*\d+\s*/gi, "")
+    .replace(/lời giải cấu trúc 5 bước để máy tự kiểm/gi, "lời giải đủ 5 bước để máy chấm")
+    .replace(/Có trích dẫn tài liệu\.?/gi, "")
+    .replace(/chưa kết luận được nên chưa đối chiếu quy tắc\.?/gi, "chưa đối chiếu được công thức.")
+    .replace(/\s+/g, " ")
+    .trim();
   if (!gon) return "";
   return gon.charAt(0).toLocaleUpperCase("vi-VN") + gon.slice(1);
+}
+
+/** Tiếng Việt không để trần trong math mode — KaTeX nuốt dấu. */
+export function chuanHoaLatexCongThuc(raw: string) {
+  const s = (raw || "").trim();
+  if (!s || /\\text\s*\{/.test(s)) return s;
+  return s.replace(
+    /[\p{L}']*[À-ỹĐđ][\p{L}']*(?:\s+[\p{L}']*[À-ỹĐđ][\p{L}']*)*/gu,
+    (chunk) => `\\text{${chunk}}`,
+  );
 }
 
 /** Lời trên phiếu — tiếng lớp 12, không mã, không ngưỡng/nấc/phát hành. */
 export function loiGoiHocSinh(lyDo: string, tenKn: string) {
   const kn = tenKn.trim();
-  if (lyDo.includes("kẹt")) return kn ? `Đang kẹt ở ${kn} — làm lại cùng mức.` : "Đang kẹt — làm lại cùng mức.";
-  if (lyDo.includes("nâng một nấc")) return kn ? `Đã vững ${kn} — chuyển mức khó hơn.` : "Đã vững — chuyển mức khó hơn.";
+  if (lyDo.includes("kẹt")) return kn ? `Đang kẹt ở ${kn} — làm lại bài này.` : "Đang kẹt — làm lại bài này.";
+  if (lyDo.includes("nâng một nấc")) return kn ? `Đã vững ${kn} — chuyển bài khó hơn.` : "Đã vững — chuyển bài khó hơn.";
   if (lyDo.includes("Cùng mức") || lyDo.includes("dạng cần ôn")) {
-    return kn ? `Ôn ${kn}, cùng mức đang yếu.` : "Ôn lại, cùng mức đang yếu.";
+    return kn ? `Ôn ${kn}.` : "Ôn lại bài này.";
   }
   if (lyDo.includes("Chưa có ước lượng")) return "Chưa làm bài nào — bắt đầu từ bài này.";
   if (kn) return `Ôn ${kn}.`;

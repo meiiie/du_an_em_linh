@@ -5,6 +5,7 @@ import { themCongThuc } from "@/lib/actions/gv";
 import { Button } from "@/components/ui/button";
 import { Field, fieldControl } from "@/components/ui/field";
 import { Tex } from "@/components/tex";
+import { chuanHoaLatexCongThuc } from "@/lib/de-hoc-sinh";
 
 export function FormThemCongThuc() {
   const [latex, setLatex] = useState("");
@@ -26,7 +27,7 @@ export function FormThemCongThuc() {
       </Field>
       {latex.trim() ? (
         <p className="max-w-[65ch] overflow-x-auto text-[1.25rem] leading-8" translate="no" aria-live="polite">
-          <Tex tex={latex} />
+          <Tex tex={chuanHoaLatexCongThuc(latex)} />
         </p>
       ) : null}
       <Field label="Giải thích">
