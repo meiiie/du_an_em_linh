@@ -103,10 +103,10 @@ export function chuanHoaLatexCongThuc(raw: string) {
 /** Lời trên phiếu — tiếng lớp 12, không mã, không ngưỡng/nấc/phát hành. */
 export function loiGoiHocSinh(lyDo: string, tenKn: string) {
   const kn = tenKn.trim();
-  if (lyDo.includes("kẹt")) return kn ? `Đang kẹt ở ${kn} — làm lại cùng mức.` : "Đang kẹt — làm lại cùng mức.";
-  if (lyDo.includes("nâng một nấc")) return kn ? `Đã vững ${kn} — chuyển mức khó hơn.` : "Đã vững — chuyển mức khó hơn.";
+  if (lyDo.includes("kẹt")) return kn ? `Đang kẹt ở ${kn} — làm lại bài này.` : "Đang kẹt — làm lại bài này.";
+  if (lyDo.includes("nâng một nấc")) return kn ? `Đã vững ${kn} — chuyển bài khó hơn.` : "Đã vững — chuyển bài khó hơn.";
   if (lyDo.includes("Cùng mức") || lyDo.includes("dạng cần ôn")) {
-    return kn ? `Ôn ${kn}, cùng mức đang yếu.` : "Ôn lại, cùng mức đang yếu.";
+    return kn ? `Ôn ${kn}.` : "Ôn lại bài này.";
   }
   if (lyDo.includes("Chưa có ước lượng")) return "Chưa làm bài nào — bắt đầu từ bài này.";
   if (kn) return `Ôn ${kn}.`;

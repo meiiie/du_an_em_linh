@@ -13,11 +13,9 @@ type Bai = {
 export function SoBaiGiao({
   danhSach,
   idGoi,
-  waiting,
 }: {
   danhSach: Bai[];
   idGoi?: string;
-  waiting: number;
 }) {
   return (
     <section aria-labelledby="bai-giao">
@@ -43,7 +41,6 @@ export function SoBaiGiao({
           })}
         </div>
       )}
-      {waiting ? <p className="mt-3 text-sm text-warn">{waiting} bài thầy cô chưa mở.</p> : null}
     </section>
   );
 }

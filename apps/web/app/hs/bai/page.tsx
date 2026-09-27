@@ -17,7 +17,6 @@ export const metadata: Metadata = {
 export default async function Page() {
   await requireRole("HS");
   const pubs = await db.select().from(problems).where(eq(problems.status, "DA_PHAT_HANH"));
-  const waiting = await db.select().from(problems).where(eq(problems.status, "CHO_GIAO_VIEN_DUYET"));
   return (
     <main>
       <PageHeader title="Đề bài" />
@@ -35,7 +34,6 @@ export default async function Page() {
           );
         })}
       </div>
-      {waiting.length ? <p className="mt-4 text-sm text-warn">{waiting.length} bài thầy cô chưa mở.</p> : null}
     </main>
   );
 }

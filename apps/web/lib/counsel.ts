@@ -33,19 +33,19 @@ export function tuVanHocTap(states: MucState[]) {
   const muc = LABEL4[weak.currentMucDo4 as Muc4] || weak.currentMucDo4;
   const ket = weak.stuckCounter >= 2;
   const loiKhuyen = ket
-    ? `Yếu nhất: ${ten} (${muc}). Tuần này ôn đúng dạng này, cùng mức, chưa tăng độ khó.`
-    : `Yếu nhất: ${ten} (${muc}). Mỗi buổi một bài cùng mức.`;
+    ? `Yếu nhất: ${ten} (${muc}). Tuần này ôn đúng dạng này, chưa tăng độ khó.`
+    : `Yếu nhất: ${ten} (${muc}). Mỗi buổi một bài.`;
 
   const slots = ket
     ? [
-        { thu: "Thứ Hai", gio: "19:00", viec: `Ôn ${ten} — bài ngắn cùng mức` },
+        { thu: "Thứ Hai", gio: "19:00", viec: `Ôn ${ten} — bài ngắn` },
         { thu: "Thứ Tư", gio: "19:00", viec: "Viết lại bước bị tô, không mở bài mới" },
         { thu: "Thứ Sáu", gio: "19:30", viec: "Hỏi gia sư gợi ý quy trình, rồi tự nộp" },
-        { thu: "Chủ Nhật", gio: "09:00", viec: "Nếu hết kẹt: một bài cùng mức khác" },
+        { thu: "Chủ Nhật", gio: "09:00", viec: "Nếu hết kẹt: một bài khác cùng dạng" },
       ]
     : [
         { thu: "Thứ Hai", gio: "19:00", viec: "Ôn công thức đạo hàm / xét dấu" },
-        { thu: "Thứ Tư", gio: "19:00", viec: "Một bài cùng mức kỹ năng yếu" },
+        { thu: "Thứ Tư", gio: "19:00", viec: "Một bài kỹ năng đang yếu" },
         { thu: "Thứ Sáu", gio: "19:30", viec: "Sửa dạng đã sai trong tuần" },
         { thu: "Chủ Nhật", gio: "09:00", viec: "Một bài khó hơn nếu đã vững" },
       ];
