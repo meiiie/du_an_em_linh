@@ -6,7 +6,7 @@ Không dùng kit Figma EduPlus / Eduva / EduTracker / EduFlow (Poppins, thẻ KP
 
 | Sản phẩm | Việc lấy | Việc không lấy |
 | --- | --- | --- |
-| [Khan Academy Wonder Blocks](https://khan.github.io/wonder-blocks/) + [learner dashboard 2025](https://qasimbrown.design/projects/ai-powered-learner-dashboard) | Việc tiếp theo đứng trước catalog; thành thạo = hàng ô; mật độ chữ cao; ít kiểu chữ | Xanh `#1865f2`, Lato, logo |
+| [Khan Academy Wonder Blocks](https://khan.github.io/wonder-blocks/) + [learner dashboard 2025](https://qasimbrown.design/projects/ai-powered-learner-dashboard) | Bài tiếp theo đứng trước catalog; mức vững = hàng ô; mật độ chữ cao; ít kiểu chữ | Xanh `#1865f2`, Lato, logo |
 | [Brilliant solvables](https://www.paigeormiston.com/brilliant) | Một luồng bước; sai = banner ngay dưới bài; một CTA | Pear / CoFo / logo |
 | [Canvas InstUI](https://instructure.design/) | Ray điều hướng đặc, việc là danh sách/bảng | Electric brand, widget KPI |
 | [Google Classroom](https://support.google.com/chrome/a/answer/15210733) | Hàng việc 2 dòng (tên + meta), không lưới thẻ khóa học | Material purple |
@@ -62,15 +62,17 @@ Không dashboard thẻ. Chia như phiếu + sổ — gáy 5 bước là vật đ
 | 220    | Toán 12, đơn điệu…        |                  |
 |        +---------------------------+------------------+
 |        | PHIẾU                     | SỔ (tab gạch)    |
-|        | 1 TXĐ                     | Kỹ năng | Bài    |
+|        | 1 TXĐ                     | Kỹ năng | Bài tập |
 |        | 2 y′     đề KaTeX         | (một panel)      |
 |        | 3 …      [Làm bước tiếp]  |                  |
 +--------+---------------------------+------------------+
 ```
 
-Desktop (`lg`): cột phiếu `1fr` | kẻ 1 px | cột sổ `18–24rem`. Điện thoại / máy tính bảng: phiếu rồi sổ. Sổ là **tab gạch chân mực** (Carbon / InstUI) — `Kỹ năng` mặc định, `?so=giao` cho bài giao. Không viên thuốc. Tab trình duyệt ngắn: `Lộ trình` / `Ngân bài` / `Lịch` / `Kho` (template `· Học toán với AI`). Ray HS: Lộ trình, Ngân bài, Lịch, Kho.
+Desktop (`lg`): cột phiếu `1fr` | kẻ 1 px | cột sổ `18–24rem`. Điện thoại / máy tính bảng: phiếu rồi sổ. Sổ là **tab gạch chân mực** (Carbon / InstUI) — `Kỹ năng` mặc định, `?so=giao` cho bài tập. Không viên thuốc. Tab trình duyệt ngắn: `Lộ trình` / `Ngân bài` / `Lịch` / `Kho` (template `· Học toán với AI`). Ray HS: Lộ trình, Ngân bài, Lịch, Kho.
 
-Đề = KaTeX từ `statementLatex`. Một thang 4 mức — không Bloom trên trang này (3 mức CV 7991 chỉ ở cổng GV). Thành thạo: tên ngắn, ô sát tên, hàng yếu lên trên, hàng đang gợi tô `wash`. Bài giao ≠ ngân bài: chỉ assignment chưa đạt.
+Đề = KaTeX từ `statementLatex`. Một thang 4 mức — không Bloom trên mặt học sinh (3 mức CV 7991 chỉ ở cổng GV). Mức vững: tên ngắn, ô sát tên, hàng yếu lên trên, hàng đang gợi tô `wash`. Bài tập ≠ ngân bài: chỉ bài thầy cô giao chưa đạt.
+
+**Chữ học sinh:** tiếng lớp 12. Tiêu đề phiếu `Bài tiếp theo`. Tab `Bài tập`. Không mã `T12.DH.*` / `DH12-*` trên UI (testid giữ mã). Không *phát hành*, *duyệt cổng*, *ước lượng*, *ngưỡng*, *nấc*, *Em* trên chrome. Không xác suất BKT. CTA khóa: `Làm bước tiếp`. Heading khóa: `Chào An`.
 
 ## Lưới và nhịp (SOTA 2026-09-27)
 

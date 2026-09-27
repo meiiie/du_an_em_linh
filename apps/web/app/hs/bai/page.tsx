@@ -20,11 +20,7 @@ export default async function Page() {
   const waiting = await db.select().from(problems).where(eq(problems.status, "CHO_GIAO_VIEN_DUYET"));
   return (
     <main>
-      <PageHeader
-        kicker="Học sinh"
-        title="Ngân bài đã phát hành"
-        description="Chỉ bài qua cổng ba tầng hoặc được giáo viên duyệt mới mở. Bài chờ duyệt không làm được."
-      />
+      <PageHeader title="Ngân bài" description="Bài thầy cô đã mở. Bài chưa mở thì chưa làm được." />
       <div className="border-y border-line">
         {pubs.map((p) => {
           const ham = hamLatex(p.statementLatex);
@@ -33,14 +29,13 @@ export default async function Page() {
               key={p.id}
               href={`/hs/luyen/${p.id}`}
               testId={`catalog-${p.code}`}
-              kicker={<span translate="no">{p.code}</span>}
               title={ham ? <Tex tex={ham} /> : p.statementText}
               meta={nhanMuc4(p.mucDo4)}
             />
           );
         })}
       </div>
-      {waiting.length ? <p className="mt-4 text-sm text-warn">{waiting.length} bài đang chờ thầy cô duyệt.</p> : null}
+      {waiting.length ? <p className="mt-4 text-sm text-warn">{waiting.length} bài thầy cô chưa mở.</p> : null}
     </main>
   );
 }

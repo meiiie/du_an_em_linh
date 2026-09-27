@@ -14,14 +14,10 @@ export default async function Page() {
   const kho = await khoLopCongKhai();
   return (
     <main className="max-w-2xl">
-      <PageHeader
-        kicker="Kho lớp"
-        title="Kiến thức gia sư được đọc"
-        description="Cùng kho tầng 2/3: tài liệu đã nạp (quyền rõ) và bảng công thức khóa. Gia sư không đọc lời giải chuẩn."
-      />
+      <PageHeader title="Công thức và tài liệu" description="Gia sư chỉ đọc kho này, không đọc lời giải." />
       <section className="border-y border-line py-6" data-testid="kho-theo-buoc-hs">
         <h2 className="text-base font-semibold">Gia sư đọc theo bước</h2>
-        <p className="mt-2 text-sm text-muted">Khi em hỏi, hệ thống lấy đoạn khớp bước đang làm — không bịa công thức ngoài kho.</p>
+        <p className="mt-2 text-sm text-muted">Khi hỏi, lấy đúng đoạn khớp bước đang làm.</p>
         <div className="mt-3">
           <KhoTheoBuoc khung={kho.khung} />
         </div>
@@ -41,7 +37,7 @@ export default async function Page() {
       </section>
       <section className="border-b border-line py-6" data-testid="kho-tai-lieu">
         <h2 className="text-base font-semibold">Tài liệu lớp</h2>
-        {kho.taiLieu.length === 0 ? <p className="mt-3 text-sm text-muted">Chưa có tài liệu dùng được.</p> : null}
+        {kho.taiLieu.length === 0 ? <p className="mt-3 text-sm text-muted">Chưa có tài liệu.</p> : null}
         <ul className="mt-3 divide-y divide-line">
           {kho.taiLieu.map((d) => (
             <li key={d.id} className="py-3">

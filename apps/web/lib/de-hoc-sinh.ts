@@ -51,10 +51,15 @@ export function thanDe(statementText: string) {
   return gon || "Xét tính đơn điệu của hàm số";
 }
 
+/** Lời trên phiếu — tiếng lớp 12, không mã, không ngưỡng/nấc/phát hành. */
 export function loiGoiHocSinh(lyDo: string, tenKn: string) {
-  if (lyDo.includes("kẹt")) return `Em đang kẹt ở ${tenKn} — giữ cùng mức, chưa nâng.`;
-  if (lyDo.includes("nâng một nấc")) return `Đủ ngưỡng ở ${tenKn} — nâng một nấc.`;
-  if (lyDo.includes("Cùng mức") || lyDo.includes("dạng cần ôn")) return `Ôn ${tenKn} cùng mức đang yếu.`;
-  if (lyDo.includes("Chưa có ước lượng")) return "Chưa có ước lượng thành thạo — bắt đầu bài đã phát hành.";
-  return lyDo.replace(/\s*·\s*Bloom.*$/i, "").trim();
+  const kn = tenKn.trim();
+  if (lyDo.includes("kẹt")) return kn ? `Đang kẹt ở ${kn} — làm lại cùng mức.` : "Đang kẹt — làm lại cùng mức.";
+  if (lyDo.includes("nâng một nấc")) return kn ? `Đã vững ${kn} — chuyển mức khó hơn.` : "Đã vững — chuyển mức khó hơn.";
+  if (lyDo.includes("Cùng mức") || lyDo.includes("dạng cần ôn")) {
+    return kn ? `Ôn ${kn}, cùng mức đang yếu.` : "Ôn lại, cùng mức đang yếu.";
+  }
+  if (lyDo.includes("Chưa có ước lượng")) return "Chưa làm bài nào — bắt đầu từ bài này.";
+  if (kn) return `Ôn ${kn}.`;
+  return "Làm bài này.";
 }

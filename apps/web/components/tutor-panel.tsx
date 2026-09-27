@@ -13,7 +13,7 @@ type Msg = { role: "hs" | "gia_su"; text: string; error?: boolean; trichDan?: { 
 
 const LOI_CHAO: Msg = {
   role: "gia_su",
-  text: "Mình là gia sư AI. Mình đọc kho lớp (công thức và tài liệu đã duyệt), sửa bài và giảng, không đưa đáp án.",
+  text: "Mình là gia sư AI. Mình đọc công thức và tài liệu lớp, sửa bài và giảng, không đưa đáp án.",
 };
 
 function khoaDraft(problemId: string) {

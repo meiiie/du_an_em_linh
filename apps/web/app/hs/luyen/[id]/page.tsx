@@ -8,7 +8,7 @@ import { docKhoaCloud } from "@/lib/ai-harness";
 import { requireRole } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { classSettings, problems, solutions } from "@/lib/db/schema";
-import { LABEL4, labelBloom, type Muc4 } from "@/lib/levels";
+import { LABEL4, type Muc4 } from "@/lib/levels";
 import { loiGiaiHocSinh } from "@/lib/loi-giai";
 
 export const dynamic = "force-dynamic";
@@ -22,7 +22,7 @@ export default async function LuyenPage({ params }: { params: Promise<{ id: stri
   if (p.status === "CHO_GIAO_VIEN_DUYET") {
     return (
       <div className="border-y border-line py-6">
-        <p>Bài này đang chờ thầy cô duyệt.</p>
+        <p>Bài này thầy cô chưa mở.</p>
         <Link href="/hs" className="mt-2 inline-block text-sm underline underline-offset-2">
           Về lộ trình
         </Link>
@@ -49,12 +49,7 @@ export default async function LuyenPage({ params }: { params: Promise<{ id: stri
   const lichSu = await lichSuGiaSu(p.id);
   return (
     <main>
-      <p className="mb-4 text-sm text-muted">
-        Mức {LABEL4[p.mucDo4 as Muc4]} · Bloom {labelBloom(p.bloomLevel)} · mã{" "}
-        <span className="font-mono" translate="no">
-          {p.code}
-        </span>
-      </p>
+      <p className="mb-4 text-sm text-muted">Mức {LABEL4[p.mucDo4 as Muc4]}</p>
       <SolveClient
         problemId={p.id}
         title={p.statementText}
@@ -66,8 +61,8 @@ export default async function LuyenPage({ params }: { params: Promise<{ id: stri
       />
       <p className="mt-3 text-xs text-muted">
         {showSolution
-          ? "Lớp này bật mở lời giải sau khi nộp xong cả năm bước. Gia sư vẫn không đọc lời giải trong lúc làm."
-          : "Mở lời giải sau khi nộp đang tắt (mặc định). Em không xem được đáp án chuẩn."}
+          ? "Lời giải mở sau khi nộp đủ năm bước. Gia sư không đọc lời giải lúc làm."
+          : "Chưa xem được lời giải."}
       </p>
     </main>
   );

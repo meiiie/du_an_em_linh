@@ -30,9 +30,9 @@ export function PhieuViecTiep({
     return (
       <section className="border-b border-line pb-6 lg:border-b-0 lg:pb-0" aria-labelledby="viec-tiep">
         <h2 id="viec-tiep" className="text-base font-semibold">
-          Việc tiếp theo
+          Bài tiếp theo
         </h2>
-        <p className="mt-2 max-w-[65ch] text-sm text-muted">Chưa có bài đã phát hành. Em chờ thầy cô duyệt cổng.</p>
+        <p className="mt-2 max-w-[65ch] text-sm text-muted">Thầy cô chưa mở bài.</p>
       </section>
     );
   }
@@ -44,7 +44,7 @@ export function PhieuViecTiep({
   return (
     <section className="border-b border-line pb-6 lg:border-b-0 lg:pb-0" aria-labelledby="viec-tiep">
       <div className="flex gap-4 sm:gap-6">
-        <ol className="hidden w-24 shrink-0 flex-col sm:flex" aria-label="Năm bước phiếu">
+        <ol className="hidden w-24 shrink-0 flex-col sm:flex" aria-label="Năm bước làm bài">
           {BUOC.map((b, i) => {
             const xong = buoc.done.includes(b.ma);
             const dang = buoc.current === b.ma && !buoc.finished;
@@ -70,17 +70,13 @@ export function PhieuViecTiep({
         </ol>
 
         <div className="min-w-0 flex-1 border-l-2 border-ink pl-4 sm:pl-6">
-          <h2 id="viec-tiep" className="text-pretty text-base font-semibold">
-            Việc tiếp theo
-          </h2>
+          <div className="flex items-baseline justify-between gap-3">
+            <h2 id="viec-tiep" className="text-pretty text-base font-semibold">
+              Bài tiếp theo
+            </h2>
+            <p className="shrink-0 text-xs text-muted">{muc}</p>
+          </div>
           <p className="mt-2 max-w-[65ch] text-sm leading-relaxed">{thanDe(problem.statementText)}</p>
-          <p className="mt-1 font-mono text-xs text-muted" translate="no">
-            {problem.code}
-            <span className="mx-1 text-muted" aria-hidden>
-              /
-            </span>
-            {muc}
-          </p>
 
           {ham ? (
             <p className="mt-4 max-w-[65ch] overflow-x-auto text-[1.25rem] leading-8" translate="no">
@@ -90,7 +86,7 @@ export function PhieuViecTiep({
             <p className="mt-4 max-w-[65ch] text-lg font-medium leading-snug">{problem.statementText}</p>
           )}
 
-          <ol className="mt-4 flex gap-2 sm:hidden" aria-label="Năm bước phiếu">
+          <ol className="mt-4 flex gap-2 sm:hidden" aria-label="Năm bước làm bài">
             {BUOC.map((b, i) => {
               const xong = buoc.done.includes(b.ma);
               const dang = buoc.current === b.ma && !buoc.finished;

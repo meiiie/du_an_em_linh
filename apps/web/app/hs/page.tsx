@@ -57,7 +57,7 @@ export default async function HsHome({ searchParams }: { searchParams: Promise<{
       <header className="mb-6 flex flex-wrap items-end justify-between gap-x-6 gap-y-2 border-b border-line pb-4">
         <div className="min-w-0">
           <h1 className="text-pretty text-[1.75rem] font-semibold tracking-tight">Chào {u.displayName}</h1>
-          <p className="mt-1 text-sm text-muted">Toán 12, đơn điệu và cực trị</p>
+          <p className="mt-1 text-sm text-muted">Đơn điệu và cực trị</p>
         </div>
         {tenLop ? <p className="text-sm text-muted">{tenLop}</p> : null}
       </header>

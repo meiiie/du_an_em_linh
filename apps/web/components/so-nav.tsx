@@ -12,7 +12,7 @@ export function SoNav({
   nGiao: number;
 }) {
   return (
-    <nav aria-label="Sổ" className="flex items-end border-b border-line">
+    <nav aria-label="Kỹ năng và bài tập" className="flex items-end border-b border-line">
       <Link
         href="/hs"
         scroll={false}
@@ -35,7 +35,7 @@ export function SoNav({
           active === "giao" ? "border-ink font-medium text-ink" : "border-transparent text-muted hover:text-ink",
         )}
       >
-        Bài giao
+        Bài tập
         {nGiao > 0 ? <span className="tabular ml-2 text-xs text-muted">{nGiao}</span> : null}
       </Link>
     </nav>

@@ -22,12 +22,12 @@ export default async function LichPage() {
   const slots = live.slots;
   return (
     <main className="space-y-8">
-      <PageHeader kicker="Học sinh" title="Thời gian biểu" description="Tư vấn theo mức thành thạo hiện tại. Nhắc trong ứng dụng, chưa gửi email hay SMS." />
+      <PageHeader title="Lịch học" description="Khung giờ tuần này. Nhắc trong ứng dụng." />
       <section>
-        <h2 className="text-base font-semibold">Phương pháp học</h2>
+        <h2 className="text-base font-semibold">Cách học</h2>
         <p className="mt-2 whitespace-pre-line text-sm leading-relaxed text-ink">{live.loiKhuyen}</p>
         {s?.methodAdvice && s.methodAdvice !== live.loiKhuyen ? (
-          <p className="mt-3 text-sm leading-relaxed text-muted">Ghi chú lúc nạp lớp: {s.methodAdvice}</p>
+          <p className="mt-3 text-sm leading-relaxed text-muted">Ghi chú lớp: {s.methodAdvice}</p>
         ) : null}
       </section>
       <section>
@@ -44,15 +44,13 @@ export default async function LichPage() {
         </ul>
       </section>
       <section>
-        <h2 className="text-base font-semibold">Nhắc trong ứng dụng</h2>
+        <h2 className="text-base font-semibold">Lời nhắc</h2>
         {rems.length === 0 ? <p className="mt-2 text-sm text-muted">Không có lời nhắc.</p> : null}
         <ul className="mt-2 divide-y divide-line border-y border-line">
           {rems.map((r) => (
             <li key={r.id} className="py-3 text-sm">
               <span className="font-medium">{r.title}</span> — {r.body}
-              <span className="mt-1 block text-xs text-muted">
-                {r.sendAt} · kênh {r.channel}
-              </span>
+              <span className="mt-1 block text-xs text-muted">{r.sendAt}</span>
             </li>
           ))}
         </ul>

@@ -53,7 +53,7 @@ Next.js 15. Server action nói chuyện với Postgres và `MATH_SERVICE_URL`.
 | `app/gv/` | Tổng quan (trạng thái ChatGPT + kho), duyệt, ngân hàng, sinh bài, tài liệu, công thức, kết nối ChatGPT, tiến độ, cài đặt |
 | `app/hs/kho` | Kho kiến thức lớp (cùng nguồn gia sư đọc) |
 | `components/app-shell.tsx` | Ray mực 220 px / ngăn kéo |
-| `components/phieu-viec-tiep.tsx` / `so-nav.tsx` | Việc tiếp theo + tab sổ `/hs` |
+| `components/phieu-viec-tiep.tsx` / `so-nav.tsx` | Bài tiếp theo + tab sổ `/hs` |
 | `lib/de-hoc-sinh.ts` | KaTeX đề, tên kỹ năng ngắn, lời gợi |
 | `components/solve-client.tsx` | Phiếu 5 bước |
 | `components/tutor-panel.tsx` | Composer gia sư (44 px, Enter, nhà, liên kết kho) |

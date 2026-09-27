@@ -15,13 +15,12 @@ const TEN_KY_NANG: Record<string, string> = {
   "T12.DH.05": "tìm cực trị từ công thức",
 };
 
-/** Tư vấn theo sơ đồ: phương pháp + lịch phù hợp mức hiện tại. Văn bản gốc, không chép SGK. */
+/** Lịch học: tiếng lớp 12. Không xác suất BKT, không sơ đồ/nấc/ngưỡng. */
 export function tuVanHocTap(states: MucState[]) {
   const weak = [...states].sort((a, b) => a.mastery - b.mastery || b.stuckCounter - a.stuckCounter)[0];
   if (!weak) {
     return {
-      loiKhuyen:
-        "Chưa có ước lượng thành thạo. Mỗi buổi làm đúng một bài đã phát hành, nộp từng bước, không hỏi đáp án.",
+      loiKhuyen: "Chưa làm bài nào. Mỗi buổi một bài, nộp đủ năm bước, đừng hỏi đáp án.",
       slots: [
         { thu: "Thứ Hai", gio: "19:00", viec: "Một bài nhận biết — viết đủ 5 bước" },
         { thu: "Thứ Tư", gio: "19:00", viec: "Ôn quy tắc đạo hàm trên giấy" },
@@ -34,8 +33,8 @@ export function tuVanHocTap(states: MucState[]) {
   const muc = LABEL4[weak.currentMucDo4 as Muc4] || weak.currentMucDo4;
   const ket = weak.stuckCounter >= 2;
   const loiKhuyen = ket
-    ? `Kỹ năng yếu nhất đang là ${ten} (mức ${muc}, xác suất ${weak.mastery.toFixed(2)}). Em đang kẹt — tuần này chỉ ôn đúng kỹ năng đó với bài cùng mức, chưa nâng nấc. Mỗi lần sai: viết lại quy tắc rồi nộp, đừng hỏi đáp án.`
-    : `Kỹ năng yếu nhất: ${ten} (mức ${muc}, xác suất ${weak.mastery.toFixed(2)}). Mỗi buổi một việc: lấy lại công thức, làm một bài cùng mức, sửa bước bị tô. Khi đủ ngưỡng mới nâng một nấc — đó là vòng lặp tới vận dụng cao trên sơ đồ.`;
+    ? `Yếu nhất: ${ten} (${muc}). Tuần này ôn đúng dạng này, cùng mức, chưa tăng độ khó. Sai thì viết lại quy tắc rồi nộp.`
+    : `Yếu nhất: ${ten} (${muc}). Mỗi buổi: ôn công thức, làm một bài cùng mức, sửa bước bị tô. Vững rồi mới chuyển mức khó hơn.`;
 
   const slots = ket
     ? [
@@ -48,7 +47,7 @@ export function tuVanHocTap(states: MucState[]) {
         { thu: "Thứ Hai", gio: "19:00", viec: "Ôn công thức đạo hàm / xét dấu" },
         { thu: "Thứ Tư", gio: "19:00", viec: "Một bài cùng mức kỹ năng yếu" },
         { thu: "Thứ Sáu", gio: "19:30", viec: "Sửa dạng đã sai trong tuần" },
-        { thu: "Chủ Nhật", gio: "09:00", viec: "Một bài nhích một nấc nếu đủ ngưỡng" },
+        { thu: "Chủ Nhật", gio: "09:00", viec: "Một bài khó hơn nếu đã vững" },
       ];
 
   return { loiKhuyen, slots, skillCode: weak.skillCode, muc };

@@ -32,7 +32,7 @@ Dùng `Button` / `buttonClasses` trong `components/ui/button.tsx`. Đừng tự 
 
 `/dang-nhap`: tâm quang học ≈ 46% `dvh`, dư 3:2 (`docs/DESIGN.md`). Một logo giữa form. Không header trùng, không `-Nvh`.
 
-`/hs`: phiếu + sổ tab. Desktop `lg`: cột phiếu | kẻ 1 px | cột sổ (`Kỹ năng` / `?so=giao`). Tab gạch chân mực, không viên thuốc. Title tab ngắn. Đề = `statementLatex`. Không Bloom trên trang này. Giữ heading «Chào An» và CTA «Làm bước tiếp».
+`/hs`: phiếu + sổ tab. Desktop `lg`: cột phiếu | kẻ 1 px | cột sổ (`Kỹ năng` / `?so=giao`). Tab gạch chân mực, không viên thuốc. Title tab ngắn. Đề = `statementLatex`. Không Bloom, không mã bài/kỹ năng trên mặt học sinh. Chữ: tiếng lớp 12 (`Bài tiếp theo`, `Bài tập`), không phát hành/duyệt/ngưỡng. Giữ heading «Chào An» và CTA «Làm bước tiếp».
 
 ## Testid không đổi
 

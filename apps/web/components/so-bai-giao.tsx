@@ -22,10 +22,10 @@ export function SoBaiGiao({
   return (
     <section aria-labelledby="bai-giao">
       <h2 id="bai-giao" className="sr-only">
-        Bài giao cho em
+        Bài tập
       </h2>
       {danhSach.length === 0 ? (
-        <p className="mt-3 text-sm text-muted">Thầy cô chưa giao bài mới. Vào ngân bài để chọn bài đã phát hành.</p>
+        <p className="mt-3 text-sm text-muted">Thầy cô chưa giao bài. Vào Ngân bài để chọn.</p>
       ) : (
         <div className="border-b border-line">
           {danhSach.map((p) => {
@@ -36,7 +36,6 @@ export function SoBaiGiao({
                 href={`/hs/luyen/${p.id}`}
                 testId={`bai-${p.code}`}
                 mark={p.id === idGoi}
-                kicker={<span translate="no">{p.code}</span>}
                 title={ham ? <Tex tex={ham} /> : p.statementText}
                 meta={nhanMuc4(p.mucDo4)}
               />
@@ -44,9 +43,7 @@ export function SoBaiGiao({
           })}
         </div>
       )}
-      {waiting ? (
-        <p className="mt-3 text-sm text-warn">{waiting} bài đang chờ thầy cô duyệt, chưa mở để làm.</p>
-      ) : null}
+      {waiting ? <p className="mt-3 text-sm text-warn">{waiting} bài thầy cô chưa mở.</p> : null}
     </section>
   );
 }

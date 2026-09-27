@@ -92,15 +92,16 @@ test.describe("học sinh máy tính", () => {
     await expect(page.getByRole("heading", { name: "Chào An" })).toBeVisible();
     await expect(page.getByTestId("sidebar")).toBeVisible();
     await expect(page.getByTestId("nav-hs-lo-trinh")).toBeVisible();
-    await expect(page.getByRole("heading", { name: "Việc tiếp theo" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Bài tiếp theo" })).toBeVisible();
     await expect(page.getByText("12A1 thử")).toBeVisible();
     await expect(page.getByText("đơn điệu và cực trị")).toBeVisible();
     await expect(page.getByTestId("tab-ky-nang")).toBeVisible();
     await expect(page.getByTestId("tab-bai-giao")).toBeVisible();
+    await expect(page.getByTestId("tab-bai-giao")).toHaveText(/Bài tập/);
     await page.screenshot({ path: `${SHOTS}/hs-lo-trinh-1280.png` });
     await page.goto("/hs/lich");
-    await expect(page.getByRole("heading", { name: "Thời gian biểu" })).toBeVisible();
-    await expect(page.getByText(/Kỹ năng yếu nhất|Chưa có ước lượng/)).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Lịch học" })).toBeVisible();
+    await expect(page.getByText(/Yếu nhất|Chưa làm bài/)).toBeVisible();
   });
 });
 
