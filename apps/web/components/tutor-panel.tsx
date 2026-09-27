@@ -126,6 +126,7 @@ export function TutorPanel({
   const choices = luaChonNhaHocSinh(ai);
   const cauCuoiHs = [...chat].reverse().find((m) => m.role === "hs")?.text;
   const loiCuoi = Boolean(chat[chat.length - 1]?.error);
+  const cuoiNguon = [...chat].reduce((acc, m, i) => (m.role === "gia_su" && m.trichDan?.length ? i : acc), -1);
 
   useEffect(() => {
     try {
@@ -359,7 +360,7 @@ export function TutorPanel({
               <LoiVaNguon
                 text={m.text}
                 trichDan={m.trichDan}
-                testId={i === chat.length - 1 ? "tutor-trich-dan" : undefined}
+                testId={i === cuoiNguon ? "tutor-trich-dan" : undefined}
               />
             ) : (
               <p className="whitespace-pre-wrap leading-relaxed">{m.text}</p>
