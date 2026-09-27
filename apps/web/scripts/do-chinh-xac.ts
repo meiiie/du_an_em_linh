@@ -87,10 +87,11 @@ function chamCongBo() {
   const loc = docKiemdinh("ket-qua-loc-lo-dap-an.json");
   if (!tang1 || !buoc5 || !loc) return { dat: false, ly: "thiếu file kiemdinh" };
   const th = (tang1.tong_hop || {}) as Record<string, number>;
+  const b5 = (buoc5.tong_hop || {}) as Record<string, number>;
   const locHop = (loc.tong_hop || {}) as Record<string, { recall_lo_ro?: [string, number]; chan_nham?: [string, number] }>;
   const dat = khopCongBo({
     tang1: th,
-    buoc5: buoc5 as { so_ca?: number; so_ca_loi?: number; loi_bat_duoc?: number },
+    buoc5: b5,
     locM3: locHop.M3_trich_xuat_sympy_ngu_canh,
   });
   return { dat, ly: dat ? "" : "lệch số công bố" };
@@ -144,6 +145,7 @@ async function chamZai() {
       loRo: cham.loRo,
       tiengViet: cham.tiengViet,
       coTrich: cham.coTrich,
+      xungCo: cham.xungCo,
       head: r.text.slice(0, 90).replace(/\s+/g, " "),
     });
   }

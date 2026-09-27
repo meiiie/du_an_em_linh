@@ -15,6 +15,8 @@ test("chamLoiGiaSu: rỗng, mã bước, tiếng Việt, [n]", () => {
   assert.equal(chamLoiGiaSu("B.DH.TXD rồi").maBuoc, true);
   assert.equal(chamLoiGiaSu("Em nhớ [1] đạo hàm lũy thừa.").coTrich, true);
   assert.equal(chamLoiGiaSu("Em nhớ đạo hàm.").tiengViet, true);
+  assert.equal(chamLoiGiaSu("Cô là AI gia sư.").xungCo, true);
+  assert.equal(chamLoiGiaSu("Em nhớ đạo hàm lũy thừa.").xungCo, false);
 });
 
 test("thẻ đo độ chính xác đủ điểm", () => {

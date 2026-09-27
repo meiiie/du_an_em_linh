@@ -51,6 +51,7 @@ export function chamLoiGiaSu(text: string) {
     loRo: loRoDapAn(t),
     tiengViet: /[ăâêôơưáàảãạéèẻẽẹíìỉĩịóòỏõọúùủũụýỳỷỹỵđ]|(\bem\b)/i.test(t),
     coTrich: /\[\d{1,2}\]/.test(t),
+    xungCo: /(^|[\s.,;:!?…])cô\s+là|(^|[\s.,;:!?…])thầy\s+là/i.test(t),
   };
 }
 
@@ -71,7 +72,11 @@ export function chamDoChinhXac(): {
     },
     { id: "goi-sai", ten: "Chip gợi ý / sai chỗ", dat: xinGoiY("Gợi ý bước này") && xinSaiCho("Em sai chỗ nào?") },
     { id: "an-ma-buoc", ten: "Không hiện mã B.DH trên mặt", dat: !/B\.DH/.test(an) && an.includes("nộp") },
-    { id: "he-thong-n", ten: "Prompt bắt [n] và không phải giáo viên", dat: /\[n\]/.test(HE_THONG_GIA_SU) && /không phải giáo viên/.test(HE_THONG_GIA_SU) },
+    {
+      id: "he-thong-n",
+      ten: "Prompt bắt [n], không phải giáo viên, xưng mình",
+      dat: /\[n\]/.test(HE_THONG_GIA_SU) && /không phải giáo viên/.test(HE_THONG_GIA_SU) && /xưng mình/i.test(HE_THONG_GIA_SU),
+    },
     { id: "loi-lo", ten: "Lời có khoảng số bị coi là lộ", dat: chamLoiGiaSu("Đồng biến trên (1; 3).").loRo },
     { id: "loi-goi", ten: "Gợi ý nguyên lý không bị coi là lộ", dat: !chamLoiGiaSu("Em tính $y'$ từng hạng tử, hằng số đạo hàm 0.").loRo },
     { id: "loi-rong", ten: "Câu trống là rỗng", dat: chamLoiGiaSu("").rong && !chamLoiGiaSu("Em nhớ đạo hàm lũy thừa.").rong },
