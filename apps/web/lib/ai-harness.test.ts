@@ -134,6 +134,26 @@ test("thông báo lỗi luôn nói không chuyển nhà", () => {
   }
 });
 
+test("Dừng giữa chừng: aborted, không gọi xong", async () => {
+  process.env.OLLAMA_BASE_URL = "http://127.0.0.1:11434/v1";
+  const ac = new AbortController();
+  ac.abort();
+  let calls = 0;
+  const r = await completeChat({
+    provider: "ollama",
+    messages: [{ role: "user", content: "hi" }],
+    offlineText: "GỢI Ý",
+    signal: ac.signal,
+    fetchFn: async () => {
+      calls += 1;
+      throw new Error("không được gọi");
+    },
+  });
+  assert.equal(calls, 0);
+  assert.equal(r.errorKind, "aborted");
+  assert.equal(r.text.includes("GỢI Ý"), false);
+});
+
 test("offline không gọi fetch", async () => {
   let calls = 0;
   const fake: typeof fetch = async () => {

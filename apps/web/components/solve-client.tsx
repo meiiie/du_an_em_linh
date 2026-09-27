@@ -144,7 +144,7 @@ export function SolveClient({
   const ma = ORDER[step];
 
   return (
-    <div className="grid gap-8 md:grid-cols-[minmax(0,1fr)_minmax(280px,340px)]">
+    <div className="grid items-start gap-8 md:grid-cols-[minmax(0,1fr)_minmax(300px,380px)]">
       <section data-testid="solve-screen">
         <h1 className="text-pretty text-xl font-semibold">{thanDe(title)}</h1>
         <p className="mt-4 max-w-[65ch] overflow-x-auto text-[1.25rem] leading-8" translate="no">

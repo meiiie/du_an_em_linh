@@ -7,7 +7,8 @@ Quyết định: `docs/adr/007-ai-providers.md`. Sư phạm: `docs/adr/003-gia-s
 1. Luật xin đáp án / gợi ý / sai chỗ (`lib/tutor.ts`).
 2. Thang 3 cấp đã kiểm — không bottom-out (VanLehn, Aleven).
 3. Nhà đã **chọn tường minh** — không đoán.
-4. Lọc SymPy (`POST /v1/filter`) trên **cả câu**. Vì thế không phát luồng từng token. Lớp chính M3 (số phải dính ngữ cảnh đáp án), lớp phụ M1 (chuỗi LaTeX). Không dùng M2 giá trị trần — tránh chặn «giảm số mũ đi 1».
+4. Lọc SymPy (`POST /v1/filter`) trên **cả câu**. Vì thế **không stream token**. Lớp chính M3 (số phải dính ngữ cảnh đáp án), lớp phụ M1 (chuỗi LaTeX). Không dùng M2 giá trị trần — tránh chặn «giảm số mũ đi 1».
+5. **SSE trạng thái** (`POST /api/hs/gia-su`): event `trang_thai` (`kho` → `goi` → `loc`) rồi `xong` với câu đã lọc. Nhịp Wiii / Open WebUI (event rồi câu đủ) — không copy mã AGPL. Cùng hàm `chayHoiGiaSu` với server action (không lệch lọc). Dừng = AbortController, không gửi lại.
 
 Demo mặc định `offline`. Không khóa API vẫn làm bài được.
 
@@ -51,8 +52,11 @@ Tham chiếu: [meiiie/lms-ibm-bob-hackathon#3](https://github.com/meiiie/lms-ibm
 | --- | --- |
 | `apps/web/lib/ai-catalog.ts` | Nhãn, loopback, chọn nhà — an toàn cho client |
 | `apps/web/lib/ai-harness.ts` | `completeChat` / `probeProvider` — một lần HTTP |
+| `apps/web/lib/gia-su-luot.ts` | Một lượt gia sư (kho → gọi → lọc) — action và SSE dùng chung |
+| `apps/web/lib/sse.ts` | Gói / đọc event trạng thái |
+| `apps/web/app/api/hs/gia-su/route.ts` | SSE: `trang_thai` rồi `xong` |
 | `apps/web/lib/llm.ts` | Xóa PII + ghi `llm_calls` |
-| `apps/web/components/tutor-panel.tsx` | Composer |
+| `apps/web/components/tutor-panel.tsx` | Cột phải, composer đáy |
 | `apps/web/app/gv/cai-dat/page.tsx` | Chọn nhà, khóa lớp, thử kết nối |
 
 ## Kết nối ChatGPT (người không chuyên)

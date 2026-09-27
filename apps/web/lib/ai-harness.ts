@@ -140,18 +140,24 @@ async function motLan(
   url: string,
   init: RequestInit,
   timeoutMs: number,
+  ngoai?: AbortSignal,
 ): Promise<{ res?: Response; kind?: "timeout" | "network" | "aborted" }> {
   const ac = new AbortController();
   const t = setTimeout(() => ac.abort(), timeoutMs);
+  const theoNgoai = () => ac.abort();
+  ngoai?.addEventListener("abort", theoNgoai);
   try {
+    if (ngoai?.aborted) return { kind: "aborted" };
     const res = await fetchFn(url, { ...init, signal: ac.signal, cache: "no-store" });
     return { res };
   } catch (e) {
+    if (ngoai?.aborted) return { kind: "aborted" };
     if (ac.signal.aborted) return { kind: "timeout" };
     if (e instanceof Error && e.name === "AbortError") return { kind: "aborted" };
     return { kind: "network" };
   } finally {
     clearTimeout(t);
+    ngoai?.removeEventListener("abort", theoNgoai);
   }
 }
 
@@ -209,6 +215,7 @@ export async function completeChat(opts: {
   messages: ChatMessage[];
   offlineText: string;
   fetchFn?: FetchLike;
+  signal?: AbortSignal;
 }): Promise<CompleteChatResult> {
   const provider = parseProvider(opts.provider);
   const fetchFn = opts.fetchFn || fetch;
@@ -258,6 +265,7 @@ export async function completeChat(opts: {
       body: JSON.stringify(body),
     },
     AI_TIMEOUT_CHAT_MS,
+    opts.signal,
   );
 
   if (started.kind === "timeout") return thatBai(provider, "timeout", base);

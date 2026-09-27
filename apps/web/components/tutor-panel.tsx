@@ -4,12 +4,22 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { guiThayCo, hoiGiaSu } from "@/lib/actions/hs";
 import { luaChonNhaHocSinh, parseProvider, type AiProviderId, type AiPublicConfig } from "@/lib/ai-catalog";
+import { chuTrangThaiGiaSu, gomSse, type GiaSuBuocSse } from "@/lib/sse";
 import { moTaCheDo } from "@/lib/tutor";
 import { Button, buttonClasses } from "./ui/button";
 import { fieldControl } from "./ui/field";
 import { cn } from "@/lib/cn";
 
 type Msg = { role: "hs" | "gia_su"; text: string; error?: boolean; trichDan?: { loai: string; ten: string }[] };
+
+type KetHoi = {
+  ok: boolean;
+  tra_loi: string;
+  offline?: boolean;
+  provider?: string;
+  error?: string | null;
+  trich_dan?: { loai: string; ten: string }[];
+};
 
 const LOI_CHAO: Msg = {
   role: "gia_su",
@@ -26,6 +36,50 @@ function khoaNha(problemId: string) {
 function fitTextarea(el: HTMLTextAreaElement) {
   el.style.height = "0px";
   el.style.height = `${Math.min(Math.max(el.scrollHeight, 44), 160)}px`;
+}
+
+async function docSseHoi(opts: {
+  problemId: string;
+  text: string;
+  provider: string;
+  model?: string;
+  signal: AbortSignal;
+  onBuoc: (b: GiaSuBuocSse) => void;
+}): Promise<KetHoi> {
+  const res = await fetch("/api/hs/gia-su", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({
+      problemId: opts.problemId,
+      text: opts.text,
+      provider: opts.provider,
+      model: opts.model,
+    }),
+    signal: opts.signal,
+  });
+  if (!res.ok || !res.body) {
+    return hoiGiaSu(opts.problemId, opts.text, { provider: opts.provider, model: opts.model });
+  }
+  const reader = res.body.getReader();
+  const dec = new TextDecoder();
+  let leftover = "";
+  let ket: KetHoi | null = null;
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    leftover += dec.decode(value, { stream: true });
+    const gom = gomSse(leftover);
+    leftover = gom.leftover;
+    for (const ev of gom.events) {
+      if (ev.event === "trang_thai") {
+        const buoc = (JSON.parse(ev.data) as { buoc?: GiaSuBuocSse }).buoc;
+        if (buoc) opts.onBuoc(buoc);
+      } else if (ev.event === "xong" || ev.event === "loi") {
+        ket = JSON.parse(ev.data) as KetHoi;
+      }
+    }
+  }
+  return ket || { ok: false, tra_loi: "Gia sư đang bận. Em cứ sửa bước được tô và nộp lại.", offline: true };
 }
 
 export function TutorPanel({
@@ -45,11 +99,13 @@ export function TutorPanel({
   const [ask, setAsk] = useState("");
   const [provider, setProvider] = useState<AiProviderId>(ai.classProvider);
   const [thinking, setThinking] = useState(false);
+  const [buocSse, setBuocSse] = useState<GiaSuBuocSse | null>(null);
   const [lastOffline, setLastOffline] = useState(ai.classProvider === "offline");
   const [lastError, setLastError] = useState<string | null>(null);
   const seq = useRef(0);
   const box = useRef<HTMLTextAreaElement>(null);
   const log = useRef<HTMLDivElement>(null);
+  const huy = useRef<AbortController | null>(null);
   const choices = luaChonNhaHocSinh(ai);
 
   useEffect(() => {
@@ -69,7 +125,7 @@ export function TutorPanel({
 
   useEffect(() => {
     log.current?.scrollTo({ top: log.current.scrollHeight });
-  }, [chat, thinking]);
+  }, [chat, thinking, buocSse]);
 
   function ghiDraft(v: string) {
     setAsk(v);
@@ -92,9 +148,26 @@ export function TutorPanel({
 
   function dung() {
     seq.current += 1;
+    huy.current?.abort();
+    huy.current = null;
     setThinking(false);
+    setBuocSse(null);
     setChat((c) => [...c, { role: "gia_su", text: "Đã dừng. Không gửi lại câu hỏi.", error: true }]);
     setLastError("aborted");
+  }
+
+  function nhanKet(res: KetHoi) {
+    if (res.ok) {
+      setLastOffline(Boolean(res.offline));
+      setLastError(res.error ?? null);
+      setChat((c) => [
+        ...c,
+        { role: "gia_su", text: res.tra_loi, error: Boolean(res.error), trichDan: res.trich_dan || [] },
+      ]);
+    } else {
+      setLastError(res.tra_loi);
+      setChat((c) => [...c, { role: "gia_su", text: res.tra_loi, error: true }]);
+    }
   }
 
   async function sendChat(raw?: string) {
@@ -104,20 +177,33 @@ export function TutorPanel({
     if (!raw) ghiDraft("");
     setChat((c) => [...c, { role: "hs", text }]);
     setThinking(true);
+    setBuocSse(null);
     setLastError(null);
-    const res = await hoiGiaSu(problemId, text, { provider, model: ai.classModel || undefined });
-    if (my !== seq.current) return;
-    setThinking(false);
-    if (res.ok) {
-      setLastOffline(res.offline);
-      setLastError(res.error);
-      setChat((c) => [
-        ...c,
-        { role: "gia_su", text: res.tra_loi, error: Boolean(res.error), trichDan: res.ok ? res.trich_dan : [] },
-      ]);
-    } else {
-      setLastError(res.tra_loi);
-      setChat((c) => [...c, { role: "gia_su", text: res.tra_loi, error: true }]);
+    const ac = new AbortController();
+    huy.current = ac;
+    try {
+      const res = await docSseHoi({
+        problemId,
+        text,
+        provider,
+        model: ai.classModel || undefined,
+        signal: ac.signal,
+        onBuoc: (b) => {
+          if (my === seq.current) setBuocSse(b);
+        },
+      });
+      if (my !== seq.current) return;
+      nhanKet(res);
+    } catch (e) {
+      if (my !== seq.current) return;
+      if (e instanceof DOMException && e.name === "AbortError") return;
+      setChat((c) => [...c, { role: "gia_su", text: "Không nối được gia sư. Không gửi lại.", error: true }]);
+    } finally {
+      if (my === seq.current) {
+        setThinking(false);
+        setBuocSse(null);
+        huy.current = null;
+      }
     }
   }
 
@@ -134,11 +220,14 @@ export function TutorPanel({
 
   return (
     <aside
-      className={`border-t border-line pt-4 md:border-t-0 md:pt-0 ${open ? "block" : "hidden md:block"}`}
+      className={cn(
+        "flex min-h-0 flex-col border-t border-line pt-4 md:sticky md:top-4 md:h-[calc(100dvh-6.5rem)] md:border-l md:border-t-0 md:pl-6 md:pt-0",
+        open ? "flex" : "hidden md:flex",
+      )}
       data-testid="tutor-panel"
       aria-busy={thinking}
     >
-      <div className="flex items-start justify-between gap-3">
+      <div className="flex shrink-0 items-start justify-between gap-3">
         <div>
           <p className="text-sm font-semibold">Gia sư AI</p>
           <p className="text-xs text-muted" data-testid="tutor-che-do">
@@ -156,7 +245,7 @@ export function TutorPanel({
         </button>
       </div>
 
-      <label className="mt-3 block text-sm">
+      <label className="mt-3 block shrink-0 text-sm">
         <span className="mb-2 block font-medium">Gia sư lần này</span>
         <select
           data-testid="tutor-provider"
@@ -173,7 +262,7 @@ export function TutorPanel({
         </select>
       </label>
 
-      <div className="mt-3 flex flex-wrap gap-2">
+      <div className="mt-3 flex shrink-0 flex-wrap gap-2">
         <Button type="button" variant="secondary" size="sm" data-testid="chip-goi-y" disabled={thinking} onClick={() => sendChat("Gợi ý bước này")}>
           Gợi ý bước này
         </Button>
@@ -185,13 +274,14 @@ export function TutorPanel({
         </Button>
       </div>
 
-      <div ref={log} data-testid="tutor-log" className="mt-4 max-h-80 space-y-2 overflow-y-auto overscroll-contain">
+      <div ref={log} data-testid="tutor-log" className="mt-4 min-h-40 flex-1 space-y-2 overflow-y-auto overscroll-contain md:min-h-0">
         {chat.map((m, i) => (
           <div
             key={i}
-            className={`px-4 py-3 text-sm ${
-              m.role === "hs" ? "bg-ink text-chalk" : m.error ? "bg-amber-50 text-amber-950" : "bg-wash"
-            }`}
+            className={cn(
+              "max-w-[92%] px-4 py-3 text-sm",
+              m.role === "hs" ? "ml-auto bg-ink text-chalk" : m.error ? "bg-amber-50 text-amber-950" : "bg-wash",
+            )}
           >
             <p>{m.text}</p>
             {m.trichDan && m.trichDan.length ? (
@@ -202,13 +292,13 @@ export function TutorPanel({
           </div>
         ))}
         {thinking ? (
-          <p className="px-4 py-3 text-sm text-muted" data-testid="tutor-thinking" aria-live="polite">
-            Đang nghĩ…
+          <p className="bg-wash px-4 py-3 text-sm text-muted" data-testid="tutor-thinking" aria-live="polite">
+            {chuTrangThaiGiaSu(buocSse)}
           </p>
         ) : null}
       </div>
 
-      <div className="mt-4 flex items-end gap-2" data-testid="tutor-composer">
+      <div className="mt-4 flex shrink-0 items-end gap-2 border-t border-line pt-3" data-testid="tutor-composer">
         <label className="sr-only" htmlFor="tutor-input">
           Câu hỏi cho gia sư
         </label>

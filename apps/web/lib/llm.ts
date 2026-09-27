@@ -28,6 +28,7 @@ export async function callLLM(opts: {
   model?: string | null;
   classApiKey?: string | null;
   classProvider?: string | null;
+  signal?: AbortSignal;
 }) {
   const cleaned = locTinNhan(opts.messages);
   const provider = parseProvider(opts.provider);
@@ -38,6 +39,7 @@ export async function callLLM(opts: {
     classProvider: opts.classProvider,
     messages: cleaned,
     offlineText: opts.offlineText,
+    signal: opts.signal,
   });
   await db.insert(llmCalls).values({
     id: crypto.randomUUID(),
