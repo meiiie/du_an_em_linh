@@ -158,13 +158,27 @@ export function TutorPanel({
 
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
-      if (e.key !== "Escape" || !huy.current) return;
-      e.preventDefault();
-      dung();
+      if (e.key !== "Escape") return;
+      if (huy.current) {
+        e.preventDefault();
+        dung();
+        return;
+      }
+      if (open && window.matchMedia("(max-width: 767px)").matches) onClose();
     }
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   });
+
+  useEffect(() => {
+    if (!open || typeof window === "undefined") return;
+    if (window.matchMedia("(min-width: 768px)").matches) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prev;
+    };
+  }, [open]);
 
   function ghiDraft(v: string) {
     setAsk(v);
@@ -266,7 +280,9 @@ export function TutorPanel({
   return (
     <aside
       className={cn(
-        "flex min-h-0 flex-col border-t border-line pt-4 md:sticky md:top-4 md:h-[calc(100dvh-6.5rem)] md:border-l md:border-t-0 md:pl-6 md:pt-0",
+        "flex min-h-0 flex-col bg-paper",
+        "max-md:fixed max-md:inset-0 max-md:z-50 max-md:h-dvh max-md:overflow-hidden max-md:px-4 max-md:pt-[max(1rem,env(safe-area-inset-top))] max-md:pb-[max(0.75rem,env(safe-area-inset-bottom))]",
+        "md:sticky md:top-4 md:h-[calc(100dvh-6.5rem)] md:border-l md:border-line md:pl-6",
         open ? "flex" : "hidden md:flex",
       )}
       data-testid="tutor-panel"
@@ -285,7 +301,12 @@ export function TutorPanel({
             </Link>
           </p>
         </div>
-        <button type="button" className={cn(buttonClasses({ variant: "ghost", size: "sm" }), "md:hidden")} onClick={onClose}>
+        <button
+          type="button"
+          data-testid="dong-gia-su"
+          className={cn(buttonClasses({ variant: "ghost", size: "sm" }), "min-h-11 min-w-11 md:hidden")}
+          onClick={onClose}
+        >
           Đóng
         </button>
       </div>
@@ -408,7 +429,7 @@ export function TutorPanel({
             }
           }}
           className={`min-h-11 min-w-0 flex-1 resize-none ${fieldControl}`}
-          placeholder="Hỏi gợi ý, không hỏi đáp án… Enter gửi, Shift+Enter xuống dòng"
+          placeholder="Hỏi gợi ý, không hỏi đáp án…"
         />
         {thinking ? (
           <Button type="button" data-testid="tutor-send" variant="secondary" onClick={dung} className="min-h-11 min-w-11 px-4">

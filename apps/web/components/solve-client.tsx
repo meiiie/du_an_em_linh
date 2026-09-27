@@ -146,7 +146,7 @@ export function SolveClient({
 
   return (
     <div className="grid items-start gap-8 md:grid-cols-[minmax(0,1fr)_minmax(300px,380px)]">
-      <section data-testid="solve-screen">
+      <section data-testid="solve-screen" className="pb-20 md:pb-0">
         <h1 className="text-pretty text-xl font-semibold">{thanDe(title)}</h1>
         <p className="mt-4 max-w-[65ch] overflow-x-auto text-[1.25rem] leading-8" translate="no">
           <Tex tex={latex} />

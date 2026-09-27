@@ -30,7 +30,7 @@ Học sinh được chọn offline luôn; Ollama/LM Studio nếu lớp bật `ai
 Tham chiếu: [meiiie/lms-ibm-bob-hackathon#3](https://github.com/meiiie/lms-ibm-bob-hackathon/pull/3) (ChatGPT tùy chọn + Ollama/LM Studio), [Ollama OpenAI compat](https://github.com/ollama/ollama/blob/main/docs/openai.md), [LM Studio local server](https://lmstudio.ai/docs/app/api), [Open WebUI](https://github.com/open-webui/open-webui), [Continue](https://github.com/continuedev/continue), [LiteLLM](https://github.com/BerriAI/litellm).
 
 - **Không fallback thầm.** Lỗi cloud/local trả lời bằng chữ «không chuyển nhà / không gửi lại». Không lấy `offlineText` thay cho mô hình.
-- **Không phát lại** cùng một HTTP. Timeout 30 s (chat) / 8 s (probe). `max_tokens` 1600 (FlashX/thinking hết 400 chỉ cho reasoning). Không queue, không backoff. SSE lỗi / hết phiên: báo lỗi, **không** gọi lại `hoiGiaSu`.
+- **Không phát lại** cùng một HTTP. Timeout 30 s (chat) / 8 s (probe). `max_tokens` 1600. Z.AI `thinking: disabled` — FlashX hay hết token cho reasoning, lớp không xem CoT. Không queue, không backoff. SSE lỗi / hết phiên: báo lỗi, **không** gọi lại `hoiGiaSu`.
 - **Khóa lớp theo đúng nhà.** `docKhoaNha` chỉ dùng khóa dán khi lớp đang chọn nhà đó (hoặc khi đang dán/probe nhà đang nối). Khóa Z.AI không gửi sang OpenAI/OpenRouter; cờ `cloudReady` / `openrouterReady` / `zaiReady` tách theo nhà.
 - **Local = loopback.** `10.x`, `192.168.x`, metadata `169.254.169.254` bị từ chối. Không quét LAN, không mượn cookie LMS.
 - **Không device-OAuth ChatGPT.** PR #3 dùng `client_id` nội bộ (`app_EMoamEEZ73f0CkXaXp7hrann`) — ToS, vỡ im lặng, khóa máy. Ở đây chỉ khóa API chính thức.

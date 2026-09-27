@@ -38,7 +38,7 @@ export function TrichDanGiaSu({
                   aria-pressed={Boolean(dang)}
                   onClick={() => onChonSo(so)}
                   className={cn(
-                    "min-h-7 px-1 text-left underline-offset-2",
+                    "min-h-11 px-2 text-left underline-offset-2",
                     dang ? "font-medium underline" : "text-muted",
                   )}
                 >
@@ -59,7 +59,10 @@ export function TrichDanGiaSu({
       {trich?.trich ? (
         <p className="mt-1 leading-relaxed text-muted">
           «{thanTrich(trich.trich)}»{" "}
-          <Link href={duongKhoTrichDan(trich)} className="underline underline-offset-2">
+          <Link
+            href={duongKhoTrichDan(trich)}
+            className="inline-flex min-h-11 items-center underline underline-offset-2"
+          >
             {tenMoKho(trich.loai)}
           </Link>
         </p>

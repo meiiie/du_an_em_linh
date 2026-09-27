@@ -46,7 +46,7 @@ function mdGoc(opts: { trichDan: TrichDanHien[]; onChonSo?: (so: number) => void
             data-so={so}
             aria-label={t ? `Đã đọc ${so}: ${tenTaiLieuNgan(t.ten)}` : `Đã đọc ${so}`}
             title={t?.trich ? thanTrich(t.trich) : undefined}
-            className="ml-0.5 inline-flex h-4 min-w-4 -translate-y-0.5 items-center justify-center bg-wash px-0.5 align-super text-[10px] font-medium leading-none no-underline"
+            className="relative ml-0.5 inline-flex h-4 min-w-4 -translate-y-0.5 items-center justify-center bg-wash px-0.5 align-super text-[10px] font-medium leading-none no-underline after:absolute after:-inset-3.5 after:content-['']"
             onClick={(e: MouseEvent<HTMLAnchorElement>) => {
               if (!opts.onChonSo) return;
               e.preventDefault();

@@ -254,7 +254,8 @@ export async function completeChat(opts: {
     messages: opts.messages,
   };
   if (provider === "zai") {
-    body.thinking = { type: "enabled" };
+    // Tắt thinking: FlashX hay hết token cho reasoning, content rỗng. Lớp không xem CoT.
+    body.thinking = { type: "disabled" };
   }
   const started = await motLan(
     fetchFn,
