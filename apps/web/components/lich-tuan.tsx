@@ -21,22 +21,19 @@ export function LichTuan({
   const coBuoi = new Set(slots.map((s) => s.thu));
   return (
     <div data-testid="lich-tuan">
-      <ol className="grid grid-cols-7 border-b border-line" aria-label="Các ngày trong tuần">
+      <ol className="grid max-w-sm grid-cols-7 border-b border-line" aria-label="Các ngày trong tuần">
         {THU_TUAN.map((d) => {
           const hom = d.ten === homNay;
           const co = coBuoi.has(d.ten);
           return (
             <li key={d.ma} className="flex flex-col items-center gap-1 py-3">
               <span className={cn("text-xs", hom ? "font-medium text-ink" : "text-muted")}>{d.ma}</span>
-              <span
-                className={cn("size-1 rounded-full", co ? "bg-ink" : "bg-transparent")}
-                aria-hidden
-              />
+              <span className={cn("size-2 rounded-full", co ? "bg-ink" : "bg-transparent")} aria-hidden />
             </li>
           );
         })}
       </ol>
-      <ol className="divide-y divide-line border-b border-line">
+      <ol className="mt-2 divide-y divide-line border-y border-line">
         {slots.map((s) => {
           const dang = s.thu === buoiTiep;
           return (
