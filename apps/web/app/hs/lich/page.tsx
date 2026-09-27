@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
 import { eq } from "drizzle-orm";
+import { LichTuan } from "@/components/lich-tuan";
 import { tuVanHocTap } from "@/lib/counsel";
 import { requireRole } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { masteryStates, reminders, studySchedules } from "@/lib/db/schema";
+import { ghepNhacVaoSlot, thuBuoiTiep, thuHomNay } from "@/lib/lich";
 
 export const dynamic = "force-dynamic";
 
@@ -18,38 +20,26 @@ export default async function LichPage() {
   const rems = s ? await db.select().from(reminders).where(eq(reminders.scheduleId, s.id)) : [];
   const states = await db.select().from(masteryStates).where(eq(masteryStates.studentId, u.id));
   const live = tuVanHocTap(states);
-  const slots = live.slots;
+  const homNay = thuHomNay();
+  const { slots, roi } = ghepNhacVaoSlot(
+    live.slots,
+    rems.map((r) => ({ id: r.id, title: r.title, body: r.body, sendAt: r.sendAt || "" })),
+    homNay,
+  );
+  const buoiTiep = thuBuoiTiep(live.slots, homNay);
   return (
     <main>
-      <header className="mb-6 border-b border-line pb-4">
+      <header className="mb-6">
         <h1 className="text-pretty text-[1.75rem] font-semibold tracking-tight">Lịch học</h1>
         <p className="mt-2 max-w-[65ch] text-sm leading-relaxed text-muted">{live.loiKhuyen}</p>
+        {roi.map((r) => (
+          <p key={r.id} className="mt-2 max-w-[65ch] text-sm leading-relaxed text-muted">
+            {r.body}
+          </p>
+        ))}
       </header>
-      {slots.length === 0 && rems.length === 0 ? <p className="text-sm text-muted">Chưa có khung giờ.</p> : null}
-      {slots.length || rems.length ? (
-        <ul className="divide-y divide-line border-b border-line text-sm">
-          {slots.map((sl) => (
-            <li
-              key={sl.thu + sl.gio}
-              className="grid min-h-11 grid-cols-[6.5rem_8rem_minmax(0,1fr)] items-center gap-3 py-3"
-            >
-              <span className="font-medium">{sl.thu}</span>
-              <span className="tabular text-muted">{sl.gio}</span>
-              <span className="min-w-0 text-muted">{sl.viec}</span>
-            </li>
-          ))}
-          {rems.map((r) => (
-            <li
-              key={r.id}
-              className="grid min-h-11 grid-cols-[6.5rem_8rem_minmax(0,1fr)] items-center gap-3 py-3"
-            >
-              <span className="font-medium">{r.title}</span>
-              <span className="tabular text-muted">{r.sendAt}</span>
-              <span className="min-w-0 text-muted">{r.body}</span>
-            </li>
-          ))}
-        </ul>
-      ) : null}
+      {slots.length === 0 ? <p className="text-sm text-muted">Chưa có khung giờ.</p> : null}
+      {slots.length ? <LichTuan slots={slots} homNay={homNay} buoiTiep={buoiTiep} /> : null}
     </main>
   );
 }
