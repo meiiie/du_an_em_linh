@@ -21,7 +21,7 @@ export default function OgImage() {
           border: "16px solid #17181C",
         }}
       >
-        <div style={{ display: "flex", fontSize: 22, color: "#5C5F66" }}>Nguyên mẫu · Toán 12</div>
+        <div style={{ display: "flex", fontSize: 22, color: "#5C5F66" }}>Toán 12 · đơn điệu và cực trị</div>
         <div style={{ display: "flex", flexDirection: "column" }}>
           <div style={{ fontSize: 72, fontWeight: 700, lineHeight: 1.1 }}>{SITE_NAME}</div>
           <div style={{ marginTop: 16, fontSize: 28, color: "#5C5F66", maxWidth: 880 }}>

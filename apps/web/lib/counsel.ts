@@ -20,7 +20,7 @@ export function tuVanHocTap(states: MucState[]) {
   const weak = [...states].sort((a, b) => a.mastery - b.mastery || b.stuckCounter - a.stuckCounter)[0];
   if (!weak) {
     return {
-      loiKhuyen: "Chưa làm bài nào. Mỗi buổi một bài, nộp đủ năm bước, đừng hỏi đáp án.",
+      loiKhuyen: "Chưa làm bài nào. Mỗi buổi một bài, nộp đủ năm bước.",
       slots: [
         { thu: "Thứ Hai", gio: "19:00", viec: "Một bài nhận biết — viết đủ 5 bước" },
         { thu: "Thứ Tư", gio: "19:00", viec: "Ôn quy tắc đạo hàm trên giấy" },
@@ -33,8 +33,8 @@ export function tuVanHocTap(states: MucState[]) {
   const muc = LABEL4[weak.currentMucDo4 as Muc4] || weak.currentMucDo4;
   const ket = weak.stuckCounter >= 2;
   const loiKhuyen = ket
-    ? `Yếu nhất: ${ten} (${muc}). Tuần này ôn đúng dạng này, cùng mức, chưa tăng độ khó. Sai thì viết lại quy tắc rồi nộp.`
-    : `Yếu nhất: ${ten} (${muc}). Mỗi buổi: ôn công thức, làm một bài cùng mức, sửa bước bị tô. Vững rồi mới chuyển mức khó hơn.`;
+    ? `Yếu nhất: ${ten} (${muc}). Tuần này ôn đúng dạng này, cùng mức, chưa tăng độ khó.`
+    : `Yếu nhất: ${ten} (${muc}). Mỗi buổi một bài cùng mức.`;
 
   const slots = ket
     ? [

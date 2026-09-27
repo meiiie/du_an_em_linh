@@ -69,7 +69,7 @@ export default async function Page() {
             data-testid="ai-model"
             defaultValue={setting?.aiModel || ""}
             className={fieldControl}
-            placeholder="gpt-4o-mini · qwen/qwen3-coder · glm-5.3-flashx · llama3.2"
+            placeholder="Để trống nếu dùng mặc định"
           />
         </label>
 

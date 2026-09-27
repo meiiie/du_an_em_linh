@@ -81,9 +81,23 @@ export function tenCuaTang(tier: number) {
 
 /** Lý do duyệt: bỏ calque «Tầng n» — số tầng đã đứng riêng trên hàng. */
 export function gonLyDoDuyet(text: string) {
-  const gon = (text || "").replace(/Tầng\s*\d+\s*/gi, "").replace(/\s+/g, " ").trim();
+  const gon = (text || "")
+    .replace(/Tầng\s*\d+\s*/gi, "")
+    .replace(/lời giải cấu trúc 5 bước để máy tự kiểm/gi, "lời giải đủ 5 bước để máy chấm")
+    .replace(/\s+/g, " ")
+    .trim();
   if (!gon) return "";
   return gon.charAt(0).toLocaleUpperCase("vi-VN") + gon.slice(1);
+}
+
+/** Tiếng Việt không để trần trong math mode — KaTeX nuốt dấu. */
+export function chuanHoaLatexCongThuc(raw: string) {
+  const s = (raw || "").trim();
+  if (!s || /\\text\s*\{/.test(s)) return s;
+  return s.replace(
+    /[\p{L}']*[À-ỹĐđ][\p{L}']*(?:\s+[\p{L}']*[À-ỹĐđ][\p{L}']*)*/gu,
+    (chunk) => `\\text{${chunk}}`,
+  );
 }
 
 /** Lời trên phiếu — tiếng lớp 12, không mã, không ngưỡng/nấc/phát hành. */

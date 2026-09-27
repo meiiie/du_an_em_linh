@@ -517,9 +517,9 @@ async function main() {
     ["Đạo hàm lũy thừa", "(x^n)' = n x^{n-1}", "Đạo hàm của x mũ n là n nhân x mũ n trừ 1. Hằng số có đạo hàm bằng 0."],
     ["Đạo hàm tổng", "(u+v)' = u' + v'", "Đạo hàm của tổng bằng tổng các đạo hàm."],
     ["Đạo hàm thương", "(u/v)' = (u'v - uv') / v^2", "Với thương, tử là u'v trừ uv', mẫu là v bình."],
-    ["Đơn điệu", "y' \\ge 0 \\Rightarrow đồng biến", "Hàm đồng biến trên khoảng khi đạo hàm không âm và bằng 0 tại hữu hạn điểm; nghịch biến khi đạo hàm không dương theo cùng quy tắc."],
-    ["Cực trị", "+ \\to - : cực đại", "Đạo hàm đổi từ dương sang âm thì cực đại; từ âm sang dương thì cực tiểu. Đạo hàm bằng 0 mà không đổi dấu thì chưa phải cực trị."],
-    ["Điểm tới hạn", "y'=0 hoặc y' không xác định", "Điểm tới hạn gồm nghiệm của đạo hàm bằng 0 và điểm thuộc tập xác định mà đạo hàm không xác định."],
+    ["Đơn điệu", "y' \\ge 0 \\Rightarrow \\text{đồng biến}", "Hàm đồng biến trên khoảng khi đạo hàm không âm và bằng 0 tại hữu hạn điểm; nghịch biến khi đạo hàm không dương theo cùng quy tắc."],
+    ["Cực trị", "+ \\to - : \\text{cực đại}", "Đạo hàm đổi từ dương sang âm thì cực đại; từ âm sang dương thì cực tiểu. Đạo hàm bằng 0 mà không đổi dấu thì chưa phải cực trị."],
+    ["Điểm tới hạn", "y'=0 \\text{ hoặc } y' \\text{ không xác định}", "Điểm tới hạn gồm nghiệm của đạo hàm bằng 0 và điểm thuộc tập xác định mà đạo hàm không xác định."],
   ];
   const congThuc = [];
   for (const [title, latex, noi] of formulaRows) {

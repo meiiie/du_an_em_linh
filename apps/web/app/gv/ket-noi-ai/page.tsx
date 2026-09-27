@@ -203,7 +203,7 @@ export default async function Page({
       <div className="border-t border-line">
         <KhoiNha
           testId="ket-noi-chatgpt"
-          ten="Lớp"
+          ten="ChatGPT"
           trangThaiTestId="ket-noi-trang-thai"
           trangThai={
             chatgptReady

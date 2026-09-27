@@ -153,12 +153,12 @@ export function SolveClient({
         </p>
         <ol className="mt-4 flex gap-0 overflow-x-auto border-y border-line lg:flex-col lg:border-0">
           {BUOC.map((b, i) => (
-            <li key={b.ma} className="shrink-0 lg:shrink">
+            <li key={b.ma} className="min-w-0 flex-1 lg:flex-none">
               <button
                 type="button"
                 data-testid={`step-${b.ma}`}
                 onClick={() => setStep(i)}
-                className={`flex min-h-11 w-full items-center gap-3 px-4 text-left text-sm ${
+                className={`flex min-h-11 w-full items-center gap-1.5 px-2 text-left text-[13px] lg:gap-3 lg:px-4 lg:text-sm ${
                   badStep === b.ma
                     ? "bg-red-50 font-medium text-mark"
                     : i === step
@@ -169,7 +169,7 @@ export function SolveClient({
                 }`}
               >
                 <span className="tabular font-mono text-xs">{i + 1}</span>
-                <span className="lg:hidden">{tenBuocNgan(b.ma)}</span>
+                <span className="whitespace-nowrap lg:hidden">{tenBuocNgan(b.ma)}</span>
                 <span className="hidden lg:inline">{b.ten}</span>
               </button>
             </li>

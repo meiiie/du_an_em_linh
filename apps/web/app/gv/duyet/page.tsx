@@ -70,7 +70,7 @@ export default async function Page() {
                 <form
                   action={async (fd) => {
                     "use server";
-                    await duyetBai(p.id, String(fd.get("note") || "Đã xem, cho học."));
+                    await duyetBai(p.id, String(fd.get("note") || "").trim() || "Đã xem, cho học.");
                   }}
                   className="flex flex-1 flex-wrap gap-2"
                 >
@@ -80,7 +80,7 @@ export default async function Page() {
                   <input
                     id={`note-${p.id}`}
                     name="note"
-                    defaultValue="Đã xem, cho học."
+                    placeholder="Ghi chú"
                     className={`min-w-[220px] flex-1 ${fieldControl}`}
                   />
                   <Button type="submit" variant="accent">

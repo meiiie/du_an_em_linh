@@ -23,5 +23,5 @@ export function siteBan() {
   return gon.slice(0, 7) || null;
 }
 export const SITE_DESC =
-  "Nguyên mẫu: gia sư Toán 12 — xét đơn điệu và cực trị theo phiếu 5 bước. Gia sư sửa bài, không đưa đáp án. Demo chạy khi không có khóa API.";
+  "Gia sư Toán 12 — xét đơn điệu và cực trị trên phiếu 5 bước. Gia sư sửa bài, không đưa đáp án.";
 export const SITE_LOCALE = "vi_VN";

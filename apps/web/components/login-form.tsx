@@ -98,9 +98,7 @@ export function LoginForm({
       <h1 id="tieu-de-dang-nhap" className="mt-5 text-pretty text-[1.75rem] font-semibold leading-9 tracking-tight">
         Đăng nhập
       </h1>
-      <p className="mt-2 min-h-[22px] text-sm leading-relaxed text-muted">
-        {buoc === "email" ? "Email tài khoản thử." : "Mật khẩu tài khoản thử."}
-      </p>
+      <p className="sr-only">{buoc === "email" ? "Nhập email." : "Nhập mật khẩu."}</p>
 
       {loi ? (
         <p
@@ -222,13 +220,6 @@ export function LoginForm({
           </li>
         ))}
       </ul>
-      {loi ? null : (
-        <p className="mt-4 text-xs leading-[18px] text-muted">
-          Học sinh <span className="font-mono">hocsinh123</span>
-          {" · "}
-          giáo viên <span className="font-mono">giaovien123</span>
-        </p>
-      )}
     </section>
   );
 }

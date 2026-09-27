@@ -329,7 +329,7 @@ export function TutorPanel({
       </div>
 
       <label className="mt-3 block shrink-0 text-sm">
-        <span className="mb-2 block font-medium">Gia sư lần này</span>
+        <span className="mb-2 block font-medium max-md:sr-only">Gia sư lần này</span>
         <select
           data-testid="tutor-provider"
           value={provider}

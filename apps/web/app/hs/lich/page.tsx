@@ -21,7 +21,7 @@ export default async function LichPage() {
   const states = await db.select().from(masteryStates).where(eq(masteryStates.studentId, u.id));
   const live = tuVanHocTap(states);
   const homNay = thuHomNay();
-  const { slots, roi } = ghepNhacVaoSlot(
+  const { slots } = ghepNhacVaoSlot(
     live.slots,
     rems.map((r) => ({ id: r.id, title: r.title, body: r.body, sendAt: r.sendAt || "" })),
     homNay,
@@ -32,11 +32,6 @@ export default async function LichPage() {
       <header className="mb-6">
         <h1 className="text-pretty text-[1.75rem] font-semibold tracking-tight">Lịch học</h1>
         <p className="mt-2 max-w-[65ch] text-sm leading-relaxed text-muted">{live.loiKhuyen}</p>
-        {roi.map((r) => (
-          <p key={r.id} className="mt-2 max-w-[65ch] text-sm leading-relaxed text-muted">
-            {r.body}
-          </p>
-        ))}
       </header>
       {slots.length === 0 ? <p className="text-sm text-muted">Chưa có khung giờ.</p> : null}
       {slots.length ? <LichTuan slots={slots} homNay={homNay} buoiTiep={buoiTiep} /> : null}
