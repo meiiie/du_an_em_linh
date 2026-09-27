@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { vaoLop } from "./vao-lop";
+import { moSoBaiGiao, vaoLop } from "./vao-lop";
 
 async function box(page: import("@playwright/test").Page, sel: string) {
   const loc = page.locator(sel).first();
@@ -42,6 +42,7 @@ test("giải phẫu nút 40/44 và ô 40", async ({ page }) => {
   expect(cta.h).toBeGreaterThanOrEqual(40);
   expect(cta.px).toBeGreaterThanOrEqual(16);
 
+  await moSoBaiGiao(page);
   await page.getByTestId("bai-DH12-03-VD-01").click();
   const step = await box(page, '[data-testid="step-B.DH.TXD"]');
   const nop = await box(page, '[data-testid="nop-buoc"]');

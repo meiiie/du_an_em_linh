@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { eq } from "drizzle-orm";
 import { PageHeader } from "@/components/ui/page-header";
 import { Tex } from "@/components/tex";
@@ -8,6 +9,10 @@ import { problems } from "@/lib/db/schema";
 import { hamLatex, nhanMuc4 } from "@/lib/de-hoc-sinh";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  title: "Ngân bài",
+};
 
 export default async function Page() {
   await requireRole("HS");

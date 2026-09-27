@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 import { SHOTS } from "./anh";
-import { vaoLop } from "./vao-lop";
+import { moSoBaiGiao, vaoLop } from "./vao-lop";
 
 test.describe("harness gia sư", () => {
   test.use({ viewport: { width: 1280, height: 800 } });
@@ -8,6 +8,7 @@ test.describe("harness gia sư", () => {
   test("composer Enter, nhà local lỗi không chuyển đám mây", async ({ page }) => {
     await page.goto("/dang-nhap");
     await vaoLop(page, "hs.an@demo.local", "hocsinh123");
+    await moSoBaiGiao(page);
     await page.getByTestId("bai-DH12-03-VD-01").click();
     await expect(page.getByTestId("tutor-panel")).toBeVisible();
     await expect(page.getByTestId("tutor-composer")).toBeVisible();

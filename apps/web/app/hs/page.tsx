@@ -1,14 +1,13 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { eq } from "drizzle-orm";
 import { PhieuViecTiep } from "@/components/phieu-viec-tiep";
+import { SoBaiGiao } from "@/components/so-bai-giao";
 import { SoKyNang } from "@/components/so-ky-nang";
-import { Tex } from "@/components/tex";
-import { WorkRow } from "@/components/work-row";
+import { SoNav } from "@/components/so-nav";
 import { requireRole } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { masteryStates, problems, skills } from "@/lib/db/schema";
-import { hamLatex, nhanMuc4, tenKyNangNgan } from "@/lib/de-hoc-sinh";
+import { tenKyNangNgan } from "@/lib/de-hoc-sinh";
 import { layBaiGiao, layIdBaiDaDat, layTenLopHs, trangThaiPhieu } from "@/lib/hs-du-lieu";
 import { recommend } from "@/lib/learning";
 import { MUC4, type Muc4 } from "@/lib/levels";
@@ -19,7 +18,8 @@ export const metadata: Metadata = {
   title: "Lộ trình",
 };
 
-export default async function HsHome() {
+export default async function HsHome({ searchParams }: { searchParams: Promise<{ so?: string }> }) {
+  const so = (await searchParams).so === "giao" ? "giao" : "ky-nang";
   const u = await requireRole("HS");
   const [states, skillRows, pubs, waiting, giao, tenLop, daDat] = await Promise.all([
     db.select().from(masteryStates).where(eq(masteryStates.studentId, u.id)),
@@ -54,13 +54,15 @@ export default async function HsHome() {
 
   return (
     <main>
-      <header className="mb-8 border-b border-line pb-6">
-        <h1 className="text-pretty text-[1.75rem] font-semibold tracking-tight">Chào {u.displayName}</h1>
-        {tenLop ? <p className="mt-2 text-sm text-muted">{tenLop}</p> : null}
-        <p className={tenLop ? "mt-1 text-sm text-muted" : "mt-2 text-sm text-muted"}>Toán 12, đơn điệu và cực trị</p>
+      <header className="mb-6 flex flex-wrap items-end justify-between gap-x-6 gap-y-2 border-b border-line pb-4">
+        <div className="min-w-0">
+          <h1 className="text-pretty text-[1.75rem] font-semibold tracking-tight">Chào {u.displayName}</h1>
+          <p className="mt-1 text-sm text-muted">Toán 12, đơn điệu và cực trị</p>
+        </div>
+        {tenLop ? <p className="text-sm text-muted">{tenLop}</p> : null}
       </header>
 
-      <div className="lg:grid lg:grid-cols-[minmax(0,1.25fr)_minmax(16rem,20rem)] lg:items-start">
+      <div className="lg:grid lg:grid-cols-[minmax(0,1fr)_minmax(18rem,24rem)] lg:items-start">
         <div className="min-w-0 lg:border-r lg:border-line lg:pr-8">
           <PhieuViecTiep
             problem={goi?.problem ?? null}
@@ -70,44 +72,13 @@ export default async function HsHome() {
           />
         </div>
 
-        <div className="mt-8 min-w-0 space-y-8 lg:mt-0 lg:pl-8">
-          <SoKyNang rows={knHang} dangYeu={goi?.problem.skillCode} />
-
-          <section aria-labelledby="bai-giao">
-            <div className="mb-1 flex items-end justify-between gap-2">
-              <h2 id="bai-giao" className="text-base font-semibold">
-                Bài giao cho em
-              </h2>
-              <Link href="/hs/bai" className="text-sm text-muted underline-offset-2 hover:text-ink hover:underline">
-                Xem ngân bài
-              </Link>
-            </div>
-            {chuaXong.length === 0 ? (
-              <p className="mt-3 text-sm text-muted">Thầy cô chưa giao bài mới. Vào ngân bài để chọn bài đã phát hành.</p>
-            ) : (
-              <div className="mt-3 border-y border-line">
-                {chuaXong.map((p) => {
-                  const ham = hamLatex(p.statementLatex);
-                  return (
-                    <WorkRow
-                      key={p.id}
-                      href={`/hs/luyen/${p.id}`}
-                      testId={`bai-${p.code}`}
-                      mark={p.id === goi?.problem.id}
-                      kicker={<span translate="no">{p.code}</span>}
-                      title={ham ? <Tex tex={ham} /> : p.statementText}
-                      meta={nhanMuc4(p.mucDo4)}
-                    />
-                  );
-                })}
-              </div>
-            )}
-            {waiting.length ? (
-              <p className="mt-3 text-sm text-warn">
-                {waiting.length} bài đang chờ thầy cô duyệt, chưa mở để làm.
-              </p>
-            ) : null}
-          </section>
+        <div className="mt-6 min-w-0 lg:mt-0 lg:pl-8">
+          <SoNav active={so} nGiao={chuaXong.length} />
+          {so === "giao" ? (
+            <SoBaiGiao danhSach={chuaXong} idGoi={goi?.problem.id} waiting={waiting.length} />
+          ) : (
+            <SoKyNang rows={knHang} dangYeu={goi?.problem.skillCode} />
+          )}
         </div>
       </div>
     </main>

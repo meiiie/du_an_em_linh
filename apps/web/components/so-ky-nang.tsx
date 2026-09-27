@@ -11,10 +11,10 @@ export function SoKyNang({
 }) {
   return (
     <section aria-labelledby="ky-nang">
-      <h2 id="ky-nang" className="text-base font-semibold">
+      <h2 id="ky-nang" className="sr-only">
         Kỹ năng
       </h2>
-      <p className="mt-1 text-xs text-muted">Ô đặc là mức thành thạo, không phải điểm.</p>
+      <p className="mt-3 text-xs text-muted">Ô đặc là mức thành thạo, không phải điểm.</p>
       {rows.length === 0 ? (
         <p className="mt-4 text-sm text-muted">Chưa có ước lượng. Làm một bài để hiện năm kỹ năng.</p>
       ) : (

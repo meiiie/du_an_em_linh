@@ -8,8 +8,8 @@ export type NavItem = {
 export const HS_NAV: NavItem[] = [
   { href: "/hs", label: "Lộ trình", icon: "home", testId: "nav-hs-lo-trinh" },
   { href: "/hs/bai", label: "Ngân bài", icon: "book", testId: "nav-hs-bai" },
-  { href: "/hs/lich", label: "Thời gian biểu", icon: "calendar", testId: "nav-hs-lich" },
-  { href: "/hs/kho", label: "Kho kiến thức", icon: "kho", testId: "nav-hs-kho" },
+  { href: "/hs/lich", label: "Lịch", icon: "calendar", testId: "nav-hs-lich" },
+  { href: "/hs/kho", label: "Kho", icon: "kho", testId: "nav-hs-kho" },
 ];
 
 export const GV_NAV: NavItem[] = [

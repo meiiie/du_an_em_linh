@@ -1,9 +1,14 @@
+import type { Metadata } from "next";
 import { khoLopCongKhai } from "@/lib/actions/hs";
 import { KhoTheoBuoc } from "@/components/kho-theo-buoc";
 import { PageHeader } from "@/components/ui/page-header";
 import { Tex } from "@/components/tex";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  title: "Kho",
+};
 
 export default async function Page() {
   const kho = await khoLopCongKhai();

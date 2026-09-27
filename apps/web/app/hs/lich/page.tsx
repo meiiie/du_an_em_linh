@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { eq } from "drizzle-orm";
 import { PageHeader } from "@/components/ui/page-header";
 import { tuVanHocTap } from "@/lib/counsel";
@@ -6,6 +7,10 @@ import { db } from "@/lib/db";
 import { masteryStates, reminders, studySchedules } from "@/lib/db/schema";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  title: "Lịch",
+};
 
 export default async function LichPage() {
   const u = await requireRole("HS");

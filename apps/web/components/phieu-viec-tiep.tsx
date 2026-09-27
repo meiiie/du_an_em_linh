@@ -114,7 +114,7 @@ export function PhieuViecTiep({
 
           <p className="mt-4 max-w-[65ch] text-sm leading-relaxed text-muted">{loiGoiHocSinh(lyDo, kn)}</p>
 
-          <Link href={`/hs/luyen/${problem.id}`} className={cn(buttonClasses(), "mt-6")}>
+          <Link href={`/hs/luyen/${problem.id}`} className={cn(buttonClasses(), "mt-4")}>
             Làm bước tiếp
           </Link>
         </div>

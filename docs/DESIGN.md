@@ -58,18 +58,17 @@ Không dashboard thẻ. Chia như phiếu + sổ — gáy 5 bước là vật đ
 
 ```
 +--------+---------------------------+------------------+
-| RAY    | Chào An                   |                  |
-| 220    | 12A1 thử                  |                  |
-|        | Toán 12, đơn điệu…        |                  |
+| RAY    | Chào An                   | 12A1 thử         |
+| 220    | Toán 12, đơn điệu…        |                  |
 |        +---------------------------+------------------+
-|        | PHIẾU                     | SỔ               |
-|        | 1 TXĐ                     | kỹ năng yếu→mạnh |
-|        | 2 y′     đề KaTeX         | bài giao: mã+hàm |
+|        | PHIẾU                     | SỔ (tab gạch)    |
+|        | 1 TXĐ                     | Kỹ năng | Bài    |
+|        | 2 y′     đề KaTeX         | (một panel)      |
 |        | 3 …      [Làm bước tiếp]  |                  |
 +--------+---------------------------+------------------+
 ```
 
-Desktop (`lg`, khi đã có ray): cột phiếu `1.25fr` | kẻ 1 px | cột sổ `16–20rem`. Điện thoại / máy tính bảng: xếp dọc phiếu → kỹ năng → bài giao.
+Desktop (`lg`): cột phiếu `1fr` | kẻ 1 px | cột sổ `18–24rem`. Điện thoại / máy tính bảng: phiếu rồi sổ. Sổ là **tab gạch chân mực** (Carbon / InstUI) — `Kỹ năng` mặc định, `?so=giao` cho bài giao. Không viên thuốc. Tab trình duyệt ngắn: `Lộ trình` / `Ngân bài` / `Lịch` / `Kho` (template `· Học toán với AI`). Ray HS: Lộ trình, Ngân bài, Lịch, Kho.
 
 Đề = KaTeX từ `statementLatex`. Một thang 4 mức — không Bloom trên trang này (3 mức CV 7991 chỉ ở cổng GV). Thành thạo: tên ngắn, ô sát tên, hàng yếu lên trên, hàng đang gợi tô `wash`. Bài giao ≠ ngân bài: chỉ assignment chưa đạt.
 

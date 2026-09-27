@@ -7,3 +7,9 @@ export async function vaoLop(page: Page, email: string, password: string) {
   await page.getByTestId("password").fill(password);
   await page.getByRole("button", { name: "Vào học" }).click();
 }
+
+/** Sổ mặc định là kỹ năng — mở tab bài giao trước khi bấm hàng `bai-*`. */
+export async function moSoBaiGiao(page: Page) {
+  const tab = page.getByTestId("tab-bai-giao");
+  if (await tab.count()) await tab.click();
+}
