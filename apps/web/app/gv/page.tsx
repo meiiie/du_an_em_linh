@@ -28,7 +28,7 @@ export default async function GvHome() {
   const published = await db.select().from(problems).where(eq(problems.status, "DA_PHAT_HANH"));
   const setting = (await db.select().from(classSettings).limit(1))[0];
   const nha = parseProvider(setting?.aiProvider);
-  const daKetNoi = laNhaKhoa(nha) && Boolean(docKhoaNha(nha, setting?.aiApiKey));
+  const daKetNoi = laNhaKhoa(nha) && Boolean(docKhoaNha(nha, setting?.aiApiKey, nha));
   const nTaiLieu = (await db.select().from(documents)).filter((d) => d.licenseStatus !== "chua_ro").length;
   const latestSheet = (await db.select().from(formulaSheets).orderBy(desc(formulaSheets.version)))[0];
   const nCongThuc = latestSheet

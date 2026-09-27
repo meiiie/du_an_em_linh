@@ -97,13 +97,25 @@ export function docModel(provider: AiProviderId, override?: string | null): stri
   return "";
 }
 
-export function docKhoaNha(provider: AiNhaKhoaId, classKey?: string | null): string | null {
-  const envName = NHA[provider].envKhoa || "LLM_API_KEY";
-  return env(envName) || (classKey || "").trim() || null;
+/**
+ * Env của đúng nhà, hoặc khóa lớp khi lớp đang chọn nhà đó.
+ * Không có classProvider (form dán khóa / probe nhà đang nối) thì khóa dán dùng cho nhà đang gọi.
+ */
+export function docKhoaNha(
+  provider: AiNhaKhoaId,
+  classKey?: string | null,
+  classProvider?: string | null,
+): string | null {
+  const fromEnv = env(NHA[provider].envKhoa || "LLM_API_KEY");
+  if (fromEnv) return fromEnv;
+  const pasted = (classKey || "").trim();
+  if (!pasted) return null;
+  if (classProvider == null) return pasted;
+  return parseProvider(classProvider) === provider ? pasted : null;
 }
 
-export function docKhoaCloud(classKey?: string | null): string | null {
-  return docKhoaNha("cloud", classKey);
+export function docKhoaCloud(classKey?: string | null, classProvider?: string | null): string | null {
+  return docKhoaNha("cloud", classKey, classProvider);
 }
 
 export function cauHinhCongKhai(opts: {
@@ -112,13 +124,14 @@ export function cauHinhCongKhai(opts: {
   allowLocal?: boolean;
   classApiKey?: string | null;
 }): AiPublicConfig {
+  const lop = resolveProvider({ classProvider: opts.classProvider });
   return {
-    classProvider: resolveProvider({ classProvider: opts.classProvider }),
+    classProvider: lop,
     classModel: (opts.classModel || "").trim() || null,
     allowLocal: opts.allowLocal !== false,
-    cloudReady: Boolean(docKhoaNha("cloud", opts.classApiKey)),
-    openrouterReady: Boolean(docKhoaNha("openrouter", opts.classApiKey)),
-    zaiReady: Boolean(docKhoaNha("zai", opts.classApiKey)),
+    cloudReady: Boolean(docKhoaNha("cloud", opts.classApiKey, lop)),
+    openrouterReady: Boolean(docKhoaNha("openrouter", opts.classApiKey, lop)),
+    zaiReady: Boolean(docKhoaNha("zai", opts.classApiKey, lop)),
   };
 }
 
@@ -192,6 +205,7 @@ export async function completeChat(opts: {
   provider: AiProviderId;
   model?: string | null;
   classApiKey?: string | null;
+  classProvider?: string | null;
   messages: ChatMessage[];
   offlineText: string;
   fetchFn?: FetchLike;
@@ -216,7 +230,7 @@ export async function completeChat(opts: {
   if (laNhaKhoa(provider)) {
     base = docBaseNhaKhoa(provider);
     if (!laUrlCloudHopLe(base)) return thatBai(provider, "bad_cloud_url", base);
-    key = docKhoaNha(provider, opts.classApiKey);
+    key = docKhoaNha(provider, opts.classApiKey, opts.classProvider);
     if (!key) return thatBai(provider, "no_key");
   } else {
     base = docBaseLocal(provider);
@@ -225,19 +239,23 @@ export async function completeChat(opts: {
   }
 
   const model = docModel(provider, opts.model);
+  const body: Record<string, unknown> = {
+    model,
+    temperature: 0.2,
+    max_tokens: AI_MAX_TOKENS_CHAT,
+    stream: false,
+    messages: opts.messages,
+  };
+  if (provider === "zai") {
+    body.thinking = { type: "enabled" };
+  }
   const started = await motLan(
     fetchFn,
     urlChat(base),
     {
       method: "POST",
       headers: headerChat(provider, key),
-      body: JSON.stringify({
-        model,
-        temperature: 0.2,
-        max_tokens: AI_MAX_TOKENS_CHAT,
-        stream: false,
-        messages: opts.messages,
-      }),
+      body: JSON.stringify(body),
     },
     AI_TIMEOUT_CHAT_MS,
   );
@@ -272,6 +290,7 @@ export async function completeChat(opts: {
 export async function probeProvider(opts: {
   provider: AiProviderId;
   classApiKey?: string | null;
+  classProvider?: string | null;
   fetchFn?: FetchLike;
 }): Promise<ProbeResult> {
   const provider = parseProvider(opts.provider);
@@ -294,7 +313,7 @@ export async function probeProvider(opts: {
     if (!laUrlCloudHopLe(base)) {
       return { ok: false, provider, message: thongBaoLoiNha("bad_cloud_url", provider, base), models: [], base };
     }
-    const k = docKhoaNha(provider, opts.classApiKey);
+    const k = docKhoaNha(provider, opts.classApiKey, opts.classProvider);
     if (!k) {
       return { ok: false, provider, message: thongBaoLoiNha("no_key", provider), models: [], base };
     }

@@ -304,6 +304,7 @@ export async function hoiGiaSu(
       provider,
       model: tuyChon?.model || lop.classModel,
       classApiKey: lop.classApiKey,
+      classProvider: lop.classProvider,
       offlineText,
       messages: [
         { role: "system", content: HE_THONG_GIA_SU },

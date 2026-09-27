@@ -81,9 +81,9 @@ export default async function Page({
   const setting = (await db.select().from(classSettings).limit(1))[0];
   const provider = parseProvider(setting?.aiProvider);
   const mask = maskKey(setting?.aiApiKey);
-  const chatgptReady = provider === "cloud" && Boolean(docKhoaNha("cloud", setting?.aiApiKey));
-  const openrouterReady = provider === "openrouter" && Boolean(docKhoaNha("openrouter", setting?.aiApiKey));
-  const zaiReady = provider === "zai" && Boolean(docKhoaNha("zai", setting?.aiApiKey));
+  const chatgptReady = Boolean(docKhoaNha("cloud", setting?.aiApiKey, provider));
+  const openrouterReady = Boolean(docKhoaNha("openrouter", setting?.aiApiKey, provider));
+  const zaiReady = Boolean(docKhoaNha("zai", setting?.aiApiKey, provider));
   const daKetNoi = chatgptReady || openrouterReady || zaiReady;
   const oauthSanSang = oauthDaDangKy();
   const khung = xemKhoTheoKhung(await taiNguyenKhoLop());
@@ -276,7 +276,7 @@ export default async function Page({
                 <p className="font-medium">Dán khóa — một lần</p>
                 <FormDanKhoa
                   provider="zai"
-                  mask={mask}
+                  mask={zaiReady ? mask : null}
                   modelPlaceholder={ZAI_MODEL_MAC_DINH}
                   khoaTestId="ket-noi-zai-khoa"
                   modelTestId="ket-noi-zai-model"

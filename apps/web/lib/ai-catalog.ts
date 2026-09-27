@@ -20,7 +20,7 @@ export const ZAI_KEYS_PAGE = "https://z.ai/manage-apikey/apikey-list";
 export const OPENROUTER_MODEL_MAC_DINH = "qwen/qwen3-coder";
 export const ZAI_MODEL_MAC_DINH = "glm-5.3-flashx";
 
-export const AI_TIMEOUT_CHAT_MS = 20_000;
+export const AI_TIMEOUT_CHAT_MS = 30_000;
 export const AI_TIMEOUT_PROBE_MS = 8_000;
 /** FlashX/thinking hết 400 token chỉ cho reasoning — để chỗ cho câu trả lời. */
 export const AI_MAX_TOKENS_CHAT = 1_600;

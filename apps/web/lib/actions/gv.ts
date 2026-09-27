@@ -321,7 +321,7 @@ export async function kiemTraNhaCungCap(providerRaw: string) {
   await requireRole("GV");
   const provider = parseProvider(providerRaw);
   const row = (await db.select().from(classSettings).limit(1))[0];
-  return probeProvider({ provider, classApiKey: row?.aiApiKey });
+  return probeProvider({ provider, classApiKey: row?.aiApiKey, classProvider: row?.aiProvider });
 }
 
 function loiDanKhoa(provider: ReturnType<typeof parseProvider>): string {

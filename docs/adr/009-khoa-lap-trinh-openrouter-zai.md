@@ -20,3 +20,5 @@ Tài liệu chính thức tới 2026-09-27:
 ## Hệ quả
 
 Thiếu khóa nhà đã chọn → lỗi rõ, không giả thang gợi ý. Học sinh chỉ thấy nhà lớp đã bật. Probe vẫn `GET /models`.
+
+Khóa lớp không dùng chung giữa các nhà: lớp chọn Z.AI thì `completeChat`/`probe` nhà cloud hoặc OpenRouter không lấy khóa đó làm Bearer. `cauHinhCongKhai` chỉ bật cờ sẵn của đúng nhà (env riêng vẫn được).

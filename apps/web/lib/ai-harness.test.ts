@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { afterEach, test } from "node:test";
 import {
+  AI_MAX_TOKENS_CHAT,
   OPENROUTER_MAC_DINH,
   ZAI_MAC_DINH,
   laDiaChiLoopback,
@@ -11,7 +12,7 @@ import {
   resolveProvider,
   thongBaoLoiNha,
 } from "./ai-catalog";
-import { completeChat, docBaseNhaKhoa, docModel, probeProvider } from "./ai-harness";
+import { cauHinhCongKhai, completeChat, docBaseNhaKhoa, docKhoaNha, docModel, probeProvider } from "./ai-harness";
 
 const envKeys = [
   "LLM_API_KEY",
@@ -305,6 +306,90 @@ test("Z.AI dùng endpoint coding, không API chat tiêu dùng", async () => {
   assert.equal(docBaseNhaKhoa("zai"), ZAI_MAC_DINH);
   assert.equal(docModel("zai"), "glm-5.3-flashx");
   assert.equal(docModel("openrouter"), "qwen/qwen3-coder");
+});
+
+test("khóa lớp Z.AI không làm sẵn cloud/OpenRouter", () => {
+  delete process.env.LLM_API_KEY;
+  delete process.env.OPENROUTER_API_KEY;
+  delete process.env.ZAI_API_KEY;
+  assert.equal(docKhoaNha("zai", "khoa-zai", "zai"), "khoa-zai");
+  assert.equal(docKhoaNha("cloud", "khoa-zai", "zai"), null);
+  assert.equal(docKhoaNha("openrouter", "khoa-zai", "zai"), null);
+  assert.equal(docKhoaNha("zai", "khoa-zai"), "khoa-zai");
+  const cfg = cauHinhCongKhai({ classProvider: "zai", classApiKey: "khoa-zai" });
+  assert.equal(cfg.classProvider, "zai");
+  assert.equal(cfg.zaiReady, true);
+  assert.equal(cfg.cloudReady, false);
+  assert.equal(cfg.openrouterReady, false);
+  const khongNha = cauHinhCongKhai({ classApiKey: "khoa-zai" });
+  assert.equal(khongNha.classProvider, "offline");
+  assert.equal(khongNha.zaiReady, false);
+  assert.equal(khongNha.cloudReady, false);
+});
+
+test("completeChat cloud không gửi khóa Z.AI của lớp", async () => {
+  delete process.env.LLM_API_KEY;
+  let calls = 0;
+  const r = await completeChat({
+    provider: "cloud",
+    classApiKey: "khoa-zai",
+    classProvider: "zai",
+    messages: [{ role: "user", content: "hi" }],
+    offlineText: "BÍ MẬT GỢI Ý",
+    fetchFn: async () => {
+      calls += 1;
+      throw new Error("không được gọi");
+    },
+  });
+  assert.equal(calls, 0);
+  assert.equal(r.errorKind, "no_key");
+  assert.equal(r.text.includes("BÍ MẬT GỢI Ý"), false);
+});
+
+test("probe cloud không lấy khóa Z.AI của lớp", async () => {
+  delete process.env.LLM_API_KEY;
+  let calls = 0;
+  const r = await probeProvider({
+    provider: "cloud",
+    classApiKey: "khoa-zai",
+    classProvider: "zai",
+    fetchFn: async () => {
+      calls += 1;
+      throw new Error("không được gọi");
+    },
+  });
+  assert.equal(calls, 0);
+  assert.equal(r.ok, false);
+  assert.match(r.message, /Chưa có khóa/);
+});
+
+test("Z.AI gửi thinking + 1600 token, không đọc reasoning_content", async () => {
+  process.env.ZAI_API_KEY = "zai-test";
+  let body: { model?: string; max_tokens?: number; thinking?: { type?: string }; stream?: boolean } = {};
+  const r = await completeChat({
+    provider: "zai",
+    messages: [{ role: "user", content: "hi" }],
+    offlineText: "GỢI Ý",
+    fetchFn: async (_input, init) => {
+      body = JSON.parse(String(init?.body || "{}")) as typeof body;
+      return new Response(
+        JSON.stringify({ choices: [{ message: { content: "", reasoning_content: "BÍ MẬT SUY LUẬN y′=0" } }] }),
+        { status: 200, headers: { "content-type": "application/json" } },
+      );
+    },
+  });
+  assert.equal(body.model, "glm-5.3-flashx");
+  assert.equal(body.max_tokens, AI_MAX_TOKENS_CHAT);
+  assert.equal(body.max_tokens, 1600);
+  assert.equal(body.stream, false);
+  assert.deepEqual(body.thinking, { type: "enabled" });
+  assert.equal(r.errorKind, "empty");
+  assert.equal(r.text.includes("BÍ MẬT"), false);
+  assert.equal(r.text.includes("y′=0"), false);
+});
+
+test("thông báo hết giờ nói 30 giây", () => {
+  assert.match(thongBaoLoiNha("timeout", "zai"), /30 giây/);
 });
 
 test("probe GET /models một lần, không POST chat", async () => {
