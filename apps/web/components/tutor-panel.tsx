@@ -145,9 +145,15 @@ export function TutorPanel({
 
   useEffect(() => {
     if (!ganDay.current || !log.current) return;
-    const moi = log.current.querySelector("[data-testid=tutor-thinking], [data-testid=tutor-md]:last-of-type");
-    if (moi instanceof HTMLElement) moi.scrollIntoView({ block: "start", inline: "nearest" });
-    else log.current.scrollTo({ top: log.current.scrollHeight });
+    const thinkingEl = log.current.querySelector("[data-testid=tutor-thinking]");
+    const dan = log.current.querySelector("[data-testid=tutor-trich-dan]");
+    const md = log.current.querySelector("[data-testid=tutor-md]:last-of-type");
+    const moi = thinkingEl || dan || md;
+    if (moi instanceof HTMLElement) {
+      moi.scrollIntoView({ block: dan && !thinkingEl ? "end" : "start", inline: "nearest" });
+    } else {
+      log.current.scrollTo({ top: log.current.scrollHeight });
+    }
   }, [chat, thinking, buocSse]);
 
   useEffect(() => {

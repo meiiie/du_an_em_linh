@@ -13,7 +13,7 @@ export function TrichDanGiaSu({
   if (!items.length) return null;
   const trich = items.find((t) => t.dung && t.trich) || items.find((t) => t.trich);
   return (
-    <div className="mt-2 text-xs" data-testid={testId}>
+    <div className="mt-2 border-t border-line pt-2 text-xs" data-testid={testId}>
       <p className="text-muted">Đã đọc</p>
       <ul className="mt-1 flex flex-wrap gap-x-3 gap-y-1">
         {items.map((t) => (
