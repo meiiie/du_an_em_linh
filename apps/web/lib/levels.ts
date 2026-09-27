@@ -22,6 +22,21 @@ export const LABEL3 = {
   VAN_DUNG: "Vận dụng",
 } as const;
 
+export function labelBloom(code: string | null | undefined) {
+  if (!code) return "—";
+  const en: Record<string, string> = {
+    REMEMBER: "Nhận biết",
+    UNDERSTAND: "Thông hiểu",
+    APPLY: "Vận dụng",
+    ANALYZE: "Phân tích",
+    EVALUATE: "Đánh giá",
+    CREATE: "Sáng tạo",
+  };
+  if (en[code]) return en[code];
+  if (MUC4.includes(code as Muc4)) return LABEL4[code as Muc4];
+  return code;
+}
+
 export function labelMuc(code: string, view3: boolean) {
   if (!MUC4.includes(code as Muc4)) return code;
   if (!view3) return LABEL4[code as Muc4];

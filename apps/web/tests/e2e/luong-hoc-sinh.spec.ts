@@ -43,13 +43,15 @@ test.describe("học sinh", () => {
     await expect(page.getByTestId("tutor-log")).toContainText("Gợi ý");
     await expect(page.getByTestId("tutor-che-do")).toContainText("Thang gợi ý");
     await page.screenshot({ path: `${SHOTS}/hs-gia-su.png`, fullPage: true });
-    await page.reload();
-    await page.getByTestId("mo-gia-su").click();
-    await expect(page.getByTestId("tutor-log")).toContainText("cho em đáp án");
+    await page.locator('[data-testid="tutor-panel"]').getByRole("button", { name: "Đóng" }).click();
 
     await page.getByTestId("latex-dh").fill("3x^{2}-12x+9");
     await page.getByTestId("nop-buoc").click();
     await expect(page.getByTestId("cham-thong-bao")).toContainText("hợp lệ");
+
+    await page.reload();
+    await page.getByTestId("mo-gia-su").click();
+    await expect(page.getByTestId("tutor-log")).toContainText("cho em đáp án");
   });
 });
 
@@ -64,7 +66,7 @@ test.describe("học sinh máy tính", () => {
     await expect(page.getByRole("heading", { name: "Chào An" })).toBeVisible();
     await expect(page.getByTestId("sidebar")).toBeVisible();
     await expect(page.getByTestId("nav-hs-lo-trinh")).toBeVisible();
-    await expect(page.getByText("Bloom")).toBeVisible();
+    await expect(page.getByText("thang Bloom", { exact: false })).toBeVisible();
     await page.screenshot({ path: `${SHOTS}/hs-lo-trinh-1280.png` });
     await page.goto("/hs/lich");
     await expect(page.getByRole("heading", { name: "Thời gian biểu" })).toBeVisible();
@@ -88,7 +90,7 @@ test.describe("máy tính bảng", () => {
     await page.getByTestId("bai-DH12-03-VD-01").click();
     await expect(page.getByTestId("solve-screen")).toBeVisible();
     await expect(page.getByTestId("tutor-panel")).toBeVisible();
-    await expect(page.getByTestId("mo-gia-su")).toHaveCount(0);
+    await expect(page.getByTestId("mo-gia-su")).toBeHidden();
     await page.screenshot({ path: `${SHOTS}/hs-may-tinh-bang-768.png`, fullPage: true });
     const solveOverflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
     expect(solveOverflow).toBeLessThanOrEqual(8);

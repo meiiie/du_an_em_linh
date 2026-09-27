@@ -6,7 +6,7 @@ import { lichSuGiaSu } from "@/lib/actions/hs";
 import { requireRole } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { classSettings, problems, solutions } from "@/lib/db/schema";
-import { LABEL4, type Muc4 } from "@/lib/levels";
+import { LABEL4, labelBloom, type Muc4 } from "@/lib/levels";
 import { loiGiaiHocSinh } from "@/lib/loi-giai";
 
 export const dynamic = "force-dynamic";
@@ -42,7 +42,7 @@ export default async function LuyenPage({ params }: { params: Promise<{ id: stri
   return (
     <main>
       <p className="mb-4 text-sm text-muted">
-        Mức {LABEL4[p.mucDo4 as Muc4]} · Bloom {LABEL4[p.bloomLevel as Muc4] || p.bloomLevel} · mã{" "}
+        Mức {LABEL4[p.mucDo4 as Muc4]} · Bloom {labelBloom(p.bloomLevel)} · mã{" "}
         <span className="font-mono" translate="no">
           {p.code}
         </span>

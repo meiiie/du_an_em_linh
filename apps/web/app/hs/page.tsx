@@ -9,7 +9,7 @@ import { requireRole } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { assignments, masteryStates, problems, skills } from "@/lib/db/schema";
 import { recommend } from "@/lib/learning";
-import { LABEL4, type Muc4 } from "@/lib/levels";
+import { LABEL4, labelBloom, type Muc4 } from "@/lib/levels";
 
 export const dynamic = "force-dynamic";
 
@@ -37,7 +37,7 @@ export default async function HsHome() {
           <p className="text-sm text-muted">Bài cho em — dạng yếu / cùng mức / nâng một nấc</p>
           <p className="mt-2 text-lg font-medium leading-snug">{goi.problem.statementText}</p>
           <p className="mt-2 text-sm text-muted">
-            {goi.lyDo} · Bloom {LABEL4[goi.problem.bloomLevel as Muc4] || goi.problem.bloomLevel || "—"}
+            {goi.lyDo} · Bloom {labelBloom(goi.problem.bloomLevel)}
           </p>
           <Link href={`/hs/luyen/${goi.problem.id}`} className={cn(buttonClasses(), "mt-4")}>
             Làm bước tiếp
@@ -81,7 +81,7 @@ export default async function HsHome() {
               key={p.id}
               href={`/hs/luyen/${p.id}`}
               testId={`bai-${p.code}`}
-              kicker={`${LABEL4[p.mucDo4 as Muc4] || p.mucDo4} · Bloom ${LABEL4[p.bloomLevel as Muc4] || p.bloomLevel || "—"}`}
+              kicker={`${LABEL4[p.mucDo4 as Muc4] || p.mucDo4} · Bloom ${labelBloom(p.bloomLevel)}`}
               title={p.statementText}
             />
           ))}

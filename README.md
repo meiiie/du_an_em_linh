@@ -118,4 +118,4 @@ Chạy trên môi trường dựng nguyên mẫu này:
   - Sandbox: 5 hàm (API không import SymPy, quá hạn thì bị giết, chấm qua tiến trình, bộ lọc chặn và bộ lọc cho qua).
 - `pnpm --filter web typecheck`: `tsc --noEmit` đạt.
 - `pnpm --filter web lint`: `next lint` đạt, không cảnh báo.
-- Playwright (`pnpm --filter web test:e2e`): **5/5 đạt**. Ca học sinh trên khung 390×844: đăng nhập An, nộp đạo hàm thiếu hạng tử, thấy bước bị tô, xin đáp án thì bị từ chối, sửa `3x^{2}-12x+9` thì bước đạt. Ca máy tính: lộ trình có thanh bên mực. Ca giáo viên: hàng đợi có tầng Không kiểm được và Sai, tiến độ 4 mức đổi sang 3 mức Biết/Hiểu/Vận dụng. Hai ca khóa giải phẫu: ô/nút ≥ 40 px, đệm ngang ≥ 16, bán kính 6; hamburger/đóng/nav ≥ 44×44 trên 390.
+- Playwright (`pnpm --filter web test:e2e`): **6/6 đạt**. Ca học sinh 390: sai đạo hàm → chặn đáp án → chip gợi ý → sửa đạt → tải lại còn hội thoại. Ca 1280: lộ trình + Bloom + lịch tư vấn. Ca 768: phiếu cạnh gia sư, không tràn ngang. Ca giáo viên: hàng đợi và 3 mức. Hai ca khóa 40/44.
