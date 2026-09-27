@@ -32,11 +32,11 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
         Bỏ qua đến form đăng nhập
       </a>
       <div className="mx-auto flex min-h-dvh max-w-5xl flex-col px-6 py-6 sm:px-8 sm:py-8">
-        {/* Tâm quang học ~46% (không phải giữa hình học 50%): dư dưới : dư trên = 6:5 */}
+        {/* Tâm quang học ~46% đỉnh trang (không phải giữa hình học 50%): dư dưới : dư trên = 3:2 */}
         <div className="flex min-h-0 flex-1 flex-col">
-          <div className="min-h-0 flex-[5_1_0]" aria-hidden />
+          <div className="min-h-0 flex-[2_1_0]" aria-hidden />
           <LoginForm loi={sp.loi === "1"} dangNhap={dangNhap} />
-          <div className="min-h-0 flex-[6_1_0]" aria-hidden />
+          <div className="min-h-0 flex-[3_1_0]" aria-hidden />
         </div>
         <footer className="flex flex-wrap items-center justify-center gap-2 text-center text-xs leading-[18px] text-muted">
           <span>Toán 12 · đơn điệu và cực trị</span>
