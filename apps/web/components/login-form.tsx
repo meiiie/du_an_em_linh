@@ -8,8 +8,8 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/cn";
 
 const TAI = [
-  { ten: "An", email: "hs.an@demo.local", vai: "Học sinh" },
-  { ten: "Giáo viên", email: "gv@demo.local", vai: "Giáo viên" },
+  { nhan: "Học sinh An", email: "hs.an@demo.local" },
+  { nhan: "Giáo viên", email: "gv@demo.local" },
 ] as const;
 
 const oNhap =
@@ -74,7 +74,7 @@ export function LoginForm({
 
   return (
     <section
-      className="mx-auto flex w-full max-w-[448px] flex-col items-center text-center motion-safe:animate-[login-vao_180ms_ease-out]"
+      className="mx-auto flex w-full max-w-[448px] -translate-y-[4vh] flex-col items-center text-center motion-safe:animate-[login-vao_180ms_ease-out] md:-translate-y-[5vh]"
       aria-labelledby="tieu-de-dang-nhap"
     >
       <p className="sr-only" aria-live="polite">
@@ -82,10 +82,12 @@ export function LoginForm({
       </p>
       <BrandMark size="lg" />
       <h1 id="tieu-de-dang-nhap" className="mt-5 text-pretty text-[1.75rem] font-semibold leading-9 tracking-tight">
-        Đăng nhập vào Học toán với AI
+        Đăng nhập
       </h1>
       <p className="mt-2 min-h-[22px] text-sm leading-relaxed text-muted">
-        {buoc === "email" ? "Nhập email tài khoản thử để bắt đầu." : "Xác nhận mật khẩu để vào phiếu học."}
+        {buoc === "email"
+          ? "Nhập email tài khoản thử để vào Học toán với AI."
+          : "Xác nhận mật khẩu để vào phiếu học."}
       </p>
 
       {loi ? (
@@ -200,7 +202,7 @@ export function LoginForm({
                 setBuoc("mat-khau");
               }}
             >
-              {t.vai} {t.ten}
+              {t.nhan}
             </button>
           </li>
         ))}
