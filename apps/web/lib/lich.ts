@@ -26,6 +26,29 @@ export function thuHomNay(now: Date = new Date()) {
   return EN_THU[wd] || "";
 }
 
+/** Thứ Hai → Chủ Nhật của tuần đang xem, kèm ngày dương lịch (giờ Việt Nam). */
+export function ngayTrongTuanHienTai(now: Date = new Date()) {
+  const ymd = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Ho_Chi_Minh",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(now);
+  const [y, m, d] = ymd.split("-").map(Number);
+  const utcNoon = Date.UTC(y, m - 1, d, 12, 0, 0);
+  const wd = new Date(utcNoon).getUTCDay();
+  const tuThuHai = wd === 0 ? 6 : wd - 1;
+  return THU_TUAN.map((t, i) => {
+    const day = new Date(utcNoon);
+    day.setUTCDate(day.getUTCDate() - tuThuHai + i);
+    return { ...t, ngay: day.getUTCDate(), thang: day.getUTCMonth() + 1 };
+  });
+}
+
+export function cacGioSlot(slots: { gio: string }[]) {
+  return [...new Set(slots.map((s) => s.gio))].sort((a, b) => a.localeCompare(b, "vi"));
+}
+
 /** Buổi gần nhất từ hôm nay — vòng lại thứ Hai nếu hết tuần. */
 export function thuBuoiTiep(slots: SlotLich[], homNay: string) {
   const idx = THU_TUAN.findIndex((t) => t.ten === homNay);

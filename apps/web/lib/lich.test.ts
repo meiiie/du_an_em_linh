@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { ghepNhacVaoSlot, thuBuoiTiep, thuHomNay } from "./lich";
+import { cacGioSlot, ghepNhacVaoSlot, ngayTrongTuanHienTai, thuBuoiTiep, thuHomNay } from "./lich";
 
 const slots = [
   { thu: "Thứ Hai", gio: "19:00", viec: "Ôn" },
@@ -12,6 +12,18 @@ const slots = [
 test("thứ hôm nay theo giờ Việt Nam", () => {
   assert.equal(thuHomNay(new Date("2026-09-27T12:00:00Z")), "Chủ Nhật");
   assert.equal(thuHomNay(new Date("2026-09-27T17:00:00Z")), "Thứ Hai");
+});
+
+test("tuần 27/9/2026 là 21–27", () => {
+  const tuan = ngayTrongTuanHienTai(new Date("2026-09-27T12:00:00Z"));
+  assert.deepEqual(
+    tuan.map((d) => `${d.ma} ${d.ngay}`),
+    ["T2 21", "T3 22", "T4 23", "T5 24", "T6 25", "T7 26", "CN 27"],
+  );
+});
+
+test("giờ trên bảng tăng dần", () => {
+  assert.deepEqual(cacGioSlot(slots), ["09:00", "19:00", "19:30"]);
 });
 
 test("buổi tiếp là buổi hôm nay hoặc buổi kế", () => {

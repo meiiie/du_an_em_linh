@@ -1,13 +1,8 @@
 import Link from "next/link";
 import { cn } from "@/lib/cn";
-import { THU_TUAN } from "@/lib/lich";
+import { cacGioSlot, ngayTrongTuanHienTai, type SlotLich } from "@/lib/lich";
 
-export type HangLich = {
-  thu: string;
-  gio: string;
-  viec: string;
-  nhac: string[];
-};
+export type HangLich = SlotLich & { nhac: string[] };
 
 export function LichTuan({
   slots,
@@ -18,49 +13,61 @@ export function LichTuan({
   homNay: string;
   buoiTiep: string;
 }) {
-  const coBuoi = new Set(slots.map((s) => s.thu));
+  const ngay = ngayTrongTuanHienTai();
+  const gioHang = cacGioSlot(slots);
+  const o = new Map(slots.map((s) => [`${s.thu}|${s.gio}`, s]));
   return (
-    <div data-testid="lich-tuan">
-      <ol className="grid max-w-sm grid-cols-7 border-b border-line" aria-label="Các ngày trong tuần">
-        {THU_TUAN.map((d) => {
-          const hom = d.ten === homNay;
-          const co = coBuoi.has(d.ten);
-          return (
-            <li key={d.ma} className="flex flex-col items-center gap-1 py-3">
-              <span className={cn("text-xs", hom ? "font-medium text-ink" : "text-muted")}>{d.ma}</span>
-              <span className={cn("size-2 rounded-full", co ? "bg-ink" : "bg-transparent")} aria-hidden />
-            </li>
-          );
-        })}
-      </ol>
-      <ol className="mt-2 divide-y divide-line border-y border-line">
-        {slots.map((s) => {
-          const dang = s.thu === buoiTiep;
-          return (
-            <li key={s.thu + s.gio}>
-              <Link
-                href="/hs"
-                aria-current={dang ? "date" : undefined}
-                className={cn(
-                  "block py-4 hover:bg-wash focus-visible:bg-wash",
-                  dang ? "border-l-2 border-ink bg-wash pl-4" : "pl-0",
-                )}
-              >
-                <p className="flex items-baseline justify-between gap-4">
-                  <span className="font-medium">{s.thu}</span>
-                  <span className="tabular text-sm text-muted">{s.gio}</span>
-                </p>
-                <p className="mt-1 text-sm leading-relaxed text-muted">{s.viec}</p>
-                {s.nhac.map((n) => (
-                  <p key={n} className="mt-1 text-sm leading-relaxed text-muted">
-                    {n}
-                  </p>
-                ))}
-              </Link>
-            </li>
-          );
-        })}
-      </ol>
+    <div className="overflow-x-auto" data-testid="lich-tuan">
+      <table className="w-full min-w-[40rem] border-collapse text-left">
+        <thead>
+          <tr className="border-b border-line">
+            <th className="w-14 py-3 pr-2" scope="col">
+              <span className="sr-only">Giờ</span>
+            </th>
+            {ngay.map((d) => {
+              const hom = d.ten === homNay;
+              return (
+                <th
+                  key={d.ma}
+                  scope="col"
+                  className={cn("px-2 py-3 font-normal", hom && "bg-wash")}
+                >
+                  <span className={cn("block text-xs", hom ? "font-medium text-ink" : "text-muted")}>{d.ma}</span>
+                  <span className={cn("mt-1 block text-sm tabular", hom ? "font-medium" : "text-muted")}>{d.ngay}</span>
+                </th>
+              );
+            })}
+          </tr>
+        </thead>
+        <tbody>
+          {gioHang.map((gio) => (
+            <tr key={gio} className="border-b border-line">
+              <th scope="row" className="tabular py-3 pr-2 text-xs font-normal text-muted">
+                {gio}
+              </th>
+              {ngay.map((d) => {
+                const s = o.get(`${d.ten}|${gio}`);
+                const hom = d.ten === homNay;
+                const dang = Boolean(s && s.thu === buoiTiep);
+                return (
+                  <td key={d.ma} className={cn("align-top px-2 py-3", hom && "bg-wash")}>
+                    {s ? (
+                      <Link
+                        href="/hs"
+                        aria-current={dang ? "date" : undefined}
+                        className={cn("block text-sm leading-snug hover:underline", dang && "font-medium")}
+                      >
+                        {s.viec}
+                        {s.nhac[0] ? <span className="mt-1 block text-xs font-normal text-muted">{s.nhac[0]}</span> : null}
+                      </Link>
+                    ) : null}
+                  </td>
+                );
+              })}
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 }
