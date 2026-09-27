@@ -31,8 +31,13 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
       <a href="#form-dang-nhap" className="skip-link">
         Bỏ qua đến form đăng nhập
       </a>
-      <div className="mx-auto grid min-h-dvh max-w-5xl grid-rows-[1fr_auto] px-6 py-6 sm:px-8 sm:py-8">
-        <LoginForm loi={sp.loi === "1"} dangNhap={dangNhap} />
+      <div className="mx-auto flex min-h-dvh max-w-5xl flex-col px-6 py-6 sm:px-8 sm:py-8">
+        {/* Tâm quang học ~46% (không phải giữa hình học 50%): dư dưới : dư trên = 6:5 */}
+        <div className="flex min-h-0 flex-1 flex-col">
+          <div className="min-h-0 flex-[5_1_0]" aria-hidden />
+          <LoginForm loi={sp.loi === "1"} dangNhap={dangNhap} />
+          <div className="min-h-0 flex-[6_1_0]" aria-hidden />
+        </div>
         <footer className="flex flex-wrap items-center justify-center gap-2 text-center text-xs leading-[18px] text-muted">
           <span>Toán 12 · đơn điệu và cực trị</span>
           <span aria-hidden>·</span>

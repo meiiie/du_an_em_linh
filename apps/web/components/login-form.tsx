@@ -82,7 +82,7 @@ export function LoginForm({
 
   return (
     <section
-      className="mx-auto flex w-full max-w-[448px] flex-col items-center place-self-center py-8 text-center motion-safe:animate-[login-vao_180ms_ease-out]"
+      className="mx-auto flex w-full max-w-[448px] flex-col items-center py-8 text-center motion-safe:animate-[login-vao_180ms_ease-out]"
       aria-labelledby="tieu-de-dang-nhap"
     >
       <p className="sr-only" aria-live="polite">
