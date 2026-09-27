@@ -219,10 +219,7 @@ export function SolveClient({
                     }
                     aria-label={r.loai === "NGHIEM" ? "Đổi thành điểm không xác định" : "Đổi thành nghiệm"}
                   >
-                    <span className="sm:hidden">{r.loai === "NGHIEM" ? "Không xác định" : "Nghiệm"}</span>
-                    <span className="hidden sm:inline">
-                      {r.loai === "NGHIEM" ? "Đổi thành điểm không xác định" : "Đổi thành nghiệm"}
-                    </span>
+                    {r.loai === "NGHIEM" ? "Không xác định" : "Nghiệm"}
                   </button>
                 </div>
               ))}

@@ -19,11 +19,16 @@ export function MathInput({
 
   useEffect(() => {
     let dead = false;
-    const el = ref.current as (HTMLElement & { value?: string; mathVirtualKeyboardPolicy?: string }) | null;
+    const el = ref.current as (HTMLElement & {
+      value?: string;
+      mathVirtualKeyboardPolicy?: string;
+      menuItems?: unknown[];
+    }) | null;
     import("mathlive")
       .then(() => {
         if (dead || !el) return;
         el.mathVirtualKeyboardPolicy = "manual";
+        el.menuItems = [];
         el.value = value;
         const handler = () => onChangeRef.current(el.value || "");
         el.addEventListener("input", handler);

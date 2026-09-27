@@ -158,6 +158,11 @@ math-field {
   font-size: 1.05rem;
 }
 
+math-field::part(menu-toggle),
+math-field::part(virtual-keyboard-toggle) {
+  display: none;
+}
+
 @media (pointer: coarse) {
   math-field {
     min-height: var(--target);
