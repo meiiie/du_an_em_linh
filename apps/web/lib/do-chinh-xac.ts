@@ -1,5 +1,5 @@
 /** Rubric đo độ chính xác sản phẩm — chấm + lọc + luật gia sư + SOTA trích dẫn. */
-import { locMatHienThi } from "./loi-gia-su";
+import { locBanGiaSu, locMatHienThi } from "./loi-gia-su";
 import { chamSotaGiaSu, type TieuChiSota } from "./sota-gia-su";
 import { HE_THONG_GIA_SU, xinDapAn, xinGoiY, xinSaiCho } from "./tutor";
 
@@ -52,6 +52,7 @@ export function chamLoiGiaSu(text: string) {
     tiengViet: /[ăâêôơưáàảãạéèẻẽẹíìỉĩịóòỏõọúùủũụýỳỷỹỵđ]|(\bem\b)/i.test(t),
     coTrich: /\[\d{1,2}\]/.test(t),
     xungCo: /(^|[\s.,;:!?…])cô\s+là|(^|[\s.,;:!?…])thầy\s+là/i.test(t),
+    gioiThieu: /chào\s+em\b|mình\s+là\s+(?:một\s+)?(?:ai\b|gia\s+sư|trợ\s+lý)|gia\s+sư\s+ai/i.test(t),
   };
 }
 
@@ -75,12 +76,26 @@ export function chamDoChinhXac(): {
     {
       id: "he-thong-n",
       ten: "Prompt bắt [n], không phải giáo viên, xưng mình",
-      dat: /\[n\]/.test(HE_THONG_GIA_SU) && /không phải giáo viên/.test(HE_THONG_GIA_SU) && /xưng mình/i.test(HE_THONG_GIA_SU),
+      dat:
+        /\[n\]/.test(HE_THONG_GIA_SU) &&
+        /không phải giáo viên/.test(HE_THONG_GIA_SU) &&
+        /xưng mình/i.test(HE_THONG_GIA_SU) &&
+        /không tự giới thiệu/i.test(HE_THONG_GIA_SU),
     },
     { id: "loi-lo", ten: "Lời có khoảng số bị coi là lộ", dat: chamLoiGiaSu("Đồng biến trên (1; 3).").loRo },
     { id: "loi-goi", ten: "Gợi ý nguyên lý không bị coi là lộ", dat: !chamLoiGiaSu("Em tính $y'$ từng hạng tử, hằng số đạo hàm 0.").loRo },
     { id: "loi-rong", ten: "Câu trống là rỗng", dat: chamLoiGiaSu("").rong && !chamLoiGiaSu("Em nhớ đạo hàm lũy thừa.").rong },
     { id: "loi-cuc", ten: "Cực trị tại x = số bị coi là lộ", dat: chamLoiGiaSu("Cực đại tại x = 1").loRo },
+    {
+      id: "loi-chao",
+      ten: "Lời chào / tự giới thiệu bị gỡ",
+      dat:
+        chamLoiGiaSu("Chào em, mình là AI gợi ý.").gioiThieu &&
+        chamLoiGiaSu("Mình là AI gia sư.").gioiThieu &&
+        !chamLoiGiaSu("Em tính y' từng hạng tử.").gioiThieu &&
+        !chamLoiGiaSu(locBanGiaSu("Chào em, mình là AI gợi ý. Em tính y'.")).gioiThieu &&
+        locBanGiaSu("Chào em, mình nhắc nguyên lý đạo hàm.").includes("nhắc nguyên lý"),
+    },
   ];
   const diem = tieuChi.filter((t) => t.dat).length;
   return { diem, toiDa: tieuChi.length, tieuChi, sota };

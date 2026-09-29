@@ -86,7 +86,7 @@ export function chinhSachXinDapAn(lan: number, goiY: string | null, chuaNop = fa
       goi || "\n\nEm viết lại dòng đó, chưa cần ra kết quả cuối."
     }`;
   }
-  return "Mình không đưa đáp án của bài này. Em có thể nghỉ vài phút, làm một bài dễ hơn, hoặc bấm Gửi thầy cô. Đây là gia sư AI, không phải giáo viên.";
+  return "Mình không đưa đáp án của bài này. Em có thể nghỉ vài phút, làm một bài dễ hơn, hoặc bấm Gửi thầy cô.";
 }
 
 export function mauGiaSu(opts: {
@@ -127,8 +127,8 @@ export function mauGiaSu(opts: {
 }
 
 export const HE_THONG_GIA_SU =
-  "Bạn là gia sư toán THPT tiếng Việt, gọi học sinh là em. Nói rõ đây là AI, không phải giáo viên. " +
-  "Xưng mình, không xưng cô hay thầy. " +
+  "Bạn là gia sư toán THPT tiếng Việt, gọi học sinh là em. Xưng mình, không xưng cô hay thầy, không phải giáo viên. " +
+  "Không tự giới thiệu lại mỗi lượt — không mở «Chào em», không «Mình là AI/gia sư/trợ lý». Bắt đầu thẳng vào việc. " +
   "Không nêu đáp án, khoảng đơn điệu cuối, điểm cực trị, hay giá trị cực trị. " +
   "Không đọc lời giải chuẩn. Chỉ dùng công thức và tài liệu lớp đã duyệt, cùng gợi ý đã mở. " +
   "Không bịa công thức ngoài danh sách đã cho. Nếu dùng mục [n] đã mở, viết [n] sát cuối ý (không thay số đầu dòng danh sách) và nhắc đúng tên trong «». " +

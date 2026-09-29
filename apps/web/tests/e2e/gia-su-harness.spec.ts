@@ -14,6 +14,7 @@ test.describe("harness gia sư", () => {
     await expect(page.getByTestId("tutor-panel")).toBeVisible();
     await expect(page.getByTestId("tutor-composer")).toBeVisible();
     await expect(page.getByTestId("tutor-provider")).toHaveValue("offline");
+    await expect(page.getByTestId("tutor-log")).not.toContainText("Mình là gia sư AI");
 
     await page.getByTestId("tutor-input").fill("Gợi ý bước này");
     await page.getByTestId("tutor-input").press("Enter");

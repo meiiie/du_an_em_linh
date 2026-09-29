@@ -35,6 +35,11 @@ export function LichTuan({
                   {dang ? <span className="text-ink"> · buổi tiếp</span> : null}
                 </p>
                 <p className={cn("mt-1 text-sm leading-snug", dang && "font-medium")}>{s.viec}</p>
+                {s.nhac.map((n) => (
+                  <p key={n} className="mt-1 text-xs text-muted">
+                    {n}
+                  </p>
+                ))}
               </Link>
             </li>
           );
@@ -87,6 +92,11 @@ export function LichTuan({
                           className={cn("block text-sm leading-snug hover:underline", dang && "font-medium")}
                         >
                           {s.viec}
+                          {s.nhac.map((n) => (
+                            <span key={n} className="mt-1 block text-xs font-normal text-muted">
+                              {n}
+                            </span>
+                          ))}
                         </Link>
                       ) : null}
                     </td>

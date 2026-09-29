@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
+import { anKhoa } from "./an-khoa";
 import { locTinNhan, redact } from "./llm";
 import { HE_THONG_GIA_SU } from "./tutor";
 
@@ -8,6 +9,9 @@ test("redact tên demo và email, giữ chữ giáo viên", () => {
   assert.equal(redact("không phải giáo viên"), "không phải giáo viên");
   assert.equal(redact("giao vien"), "giao vien");
   assert.equal(redact("hs.an@demo.local gọi 0912345678"), "[email] gọi [sdt]");
+  assert.equal(redact("dán sk-abcdefghijklmnop vào đây"), "dán [khoa] vào đây");
+  assert.doesNotMatch(redact("dán zai-abcdefghijklmnop vào đây"), /zai-/);
+  assert.equal(anKhoa("sk-abcdefghijklmnop"), "[khoa]");
 });
 
 test("locTinNhan không sửa prompt hệ thống", () => {

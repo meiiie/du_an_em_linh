@@ -11,6 +11,8 @@ test("hệ thống bắt viết [n] khi dùng mục đã mở", () => {
   assert.match(HE_THONG_GIA_SU, /\[n\]/);
   assert.match(HE_THONG_GIA_SU, /không phải giáo viên/);
   assert.match(HE_THONG_GIA_SU, /xưng mình/i);
+  assert.match(HE_THONG_GIA_SU, /không tự giới thiệu/i);
+  assert.match(HE_THONG_GIA_SU, /Chào em/);
 });
 
 test("đừng nêu đáp án không phải xin đáp án", () => {

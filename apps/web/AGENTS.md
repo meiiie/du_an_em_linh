@@ -46,7 +46,7 @@ Dùng `Button` / `buttonClasses` trong `components/ui/button.tsx`. Đừng tự 
 - Nguyên thủy: `components/ui/*`. Vỏ: `components/app-shell.tsx`.
 - Server action: `lib/actions/{hs,gv,auth}.ts`. Schema: `lib/db/schema.ts`.
 - Gia sư: `lib/tutor.ts` + `lib/gia-su-luot.ts` + `lib/ai-harness.ts` + `lib/llm.ts` + `POST /api/hs/gia-su` (SSE trạng thái) + `components/tutor-panel.tsx` + `loi-gia-su.tsx` + `trich-dan-gia-su.tsx`. Không đưa lời giải vào prompt. Không stream token. Không fallback thầm. Escape Dừng hoặc đóng tờ; không gọi lại model khi SSE lỗi. Trang làm bài: mục lục bước + công thức; `Kiểm tra` / `Cần gợi ý?`. Gia sư đóng cho đến khi hỏi. Dưới `lg`: tờ full màn, Đóng 44. Z.AI `thinking.enabled` + `reasoning_effort: low`. Trích dẫn = badge `[n]`, chip, Mở về kho. Đo `lib/sota-gia-su.test.ts` + `lib/do-chinh-xac.test.ts` (`pnpm test:do` khi có khóa và dịch vụ toán). Cài lớp hiện `do-chinh-xac-tom-tat`. `/api/suc-khoe` trả `phien` + `ban`.
-
+ Không commit `zaiapikey.txt` / khóa — `pnpm test:khoa`.
 ## Skill
 
 `.cursor/skills/frontend-design`, `.cursor/skills/web-design-guidelines`.

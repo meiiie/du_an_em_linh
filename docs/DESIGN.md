@@ -108,7 +108,7 @@ Không lấy viên thuốc Material Expressive. Giữ phiếu: chữ nhật, bá
 | Tối thiểu AA | 24×24 | [WCAG 2.2 SC 2.5.8](https://www.w3.org/WAI/WCAG22/Understanding/target-size-minimum.html) |
 | Đệm ngang | 16 px | Material 3 Expressive (5/2025) khuyến 16 dp, không 24 |
 | Chỉ biểu tượng | 44×44 | Cùng HIG / 2.5.5 — không `p-1.5` |
-| Ô xét dấu trong bảng | 32×32 | Dày phiếu; trên 24 AA, dưới 44 để bảng không vỡ |
+| Ô xét dấu trong bảng | 32×32 chuột; 44×44 `pointer: coarse` | Dày phiếu trên desktop; điện thoại đủ HIG 44 |
 
 Nút `md` = `min-h-10 px-4`. `@media (pointer: coarse)` → `min-h-11`. Dùng `Button` / `buttonClasses`.
 
@@ -120,7 +120,7 @@ Thanh công cụ điện thoại 48 px (`h-12`) — Material touch 48 dp, cao h�
 - Bước 5 bước = mục lục tên + số mono, vạch 2 px ở bước hiện tại. Mỗi hàng `min-h-11`. Không chip viên thuốc, không nền mực cả hàng.
 - Sai = vạch `mark` trên mục và dòng phản hồi ngay dưới chỗ viết. Ô sai trong bảng vẫn `cell-bad`.
 - Composer gia sư: chỉ khi bấm `Cần gợi ý?`. Dưới `lg` là tờ full màn; `lg+` là tờ phải 24 rem, có Đóng. Không chiếm cột khi đóng. Thanh đáy điện thoại: **Kiểm tra + Cần gợi ý?** Chip «Sai chỗ nào?» (gửi vẫn «Em sai chỗ nào?»). `visualViewport` khi bàn phím, composer đáy, Đóng 44. `textarea` tối thiểu 44, nút Gửi **luôn** 44×44, Enter gửi / Shift+Enter dòng / Escape Dừng hoặc đóng tờ. Ô vẫn gõ được lúc đang nghĩ. Cuộn theo đáy (Open WebUI); kéo lên thì giữ chỗ, có «Xuống». Lỗi: «Hỏi lại» đổ câu vào ô — không tự gửi. SSE `trang_thai` kho/gọi/lọc rồi `xong` — **không** xả token. Chờ = 3 ô CSS (bước đang làm nhịp, scale 0,85↔1) + chữ `Đang nghĩ…` / `Đang mở công thức…` / `Đang hỏi gia sư…` / `Đang kiểm lời…`. Câu mới và dòng chấm vào bằng `phieu-vao` (180 ms, 6 px); tờ dưới `lg` dùng `to-len` (200 ms, 16 px). Không khối SVG trang trí, không bong bóng gradient, không gọi lại model khi SSE lỗi. Hình trang chủ là đồ thị của hàm minh họa, không phải họa tiết.
-- Lời gia sư: Markdown + KaTeX (nhịp Claude / assistant-ui / Open WebUI — flush trái trên giấy, học sinh mới có bong bóng mực). Cột hẹp: đoạn ngắn, danh sách, công thức căn trái cuộn ngang. Chuẩn hóa `\[ \]`, `\(...\)`, `align` trần, hàng rào `latex`. KaTeX lỗi thì chữ mờ, không hộp đỏ. Tiêu đề `#` thành chữ đậm cùng cỡ. Không HTML thô, không bong bóng wash. Trích dẫn: số `[n]` trong lời là badge (không lẫn số danh sách). Bấm số / chip = xem đúng đoạn trên phiếu. **Mở công thức** / **Mở tài liệu** mới về `#ct-` / `#tl-`. Một đoạn, không chồng 5–6.
+- Lời gia sư: Markdown + KaTeX (nhịp Claude / assistant-ui / Open WebUI — flush trái trên giấy, học sinh mới có bong bóng mực). Cột hẹp: đoạn ngắn, danh sách, công thức căn trái cuộn ngang. Chuẩn hóa `\[ \]`, `\(...\)`, `align` trần, hàng rào `latex`. KaTeX lỗi thì chữ mờ, không hộp đỏ. Tiêu đề `#` thành chữ đậm cùng cỡ. Không HTML thô, không bong bóng wash. Không tự giới thiệu trên mặt («Chào em», «Mình là AI…») — lời mở chỉ việc: đọc công thức, không đáp án. Trích dẫn: số `[n]` trong lời là badge (không lẫn số danh sách). Bấm số / chip = xem đúng đoạn trên phiếu. **Mở công thức** / **Mở tài liệu** mới về `#ct-` / `#tl-`. Một đoạn, không chồng 5–6.
 - Kết nối tài khoản: hai bước như Notion/Linear (mở trang chính thức → dán một lần). Không nút xanh ChatGPT, không logo.
 - Không hero navy, không số khổng lồ trên 3 thẻ giống nhau.
 

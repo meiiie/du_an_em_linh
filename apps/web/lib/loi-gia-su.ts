@@ -1,3 +1,27 @@
+import { anKhoa } from "./an-khoa";
+
+/** Chào / «Mình là AI…» đầu lượt — giữ phần việc phía sau. */
+const MO_DAU_CHAO = /^(?:chào\s+em|xin\s+chào(?:\s+em)?)\s*[,.!?:…]\s*/i;
+const CAU_GIOI_THIEU =
+  /^(?:mình|tôi)\s+là\s+(?:một\s+)?(?:ai\b|gia\s+sư|trợ\s+lý|mô\s+hình)[^.!?\n]*[.!?…]?\s*/i;
+
+export function boLoiTuGioiThieu(raw: string): string {
+  let s = (raw || "").replace(/^\uFEFF/, "").trim();
+  if (!s) return "";
+  for (let i = 0; i < 4; i++) {
+    const truoc = s;
+    s = s.replace(MO_DAU_CHAO, "").trim();
+    s = s.replace(CAU_GIOI_THIEU, "").trim();
+    if (s === truoc) break;
+  }
+  return s || "Em nói mình đang mắc chỗ nào ở bước này.";
+}
+
+/** Lưu và hiện: gỡ chào, che khóa, rồi mới chuẩn hóa công thức. */
+export function locBanGiaSu(raw: string): string {
+  return anKhoa(boLoiTuGioiThieu(raw));
+}
+
 /** Bỏ mã bước khỏi mặt phiếu — An không cần B.DH.DAOHAM. */
 export function locMatHienThi(raw: string): string {
   return (raw || "")
@@ -19,7 +43,7 @@ function namTrongTien(s: string, offset: number) {
 }
 
 export function chuanHoaLatexGiaSu(raw: string): string {
-  let s = locMatHienThi(raw).replace(/\r\n/g, "\n").trim();
+  let s = locMatHienThi(locBanGiaSu(raw)).replace(/\r\n/g, "\n").trim();
 
   s = s.replace(/\\\[\s*([\s\S]+?)\s*\\\]/g, (_m, t: string) => `\n\n$$\n${t.trim()}\n$$\n\n`);
   s = s.replace(/\\\(\s*([\s\S]+?)\s*\\\)/g, (_m, t: string) => `$${t.trim()}$`);
