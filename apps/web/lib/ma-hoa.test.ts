@@ -6,7 +6,7 @@ import { daMaHoa, giaiMa, maHoa } from "./ma-hoa";
 const env = { APP_ENC_KEY: randomBytes(32).toString("base64") };
 
 test("F-10: khoá API lưu dạng AES-256-GCM, giải mã lại đúng, không chứa bản rõ", () => {
-  const khoa = "sk-or-v1-0123456789abcdef";
+  const khoa = "khoa-lop-thu-0123456789abcdef";
   const luu = maHoa(khoa, env);
   assert.ok(daMaHoa(luu));
   assert.ok(!luu.includes(khoa));

@@ -48,7 +48,7 @@ test.describe("bảo mật F-05 / F-10", () => {
 
   test("F-10: khoá API cũ lưu rõ được mã hoá AES-GCM khi đọc, trang không lộ khoá", async ({ page }) => {
     const lop = (await sql.unsafe(LOP_A))[0].class_id as string;
-    const ro = "sk-e2e-plaintext-khong-duoc-luu-ro-123456";
+    const ro = "khoa lop thu e2e khong duoc luu ro 123456";
     await sql`update class_settings set ai_api_key = ${ro} where class_id = ${lop}`;
     try {
       await page.goto("/dang-nhap");
