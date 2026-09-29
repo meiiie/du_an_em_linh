@@ -57,8 +57,12 @@ def _hints(bl=None, de_bai=None):
     return _hints_cu(bl)
 
 
+CAP3_XETDAU = ("Trong mỗi khoảng của bảng, em tự chọn một giá trị x nằm hẳn bên trong khoảng (không lấy đúng mốc), "
+               "thay vào y' để lấy dấu của ô đó, rồi chọn mũi tên tương ứng. Chưa cần viết kết luận.")
+
+
 def _hints_cu(bl=None):
-    """(Dự phòng cho dạng ngoài thang mẫu) Thang gợi ý 3 cấp mỗi bước. Có lời giải máy thì cấp 3 theo bài (SP-11): điểm thử cụ thể, không nêu dấu;
+    """(Dự phòng cho dạng ngoài thang mẫu) Thang gợi ý 3 cấp mỗi bước. Cấp 3 bước xét dấu không nêu điểm thử cụ thể (Sư phạm 29/09, thay SP-11 cũ);
     cấp 1–2 bước đạo hàm theo dạng hàm (thương thì quy tắc thương, không nói "tách tổng")."""
     goi = {k: list(v) for k, v in GOI_Y.items()}
     if bl:
@@ -79,13 +83,9 @@ def _hints_cu(bl=None):
                                    "tại mọi điểm thuộc tập xác định.")
         else:
             goi["B.DH.DAOHAM"][1] = "Nhớ (x^n)' = n·x^(n-1), đạo hàm của tổng bằng tổng các đạo hàm, hằng số có đạo hàm 0."
-        try:
-            thu = _diem_thu(bl)
-        except Exception:
-            thu = None
-        if thu:
-            goi["B.DH.XETDAU"][2] = ("Thử lần lượt x = %s (mỗi số nằm trong một khoảng của bảng), thay vào y' để lấy dấu từng ô, "
-                                   "rồi chọn mũi tên tương ứng." % ", ".join(thu))
+        # Sư phạm 29/09: cấp 3 XETDAU KHÔNG nêu điểm thử cụ thể ("Thử lần lượt x = -1, 1" lộ vị trí mốc, 0003 chặn đúng);
+        # cùng luật với thang mẫu (tham_so_cam). Không dùng _diem_thu cho câu gợi ý.
+        goi["B.DH.XETDAU"][2] = CAP3_XETDAU
     out = []
     for ma, caps in goi.items():
         out.append({"ma_buoc": ma, "cac_cap": [
