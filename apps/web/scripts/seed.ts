@@ -177,6 +177,7 @@ async function napBai(opts: {
   latex: string;
   ham: string | null;
   dangTraLoi?: string;
+  buocBatDau?: string | null;
   origin: string;
   baiLam: unknown;
   facts: unknown;
@@ -188,6 +189,8 @@ async function napBai(opts: {
     bai_lam: opts.baiLam,
     // Chốt 11:25 c: thang gợi ý đi cùng lời giải qua kiểm định 3 tầng (câu lộ kết quả -> không phát hành)
     thang_goi_y: opts.hints,
+    // bài khung ngắn: tầng 1 chấm đúng khung học sinh làm (từ buoc_bat_dau)
+    ...(opts.buocBatDau ? { buoc_bat_dau: opts.buocBatDau } : {}),
     ...opts.corpus,
   });
   const id = crypto.randomUUID();
@@ -205,6 +208,7 @@ async function napBai(opts: {
     statementLatex: opts.latex,
     hamSympy: opts.ham,
     dangTraLoi: opts.dangTraLoi || "TU_LUAN_5_BUOC",
+    buocBatDau: opts.buocBatDau || null,
     origin: opts.origin,
     status: verified.trang_thai_phat_hanh,
     contentHash: hash,
@@ -690,6 +694,47 @@ async function main() {
     });
     if (row.status === "DA_PHAT_HANH") published.push(row.id);
   }
+
+  // Bài khung ngắn của Sư phạm (supham/bai-khung-ngan, seed-v01, sha256 cb390098…963c): 4 NB bắt đầu ở XETDAU, 4 TH bắt đầu ở
+  // NGHIEM; y' cho sẵn trong đề. Thang gợi ý giữ nguyên của Sư phạm. Phát hành qua cổng 3 tầng chấm đúng khung ngắn.
+  // Không giao vào bộ mặc định; dùng làm "bài dễ hơn một mức" (baiDeHonMotMuc / recommend).
+  const khungNgan = JSON.parse(readFileSync(path.join(root, "data/supham/bai-khung-ngan.seed-v01.json"), "utf8")) as {
+    id: string;
+    ky_nang_chinh: string;
+    ky_nang_phu?: string[];
+    muc_do_4: string;
+    muc_do_bo_3: string | null;
+    muc_bloom: string | null;
+    dang_cau?: string;
+    de_bai: { van_ban: string; latex: string; ham_so_sympy: string };
+    thang_goi_y: HintBlock[];
+    buoc_bat_dau: string;
+  }[];
+  const khungNganLoi: string[] = [];
+  for (const ex of khungNgan) {
+    const solved = await math<{ dat?: boolean; bai_lam?: unknown; su_kien?: unknown }>("solve", { ham: ex.de_bai.ham_so_sympy });
+    if (!solved.dat || !solved.bai_lam) throw new Error(`Không giải được ${ex.id}`);
+    const row = await napBai({
+      code: ex.id,
+      skill: ex.ky_nang_chinh,
+      phu: ex.ky_nang_phu || [],
+      muc4: MUC4[ex.muc_do_4] || ex.muc_do_4,
+      muc3: ex.muc_do_bo_3 || MUC3[ex.muc_do_4] || null,
+      bloom: ex.muc_bloom,
+      text: ex.de_bai.van_ban,
+      latex: ex.de_bai.latex,
+      ham: ex.de_bai.ham_so_sympy,
+      dangTraLoi: (ex.dang_cau || "TU_LUAN") === "TU_LUAN" ? "TU_LUAN_5_BUOC" : ex.dang_cau,
+      buocBatDau: ex.buoc_bat_dau,
+      origin: "SUPHAM_KHUNG_NGAN",
+      baiLam: solved.bai_lam,
+      facts: solved.su_kien || [],
+      hints: ex.thang_goi_y,
+      corpus,
+    });
+    if (row.status !== "DA_PHAT_HANH") khungNganLoi.push(`${ex.id}=${row.status}`);
+  }
+  if (khungNganLoi.length) throw new Error(`Bài khung ngắn không qua cổng phát hành: ${khungNganLoi.join(", ")}`);
 
   const badSolved = await math<{ dat?: boolean; bai_lam?: { dao_ham?: string }; su_kien?: unknown; thang_goi_y?: HintBlock[] }>(
     "solve",

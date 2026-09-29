@@ -16,7 +16,7 @@ Không có kết quả tầng nào -> không phát hành.
 import re
 import unicodedata
 
-from app.grader import bai_lam_sang_payload, grade, payload_to_bai_lam
+from app.grader import ORDER as _ORDER, bai_lam_sang_payload, grade, payload_to_bai_lam
 
 QUYEN_HOP_LE = {"tu_soan", "gv_so_huu", "cong_khai", "duoc_phep", "cc_by", "cc_by_sa", "cc0", "public_domain", "mien_phi_giao_duc"}
 
@@ -328,6 +328,13 @@ def verify(payload):
                 bl = None
     elif bl:
         gp = bai_lam_sang_payload(bl, payload.get("ham"))
+        bd = payload.get("buoc_bat_dau")
+        if bd:
+            # Bài khung ngắn: tầng 1 chấm ĐÚNG khung học sinh làm (các bước từ buoc_bat_dau), bước trước do đề cho sẵn
+            # (grader lấy từ lời giải máy). buoc_bat_dau lạ -> grader trả KHONG_KIEM_DUOC, bài không phát hành.
+            gp = dict(gp, buoc_bat_dau=bd)
+            if bd in _ORDER:
+                gp["cac_buoc"] = [b for b in gp["cac_buoc"] if b.get("ma_buoc") in _ORDER[_ORDER.index(bd):]]
     else:
         t1 = {"tang": 1, "trang_thai": "KHONG_KIEM_DUOC", "ly_do": "Chưa có lời giải cấu trúc 5 bước để máy tự kiểm."}
         t2 = tang_2(payload.get("tai_lieu") or [])

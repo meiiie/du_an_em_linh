@@ -20,12 +20,13 @@ import { goiKhoChoBuoc, taiNguyenKhoLop } from "./kho-lop";
 import { docTrichDanLuu, dongKhoChoPrompt, locTrichDanTheoLoi, nhanTrichDan, type TrichDanHien } from "./kien-thuc";
 import { assertMayLearn, baiDeHonMotMuc, loadConfig } from "./learning";
 import { BUOC } from "./levels";
-import { locBanGiaSu } from "./loi-gia-su";
+import { boDauHop, locBanGiaSu } from "./loi-gia-su";
 import { callLLM } from "./llm";
 import { mathJob } from "./math";
 import type { GiaSuBuocSse } from "./sse";
 import {
   cauHoiXocratis,
+  cauNhanDauU,
   chinhSachXinDapAn,
   goiYBuoc,
   HE_THONG_GIA_SU,
@@ -267,6 +268,15 @@ export async function chayHoiGiaSu(opts: {
       text,
       nguon.congThuc.map((c) => ({ ten: c.title, noiDung: c.noiDung || c.latex || "" })),
     );
+  } else if (
+    !goi &&
+    grade?.ketQua === "SAI" &&
+    grade.maLoi === "ERR.DH.07" &&
+    (grade.buocSai as { ma_buoc?: string } | null)?.ma_buoc === "B.DH.KETLUAN" &&
+    buoc === "B.DH.KETLUAN"
+  ) {
+    // §(23) luật dấu U: câu cố định theo cờ toan_dung (không gọi mô hình, không bao giờ viết U)
+    draft = cauNhanDauU(grade.toanDung);
   } else if (hetThang) {
     // SP-17 / AI-5.h / chốt 11:37 (1): hết thang -> đề xuất một bài CỤ THỂ dễ hơn (cùng kỹ năng, thấp hơn một mức, đã phát hành,
     // em chưa làm). Không có thì nói bằng lời và gợi ý Gửi thầy cô.
@@ -335,6 +345,8 @@ export async function chayHoiGiaSu(opts: {
     llmError = llm.error;
     if (llm.error) persistCap = false;
   }
+  // §(23): mọi câu gia sư (mô hình, mẫu, thang gợi ý) không viết dấu hợp giữa hai khoảng
+  draft = boDauHop(draft);
   await bao("loc");
   if (daDung(signal)) return dung();
   const facts = await db.select().from(solutions).where(eq(solutions.problemId, problemId)).limit(1);

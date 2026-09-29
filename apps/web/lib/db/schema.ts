@@ -139,6 +139,7 @@ export const problems = pgTable("problems", {
   hamSympy: text("ham_sympy"),
   // SP-06(d): dạng trả lời. TU_LUAN_5_BUOC = khung 5 bước; TN_DUNG_SAI, TRA_LOI_NGAN... là dạng khác (chưa có khung làm trên app)
   dangTraLoi: text("dang_tra_loi").notNull().default("TU_LUAN_5_BUOC"),
+  buocBatDau: text("buoc_bat_dau"),
   origin: text("origin").notNull(),
   status: text("status").notNull(),
   contentHash: text("content_hash").notNull(),
@@ -279,6 +280,7 @@ export const gradingResults = pgTable("grading_results", {
   perBuoc: jsonb("per_buoc"),
   thongBao: text("thong_bao"),
   cacVanDe: jsonb("cac_van_de"),
+  toanDung: boolean("toan_dung"),
 });
 
 export const tutorSessions = pgTable("tutor_sessions", {

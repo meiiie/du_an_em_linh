@@ -213,3 +213,17 @@ export function moTaCheDo(arg: boolean | { provider?: string; offline: boolean; 
   if (provider === "zai") return "Z.AI của lớp";
   return "ChatGPT của lớp";
 }
+
+/** §(23) ai/thiet-ke-ai-v0.md: câu nhắn cố định cho luật dấu U (ERR.DH.07 ở bước kết luận). Không câu nào chứa U. */
+export const CAU_DAU_U_TOAN_DUNG =
+  'Kết luận của em đúng về toán, nhưng theo cách trình bày của SGK em viết tách từng khoảng và nối bằng chữ "và", không dùng U.';
+export const CAU_DAU_U_SAI_TOAN = "Hàm số có xác định tại mọi điểm của khoảng em viết không?";
+export const CAU_DAU_U_TRUNG_TINH =
+  "Em xem lại tập xác định của hàm số: mỗi khoảng em viết ở kết luận có nằm trọn trong tập xác định không?";
+
+/** true -> lỗi trình bày; false -> lỗi toán (hỏi về TXĐ); thiếu cờ -> câu trung tính, KHÔNG nói "đúng về toán". */
+export function cauNhanDauU(toanDung: boolean | null | undefined): string {
+  if (toanDung === true) return CAU_DAU_U_TOAN_DUNG;
+  if (toanDung === false) return CAU_DAU_U_SAI_TOAN;
+  return CAU_DAU_U_TRUNG_TINH;
+}
