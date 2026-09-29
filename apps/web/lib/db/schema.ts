@@ -372,8 +372,14 @@ export const escalations = pgTable("escalations", {
   studentId: uuid("student_id").notNull(),
   skillCode: text("skill_code").notNull(),
   reason: text("reason").notNull(),
+  /** UX-09: bài và bước của cảnh báo (NULL = cảnh báo theo kỹ năng, không gắn bài). */
+  problemId: uuid("problem_id"),
+  maBuoc: text("ma_buoc"),
+  /** KET = máy phát hiện kẹt; NHO_GV = học sinh bấm «Gửi thầy cô». */
+  loai: text("loai").notNull().default("KET"),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
   handledAt: timestamp("handled_at", { withTimezone: true }),
+  handledBy: uuid("handled_by"),
 });
 
 export const sessions = pgTable("sessions", {

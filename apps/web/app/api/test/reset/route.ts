@@ -1,3 +1,4 @@
+import { CANH_BAO_MAU } from "@/lib/canh-bao-mau";
 import { sql } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
@@ -40,6 +41,12 @@ export async function POST(req: Request) {
     await tx`delete from mastery_events where student_id = any(${ids}::uuid[])`;
     await tx`delete from submissions where student_id = any(${ids}::uuid[])`;
     await tx`delete from escalations where student_id = any(${ids}::uuid[])`;
+    // Trả cảnh báo mẫu của seed (vd 'Chi — Điểm tới hạn') cho học sinh vừa đặt lại, như lúc mới nạp dữ liệu.
+    for (const m of CANH_BAO_MAU) {
+      await tx`insert into escalations (id, student_id, skill_code, reason, loai)
+        select gen_random_uuid(), u.id, ${m.skillCode}, ${m.reason}, 'KET' from users u
+        where lower(u.email) = ${m.email} and u.id = any(${ids}::uuid[])`;
+    }
     await tx`update mastery_states set stuck_counter = 0, last_error_codes = '[]'::jsonb where student_id = any(${ids}::uuid[])`;
     // F-10: xoá bộ đếm hạn mức (gia sư, nộp bước) của các HS này và mọi khoá đăng nhập đang tính
     await tx`delete from rate_limit_events where khoa = any(${ids.flatMap((i) => [`gia_su:${i}`, `nop_buoc:${i}`])}::text[]) or khoa like 'dang_nhap:%'`;

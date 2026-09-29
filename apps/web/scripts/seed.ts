@@ -35,6 +35,7 @@ import {
   verificationRuns,
   verificationTierResults,
 } from "../lib/db/schema";
+import { CANH_BAO_MAU } from "../lib/canh-bao-mau";
 
 const GV = "11111111-1111-4111-8111-111111111111";
 const AN = "22222222-2222-4222-8222-222222222222";
@@ -801,8 +802,8 @@ async function main() {
   await db.insert(escalations).values({
     id: crypto.randomUUID(),
     studentId: CHI,
-    skillCode: "T12.DH.02",
-    reason: "Kẹt 3 lượt ở T12.DH.02 (tính đạo hàm). Bản ghi tổng hợp để thấy cảnh báo, không phải học sinh thật.",
+    skillCode: CANH_BAO_MAU[0].skillCode,
+    reason: CANH_BAO_MAU[0].reason,
     createdAt: now,
     handledAt: null,
   });

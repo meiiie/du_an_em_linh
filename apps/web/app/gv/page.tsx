@@ -10,6 +10,8 @@ import { tenKyNangNgan } from "@/lib/de-hoc-sinh";
 import { db } from "@/lib/db";
 import { documents, escalations, formulaSheets, formulas, problems, skills, users } from "@/lib/db/schema";
 import { caiDatLopCuaGv, hsCuaGv } from "@/lib/lop";
+import { daXuLyCanhBao } from "@/lib/actions/canh-bao";
+import { dungCanhBao } from "@/lib/canh-bao-hien";
 
 export const dynamic = "force-dynamic";
 
@@ -59,6 +61,13 @@ export default async function GvHome() {
   const name = new Map(names.map((n) => [n.id, n.displayName]));
   const kn = await db.select().from(skills);
   const tenKn = new Map(kn.map((s) => [s.code, tenKyNangNgan(s.code, s.name)]));
+  const baiIds = [...new Set(stuck.map((e) => e.problemId).filter((x): x is string => Boolean(x)))];
+  const baiRows = baiIds.length ? await db.select({ id: problems.id, code: problems.code }).from(problems).where(inArray(problems.id, baiIds)) : [];
+  const baiMap = new Map(baiRows.map((b) => [b.id, b]));
+  // UX-09: mới nhất trước; mỗi mục đủ ai, kỹ năng/bước, bài, lý do, lúc nào
+  const canhBao = [...stuck]
+    .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+    .map((e) => dungCanhBao(e, name, tenKn, baiMap));
   const queue = await db.select().from(problems).where(eq(problems.status, "CHO_GIAO_VIEN_DUYET"));
   const blocked = await db.select().from(problems).where(eq(problems.status, "BI_CHAN"));
   const published = await db.select().from(problems).where(eq(problems.status, "DA_PHAT_HANH"));
@@ -95,14 +104,38 @@ export default async function GvHome() {
       </ul>
 
       <section className="border-b border-line py-4" data-testid="canh-bao-ket">
-        <h2 className="text-sm font-semibold text-mark">Đang kẹt</h2>
-        {stuck.length === 0 ? <p className="mt-2 text-sm text-muted">Không ai kẹt.</p> : null}
-        <ul className="mt-2 space-y-1 text-sm">
-          {stuck.map((e) => (
-            <li key={e.id}>
-              <Link href="/gv/tien-do" className="underline-offset-2 hover:underline">
-                {name.get(e.studentId)} — {tenKn.get(e.skillCode) || e.skillCode}
+        <h2 className="text-sm font-semibold text-mark">Đang kẹt · nhờ thầy cô</h2>
+        {canhBao.length === 0 ? <p className="mt-2 text-sm text-muted">Không ai kẹt.</p> : null}
+        <ul className="mt-2 divide-y divide-line text-sm">
+          {canhBao.map((c) => (
+            <li key={c.id} data-testid={`canh-bao-${c.id}`} data-loai={c.nho ? "NHO_GV" : "KET"} className="flex items-stretch gap-2">
+              <Link href={c.href} className="flex min-h-11 min-w-0 flex-1 flex-col justify-center py-2 underline-offset-2 hover:underline">
+                <span className="font-medium">
+                  {c.ten} — {c.kyNang}
+                  {c.buoc ? ` · bước ${c.buoc}` : ""}
+                </span>
+                <span className="mt-0.5 text-xs text-muted">
+                  <span data-truong="bai">{c.bai ? c.bai.code : "Không gắn bài"}</span>
+                  {" · "}
+                  <span data-truong="ly-do" className={c.nho ? "text-mark" : undefined}>
+                    {c.nho ? "Học sinh nhờ thầy cô: " : ""}
+                    {c.lyDo}
+                  </span>
+                  {" · "}
+                  <span data-truong="luc" className="tabular">
+                    {c.luc}
+                  </span>
+                </span>
               </Link>
+              <form action={daXuLyCanhBao.bind(null, c.id)} className="flex shrink-0 items-center">
+                <button
+                  type="submit"
+                  data-testid={`xu-ly-${c.id}`}
+                  className="min-h-11 min-w-11 rounded-button border border-line px-3 text-sm hover:bg-wash"
+                >
+                  Đã xử lý
+                </button>
+              </form>
             </li>
           ))}
         </ul>

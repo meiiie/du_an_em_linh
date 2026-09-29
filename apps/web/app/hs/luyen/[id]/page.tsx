@@ -13,6 +13,7 @@ import { hamLatex } from "@/lib/de-hoc-sinh";
 import { trangThaiPhieu } from "@/lib/hs-du-lieu";
 import { loiGiaiHocSinh } from "@/lib/loi-giai";
 import { capGoiYTheoBuoc } from "@/lib/gia-su-luot";
+import { buocDaDeXuatGuiGv } from "@/lib/ket-buoc";
 import { tienTrinhBai } from "@/lib/tien-trinh";
 import { BUOC } from "@/lib/levels";
 
@@ -65,7 +66,11 @@ export default async function LuyenPage({ params }: { params: Promise<{ id: stri
   const lichSu = await lichSuGiaSu(p.id);
   // UX-06 / UX-07: tải lại mở đúng bước đang dở và đúng cấp gợi ý (dựng từ lượt nộp gần nhất và phiên gia sư).
   const batDau = p.buocBatDau ? Math.max(0, BUOC.findIndex((b) => b.ma === p.buocBatDau)) : 0;
-  const [tienTrinh, capGoiY] = await Promise.all([tienTrinhBai(u.id, p.id, batDau), capGoiYTheoBuoc(u.id, p.id)]);
+  const [tienTrinh, capGoiY, deXuatGuiGv] = await Promise.all([
+    tienTrinhBai(u.id, p.id, batDau),
+    capGoiYTheoBuoc(u.id, p.id),
+    buocDaDeXuatGuiGv(u.id, p.id),
+  ]);
   return (
     <main>
       <SolveClient
@@ -79,6 +84,7 @@ export default async function LuyenPage({ params }: { params: Promise<{ id: stri
         buocBatDau={p.buocBatDau}
         tienTrinh={tienTrinh}
         capGoiY={capGoiY}
+        deXuatGuiGv={deXuatGuiGv}
       />
     </main>
   );

@@ -24,6 +24,7 @@ import { assertMayLearn, loadConfig, nghiDoanMo, applyMastery, recommend } from 
 import { mathJob, type GradeResult } from "../math";
 import type { AiPublicConfig } from "../ai-catalog";
 import { caiDatGiaSuCongKhaiCho, chayHoiGiaSu, sessionFor } from "../gia-su-luot";
+import { ketSauNopSai, laMaBuoc, tenBuoc } from "../ket-buoc";
 import { taiNguyenKhoLop } from "../kho-lop";
 import { docTrichDanLuu, xemKhoTheoKhung } from "../kien-thuc";
 import { loiGiaiHocSinh } from "../loi-giai";
@@ -163,6 +164,12 @@ export async function nopBuoc(problemId: string, body: StepPayload) {
     nghi: Boolean(lyDo),
     finished,
   });
+  // UXT-07-k: nộp sai ở bước đã hết thang gợi ý được đếm ngay lúc nộp (không cần hỏi gia sư); đủ 2 lần -> cảnh báo kẹt + đề xuất «Gửi thầy cô».
+  const buocSaiNop = (graded.buoc_sai as { ma_buoc?: string } | null)?.ma_buoc;
+  const deXuatGuiGv =
+    graded.ket_qua === "SAI" && buocSaiNop
+      ? await ketSauNopSai({ studentId: user.id, problem: p, buoc: buocSaiNop, subId }).catch(() => false)
+      : false;
   revalidatePath("/hs");
   let tiepTheo: { id: string; code: string; lyDo: string } | null = null;
   if (finished) {
@@ -194,6 +201,8 @@ export async function nopBuoc(problemId: string, body: StepPayload) {
     finished,
     nghi_doan_mo: Boolean(lyDo),
     sub_id: subId,
+    de_xuat_gui_gv: deXuatGuiGv,
+    buoc_de_xuat: deXuatGuiGv ? buocSaiNop ?? null : null,
   };
 }
 
@@ -242,23 +251,30 @@ export async function lichSuGiaSu(problemId: string) {
   };
 }
 
-export async function guiThayCo(problemId: string) {
+export async function guiThayCo(problemId: string, maBuocHs?: string) {
   const user = await requireRole("HS");
   await assertMayLearn(user);
   const prob = await db.select().from(problems).where(eq(problems.id, problemId)).limit(1);
   const p = prob[0];
   if (!p) return { ok: false as const, tra_loi: "Không thấy bài." };
   const skill = p.skillCode || "T12.DH.03";
+  // UXT-09-b: lời nhờ là mục RIÊNG (loai NHO_GV, gắn bài + bước đang làm), kể cả khi đã có cảnh báo tự động cùng kỹ năng.
+  // Chỉ gộp khi đã có một lời nhờ CHƯA xử lý cho đúng bài này.
   const open = await db
     .select()
     .from(escalations)
-    .where(and(eq(escalations.studentId, user.id), eq(escalations.skillCode, skill)));
+    .where(and(eq(escalations.studentId, user.id), eq(escalations.problemId, problemId), eq(escalations.loai, "NHO_GV")));
   if (!open.some((e) => !e.handledAt)) {
+    const sess = await sessionFor(user.id, problemId);
+    const maBuoc = laMaBuoc(maBuocHs) ? maBuocHs : laMaBuoc(sess.lastBuoc) ? sess.lastBuoc : null;
     await db.insert(escalations).values({
       id: crypto.randomUUID(),
       studentId: user.id,
       skillCode: skill,
-      reason: "Em nhờ thầy cô.",
+      problemId,
+      maBuoc,
+      loai: "NHO_GV",
+      reason: `Em nhờ thầy cô${maBuoc ? ` ở bước ${tenBuoc(maBuoc)}` : ""}.`,
     });
   }
   await ghiNhatKy(user.id, "GUI_THAY_CO", "problem", problemId, skill);

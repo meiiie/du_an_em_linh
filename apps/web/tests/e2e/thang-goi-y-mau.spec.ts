@@ -52,9 +52,14 @@ test.describe("thang gợi ý mẫu", () => {
     const log = page.getByTestId("tutor-log");
     await page.getByTestId("chip-goi-y").click();
     await expect(log).toContainText("Tập xác định là tập các giá trị x làm cho biểu thức của hàm số có nghĩa");
+    // UXT-07-a/d: «Gợi ý bước này» nhắc lại cấp đang mở; lên cấp bằng «Gợi ý thêm»
     await page.getByTestId("chip-goi-y").click();
+    await expect(log.getByText("Tập xác định là tập các giá trị x làm cho biểu thức của hàm số có nghĩa")).toHaveCount(2);
+    await expect(log).not.toContainText("em đã loại bỏ hoặc giới hạn x vì lý do gì");
+    await page.getByTestId("goi-y-them").click();
     await expect(log).toContainText("em đã loại bỏ hoặc giới hạn x vì lý do gì");
-    await page.getByTestId("chip-goi-y").click();
+    const them = page.getByTestId("goi-y-them");
+    await (await them.isVisible() ? them : page.getByTestId("chip-goi-y")).click();
     await expect(log).toContainText(/bài dễ hơn «|Gửi thầy cô/);
     await expect(log).not.toContainText(/cấp 3\/3|ly_do_trong|siêu dữ liệu/);
     await page.screenshot({ path: `${SHOTS}/hs-thang-mau-cap-rong.png`, fullPage: true });

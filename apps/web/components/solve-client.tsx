@@ -93,6 +93,7 @@ export function SolveClient({
   buocBatDau = null,
   tienTrinh = null,
   capGoiY,
+  deXuatGuiGv,
 }: {
   problemId: string;
   title: string;
@@ -107,6 +108,8 @@ export function SolveClient({
   tienTrinh?: TienTrinh | null;
   /** UX-07: cấp gợi ý đã mở theo bước (phiên gia sư trên máy chủ). */
   capGoiY?: Record<string, number>;
+  /** UXT-07-k: bước đã đủ điều kiện «Gửi thầy cô» (đọc từ phiên gia sư lúc mở trang). */
+  deXuatGuiGv?: string[];
 }) {
   const batDau = Math.max(0, buocBatDau ? ORDER.indexOf(buocBatDau as (typeof ORDER)[number]) : 0);
   const tt = tienTrinh;
@@ -130,6 +133,7 @@ export function SolveClient({
   // Bước đã đạt theo lượt chấm gần nhất (dấu ✓ trên thanh bước, UXT-06-a/b).
   const [perBuoc, setPerBuoc] = useState<Record<string, string>>(tt?.perBuoc ?? {});
   const [xongBai, setXongBai] = useState(Boolean(tt?.finished));
+  const [buocGuiGv, setBuocGuiGv] = useState<string[]>(deXuatGuiGv ?? []);
   // UXT-06-c: nháp chưa nộp (mốc, dấu, mũi tên, các ô) giữ qua tải lại — lưu cục bộ, gắn với lượt nộp gần nhất.
   const khoaNhap = `nhap:${problemId}`;
   const subRef = useRef<string | null>(tt?.subId ?? null);
@@ -243,6 +247,10 @@ export function SolveClient({
       return;
     }
     setGrade(res);
+    if (res.de_xuat_gui_gv && res.buoc_de_xuat) {
+      const b = res.buoc_de_xuat;
+      setBuocGuiGv((cu) => (cu.includes(b) ? cu : [...cu, b]));
+    }
     setBuocCham(res.buoc_sai?.ma_buoc ?? ma);
     if (res.per_buoc) setPerBuoc(res.per_buoc);
     if (res.finished) setXongBai(true);
@@ -749,6 +757,7 @@ export function SolveClient({
       onClose={() => setOpenTutor(false)}
       maBuoc={ma}
       capBanDau={capGoiY}
+      deXuatGuiGv={buocGuiGv}
     />
     </>
   );
