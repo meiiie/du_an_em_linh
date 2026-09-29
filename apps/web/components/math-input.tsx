@@ -25,6 +25,9 @@ export function MathInput({
   testId,
   label,
   nhe = false,
+  placeholder = "Gõ bằng bàn phím, ví dụ 3x^2-12x+9",
+  title,
+  xemTruoc = true,
 }: {
   value: string;
   onChange: (v: string) => void;
@@ -32,6 +35,10 @@ export function MathInput({
   label: string;
   /** Nhãn là ký hiệu toán, không phải tiêu đề form. */
   nhe?: boolean;
+  placeholder?: string;
+  title?: string;
+  /** Dòng "Máy hiểu là…" (tắt cho ô lẫn chữ tiếng Việt như ô cực trị). */
+  xemTruoc?: boolean;
 }) {
   const ref = useRef<MathFieldEl | null>(null);
   const onChangeRef = useRef(onChange);
@@ -95,14 +102,15 @@ export function MathInput({
         value={value}
         onChange={(e) => onChange(e.target.value)}
         className="mt-2 w-full min-h-11 rounded-button border border-line bg-canvas px-3 py-2 font-mono text-sm"
-        placeholder="hoặc gõ thường, ví dụ 3x^2-12x+9"
+        placeholder={placeholder}
+        title={title}
         inputMode="text"
         autoCapitalize="off"
         autoCorrect="off"
         spellCheck={false}
-        aria-label={`${label} (gõ thường)`}
+        aria-label={`${label} — Gõ bằng bàn phím`}
       />
-      {value.trim() ? (
+      {xemTruoc && value.trim() ? (
         <span className="mt-1 block text-xs text-muted" data-testid={`hieu-${testId}`}>
           Máy hiểu là: <Tex tex={value} />
         </span>

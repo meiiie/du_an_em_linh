@@ -42,6 +42,9 @@ export type HoiGiaSuKet =
       tra_loi: string;
       blocked: boolean;
       cap: number;
+      /** Bước gia sư vừa nói tới và số cấp của thang bước đó (chỉ báo 'cấp n/3' trên khung gợi ý, UX-07). */
+      ma_buoc?: string;
+      so_cap?: number;
       offline: boolean;
       provider: string;
       error: string | null;
@@ -311,13 +314,13 @@ export async function chayHoiGiaSu(opts: {
     // Cấp gợi ý để trống theo thang mẫu (nói thêm là lộ kết quả): không hiện câu gợi ý, không lộ lý do nội bộ.
     state = "BAI_TUONG_TU";
     draft = baiDe
-      ? `Gợi ý tiếp theo của bước ${tenBuoc} sẽ nói ra kết quả, nên mình dừng ở đây. Em thử bài dễ hơn «${baiDe.code}» (/hs/luyen/${baiDe.id}) rồi quay lại bài này.`
+      ? `Gợi ý tiếp theo của bước ${tenBuoc} sẽ nói ra kết quả, nên mình dừng ở đây. Em thử [bài dễ hơn «${baiDe.code}»](/hs/luyen/${baiDe.id}) rồi quay lại bài này.`
       : `Gợi ý tiếp theo của bước ${tenBuoc} sẽ nói ra kết quả, nên mình dừng ở đây. Hiện chưa có bài dễ hơn cùng kỹ năng đã mở cho em; em thử một bài tương tự trong mục Đề bài, hoặc bấm «Gửi thầy cô» để thầy cô xem cùng.`;
   } else if (hetThang) {
     // SP-17 / AI-5.h / chốt 11:37 (1): hết thang -> đề xuất một bài CỤ THỂ dễ hơn (cùng kỹ năng, thấp hơn một mức, đã phát hành,
     // em chưa làm). Không có thì nói bằng lời và gợi ý Gửi thầy cô.
     draft = baiDe
-      ? `Em đã mở hết các gợi ý của bước ${tenBuoc}. Em thử bài dễ hơn «${baiDe.code}» (/hs/luyen/${baiDe.id}) rồi quay lại bài này.`
+      ? `Em đã mở hết các gợi ý của bước ${tenBuoc}. Em thử [bài dễ hơn «${baiDe.code}»](/hs/luyen/${baiDe.id}) rồi quay lại bài này.`
       : `Em đã mở hết các gợi ý của bước ${tenBuoc}. Hiện chưa có bài dễ hơn cùng kỹ năng đã mở cho em; em thử một bài tương tự trong mục Đề bài, hoặc bấm «Gửi thầy cô» để thầy cô xem cùng.`;
   } else {
     const offlineText = [
@@ -458,6 +461,8 @@ export async function chayHoiGiaSu(opts: {
     tra_loi: draft,
     blocked,
     cap: persistCap ? capMoi : capCu,
+    ma_buoc: buoc,
+    so_cap: soCap,
     offline,
     provider: nha,
     error: llmError,
@@ -490,4 +495,38 @@ export function chonBuoc(opts: {
 async function baiDeHon(studentId: string, p: { id: string; skillCode: string | null; mucDo4: string | null }) {
   const b = await baiDeHonMotMuc(studentId, p);
   return b ? { id: b.id, code: b.code } : null;
+}
+
+
+/**
+ * UX-07: cấp gợi ý hiện tại của từng bước (đọc phiên gia sư, không tạo phiên mới). Cùng quy tắc khóa với chayHoiGiaSu:
+ * bước đang sai ở lượt nộp gần nhất dùng khóa theo loại lỗi, bước khác dùng thang CHUNG.
+ */
+export async function capGoiYTheoBuoc(studentId: string, problemId: string): Promise<Record<string, number>> {
+  const sess = (
+    await db
+      .select()
+      .from(tutorSessions)
+      .where(and(eq(tutorSessions.studentId, studentId), eq(tutorSessions.problemId, problemId)))
+      .orderBy(desc(tutorSessions.startedAt))
+      .limit(1)
+  )[0];
+  const caps = (sess?.hintCaps as Record<string, number> | null) || {};
+  if (!sess || !Object.keys(caps).length) return {};
+  const sub = (
+    await db
+      .select()
+      .from(submissions)
+      .where(and(eq(submissions.studentId, studentId), eq(submissions.problemId, problemId)))
+      .orderBy(desc(submissions.submittedAt))
+      .limit(1)
+  )[0];
+  const g = sub ? (await db.select().from(gradingResults).where(eq(gradingResults.submissionId, sub.id)).limit(1))[0] : null;
+  const out: Record<string, number> = {};
+  for (const ma of THU_TU) {
+    const sai = g?.ketQua === "SAI" && (g.buocSai as { ma_buoc?: string } | null)?.ma_buoc === ma;
+    const c = Number(caps[`${ma}|${sai ? g?.loaiKetQua || "SAI" : "CHUNG"}`] || 0);
+    if (c > 0) out[ma] = c;
+  }
+  return out;
 }

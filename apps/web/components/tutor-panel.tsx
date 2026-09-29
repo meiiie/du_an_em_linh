@@ -22,6 +22,17 @@ type KetHoi = {
   provider?: string;
   error?: string | null;
   trich_dan?: TrichDanHien[];
+  cap?: number;
+  ma_buoc?: string;
+  so_cap?: number;
+};
+
+const TEN_BUOC_CAP: Record<string, string> = {
+  "B.DH.TXD": "Tập xác định",
+  "B.DH.DAOHAM": "Đạo hàm",
+  "B.DH.NGHIEM": "Nghiệm y′",
+  "B.DH.XETDAU": "Xét dấu",
+  "B.DH.KETLUAN": "Kết luận",
 };
 
 const LOI_CHAO: Msg = {
@@ -107,6 +118,7 @@ export function TutorPanel({
   open,
   onClose,
   maBuoc,
+  capBanDau,
 }: {
   problemId: string;
   initialChat: { role: "hs" | "gia_su"; text: string; trichDan?: TrichDanHien[] }[];
@@ -115,6 +127,8 @@ export function TutorPanel({
   onClose: () => void;
   /** SP-09: bước học sinh đang làm, để gợi ý đúng bước. */
   maBuoc?: string;
+  /** UX-07: cấp gợi ý đã mở của từng bước (lưu ở phiên gia sư trên máy chủ), để tải lại vẫn thấy đúng cấp. */
+  capBanDau?: Record<string, number>;
 }) {
   const [chat, setChat] = useState<Msg[]>(initialChat.length ? initialChat : [LOI_CHAO]);
   const [ask, setAsk] = useState("");
@@ -124,6 +138,11 @@ export function TutorPanel({
   const [lastOffline, setLastOffline] = useState(ai.classProvider === "offline");
   const [lastError, setLastError] = useState<string | null>(null);
   const [hienXuong, setHienXuong] = useState(false);
+  const [capTheoBuoc, setCapTheoBuoc] = useState<Record<string, { cap: number; soCap: number }>>(() =>
+    Object.fromEntries(Object.entries(capBanDau || {}).map(([k, v]) => [k, { cap: v, soCap: 3 }])),
+  );
+  const capNay = maBuoc ? capTheoBuoc[maBuoc] : undefined;
+  const hetCap = Boolean(capNay && capNay.cap >= capNay.soCap);
   const seq = useRef(0);
   const box = useRef<HTMLTextAreaElement>(null);
   const log = useRef<HTMLDivElement>(null);
@@ -240,6 +259,11 @@ export function TutorPanel({
   }
 
   function nhanKet(res: KetHoi) {
+    if (res.ok && res.ma_buoc && typeof res.cap === "number" && res.cap > 0) {
+      const b = res.ma_buoc;
+      const c = res.cap;
+      setCapTheoBuoc((m) => ({ ...m, [b]: { cap: Math.min(c, res.so_cap || 3), soCap: res.so_cap || 3 } }));
+    }
     if (res.ok) {
       setLastOffline(Boolean(res.offline));
       setLastError(res.error ?? null);
@@ -362,6 +386,11 @@ export function TutorPanel({
         <Button type="button" variant="secondary" size="sm" data-testid="chip-goi-y" disabled={thinking} className="shrink-0" onClick={() => sendChat("Gợi ý bước này")}>
           Gợi ý bước này
         </Button>
+        {capNay && capNay.cap > 0 && !hetCap ? (
+          <Button type="button" variant="secondary" size="sm" data-testid="goi-y-them" disabled={thinking} className="shrink-0" onClick={() => sendChat("Gợi ý thêm")}>
+            Gợi ý thêm
+          </Button>
+        ) : null}
         <Button type="button" variant="secondary" size="sm" data-testid="chip-sai-cho" disabled={thinking} className="shrink-0" onClick={() => sendChat("Em sai chỗ nào?")}>
           Sai chỗ nào?
         </Button>
@@ -384,6 +413,16 @@ export function TutorPanel({
           </Button>
         ) : null}
       </div>
+
+      {capNay && capNay.cap > 0 && maBuoc ? (
+        <p className="mt-2 shrink-0 text-xs text-muted" data-testid="goi-y-cap-dong">
+          <span data-testid="goi-y-cap" data-cap={capNay.cap} className="font-medium tabular text-ink">
+            Gợi ý cấp {capNay.cap}/{capNay.soCap}
+          </span>{" "}
+          · bước {TEN_BUOC_CAP[maBuoc] || "đang làm"}
+          {hetCap ? " · đã dùng hết gợi ý của bước này" : null}
+        </p>
+      ) : null}
 
       <div
         ref={log}
