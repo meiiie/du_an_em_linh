@@ -20,7 +20,7 @@ test.describe("harness gia sư", () => {
     await page.getByTestId("tutor-input").press("Enter");
     await expect(page.getByTestId("tutor-log")).toContainText("Gợi ý");
     await expect(page.getByTestId("tutor-che-do")).toContainText("Thang gợi ý");
-    await expect(page.getByTestId("tutor-trich-dan")).toContainText(/Đạo hàm|Cực trị|Đơn điệu|Ghi chú/);
+    await expect(page.getByTestId("tutor-trich-dan")).toContainText(/Đạo hàm|Cực trị|Đơn điệu|Ghi chú|Điểm tới hạn|Tập xác định/);
 
     await page.getByTestId("tutor-provider").selectOption("ollama");
     await page.getByTestId("chip-goi-y").click();

@@ -32,7 +32,19 @@ export default async function HsHome({ searchParams }: { searchParams: Promise<{
   const tenKn = new Map(skillRows.map((s) => [s.code, s.name]));
   const giaoIds = new Set(giao.map((a) => a.problemId));
   const chuaXong = pubs.filter((p) => giaoIds.has(p.id) && !daDat.has(p.id));
-  const goi = await recommend(u.id);
+  const goiMay = await recommend(u.id);
+  // SP-02: máy chỉ gợi ý bài ≤ mức hiện tại + 1. Không có bài hợp mức thì phiếu việc tiếp là bài thầy cô giao
+  // (hạn gần nhất), ghi rõ lý do — không giả làm "gợi ý theo mức".
+  const giaoSom = [...chuaXong].sort(
+    (a, b) =>
+      (giao.find((g) => g.problemId === a.id)?.dueAt?.getTime() ?? Infinity) -
+      (giao.find((g) => g.problemId === b.id)?.dueAt?.getTime() ?? Infinity),
+  )[0];
+  const goi =
+    goiMay ??
+    (giaoSom
+      ? { problem: giaoSom, lyDo: "Bài thầy cô giao, hạn gần nhất. Hiện chưa có bài đúng mức em để máy gợi ý thêm." }
+      : null);
   if (goi) {
     chuaXong.sort((a, b) => {
       if (a.id === goi.problem.id) return -1;
