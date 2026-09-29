@@ -42,6 +42,24 @@ const AN = "22222222-2222-4222-8222-222222222222";
 const BINH = "33333333-3333-4333-8333-333333333333";
 const CHI = "44444444-4444-4444-8444-444444444444";
 const LOP = "55555555-5555-4555-8555-555555555555";
+// Tài khoản CHỈ nạp ở chế độ test (APP_ENV=test, không Render) — cho bộ nghiệm thu Build chạy song song mà không làm cạn
+// thang gợi ý của tài khoản demo, thử khóa đăng nhập (F-10) và thử phân quyền lớp (F-08 d). Không bao giờ có trên bản host.
+const HS_BUILD = "66666666-6666-4666-8666-666666666666";
+const HS_KHOA = "77777777-7777-4777-8777-777777777777";
+const GV2 = "88888888-8888-4888-8888-888888888888";
+const HS_LOP2 = "99999999-9999-4999-8999-999999999999";
+const LOP2 = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
+export const TAI_KHOAN_TEST = {
+  hsBuild: { email: "hs.build@test.local", matKhau: "buildtest123" },
+  khoa: { email: "khoa.test@test.local", matKhau: "khoatest123" },
+  gv2: { email: "gv2@test.local", matKhau: "giaovien2test" },
+  hsLop2: { email: "hs.lop2@test.local", matKhau: "hoclop2test" },
+};
+function cheDoTestSeed() {
+  const laTest = process.env.APP_ENV === "test" || process.env.NODE_ENV === "test";
+  const laHost = Boolean(process.env.RENDER || process.env.RENDER_SERVICE_ID || process.env.RENDER_EXTERNAL_URL);
+  return laTest && !laHost;
+}
 
 const MUC4: Record<string, string> = {
   NB: "NHAN_BIET",
@@ -384,8 +402,55 @@ async function main() {
     aiOpenaiEmail: null,
     aiConnectedAt: null,
   });
+  const hsTest: string[] = [];
+  if (cheDoTestSeed()) {
+    const T = TAI_KHOAN_TEST;
+    const tk = (id: string, email: string, matKhau: string, ten: string, nam: number | null) => ({
+      id,
+      email,
+      passwordHash: hashPassword(matKhau),
+      displayName: ten,
+      birthYear: nam,
+      status: "active",
+      isSynthetic: true,
+      pseudonymId: `ps-${id.slice(0, 4)}`,
+    });
+    await db.insert(users).values([
+      tk(HS_BUILD, T.hsBuild.email, T.hsBuild.matKhau, "Học sinh Build (test)", 2008),
+      tk(HS_KHOA, T.khoa.email, T.khoa.matKhau, "Khóa đăng nhập (test)", 2008),
+      tk(GV2, T.gv2.email, T.gv2.matKhau, "Giáo viên lớp 12B (test)", null),
+      tk(HS_LOP2, T.hsLop2.email, T.hsLop2.matKhau, "Dũng (lớp 12B, test)", 2008),
+    ]);
+    await db.insert(userRoles).values([
+      { userId: HS_BUILD, roleCode: "HS" },
+      { userId: HS_KHOA, roleCode: "HS" },
+      { userId: GV2, roleCode: "GV" },
+      { userId: HS_LOP2, roleCode: "HS" },
+    ]);
+    // hs.build học lớp demo 12A1 (giáo viên demo thấy cảnh báo / tiến độ của em); lớp 12B chỉ để thử F-08 (d).
+    await db.insert(enrollments).values({ classId: LOP, userId: HS_BUILD, roleInClass: "HS" });
+    await db.insert(classes).values({ id: LOP2, name: "12B thử (test)", grade: 12, year: 2026 });
+    await db.insert(enrollments).values([
+      { classId: LOP2, userId: GV2, roleInClass: "GV" },
+      { classId: LOP2, userId: HS_LOP2, roleInClass: "HS" },
+      { classId: LOP2, userId: HS_KHOA, roleInClass: "HS" },
+    ]);
+    await db.insert(classSettings).values({
+      classId: LOP2,
+      moLoiGiaiSauKhiNop: false,
+      aiProvider: "offline",
+      aiModel: null,
+      aiAllowLocal: true,
+      aiApiKey: null,
+      aiOpenaiSub: null,
+      aiOpenaiEmail: null,
+      aiConnectedAt: null,
+    });
+    hsTest.push(HS_BUILD, HS_KHOA, HS_LOP2);
+    console.log(`Chế độ test: thêm ${T.hsBuild.email}, ${T.khoa.email} (F-10), ${T.gv2.email} + ${T.hsLop2.email} (lớp 12B, F-08 d).`);
+  }
   const now = new Date();
-  for (const id of [AN, BINH, CHI]) {
+  for (const id of [AN, BINH, CHI, ...hsTest]) {
     await db.insert(consentRecords).values({
       id: crypto.randomUUID(),
       subjectUserId: id,

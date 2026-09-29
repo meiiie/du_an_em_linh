@@ -53,6 +53,29 @@ export function MathInput({
       const v = typeof el.getValue === "function" ? el.getValue("latex") : el.value || "";
       onChangeRef.current(v || "");
     };
+    // UXT-01-b (390): chạm vào ô trên thiết bị cảm ứng, MathLive focus ô nhận phím ẩn (keyboard-sink, contenteditable) nhưng
+    // sự kiện chuột giả lập sau cú chạm đặt vùng chọn của tài liệu ra NGOÀI ô đó (vào <label> bao quanh). Khi vùng chọn không
+    // nằm trong phần tử soạn thảo, trình duyệt không sinh input cho phím chữ/số -> các phím đầu ("3x") mất cho tới khi MathLive
+    // tự focus lại (lúc bàn phím ảo hiện). Sau mỗi cú chạm/nhấp/focus: nếu ô nhận phím đang focus mà vùng chọn nằm ngoài nó
+    // thì đặt con trỏ vào trong ô (không đổi nội dung, không đổi vị trí con trỏ toán của MathLive).
+    const giuCaret = () => {
+      const sr = el?.shadowRoot;
+      const sink = sr?.querySelector<HTMLElement>(".ML__keyboard-sink");
+      const sel = document.getSelection();
+      if (!sr || !sink || !sel || sr.activeElement !== sink) return;
+      const trong = sel.rangeCount > 0 && !!sel.anchorNode && (sel.anchorNode === sink || sink.contains(sel.anchorNode));
+      if (trong) return;
+      try {
+        sel.collapse(sink, 0);
+      } catch {
+        /* trình duyệt không cho đặt vùng chọn trong shadow DOM: bỏ qua */
+      }
+    };
+    const giuCaretSau = () => {
+      giuCaret();
+      setTimeout(giuCaret, 0);
+    };
+    const SU_KIEN_CARET = ["pointerup", "mouseup", "touchend", "click", "focusin"] as const;
     import("mathlive")
       .then(() => customElements.whenDefined("math-field"))
       .then(() => {
@@ -69,6 +92,7 @@ export function MathInput({
         else el.value = value;
         el.addEventListener("input", handler);
         el.addEventListener("change", handler);
+        for (const ev of SU_KIEN_CARET) el.addEventListener(ev, giuCaretSau);
         setSanSang(true);
       })
       .catch(() => undefined);
@@ -77,6 +101,7 @@ export function MathInput({
       if (el) {
         el.removeEventListener("input", handler);
         el.removeEventListener("change", handler);
+        for (const ev of SU_KIEN_CARET) el.removeEventListener(ev, giuCaretSau);
       }
     };
     // Chỉ gắn một lần; giá trị sau đó đồng bộ ở effect dưới.
