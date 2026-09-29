@@ -51,3 +51,30 @@ export async function trangThaiPhieu(studentId: string, problemId: string): Prom
   const current = BUOC.map((b) => b.ma).find((ma) => per[ma] !== "DAT") ?? null;
   return { done, current, finished: false };
 }
+
+/**
+ * UXT-06-d: bài em đang làm dở — lần nộp gần nhất chưa Đạt, đã qua ít nhất một bước.
+ * Trang Học trỏ phiếu "việc tiếp" về đúng bài + bước này để khớp với màn làm bài (giữ tiến trình).
+ */
+export async function layBaiDangDo(
+  studentId: string,
+  choPhep: Set<string>,
+  daDat: Set<string>,
+): Promise<{ problemId: string; buoc: TrangThaiBuoc } | null> {
+  const gan = await db
+    .select({ problemId: submissions.problemId })
+    .from(submissions)
+    .where(eq(submissions.studentId, studentId))
+    .orderBy(desc(submissions.submittedAt))
+    .limit(20);
+  const daXet = new Set<string>();
+  for (const r of gan) {
+    if (daXet.has(r.problemId)) continue;
+    daXet.add(r.problemId);
+    if (!choPhep.has(r.problemId) || daDat.has(r.problemId)) continue;
+    const buoc = await trangThaiPhieu(studentId, r.problemId);
+    if (!buoc.finished && buoc.done.length > 0 && buoc.current) return { problemId: r.problemId, buoc };
+  }
+  return null;
+}
+

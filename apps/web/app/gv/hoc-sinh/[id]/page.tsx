@@ -10,7 +10,8 @@ import { daXuLyCanhBao } from "@/lib/actions/canh-bao";
 import { dungCanhBao, gioCanhBao } from "@/lib/canh-bao-hien";
 import { hamLatex, tenKyNangNgan } from "@/lib/de-hoc-sinh";
 import { db } from "@/lib/db";
-import { escalations, problems, skills, submissions, users } from "@/lib/db/schema";
+import { escalations, gradingResults, problems, skills, submissions, users } from "@/lib/db/schema";
+import { docVanDe, moTaVanDe } from "@/lib/van-de-gv";
 import { gvDayHs } from "@/lib/lop";
 
 export const dynamic = "force-dynamic";
@@ -45,6 +46,11 @@ export default async function Page({ params, searchParams }: { params: Promise<{
         .orderBy(desc(submissions.submittedAt))
         .limit(5)
     : [];
+  // UXT-05-c: giáo viên thấy ĐỦ mọi vấn đề của lần nộp gần nhất (màn học sinh chỉ mở vấn đề đầu).
+  const kqGanNhat = nop[0]
+    ? (await db.select().from(gradingResults).where(eq(gradingResults.submissionId, nop[0].id)).limit(1))[0]
+    : undefined;
+  const vanDe = docVanDe(kqGanNhat?.cacVanDe).map(moTaVanDe);
   const mo = await db
     .select()
     .from(escalations)
@@ -79,6 +85,20 @@ export default async function Page({ params, searchParams }: { params: Promise<{
           ) : (
             <p className="mt-1 text-sm text-muted">Chưa nộp bài này.</p>
           )}
+          {vanDe.length ? (
+            <>
+              <h3 className="mt-4 text-sm font-medium">Mọi lỗi của lần nộp gần nhất ({vanDe.length})</h3>
+              <ol className="mt-1 list-decimal space-y-1 pl-5 text-sm" data-testid="gv-van-de-ds">
+                {vanDe.map((v, i) => (
+                  <li key={i} data-testid="gv-van-de" data-he-qua={v.heQua ? "1" : undefined}>
+                    Bước {v.buoc}
+                    {v.viTri ? ` · ${v.viTri}` : ""} · {v.loai}
+                    {v.maLoi ? <span className="ml-1 font-mono text-xs text-muted">{v.maLoi}</span> : null}
+                  </li>
+                ))}
+              </ol>
+            </>
+          ) : null}
         </section>
       ) : null}
       <section className="mt-6" data-testid="gv-hs-canh-bao">

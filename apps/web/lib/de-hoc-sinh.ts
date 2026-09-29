@@ -136,6 +136,7 @@ export function chuanHoaLatexCongThuc(raw: string) {
 /** Lời trên phiếu — tiếng lớp 12, không mã, không ngưỡng/nấc/phát hành. */
 export function loiGoiHocSinh(lyDo: string, tenKn: string) {
   const kn = tenKn.trim();
+  if (lyDo === "Đang làm dở") return "Em đang làm dở bài này — làm tiếp từ bước đang dừng.";
   if (lyDo.includes("kẹt")) return kn ? `Đang kẹt ở ${kn} — làm lại bài này.` : "Đang kẹt — làm lại bài này.";
   if (lyDo.includes("nâng một nấc")) return kn ? `Đã vững ${kn} — chuyển bài khó hơn.` : "Đã vững — chuyển bài khó hơn.";
   if (lyDo.includes("Cùng mức") || lyDo.includes("dạng cần ôn")) {

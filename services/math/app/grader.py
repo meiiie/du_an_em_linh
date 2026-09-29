@@ -88,7 +88,8 @@ def _thong_bao(buoc_sai, loai):
     if loai == "SAI_THU_TU_MOC":
         return "Các mốc trên hàng x chưa theo thứ tự tăng dần. Em sắp lại các mốc từ trái sang phải trước, rồi xét dấu từng khoảng."
     if loai == "DIEM_THUA" and ma == "B.DH.XETDAU":
-        return "Hàng x của bảng có một mốc không cần đặt. Em đối chiếu hàng x với danh sách điểm ở bước nghiệm."
+        # UXT-04-a: lỗi nằm ở bảng (ERR.DH.31), không quy về bước trước.
+        return "Hàng x của bảng có một mốc không cần đặt. Em xem lại từng mốc: mốc chỉ đặt tại điểm làm y' bằng 0 hoặc không xác định."
     if loai == "DIEM_THUA":
         return "Bước nghiệm có điểm không phải điểm tới hạn. Em thử thay lại từng điểm vào y'."
     if loai == "KHONG_KIEM_DUOC":
@@ -810,6 +811,7 @@ def grade(payload):
         if r.get("ket_qua") == "DAT":
             r = _diem_ngoai_txd(payload, r) or r
         _hau_xu_ly(payload, r)
+        _dau_doi_do_thieu_moc(payload, r)
     except Exception:
         pass  # hậu xử lý chỉ tinh chỉnh vị trí; lỗi ở đây không được đổi kết quả chấm
     if K._TU_CHOI:
@@ -860,12 +862,18 @@ def _dong_chua_moc(payload, gia_tri):
 
 def _dong_ket_luan_sai(payload):
     """Ô kết luận đầu tiên (theo thứ tự Đồng biến → Nghịch biến → Cực đại → Cực tiểu) có nội dung khác lời giải máy."""
+    ds = _cac_o_ket_luan_sai(payload)
+    return ds[0][0] if ds else None
+
+
+def _cac_o_ket_luan_sai(payload):
+    """Mọi ô kết luận có nội dung khác lời giải máy, theo thứ tự Đồng biến → Nghịch biến → Cực đại → Cực tiểu: [(dong, key)]."""
     import re
     step = _buoc_theo_ma(payload, "B.DH.KETLUAN")
     kl, _ = _parse_ket_luan(step)
     may = bai_lam_may(payload.get("ham"))
     if kl is None or not may:
-        return None
+        return []
     km = may["ket_luan"]
     chi_y = kl.pop("_chi_tung_do", None) or {}   # 0002e: ô chỉ tung độ
     dong_cua = {}
@@ -904,10 +912,66 @@ def _dong_ket_luan_sai(payload):
             if not (_cung_ds(kl.get(key + "_x"), km.get(key + "_x")) and
                     (not kl.get("gia_tri_" + key) or _cung_ds(kl.get("gia_tri_" + key), km.get("gia_tri_" + key)))):
                 sai.append(key)
+    out = []
     for key in sai:
-        if key in dong_cua:
-            return dong_cua[key]
-    return None
+        if key in dong_cua and all(d != dong_cua[key] for d, _k in out):
+            out.append((dong_cua[key], key))
+    return out
+
+
+def _so_thuc(v):
+    """Giá trị mốc HS nhập -> float (qua bộ chuẩn hóa an toàn). None nếu không đọc được."""
+    import math
+    try:
+        t = str(v).strip().replace("−", "-")
+        if t in ("-oo", "-∞"):
+            return -math.inf
+        if t in ("+oo", "oo", "+∞", "∞"):
+            return math.inf
+        n = normalize_expr(t)
+        if n is None:
+            return None
+        return float(K.P(n))
+    except Exception:
+        return None
+
+
+def _dau_doi_do_thieu_moc(payload, r):
+    """UXT-04-d (DAC-TA §3.4, SP-05): bước Nghiệm thiếu điểm tới hạn (DIEM_THIEU, B.DH.NGHIEM) mà HS đã dựng bảng theo tập
+    điểm thiếu: mỗi ô khoảng DAU_YPHAY của bảng HS mà y' thật sự đổi dấu bên trong là HỆ QUẢ (DAU_DOI_TRONG_KHOANG,
+    nguyen_nhan = vấn đề gốc). Không nêu điểm bị thiếu; không thêm lỗi gốc mới."""
+    den = payload.get("nop_toi")
+    if r.get("ket_qua") != "SAI" or den not in ORDER or ORDER.index(den) < ORDER.index("B.DH.XETDAU"):
+        return
+    ds = r.get("cac_van_de") or []
+    goc = next((v for v in ds if v.get("loai_ket_qua") == "DIEM_THIEU" and not v.get("nguyen_nhan")
+                and (v.get("buoc_sai") or {}).get("ma_buoc") == "B.DH.NGHIEM"), None)
+    if not goc or any(v.get("nguyen_nhan") == goc.get("id") for v in ds):
+        return
+    xs = sorted(((c.get("k"), c.get("gia_tri")) for c in _cells(_buoc_theo_ma(payload, "B.DH.XETDAU"))
+                 if c.get("hang") in ("X", "x") and isinstance(c.get("k"), int)), key=lambda t: t[0])
+    vals = [_so_thuc(g) for _k, g in xs]
+    if any(v is None for v in vals) or any(b <= a for a, b in zip(vals, vals[1:])):
+        return   # hàng X không đọc được hoặc sai thứ tự: để luật thứ tự mốc xử lý
+    may = bai_lam_may(payload.get("ham")) or {}
+    bang = may.get("bang") or {}
+    moc = [_so_thuc(m) for m in bang.get("moc") or []]
+    dau = list(bang.get("dau") or [])
+    if not dau or len(moc) != len(dau) + 1 or any(m is None for m in moc):
+        return
+    import math
+    bien = [-math.inf] + vals + [math.inf]
+    so = len(ds)
+    for j in range(len(bien) - 1):
+        a, b = bien[j], bien[j + 1]
+        cac_dau = {dau[i] for i in range(len(dau)) if moc[i] < b and moc[i + 1] > a and dau[i] in ("+", "-")}
+        if len(cac_dau) > 1:
+            so += 1
+            ds.append({"id": "VD%d" % so, "loai_ket_qua": "DAU_DOI_TRONG_KHOANG",
+                       "buoc_sai": _buoc("B.DH.XETDAU", None, {"hang": "DAU_YPHAY", "k": 2 * j}),
+                       "nguyen_nhan": goc.get("id"), "ma_loi": _MA_LOI["DAU_DOI_TRONG_KHOANG"][0],
+                       "do_tin_cay": _MA_LOI["DAU_DOI_TRONG_KHOANG"][1]})
+    r["cac_van_de"] = ds
 
 
 def _hau_xu_ly(payload, r):
@@ -941,6 +1005,32 @@ def _hau_xu_ly(payload, r):
                                  if l.get("dong") == dkl), "")
                     r["thong_bao"] = ("Bước kết luận: ô %s cần xem lại." % ten[nhan]) if nhan in ten else \
                         "Bước kết luận, dòng %d cần xem lại." % (dkl + 1)
+    _them_o_ket_luan_sai(payload, r)
+
+
+def _them_o_ket_luan_sai(payload, r):
+    """UXT-05-b (DAC-TA v1.3 điểm 10: API luôn trả đủ): nhiều ô kết luận cùng sai -> mỗi ô một vấn đề gốc (dong = chỉ số ô).
+    Màn học sinh chỉ mở ô đầu; giáo viên thấy đủ. Chỉ thêm khi vấn đề đầu là lỗi kết luận thường (không đổi ERR.DH.11/22, dấu U)."""
+    ds = r.get("cac_van_de") or []
+    kl_ds = [v for v in ds if (v.get("buoc_sai") or {}).get("ma_buoc") == "B.DH.KETLUAN"]
+    if len(kl_ds) != 1 or kl_ds[0].get("loai_ket_qua") != "SAI_KET_LUAN" or kl_ds[0].get("ma_loi") in ("ERR.DH.07", "ERR.DH.11", "ERR.DH.22"):
+        return
+    if r.get("dau_U") or r.get("toan_dung") is not None:
+        return
+    dau = kl_ds[0]
+    try:
+        cac = _cac_o_ket_luan_sai(payload)
+    except Exception:
+        return
+    if len(cac) < 2 or cac[0][0] != (dau.get("buoc_sai") or {}).get("dong"):
+        return
+    so = len(ds)
+    for dong, key in cac[1:]:
+        so += 1
+        ma, tin = _MA_LOI["cuc_tri_sai" if key.startswith("cuc") else "don_dieu_sai"]
+        ds.append({"id": "VD%d" % so, "loai_ket_qua": "SAI_KET_LUAN", "buoc_sai": _buoc("B.DH.KETLUAN", dong, None),
+                   "ma_loi": ma, "do_tin_cay": tin})
+    r["cac_van_de"] = ds
 
 
 def _grade_core(payload):

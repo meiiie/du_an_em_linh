@@ -8,7 +8,7 @@ import { requireRole } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { masteryStates, problems, skills } from "@/lib/db/schema";
 import { tenKyNangNgan } from "@/lib/de-hoc-sinh";
-import { layBaiGiao, layIdBaiDaDat, layTenLopHs, trangThaiPhieu } from "@/lib/hs-du-lieu";
+import { layBaiDangDo, layBaiGiao, layIdBaiDaDat, layTenLopHs, trangThaiPhieu } from "@/lib/hs-du-lieu";
 import { recommend } from "@/lib/learning";
 import { MUC4, type Muc4 } from "@/lib/levels";
 
@@ -40,7 +40,11 @@ export default async function HsHome({ searchParams }: { searchParams: Promise<{
       (giao.find((g) => g.problemId === a.id)?.dueAt?.getTime() ?? Infinity) -
       (giao.find((g) => g.problemId === b.id)?.dueAt?.getTime() ?? Infinity),
   )[0];
+  // UXT-06-d: bài đang làm dở (đã qua ≥ 1 bước, chưa Đạt) đứng trước gợi ý mới, để Trang Học khớp màn làm bài.
+  const dangDo = await layBaiDangDo(u.id, new Set(pubs.map((p) => p.id)), daDat);
+  const baiDo = dangDo ? pubs.find((p) => p.id === dangDo.problemId) : undefined;
   const goi =
+    (baiDo ? { problem: baiDo, lyDo: "Đang làm dở" } : null) ??
     goiMay ??
     (giaoSom
       ? { problem: giaoSom, lyDo: "Bài thầy cô giao, hạn gần nhất. Hiện chưa có bài đúng mức em để máy gợi ý thêm." }
@@ -63,7 +67,12 @@ export default async function HsHome({ searchParams }: { searchParams: Promise<{
       mastery: s.mastery,
       currentMucDo4: s.currentMucDo4,
     }));
-  const buoc = goi ? await trangThaiPhieu(u.id, goi.problem.id) : { done: [], current: null, finished: false };
+  const buoc =
+    dangDo && goi?.problem.id === dangDo.problemId
+      ? dangDo.buoc
+      : goi
+        ? await trangThaiPhieu(u.id, goi.problem.id)
+        : { done: [], current: null, finished: false };
   const knGoi = goi?.problem.skillCode ? tenKyNangNgan(goi.problem.skillCode, tenKn.get(goi.problem.skillCode)) : "";
 
   return (

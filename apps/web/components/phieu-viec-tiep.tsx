@@ -48,7 +48,13 @@ export function PhieuViecTiep({
         <h2 id="viec-tiep" className="text-pretty text-base font-semibold">
           Bài tiếp theo
         </h2>
-        <p className="shrink-0 text-xs text-muted">{muc}</p>
+        <p className="shrink-0 text-xs text-muted">
+          <span className="font-mono tabular" translate="no">
+            {problem.code}
+          </span>
+          <span className="mx-1.5">·</span>
+          {muc}
+        </p>
       </div>
       <p className="mt-2 max-w-[65ch] text-sm leading-relaxed">{thanDe(problem.statementText)}</p>
 

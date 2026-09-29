@@ -1,13 +1,14 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { and, eq, inArray, isNull, sql } from "drizzle-orm";
+import { and, desc, eq, inArray, isNull, sql } from "drizzle-orm";
 import { buttonClasses } from "@/components/ui/button";
 import { PageHeader } from "@/components/ui/page-header";
 import { requireRole } from "@/lib/auth";
 import { ghiNhatKy } from "@/lib/actions/hs";
 import { tenKyNangNgan } from "@/lib/de-hoc-sinh";
 import { db } from "@/lib/db";
-import { enrollments, escalations, gradingResults, masteryStates, skills, submissions, users } from "@/lib/db/schema";
+import { enrollments, escalations, gradingResults, masteryStates, problems, skills, submissions, users } from "@/lib/db/schema";
+import { gioCanhBao } from "@/lib/canh-bao-hien";
 import { caiDatLopCuaGv, lopGvDay } from "@/lib/lop";
 import { LABEL3, LABEL4, TO3, type Muc4 } from "@/lib/levels";
 
@@ -50,6 +51,31 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ m
         .where(and(isNull(escalations.handledAt), inArray(escalations.studentId, hsIds)))
     : [];
   const ket = new Set(moKet.map((k) => `${k.hs}|${k.kn}`));
+  // UXT-05-c: đường vào bài làm của từng học sinh — lần nộp gần nhất theo (học sinh, bài).
+  const ganDay = hsIds.length
+    ? await db
+        .select({
+          hs: submissions.studentId,
+          baiId: submissions.problemId,
+          ketQua: submissions.ketQua,
+          luc: submissions.submittedAt,
+          code: problems.code,
+        })
+        .from(submissions)
+        .innerJoin(problems, eq(problems.id, submissions.problemId))
+        .where(inArray(submissions.studentId, hsIds))
+        .orderBy(desc(submissions.submittedAt))
+        .limit(60)
+    : [];
+  const daThay = new Set<string>();
+  const baiNop = ganDay.filter((r) => {
+    const k = `${r.hs}|${r.baiId}`;
+    if (daThay.has(k)) return false;
+    daThay.add(k);
+    return true;
+  }).slice(0, 12);
+  const email = new Map(allUsers.map((x) => [x.id, x.email]));
+  const TEN_KQ: Record<string, string> = { DAT: "Đạt", SAI: "Sai", KHONG_KIEM_DUOC: "Chờ thầy cô xem" };
   const DauKet = () => (
     <span
       data-ket="true"
@@ -137,6 +163,34 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ m
           </tbody>
         </table>
       </div>
+      <section className="mt-8" data-testid="bai-nop-gan-day">
+        <h2 className="text-sm font-medium">Bài làm gần đây</h2>
+        <p className="mt-1 text-sm text-muted">Mở để xem đủ mọi lỗi của lần nộp gần nhất.</p>
+        {baiNop.length ? (
+          <ul className="mt-2 divide-y divide-line border-y border-line text-sm">
+            {baiNop.map((r) => (
+              <li key={`${r.hs}|${r.baiId}`}>
+                <Link
+                  data-testid="xem-bai-lam"
+                  data-hoc-sinh={email.get(r.hs)}
+                  data-ma-de={r.code}
+                  href={`/gv/hoc-sinh/${r.hs}?bai=${r.baiId}`}
+                  className="flex min-h-11 items-center justify-between gap-4 py-2 hover:bg-wash"
+                >
+                  <span>
+                    {name.get(r.hs)} · <span className="tabular">{r.code}</span>
+                  </span>
+                  <span className="text-muted">
+                    {TEN_KQ[r.ketQua || ""] || r.ketQua || "—"} · <span className="tabular">{gioCanhBao(r.luc)}</span>
+                  </span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="mt-2 text-sm text-muted">Chưa có bài nộp.</p>
+        )}
+      </section>
       <section className="mt-8" data-testid="loi-trinh-bay-u">
         <h2 className="text-sm font-medium">Lỗi trình bày: dùng U khi kết luận (toán đúng)</h2>
         <p className="mt-1 text-sm text-muted">Đếm riêng, không tính vào mức. Học sinh viết lại tách khoảng, nối bằng «và» thì mới xong bài.</p>

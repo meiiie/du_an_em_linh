@@ -79,7 +79,7 @@ export function AppShell({
           >
             <Menu className="h-5 w-5" aria-hidden />
           </button>
-          <Link href={role === "GV" ? "/gv" : "/hs"} className="flex min-w-0 items-center gap-2">
+          <Link href={role === "GV" ? "/gv" : "/hs"} className="flex min-h-11 min-w-0 items-center gap-2">
             <BrandMark />
             <span className="truncate text-sm font-medium">Học toán với AI</span>
           </Link>

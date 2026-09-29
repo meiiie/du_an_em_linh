@@ -188,7 +188,7 @@ export async function chayHoiGiaSu(opts: {
     .select()
     .from(hintLevels)
     .where(and(eq(hintLevels.problemId, problemId), eq(hintLevels.maBuoc, buoc)));
-  const soCap = hints.length ? Math.max(...hints.map((h) => h.cap)) : 3;
+  const soCap = soCapThang(hints.map((h) => h.cap));
   let hetThang = false;
   // Chốt 11:25 a: cấp chỉ tăng khi (1) HS bấm/xin "gợi ý thêm", hoặc (2) đã thử lại ở bước này mà VẪN SAI
   // (bài nộp sai mới kể từ lần mở cấp trước). Xin đáp án không mở cấp.
@@ -529,7 +529,18 @@ async function baiDeHon(studentId: string, p: { id: string; skillCode: string | 
  * UX-07: cấp gợi ý hiện tại của từng bước (đọc phiên gia sư, không tạo phiên mới). Cùng quy tắc khóa với chayHoiGiaSu:
  * bước đang sai ở lượt nộp gần nhất dùng khóa theo loại lỗi, bước khác dùng thang CHUNG.
  */
-export async function capGoiYTheoBuoc(studentId: string, problemId: string): Promise<Record<string, number>> {
+/** Số cấp thật của thang một bước = cấp cao nhất có câu (cấp trống/null không lưu). Không có thang lưu: mặc định 3. */
+export function soCapThang(caps: number[]): number {
+  return caps.length ? Math.max(...caps) : 3;
+}
+
+export type CapBuoc = { cap: number; soCap: number };
+
+/**
+ * UX-07 / AI-5: cấp gợi ý đã mở của từng bước KÈM số cấp thật của thang bước đó (so_cap), để sau tải lại chỉ báo
+ * "Gợi ý cấp k/n" và trạng thái "hết gợi ý" (ẩn «Gợi ý thêm») khớp đúng như lúc đang làm.
+ */
+export async function capGoiYTheoBuoc(studentId: string, problemId: string): Promise<Record<string, CapBuoc>> {
   const sess = (
     await db
       .select()
@@ -549,11 +560,18 @@ export async function capGoiYTheoBuoc(studentId: string, problemId: string): Pro
       .limit(1)
   )[0];
   const g = sub ? (await db.select().from(gradingResults).where(eq(gradingResults.submissionId, sub.id)).limit(1))[0] : null;
-  const out: Record<string, number> = {};
+  const hints = await db
+    .select({ maBuoc: hintLevels.maBuoc, cap: hintLevels.cap })
+    .from(hintLevels)
+    .where(eq(hintLevels.problemId, problemId));
+  const out: Record<string, CapBuoc> = {};
   for (const ma of THU_TU) {
     const sai = g?.ketQua === "SAI" && (g.buocSai as { ma_buoc?: string } | null)?.ma_buoc === ma;
     const c = Number(caps[`${ma}|${sai ? g?.loaiKetQua || "SAI" : "CHUNG"}`] || 0);
-    if (c > 0) out[ma] = c;
+    if (c > 0) {
+      const soCap = soCapThang(hints.filter((h) => h.maBuoc === ma).map((h) => h.cap));
+      out[ma] = { cap: Math.min(c, soCap), soCap };
+    }
   }
   return out;
 }
