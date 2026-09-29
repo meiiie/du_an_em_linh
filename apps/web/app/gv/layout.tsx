@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { and, eq, inArray, isNull } from "drizzle-orm";
 import { AppShell } from "@/components/app-shell";
 import { requireRole } from "@/lib/auth";
+import { cheDoTest } from "@/lib/che-do-test";
 import { db } from "@/lib/db";
 import { escalations, problems } from "@/lib/db/schema";
 import { hsCuaGv } from "@/lib/lop";
@@ -27,6 +28,7 @@ export default async function Layout({ children }: { children: React.ReactNode }
       items={GV_NAV}
       badges={{ "/gv/duyet": queue.length, "/gv": stuck.length }}
       phien={SITE_VERSION}
+      datLaiTest={cheDoTest() ? { email: null } : undefined}
     >
       {children}
     </AppShell>
