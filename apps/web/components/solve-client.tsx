@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { nopBuoc, type StepPayload } from "@/lib/actions/hs";
 import type { AiPublicConfig } from "@/lib/ai-catalog";
 import type { TrichDanHien } from "@/lib/kien-thuc";
@@ -12,6 +12,7 @@ import { fieldControl } from "./ui/field";
 import { MathInput } from "./math-input";
 import { Tex } from "./tex";
 import { TutorPanel } from "./tutor-panel";
+import type { TienTrinh } from "@/lib/tien-trinh";
 import { cn } from "@/lib/cn";
 
 type BuocSai = { ma_buoc: string; dong: number | null; o: { hang: string; k: number | null } | null };
@@ -33,6 +34,7 @@ type Grade = {
   thong_bao: string;
   per_buoc?: Record<string, string>;
   finished?: boolean;
+  sub_id?: string;
 };
 
 const TEN_LOI: Record<string, string> = {
@@ -56,6 +58,21 @@ type Ev = StepPayload["events"][number];
 
 const ORDER = BUOC.map((b) => b.ma);
 
+/** Cột nhãn x / y′ / y dính trái khi cuộn bảng ngang (UXT-10-e). */
+const NHAN_BANG = "sticky left-0 z-10 bg-canvas p-1 pr-2 text-left";
+
+/** Tên đọc màn hình của giá trị dấu (UXT-10-f). */
+const TEN_DAU: Record<string, string> = { "+": "cộng (+)", "-": "trừ (−)", "0": "bằng 0", "||": "không xác định (||)" };
+
+/** Mô tả vị trí ô k của hàng dấu: k chẵn là khoảng giữa hai mốc, k lẻ là tại mốc. */
+function moTaViTri(moc: string[], k: number) {
+  if (k % 2 === 1) return `tại x = ${moc[(k - 1) / 2] ?? ""}`;
+  const j = k / 2;
+  const trai = j === 0 ? "−∞" : moc[j - 1];
+  const phai = j === moc.length ? "+∞" : moc[j];
+  return `trên khoảng (${trai}; ${phai})`;
+}
+
 const AI_MAC_DINH: AiPublicConfig = {
   classProvider: "offline",
   classModel: null,
@@ -74,6 +91,8 @@ export function SolveClient({
   initialChat = [],
   ai = AI_MAC_DINH,
   buocBatDau = null,
+  tienTrinh = null,
+  capGoiY,
 }: {
   problemId: string;
   title: string;
@@ -84,19 +103,76 @@ export function SolveClient({
   ai?: AiPublicConfig;
   /** Bài khung ngắn: bước đầu tiên HS làm; các bước trước là dữ kiện đề cho (UXT-07-l). */
   buocBatDau?: string | null;
+  /** UX-06: tiến trình dựng lại từ lượt nộp gần nhất (tải lại / vào lại mở đúng bước đang dở). */
+  tienTrinh?: TienTrinh | null;
+  /** UX-07: cấp gợi ý đã mở theo bước (phiên gia sư trên máy chủ). */
+  capGoiY?: Record<string, number>;
 }) {
   const batDau = Math.max(0, buocBatDau ? ORDER.indexOf(buocBatDau as (typeof ORDER)[number]) : 0);
-  const [step, setStep] = useState(batDau);
-  const [txd, setTxd] = useState("");
-  const [dh, setDh] = useState<string[]>([""]);
-  const [roots, setRoots] = useState<{ latex: string; loai: "NGHIEM" | "KHONG_XD" }[]>([{ latex: "", loai: "NGHIEM" }]);
-  const [points, setPoints] = useState<string[]>([]);
+  const tt = tienTrinh;
+  const [step, setStep] = useState(tt ? Math.max(batDau, tt.step) : batDau);
+  const [txd, setTxd] = useState(tt?.txd ?? "");
+  const [dh, setDh] = useState<string[]>(tt?.dh?.length ? tt.dh : [""]);
+  const [roots, setRoots] = useState<{ latex: string; loai: "NGHIEM" | "KHONG_XD" }[]>(
+    tt?.roots?.length ? tt.roots : [{ latex: "", loai: "NGHIEM" }],
+  );
+  const [points, setPoints] = useState<string[]>(tt?.points ?? []);
   const [draftPoint, setDraftPoint] = useState("");
-  const [signs, setSigns] = useState<Record<number, string>>({});
-  const [arrows, setArrows] = useState<Record<number, string>>({});
-  const [kl, setKl] = useState({ db: "", nb: "", cd: "", ct: "" });
+  const [signs, setSigns] = useState<Record<number, string>>(tt?.signs ?? {});
+  const [arrows, setArrows] = useState<Record<number, string>>(tt?.arrows ?? {});
+  const [kl, setKl] = useState(tt?.kl ?? { db: "", nb: "", cd: "", ct: "" });
   const [events, setEvents] = useState<Ev[]>([]);
-  const [grade, setGrade] = useState<Grade | null>(null);
+  const [grade, setGrade] = useState<Grade | null>((tt?.grade as Grade | null) ?? null);
+  /** Bước của lượt nộp đang hiện kết quả (thông báo chấm không treo sang bước khác, UXT-04-f). */
+  const [buocCham, setBuocCham] = useState<string | null>(
+    tt?.grade ? (tt.grade.buoc_sai?.ma_buoc ?? ORDER[Math.max(batDau, tt.step)]) : null,
+  );
+  // Bước đã đạt theo lượt chấm gần nhất (dấu ✓ trên thanh bước, UXT-06-a/b).
+  const [perBuoc, setPerBuoc] = useState<Record<string, string>>(tt?.perBuoc ?? {});
+  const [xongBai, setXongBai] = useState(Boolean(tt?.finished));
+  // UXT-06-c: nháp chưa nộp (mốc, dấu, mũi tên, các ô) giữ qua tải lại — lưu cục bộ, gắn với lượt nộp gần nhất.
+  const khoaNhap = `nhap:${problemId}`;
+  const subRef = useRef<string | null>(tt?.subId ?? null);
+  const daNap = useRef(false);
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(khoaNhap);
+      if (raw) {
+        const d = JSON.parse(raw) as {
+          subId: string | null;
+          txd?: string;
+          dh?: string[];
+          roots?: { latex: string; loai: "NGHIEM" | "KHONG_XD" }[];
+          points?: string[];
+          signs?: Record<number, string>;
+          arrows?: Record<number, string>;
+          kl?: { db: string; nb: string; cd: string; ct: string };
+        };
+        if (d && d.subId === subRef.current) {
+          if (typeof d.txd === "string") setTxd(d.txd);
+          if (Array.isArray(d.dh) && d.dh.length) setDh(d.dh);
+          if (Array.isArray(d.roots) && d.roots.length) setRoots(d.roots);
+          if (Array.isArray(d.points)) setPoints(d.points);
+          if (d.signs) setSigns(d.signs);
+          if (d.arrows) setArrows(d.arrows);
+          if (d.kl) setKl(d.kl);
+        } else localStorage.removeItem(khoaNhap);
+      }
+    } catch {
+      /* localStorage có thể bị chặn */
+    }
+    daNap.current = true;
+    // chỉ đọc một lần khi mở bài
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  useEffect(() => {
+    if (!daNap.current) return;
+    try {
+      localStorage.setItem(khoaNhap, JSON.stringify({ subId: subRef.current, txd, dh, roots, points, signs, arrows, kl }));
+    } catch {
+      /* bỏ */
+    }
+  }, [khoaNhap, txd, dh, roots, points, signs, arrows, kl]);
   const [busy, setBusy] = useState(false);
   const [openTutor, setOpenTutor] = useState(false);
   const [moHet, setMoHet] = useState(false);
@@ -148,8 +224,9 @@ export function SolveClient({
       push("dong_bien", "DONG_BIEN", kl.db);
       push("nghich_bien", "NGHICH_BIEN", kl.nb);
       if (hoiCucTri) {
-        push("cuc_dai", "CUC_DAI", kl.cd);
-        push("cuc_tieu", "CUC_TIEU", kl.ct);
+        // UXT-02-b: để trống ô cực trị = "không có" (gửi rõ chữ để bộ chấm và giáo viên đọc được).
+        push("cuc_dai", "CUC_DAI", kl.cd.trim() ? kl.cd : "không có cực đại");
+        push("cuc_tieu", "CUC_TIEU", kl.ct.trim() ? kl.ct : "không có cực tiểu");
       }
       cac_buoc.push({ ma_buoc: "B.DH.KETLUAN", khai_bao: khai, cac_dong: lines });
     }
@@ -166,6 +243,10 @@ export function SolveClient({
       return;
     }
     setGrade(res);
+    setBuocCham(res.buoc_sai?.ma_buoc ?? ma);
+    if (res.per_buoc) setPerBuoc(res.per_buoc);
+    if (res.finished) setXongBai(true);
+    if (res.sub_id) subRef.current = res.sub_id;
     setMoHet(false);
     if (res.ket_qua === "DAT" && !res.finished && step < ORDER.length - 1) setStep(step + 1);
   }
@@ -237,14 +318,17 @@ export function SolveClient({
           {BUOC.map((b, i) => {
             const dang = i === step;
             const sai = badStep === b.ma;
-            const xong = i < step && !sai;
             const deCho = i < batDau;
+            const xong = !deCho && !sai && (xongBai || perBuoc[b.ma] === "DAT" || i < step);
+            const trangThai = deCho ? "de-cho" : sai ? "sai" : xong ? "dat" : dang ? "dang-lam" : "chua-lam";
             return (
               <li key={b.ma} className="shrink-0 sm:shrink">
                 <button
                   type="button"
                   data-testid={`step-${b.ma}`}
                   data-de-cho={deCho ? "1" : undefined}
+                  data-trang-thai={trangThai}
+                  aria-label={`${soBuoc(b.ma)} ${tenBuocTrang(b.ma)}${xong ? " — đã đạt" : sai ? " — cần sửa" : ""}`}
                   aria-current={dang ? "step" : undefined}
                   aria-disabled={deCho || undefined}
                   title={deCho ? "Đề đã cho sẵn bước này" : undefined}
@@ -263,9 +347,16 @@ export function SolveClient({
                   )}
                 >
                   <span className="font-mono text-xs tabular text-muted">{soBuoc(b.ma)}</span>
-                  <span className="sm:hidden">{tenBuocNgan(b.ma)}</span>
-                  <span className="hidden sm:inline">{tenBuocTrang(b.ma)}</span>
+                  <span className="sm:hidden">
+                    {tenBuocNgan(b.ma)}
+                    {xong ? <span aria-hidden="true" className="ml-1 text-pass">✓</span> : null}
+                  </span>
+                  <span className="hidden sm:inline">
+                    {tenBuocTrang(b.ma)}
+                    {xong ? <span aria-hidden="true" className="ml-1 text-pass">✓</span> : null}
+                  </span>
                   {deCho ? <span className="text-xs text-muted">đề cho</span> : null}
+
                 </button>
               </li>
             );
@@ -364,6 +455,7 @@ export function SolveClient({
                 />
                 <Button
                   type="button"
+                  className="shrink-0 whitespace-nowrap"
                   data-testid="moc-them"
                   onClick={() => {
                     const v = draftPoint.trim();
@@ -386,7 +478,7 @@ export function SolveClient({
                 <table className="w-full min-w-[320px] border-collapse text-center text-sm">
                   <tbody>
                     <tr data-testid="hang-x" className={coThuTu ? "cell-bad" : ""}>
-                      <th className="p-1 text-left">x</th>
+                      <th scope="row" className={NHAN_BANG}>x</th>
                       {Array.from({ length: sorted.length * 2 + 1 }, (_, k) => {
                         if (k % 2 === 1) {
                           const idx = (k - 1) / 2;
@@ -409,26 +501,43 @@ export function SolveClient({
                             </td>
                           );
                         }
+                        // UXT-04-e: bảng chưa có mốc vẫn hiện đủ −∞ và +∞ (hai ô, các hàng dưới gộp cột).
+                        if (sorted.length === 0)
+                          return [
+                            <td key="am">−∞</td>,
+                            <td key="duong">+∞</td>,
+                          ];
                         if (k === 0) return <td key={k}>−∞</td>;
                         if (k === sorted.length * 2) return <td key={k}>+∞</td>;
                         return <td key={k} />;
                       })}
                     </tr>
                     <tr>
-                      <th className="p-1 text-left">y′</th>
+                      <th scope="row" className={NHAN_BANG}>y′</th>
                       {Array.from({ length: sorted.length * 2 + 1 }, (_, k) => {
                         const pointCell = k % 2 === 1;
                         const cur = signs[k];
+                        const viTri = moTaViTri(sorted, k);
                         return (
-                          <td key={k} data-testid={`o-dau-${k}`} className={`p-1 ${oClass("DAU_YPHAY", k)}`}>
+                          <td
+                            key={k}
+                            colSpan={sorted.length === 0 ? 2 : undefined}
+                            data-testid={`o-dau-${k}`}
+                            role="group"
+                            aria-label={`Dấu y′ ${viTri}${cur ? `: ${TEN_DAU[cur] || cur}` : ""}`}
+                            className={`p-1 ${oClass("DAU_YPHAY", k)}`}
+                          >
                             {oTrangThai("DAU_YPHAY", k).nhan ? (
                               <span className="mb-1 block text-[0.65rem] leading-tight text-muted">{oTrangThai("DAU_YPHAY", k).nhan}</span>
                             ) : null}
-                            <div className="flex justify-center gap-1">
-                              {(pointCell ? ["0", "||"] : ["+", "−"]).map((opt) => (
+                            <div className="mx-auto grid w-max grid-cols-2 justify-center gap-1">
+                              {/* UXT-10-b: mọi ô chọn được đủ 4 giá trị +, −, 0, || (ô khoảng hiện +/− trước, ô mốc hiện 0/|| trước). */}
+                              {(pointCell ? ["0", "||", "+", "−"] : ["+", "−", "0", "||"]).map((opt) => (
                                 <button
                                   key={opt}
                                   type="button"
+                                  aria-label={TEN_DAU[opt === "−" ? "-" : opt]}
+                                  aria-pressed={cur === (opt === "−" ? "-" : opt)}
                                   data-testid={`dau-${k}-${opt === "−" ? "-" : opt}`}
                                   className={`inline-flex min-h-8 min-w-8 items-center justify-center rounded text-xs [@media(pointer:coarse)]:min-h-11 [@media(pointer:coarse)]:min-w-11 ${cur === (opt === "−" ? "-" : opt) ? "bg-ink text-chalk" : "bg-wash"}`}
                                   onClick={() => {
@@ -452,12 +561,19 @@ export function SolveClient({
                       })}
                     </tr>
                     <tr>
-                      <th className="p-1 text-left">y</th>
+                      <th scope="row" className={NHAN_BANG}>y</th>
                       {Array.from({ length: sorted.length * 2 + 1 }, (_, k) =>
                         k % 2 === 1 ? (
                           <td key={k} />
                         ) : (
-                          <td key={k} data-testid={`o-mui-${k}`} className={`p-1 ${oClass("BIEN_THIEN", k)}`}>
+                          <td
+                            key={k}
+                            colSpan={sorted.length === 0 ? 2 : undefined}
+                            data-testid={`o-mui-${k}`}
+                            role="group"
+                            aria-label={`Chiều biến thiên ${moTaViTri(sorted, k)}`}
+                            className={`p-1 ${oClass("BIEN_THIEN", k)}`}
+                          >
                             <div className="flex justify-center gap-1">
                               {[
                                 ["TANG", "↗"],
@@ -466,6 +582,8 @@ export function SolveClient({
                                 <button
                                   key={val}
                                   type="button"
+                                  aria-label={val === "TANG" ? "tăng (đồng biến)" : "giảm (nghịch biến)"}
+                                  aria-pressed={arrows[k] === val}
                                   data-testid={`mui-${k}-${val}`}
                                   className={`inline-flex min-h-8 min-w-8 items-center justify-center rounded text-xs [@media(pointer:coarse)]:min-h-11 [@media(pointer:coarse)]:min-w-11 ${arrows[k] === val ? "bg-ink text-chalk" : "bg-wash"}`}
                                   onClick={() => {
@@ -505,7 +623,21 @@ export function SolveClient({
                 ] as const
               )
                 .filter(([key]) => hoiCucTri || key === "db" || key === "nb")
-                .map(([key, id, label], i) => (
+                .map(([key, id, label], i) =>
+                  key === "cd" || key === "ct" ? (
+                    // CT-SGK (Build 13:25 mục 3): ô cực trị nhập được qua MathLive (x_{CT} = 3) VÀ ô gõ thường.
+                    <div key={key} data-testid={`o-kl-${key}`} className={cn(lineBad("B.DH.KETLUAN", i) && "cell-bad p-2")}>
+                      <MathInput
+                        testId={id}
+                        label={label}
+                        value={kl[key]}
+                        onChange={(v) => setKl((cu) => ({ ...cu, [key]: v }))}
+                        placeholder="x = …, y = …, hoặc: không có"
+                        title={key === "cd" ? "cực đại tại x = ..., y = ..." : "cực tiểu tại x = ..., y = ..."}
+                        xemTruoc={false}
+                      />
+                    </div>
+                  ) : (
                 <label key={key} data-testid={`o-kl-${key}`} className={cn("block text-sm", lineBad("B.DH.KETLUAN", i) && "cell-bad p-2")}>
                   <span className="mb-2 block font-medium">{label}</span>
                   <input
@@ -527,12 +659,13 @@ export function SolveClient({
                     }
                   />
                 </label>
-              ))}
+                  ),
+                )}
             </div>
           )}
         </div>
 
-        {grade ? (
+        {grade && (grade.finished || dat || !buocCham || buocCham === ma) ? (
           <p
             key={`${grade.ket_qua}-${grade.thong_bao}`}
             data-testid="cham-thong-bao"
@@ -542,7 +675,11 @@ export function SolveClient({
               dat ? "border-pass" : "border-mark",
             )}
           >
-            {grade.finished ? "Đã xong bài này." : grade.thong_bao}
+            {grade.finished
+              ? "Đã xong bài này."
+              : dat && buocCham && buocCham !== ma
+                ? `Bước ${tenBuocTrang(buocCham)} đã nộp hợp lệ. Em làm tiếp bước này.`
+                : grade.thong_bao}
           </p>
         ) : null}
 
@@ -611,6 +748,7 @@ export function SolveClient({
       open={openTutor}
       onClose={() => setOpenTutor(false)}
       maBuoc={ma}
+      capBanDau={capGoiY}
     />
     </>
   );

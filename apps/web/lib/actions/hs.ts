@@ -193,6 +193,7 @@ export async function nopBuoc(problemId: string, body: StepPayload) {
     toan_dung: laDauU(graded) ? graded.toan_dung ?? null : null,
     finished,
     nghi_doan_mo: Boolean(lyDo),
+    sub_id: subId,
   };
 }
 
