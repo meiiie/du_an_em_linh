@@ -1,6 +1,8 @@
 "use server";
 
 import { createHash } from "crypto";
+import { caiDatLopCuaGv } from "../lop";
+import { maHoa } from "../ma-hoa";
 import { and, eq, inArray } from "drizzle-orm";
 import { mkdir, writeFile } from "fs/promises";
 import path from "path";
@@ -310,6 +312,11 @@ export async function sinhBienThe(form: FormData) {
   redirect(`/gv/sinh-bai?ma=${encodeURIComponent(code)}&trang=${encodeURIComponent(verified.trang_thai_phat_hanh)}`);
 }
 
+async function caiDatCuaGv(user: Awaited<ReturnType<typeof requireRole>>) {
+  const { setting } = await caiDatLopCuaGv(user);
+  return setting ? [setting] : [];
+}
+
 export async function luuCaiDatLop(form: FormData) {
   const user = await requireRole("GV");
   const mo = form.get("mo_loi_giai") === "on";
@@ -318,7 +325,8 @@ export async function luuCaiDatLop(form: FormData) {
   const allowLocal = form.get("ai_allow_local") === "on";
   const keyRaw = String(form.get("ai_api_key") || "").trim();
   const xoaKey = form.get("xoa_ai_api_key") === "on";
-  const rows = await db.select().from(classSettings);
+  // F-08: chỉ lớp GV này dạy
+  const rows = await caiDatCuaGv(user);
   if (!rows[0]) return;
   const patch: {
     moLoiGiaiSauKhiNop: boolean;
@@ -333,7 +341,14 @@ export async function luuCaiDatLop(form: FormData) {
     aiAllowLocal: allowLocal,
   };
   if (xoaKey) patch.aiApiKey = null;
-  else if (keyRaw && keyRaw !== "********") patch.aiApiKey = keyRaw;
+  else if (keyRaw && keyRaw !== "********") {
+    // F-10: không lưu rõ; thiếu APP_ENC_KEY trên host thì bỏ qua khoá (không lưu), các cài đặt khác vẫn lưu
+    try {
+      patch.aiApiKey = maHoa(keyRaw);
+    } catch (e) {
+      console.error("luuCaiDatLop:", e instanceof Error ? e.message : "không mã hoá được khoá");
+    }
+  }
   await db.update(classSettings).set(patch).where(eq(classSettings.classId, rows[0].classId));
   await audit(user.id, "LUU_CAI_DAT_AI", "class_settings", rows[0].classId, provider);
   revalidatePath("/gv/cai-dat");
@@ -341,9 +356,9 @@ export async function luuCaiDatLop(form: FormData) {
 }
 
 export async function kiemTraNhaCungCap(providerRaw: string) {
-  await requireRole("GV");
+  const user = await requireRole("GV");
   const provider = parseProvider(providerRaw);
-  const row = (await db.select().from(classSettings).limit(1))[0];
+  const row = (await caiDatCuaGv(user))[0];
   const r = await probeProvider({ provider, classApiKey: row?.aiApiKey, classProvider: row?.aiProvider });
   return { ok: r.ok, message: r.message, models: r.models };
 }
@@ -365,7 +380,8 @@ export async function ketNoiBangKhoa(form: FormData) {
   if (!key || key === "********") {
     redirect("/gv/ket-noi-ai?loi=" + encodeURIComponent(loiDanKhoa(provider)));
   }
-  const rows = await db.select().from(classSettings);
+  // F-08: chỉ lớp GV này dạy
+  const rows = await caiDatCuaGv(user);
   if (!rows[0]) redirect("/gv/ket-noi-ai?loi=" + encodeURIComponent("Chưa có lớp."));
   const probe = await probeProvider({ provider, classApiKey: key });
   if (!probe.ok) {
@@ -376,7 +392,7 @@ export async function ketNoiBangKhoa(form: FormData) {
       .update(classSettings)
       .set({
         aiProvider: provider,
-        aiApiKey: key,
+        aiApiKey: maHoa(key), // F-10: AES-256-GCM, không lưu rõ
         aiModel: model,
         aiConnectedAt: new Date(),
       })
@@ -395,7 +411,8 @@ export async function ketNoiBangKhoa(form: FormData) {
 
 export async function ngatKetNoiAi() {
   const user = await requireRole("GV");
-  const rows = await db.select().from(classSettings);
+  // F-08: chỉ lớp GV này dạy
+  const rows = await caiDatCuaGv(user);
   if (!rows[0]) return;
   await db
     .update(classSettings)

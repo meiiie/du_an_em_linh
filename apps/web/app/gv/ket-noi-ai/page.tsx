@@ -18,8 +18,8 @@ import { KhoTheoBuoc } from "@/components/kho-theo-buoc";
 import { Button, buttonClasses } from "@/components/ui/button";
 import { fieldControl } from "@/components/ui/field";
 import { PageHeader } from "@/components/ui/page-header";
-import { db } from "@/lib/db";
-import { classSettings } from "@/lib/db/schema";
+import { requireRole } from "@/lib/auth";
+import { caiDatLopCuaGv } from "@/lib/lop";
 import { cn } from "@/lib/cn";
 
 export const dynamic = "force-dynamic";
@@ -170,7 +170,9 @@ export default async function Page({
   searchParams: Promise<{ ok?: string; oauth?: string; loi?: string }>;
 }) {
   const q = await searchParams;
-  const setting = (await db.select().from(classSettings).limit(1))[0];
+  // F-08: cài đặt AI của lớp GV này dạy
+  const u = await requireRole("GV");
+  const { setting } = await caiDatLopCuaGv(u);
   const provider = parseProvider(setting?.aiProvider);
   const mask = maskKey(setting?.aiApiKey);
   const chatgptReady = Boolean(docKhoaNha("cloud", setting?.aiApiKey, provider));

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { desc, eq, isNull } from "drizzle-orm";
+import { and, desc, eq, inArray, isNull } from "drizzle-orm";
 import { requireRole } from "@/lib/auth";
 import { ghiNhatKy } from "@/lib/actions/hs";
 import { laNhaKhoa, parseProvider } from "@/lib/ai-catalog";
@@ -8,7 +8,8 @@ import { docKhoaNha } from "@/lib/ai-harness";
 import { cn } from "@/lib/cn";
 import { tenKyNangNgan } from "@/lib/de-hoc-sinh";
 import { db } from "@/lib/db";
-import { classSettings, documents, escalations, formulaSheets, formulas, problems, skills, users } from "@/lib/db/schema";
+import { documents, escalations, formulaSheets, formulas, problems, skills, users } from "@/lib/db/schema";
+import { caiDatLopCuaGv, hsCuaGv } from "@/lib/lop";
 
 export const dynamic = "force-dynamic";
 
@@ -47,16 +48,20 @@ function Hang({
 
 export default async function GvHome() {
   const u = await requireRole("GV");
-  await ghiNhatKy(u.id, "XEM_TONG_QUAN", "class", "12A1");
-  const stuck = await db.select().from(escalations).where(isNull(escalations.handledAt));
-  const names = await db.select().from(users);
+  const { lop, setting } = await caiDatLopCuaGv(u);
+  await ghiNhatKy(u.id, "XEM_TONG_QUAN", "class", lop?.id || "-");
+  // F-08: chỉ HS và cảnh báo của lớp GV này dạy
+  const hsIds = await hsCuaGv(u.id);
+  const stuck = hsIds.length
+    ? await db.select().from(escalations).where(and(isNull(escalations.handledAt), inArray(escalations.studentId, hsIds)))
+    : [];
+  const names = hsIds.length ? await db.select().from(users).where(inArray(users.id, hsIds)) : [];
   const name = new Map(names.map((n) => [n.id, n.displayName]));
   const kn = await db.select().from(skills);
   const tenKn = new Map(kn.map((s) => [s.code, tenKyNangNgan(s.code, s.name)]));
   const queue = await db.select().from(problems).where(eq(problems.status, "CHO_GIAO_VIEN_DUYET"));
   const blocked = await db.select().from(problems).where(eq(problems.status, "BI_CHAN"));
   const published = await db.select().from(problems).where(eq(problems.status, "DA_PHAT_HANH"));
-  const setting = (await db.select().from(classSettings).limit(1))[0];
   const nha = parseProvider(setting?.aiProvider);
   const daKetNoi = laNhaKhoa(nha) && Boolean(docKhoaNha(nha, setting?.aiApiKey, nha));
   const nTaiLieu = (await db.select().from(documents)).filter((d) => d.licenseStatus !== "chua_ro").length;
@@ -67,7 +72,7 @@ export default async function GvHome() {
   return (
     <main>
       <header className="mb-6 border-b border-line pb-4">
-        <h1 className="text-pretty text-[1.75rem] font-semibold tracking-tight">Lớp 12A1 thử</h1>
+        <h1 className="text-pretty text-[1.75rem] font-semibold tracking-tight">{lop ? `Lớp ${lop.name}` : "Chưa có lớp"}</h1>
         <p className="mt-1 text-sm text-muted">Đơn điệu và cực trị</p>
       </header>
 

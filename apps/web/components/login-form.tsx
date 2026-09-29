@@ -28,9 +28,11 @@ function NutVaoHoc() {
 
 export function LoginForm({
   loi,
+  khoa = false,
   dangNhap,
 }: {
   loi: boolean;
+  khoa?: boolean;
   dangNhap: (formData: FormData) => void | Promise<void>;
 }) {
   const [buoc, setBuoc] = useState<"email" | "mat-khau">("email");
@@ -110,6 +112,15 @@ export function LoginForm({
           Chưa vào được. Học sinh <span className="font-mono">hocsinh123</span>
           {" · "}
           giáo viên <span className="font-mono">giaovien123</span>.
+        </p>
+      ) : khoa ? (
+        <p
+          id="loi-dang-nhap"
+          data-testid="khoa-dang-nhap"
+          className="mt-6 w-full rounded-button bg-wash px-3 py-3 text-left text-[13px] leading-5 text-mark"
+          role="alert"
+        >
+          Sai mật khẩu quá 5 lần. Tài khoản này tạm khoá 15 phút trên máy này.
         </p>
       ) : null}
 

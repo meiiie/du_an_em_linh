@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { eq } from "drizzle-orm";
 import { luuCaiDatLop } from "@/lib/actions/gv";
 import { laNhaKhoa, NHA, parseProvider, type AiProviderId } from "@/lib/ai-catalog";
 import { docKhoaNha } from "@/lib/ai-harness";
@@ -9,8 +8,8 @@ import { Button } from "@/components/ui/button";
 import { fieldControl } from "@/components/ui/field";
 import { PageHeader } from "@/components/ui/page-header";
 import { chamDoChinhXac } from "@/lib/do-chinh-xac";
-import { db } from "@/lib/db";
-import { classSettings, classes } from "@/lib/db/schema";
+import { requireRole } from "@/lib/auth";
+import { caiDatLopCuaGv } from "@/lib/lop";
 
 export const dynamic = "force-dynamic";
 
@@ -19,8 +18,9 @@ export const metadata: Metadata = {
 };
 
 export default async function Page() {
-  const lop = (await db.select().from(classes))[0];
-  const setting = lop ? (await db.select().from(classSettings).where(eq(classSettings.classId, lop.id)))[0] : null;
+  // F-08: cài đặt của lớp GV này dạy, không phải lớp đầu tiên trong bảng
+  const u = await requireRole("GV");
+  const { setting } = await caiDatLopCuaGv(u);
   const provider = parseProvider(setting?.aiProvider);
   const hasEnv = laNhaKhoa(provider) && Boolean(docKhoaNha(provider, null));
   const khoaLop = Boolean((setting?.aiApiKey || "").trim());
