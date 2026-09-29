@@ -120,7 +120,7 @@ export function LoginForm({
           className="mt-6 w-full rounded-button bg-wash px-3 py-3 text-left text-[13px] leading-5 text-mark"
           role="alert"
         >
-          Sai mật khẩu quá 5 lần. Tài khoản này tạm khoá 15 phút trên máy này.
+          Sai mật khẩu quá nhiều lần (5 lần). Tài khoản này tạm khóa 15 phút trên máy này, em thử lại sau.
         </p>
       ) : null}
 
