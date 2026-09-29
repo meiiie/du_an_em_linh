@@ -39,7 +39,7 @@ def test_P_tu_choi(s):
         K.P(s)
 
 
-@pytest.mark.parametrize("s", ["3*x**2-12*x+9", "((3)/((x+3)**(2)))", "sqrt(x)+Abs(x-1)", "Rational(1,2)*x", "-oo", "x > 1"])
+@pytest.mark.parametrize("s", ["3*x**2-12*x+9", "((3)/((x+3)**(2)))", "sqrt(x)+Abs(x-1)", "x/2 + 1", "-oo", "x > 1"])
 def test_P_van_nhan_bieu_thuc_toan(s):
     K.P(s)
 

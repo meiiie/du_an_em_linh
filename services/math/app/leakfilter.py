@@ -19,6 +19,7 @@ Không trả về phần khớp — chỉ cho_phep, để gia sư không nhận 
 import re
 import unicodedata
 
+from app.dau_vao import DAU_VAO_KHONG_HOP_LE, ly_do_tu_choi
 from app.paths import load_loc
 
 _loc = None
@@ -274,7 +275,13 @@ def _vi_pham_phu_dinh(ban_nhap, phu_dinh, cau_hs):
 
 def loc_ban_nhap(ban_nhap, su_kien, cau_hs=None):
     try:
+        # F-01: bản nháp có dấu hiệu code / quá dài, hoặc giá trị sự kiện không qua cổng danh sách trắng -> chặn.
+        # Không bao giờ thực thi; chặn để câu lạ không tới học sinh và sự kiện hỏng không làm bộ so "không khớp".
+        if not isinstance(ban_nhap, str) or _L().kiem_ban_nhap(ban_nhap):
+            return {"cho_phep": False, "lop_chinh": "dau_vao", "lop_phu": "chuoi", "loi": False, "ly_do": DAU_VAO_KHONG_HOP_LE}
         cac = _pairs(su_kien)
+        if any(not re.fullmatch(r"[A-Z][A-Z_]{0,30}", str(a)) or ly_do_tu_choi(b) for a, b in cac):
+            return {"cho_phep": False, "lop_chinh": "dau_vao", "lop_phu": "chuoi", "loi": False, "ly_do": DAU_VAO_KHONG_HOP_LE}
         phu_dinh = [a for a, _b in cac if str(a).startswith("KHONG_")]
         bai = {"su_kien": [(a, b) for a, b in cac if not str(a).startswith("KHONG_")]}
         # Thiếu câu HS: câu nháp chỉ là "không"/"có" không đánh giá được -> chặn

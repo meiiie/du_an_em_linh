@@ -10,6 +10,7 @@ Chỉ số sản phẩm (build §6.4), KHÁC bộ YAML kiểm định (k bắt �
 - Đầu ra chỉ dùng tên hàng HOA (X, DAU_YPHAY, BIEN_THIEN); đầu vào nhận thêm tên cũ chữ thường làm bí danh.
 - `cac_van_de`: đủ mọi vấn đề, gốc theo thứ tự bước (SAI_TXD, DIEM_THIEU, DIEM_THUA@NGHIEM, SAI_THU_TU_MOC, DIEM_THUA@XETDAU) rồi ô theo k; ô hệ quả có nguyen_nhan = id vấn đề gốc.
 """
+from app.dau_vao import DAU_VAO_KHONG_HOP_LE, tu_choi_payload
 from app.machine import bai_lam_may
 from app.normalizer import NORMALIZER_VERSION, normalize_domain, normalize_expr
 from app.paths import load_kiem
@@ -583,7 +584,25 @@ def _overlay_may(student_bl, den):
     return out
 
 
+def _kkd_dau_vao(payload, ma, dong, o, chi_tiet):
+    """F-01: chuỗi học sinh bị cổng danh sách trắng / bộ phân tích an toàn từ chối -> KHONG_KIEM_DUOC, không bao giờ chấm."""
+    den = payload.get("nop_toi") if payload.get("nop_toi") in ORDER else "B.DH.KETLUAN"
+    ma = ma if ma in ORDER else None
+    r = _pack("KHONG_KIEM_DUOC", "KHONG_KIEM_DUOC", _buoc(ma, dong, o) if ma else None, DAU_VAO_KHONG_HOP_LE,
+              _per(den, ma, "KHONG_KIEM_DUOC") if ma else {}, [], nop_toi=den,
+              thong_bao=None if ma else "Máy chưa đọc được bài làm này. Thầy cô sẽ xem.")
+    r["ly_do"] = DAU_VAO_KHONG_HOP_LE
+    r["chi_tiet_tu_choi"] = str(chi_tiet)[:120]
+    return r
+
+
 def grade(payload):
+    if not isinstance(payload, dict) or not isinstance(payload.get("cac_buoc"), list):
+        return _kkd_dau_vao(payload if isinstance(payload, dict) else {}, None, None, None, "payload sai khuôn")
+    tc = tu_choi_payload(payload)
+    if tc:
+        return _kkd_dau_vao(payload, *tc)
+    del K._TU_CHOI[:]
     r = _grade_core(payload)
     try:
         if r.get("ket_qua") == "DAT":
@@ -591,6 +610,9 @@ def grade(payload):
         _hau_xu_ly(payload, r)
     except Exception:
         pass  # hậu xử lý chỉ tinh chỉnh vị trí; lỗi ở đây không được đổi kết quả chấm
+    if K._TU_CHOI:
+        # bộ phân tích an toàn đã từ chối một chuỗi ở đâu đó (kể cả khi lỗi bị nuốt): không bao giờ giữ kết quả chấm
+        return _kkd_dau_vao(payload, None, None, None, K._TU_CHOI[0])
     return r
 
 

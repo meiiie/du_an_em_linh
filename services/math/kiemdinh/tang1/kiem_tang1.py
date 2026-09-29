@@ -13,7 +13,8 @@ from sympy import (Symbol, Integer, Rational, pi, E, oo, zoo, nan, S, sqrt, log,
                    preorder_traversal, logcombine, periodicity, together, fraction, nsimplify,
                    binomial, factorial, expand, Min, Max)
 from sympy.logic.boolalg import BooleanTrue, BooleanFalse
-from sympy.parsing.sympy_parser import (parse_expr, standard_transformations, rationalize)
+# F-01: không import parse_expr ở cấp module; chỉ bộ phân tích an toàn bên dưới được gọi nó.
+from sympy.parsing.sympy_parser import standard_transformations, rationalize
 
 x = Symbol('x', real=True)
 a = Symbol('a', real=True)
@@ -98,12 +99,170 @@ def kiem_an_toan(s):
     return s
 
 
+# ======================= BỘ PHÂN TÍCH AN TOÀN (F-01, 29/09/2026) =======================
+# Chuỗi đầu vào KHÔNG BAO GIỜ được thực thi như code Python tùy ý:
+#  1) giới hạn độ dài; 2) danh sách ký tự cho phép; 3) mọi '.' phải thuộc một số thập phân;
+#  4) mọi tên phải nằm trong danh sách cho phép; 5) cây cú pháp (ast.parse, KHÔNG thực thi) chỉ gồm
+#     số, tên cho phép, + - * / ** (^), so sánh đơn < > <= >=, lời gọi hàm cho phép (không keyword);
+#  6) chặn lũy thừa lớn / tháp lũy thừa (9**9**9); 7) parse_expr với local_dict cố định, global_dict tối thiểu,
+#     __builtins__ rỗng, KHÔNG dùng lambda_notation / auto_symbol / factorial_notation.
+# Bị từ chối -> ném DauVaoKhongHopLe (ly_do = DAU_VAO_KHONG_HOP_LE).
+import ast as _ast
+import re as _re_at
+import sympy as _sp
+from sympy.parsing.sympy_parser import (parse_expr as _parse_expr_goc, auto_number as _auto_number,
+                                        rationalize as _rationalize, convert_xor as _convert_xor)
+
+DAU_VAO_KHONG_HOP_LE = 'DAU_VAO_KHONG_HOP_LE'
+DO_DAI_TOI_DA = 300          # ký tự (chuỗi dài nhất trong mọi bộ ca hiện có: 47)
+SO_MU_TOI_DA = 100           # |số mũ hằng| tối đa
+DO_SAU_LUY_THUA_TOI_DA = 2   # số tầng ** lồng nhau ở cơ số ((a**b)**c là tối đa)
+SO_CHU_SO_TOI_DA = 15        # chữ số tối đa của một hằng số nguyên
+_KY_TU_CHO_PHEP = _re_at.compile(r'^[0-9A-Za-z+\-*/^().,<>= ]*$')
+_SO_THAP_PHAN = _re_at.compile(r'\d+\.\d*|\.\d+|\d+')
+_TEN = _re_at.compile(r'[A-Za-z][A-Za-z0-9]*')
+_HAM_CHO_PHEP = {'sin': _sp.sin, 'cos': _sp.cos, 'tan': _sp.tan, 'cot': _sp.cot, 'exp': _sp.exp, 'log': _sp.log,
+                 'ln': _sp.log, 'sqrt': _sp.sqrt, 'abs': _sp.Abs, 'Abs': _sp.Abs, 'Ne': _sp.Ne}
+_X_AT = _sp.Symbol('x', real=True)
+_HANG_CHO_PHEP = {'x': _X_AT, 'pi': _sp.pi, 'E': _sp.E, 'e': _sp.E, 'oo': _sp.oo,
+                  # tên các bộ ca Tầng 1 đang dùng (đồng nhất thức a, b; họ nghiệm k; hằng nguyên hàm C)
+                  'a': _sp.Symbol('a', real=True), 'b': _sp.Symbol('b', real=True),
+                  'k': _sp.Symbol('k', integer=True), 'C': _sp.Symbol('C')}
+_GLOBAL_TOI_THIEU = {'Symbol': _sp.Symbol, 'Integer': _sp.Integer, 'Float': _sp.Float, 'Rational': _sp.Rational}
+_BIEN_DOI_AN_TOAN = (_auto_number, _rationalize, _convert_xor)
+
+
+class DauVaoKhongHopLe(ValueError):
+    ly_do = DAU_VAO_KHONG_HOP_LE
+
+
+def _tu_choi(s, vi_sao):
+    raise DauVaoKhongHopLe('%s: %s (%r)' % (DAU_VAO_KHONG_HOP_LE, vi_sao, s[:60] if isinstance(s, str) else type(s).__name__))
+
+
+def _hang_so(n):
+    if isinstance(n, _ast.Constant) and type(n.value) in (int, float):
+        return n.value
+    if isinstance(n, _ast.UnaryOp) and isinstance(n.op, (_ast.USub, _ast.UAdd)):
+        v = _hang_so(n.operand)
+        return None if v is None else (-v if isinstance(n.op, _ast.USub) else v)
+    return None
+
+
+def _co_pow(n):
+    return any(isinstance(m, _ast.BinOp) and isinstance(m.op, _ast.Pow) for m in _ast.walk(n))
+
+
+def _do_sau_pow(n):
+    if isinstance(n, _ast.BinOp) and isinstance(n.op, _ast.Pow):
+        return 1 + _do_sau_pow(n.left)
+    if isinstance(n, _ast.BinOp):
+        return max(_do_sau_pow(n.left), _do_sau_pow(n.right))
+    if isinstance(n, _ast.UnaryOp):
+        return _do_sau_pow(n.operand)
+    if isinstance(n, _ast.Call):
+        return max([_do_sau_pow(a_) for a_ in n.args] or [0])
+    return 0
+
+
+def _kiem_cay(n, s, ten_ok):
+    if isinstance(n, _ast.Expression):
+        return _kiem_cay(n.body, s, ten_ok)
+    if isinstance(n, _ast.Constant):
+        if type(n.value) not in (int, float):
+            _tu_choi(s, 'hằng không phải số')
+        if type(n.value) is int and len(str(abs(n.value))) > SO_CHU_SO_TOI_DA:
+            _tu_choi(s, 'số quá lớn')
+        return
+    if isinstance(n, _ast.Name):
+        if n.id not in ten_ok:
+            _tu_choi(s, 'tên không cho phép: %s' % n.id)
+        return
+    if isinstance(n, _ast.UnaryOp):
+        if not isinstance(n.op, (_ast.USub, _ast.UAdd)):
+            _tu_choi(s, 'toán tử một ngôi không cho phép')
+        return _kiem_cay(n.operand, s, ten_ok)
+    if isinstance(n, _ast.BinOp):
+        if not isinstance(n.op, (_ast.Add, _ast.Sub, _ast.Mult, _ast.Div, _ast.Pow)):
+            _tu_choi(s, 'toán tử không cho phép')
+        if isinstance(n.op, _ast.Pow):
+            if _co_pow(n.right):
+                _tu_choi(s, 'tháp lũy thừa')
+            for m in _ast.walk(n.right):
+                v = _hang_so(m) if isinstance(m, (_ast.Constant, _ast.UnaryOp)) else None
+                if v is not None and abs(v) > SO_MU_TOI_DA:
+                    _tu_choi(s, 'số mũ quá lớn')
+            if _do_sau_pow(n) > DO_SAU_LUY_THUA_TOI_DA:
+                _tu_choi(s, 'lũy thừa lồng quá sâu')
+        _kiem_cay(n.left, s, ten_ok)
+        return _kiem_cay(n.right, s, ten_ok)
+    if isinstance(n, _ast.Compare):
+        if len(n.ops) != 1 or not isinstance(n.ops[0], (_ast.Lt, _ast.Gt, _ast.LtE, _ast.GtE)):
+            _tu_choi(s, 'so sánh không cho phép')
+        _kiem_cay(n.left, s, ten_ok)
+        return _kiem_cay(n.comparators[0], s, ten_ok)
+    if isinstance(n, _ast.Call):
+        if not isinstance(n.func, _ast.Name) or n.func.id not in _HAM_CHO_PHEP or n.keywords or not (1 <= len(n.args) <= 2):
+            _tu_choi(s, 'lời gọi hàm không cho phép')
+        for a_ in n.args:
+            if isinstance(a_, _ast.Starred):
+                _tu_choi(s, 'đối số * không cho phép')
+            _kiem_cay(a_, s, ten_ok)
+        return
+    _tu_choi(s, 'cú pháp không cho phép: %s' % type(n).__name__)
+
+
+def kiem_chuoi_an_toan(s, them_ten=()):
+    """Kiểm chuỗi TRƯỚC khi parse. Trả chuỗi đã đổi ^ -> **; ném DauVaoKhongHopLe nếu bị từ chối."""
+    if not isinstance(s, str):
+        if isinstance(s, (int, float)) and not isinstance(s, bool):
+            s = str(s)
+        else:
+            _tu_choi(s, 'không phải chuỗi')
+    if len(s) > DO_DAI_TOI_DA:
+        _tu_choi(s, 'chuỗi quá dài (%d ký tự)' % len(s))
+    if not _KY_TU_CHO_PHEP.match(s):
+        _tu_choi(s, 'ký tự không cho phép')
+    if '.' in _SO_THAP_PHAN.sub('0', s):
+        _tu_choi(s, "dấu '.' không thuộc số thập phân")
+    ten_ok = set(_HAM_CHO_PHEP) | set(_HANG_CHO_PHEP) | set(them_ten)
+    for m in _TEN.finditer(s):
+        if m.group(0) not in ten_ok:
+            _tu_choi(s, 'tên không cho phép: %s' % m.group(0))
+    s2 = s.replace('^', '**')
+    try:
+        cay = _ast.parse(s2.strip(), mode='eval')   # chỉ dựng cây, không thực thi
+    except (SyntaxError, ValueError, RecursionError, MemoryError):
+        _tu_choi(s, 'không đúng cú pháp biểu thức')
+    _kiem_cay(cay, s, ten_ok)
+    return s2
+
+
+def phan_tich_an_toan(s, them=None):
+    """Thay cho parse_expr: chỉ parse sau khi kiem_chuoi_an_toan chấp nhận; tên nằm trong local_dict cố định."""
+    them = dict(them or {})
+    s2 = kiem_chuoi_an_toan(s, them.keys())
+    loc_ = dict(_HANG_CHO_PHEP)
+    loc_.update(_HAM_CHO_PHEP)
+    loc_.update(them)
+    glob_ = dict(_GLOBAL_TOI_THIEU)
+    glob_['__builtins__'] = {}
+    return _parse_expr_goc(s2, local_dict=loc_, global_dict=glob_, transformations=_BIEN_DOI_AN_TOAN)
+# ===================== HẾT BỘ PHÂN TÍCH AN TOÀN =====================
+
+
+# Ghi các lần từ chối trong một lượt kiểm: kiem()/kiem_5_buoc() đổi kết quả thành KHONG_KIEM_DUOC (ly_do DAU_VAO_KHONG_HOP_LE),
+# kể cả khi lỗi bị một khối try bên trong nuốt mất. Không bao giờ DAT khi có chuỗi bị từ chối.
+_TU_CHOI = []
+
+
 def P(s, extra=None):
-    d = dict(LOC)
-    if extra:
-        d.update(extra)
-    kiem_an_toan(s)
-    return parse_expr(str(s), local_dict=d, transformations=TRANS)
+    """Đọc biểu thức bằng bộ phân tích an toàn (F-01). Thay lời gọi parse_expr cũ ở dòng 34."""
+    try:
+        return phan_tich_an_toan(s, extra)
+    except DauVaoKhongHopLe as ex:
+        _TU_CHOI.append(str(ex))
+        raise
 
 
 def P_pt(s):
@@ -427,12 +586,29 @@ def _kiem_ho_nghiem(e, conds, ho):
 
 
 # ------------------------------------------------------------------ 3. tập hợp / khoảng
+_TAP_KY_TU = _re_at.compile(r'^[0-9A-Za-z+\-*/^().,;\[\]{}\\ ∅−]*$')
+
+
 def parse_tap(s):
+    """Đọc tập (TXĐ, tập nghiệm). F-01: kiểm độ dài + ký tự trước; tập sai khuôn -> DauVaoKhongHopLe (KHONG_KIEM_DUOC)."""
+    if not isinstance(s, str) or len(s) > DO_DAI_TOI_DA or not _TAP_KY_TU.match(s) or '_' in s:
+        _TU_CHOI.append('%s: tập không hợp lệ (%r)' % (DAU_VAO_KHONG_HOP_LE, str(s)[:60]))
+        raise DauVaoKhongHopLe(_TU_CHOI[-1])
+    try:
+        return _parse_tap_loi(s)
+    except DauVaoKhongHopLe:
+        raise
+    except (ValueError, IndexError, TypeError, SyntaxError) as ex:
+        _TU_CHOI.append('%s: tập sai khuôn (%r: %s)' % (DAU_VAO_KHONG_HOP_LE, s[:60], type(ex).__name__))
+        raise DauVaoKhongHopLe(_TU_CHOI[-1])
+
+
+def _parse_tap_loi(s):
     s = s.strip().replace('+oo', 'oo').replace('−', '-')
     if s == 'R':
         return Reals
     if s.startswith('R \\'):
-        return Complement(Reals, parse_tap(s[3:].strip()))
+        return Complement(Reals, _parse_tap_loi(s[3:].strip()))
     if s in ('{}', '∅'):
         return EmptySet
     phan = []
@@ -646,25 +822,129 @@ def kiem_don_vi(trai, phai):
                    phan_chung=dict(trai_SI=str(convert_to(L, base)), phai_SI=str(convert_to(R, base))), bang_chung='sympy.physics.units')
 
 
-_NS_DEM = dict(product=itertools.product, permutations=itertools.permutations,
-               combinations=itertools.combinations, range=range, sum=sum, len=len)
+# F-01 (29/09): BỎ eval() ở kiem_dem (trước ở dòng 585 và 591). Hai chuỗi khong_gian / su_kien chỉ đến từ bộ ca do người soạn
+# (bo-de-kiem-thu/cac-ca.yaml, kieu dem / xac_suat), KHÔNG đến từ học sinh hay AI; vẫn bỏ eval theo yêu cầu F-01.
+# Thay bằng bộ đọc có cấu trúc: ast.parse (chỉ dựng cây) + thông dịch một văn phạm nhỏ, không có builtins, không thực thi code.
+import ast as _ast_dem
+_DEM_TOI_DA = 10 ** 6   # số phần tử không gian mẫu tối đa được liệt kê
+
+
+def _dem_so_nguyen(n):
+    if isinstance(n, _ast_dem.Constant) and type(n.value) is int:
+        return n.value
+    if isinstance(n, _ast_dem.UnaryOp) and isinstance(n.op, _ast_dem.USub):
+        return -_dem_so_nguyen(n.operand)
+    raise DauVaoKhongHopLe('%s: khong_gian chỉ nhận số nguyên' % DAU_VAO_KHONG_HOP_LE)
+
+
+def _dem_day(n):
+    """range(a[, b[, c]]) hoặc [số nguyên, ...] -> list."""
+    if isinstance(n, (_ast_dem.List, _ast_dem.Tuple)):
+        return [_dem_so_nguyen(e) for e in n.elts]
+    if isinstance(n, _ast_dem.Call) and isinstance(n.func, _ast_dem.Name) and n.func.id == 'range' and not n.keywords and 1 <= len(n.args) <= 3:
+        return list(range(*[_dem_so_nguyen(a_) for a_ in n.args]))
+    raise DauVaoKhongHopLe('%s: khong_gian chỉ nhận range(...) hoặc danh sách số nguyên' % DAU_VAO_KHONG_HOP_LE)
+
+
+def doc_khong_gian(chuoi):
+    """product(...)/permutations(...)/combinations(...) trên range/danh sách số nguyên -> list các bộ."""
+    kiem = chuoi if isinstance(chuoi, str) and len(chuoi) <= DO_DAI_TOI_DA else None
+    if kiem is None or '_' in kiem:
+        raise DauVaoKhongHopLe('%s: khong_gian không hợp lệ' % DAU_VAO_KHONG_HOP_LE)
+    try:
+        n = _ast_dem.parse(kiem.strip(), mode='eval').body
+    except SyntaxError:
+        raise DauVaoKhongHopLe('%s: khong_gian sai cú pháp' % DAU_VAO_KHONG_HOP_LE)
+    if not (isinstance(n, _ast_dem.Call) and isinstance(n.func, _ast_dem.Name) and n.func.id in ('product', 'permutations', 'combinations')):
+        raise DauVaoKhongHopLe('%s: khong_gian phải là product/permutations/combinations' % DAU_VAO_KHONG_HOP_LE)
+    ten = n.func.id
+    kw = {k_.arg: _dem_so_nguyen(k_.value) for k_ in n.keywords}
+    if ten == 'product':
+        if set(kw) - {'repeat'}:
+            raise DauVaoKhongHopLe('%s: product chỉ nhận repeat=' % DAU_VAO_KHONG_HOP_LE)
+        days = [_dem_day(a_) for a_ in n.args]
+        so = 1
+        for d_ in days:
+            so *= len(d_)
+        so **= kw.get('repeat', 1)
+        if so > _DEM_TOI_DA:
+            raise DauVaoKhongHopLe('%s: không gian mẫu quá lớn' % DAU_VAO_KHONG_HOP_LE)
+        return list(itertools.product(*days, repeat=kw.get('repeat', 1)))
+    if kw or not (1 <= len(n.args) <= 2):
+        raise DauVaoKhongHopLe('%s: %s(dãy[, r])' % (DAU_VAO_KHONG_HOP_LE, ten))
+    d_ = _dem_day(n.args[0])
+    r_ = _dem_so_nguyen(n.args[1]) if len(n.args) == 2 else None
+    if ten == 'combinations' and r_ is None:
+        raise DauVaoKhongHopLe('%s: combinations cần r' % DAU_VAO_KHONG_HOP_LE)
+    if len(d_) > 12:
+        raise DauVaoKhongHopLe('%s: không gian mẫu quá lớn' % DAU_VAO_KHONG_HOP_LE)
+    return list(getattr(itertools, ten)(d_, r_) if r_ is not None else itertools.permutations(d_))
+
+
+def _dem_bieu_thuc(n, t):
+    """Thông dịch biểu thức của su_kien trên bộ t: số nguyên, t[i], sum(t), len(t), + - *, so sánh, and/or/not."""
+    B = _ast_dem
+    if isinstance(n, B.Constant) and type(n.value) is int:
+        return n.value
+    if isinstance(n, B.Name) and n.id == 't':
+        return t
+    if isinstance(n, B.Subscript) and isinstance(n.value, B.Name) and n.value.id == 't':
+        return t[_dem_so_nguyen(n.slice)]
+    if isinstance(n, B.Call) and isinstance(n.func, B.Name) and n.func.id in ('sum', 'len') and not n.keywords and len(n.args) == 1 \
+            and isinstance(n.args[0], B.Name) and n.args[0].id == 't':
+        return sum(t) if n.func.id == 'sum' else len(t)
+    if isinstance(n, B.UnaryOp) and isinstance(n.op, (B.USub, B.Not)):
+        v = _dem_bieu_thuc(n.operand, t)
+        return -v if isinstance(n.op, B.USub) else (not v)
+    if isinstance(n, B.BinOp) and isinstance(n.op, (B.Add, B.Sub, B.Mult, B.Mod)):
+        l_, r_ = _dem_bieu_thuc(n.left, t), _dem_bieu_thuc(n.right, t)
+        if not (type(l_) is int and type(r_) is int):
+            raise DauVaoKhongHopLe('%s: phép tính chỉ trên số nguyên' % DAU_VAO_KHONG_HOP_LE)
+        return {B.Add: l_ + r_, B.Sub: l_ - r_, B.Mult: l_ * r_}.get(type(n.op)) if not isinstance(n.op, B.Mod) else l_ % r_
+    if isinstance(n, B.BoolOp):
+        vs = [_dem_bieu_thuc(v, t) for v in n.values]
+        return all(vs) if isinstance(n.op, B.And) else any(vs)
+    if isinstance(n, B.Compare):
+        OPS = {B.Eq: lambda p, q: p == q, B.NotEq: lambda p, q: p != q, B.Lt: lambda p, q: p < q, B.LtE: lambda p, q: p <= q,
+               B.Gt: lambda p, q: p > q, B.GtE: lambda p, q: p >= q}
+        trai = _dem_bieu_thuc(n.left, t)
+        for op, c_ in zip(n.ops, n.comparators):
+            if type(op) not in OPS:
+                raise DauVaoKhongHopLe('%s: so sánh không cho phép' % DAU_VAO_KHONG_HOP_LE)
+            phai = _dem_bieu_thuc(c_, t)
+            if not OPS[type(op)](trai, phai):
+                return False
+            trai = phai
+        return True
+    raise DauVaoKhongHopLe('%s: su_kien có cú pháp không cho phép (%s)' % (DAU_VAO_KHONG_HOP_LE, type(n).__name__))
+
+
+def doc_su_kien(chuoi):
+    """'lambda t: <biểu thức>' -> hàm Python thuần thông dịch cây đã kiểm (không eval)."""
+    if not isinstance(chuoi, str) or len(chuoi) > DO_DAI_TOI_DA or '_' in chuoi:
+        raise DauVaoKhongHopLe('%s: su_kien không hợp lệ' % DAU_VAO_KHONG_HOP_LE)
+    try:
+        n = _ast_dem.parse(chuoi.strip(), mode='eval').body
+    except SyntaxError:
+        raise DauVaoKhongHopLe('%s: su_kien sai cú pháp' % DAU_VAO_KHONG_HOP_LE)
+    a_ = getattr(n, 'args', None)
+    if not (isinstance(n, _ast_dem.Lambda) and len(a_.args) == 1 and a_.args[0].arg == 't' and not a_.vararg and not a_.kwarg
+            and not a_.kwonlyargs and not a_.defaults and not a_.posonlyargs):
+        raise DauVaoKhongHopLe('%s: su_kien phải có dạng lambda t: ...' % DAU_VAO_KHONG_HOP_LE)
+    than = n.body
+    _dem_bieu_thuc(than, (0,) * 16)  # kiểm cú pháp sớm trên một bộ giả (không có tác dụng phụ)
+    return lambda t: bool(_dem_bieu_thuc(than, tuple(t)))
 
 
 def kiem_dem(khong_gian, gia_tri_ai, su_kien=None):
     """Liệt kê không gian mẫu (mô hình hóa do người soạn, độc lập với AI)."""
-    # F-01: kiem_dem dùng eval cho mô hình do người soạn viết; KHÔNG có đường gọi từ dịch vụ (app/). Chỉ mở
-    # khi chạy bộ kiểm của Kiểm định (biến môi trường), để không ai vô tình nối nó với dữ liệu HS.
-    if os.environ.get('HOC_TOAN_CHO_KIEM_DEM') != '1':
-        return ket_qua('KHONG_KIEM_DUOC', 'dem', 'kiem_dem bị tắt trong dịch vụ (cần HOC_TOAN_CHO_KIEM_DEM=1)')
-    ns = {'__builtins__': {}}
-    ns.update(_NS_DEM)
-    omega = list(eval(khong_gian, ns))
+    omega = doc_khong_gian(khong_gian)
     v = P(gia_tri_ai)
     if su_kien is None:
         dung = Integer(len(omega))
         loai = 'dem'
     else:
-        f = eval(su_kien, ns)
+        f = doc_su_kien(su_kien)
         dung = Rational(sum(1 for t in omega if f(t)), len(omega))
         loai = 'xac_suat'
     if la_khong(dung - v):
@@ -996,8 +1276,22 @@ BO_KIEM = dict(
 )
 
 
+def _kkd_dau_vao(chi_tiet):
+    r = ket_qua('KHONG_KIEM_DUOC', 'dau_vao_khong_hop_le', chi_tiet)
+    r['ly_do'] = DAU_VAO_KHONG_HOP_LE
+    return r
+
+
 def kiem(ca_kiem):
-    return BO_KIEM[ca_kiem['kieu']](ca_kiem)
+    """F-01: mọi chuỗi bị bộ phân tích an toàn từ chối -> KHONG_KIEM_DUOC, ly_do DAU_VAO_KHONG_HOP_LE (không bao giờ DAT/SAI)."""
+    del _TU_CHOI[:]
+    try:
+        r = BO_KIEM[ca_kiem['kieu']](ca_kiem)
+    except DauVaoKhongHopLe as ex:
+        return _kkd_dau_vao(str(ex))
+    if _TU_CHOI:
+        return _kkd_dau_vao(_TU_CHOI[0])
+    return r
 
 
 # ------------------------------------------------------------------ 8. bài làm có cấu trúc 5 bước (đơn điệu / cực trị)
@@ -1130,6 +1424,19 @@ def _kiem_bang_sai_thu_tu(f, cf, bang, moc, diem_hs, k_thu_tu, khong0, khongxd, 
 
 
 def kiem_5_buoc(bl, bo_qua_txd=False):
+    """F-01: bọc lõi; chuỗi nào bị từ chối (kể cả khi lõi đã nuốt lỗi) -> KHONG_KIEM_DUOC, ly_do DAU_VAO_KHONG_HOP_LE."""
+    del _TU_CHOI[:]
+    try:
+        r = _kiem_5_buoc_loi(bl, bo_qua_txd)
+    except DauVaoKhongHopLe as ex:
+        r = None
+        _TU_CHOI.append(str(ex))
+    if _TU_CHOI:
+        return _kkd_dau_vao(_TU_CHOI[0])
+    return r
+
+
+def _kiem_5_buoc_loi(bl, bo_qua_txd=False):
     from sympy import limit
     f = P(bl['ham'])
     cf = dieu_kien(f)
