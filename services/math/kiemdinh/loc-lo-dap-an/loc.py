@@ -252,25 +252,53 @@ def chuan_hoa(text):
         t = re.sub(r'(?<!\w)%s\s+(%s)(?!\w)' % (KICH, W), lambda m: m.group(1) + ' ' + SO_CHU[m.group(2)], t)
     t = re.sub(r'\bâm\s+(\d)', r'-\1', t)
     t = re.sub(r'(\d),(\d)', r'\1.\2', t)
+    # căn bậc hai -> sqrt(n) (29/09: cực trị vô tỉ, vd 1 ± √2; trước đây M3 chỉ trích số hữu tỉ nên câu lộ vô tỉ lọt)
+    t = re.sub(r'\\sqrt\s*\{\s*(\d+)\s*\}', r'sqrt(\1)', t)
+    t = re.sub(r'\\sqrt\s*(\d)', r'sqrt(\1)', t)
+    t = re.sub(r'√\s*\(\s*(\d+)\s*\)', r'sqrt(\1)', t)
+    t = re.sub(r'√\s*(\d+)', r'sqrt(\1)', t)
+    t = t.replace('\\pm', '±').replace('+-', '±').replace('+/-', '±')
+    t = re.sub(r'căn(?:\s+bậc\s+(?:hai|2))?(?:\s+của)?\s+(\d+)', r'sqrt(\1)', t)
+    t = re.sub(r'sqrt\s*\(\s*(\d+)\s*\)', r'sqrt(\1)', t)
+    t = re.sub(r'\\cdot|\\times', '*', t)
     return t
 
 
-NUM = r'-?\s*(?:oo|\(\d+\)/\(\d+\)|\d+(?:\.\d+)?(?:/\d+)?)'
+NUM_HT = r'-?\s*(?:oo|\(\d+\)/\(\d+\)|\d+(?:\.\d+)?(?:/\d+)?)'
+# số vô tỉ bậc hai: [a ±] [b[*]]sqrt(n) [± a]; phải có sqrt
+_SQ = r'(?:\d+(?:\.\d+)?\s*\*?\s*)?sqrt\(\d+\)'
+IRR = r'-?\s*(?:\d+(?:\.\d+)?\s*[+-]\s*)?%s(?:\s*[+-]\s*\d+(?:\.\d+)?(?![\d.]*\s*\*?\s*sqrt))?' % _SQ
+NUM = r'(?:%s|%s)' % (IRR, NUM_HT)
+
+
+def _num_trich(s):
+    # thêm '*' cho hệ số dính sqrt (4sqrt(2) -> 4*sqrt(2)); không nhân ngầm
+    return num(re.sub(r'(\d)\s*(?=sqrt)', r'\1*', s))
 
 
 def trich_xuat(t):
     """Trả danh sách (vị_trí, loại 'khoang'|'so', giá trị)."""
     items, dung = [], []
     for m in re.finditer(r'[\(\[]\s*(%s)\s*;\s*(%s)\s*[\)\]]' % (NUM, NUM), t):
-        items.append((m.start(), 'khoang', (num(m.group(1)), num(m.group(2)))))
+        items.append((m.start(), 'khoang', (_num_trich(m.group(1)), _num_trich(m.group(2)))))
         dung.append(m.span())
     for m in re.finditer(r'(?:từ|khoảng)\s+(%s)\s+(?:đến|tới)\s+(%s)' % (NUM, NUM), t):
-        items.append((m.start(), 'khoang', (num(m.group(1)), num(m.group(2)))))
+        items.append((m.start(), 'khoang', (_num_trich(m.group(1)), _num_trich(m.group(2)))))
         dung.append(m.span())
     for m in re.finditer(r'\{([^{}]*)\}', t):
         for p in re.split(r'[;,]', m.group(1)):
             if re.fullmatch(r'\s*%s\s*' % NUM, p):
-                items.append((m.start(), 'so', num(p)))
+                items.append((m.start(), 'so', _num_trich(p)))
+        dung.append(m.span())
+    # a ± [b]sqrt(n) -> hai số a + ..., a - ...
+    for m in re.finditer(r'(?<![\w.^\)])(-?\s*\d+(?:\.\d+)?)\s*±\s*(%s)' % _SQ, t):
+        items.append((m.start(), 'so', _num_trich('%s+%s' % (m.group(1), m.group(2)))))
+        items.append((m.start(), 'so', _num_trich('%s-%s' % (m.group(1), m.group(2)))))
+        dung.append(m.span())
+    for m in re.finditer(r'(?<![\w.^\)])(%s)' % IRR, t):
+        if any(a <= m.start() < b for a, b in dung):
+            continue
+        items.append((m.start(), 'so', _num_trich(m.group(1))))
         dung.append(m.span())
     for m in re.finditer(r'(?<![\w.^\)])(%s)(?![\w.]*\^)' % NUM, t):
         if any(a <= m.start() < b for a, b in dung):

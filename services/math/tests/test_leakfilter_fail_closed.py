@@ -48,6 +48,16 @@ class _LocHong:
     def __init__(self, ho_m23=True, ho_m1=False):
         self.ho_m23, self.ho_m1 = ho_m23, ho_m1
 
+    # đọc sự kiện bình thường (bản vá SU_KIEN_LOI kiểm sự kiện trước khi so)
+    @staticmethod
+    def parse_khoang(s):
+        a, b = s.strip()[1:-1].split(";")
+        return (a, b)
+
+    @staticmethod
+    def num(s):
+        return s
+
     def m23(self, t, b, ctx):
         if self.ho_m23:
             raise SyntaxError("gia lap loi parse")
@@ -77,6 +87,7 @@ def test_nap_bo_loc_loi_thi_chan(monkeypatch):
 
 
 def test_su_kien_hong_thi_chan():
+    # Sư phạm 11:54: sự kiện bảo vệ không đọc được -> chặn với lý do riêng SU_KIEN_LOI (trước bản vá: LOI_KIEM_TRA)
     q = lf.loc_ban_nhap("Hàm nghịch biến trên (1;3).", [["NB", "(1;3"]])
     assert q["cho_phep"] is False
-    assert q["ly_do"] == "LOI_KIEM_TRA"
+    assert q["ly_do"] == "SU_KIEN_LOI"
