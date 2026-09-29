@@ -17,7 +17,7 @@ SO_JOB_DONG_THOI = int(os.environ.get("MATH_JOB_CONCURRENCY", "2"))
 TIMEOUT_TOI_DA = 20
 _CHO = threading.BoundedSemaphore(SO_JOB_DONG_THOI)
 # Tiến trình con chỉ nhận biến môi trường tối thiểu: không DATABASE_URL, không khoá API.
-_ENV_GIU = ("PATH", "LANG", "LC_ALL", "PYTHONPATH", "PYTHONHASHSEED", "HOME", "TMPDIR", "HOC_TOAN_CHO_KIEM_DEM")
+_ENV_GIU = ("PATH", "LANG", "LC_ALL", "PYTHONPATH", "PYTHONHASHSEED", "HOME", "TMPDIR")
 
 
 def _env_toi_thieu():

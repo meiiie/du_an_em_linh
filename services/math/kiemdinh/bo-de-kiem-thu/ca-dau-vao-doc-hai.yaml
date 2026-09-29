@@ -1,0 +1,61 @@
+# Bộ ca ĐẦU VÀO ĐỘC HẠI VÔ HẠI (F-01, No chốt 29/09/2026 11:19). Soạn: TOÁN · Kiểm định, 29/09 ~11:40.
+# Mục đích: chuỗi học sinh/AI nhập KHÔNG BAO GIỜ được thực thi như code Python.
+# VÔ HẠI: không xóa file, không gọi mạng. Chuỗi "có cờ" chỉ tạo một file RỖNG /tmp/kd-f01-co-<id> nếu bị thực thi;
+# bộ chạy xóa cờ trước mỗi lượt và khẳng định cờ KHÔNG được tạo.
+# Kỳ vọng mọi ca:
+#   - bộ chấm (tham chiếu kiem_5_buoc / kiem, code /v1/grade): KHONG_KIEM_DUOC (lý do DAU_VAO_KHONG_HOP_LE) — không bao giờ DAT;
+#   - bộ lọc (tham chiếu kiem_loc, code /v1/filter): cho_phep = false;
+#   - không treo quá thời hạn, không tạo file cờ.
+# Bộ chạy: giai-doan-2/chay_doc_hai.py. Khóa SHA-256 cùng các bộ nghiệm thu khác (bo-de-kiem-thu/README.md, mục "Chuẩn nghiệm thu").
+phien_ban: 1.0-f01
+thoi_han_moi_ca_s: 10
+chuoi:
+  - {id: M01, chuoi: "__import__('os').getcwd()"}
+  - {id: M02, chuoi: "().__class__"}
+  - {id: M03, chuoi: "lambda: 1"}
+  - {id: M04, co: true, chuoi: "(lambda: __import__('pathlib').Path('/tmp/kd-f01-co-M04').touch())()"}
+  - {id: M05, lap: {mau: "x+", so_lan: 5000, duoi: "1"}, ghi_chu: "chuỗi rất dài, 10001 ký tự"}
+  - {id: M06, chuoi: "9**9**9"}
+  - {id: M07, chuoi: "x.__dict__"}
+  - {id: M08, co: true, chuoi: "open('/tmp/kd-f01-co-M08', 'w')"}
+  - {id: M09, co: true, chuoi: "__import__('pathlib').Path('/tmp/kd-f01-co-M09').write_text('1')"}
+  - {id: M10, chuoi: "x.__class__.__mro__"}
+  - {id: M11, chuoi: "[c for c in ().__class__.__base__.__subclasses__()]"}
+  - {id: M12, co: true, chuoi: "exec(\"open('/tmp/kd-f01-co-M12','w')\")"}
+  - {id: M13, chuoi: "eval('1+1')"}
+  - {id: M14, chuoi: "getattr(x, 'subs')"}
+  - {id: M15, chuoi: "Symbol('y')"}
+  - {id: M16, chuoi: "2**2**2**2**2**2"}
+  - {id: M17, chuoi: "factorial(10**8)"}
+  - {id: M18, chuoi: "x; import os"}
+  - {id: M19, chuoi: "\"x\""}
+  - {id: M20, chuoi: "x_1 + 1"}
+  - {id: M21, chuoi: "10^10^10", ghi_chu: "lũy thừa dạng ^"}
+  - {id: M22, co: true, chuoi: "x + __import__('pathlib').Path('/tmp/kd-f01-co-M22').touch().__class__.__name__.__len__()"}
+# Vị trí đặt chuỗi. Bài nền: y = x^3 - 3x^2 + 2 (S01 của cac-ca-5-buoc.yaml, bài làm đúng).
+# 5 bước: chuỗi thay vào đúng một ô; mọi ô khác giữ nguyên bài làm đúng.
+vi_tri_5_buoc: [ham, TXD, dao_ham, y_phay_bang_0.0, bang.moc.1, ket_luan.cuc_dai_x.0, ket_luan.gia_tri_cuc_dai.0, ket_luan_o.cd]
+bai_nen:
+  ham: "x**3 - 3*x**2 + 2"
+  TXD: "R"
+  dao_ham: "3*x**2 - 6*x"
+  y_phay_bang_0: ["0", "2"]
+  y_phay_khong_xd: []
+  bang: {moc: ["-oo", "0", "2", "oo"], dau: ["+", "-", "+"], chieu: ["tang", "giam", "tang"]}
+  ket_luan: {dong_bien: ["(-oo; 0)", "(2; +oo)"], nghich_bien: ["(0; 2)"], cuc_dai_x: ["0"], cuc_tieu_x: ["2"], gia_tri_cuc_dai: ["2"], gia_tri_cuc_tieu: ["-2"]}
+# ket_luan_o.cd: chuỗi đặt sau "x = " trong ô Cực đại gõ tự do (ba ô khác gõ đúng). Chỉ tham chiếu có đường này; code repo không có.
+ket_luan_o_nen: {db: "(-∞;0) và (2;+∞)", nb: "(0;2)", cd: "x = {CHUOI}, y = 2", ct: "x = 2, y = -2"}
+# Tầng 1: chuỗi thay vào trường đáp án AI.
+tang1:
+  - {kieu: dao_ham, ham: "x**2", truong: dao_ham_ai}
+  - {kieu: dem, khong_gian: "combinations(range(10), 3)", gia_tri_ai: "120", truong: khong_gian}
+  - {kieu: xac_suat, khong_gian: "product(range(1, 7), repeat=2)", su_kien: "lambda t: t[0] + t[1] == 7", gia_tri_ai: "1/6", truong: su_kien}
+# Thêm cho eval cũ ở kiem_dem (dòng 585, 591 trước F-01): chuỗi đúng cú pháp eval, có cờ.
+tang1_them:
+  - {id: T01, co: true, kieu: xac_suat, khong_gian: "product(range(1, 7), repeat=2)", gia_tri_ai: "1/6", su_kien: "lambda t: [c for c in ().__class__.__base__.__subclasses__() if c.__name__ == 'catch_warnings'][0]()._module.__builtins__['open']('/tmp/kd-f01-co-T01', 'w') and False"}
+  - {id: T02, kieu: dem, khong_gian: "range(10**12)", gia_tri_ai: "1", ghi_chu: "không gian mẫu quá lớn (treo/hết bộ nhớ nếu liệt kê)"}
+# Bộ lọc: bài I1 của bo-tin-nhan.yaml. (a) chuỗi chèn vào bản nháp; (b) chuỗi làm giá trị một sự kiện bảo vệ.
+loc:
+  bai: {su_kien: [[DB, "(-oo; 0)"], [DB, "(2; oo)"], [NB, "(0; 2)"], [DCD, "0"], [GTCD, "2"], [DCT, "2"], [GTCT, "-2"]]}
+  mau_ban_nhap: "Em thử tính {CHUOI} rồi xét dấu y' nhé."
+  su_kien_doc_hai: DCD
