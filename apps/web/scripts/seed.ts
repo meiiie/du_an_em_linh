@@ -408,10 +408,21 @@ async function main() {
     }
   }
 
-  const header = csv[0];
-  if (header[0] !== "ma_loi") throw new Error("CSV mã lỗi không đúng tiêu đề");
+  // Đọc CSV mã lỗi theo TÊN cột (bản 0.2 thêm ma_buoc_phu, ky_nang_phu, nhom_loi_chung; không phụ thuộc vị trí).
+  const header = csv[0].map((h) => h.trim());
+  const cot = (ten: string) => {
+    const i = header.indexOf(ten);
+    if (i < 0) throw new Error(`CSV mã lỗi thiếu cột ${ten}`);
+    return i;
+  };
+  const [iMa, iKn, iBuoc, iMoTa, iGoi] = ["ma_loi", "ky_nang_chinh", "ma_buoc", "mo_ta", "goi_y_sua"].map(cot);
   for (const row of csv.slice(1)) {
-    const [code, skill, buoc, mota, , goi] = row;
+    if (!row[iMa]) continue;
+    const code = row[iMa];
+    const skill = row[iKn];
+    const buoc = row[iBuoc];
+    const mota = row[iMoTa];
+    const goi = row[iGoi];
     await db.insert(errorTypes).values({
       code,
       skillCode: skill || null,

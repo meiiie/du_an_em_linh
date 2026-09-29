@@ -3,10 +3,12 @@
 
 Chỉ số sản phẩm (build §6.4), KHÁC bộ YAML kiểm định (k bắt đầu từ 1):
 - dong: chỉ số dòng trong bước, bắt đầu từ 0. Cặp dòng sai thì dong là dòng sau của cặp.
-- hang X: k = thứ tự điểm chia học sinh, bắt đầu từ 0 sau khi sắp trái sang phải.
+- hang X: k = thứ tự điểm chia theo đúng thứ tự học sinh nhập (app KHÔNG tự sắp), bắt đầu từ 0.
 - hang DAU_YPHAY / BIEN_THIEN: k bắt đầu từ 0, xen kẽ khoảng, điểm, khoảng, ...
   k chẵn = ô khoảng, k lẻ = ô điểm. Với 2 điểm chia, dấu trên (p1; +∞) là k = 4.
 - Điểm thiếu: buoc_sai.ma_buoc = B.DH.NGHIEM, o = {hang: X, k: null}, loai DIEM_THIEU.
+- Đầu ra chỉ dùng tên hàng HOA (X, DAU_YPHAY, BIEN_THIEN); đầu vào nhận thêm tên cũ chữ thường làm bí danh.
+- `cac_van_de`: đủ mọi vấn đề, gốc theo thứ tự bước (SAI_TXD, DIEM_THIEU, DIEM_THUA@NGHIEM, SAI_THU_TU_MOC, DIEM_THUA@XETDAU) rồi ô theo k; ô hệ quả có nguyen_nhan = id vấn đề gốc.
 """
 from app.machine import bai_lam_may
 from app.normalizer import NORMALIZER_VERSION, normalize_domain, normalize_expr
@@ -16,43 +18,49 @@ K = load_kiem()
 
 ORDER = ["B.DH.TXD", "B.DH.DAOHAM", "B.DH.NGHIEM", "B.DH.XETDAU", "B.DH.KETLUAN"]
 
-# loai_kiem của bộ Kiểm định -> enum sản phẩm (đúng tập đã chốt)
+# loai_kiem của bộ Kiểm định -> enum sản phẩm. SP-05: dùng đúng ánh xạ của bộ kiểm (SAI_TXD, SAI_DAU, SAI_KET_LUAN,
+# SAI_BIEN_DOI) thay vì dồn về SAI_GIA_TRI.
 _MAP_LOAI = {
     "dao_ham_sai": "SAI_BIEN_DOI",
     "khong_tuong_duong": "SAI_BIEN_DOI",
     "sai_mien_xac_dinh": "SAI_BIEN_DOI",
-    "sai_dau_o_khoang": "SAI_GIA_TRI",
+    "sai_dau_o_khoang": "SAI_DAU",
     "sai_o_tai_diem": "SAI_GIA_TRI",
-    "sai_o_chieu_bien_thien": "SAI_GIA_TRI",
-    "sai_tap_xac_dinh": "SAI_GIA_TRI",
+    "sai_o_chieu_bien_thien": "SAI_BIEN_DOI",
+    "sai_tap_xac_dinh": "SAI_TXD",
     "khac_tap": "SAI_GIA_TRI",
-    "cuc_tri_sai": "SAI_GIA_TRI",
-    "don_dieu_sai": "SAI_GIA_TRI",
-    "ket_luan_sai": "SAI_GIA_TRI",
+    "cuc_tri_sai": "SAI_KET_LUAN",
+    "don_dieu_sai": "SAI_KET_LUAN",
+    "ket_luan_sai": "SAI_KET_LUAN",
     "sai_diem_toi_han": "DIEM_THIEU",
     "sai_hang_x_bang": "DIEM_THIEU",
     "dau_doi_trong_khoang": "DAU_DOI_TRONG_KHOANG",
+    "sai_thu_tu_moc": "SAI_THU_TU_MOC",
     "thua_nghiem_vi_pham_dkxd": "DIEM_THUA",
     "thua_nghiem_khong_thoa": "DIEM_THUA",
     "mat_nghiem": "DIEM_THIEU",
 }
 
+# (mã lỗi, độ tin cậy). SP-07: đoán chỉ theo loại (không có dấu hiệu riêng) để dưới 0,65.
 _MA_LOI = {
     "dao_ham_sai": ("ERR.DH.01", 0.8),
     "sai_tap_xac_dinh": ("ERR.DH.02", 0.75),
-    "khac_tap": ("ERR.DH.02", 0.7),
-    "sai_dau_o_khoang": ("ERR.DH.06", 0.8),
-    "sai_o_tai_diem": ("ERR.DH.05", 0.6),
-    "sai_o_chieu_bien_thien": ("ERR.DH.12", 0.55),
-    "don_dieu_sai": ("ERR.DH.07", 0.65),
-    "cuc_tri_sai": ("ERR.DH.12", 0.6),
+    "khac_tap": ("ERR.DH.02", 0.6),
+    "sai_dau_o_khoang": ("ERR.DH.06", 0.6),
+    "sai_o_tai_diem": ("ERR.DH.25", 0.8),
+    "sai_o_chieu_bien_thien": ("ERR.DH.26", 0.85),
+    "don_dieu_sai": ("ERR.DH.07", 0.6),
+    "cuc_tri_sai": ("ERR.DH.12", 0.55),
     "DIEM_THIEU": ("ERR.DH.03", 0.7),
     "DIEM_THUA": ("ERR.DH.21", 0.65),
     "DAU_DOI_TRONG_KHOANG": ("ERR.DH.03", 0.72),
-    "SAI_BIEN_DOI": ("ERR.DH.01", 0.6),
+    "SAI_THU_TU_MOC": ("ERR.DH.30", 0.95),
+    "SAI_DAU": ("ERR.DH.06", 0.6),
+    "SAI_BIEN_DOI": ("ERR.DH.26", 0.85),
+    "SAI_TXD": ("ERR.DH.02", 0.75),
     "SAI_GIA_TRI": ("ERR.DH.06", 0.5),
 }
-
+_TIN_CAY_LUAT = 0.95  # mã do luật chốt quyết định (ERR.DH.24/30/31)
 
 def _buoc(ma, dong=None, o=None):
     return {"ma_buoc": ma, "dong": dong, "o": o}
@@ -73,6 +81,10 @@ def _thong_bao(buoc_sai, loai):
         return "Ở bước nghiệm: trong một khoảng em dựng, y' đổi dấu. Em tìm lại các điểm làm y' bằng 0 hoặc không xác định."
     if loai == "DIEM_THIEU":
         return "Bước nghiệm chưa khớp tập điểm tới hạn. Em kiểm tra lại phương trình y' = 0 và các điểm y' không xác định."
+    if loai == "SAI_THU_TU_MOC":
+        return "Các mốc trên hàng x chưa theo thứ tự tăng dần. Em sắp lại các mốc từ trái sang phải trước, rồi xét dấu từng khoảng."
+    if loai == "DIEM_THUA" and ma == "B.DH.XETDAU":
+        return "Hàng x của bảng có một mốc không cần đặt. Em đối chiếu hàng x với danh sách điểm ở bước nghiệm."
     if loai == "DIEM_THUA":
         return "Bước nghiệm có điểm không phải điểm tới hạn. Em thử thay lại từng điểm vào y'."
     if loai == "KHONG_KIEM_DUOC":
@@ -86,13 +98,18 @@ def _thong_bao(buoc_sai, loai):
     return "Bước %s, dòng %d cần xem lại." % (ten, dong + 1)
 
 
-def _pack(trang, loai, buoc_sai, loai_kiem, per, chuan, chua_xong=False, nop_toi=None):
+def _pack(trang, loai, buoc_sai, loai_kiem, per, chuan, chua_xong=False, nop_toi=None, cac_van_de=None, ma_loi_tin=None, thong_bao=None):
     ma_loi, tin = None, None
     if trang == "SAI":
-        cap = _MA_LOI.get(loai_kiem) or _MA_LOI.get(loai)
+        cap = ma_loi_tin or _MA_LOI.get(loai_kiem) or _MA_LOI.get(loai)
         if cap:
             ma_loi, tin = cap
+    if trang == "SAI" and not cac_van_de and buoc_sai:
+        cac_van_de = [{"id": "VD1", "loai_ket_qua": loai, "buoc_sai": buoc_sai, "ma_loi": ma_loi, "do_tin_cay": tin}]
     return {
+        # Danh sách ĐỦ mọi vấn đề (gốc theo thứ tự bước, rồi ô). Màn giáo viên và mô hình thành thạo dùng cả danh sách;
+        # màn học sinh chỉ mở vấn đề gốc đầu tiên. Không bao giờ có giá trị điểm (khóa `diem`).
+        "cac_van_de": (cac_van_de or []) if trang == "SAI" else [],
         "ket_qua": trang,
         "loai_ket_qua": loai if trang != "DAT" else "DAT",
         "buoc_sai": buoc_sai if trang == "SAI" else None,
@@ -101,7 +118,7 @@ def _pack(trang, loai, buoc_sai, loai_kiem, per, chuan, chua_xong=False, nop_toi
         "per_buoc": per,
         "chuan_hoa": chuan,
         "phien_ban_chuan_hoa": NORMALIZER_VERSION,
-        "thong_bao": _thong_bao(buoc_sai if trang != "DAT" else None, loai),
+        "thong_bao": thong_bao or _thong_bao(buoc_sai if trang != "DAT" else None, loai),
         "chua_xong": chua_xong,
         "nop_toi": nop_toi,
     }
@@ -206,6 +223,10 @@ def _parse_nghiem_lines(lines):
         if re.search(r"không có|khong co|không nghiệm|khong nghiem|∅|emptyset", text) and not re.search(r"\d", text):
             chuan.append({"dong": line.get("dong", 0), "trang_thai_chuan_hoa": "OK", "chuoi_chuan_hoa": "rong"})
             continue
+        # SP-04: x \in \{1;3\}, S = \{1; 3\}; bỏ tiền tố "y' không xác định tại"
+        raw = re.sub(r"^.*?(không xác định|khong xac dinh)\s*(tại|tai)?\s*", "", raw, flags=re.I) if is_kxd else raw
+        raw = re.sub(r"(x|S)\s*(\\in|∈|=)\s*\\?\{", "", raw)
+        raw = raw.replace("\\{", "").replace("\\}", "").replace("{", "").replace("}", "") if re.search(r"\\\{|\\\}", line.get("latex") or "") else raw
         parts = re.split(r"\\lor|\\vee|\\quad|;| hoặc | hoac |,| và | va ", raw)
         found = []
         for part in parts:
@@ -247,6 +268,28 @@ def _interval_strings(text):
     return out
 
 
+_NHAN_KL = {"DONG_BIEN": "dong_bien", "NGHICH_BIEN": "nghich_bien", "CUC_DAI": "cuc_dai", "CUC_TIEU": "cuc_tieu"}
+_SO = r"[+\-−]?\d+(?:[.,]\d+)?(?:/\d+)?"
+
+
+def _doc_cuc_tri(raw):
+    """Đọc ô cực đại/cực tiểu: "x = 1, y = 6", "x=1; y_{CĐ}=6", "(1; 6)", "1". Trả (các x, các y)."""
+    import re
+    t = raw.replace("$", "").replace("\\", "").replace("−", "-").lower()
+    t = re.sub(r"_\{?\s*c[dđt]\s*\}?", "", t)
+    xs = re.findall(r"x\s*=\s*(%s)" % _SO, t)
+    ys = re.findall(r"y\s*=\s*(%s)" % _SO, t)
+    if not xs:
+        m = re.fullmatch(r"\s*\(\s*(%s)\s*[;,]\s*(%s)\s*\)\s*" % (_SO, _SO), t)
+        if m:
+            xs, ys = [m.group(1)], [m.group(2)]
+        else:
+            m = re.fullmatch(r"\s*(%s)\s*" % _SO, t)
+            if m:
+                xs = [m.group(1)]
+    return [v.replace(",", ".") for v in xs], [v.replace(",", ".") for v in ys]
+
+
 def _parse_ket_luan(step):
     import re
     lines = _idx(step.get("cac_dong") or [])
@@ -262,6 +305,35 @@ def _parse_ket_luan(step):
         t = raw.lower()
         intervals = _interval_strings(raw)
         has_union = ("\\cup" in raw) or ("∪" in raw) or (" U " in raw)
+        nhan = (line.get("loai") or "").upper()
+        if nhan in _NHAN_KL:
+            # SP-03: ô có nhãn -> hiểu nội dung theo nhãn. Ô trống / "không có" / "Hàm số không có cực trị" = danh sách rỗng.
+            key = _NHAN_KL[nhan]
+            saw.add(key)
+            rong = (not raw.strip()) or (not re.search(r"\d|oo|infty|∞", t) and bool(re.search(r"không|khong|∅|emptyset|varnothing", t)))
+            if key in ("dong_bien", "nghich_bien"):
+                if not rong and not intervals:
+                    return None, [{"dong": line.get("dong", 0), "trang_thai_chuan_hoa": "THAT_BAI"}]
+                if has_union and intervals:
+                    if key == "dong_bien":
+                        db_tap = " U ".join(intervals)
+                    else:
+                        nb_tap = " U ".join(intervals)
+                elif not rong:
+                    (db if key == "dong_bien" else nb).extend(intervals)
+            else:
+                if not rong:
+                    xs, ys = _doc_cuc_tri(raw)
+                    if not xs:
+                        return None, [{"dong": line.get("dong", 0), "trang_thai_chuan_hoa": "THAT_BAI"}]
+                    (cd if key == "cuc_dai" else ct).extend(xs)
+                    (gcd if key == "cuc_dai" else gct).extend(ys)
+            chuan.append({"dong": line.get("dong", 0), "trang_thai_chuan_hoa": "OK"})
+            continue
+        if re.search(r"không có cực trị|khong co cuc tri|không có điểm cực trị", t):
+            saw.update({"cuc_dai", "cuc_tieu"})
+            chuan.append({"dong": line.get("dong", 0), "trang_thai_chuan_hoa": "OK"})
+            continue
         if re.search(r"đồng biến|dong bien", t):
             saw.add("dong_bien")
             if has_union:
@@ -511,16 +583,145 @@ def grade(payload):
     last_n = bl.get("_last_nghiem", 0)
     if r["trang_thai"] == "DAT":
         return _pack("DAT", "DAT", None, "dat", _per(den), bl.get("_chuan") or [], chua_xong=den != "B.DH.KETLUAN", nop_toi=den)
+    if r.get("cac_van_de"):
+        ds, dau_tien = _van_de_san_pham(r, last_n, clean)
+        buoc_sai, loai = dau_tien["buoc_sai"], dau_tien["loai_ket_qua"]
+        if ORDER.index(buoc_sai["ma_buoc"]) > ORDER.index(den):
+            return _pack("DAT", "DAT", None, "dat", _per(den), bl.get("_chuan") or [], chua_xong=True, nop_toi=den)
+        ds = [v for v in ds if ORDER.index(v["buoc_sai"]["ma_buoc"]) <= ORDER.index(den)]
+        return _pack("SAI", loai, buoc_sai, r.get("loai_kiem"), _per(den, buoc_sai["ma_buoc"]), bl.get("_chuan") or [], nop_toi=den,
+                     cac_van_de=ds, ma_loi_tin=(dau_tien["ma_loi"], dau_tien["do_tin_cay"]), thong_bao=dau_tien.get("_thong_bao"))
     buoc_sai, loai, lk = _buoc_tu_ket_qua(r, last_n)
     # Nếu lỗi nằm ở bước sau phần học sinh nộp (không mong đợi vì đã vá bằng lời giải máy) thì coi phần đã nộp là đạt.
     if buoc_sai and ORDER.index(buoc_sai["ma_buoc"]) > ORDER.index(den):
-        return _pack("DAT", "DAT", None, "dat", _per(den), bl.get("_chuan") or [], chua_xong=True, nop_toi=den)
+        return _pack("DAT", "DAT", None, "dat", _per(den), bl.get("_chuan") or [], chua_xong=den != "B.DH.KETLUAN", nop_toi=den)
     if r["trang_thai"] == "KHONG_KIEM_DUOC":
         return _pack("KHONG_KIEM_DUOC", "KHONG_KIEM_DUOC", buoc_sai, lk, _per(den, buoc_sai["ma_buoc"] if buoc_sai else den, "KHONG_KIEM_DUOC"), bl.get("_chuan") or [], nop_toi=den)
     # Sai đạo hàm ở dòng 0 khi có nhiều dòng: kiem_5_buoc chỉ thấy dòng đầu.
     if buoc_sai and buoc_sai["ma_buoc"] == "B.DH.DAOHAM":
         buoc_sai = _buoc("B.DH.DAOHAM", 0, None)
-    return _pack("SAI", loai, buoc_sai, lk or loai, _per(den, buoc_sai["ma_buoc"] if buoc_sai else den), bl.get("_chuan") or [], nop_toi=den)
+    ma_tin, tb = _ma_loi_chi_tiet(r, lk, loai, clean)
+    return _pack("SAI", loai, buoc_sai, lk or loai, _per(den, buoc_sai["ma_buoc"] if buoc_sai else den), bl.get("_chuan") or [], nop_toi=den,
+                 ma_loi_tin=ma_tin, thong_bao=tb)
+
+
+def _bang(a, b):
+    try:
+        return K.la_khong(K.P(str(a)) - K.P(str(b)))
+    except Exception:
+        return str(a).strip() == str(b).strip()
+
+
+def _cung_ds(xs, ys):
+    xs, ys = list(xs or []), list(ys or [])
+    return len(xs) == len(ys) and all(any(_bang(a, b) for b in ys) for a in xs)
+
+
+def _khoang_chuan(ds):
+    return sorted(str(v).replace(" ", "").replace("+oo", "oo") for v in (ds or []))
+
+
+def _ma_loi_chi_tiet(r, lk, loai, bl):
+    """SP-07: mã lỗi cụ thể khi có dấu hiệu riêng; không có thì trả None để dùng mã theo loại (tin cậy < 0,65)."""
+    try:
+        may = bai_lam_may(bl["ham"])
+    except Exception:
+        may = None
+    if not may:
+        return None, None
+    kl, kl_m = bl.get("ket_luan") or {}, may["ket_luan"]
+    if lk == "don_dieu_sai":
+        db, nb = _khoang_chuan(kl.get("dong_bien")), _khoang_chuan(kl.get("nghich_bien"))
+        if (db or nb) and db == _khoang_chuan(kl_m.get("nghich_bien")) and nb == _khoang_chuan(kl_m.get("dong_bien")):
+            return ("ERR.DH.08", 0.8), None  # đọc ngược chiều đồng biến / nghịch biến
+        return None, None
+    if lk == "cuc_tri_sai":
+        cd, ct = kl.get("cuc_dai_x") or [], kl.get("cuc_tieu_x") or []
+        cd_m, ct_m = kl_m.get("cuc_dai_x") or [], kl_m.get("cuc_tieu_x") or []
+        if (cd or ct) and _cung_ds(cd, ct_m) and _cung_ds(ct, cd_m):
+            return ("ERR.DH.12", 0.85), None
+        nghiem0 = may.get("y_phay_bang_0") or []
+        for x0 in list(cd) + list(ct):
+            la_ct_that = any(_bang(x0, v) for v in list(cd_m) + list(ct_m))
+            if not la_ct_that and any(_bang(x0, v) for v in nghiem0):
+                return ("ERR.DH.10", 0.85), None  # y'(x0) = 0 nhưng y' không đổi dấu
+        if _cung_ds(cd, cd_m) and _cung_ds(ct, ct_m):
+            # vị trí đúng, giá trị sai: thử giả thuyết thay vào y'
+            try:
+                fp = K.P(may["dao_ham"])
+                for xs, ys in ((cd, kl.get("gia_tri_cuc_dai") or []), (ct, kl.get("gia_tri_cuc_tieu") or [])):
+                    for x0, y0 in zip(xs, ys):
+                        if K.la_khong(fp.subs(K.x, K.P(str(x0))) - K.P(str(y0))):
+                            return ("ERR.DH.22", 0.85), None
+            except Exception:
+                pass
+            return ("ERR.DH.22", 0.6), None
+        return None, None
+    if lk == "sai_diem_toi_han":
+        D = None
+        try:
+            f = K.P(bl["ham"])
+            cf = K.dieu_kien(f)
+            for v in (bl.get("y_phay_bang_0") or []) + (bl.get("y_phay_khong_xd") or []):
+                if K.gia_tri(f, {K.x: K.P(str(v))}, cf) is None:
+                    return ("ERR.DH.02", 0.8), "Có điểm em ghi không thuộc tập xác định. Em đối chiếu lại từng điểm với tập xác định."
+        except Exception:
+            pass
+        thieu_kxd = [v for v in (may.get("y_phay_khong_xd") or []) if not any(_bang(v, u) for u in (bl.get("y_phay_khong_xd") or []))]
+        if thieu_kxd:
+            return ("ERR.DH.04", 0.75), None
+        thua = [v for v in (bl.get("y_phay_bang_0") or []) if not any(_bang(v, u) for u in (may.get("y_phay_bang_0") or []))]
+        thieu = [v for v in (may.get("y_phay_bang_0") or []) if not any(_bang(v, u) for u in (bl.get("y_phay_bang_0") or []))]
+        if thua and not thieu:
+            return ("ERR.DH.21", 0.7), None
+        return None, None
+    return None, None
+
+
+def _van_de_san_pham(r, last_n, bl):
+    """Đổi cac_van_de của bộ kiểm sang dạng sản phẩm (k, dong từ 0; hàng HOA). Bỏ giá trị điểm."""
+    try:
+        f = K.P(bl["ham"])
+        cf = K.dieu_kien(f)
+    except Exception:
+        f = cf = None
+    ra = []
+    for v in r["cac_van_de"]:
+        bs = v.get("buoc_sai") or {}
+        o = _translate_o(bs.get("o"))
+        dong = bs.get("dong")
+        if o:
+            dong = None
+        elif dong in (1, 2, 3, 5):
+            dong = last_n if bs.get("ma_buoc") == "B.DH.NGHIEM" else 0
+        loai = v["loai_ket_qua"]
+        d = {"id": v["id"], "loai_ket_qua": loai, "buoc_sai": _buoc(bs.get("ma_buoc"), dong, o)}
+        if v.get("nguyen_nhan"):
+            d["nguyen_nhan"] = v["nguyen_nhan"]
+        if v.get("so_diem_thieu") is not None:
+            d["so_diem_thieu"] = v["so_diem_thieu"]
+        if v.get("ma_loi"):
+            d["ma_loi"], d["do_tin_cay"] = v["ma_loi"], _TIN_CAY_LUAT
+        else:
+            d["ma_loi"], d["do_tin_cay"] = _MA_LOI.get(loai, (None, None))
+        if loai == "DIEM_THIEU" and f is not None:
+            diem = v.get("diem") or []
+            try:
+                ngoai = [p for p in diem if K.gia_tri(f, {K.x: K.P(p)}, cf) is None]
+            except Exception:
+                ngoai = []
+            if diem and len(ngoai) == len(diem):
+                # SP-07: điểm bị loại khỏi TXĐ không gọi là "điểm tới hạn"
+                d["ma_loi"], d["do_tin_cay"] = "ERR.DH.02", 0.75
+                d["_thong_bao"] = "Hàng x còn thiếu một mốc: điểm làm hàm số không xác định cũng phải đặt trên hàng x (ô tại đó ghi ||)."
+        if v.get("ky_nang"):
+            d["ky_nang"] = v["ky_nang"]
+        ra.append(d)
+    dau = ra[0]
+    for d in ra[1:]:
+        d.pop("_thong_bao", None)
+    ra_sach = [{k: val for k, val in d.items() if not k.startswith("_")} for d in ra]
+    return ra_sach, dau
 
 
 def bai_lam_sang_payload(bl, ham=None):

@@ -14,7 +14,7 @@ def _run(kind, payload):
         return verify(payload)
     if kind == "filter":
         from app.leakfilter import loc_ban_nhap
-        return loc_ban_nhap(payload.get("ban_nhap") or "", payload.get("su_kien") or [])
+        return loc_ban_nhap(payload.get("ban_nhap") or "", payload.get("su_kien") or [], payload.get("cau_hs"))
     if kind == "generate":
         from app.generator import sinh
         return sinh(payload)
@@ -38,7 +38,7 @@ def _run(kind, payload):
             "thong_bao": g.get("thong_bao"),
             "buoc_sai": g.get("buoc_sai"),
             "su_kien": [{"loai": a, "gia_tri": b} for a, b in sk],
-            "thang_goi_y": _hints(),
+            "thang_goi_y": _hints(bl),
         }
     if kind == "spin":
         time.sleep(float(payload.get("giay") or 30))

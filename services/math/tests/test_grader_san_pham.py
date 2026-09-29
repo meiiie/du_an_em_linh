@@ -12,13 +12,25 @@ from app.paths import KIEMDINH
 BO = os.path.join(KIEMDINH, "bo-de-kiem-thu", "cac-ca-5-buoc.yaml")
 
 
+# Nhãn v1.2 bị luật chốt 29/09 thay thế (bộ v1.2 đóng băng nên không sửa YAML):
+# S14 có điểm thừa x = 1 CHỈ ở hàng X (bước nghiệm đúng) -> B.DH.XETDAU, ERR.DH.31 (cùng tình huống với S29 của v1.3).
+GHI_DE_NHAN = {"S14": "B.DH.XETDAU"}
+
+
+def _nhan_bs(ca):
+    bs = ca["buoc_sai_nhan"]
+    if bs is not None and ca["id"] in GHI_DE_NHAN:
+        bs = dict(bs, ma_buoc=GHI_DE_NHAN[ca["id"]])
+    return bs
+
+
 def test_16_ca_qua_payload_san_pham():
     bo = yaml.safe_load(open(BO, encoding="utf-8"))
     lech = []
     for ca in bo["ca"]:
         payload = bai_lam_sang_payload(ca["bai_lam"])
         r = grade(payload)
-        mong = nhan_sang_san_pham(ca["buoc_sai_nhan"])
+        mong = nhan_sang_san_pham(_nhan_bs(ca))
         if ca["nhan"] == "dung":
             if r["ket_qua"] != "DAT":
                 lech.append((ca["id"], r["ket_qua"], r.get("buoc_sai"), r.get("thong_bao")))

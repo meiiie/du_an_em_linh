@@ -1,0 +1,454 @@
+mo_ta: Ca test Tầng 2/3 của services/math/app/verify.py; chạy thật qua POST /v1/verify trên uvicorn cục bộ.
+commit: 6eb8b064dedb803fa271aa30ffc39d23b93d9f44
+thoi_diem: '2026-09-29T11:00:48+07:00'
+chuan: Tầng 2 phải khớp được một đoạn tài liệu có trích dẫn (đoạn nói về phương pháp/công thức được dùng), không khớp -> KHONG_KIEM_DUOC. Tầng 3 phải đối chiếu với từng dòng của bảng
+  công thức.
+tong_hop:
+  so_ca: 10
+  ca_co_tang_bao_DAT_sai: 8
+  ca_phat_hanh_lech: 6
+  ca_DA_PHAT_HANH_ma_dung_ra_khong: 6
+ca:
+- id: T23-01
+  mo_ta: Không có tài liệu nào, bảng công thức có dòng đúng
+  dau_vao:
+    bai_lam: S01 (đúng)
+    ham: x**3 - 3*x**2 + 2
+    tai_lieu: []
+    cong_thuc:
+    - &id001
+      id: CT.DH.DONDIEU.01
+      ten: Quy tắc đơn điệu
+      latex: f'(x)>0 \Rightarrow f \text{ đồng biến}
+      noi_dung: f'(x) > 0 trên K thì f đồng biến trên K
+  ket_qua_code:
+    http: 200
+    trang_thai_phat_hanh: CHO_GIAO_VIEN_DUYET
+    trang_thai_tong: KHONG_KIEM_DUOC
+    tang_1:
+      trang_thai: DAT
+      ly_do: Các bước đã nộp hợp lệ.
+      loai_ket_qua: DAT
+    tang_2:
+      trang_thai: KHONG_KIEM_DUOC
+      ly_do: Không có đoạn tài liệu trích dẫn được cho phương pháp xét dấu / đơn điệu.
+      trich_dan: []
+    tang_3:
+      trang_thai: DAT
+      ly_do: Kết luận khớp quy tắc trong bảng công thức.
+      cong_thuc:
+      - formula_id: CT.DH.DONDIEU.01
+        ten: Quy tắc đơn điệu
+        noi_dung: f'(x) > 0 trên K thì f đồng biến trên K
+  ket_qua_dung:
+    tang_2: KHONG_KIEM_DUOC
+    tang_3: DAT
+    trang_thai_phat_hanh: CHO_GIAO_VIEN_DUYET
+  tang_bao_DAT_sai: []
+  tang_lech_ky_vong: []
+  phat_hanh_lech: false
+  ly_do: 'Ca kiểm chứng: không có tài liệu thì Tầng 2 phải KHONG_KIEM_DUOC. Nếu code trả đúng thì ghi là KHÔNG tái hiện lỗi.'
+- id: T23-02
+  mo_ta: Tài liệu chỉ là mục lục (có 2 từ khóa "đạo hàm", "cực trị"), không có đoạn nào về phương pháp
+  dau_vao:
+    bai_lam: S01 (đúng)
+    ham: x**3 - 3*x**2 + 2
+    tai_lieu:
+    - &id003
+      id: tl_mucluc
+      ten: Mục lục chương
+      license_status: tu_soan
+      phien_ban: 1
+      text: 'Mục lục: 1. Đạo hàm. 2. Cực trị. 3. Bài tập.'
+    cong_thuc:
+    - *id001
+  ket_qua_code:
+    http: 200
+    trang_thai_phat_hanh: DA_PHAT_HANH
+    trang_thai_tong: DAT
+    tang_1:
+      trang_thai: DAT
+      ly_do: Các bước đã nộp hợp lệ.
+      loai_ket_qua: DAT
+    tang_2:
+      trang_thai: DAT
+      ly_do: Có trích dẫn tài liệu.
+      trich_dan:
+      - document_id: tl_mucluc
+        ten: Mục lục chương
+        phien_ban: 1
+        trich: 'Mục lục: 1. Đạo hàm. 2. Cực trị. 3. Bài tập.'
+    tang_3:
+      trang_thai: DAT
+      ly_do: Kết luận khớp quy tắc trong bảng công thức.
+      cong_thuc:
+      - formula_id: CT.DH.DONDIEU.01
+        ten: Quy tắc đơn điệu
+        noi_dung: f'(x) > 0 trên K thì f đồng biến trên K
+  ket_qua_dung:
+    tang_2: KHONG_KIEM_DUOC
+    tang_3: DAT
+    trang_thai_phat_hanh: CHO_GIAO_VIEN_DUYET
+  tang_bao_DAT_sai:
+  - 2
+  tang_lech_ky_vong:
+  - 2
+  phat_hanh_lech: true
+  ly_do: Tầng 2 phải khớp được một đoạn tài liệu nói về phương pháp/công thức được dùng (xét dấu y' -> đơn điệu, cực trị). Mục lục không chứa phương pháp nên không trích dẫn được ->
+    KHONG_KIEM_DUOC.
+- id: T23-03
+  mo_ta: Tài liệu môn khác (Vật lí) tình cờ có "đạo hàm", "xét dấu"; không ghi license_status
+  dau_vao:
+    bai_lam: S01 (đúng)
+    ham: x**3 - 3*x**2 + 2
+    tai_lieu:
+    - id: tl_vatly
+      ten: Vật lí 10 – chuyển động
+      phien_ban: 1
+      text: Vận tốc tức thời là đạo hàm của quãng đường theo thời gian; xét dấu của gia tốc để biết vật chuyển động nhanh dần hay chậm dần.
+    cong_thuc:
+    - *id001
+  ket_qua_code:
+    http: 200
+    trang_thai_phat_hanh: DA_PHAT_HANH
+    trang_thai_tong: DAT
+    tang_1:
+      trang_thai: DAT
+      ly_do: Các bước đã nộp hợp lệ.
+      loai_ket_qua: DAT
+    tang_2:
+      trang_thai: DAT
+      ly_do: Có trích dẫn tài liệu.
+      trich_dan:
+      - document_id: tl_vatly
+        ten: Vật lí 10 – chuyển động
+        phien_ban: 1
+        trich: Vận tốc tức thời là đạo hàm của quãng đường theo thời gian; xét dấu của gia tốc để biết vật chuyển động nha
+    tang_3:
+      trang_thai: DAT
+      ly_do: Kết luận khớp quy tắc trong bảng công thức.
+      cong_thuc:
+      - formula_id: CT.DH.DONDIEU.01
+        ten: Quy tắc đơn điệu
+        noi_dung: f'(x) > 0 trên K thì f đồng biến trên K
+  ket_qua_dung:
+    tang_2: KHONG_KIEM_DUOC
+    tang_3: DAT
+    trang_thai_phat_hanh: CHO_GIAO_VIEN_DUYET
+  tang_bao_DAT_sai:
+  - 2
+  tang_lech_ky_vong:
+  - 2
+  phat_hanh_lech: true
+  ly_do: Đoạn trích không nói về tính đơn điệu/cực trị của hàm số; đồng thời tài liệu không khai quyền sử dụng (code chỉ loại khi = "chua_ro").
+- id: T23-04
+  mo_ta: Tài liệu có từ khóa nhưng nội dung TRÁI định lí (f' > 0 -> nghịch biến)
+  dau_vao:
+    bai_lam: S01 (đúng)
+    ham: x**3 - 3*x**2 + 2
+    tai_lieu:
+    - id: tl_trai
+      ten: Tài liệu ghi ngược định lí
+      license_status: tu_soan
+      phien_ban: 1
+      text: Nếu f'(x) > 0 với mọi x thuộc K thì hàm số nghịch biến trên K; nếu f'(x) < 0 thì hàm số đồng biến trên K. Xét dấu đạo hàm để kết luận.
+    cong_thuc:
+    - *id001
+  ket_qua_code:
+    http: 200
+    trang_thai_phat_hanh: DA_PHAT_HANH
+    trang_thai_tong: DAT
+    tang_1:
+      trang_thai: DAT
+      ly_do: Các bước đã nộp hợp lệ.
+      loai_ket_qua: DAT
+    tang_2:
+      trang_thai: DAT
+      ly_do: Có trích dẫn tài liệu.
+      trich_dan:
+      - document_id: tl_trai
+        ten: Tài liệu ghi ngược định lí
+        phien_ban: 1
+        trich: '> 0 với mọi x thuộc K thì hàm số nghịch biến trên K; nếu f''(x) < 0 thì hàm số đồng biến trên K. Xét dấu đạo hàm để kết luận.'
+    tang_3:
+      trang_thai: DAT
+      ly_do: Kết luận khớp quy tắc trong bảng công thức.
+      cong_thuc:
+      - formula_id: CT.DH.DONDIEU.01
+        ten: Quy tắc đơn điệu
+        noi_dung: f'(x) > 0 trên K thì f đồng biến trên K
+  ket_qua_dung:
+    tang_2: SAI
+    tang_3: DAT
+    trang_thai_phat_hanh: BI_CHAN
+  tang_bao_DAT_sai:
+  - 2
+  tang_lech_ky_vong:
+  - 2
+  phat_hanh_lech: true
+  ly_do: Tài liệu nói ngược nội dung (và ngược bảng công thức) -> Tầng 2 SAI kèm trích dẫn, nội dung BI_CHAN + cờ giáo viên (DAC-TA §4, §6 dòng 5). Tối thiểu không được DAT.
+- id: T23-05
+  mo_ta: Bảng công thức chỉ có một dòng SAI (f' > 0 -> nghịch biến) nhưng chứa từ khóa
+  dau_vao:
+    bai_lam: S01 (đúng)
+    ham: x**3 - 3*x**2 + 2
+    tai_lieu:
+    - &id002
+      id: tl_dung
+      ten: Ghi chú đơn điệu
+      license_status: tu_soan
+      phien_ban: 1
+      text: 'Định lí: nếu f''(x) > 0 với mọi x thuộc K thì hàm số đồng biến trên K; nếu f''(x) < 0 thì nghịch biến trên K. Lập bảng xét dấu đạo hàm.'
+    cong_thuc:
+    - id: CT.SAI.01
+      ten: Quy tắc đơn điệu (ghi sai)
+      latex: f'(x)>0 \Rightarrow f \text{ nghịch biến}
+      noi_dung: f'(x) > 0 trên K thì f nghịch biến trên K
+  ket_qua_code:
+    http: 200
+    trang_thai_phat_hanh: DA_PHAT_HANH
+    trang_thai_tong: DAT
+    tang_1:
+      trang_thai: DAT
+      ly_do: Các bước đã nộp hợp lệ.
+      loai_ket_qua: DAT
+    tang_2:
+      trang_thai: DAT
+      ly_do: Có trích dẫn tài liệu.
+      trich_dan:
+      - document_id: tl_dung
+        ten: Ghi chú đơn điệu
+        phien_ban: 1
+        trich: 'Định lí: nếu f''(x) > 0 với mọi x thuộc K thì hàm số đồng biến trên K; nếu f''(x) < 0 thì nghịch biến trên K. Lập bảng xét dấu đạo hàm.'
+    tang_3:
+      trang_thai: DAT
+      ly_do: Kết luận khớp quy tắc trong bảng công thức.
+      cong_thuc:
+      - formula_id: CT.SAI.01
+        ten: Quy tắc đơn điệu (ghi sai)
+        noi_dung: f'(x) > 0 trên K thì f nghịch biến trên K
+  ket_qua_dung:
+    tang_2: DAT
+    tang_3: SAI
+    trang_thai_phat_hanh: BI_CHAN
+  tang_bao_DAT_sai:
+  - 3
+  tang_lech_ky_vong:
+  - 3
+  phat_hanh_lech: true
+  ly_do: 'Tầng 3 phải đối chiếu kết luận với từng dòng: lời giải kết luận đồng biến khi y'' > 0, mâu thuẫn dòng công thức -> SAI (và cờ giáo viên vì bảng sai). Code chỉ thấy từ khóa
+    rồi chép Tầng 1.'
+- id: T23-06
+  mo_ta: Bảng công thức không có dòng liên quan tới đơn điệu (chỉ "đạo hàm của sin x là cos x")
+  dau_vao:
+    bai_lam: S01 (đúng)
+    ham: x**3 - 3*x**2 + 2
+    tai_lieu:
+    - *id002
+    cong_thuc:
+    - &id004
+      id: CT.LG.01
+      ten: Đạo hàm của sin
+      latex: (\sin x)' = \cos x
+      noi_dung: đạo hàm của sin x là cos x
+  ket_qua_code:
+    http: 200
+    trang_thai_phat_hanh: DA_PHAT_HANH
+    trang_thai_tong: DAT
+    tang_1:
+      trang_thai: DAT
+      ly_do: Các bước đã nộp hợp lệ.
+      loai_ket_qua: DAT
+    tang_2:
+      trang_thai: DAT
+      ly_do: Có trích dẫn tài liệu.
+      trich_dan:
+      - document_id: tl_dung
+        ten: Ghi chú đơn điệu
+        phien_ban: 1
+        trich: 'Định lí: nếu f''(x) > 0 với mọi x thuộc K thì hàm số đồng biến trên K; nếu f''(x) < 0 thì nghịch biến trên K. Lập bảng xét dấu đạo hàm.'
+    tang_3:
+      trang_thai: DAT
+      ly_do: Kết luận khớp quy tắc trong bảng công thức.
+      cong_thuc:
+      - formula_id: CT.LG.01
+        ten: Đạo hàm của sin
+        noi_dung: đạo hàm của sin x là cos x
+  ket_qua_dung:
+    tang_2: DAT
+    tang_3: KHONG_KIEM_DUOC
+    trang_thai_phat_hanh: CHO_GIAO_VIEN_DUYET
+  tang_bao_DAT_sai:
+  - 3
+  tang_lech_ky_vong:
+  - 3
+  phat_hanh_lech: true
+  ly_do: Công thức được dùng (quy tắc dấu y' -> đơn điệu, quy tắc cực trị, đạo hàm lũy thừa) không có trong bảng -> KHONG_KIEM_DUOC ("không có trong bảng").
+- id: T23-07
+  mo_ta: Bảng công thức chỉ có một dòng đạo hàm lũy thừa ghi SAI ((x^n)' = x^(n-1))
+  dau_vao:
+    bai_lam: S01 (đúng)
+    ham: x**3 - 3*x**2 + 2
+    tai_lieu:
+    - *id002
+    cong_thuc:
+    - id: CT.SAI.02
+      ten: Đạo hàm lũy thừa (ghi sai)
+      latex: (x^n)' = x^{n-1}
+      noi_dung: đạo hàm của x^n là x^(n-1)
+  ket_qua_code:
+    http: 200
+    trang_thai_phat_hanh: DA_PHAT_HANH
+    trang_thai_tong: DAT
+    tang_1:
+      trang_thai: DAT
+      ly_do: Các bước đã nộp hợp lệ.
+      loai_ket_qua: DAT
+    tang_2:
+      trang_thai: DAT
+      ly_do: Có trích dẫn tài liệu.
+      trich_dan:
+      - document_id: tl_dung
+        ten: Ghi chú đơn điệu
+        phien_ban: 1
+        trich: 'Định lí: nếu f''(x) > 0 với mọi x thuộc K thì hàm số đồng biến trên K; nếu f''(x) < 0 thì nghịch biến trên K. Lập bảng xét dấu đạo hàm.'
+    tang_3:
+      trang_thai: DAT
+      ly_do: Kết luận khớp quy tắc trong bảng công thức.
+      cong_thuc:
+      - formula_id: CT.SAI.02
+        ten: Đạo hàm lũy thừa (ghi sai)
+        noi_dung: đạo hàm của x^n là x^(n-1)
+  ket_qua_dung:
+    tang_2: DAT
+    tang_3: SAI
+    trang_thai_phat_hanh: BI_CHAN
+  tang_bao_DAT_sai:
+  - 3
+  tang_lech_ky_vong:
+  - 3
+  phat_hanh_lech: true
+  ly_do: Lời giải dùng (x^3)' = 3x^2, mâu thuẫn dòng bảng -> SAI + cờ giáo viên (bảng sai). Không được DAT.
+- id: T23-08
+  mo_ta: Bảng công thức trống
+  dau_vao:
+    bai_lam: S01 (đúng)
+    ham: x**3 - 3*x**2 + 2
+    tai_lieu:
+    - *id002
+    cong_thuc: []
+  ket_qua_code:
+    http: 200
+    trang_thai_phat_hanh: CHO_GIAO_VIEN_DUYET
+    trang_thai_tong: KHONG_KIEM_DUOC
+    tang_1:
+      trang_thai: DAT
+      ly_do: Các bước đã nộp hợp lệ.
+      loai_ket_qua: DAT
+    tang_2:
+      trang_thai: DAT
+      ly_do: Có trích dẫn tài liệu.
+      trich_dan:
+      - document_id: tl_dung
+        ten: Ghi chú đơn điệu
+        phien_ban: 1
+        trich: 'Định lí: nếu f''(x) > 0 với mọi x thuộc K thì hàm số đồng biến trên K; nếu f''(x) < 0 thì nghịch biến trên K. Lập bảng xét dấu đạo hàm.'
+    tang_3:
+      trang_thai: KHONG_KIEM_DUOC
+      ly_do: Bảng công thức chưa có quy tắc đơn điệu hoặc cực trị để đối chiếu.
+      cong_thuc: []
+  ket_qua_dung:
+    tang_2: DAT
+    tang_3: KHONG_KIEM_DUOC
+    trang_thai_phat_hanh: CHO_GIAO_VIEN_DUYET
+  tang_bao_DAT_sai: []
+  tang_lech_ky_vong: []
+  phat_hanh_lech: false
+  ly_do: 'Ca kiểm chứng: bảng trống thì Tầng 3 phải KHONG_KIEM_DUOC. Nếu code trả đúng thì ghi là KHÔNG tái hiện lỗi.'
+- id: T23-09
+  mo_ta: 'Tầng 1 SAI (S02: sai một ô dấu) mà có tài liệu chứa từ khóa'
+  dau_vao:
+    bai_lam: S02 (sai ô dấu k=4 theo quy ước code)
+    ham: x**3 - 3*x**2 + 2
+    tai_lieu:
+    - *id002
+    cong_thuc:
+    - *id001
+  ket_qua_code:
+    http: 200
+    trang_thai_phat_hanh: BI_CHAN
+    trang_thai_tong: SAI
+    tang_1:
+      trang_thai: SAI
+      ly_do: Ô ở bước bảng xét dấu cần xem lại. Em kiểm tra lại cả bước rồi nộp.
+      loai_ket_qua: SAI_GIA_TRI
+    tang_2:
+      trang_thai: DAT
+      ly_do: Có trích dẫn tài liệu.
+      trich_dan:
+      - document_id: tl_dung
+        ten: Ghi chú đơn điệu
+        phien_ban: 1
+        trich: 'Định lí: nếu f''(x) > 0 với mọi x thuộc K thì hàm số đồng biến trên K; nếu f''(x) < 0 thì nghịch biến trên K. Lập bảng xét dấu đạo hàm.'
+    tang_3:
+      trang_thai: SAI
+      ly_do: Lời giải mâu thuẫn với quy tắc dấu của đạo hàm trong bảng công thức.
+      cong_thuc:
+      - formula_id: CT.DH.DONDIEU.01
+        ten: Quy tắc đơn điệu
+        noi_dung: f'(x) > 0 trên K thì f đồng biến trên K
+  ket_qua_dung:
+    tang_2: SAI
+    tang_3: SAI
+    trang_thai_phat_hanh: BI_CHAN
+  tang_bao_DAT_sai:
+  - 2
+  tang_lech_ky_vong:
+  - 2
+  phat_hanh_lech: false
+  ly_do: 'Tầng 2 phải đối chiếu nội dung với tài liệu: bảng dấu của lời giải trái định lí trong tài liệu -> SAI (hoặc KHONG_KIEM_DUOC nếu không đối chiếu được), không được DAT "Có trích
+    dẫn tài liệu" cho một lời giải sai. Tầng 3 SAI ở code chỉ là chép Tầng 1 (verify.py:69-75), không có dòng công thức nào được đối chiếu.'
+- id: T23-10
+  mo_ta: Tầng 1 SAI, tài liệu mục lục và bảng chỉ có công thức không liên quan
+  dau_vao:
+    bai_lam: S02 (sai ô dấu k=4 theo quy ước code)
+    ham: x**3 - 3*x**2 + 2
+    tai_lieu:
+    - *id003
+    cong_thuc:
+    - *id004
+  ket_qua_code:
+    http: 200
+    trang_thai_phat_hanh: BI_CHAN
+    trang_thai_tong: SAI
+    tang_1:
+      trang_thai: SAI
+      ly_do: Ô ở bước bảng xét dấu cần xem lại. Em kiểm tra lại cả bước rồi nộp.
+      loai_ket_qua: SAI_GIA_TRI
+    tang_2:
+      trang_thai: DAT
+      ly_do: Có trích dẫn tài liệu.
+      trich_dan:
+      - document_id: tl_mucluc
+        ten: Mục lục chương
+        phien_ban: 1
+        trich: 'Mục lục: 1. Đạo hàm. 2. Cực trị. 3. Bài tập.'
+    tang_3:
+      trang_thai: SAI
+      ly_do: Lời giải mâu thuẫn với quy tắc dấu của đạo hàm trong bảng công thức.
+      cong_thuc:
+      - formula_id: CT.LG.01
+        ten: Đạo hàm của sin
+        noi_dung: đạo hàm của sin x là cos x
+  ket_qua_dung:
+    tang_2: KHONG_KIEM_DUOC
+    tang_3: KHONG_KIEM_DUOC
+    trang_thai_phat_hanh: BI_CHAN
+  tang_bao_DAT_sai:
+  - 2
+  tang_lech_ky_vong:
+  - 2
+  - 3
+  phat_hanh_lech: false
+  ly_do: Tầng 3 báo SAI với lý do "Lời giải mâu thuẫn với quy tắc dấu của đạo hàm trong bảng công thức" dù bảng không có quy tắc dấu -> lý do và trích dẫn giả. Kết quả phát hành vẫn
+    BI_CHAN (nhờ Tầng 1).
