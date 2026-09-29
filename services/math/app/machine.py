@@ -36,6 +36,12 @@ def fmt_domain(D):
             return "R \\ {%s}" % inside
         if base == Reals:
             return "R \\ %s" % fmt_domain(removed)
+    # TXĐ hữu tỉ: SymPy thường trả Union các Interval mở (vd Union((-oo,-3),(-3,oo))), không phải Complement.
+    # Quy về chuẩn "R \\ {…}" khi phần bù trong R là tập hữu hạn (Sư phạm SP-16: không nối khoảng bằng U).
+    bu = Complement(Reals, D)
+    if isinstance(bu, FiniteSet) and len(bu) > 0 and all(v.is_real for v in bu):
+        inside = ", ".join(_num(p) for p in sorted(bu, key=lambda v: float(v)))
+        return "R \\ {%s}" % inside
     parts = D.args if isinstance(D, Union) else (D,)
     out = []
     for p in parts:
@@ -183,18 +189,20 @@ def su_kien_bao_ve(bl):
         sk.append(["DB", _khoang_loc(s)])
     for s in kl.get("nghich_bien") or []:
         sk.append(["NB", _khoang_loc(s)])
+    # Trước bản vá: str(s).replace("+", "") làm hỏng cực trị vô tỉ ("1 + sqrt(2)" -> "1  sqrt(2)"). Nay chuẩn hóa bằng SymPy
+    # qua bộ đọc an toàn K.P rồi str(); giữ nguyên dấu "+".
     for s in kl.get("cuc_dai_x") or []:
-        sk.append(["DCD", str(s).replace("+", "")])
+        sk.append(["DCD", _so_sk(s)])
     for s in kl.get("cuc_tieu_x") or []:
-        sk.append(["DCT", str(s).replace("+", "")])
+        sk.append(["DCT", _so_sk(s)])
     for s in kl.get("gia_tri_cuc_dai") or []:
-        sk.append(["GTCD", str(s)])
+        sk.append(["GTCD", _so_sk(s)])
     for s in kl.get("gia_tri_cuc_tieu") or []:
-        sk.append(["GTCT", str(s)])
+        sk.append(["GTCT", _so_sk(s)])
     for s in bl.get("y_phay_bang_0") or []:
-        sk.append(["NGHIEM", str(s)])
+        sk.append(["NGHIEM", _so_sk(s)])
     for s in bl.get("y_phay_khong_xd") or []:
-        sk.append(["NGHIEM", str(s)])
+        sk.append(["NGHIEM", _so_sk(s)])
     # Sự kiện phủ định: kết luận "không có …" cũng là đáp án phải giữ kín
     if not (kl.get("cuc_dai_x") or kl.get("cuc_tieu_x")):
         sk.append(["KHONG_CUC_TRI", ""])
@@ -212,8 +220,18 @@ def su_kien_bao_ve(bl):
     return sk
 
 
+def _so_sk(s):
+    """Giá trị sự kiện bảo vệ: chuẩn hóa bằng SymPy (bộ đọc an toàn K.P), bỏ khoảng trắng. Giữ dấu '+' (vd 1+sqrt(2))."""
+    t = str(s).strip()
+    if t in ("oo", "+oo"):
+        return "oo"
+    if t == "-oo":
+        return "-oo"
+    return str(simplify(K.P(t))).replace(" ", "")
+
+
 def _khoang_loc(s):
-    t = str(s).replace(" ", "")
-    # loc.parse_khoang cần dạng (a;b) không khoảng trắng, +oo được num() hiểu
-    t = t.replace("+oo", "oo")
-    return t
+    t = str(s).strip()
+    # loc.parse_khoang cần dạng (a;b); hai đầu mút chuẩn hóa như _so_sk
+    a, b = t[1:-1].split(";")
+    return "(%s;%s)" % (_so_sk(a), _so_sk(b))

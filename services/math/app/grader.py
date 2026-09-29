@@ -10,6 +10,8 @@ Chỉ số sản phẩm (build §6.4), KHÁC bộ YAML kiểm định (k bắt �
 - Đầu ra chỉ dùng tên hàng HOA (X, DAU_YPHAY, BIEN_THIEN); đầu vào nhận thêm tên cũ chữ thường làm bí danh.
 - `cac_van_de`: đủ mọi vấn đề, gốc theo thứ tự bước (SAI_TXD, DIEM_THIEU, DIEM_THUA@NGHIEM, SAI_THU_TU_MOC, DIEM_THUA@XETDAU) rồi ô theo k; ô hệ quả có nguyen_nhan = id vấn đề gốc.
 """
+import re
+
 from app.dau_vao import DAU_VAO_KHONG_HOP_LE, tu_choi_payload
 from app.machine import bai_lam_may
 from app.normalizer import NORMALIZER_VERSION, normalize_domain, normalize_expr
@@ -409,8 +411,12 @@ def _bang_tu_o(cells):
     xs = sorted(xs, key=lambda c: c.get("k", 0))
     diem = []
     for c in xs:
-        token = normalize_expr(str(c.get("gia_tri")))
+        raw = c.get("gia_tri")
+        token = normalize_expr(str(raw))
         if token is None:
+            if raw not in (None, "") and str(raw).strip():
+                # F-01: ô hàng X có nội dung nhưng không đọc được -> KHONG_KIEM_DUOC (không phải SAI "ô trống")
+                return None, None
             return None, c.get("k", 0)
         diem.append(token)
     m = len(diem)
@@ -584,6 +590,43 @@ def _overlay_may(student_bl, den):
     return out
 
 
+_CHUOI_TOI_DA = 2000
+# F-01 (bản vá Kiểm định): dấu hiệu code trong chuỗi học sinh nhập, quét TRƯỚC khi chuẩn hóa. Chuỗi không bao giờ được thực thi;
+# đây là lớp fail-closed để ô có nội dung lạ không bị bộ trích số bỏ qua rồi chấm như ô trống / ô đúng
+# (đo trên 4e4af19: chuỗi code ở ô gia_tri_cuc_dai được chấm DAT 20/22 ca).
+_DAU_HIEU_CODE_CHUNG = (r"__|\blambda\b|\bimport\b|\b(?:eval|exec|open|compile|getattr|setattr|globals|locals|vars|input|"
+                        r"Symbol|Integer|Float|Rational|Function|Lambda|sympify|parse_expr|lambdify|factorial)\s*\(|"
+                        r"\b[A-Za-z_]\w*\s*\(\s*[\'\"]|\(\s*\)\s*\.|\.\s*__|[\"`]|\'\s*\w+\s*\'|"
+                        r"(?:\*\*|\^)\s*\{?\s*\d+\s*\}?\s*(?:\*\*|\^)|(?:\*\*|\^)\s*\(?\s*\d{3,}|\d\s*\*\*\s*\d{2,}")
+# ô công thức / hàm số: không có tên chứa '_' (x_1 là tên lạ); dòng LaTeX: cho phép y_{CD} và nhãn x_1, x_{2} đứng trước = , ; ) và là
+_DAU_HIEU_CODE_O = re.compile(_DAU_HIEU_CODE_CHUNG + r"|\b(?![yY]_)[A-Za-z]\w*_\w")
+_DAU_HIEU_CODE_DONG = re.compile(_DAU_HIEU_CODE_CHUNG + r"|\b(?![yYxX]_)[A-Za-z]\w*_\w|\b[xX]_(?!\{?\d{1,2}\}?\s*(?:=|,|;|\)|và\b|là\b|$))")
+
+
+def _chuoi_nguoi_nhap(payload):
+    """(chuỗi, là dòng LaTeX?) do học sinh/AI nhập: ham, cac_dong[].latex, bang.cac_o[].gia_tri."""
+    yield payload.get("ham"), False
+    for b in payload.get("cac_buoc") or []:
+        if not isinstance(b, dict):
+            continue
+        for d in b.get("cac_dong") or []:
+            if isinstance(d, dict):
+                yield d.get("latex"), True
+        for o in ((b.get("bang") or {}).get("cac_o") or []):
+            if isinstance(o, dict):
+                yield o.get("gia_tri"), False
+
+
+def _chuoi_doc_hai(payload):
+    for t, la_dong in _chuoi_nguoi_nhap(payload):
+        if t is None:
+            continue
+        t = str(t)
+        if len(t) > _CHUOI_TOI_DA or (_DAU_HIEU_CODE_DONG if la_dong else _DAU_HIEU_CODE_O).search(t):
+            return True
+    return False
+
+
 def _kkd_dau_vao(payload, ma, dong, o, chi_tiet):
     """F-01: chuỗi học sinh bị cổng danh sách trắng / bộ phân tích an toàn từ chối -> KHONG_KIEM_DUOC, không bao giờ chấm."""
     den = payload.get("nop_toi") if payload.get("nop_toi") in ORDER else "B.DH.KETLUAN"
@@ -600,6 +643,13 @@ def grade(payload):
     if not isinstance(payload, dict) or not isinstance(payload.get("cac_buoc"), list):
         return _kkd_dau_vao(payload if isinstance(payload, dict) else {}, None, None, None, "payload sai khuôn")
     tc = tu_choi_payload(payload)
+    if not tc:
+        # lớp dấu hiệu code của bản vá Kiểm định 0002 (fail-closed), chạy sau cổng danh sách trắng
+        try:
+            if _chuoi_doc_hai(payload):
+                tc = (None, None, None, "dấu hiệu code (bản vá Kiểm định 0002)")
+        except Exception:
+            tc = (None, None, None, "không quét được chuỗi")
     if tc:
         return _kkd_dau_vao(payload, *tc)
     del K._TU_CHOI[:]

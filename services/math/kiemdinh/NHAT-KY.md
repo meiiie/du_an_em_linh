@@ -17,3 +17,6 @@ Giờ ghi theo giờ Việt Nam (UTC+7).
   (chỉ đổi chữ ký `kiem_5_buoc(bl, bo_qua_txd=False)` cho khớp bản v1.3 trên main 4e4af19; nội dung khối code chép nguyên văn).
 - Sao bộ ca khóa `bo-de-kiem-thu/ca-dau-vao-doc-hai.yaml` (1.0-f01, SHA-256 ce50b1737d0287c20f43206deb32cf46d423c21c37aedae09ca2e2eb79d47c76), không sửa;
   port thành `tests/test_dau_vao_doc_hai_kd.py` (kiểm SHA + đủ 288 ca).
+- 29/09 ~12:25: áp bản vá gộp của Kiểm định `kiemdinh/ban-va/0002-f01-loc-su-kien-bao-ve-4e4af19.patch` lên main 507874c (git apply --3way).
+  Xung đột: `kiem_tang1.py` giữ bản trên main (đã có bộ phân tích an toàn tham chiếu từ ap_f01; bỏ các khối kiem_an_toan/cổng HOC_TOAN_CHO_KIEM_DEM cũ của 0002);
+  `grader.py` giữ cổng danh sách trắng và thêm lớp `_chuoi_doc_hai` của 0002 chạy sau cổng. machine.py, leakfilter.py, loc.py và 3 file test áp nguyên văn.

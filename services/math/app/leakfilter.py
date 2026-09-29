@@ -273,6 +273,16 @@ def _vi_pham_phu_dinh(ban_nhap, phu_dinh, cau_hs):
     return None
 
 
+_BAN_NHAP_TOI_DA = 4000
+_DAU_HIEU_CODE = re.compile(r"__|\blambda\b|\bimport\b|\b(?:eval|exec|open|compile|getattr|setattr|globals|locals|vars|input)\s*\("
+                            r"|\bsubprocess\b|\bos\.\w|\bsys\.\w|\(\s*\)\s*\."
+                            r"|\b[A-Za-z_]\w*\s*\(\s*[\'\"]"
+                            r"|\b(?:factorial|Symbol|Integer|Float|Rational|Function|Lambda|sympify|parse_expr|lambdify)\s*\("
+                            r"|(?:\*\*|\^)\s*\{?\s*\d+\s*\}?\s*(?:\*\*|\^)"
+                            r"|(?:\*\*|\^)\s*\(?\s*\d{3,}|\d\s*\*\*\s*\d{2,}"
+                            r"|\b(?![yY]_)\w+_\w+\b|[\"\'`]\s*\w+\s*[\"\'`]")
+
+
 def loc_ban_nhap(ban_nhap, su_kien, cau_hs=None):
     try:
         # F-01: bản nháp có dấu hiệu code / quá dài, hoặc giá trị sự kiện không qua cổng danh sách trắng -> chặn.
@@ -284,16 +294,40 @@ def loc_ban_nhap(ban_nhap, su_kien, cau_hs=None):
             return {"cho_phep": False, "lop_chinh": "dau_vao", "lop_phu": "chuoi", "loi": False, "ly_do": DAU_VAO_KHONG_HOP_LE}
         phu_dinh = [a for a, _b in cac if str(a).startswith("KHONG_")]
         bai = {"su_kien": [(a, b) for a, b in cac if not str(a).startswith("KHONG_")]}
+        # Sự kiện bảo vệ phải đọc được TRƯỚC khi so (Sư phạm 11:54): hỏng -> chặn, ly_do SU_KIEN_LOI
+        # (vd "1  sqrt(2)" do replace("+", "") cũ; không để lẫn với lỗi kiểm bản nháp).
+        if not _su_kien_doc_duoc(bai["su_kien"]):
+            return {"cho_phep": False, "lop_chinh": "sympy", "lop_phu": "chuoi", "loi": True, "ly_do": "SU_KIEN_LOI"}
+        # F-01 (bản vá Kiểm định): bản nháp có dấu hiệu code / quá dài -> chặn (không bao giờ thực thi; câu lạ không tới HS).
+        if not isinstance(ban_nhap, str) or len(ban_nhap) > _BAN_NHAP_TOI_DA or _DAU_HIEU_CODE.search(ban_nhap):
+            return {"cho_phep": False, "lop_chinh": "sympy", "lop_phu": "chuoi", "loi": True, "ly_do": "DAU_VAO_KHONG_HOP_LE"}
         # Thiếu câu HS: câu nháp chỉ là "không"/"có" không đánh giá được -> chặn
         if cau_hs is None and _NGAN.match(unicodedata.normalize("NFC", ban_nhap or "")):
             return {"cho_phep": False, "lop_chinh": "ngu_canh", "lop_phu": "chuoi", "loi": False, "ly_do": "THIEU_NGU_CANH"}
         ly_do = _vi_pham_phu_dinh(ban_nhap, phu_dinh, cau_hs) or _vi_pham(ban_nhap, bai, cau_hs)
-        # ly_do chỉ là LOẠI quyết định (theo bản vá Kiểm định): LO_DAP_AN / XAC_NHAN / THIEU_NGU_CANH / LOI_KIEM_TRA / None
+        # ly_do chỉ là LOẠI quyết định (theo bản vá Kiểm định): LO_DAP_AN / XAC_NHAN / THIEU_NGU_CANH / SU_KIEN_LOI / DAU_VAO_KHONG_HOP_LE / LOI_KIEM_TRA / None
         return {"cho_phep": ly_do is None, "lop_chinh": "sympy", "lop_phu": "chuoi", "loi": False,
                 "ly_do": None if ly_do is None else ("XAC_NHAN" if ly_do == "xac_nhan" else "LO_DAP_AN")}
     except Exception:
         # FAIL CLOSED: không kiểm được (nạp bộ lọc, đọc sự kiện, parse số, so SymPy) thì CHẶN
         return {"cho_phep": False, "lop_chinh": "sympy", "lop_phu": "chuoi", "loi": True, "ly_do": "LOI_KIEM_TRA"}
+
+
+def _su_kien_doc_duoc(cap):
+    # Lỗi nạp bộ lọc (không có loc.py / thiếu hàm) KHÔNG phải lỗi sự kiện: để nó bay ra -> LOI_KIEM_TRA.
+    L = _L()
+    doc_khoang, doc_so = L.parse_khoang, L.num
+    for a, b in cap:
+        try:
+            if a in ("DB", "NB"):
+                doc_khoang(str(b))
+            elif a in ("DCD", "DCT", "GTCD", "GTCT", "NGHIEM"):
+                doc_so(str(b))
+            else:
+                return False   # loại sự kiện lạ
+        except Exception:
+            return False
+    return True
 
 
 def _pairs(su_kien):
