@@ -40,8 +40,11 @@ def _run(kind, payload):
             "thong_bao": g.get("thong_bao"),
             "buoc_sai": g.get("buoc_sai"),
             "su_kien": [{"loai": a, "gia_tri": b} for a, b in sk],
-            "thang_goi_y": _hints(bl),
+            "thang_goi_y": _hints(bl, payload.get("de_bai")),
         }
+    if kind == "goi_y":
+        from app.thang_mau import goi_y
+        return goi_y(payload)
     if kind == "spin":
         time.sleep(float(payload.get("giay") or 30))
         return {"ok": True}

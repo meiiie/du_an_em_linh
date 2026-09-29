@@ -1,0 +1,6 @@
+Thang gợi ý mẫu 3 cấp — nguồn: /workspace/projects/hoc-toan-ai/supham/thang-goi-y-mau/ (Sư phạm, v0.1, 29/09/2026, kiểm máy 11:52 VN).
+Chép NGUYÊN VĂN, không sửa tay. Sửa câu: Sư phạm sửa _kiem/soan_thang.py, sinh lại, kiểm lại, rồi chép lại vào đây và cập nhật sha.
+sha256:
+7a57ac9d9bf9e2d2544b29e0cbc07aba5b0e5299fc074fbfd897bc8a3fc95afa  bac-ba.json
+5afc324873cb8c177d59a416dd027ae12f961ab2517fbd1abbe65a79e20a27fa  trung-phuong.json
+e29ca4ef4c5c515fe18ef6680cc8d619f8de94e0140461db5a2278fbec54f5c8  huu-ti.json

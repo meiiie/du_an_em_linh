@@ -1,0 +1,1218 @@
+{
+ "loai_tai_lieu": "THANG_GOI_Y_MAU_3_CAP",
+ "phien_ban": "0.1 (2026-09-29)",
+ "nguoi_soan": "Nhóm Sư phạm (TOÁN · Sư phạm), theo giao việc của Điều phối viên No",
+ "chu_de": "Toán 12 — Ứng dụng đạo hàm: tính đơn điệu và cực trị (CT GDPT 2018)",
+ "dang": "huu_ti",
+ "mo_ta_dang": "y = (ax + b)/(cx + d) (c ≠ 0, ad − bc ≠ 0)",
+ "khung_buoc": "F1_DAU_Y1: B.DH.TXD → B.DH.DAOHAM → B.DH.NGHIEM → B.DH.XETDAU → B.DH.KETLUAN",
+ "bo_sinh_bai_repo": {
+  "repo": "meiiie/du_an_em_linh",
+  "commit": "6eb8b064dedb803fa271aa30ffc39d23b93d9f44",
+  "tep": "services/math/app/generator.py",
+  "tham_so_hien_tai": "_ham_huu_ti: y = (x + m)/(x + n), n ∈ {−2; −1; 1; 2; 3}, m ∈ {−3; −1; 0; 1; 2; 4} \\ {n}. Chỉ sinh a = c = 1. Mẫu này viết cho dạng tổng quát (c ≠ 1, d = 0, b = 0, −d/c không nguyên)."
+ },
+ "dac_thu_dang": [
+  "y' = (ad − bc)/(cx + d)²: không có điểm tới hạn, không có cực trị; y' cùng một dấu trên từng khoảng của TXĐ.",
+  "TXĐ viết D = ℝ \\ {−d/c}, không dùng ∪ nối khoảng.",
+  "Mốc x = −d/c phải có trên hàng x của bảng (ghi || ở hàng y') dù không thuộc TXĐ.",
+  "Kết luận hai khoảng đơn điệu riêng, nối bằng “và”, không dùng ∪.",
+  "Đạo hàm bằng QUY TẮC THƯƠNG; cấm mọi gợi ý kiểu \"tách tổng\" / \"đạo hàm từng hạng tử\" (SP: sai phương pháp)."
+ ],
+ "tham_so_duoc_phep": {
+  "ham": "Hàm số đúng như đề (vd \"(2x + 1)/(x − 3)\").",
+  "tu": "Tử số đúng như đề (vd \"2x + 1\").",
+  "mau": "Mẫu số đúng như đề (vd \"x − 3\")."
+ },
+ "tham_so_cam": {
+  "txd": "TXĐ",
+  "diem_loai": "giá trị −d/c",
+  "y_phay": "y' (mọi dạng)",
+  "y_phay_tich": "y' dạng tích",
+  "u_phay": "u'",
+  "v_phay": "v'",
+  "ad_bc": "ad − bc và dấu của nó",
+  "delta": "Δ' và dấu của nó",
+  "dau_ab": "dấu của ab",
+  "so_nghiem": "số nghiệm y' = 0",
+  "tap_diem_toi_han": "tập điểm tới hạn",
+  "so_diem_toi_han": "số điểm tới hạn",
+  "diem_thieu": "mốc bị thiếu",
+  "so_diem_thieu": "số mốc thiếu",
+  "diem_thu": "điểm thử cụ thể (lộ vị trí mốc)",
+  "dau_tung_khoang": "dấu y' từng khoảng",
+  "khoang_dong_bien": "khoảng đồng biến",
+  "khoang_nghich_bien": "khoảng nghịch biến",
+  "diem_cuc_dai": "điểm cực đại",
+  "diem_cuc_tieu": "điểm cực tiểu",
+  "gia_tri_cuc_dai": "giá trị cực đại",
+  "gia_tri_cuc_tieu": "giá trị cực tiểu",
+  "so_cuc_tri": "số điểm cực trị",
+  "khoang_hs": "khoảng/mốc do học sinh ghi (M1 của bộ lọc chặn chuỗi (a;b) trùng đáp án; và dễ thành xác nhận từng phần)",
+  "he_so_rieng": "hệ số riêng lẻ a, b, c, d dạng số (dễ trùng giá trị kết quả; đã có trong {ham})"
+ },
+ "cam_lo_dinh_nghia": {
+  "TXD": "Tập xác định D (ℝ với hàm đa thức; ℝ \\ {−d/c} và giá trị −d/c với hàm hữu tỉ), kể cả nói gián tiếp như \"mọi số thực\", \"không cần điều kiện\".",
+  "Y_PHAY": "Biểu thức y' (mọi dạng tương đương: khai triển, dạng tích, hệ số của y', bậc của y' khi đang ở bước DAOHAM).",
+  "U_PHAY_V_PHAY": "Giá trị u' và v' (hàm hữu tỉ) khi đang ở bước DAOHAM.",
+  "DAI_LUONG_QUYET_DINH": "Giá trị hoặc dấu của đại lượng quyết định kết quả: Δ' = b² − 3ac (bậc ba), dấu của ab và nghiệm của 2ax² + b = 0 (trùng phương), giá trị/dấu của ad − bc (hữu tỉ).",
+  "TAP_DIEM_TOI_HAN": "Các điểm tới hạn (nghiệm y' = 0 thuộc D và điểm thuộc D mà y' không xác định), kể cả việc tập này rỗng hay không.",
+  "SO_DIEM_TOI_HAN": "Số điểm tới hạn / số nghiệm của y' = 0 (vd \"có hai nghiệm\", \"vô nghiệm\", \"nghiệm kép\" nói như sự thật về bài này).",
+  "MOC_BI_THIEU": "Mốc/điểm tới hạn học sinh bỏ sót (giá trị hoặc mô tả chỉ đích danh nhân tử sinh ra nó).",
+  "SO_DIEM_THIEU": "Số điểm còn thiếu (so_diem_thieu) — mẫu này không dùng; xem README mục Điểm cần quyết.",
+  "DAU_Y_PHAY": "Dấu của y' trên từng khoảng (kể cả \"y' luôn dương/âm\", \"không đổi dấu\" nói như sự thật về bài này).",
+  "KHOANG_DON_DIEU": "Các khoảng đồng biến, nghịch biến (kể cả \"đồng biến trên ℝ\", \"trên từng khoảng xác định\" nói như sự thật về bài này).",
+  "DIEM_CUC_TRI": "Điểm cực đại/cực tiểu, loại và số điểm cực trị, việc hàm có hay không có cực trị.",
+  "GIA_TRI_CUC_TRI": "Giá trị cực đại/cực tiểu.",
+  "XAC_NHAN_TUNG_PHAN": "Xác nhận đúng/sai từng phần (\"nghiệm đầu đúng rồi\", \"chỉ còn thiếu nghiệm lớn hơn\")."
+ },
+ "quy_tac": [
+  "Gia sư chỉ nhận thang đã kiểm; không nhận lời giải mẫu. Chọn thang theo (bài, ma_buoc, loai_ket_qua); không có thì dùng \"chung\" của bước.",
+  "Cấp 1 định hướng; cấp 2 chỉ công cụ/đối tượng cần xét; cấp 3 gần kết quả nhưng không nêu kết quả của bước.",
+  "noi_dung = null (chỉ ở cấp 3): KHÔNG tạo dòng gợi ý; ly_do_trong là siêu dữ liệu, không bao giờ hiển thị; thực hiện hanh_dong.",
+  "Chỉ điền tham số trong tham_so_duoc_phep, bằng đúng chuỗi của đề. Không điền giá trị nào từ lời giải máy.",
+  "DIEM_THIEU: không bao giờ nêu mốc bị thiếu; không xác nhận đúng/sai từng phần của bước.",
+  "Sau khi điền, câu vẫn phải qua bộ lọc lộ đáp án và kiểm định 3 tầng như mọi gợi ý máy sinh."
+ ],
+ "thang": {
+  "B.DH.TXD": {
+   "_meta": {
+    "ten_buoc": "Tập xác định",
+    "ky_nang": "T12.DH.02",
+    "cam_lo_toi_thieu": [
+     "TXD",
+     "Y_PHAY",
+     "DAI_LUONG_QUYET_DINH",
+     "TAP_DIEM_TOI_HAN",
+     "SO_DIEM_TOI_HAN",
+     "DAU_Y_PHAY",
+     "KHOANG_DON_DIEU",
+     "DIEM_CUC_TRI",
+     "GIA_TRI_CUC_TRI",
+     "XAC_NHAN_TUNG_PHAN"
+    ]
+   },
+   "chung": {
+    "_meta": {
+     "ma_loi": []
+    },
+    "1": {
+     "noi_dung": "Biểu thức của hàm số {ham} có mẫu số. Mẫu số cần thỏa điều kiện gì để phân thức có nghĩa?",
+     "tham_so": [
+      "ham"
+     ],
+     "cam_lo": [
+      "TXD",
+      "Y_PHAY",
+      "DAI_LUONG_QUYET_DINH",
+      "TAP_DIEM_TOI_HAN",
+      "SO_DIEM_TOI_HAN",
+      "DAU_Y_PHAY",
+      "KHOANG_DON_DIEU",
+      "DIEM_CUC_TRI",
+      "GIA_TRI_CUC_TRI",
+      "XAC_NHAN_TUNG_PHAN"
+     ],
+     "khang_dinh": [
+      "HAM_LA_THUONG"
+     ],
+     "ly_do_trong": null,
+     "hanh_dong": null
+    },
+    "2": {
+     "noi_dung": "Điều kiện xác định: mẫu số {mau} phải khác 0. Em tìm giá trị x làm cho mẫu số bằng 0 để loại ra khỏi tập xác định.",
+     "tham_so": [
+      "mau"
+     ],
+     "cam_lo": [
+      "TXD",
+      "Y_PHAY",
+      "DAI_LUONG_QUYET_DINH",
+      "TAP_DIEM_TOI_HAN",
+      "SO_DIEM_TOI_HAN",
+      "DAU_Y_PHAY",
+      "KHOANG_DON_DIEU",
+      "DIEM_CUC_TRI",
+      "GIA_TRI_CUC_TRI",
+      "XAC_NHAN_TUNG_PHAN"
+     ],
+     "khang_dinh": [
+      "MAU_BAC_NHAT",
+      "TXD_LOAI_NGHIEM_MAU"
+     ],
+     "ly_do_trong": null,
+     "hanh_dong": null
+    },
+    "3": {
+     "noi_dung": "Giải phương trình {mau} = 0 để tìm giá trị x bị loại, rồi viết TXĐ theo dạng D = ℝ \\ {…}, trong đó chỗ “…” là giá trị vừa tìm (không viết thành hợp các khoảng).",
+     "tham_so": [
+      "mau"
+     ],
+     "cam_lo": [
+      "TXD",
+      "Y_PHAY",
+      "DAI_LUONG_QUYET_DINH",
+      "TAP_DIEM_TOI_HAN",
+      "SO_DIEM_TOI_HAN",
+      "DAU_Y_PHAY",
+      "KHOANG_DON_DIEU",
+      "DIEM_CUC_TRI",
+      "GIA_TRI_CUC_TRI",
+      "XAC_NHAN_TUNG_PHAN"
+     ],
+     "khang_dinh": [
+      "MAU_BAC_NHAT",
+      "TXD_LOAI_NGHIEM_MAU"
+     ],
+     "ly_do_trong": null,
+     "hanh_dong": null
+    }
+   },
+   "SAI_TXD": {
+    "_meta": {
+     "ma_loi": [
+      "ERR.DH.02"
+     ]
+    },
+    "1": {
+     "noi_dung": "Với phân thức, những giá trị x nào phải loại khỏi tập xác định? Em đã loại đúng những giá trị làm cho mẫu số bằng 0 chưa?",
+     "tham_so": [],
+     "cam_lo": [
+      "TXD",
+      "Y_PHAY",
+      "DAI_LUONG_QUYET_DINH",
+      "TAP_DIEM_TOI_HAN",
+      "SO_DIEM_TOI_HAN",
+      "DAU_Y_PHAY",
+      "KHOANG_DON_DIEU",
+      "DIEM_CUC_TRI",
+      "GIA_TRI_CUC_TRI",
+      "XAC_NHAN_TUNG_PHAN"
+     ],
+     "khang_dinh": [],
+     "ly_do_trong": null,
+     "hanh_dong": null
+    },
+    "2": {
+     "noi_dung": "Dòng TXĐ của em chưa khớp với điều kiện mẫu số {mau} khác 0. Em kiểm tra lại cả giá trị bị loại lẫn cách viết: TXĐ gồm các số thực x trừ những giá trị làm mẫu bằng 0, viết bằng ký hiệu D = ℝ \\ {…}, không nối các khoảng bằng ∪.",
+     "tham_so": [
+      "mau"
+     ],
+     "cam_lo": [
+      "TXD",
+      "Y_PHAY",
+      "DAI_LUONG_QUYET_DINH",
+      "TAP_DIEM_TOI_HAN",
+      "SO_DIEM_TOI_HAN",
+      "DAU_Y_PHAY",
+      "KHOANG_DON_DIEU",
+      "DIEM_CUC_TRI",
+      "GIA_TRI_CUC_TRI",
+      "XAC_NHAN_TUNG_PHAN"
+     ],
+     "khang_dinh": [
+      "TXD_LOAI_NGHIEM_MAU"
+     ],
+     "ly_do_trong": null,
+     "hanh_dong": null
+    },
+    "3": {
+     "noi_dung": "Giải lại phương trình {mau} = 0 (chuyển hạng tử tự do sang vế phải, nếu có, rồi chia cho hệ số của x), sau đó thay giá trị tìm được vào {mau} để chắc chắn mẫu bằng 0 tại đó; cuối cùng viết D = ℝ \\ {…} với giá trị vừa kiểm.",
+     "tham_so": [
+      "mau"
+     ],
+     "cam_lo": [
+      "TXD",
+      "Y_PHAY",
+      "DAI_LUONG_QUYET_DINH",
+      "TAP_DIEM_TOI_HAN",
+      "SO_DIEM_TOI_HAN",
+      "DAU_Y_PHAY",
+      "KHOANG_DON_DIEU",
+      "DIEM_CUC_TRI",
+      "GIA_TRI_CUC_TRI",
+      "XAC_NHAN_TUNG_PHAN"
+     ],
+     "khang_dinh": [
+      "MAU_BAC_NHAT",
+      "TXD_LOAI_NGHIEM_MAU"
+     ],
+     "ly_do_trong": null,
+     "hanh_dong": null
+    }
+   }
+  },
+  "B.DH.DAOHAM": {
+   "_meta": {
+    "ten_buoc": "Tính đạo hàm y'",
+    "ky_nang": "T11.DH.01",
+    "cam_lo_toi_thieu": [
+     "Y_PHAY",
+     "DAI_LUONG_QUYET_DINH",
+     "TAP_DIEM_TOI_HAN",
+     "SO_DIEM_TOI_HAN",
+     "DAU_Y_PHAY",
+     "KHOANG_DON_DIEU",
+     "DIEM_CUC_TRI",
+     "GIA_TRI_CUC_TRI",
+     "XAC_NHAN_TUNG_PHAN"
+    ]
+   },
+   "chung": {
+    "_meta": {
+     "ma_loi": [],
+     "cam_lo_them": [
+      "U_PHAY_V_PHAY"
+     ]
+    },
+    "1": {
+     "noi_dung": "Hàm {ham} là thương của tử số và mẫu số. Em nhớ quy tắc tính đạo hàm của một thương chưa?",
+     "tham_so": [
+      "ham"
+     ],
+     "cam_lo": [
+      "Y_PHAY",
+      "DAI_LUONG_QUYET_DINH",
+      "TAP_DIEM_TOI_HAN",
+      "SO_DIEM_TOI_HAN",
+      "DAU_Y_PHAY",
+      "KHOANG_DON_DIEU",
+      "DIEM_CUC_TRI",
+      "GIA_TRI_CUC_TRI",
+      "XAC_NHAN_TUNG_PHAN",
+      "U_PHAY_V_PHAY"
+     ],
+     "khang_dinh": [
+      "HAM_LA_THUONG"
+     ],
+     "ly_do_trong": null,
+     "hanh_dong": null
+    },
+    "2": {
+     "noi_dung": "Dùng quy tắc đạo hàm của thương: (u/v)' = (u'v − uv')/v², với u là tử số và v là mẫu số. Không lấy đạo hàm riêng tử số và mẫu số rồi chia cho nhau.",
+     "tham_so": [],
+     "cam_lo": [
+      "Y_PHAY",
+      "DAI_LUONG_QUYET_DINH",
+      "TAP_DIEM_TOI_HAN",
+      "SO_DIEM_TOI_HAN",
+      "DAU_Y_PHAY",
+      "KHOANG_DON_DIEU",
+      "DIEM_CUC_TRI",
+      "GIA_TRI_CUC_TRI",
+      "XAC_NHAN_TUNG_PHAN",
+      "U_PHAY_V_PHAY"
+     ],
+     "khang_dinh": [
+      "QUY_TAC_THUONG",
+      "KHONG_BANG_THUONG_DAO_HAM"
+     ],
+     "ly_do_trong": null,
+     "hanh_dong": null
+    },
+    "3": {
+     "noi_dung": "Đặt u = {tu} và v = {mau}. Tính u' và v', thay u, v, u', v' vào công thức (u'v − uv')/v², rồi khai triển và rút gọn tử số; mẫu số giữ nguyên dạng bình phương.",
+     "tham_so": [
+      "mau",
+      "tu"
+     ],
+     "cam_lo": [
+      "Y_PHAY",
+      "DAI_LUONG_QUYET_DINH",
+      "TAP_DIEM_TOI_HAN",
+      "SO_DIEM_TOI_HAN",
+      "DAU_Y_PHAY",
+      "KHOANG_DON_DIEU",
+      "DIEM_CUC_TRI",
+      "GIA_TRI_CUC_TRI",
+      "XAC_NHAN_TUNG_PHAN",
+      "U_PHAY_V_PHAY"
+     ],
+     "khang_dinh": [
+      "QUY_TAC_THUONG",
+      "MAU_Y_PHAY_BINH_PHUONG"
+     ],
+     "ly_do_trong": null,
+     "hanh_dong": null
+    }
+   },
+   "SAI_GIA_TRI": {
+    "_meta": {
+     "ma_loi": [
+      "ERR.DH.01"
+     ],
+     "cam_lo_them": [
+      "U_PHAY_V_PHAY"
+     ]
+    },
+    "1": {
+     "noi_dung": "Em kiểm tra lại dòng đầu tiên của y': em đã dùng quy tắc đạo hàm của thương chưa, và thứ tự các tích trên tử số có đúng không?",
+     "tham_so": [],
+     "cam_lo": [
+      "Y_PHAY",
+      "DAI_LUONG_QUYET_DINH",
+      "TAP_DIEM_TOI_HAN",
+      "SO_DIEM_TOI_HAN",
+      "DAU_Y_PHAY",
+      "KHOANG_DON_DIEU",
+      "DIEM_CUC_TRI",
+      "GIA_TRI_CUC_TRI",
+      "XAC_NHAN_TUNG_PHAN",
+      "U_PHAY_V_PHAY"
+     ],
+     "khang_dinh": [],
+     "ly_do_trong": null,
+     "hanh_dong": null
+    },
+    "2": {
+     "noi_dung": "Dòng y' đầu tiên chưa đúng. Hay gặp nhất là nhầm dấu hoặc đảo thứ tự ở tử số: công thức là u'v − uv' (đạo hàm của tử nhân mẫu, trừ tử nhân đạo hàm của mẫu), còn mẫu là v².",
+     "tham_so": [],
+     "cam_lo": [
+      "Y_PHAY",
+      "DAI_LUONG_QUYET_DINH",
+      "TAP_DIEM_TOI_HAN",
+      "SO_DIEM_TOI_HAN",
+      "DAU_Y_PHAY",
+      "KHOANG_DON_DIEU",
+      "DIEM_CUC_TRI",
+      "GIA_TRI_CUC_TRI",
+      "XAC_NHAN_TUNG_PHAN",
+      "U_PHAY_V_PHAY"
+     ],
+     "khang_dinh": [
+      "QUY_TAC_THUONG"
+     ],
+     "ly_do_trong": null,
+     "hanh_dong": null
+    },
+    "3": {
+     "noi_dung": "Viết riêng trên giấy nháp: u = {tu}, v = {mau}, rồi u' và v'. Thay vào (u'v − uv')/v² đúng thứ tự, khai triển tử số và gộp các hạng tử chứa x; so với dòng em đã viết để tìm chỗ lệch.",
+     "tham_so": [
+      "mau",
+      "tu"
+     ],
+     "cam_lo": [
+      "Y_PHAY",
+      "DAI_LUONG_QUYET_DINH",
+      "TAP_DIEM_TOI_HAN",
+      "SO_DIEM_TOI_HAN",
+      "DAU_Y_PHAY",
+      "KHOANG_DON_DIEU",
+      "DIEM_CUC_TRI",
+      "GIA_TRI_CUC_TRI",
+      "XAC_NHAN_TUNG_PHAN",
+      "U_PHAY_V_PHAY"
+     ],
+     "khang_dinh": [
+      "QUY_TAC_THUONG"
+     ],
+     "ly_do_trong": null,
+     "hanh_dong": null
+    }
+   },
+   "SAI_BIEN_DOI": {
+    "_meta": {
+     "ma_loi": [
+      "ERR.DH.01"
+     ],
+     "cam_lo_them": [
+      "U_PHAY_V_PHAY"
+     ]
+    },
+    "1": {
+     "noi_dung": "Dòng biến đổi sau có còn bằng dòng y' ngay trước nó với mọi x thuộc TXĐ không?",
+     "tham_so": [],
+     "cam_lo": [
+      "Y_PHAY",
+      "DAI_LUONG_QUYET_DINH",
+      "TAP_DIEM_TOI_HAN",
+      "SO_DIEM_TOI_HAN",
+      "DAU_Y_PHAY",
+      "KHOANG_DON_DIEU",
+      "DIEM_CUC_TRI",
+      "GIA_TRI_CUC_TRI",
+      "XAC_NHAN_TUNG_PHAN",
+      "U_PHAY_V_PHAY"
+     ],
+     "khang_dinh": [],
+     "ly_do_trong": null,
+     "hanh_dong": null
+    },
+    "2": {
+     "noi_dung": "Dòng rút gọn được đánh dấu chưa tương đương với dòng trước. Em xem lại phép khai triển tử số, nhất là dấu trừ đứng trước tích uv'.",
+     "tham_so": [],
+     "cam_lo": [
+      "Y_PHAY",
+      "DAI_LUONG_QUYET_DINH",
+      "TAP_DIEM_TOI_HAN",
+      "SO_DIEM_TOI_HAN",
+      "DAU_Y_PHAY",
+      "KHOANG_DON_DIEU",
+      "DIEM_CUC_TRI",
+      "GIA_TRI_CUC_TRI",
+      "XAC_NHAN_TUNG_PHAN",
+      "U_PHAY_V_PHAY"
+     ],
+     "khang_dinh": [],
+     "ly_do_trong": null,
+     "hanh_dong": null
+    },
+    "3": {
+     "noi_dung": "Khai triển riêng tích u'v và tích uv' trên giấy nháp, đặt tích uv' trong ngoặc rồi mới bỏ ngoặc cùng dấu trừ. Em cũng có thể thay cùng một giá trị x (thuộc TXĐ) vào cả dòng trước lẫn dòng sau: kết quả phải bằng nhau.",
+     "tham_so": [],
+     "cam_lo": [
+      "Y_PHAY",
+      "DAI_LUONG_QUYET_DINH",
+      "TAP_DIEM_TOI_HAN",
+      "SO_DIEM_TOI_HAN",
+      "DAU_Y_PHAY",
+      "KHOANG_DON_DIEU",
+      "DIEM_CUC_TRI",
+      "GIA_TRI_CUC_TRI",
+      "XAC_NHAN_TUNG_PHAN",
+      "U_PHAY_V_PHAY"
+     ],
+     "khang_dinh": [],
+     "ly_do_trong": null,
+     "hanh_dong": null
+    }
+   }
+  },
+  "B.DH.NGHIEM": {
+   "_meta": {
+    "ten_buoc": "Tìm điểm tới hạn",
+    "ky_nang": "T12.DH.02",
+    "cam_lo_toi_thieu": [
+     "DAI_LUONG_QUYET_DINH",
+     "TAP_DIEM_TOI_HAN",
+     "SO_DIEM_TOI_HAN",
+     "DAU_Y_PHAY",
+     "KHOANG_DON_DIEU",
+     "DIEM_CUC_TRI",
+     "GIA_TRI_CUC_TRI",
+     "XAC_NHAN_TUNG_PHAN"
+    ]
+   },
+   "chung": {
+    "_meta": {
+     "ma_loi": []
+    },
+    "1": {
+     "noi_dung": "Chiều biến thiên của hàm số chỉ có thể thay đổi tại những điểm nào? Nhớ rằng điểm tới hạn gồm các điểm thuộc TXĐ làm cho y' bằng 0 hoặc làm cho y' không xác định.",
+     "tham_so": [],
+     "cam_lo": [
+      "DAI_LUONG_QUYET_DINH",
+      "TAP_DIEM_TOI_HAN",
+      "SO_DIEM_TOI_HAN",
+      "DAU_Y_PHAY",
+      "KHOANG_DON_DIEU",
+      "DIEM_CUC_TRI",
+      "GIA_TRI_CUC_TRI",
+      "XAC_NHAN_TUNG_PHAN"
+     ],
+     "khang_dinh": [],
+     "ly_do_trong": null,
+     "hanh_dong": null
+    },
+    "2": {
+     "noi_dung": "Em nhìn vào tử số của y' sau khi rút gọn: tử số đó có chứa x không, và điều đó cho biết gì về phương trình y' = 0? Còn điểm làm y' không xác định, em kiểm tra xem điểm đó có thuộc TXĐ không.",
+     "tham_so": [],
+     "cam_lo": [
+      "DAI_LUONG_QUYET_DINH",
+      "TAP_DIEM_TOI_HAN",
+      "SO_DIEM_TOI_HAN",
+      "DAU_Y_PHAY",
+      "KHOANG_DON_DIEU",
+      "DIEM_CUC_TRI",
+      "GIA_TRI_CUC_TRI",
+      "XAC_NHAN_TUNG_PHAN"
+     ],
+     "khang_dinh": [
+      "Y_PHAY_KXD_TRUNG_DIEM_LOAI"
+     ],
+     "ly_do_trong": null,
+     "hanh_dong": null
+    },
+    "3": {
+     "noi_dung": "Viết y' thành một phân thức đã rút gọn tử số. Xét phương trình y' = 0 bằng cách cho tử số bằng 0; sau đó so điểm làm mẫu số của y' bằng 0 với TXĐ ở bước đầu. Ghi kết luận của bước này thành một dòng.",
+     "tham_so": [],
+     "cam_lo": [
+      "DAI_LUONG_QUYET_DINH",
+      "TAP_DIEM_TOI_HAN",
+      "SO_DIEM_TOI_HAN",
+      "DAU_Y_PHAY",
+      "KHOANG_DON_DIEU",
+      "DIEM_CUC_TRI",
+      "GIA_TRI_CUC_TRI",
+      "XAC_NHAN_TUNG_PHAN"
+     ],
+     "khang_dinh": [
+      "MAU_Y_PHAY_BINH_PHUONG",
+      "Y_PHAY_KXD_TRUNG_DIEM_LOAI"
+     ],
+     "ly_do_trong": null,
+     "hanh_dong": null
+    }
+   },
+   "DIEM_THIEU": {
+    "_meta": {
+     "ma_loi": [],
+     "ghi_chu": "Với dạng này tập điểm tới hạn luôn rỗng, nên DIEM_THIEU chỉ phát sinh khi hàng x thiếu điểm bị loại khỏi TXĐ (grader gắn B.DH.NGHIEM). Chưa có mã lỗi riêng trong ma-loi-DH.csv cho trường hợp này (ERR.DH.03/04 không khớp) — xem README mục Điểm cần quyết. Siêu dữ liệu này không hiển thị cho học sinh.",
+     "cam_lo_them": [
+      "MOC_BI_THIEU",
+      "SO_DIEM_THIEU"
+     ]
+    },
+    "1": {
+     "noi_dung": "Trên hàng x của bảng, ngoài các điểm tới hạn còn cần ghi những điểm nào?",
+     "tham_so": [],
+     "cam_lo": [
+      "DAI_LUONG_QUYET_DINH",
+      "TAP_DIEM_TOI_HAN",
+      "SO_DIEM_TOI_HAN",
+      "DAU_Y_PHAY",
+      "KHOANG_DON_DIEU",
+      "DIEM_CUC_TRI",
+      "GIA_TRI_CUC_TRI",
+      "XAC_NHAN_TUNG_PHAN",
+      "MOC_BI_THIEU",
+      "SO_DIEM_THIEU"
+     ],
+     "khang_dinh": [],
+     "ly_do_trong": null,
+     "hanh_dong": null
+    },
+    "2": {
+     "noi_dung": "Hàng x của em còn thiếu mốc. Nhớ rằng điểm bị loại khỏi TXĐ (nơi hàm số không xác định) cũng phải ghi trên hàng x để chia khoảng, dù điểm đó không thuộc TXĐ.",
+     "tham_so": [],
+     "cam_lo": [
+      "DAI_LUONG_QUYET_DINH",
+      "TAP_DIEM_TOI_HAN",
+      "SO_DIEM_TOI_HAN",
+      "DAU_Y_PHAY",
+      "KHOANG_DON_DIEU",
+      "DIEM_CUC_TRI",
+      "GIA_TRI_CUC_TRI",
+      "XAC_NHAN_TUNG_PHAN",
+      "MOC_BI_THIEU",
+      "SO_DIEM_THIEU"
+     ],
+     "khang_dinh": [],
+     "ly_do_trong": null,
+     "hanh_dong": null
+    },
+    "3": {
+     "noi_dung": "Xem lại dòng TXĐ em đã viết ở bước đầu, ghi thêm vào hàng x mọi điểm bị loại, xếp đúng thứ tự từ nhỏ đến lớn, và tại điểm đó ghi || ở hàng y'.",
+     "tham_so": [],
+     "cam_lo": [
+      "DAI_LUONG_QUYET_DINH",
+      "TAP_DIEM_TOI_HAN",
+      "SO_DIEM_TOI_HAN",
+      "DAU_Y_PHAY",
+      "KHOANG_DON_DIEU",
+      "DIEM_CUC_TRI",
+      "GIA_TRI_CUC_TRI",
+      "XAC_NHAN_TUNG_PHAN",
+      "MOC_BI_THIEU",
+      "SO_DIEM_THIEU"
+     ],
+     "khang_dinh": [],
+     "ly_do_trong": null,
+     "hanh_dong": null
+    }
+   },
+   "DIEM_THUA": {
+    "_meta": {
+     "ma_loi": [
+      "ERR.DH.24"
+     ]
+    },
+    "1": {
+     "noi_dung": "Điểm em ghi có thuộc TXĐ không? Thay vào y' thì y' có bằng 0 không?",
+     "tham_so": [],
+     "cam_lo": [
+      "DAI_LUONG_QUYET_DINH",
+      "TAP_DIEM_TOI_HAN",
+      "SO_DIEM_TOI_HAN",
+      "DAU_Y_PHAY",
+      "KHOANG_DON_DIEU",
+      "DIEM_CUC_TRI",
+      "GIA_TRI_CUC_TRI",
+      "XAC_NHAN_TUNG_PHAN"
+     ],
+     "khang_dinh": [],
+     "ly_do_trong": null,
+     "hanh_dong": null
+    },
+    "2": {
+     "noi_dung": "Danh sách của em có điểm không phải điểm tới hạn. Lỗi hay gặp là cho tử số {tu} của hàm số y bằng 0 thay vì xét y' = 0, hoặc ghi điểm không thuộc TXĐ vào danh sách điểm tới hạn.",
+     "tham_so": [
+      "tu"
+     ],
+     "cam_lo": [
+      "DAI_LUONG_QUYET_DINH",
+      "TAP_DIEM_TOI_HAN",
+      "SO_DIEM_TOI_HAN",
+      "DAU_Y_PHAY",
+      "KHOANG_DON_DIEU",
+      "DIEM_CUC_TRI",
+      "GIA_TRI_CUC_TRI",
+      "XAC_NHAN_TUNG_PHAN"
+     ],
+     "khang_dinh": [],
+     "ly_do_trong": null,
+     "hanh_dong": null
+    },
+    "3": {
+     "noi_dung": "Với từng điểm em ghi: kiểm tra nó có thuộc TXĐ không, rồi xem tử số của y' đã rút gọn có bằng 0 tại đó không. Điểm nào không thỏa thì bỏ ra khỏi danh sách điểm tới hạn (điểm bị loại khỏi TXĐ vẫn được ghi trên hàng x của bảng, nhưng không phải điểm tới hạn).",
+     "tham_so": [],
+     "cam_lo": [
+      "DAI_LUONG_QUYET_DINH",
+      "TAP_DIEM_TOI_HAN",
+      "SO_DIEM_TOI_HAN",
+      "DAU_Y_PHAY",
+      "KHOANG_DON_DIEU",
+      "DIEM_CUC_TRI",
+      "GIA_TRI_CUC_TRI",
+      "XAC_NHAN_TUNG_PHAN"
+     ],
+     "khang_dinh": [],
+     "ly_do_trong": null,
+     "hanh_dong": null
+    }
+   }
+  },
+  "B.DH.XETDAU": {
+   "_meta": {
+    "ten_buoc": "Lập bảng xét dấu y' / bảng biến thiên",
+    "ky_nang": "T12.DH.03",
+    "cam_lo_toi_thieu": [
+     "DAI_LUONG_QUYET_DINH",
+     "TAP_DIEM_TOI_HAN",
+     "SO_DIEM_TOI_HAN",
+     "DAU_Y_PHAY",
+     "KHOANG_DON_DIEU",
+     "DIEM_CUC_TRI",
+     "GIA_TRI_CUC_TRI",
+     "XAC_NHAN_TUNG_PHAN"
+    ]
+   },
+   "chung": {
+    "_meta": {
+     "ma_loi": []
+    },
+    "1": {
+     "noi_dung": "Trên hàng x cần ghi những mốc nào? Điểm hàm số không xác định có cần xuất hiện trên bảng không, và tại đó hàng y' ghi gì?",
+     "tham_so": [],
+     "cam_lo": [
+      "DAI_LUONG_QUYET_DINH",
+      "TAP_DIEM_TOI_HAN",
+      "SO_DIEM_TOI_HAN",
+      "DAU_Y_PHAY",
+      "KHOANG_DON_DIEU",
+      "DIEM_CUC_TRI",
+      "GIA_TRI_CUC_TRI",
+      "XAC_NHAN_TUNG_PHAN"
+     ],
+     "khang_dinh": [],
+     "ly_do_trong": null,
+     "hanh_dong": null
+    },
+    "2": {
+     "noi_dung": "Với y' của hàm {ham}, em xét riêng dấu của tử số và dấu của mẫu số trên mỗi khoảng. Mẫu số là một bình phương nên không âm; vậy dấu của y' do phần nào quyết định?",
+     "tham_so": [
+      "ham"
+     ],
+     "cam_lo": [
+      "DAI_LUONG_QUYET_DINH",
+      "TAP_DIEM_TOI_HAN",
+      "SO_DIEM_TOI_HAN",
+      "DAU_Y_PHAY",
+      "KHOANG_DON_DIEU",
+      "DIEM_CUC_TRI",
+      "GIA_TRI_CUC_TRI",
+      "XAC_NHAN_TUNG_PHAN"
+     ],
+     "khang_dinh": [
+      "MAU_Y_PHAY_BINH_PHUONG",
+      "DAU_Y_PHAY_LA_DAU_TU"
+     ],
+     "ly_do_trong": null,
+     "hanh_dong": null
+    },
+    "3": {
+     "noi_dung": "Lập bảng với hàng x gồm các điểm tới hạn em đã tìm (nếu có) và điểm bị loại khỏi TXĐ; tại điểm bị loại ghi || ở hàng y'. Trên từng khoảng mà các mốc chia ra, chọn một giá trị thử thuộc khoảng đó, thay vào y' để lấy dấu. Việc đầu tiên: chọn giá trị thử cho khoảng ngoài cùng bên trái.",
+     "tham_so": [],
+     "cam_lo": [
+      "DAI_LUONG_QUYET_DINH",
+      "TAP_DIEM_TOI_HAN",
+      "SO_DIEM_TOI_HAN",
+      "DAU_Y_PHAY",
+      "KHOANG_DON_DIEU",
+      "DIEM_CUC_TRI",
+      "GIA_TRI_CUC_TRI",
+      "XAC_NHAN_TUNG_PHAN"
+     ],
+     "khang_dinh": [],
+     "ly_do_trong": null,
+     "hanh_dong": null
+    }
+   },
+   "SAI_DAU": {
+    "_meta": {
+     "ma_loi": [
+      "ERR.DH.25",
+      "ERR.DH.06"
+     ]
+    },
+    "1": {
+     "noi_dung": "Dấu của y' trên một khoảng được xác định bằng cách nào? Mẫu số của y' có thể âm không?",
+     "tham_so": [],
+     "cam_lo": [
+      "DAI_LUONG_QUYET_DINH",
+      "TAP_DIEM_TOI_HAN",
+      "SO_DIEM_TOI_HAN",
+      "DAU_Y_PHAY",
+      "KHOANG_DON_DIEU",
+      "DIEM_CUC_TRI",
+      "GIA_TRI_CUC_TRI",
+      "XAC_NHAN_TUNG_PHAN"
+     ],
+     "khang_dinh": [
+      "MAU_Y_PHAY_BINH_PHUONG"
+     ],
+     "ly_do_trong": null,
+     "hanh_dong": null
+    },
+    "2": {
+     "noi_dung": "Có ô dấu trên hàng y' chưa đúng; em xem lại ô đang được đánh dấu. Tại điểm bị loại khỏi TXĐ, hàng y' ghi || (không ghi 0); trên mỗi khoảng, dấu của y' là dấu của tử số đã rút gọn.",
+     "tham_so": [],
+     "cam_lo": [
+      "DAI_LUONG_QUYET_DINH",
+      "TAP_DIEM_TOI_HAN",
+      "SO_DIEM_TOI_HAN",
+      "DAU_Y_PHAY",
+      "KHOANG_DON_DIEU",
+      "DIEM_CUC_TRI",
+      "GIA_TRI_CUC_TRI",
+      "XAC_NHAN_TUNG_PHAN"
+     ],
+     "khang_dinh": [
+      "DAU_Y_PHAY_LA_DAU_TU",
+      "Y_PHAY_KXD_TRUNG_DIEM_LOAI"
+     ],
+     "ly_do_trong": null,
+     "hanh_dong": null
+    },
+    "3": {
+     "noi_dung": "Chọn một số cụ thể trong khoảng của ô đó (khác điểm bị loại), thay vào y' đã rút gọn: xét riêng dấu tử số, dấu mẫu số rồi chia dấu. Làm tương tự với các khoảng khác để tự kiểm tra.",
+     "tham_so": [],
+     "cam_lo": [
+      "DAI_LUONG_QUYET_DINH",
+      "TAP_DIEM_TOI_HAN",
+      "SO_DIEM_TOI_HAN",
+      "DAU_Y_PHAY",
+      "KHOANG_DON_DIEU",
+      "DIEM_CUC_TRI",
+      "GIA_TRI_CUC_TRI",
+      "XAC_NHAN_TUNG_PHAN"
+     ],
+     "khang_dinh": [
+      "MAU_Y_PHAY_BINH_PHUONG"
+     ],
+     "ly_do_trong": null,
+     "hanh_dong": null
+    }
+   },
+   "DAU_DOI_TRONG_KHOANG": {
+    "_meta": {
+     "ma_loi": [],
+     "dung_thang_mac_dinh": "B.DH.NGHIEM/DIEM_THIEU",
+     "ghi_chu": "Theo §5.1/§6.2 (giai-doan-1-su-pham.md) và mô tả schema v0.2: DAU_DOI_TRONG_KHOANG là hệ quả, KHÔNG tạo lượt gợi ý riêng, mặc định dùng thang B.DH.NGHIEM/DIEM_THIEU. Thang dưới đây chỉ dùng nếu No quyết định cho hệ quả có lượt riêng (vd học sinh đang ở màn bảng). Xem README mục Điểm cần quyết. Với dạng hữu tỉ, y' không đổi dấu trên từng khoảng của TXĐ nên hệ quả này gần như không phát sinh; nội dung được sao y thang DIEM_THIEU (thiếu điểm bị loại trên hàng x).",
+     "cam_lo_them": [
+      "MOC_BI_THIEU",
+      "SO_DIEM_THIEU"
+     ]
+    },
+    "1": {
+     "noi_dung": "Trên hàng x của bảng, ngoài các điểm tới hạn còn cần ghi những điểm nào?",
+     "tham_so": [],
+     "cam_lo": [
+      "DAI_LUONG_QUYET_DINH",
+      "TAP_DIEM_TOI_HAN",
+      "SO_DIEM_TOI_HAN",
+      "DAU_Y_PHAY",
+      "KHOANG_DON_DIEU",
+      "DIEM_CUC_TRI",
+      "GIA_TRI_CUC_TRI",
+      "XAC_NHAN_TUNG_PHAN",
+      "MOC_BI_THIEU",
+      "SO_DIEM_THIEU"
+     ],
+     "khang_dinh": [],
+     "ly_do_trong": null,
+     "hanh_dong": null
+    },
+    "2": {
+     "noi_dung": "Hàng x của em còn thiếu mốc. Nhớ rằng điểm bị loại khỏi TXĐ (nơi hàm số không xác định) cũng phải ghi trên hàng x để chia khoảng, dù điểm đó không thuộc TXĐ.",
+     "tham_so": [],
+     "cam_lo": [
+      "DAI_LUONG_QUYET_DINH",
+      "TAP_DIEM_TOI_HAN",
+      "SO_DIEM_TOI_HAN",
+      "DAU_Y_PHAY",
+      "KHOANG_DON_DIEU",
+      "DIEM_CUC_TRI",
+      "GIA_TRI_CUC_TRI",
+      "XAC_NHAN_TUNG_PHAN",
+      "MOC_BI_THIEU",
+      "SO_DIEM_THIEU"
+     ],
+     "khang_dinh": [],
+     "ly_do_trong": null,
+     "hanh_dong": null
+    },
+    "3": {
+     "noi_dung": "Xem lại dòng TXĐ em đã viết ở bước đầu, ghi thêm vào hàng x mọi điểm bị loại, xếp đúng thứ tự từ nhỏ đến lớn, và tại điểm đó ghi || ở hàng y'.",
+     "tham_so": [],
+     "cam_lo": [
+      "DAI_LUONG_QUYET_DINH",
+      "TAP_DIEM_TOI_HAN",
+      "SO_DIEM_TOI_HAN",
+      "DAU_Y_PHAY",
+      "KHOANG_DON_DIEU",
+      "DIEM_CUC_TRI",
+      "GIA_TRI_CUC_TRI",
+      "XAC_NHAN_TUNG_PHAN",
+      "MOC_BI_THIEU",
+      "SO_DIEM_THIEU"
+     ],
+     "khang_dinh": [],
+     "ly_do_trong": null,
+     "hanh_dong": null
+    }
+   },
+   "SAI_THU_TU_MOC": {
+    "_meta": {
+     "ma_loi": [
+      "ERR.DH.30"
+     ]
+    },
+    "1": {
+     "noi_dung": "Các mốc trên hàng x đã xếp từ nhỏ đến lớn chưa?",
+     "tham_so": [],
+     "cam_lo": [
+      "DAI_LUONG_QUYET_DINH",
+      "TAP_DIEM_TOI_HAN",
+      "SO_DIEM_TOI_HAN",
+      "DAU_Y_PHAY",
+      "KHOANG_DON_DIEU",
+      "DIEM_CUC_TRI",
+      "GIA_TRI_CUC_TRI",
+      "XAC_NHAN_TUNG_PHAN"
+     ],
+     "khang_dinh": [],
+     "ly_do_trong": null,
+     "hanh_dong": null
+    },
+    "2": {
+     "noi_dung": "Hàng x của em có một cặp mốc liền nhau đang đứng ngược thứ tự. Trên trục số, số bé hơn phải nằm bên trái.",
+     "tham_so": [],
+     "cam_lo": [
+      "DAI_LUONG_QUYET_DINH",
+      "TAP_DIEM_TOI_HAN",
+      "SO_DIEM_TOI_HAN",
+      "DAU_Y_PHAY",
+      "KHOANG_DON_DIEU",
+      "DIEM_CUC_TRI",
+      "GIA_TRI_CUC_TRI",
+      "XAC_NHAN_TUNG_PHAN"
+     ],
+     "khang_dinh": [],
+     "ly_do_trong": null,
+     "hanh_dong": null
+    },
+    "3": {
+     "noi_dung": "So sánh lần lượt từng cặp mốc liền nhau trên hàng x, đổi chỗ cặp bị ngược, rồi xét dấu lại từng khoảng theo thứ tự mới. Mốc nào là phân số hoặc chứa căn thì em ước lượng giá trị gần đúng để so sánh.",
+     "tham_so": [],
+     "cam_lo": [
+      "DAI_LUONG_QUYET_DINH",
+      "TAP_DIEM_TOI_HAN",
+      "SO_DIEM_TOI_HAN",
+      "DAU_Y_PHAY",
+      "KHOANG_DON_DIEU",
+      "DIEM_CUC_TRI",
+      "GIA_TRI_CUC_TRI",
+      "XAC_NHAN_TUNG_PHAN"
+     ],
+     "khang_dinh": [],
+     "ly_do_trong": null,
+     "hanh_dong": null
+    }
+   },
+   "DIEM_THUA": {
+    "_meta": {
+     "ma_loi": [
+      "ERR.DH.31"
+     ],
+     "ghi_chu": "DIEM_THUA gắn B.DH.XETDAU chỉ khi bước NGHIEM đạt mà học sinh tự thêm mốc (No chốt 29/09 11:00); nếu mốc đã có trong dòng nghiệm thì dùng thang B.DH.NGHIEM/DIEM_THUA."
+    },
+    "1": {
+     "noi_dung": "Mỗi mốc trên hàng x của em được lấy từ đâu?",
+     "tham_so": [],
+     "cam_lo": [
+      "DAI_LUONG_QUYET_DINH",
+      "TAP_DIEM_TOI_HAN",
+      "SO_DIEM_TOI_HAN",
+      "DAU_Y_PHAY",
+      "KHOANG_DON_DIEU",
+      "DIEM_CUC_TRI",
+      "GIA_TRI_CUC_TRI",
+      "XAC_NHAN_TUNG_PHAN"
+     ],
+     "khang_dinh": [],
+     "ly_do_trong": null,
+     "hanh_dong": null
+    },
+    "2": {
+     "noi_dung": "Hàng x có mốc không nằm trong danh sách điểm tới hạn em đã tìm ở bước trước. Mốc trong bảng chỉ gồm các điểm tới hạn và các điểm bị loại khỏi TXĐ (nếu có).",
+     "tham_so": [],
+     "cam_lo": [
+      "DAI_LUONG_QUYET_DINH",
+      "TAP_DIEM_TOI_HAN",
+      "SO_DIEM_TOI_HAN",
+      "DAU_Y_PHAY",
+      "KHOANG_DON_DIEU",
+      "DIEM_CUC_TRI",
+      "GIA_TRI_CUC_TRI",
+      "XAC_NHAN_TUNG_PHAN"
+     ],
+     "khang_dinh": [],
+     "ly_do_trong": null,
+     "hanh_dong": null
+    },
+    "3": {
+     "noi_dung": "Đối chiếu từng mốc trên hàng x với dòng điểm tới hạn em đã viết; mốc nào không có ở đó (và cũng không phải điểm bị loại khỏi TXĐ) thì bỏ ra khỏi bảng, rồi xem lại ô dấu của khoảng vừa được gộp.",
+     "tham_so": [],
+     "cam_lo": [
+      "DAI_LUONG_QUYET_DINH",
+      "TAP_DIEM_TOI_HAN",
+      "SO_DIEM_TOI_HAN",
+      "DAU_Y_PHAY",
+      "KHOANG_DON_DIEU",
+      "DIEM_CUC_TRI",
+      "GIA_TRI_CUC_TRI",
+      "XAC_NHAN_TUNG_PHAN"
+     ],
+     "khang_dinh": [],
+     "ly_do_trong": null,
+     "hanh_dong": null
+    }
+   },
+   "SAI_BIEN_DOI": {
+    "_meta": {
+     "ma_loi": [
+      "ERR.DH.26"
+     ]
+    },
+    "1": {
+     "noi_dung": "Trên khoảng mà y' mang dấu + thì hàm số tăng hay giảm? Còn dấu − thì sao?",
+     "tham_so": [],
+     "cam_lo": [
+      "DAI_LUONG_QUYET_DINH",
+      "TAP_DIEM_TOI_HAN",
+      "SO_DIEM_TOI_HAN",
+      "DAU_Y_PHAY",
+      "KHOANG_DON_DIEU",
+      "DIEM_CUC_TRI",
+      "GIA_TRI_CUC_TRI",
+      "XAC_NHAN_TUNG_PHAN"
+     ],
+     "khang_dinh": [
+      "DINH_LI_DON_DIEU"
+     ],
+     "ly_do_trong": null,
+     "hanh_dong": null
+    },
+    "2": {
+     "noi_dung": "Có mũi tên trên hàng biến thiên chưa khớp với dấu mà chính em đã ghi ở hàng y' của cùng khoảng. Em đối chiếu từng cột một.",
+     "tham_so": [],
+     "cam_lo": [
+      "DAI_LUONG_QUYET_DINH",
+      "TAP_DIEM_TOI_HAN",
+      "SO_DIEM_TOI_HAN",
+      "DAU_Y_PHAY",
+      "KHOANG_DON_DIEU",
+      "DIEM_CUC_TRI",
+      "GIA_TRI_CUC_TRI",
+      "XAC_NHAN_TUNG_PHAN"
+     ],
+     "khang_dinh": [],
+     "ly_do_trong": null,
+     "hanh_dong": null
+    },
+    "3": {
+     "noi_dung": "Đi lần lượt từ trái sang phải: với mỗi khoảng, đọc dấu em đã ghi ở hàng y', rồi vẽ mũi tên đi lên nếu dấu là +, đi xuống nếu dấu là −.",
+     "tham_so": [],
+     "cam_lo": [
+      "DAI_LUONG_QUYET_DINH",
+      "TAP_DIEM_TOI_HAN",
+      "SO_DIEM_TOI_HAN",
+      "DAU_Y_PHAY",
+      "KHOANG_DON_DIEU",
+      "DIEM_CUC_TRI",
+      "GIA_TRI_CUC_TRI",
+      "XAC_NHAN_TUNG_PHAN"
+     ],
+     "khang_dinh": [
+      "DINH_LI_DON_DIEU"
+     ],
+     "ly_do_trong": null,
+     "hanh_dong": null
+    }
+   }
+  },
+  "B.DH.KETLUAN": {
+   "_meta": {
+    "ten_buoc": "Kết luận khoảng đơn điệu, cực trị",
+    "ky_nang": "T12.DH.03 (đơn điệu) / T12.DH.05 (cực trị)",
+    "cam_lo_toi_thieu": [
+     "DAI_LUONG_QUYET_DINH",
+     "TAP_DIEM_TOI_HAN",
+     "SO_DIEM_TOI_HAN",
+     "DAU_Y_PHAY",
+     "KHOANG_DON_DIEU",
+     "DIEM_CUC_TRI",
+     "GIA_TRI_CUC_TRI",
+     "XAC_NHAN_TUNG_PHAN"
+    ]
+   },
+   "chung": {
+    "_meta": {
+     "ma_loi": []
+    },
+    "1": {
+     "noi_dung": "Từ bảng xét dấu, dấu của y' trên từng khoảng cho em biết gì về chiều biến thiên? Hàm số chỉ có thể đạt cực trị tại những điểm như thế nào?",
+     "tham_so": [],
+     "cam_lo": [
+      "DAI_LUONG_QUYET_DINH",
+      "TAP_DIEM_TOI_HAN",
+      "SO_DIEM_TOI_HAN",
+      "DAU_Y_PHAY",
+      "KHOANG_DON_DIEU",
+      "DIEM_CUC_TRI",
+      "GIA_TRI_CUC_TRI",
+      "XAC_NHAN_TUNG_PHAN"
+     ],
+     "khang_dinh": [],
+     "ly_do_trong": null,
+     "hanh_dong": null
+    },
+    "2": {
+     "noi_dung": "Nhớ lại: nếu y' > 0 trên một khoảng thì hàm số đồng biến trên khoảng đó, nếu y' < 0 thì nghịch biến. Điểm cực trị phải thuộc TXĐ và y' phải đổi dấu khi x đi qua điểm đó; điểm bị loại khỏi TXĐ không thể là điểm cực trị.",
+     "tham_so": [],
+     "cam_lo": [
+      "DAI_LUONG_QUYET_DINH",
+      "TAP_DIEM_TOI_HAN",
+      "SO_DIEM_TOI_HAN",
+      "DAU_Y_PHAY",
+      "KHOANG_DON_DIEU",
+      "DIEM_CUC_TRI",
+      "GIA_TRI_CUC_TRI",
+      "XAC_NHAN_TUNG_PHAN"
+     ],
+     "khang_dinh": [
+      "DINH_LI_DON_DIEU",
+      "DIEM_LOAI_KHONG_THUOC_TXD"
+     ],
+     "ly_do_trong": null,
+     "hanh_dong": null
+    },
+    "3": {
+     "noi_dung": "Đọc bảng của em theo từng khoảng xác định: dấu + thì ghi đồng biến, dấu − thì ghi nghịch biến; mỗi khoảng viết riêng, nếu cùng loại thì nối bằng chữ “và”, không dùng ∪ vì hàm số không xác định tại điểm bị loại. Sau đó trả lời phần cực trị dựa vào các điểm tới hạn em đã tìm ở bước trước.",
+     "tham_so": [],
+     "cam_lo": [
+      "DAI_LUONG_QUYET_DINH",
+      "TAP_DIEM_TOI_HAN",
+      "SO_DIEM_TOI_HAN",
+      "DAU_Y_PHAY",
+      "KHOANG_DON_DIEU",
+      "DIEM_CUC_TRI",
+      "GIA_TRI_CUC_TRI",
+      "XAC_NHAN_TUNG_PHAN"
+     ],
+     "khang_dinh": [
+      "DINH_LI_DON_DIEU",
+      "DIEM_LOAI_KHONG_THUOC_TXD"
+     ],
+     "ly_do_trong": null,
+     "hanh_dong": null
+    }
+   },
+   "SAI_KET_LUAN": {
+    "_meta": {
+     "ma_loi": [
+      "ERR.DH.07",
+      "ERR.DH.10"
+     ]
+    },
+    "1": {
+     "noi_dung": "Kết luận của em có khớp với bảng xét dấu em đã lập không? Hàm số có xác định tại mọi điểm của khoảng em viết không?",
+     "tham_so": [],
+     "cam_lo": [
+      "DAI_LUONG_QUYET_DINH",
+      "TAP_DIEM_TOI_HAN",
+      "SO_DIEM_TOI_HAN",
+      "DAU_Y_PHAY",
+      "KHOANG_DON_DIEU",
+      "DIEM_CUC_TRI",
+      "GIA_TRI_CUC_TRI",
+      "XAC_NHAN_TUNG_PHAN"
+     ],
+     "khang_dinh": [],
+     "ly_do_trong": null,
+     "hanh_dong": null
+    },
+    "2": {
+     "noi_dung": "Có chỗ trong kết luận chưa khớp với bảng hoặc chưa đúng quy ước. Hàm số không xác định tại điểm bị loại, nên không được nối các khoảng đơn điệu bằng ∪ hay gộp thành một khoảng chứa điểm đó; mỗi khoảng kết luận riêng, nối bằng chữ “và”. Điểm bị loại cũng không thể là điểm cực trị.",
+     "tham_so": [],
+     "cam_lo": [
+      "DAI_LUONG_QUYET_DINH",
+      "TAP_DIEM_TOI_HAN",
+      "SO_DIEM_TOI_HAN",
+      "DAU_Y_PHAY",
+      "KHOANG_DON_DIEU",
+      "DIEM_CUC_TRI",
+      "GIA_TRI_CUC_TRI",
+      "XAC_NHAN_TUNG_PHAN"
+     ],
+     "khang_dinh": [
+      "DIEM_LOAI_KHONG_THUOC_TXD"
+     ],
+     "ly_do_trong": null,
+     "hanh_dong": null
+    },
+    "3": {
+     "noi_dung": "Viết lại kết luận theo từng khoảng xác định trên bảng, mỗi khoảng một ý, chiều biến thiên lấy đúng theo dấu y' em đã ghi. Muốn tự thấy vì sao không được dùng ∪: chọn một điểm sát bên trái và một điểm sát bên phải điểm bị loại, so sánh giá trị hàm số tại các điểm đó với chiều biến thiên em đã kết luận.",
+     "tham_so": [],
+     "cam_lo": [
+      "DAI_LUONG_QUYET_DINH",
+      "TAP_DIEM_TOI_HAN",
+      "SO_DIEM_TOI_HAN",
+      "DAU_Y_PHAY",
+      "KHOANG_DON_DIEU",
+      "DIEM_CUC_TRI",
+      "GIA_TRI_CUC_TRI",
+      "XAC_NHAN_TUNG_PHAN"
+     ],
+     "khang_dinh": [
+      "DINH_LI_DON_DIEU",
+      "KHONG_DON_DIEU_TREN_HOP"
+     ],
+     "ly_do_trong": null,
+     "hanh_dong": null
+    }
+   }
+  }
+ }
+}

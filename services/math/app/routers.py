@@ -42,6 +42,13 @@ def giai_may(body: JobIn) -> dict:
     return run_sympy_job("solve", data, timeout=int(data.get("timeout_s") or 20))
 
 
+@v1.post("/goi-y")
+def goi_y_thang_mau(body: JobIn) -> dict:
+    # Thang gợi ý mẫu Sư phạm theo (bước, loại kết quả, cấp); câu đã điền đi qua bộ lọc lộ đáp án trong sandbox
+    data = _payload(body)
+    return run_sympy_job("goi_y", data, timeout=int(data.get("timeout_s") or 12))
+
+
 @v1.post("/extract")
 def trich_pdf(body: JobIn) -> dict:
     data = _payload(body)
