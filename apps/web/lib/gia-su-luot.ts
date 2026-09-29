@@ -215,7 +215,37 @@ export async function chayHoiGiaSu(opts: {
   }
   // N4: gợi ý lấy từ thang ĐÃ KIỂM ĐỊNH của chính bài; chỉ khi bài không có thang mới dùng câu mặc định
   const capHien = xin ? capCu : capMoi;
-  const goiY = capHien > 0 ? (hints.length ? hints.find((h) => h.cap === capHien)?.noiDung || null : goiYBuoc(buoc, capHien)) : null;
+  let goiY = capHien > 0 ? (hints.length ? hints.find((h) => h.cap === capHien)?.noiDung || null : goiYBuoc(buoc, capHien)) : null;
+  const facts = await db.select().from(solutions).where(eq(solutions.problemId, problemId)).limit(1);
+  const suKien = (facts[0]?.protectedFacts as unknown[] | null) || [];
+  // Thang mẫu Sư phạm (supham/thang-goi-y-mau, 52 thang): khi bước này vừa nộp SAI với một loại kết quả có thang RIÊNG
+  // (DIEM_THIEU, SAI_DAU, SAI_KET_LUAN…), gợi ý lấy từ thang riêng đó thay cho thang chung của bài. Câu đã qua bộ lọc lộ
+  // đáp án ở dịch vụ toán (bị chặn thì lùi cấp / về thang chung). Cấp để trống (null) -> không hiện câu nào, đề xuất
+  // bài dễ hơn (recommend/baiDeHonMotMuc) hoặc lời + «Gửi thầy cô». Lỗi dịch vụ -> giữ thang của bài như cũ.
+  let capRong = false;
+  if (capHien > 0 && loaiNay !== "CHUNG" && prob[0].hamSympy) {
+    try {
+      const mau = await mathJob<{ rieng?: boolean; noi_dung?: string | null; hanh_dong?: string | null }>(
+        "goi_y",
+        {
+          ham: prob[0].hamSympy,
+          de_bai: prob[0].statementText,
+          ma_buoc: buoc,
+          loai_ket_qua: loaiNay,
+          cap: capHien,
+          su_kien: suKien,
+        },
+        8000,
+      );
+      if (mau?.rieng && mau.noi_dung) goiY = mau.noi_dung;
+      else if (mau?.rieng && !mau.noi_dung && mau.hanh_dong === "BAI_TUONG_TU_DE_HON") {
+        goiY = null;
+        capRong = !xin;
+      }
+    } catch {
+      // dịch vụ toán lỗi / quá giờ: dùng thang của bài
+    }
+  }
   const err = grade?.maLoi ? (await db.select().from(errorTypes).where(eq(errorTypes.code, grade.maLoi)).limit(1))[0] : null;
   const cfg = await loadConfig();
   const lop = await caiDatAiLop(user.id);
@@ -244,7 +274,7 @@ export async function chayHoiGiaSu(opts: {
   const mo = nhanTrichDan(kho);
   const vanDe = ((grade?.cacVanDe as { nguyen_nhan?: string }[] | null) || []).filter((v) => !v.nguyen_nhan);
   const chuyenGv = soLanSauHet >= 2;
-  const baiDe = (xin && answerRequests >= 3) || hetThang ? await baiDeHon(user.id, prob[0]) : null;
+  const baiDe = (xin && answerRequests >= 3) || hetThang || capRong ? await baiDeHon(user.id, prob[0]) : null;
   if (chuyenGv) {
     state = "CHUYEN_GIAO_VIEN";
     draft = `Em đã dùng hết gợi ý của bước ${tenBuoc} mà vẫn vướng. Em bấm «Gửi thầy cô» để thầy cô xem cùng em; mình đã báo thầy cô là em đang kẹt ở bước này.`;
@@ -277,6 +307,12 @@ export async function chayHoiGiaSu(opts: {
   ) {
     // §(23) luật dấu U: câu cố định theo cờ toan_dung (không gọi mô hình, không bao giờ viết U)
     draft = cauNhanDauU(grade.toanDung);
+  } else if (capRong) {
+    // Cấp gợi ý để trống theo thang mẫu (nói thêm là lộ kết quả): không hiện câu gợi ý, không lộ lý do nội bộ.
+    state = "BAI_TUONG_TU";
+    draft = baiDe
+      ? `Gợi ý tiếp theo của bước ${tenBuoc} sẽ nói ra kết quả, nên mình dừng ở đây. Em thử bài dễ hơn «${baiDe.code}» (/hs/luyen/${baiDe.id}) rồi quay lại bài này.`
+      : `Gợi ý tiếp theo của bước ${tenBuoc} sẽ nói ra kết quả, nên mình dừng ở đây. Hiện chưa có bài dễ hơn cùng kỹ năng đã mở cho em; em thử một bài tương tự trong mục Đề bài, hoặc bấm «Gửi thầy cô» để thầy cô xem cùng.`;
   } else if (hetThang) {
     // SP-17 / AI-5.h / chốt 11:37 (1): hết thang -> đề xuất một bài CỤ THỂ dễ hơn (cùng kỹ năng, thấp hơn một mức, đã phát hành,
     // em chưa làm). Không có thì nói bằng lời và gợi ý Gửi thầy cô.
@@ -349,10 +385,8 @@ export async function chayHoiGiaSu(opts: {
   draft = boDauHop(draft);
   await bao("loc");
   if (daDung(signal)) return dung();
-  const facts = await db.select().from(solutions).where(eq(solutions.problemId, problemId)).limit(1);
   let blocked = false;
   const AN_TOAN = `Mình chưa nói tiếp được chi tiết đó. Em làm lại bước ${tenBuoc} theo gợi ý đã mở rồi nộp.`;
-  const suKien = (facts[0]?.protectedFacts as unknown[] | null) || [];
   try {
     // F-05: bài không có sự kiện bảo vệ thì bộ lọc không có gì để so -> không gửi bản nháp của mô hình
     if (!offline && suKien.length === 0) throw new Error("thiếu protectedFacts");

@@ -36,6 +36,7 @@ const PATHS: Record<string, string> = {
   filter: "/v1/filter",
   generate: "/v1/generate",
   solve: "/v1/solve",
+  goi_y: "/v1/goi-y",
   extract_pdf: "/v1/extract",
 };
 

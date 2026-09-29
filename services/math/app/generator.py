@@ -40,8 +40,25 @@ GOI_Y = {
 }
 
 
-def _hints(bl=None):
-    """Thang gợi ý 3 cấp mỗi bước. Có lời giải máy thì cấp 3 theo bài (SP-11): điểm thử cụ thể, không nêu dấu;
+def _hints(bl=None, de_bai=None):
+    """Thang gợi ý 3 cấp mỗi bước.
+
+    Bậc ba / trùng phương / hữu tỉ bậc nhất-bậc nhất: thang `chung` của thang mẫu Sư phạm (app/thang_mau.py), điền
+    {ham}/{tu}/{mau} nguyên văn từ đề — mỗi dạng một thang riêng, đa thức không còn dùng chung một thang. Dạng khác: thang
+    GOI_Y cũ bên dưới (dự phòng)."""
+    if bl and bl.get("ham"):
+        from app import thang_mau
+        dang = thang_mau.dang_cua(bl.get("ham"))
+        if dang:
+            de = de_bai or "Hàm số $y = %s$." % latex_ham(bl["ham"])
+            t = thang_mau.thang_chung(dang, de)
+            if t:
+                return t
+    return _hints_cu(bl)
+
+
+def _hints_cu(bl=None):
+    """(Dự phòng cho dạng ngoài thang mẫu) Thang gợi ý 3 cấp mỗi bước. Có lời giải máy thì cấp 3 theo bài (SP-11): điểm thử cụ thể, không nêu dấu;
     cấp 1–2 bước đạo hàm theo dạng hàm (thương thì quy tắc thương, không nói "tách tổng")."""
     goi = {k: list(v) for k, v in GOI_Y.items()}
     if bl:
@@ -158,7 +175,9 @@ def sinh(payload):
     if g["ket_qua"] != "DAT":
         return {"loi": "loi giai may khong qua tu cham", "ham": ham, "cham": g["ket_qua"], "thong_bao": g.get("thong_bao"), "buoc_sai": g.get("buoc_sai")}
     sk = su_kien_bao_ve(bl)
-    hints = _hints(bl)
+    lx = latex_ham(ham)
+    de_bai = "Tìm các khoảng đồng biến, nghịch biến và cực trị của hàm số $y = %s$." % lx
+    hints = _hints(bl, de_bai)
     for block in hints:
         for cap in block["cac_cap"]:
             if not cap.get("noi_dung"):
@@ -169,12 +188,11 @@ def sinh(payload):
                 # Không thay bằng câu chung: để trống cấp này (không tạo dòng gợi ý), hết thang thì chuyển bài tương tự
                 cap["noi_dung"] = None
                 cap["ly_do_trong"] = "Bộ lọc chặn vì có thể lộ kết quả (%s)." % quyet.get("ly_do")
-    lx = latex_ham(ham)
     return {
         "dang": dang,
         "ham": ham,
         "latex": lx,
-        "de_bai": "Tìm các khoảng đồng biến, nghịch biến và cực trị của hàm số $y = %s$." % lx,
+        "de_bai": de_bai,
         "muc_do_4": muc4,
         "muc_do_bo_3": muc3,
         "muc_bloom": bloom,
