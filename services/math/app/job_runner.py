@@ -30,7 +30,9 @@ def _run(kind, payload):
             return {"dat": False, "ham": ham, "ly_do": "khong_giai_duoc"}
         gp = bai_lam_sang_payload(bl, ham)
         g = grade(gp)
-        sk = su_kien_bao_ve(bl)
+        # 0004: bài khung ngắn (buoc_bat_dau NGHIEM/XETDAU) -> thêm YPHAY_DE = nguyên văn dòng y' của đề
+        from app.leakfilter import su_kien_de_cho
+        sk = su_kien_bao_ve(bl) + su_kien_de_cho(payload.get("de_bai"), payload.get("buoc_bat_dau"))
         return {
             "dat": g["ket_qua"] == "DAT",
             "ham": ham,

@@ -356,7 +356,7 @@ def verify(payload):
         "ly_do": g.get("thong_bao"),
     }
     if t1["trang_thai"] == "DAT" and payload.get("thang_goi_y"):
-        lo = kiem_thang_goi_y(payload.get("thang_goi_y"), bl)
+        lo = kiem_thang_goi_y(payload.get("thang_goi_y"), bl, payload.get("de_bai"), payload.get("buoc_bat_dau"))
         if lo:
             t1 = dict(t1, trang_thai="SAI", loai_ket_qua="THANG_GOI_Y_LO", thang_goi_y_lo=lo,
                       ly_do="Thang gợi ý có câu lộ kết quả của bài (%d câu) — sửa thang rồi kiểm lại." % len(lo))
@@ -374,15 +374,17 @@ def verify(payload):
     }
 
 
-def kiem_thang_goi_y(thang, bl):
+def kiem_thang_goi_y(thang, bl, de_bai=None, buoc_bat_dau=None):
     """DAC-TA §7.1/§9.1: thang gợi ý đi cùng lời giải qua kiểm định. Mỗi câu gợi ý được so với sự kiện bảo vệ của lời giải
     (bộ lọc lộ đáp án, fail closed). Trả danh sách câu bị chặn (rỗng = sạch)."""
-    from .leakfilter import loc_ban_nhap
+    from .leakfilter import loc_ban_nhap, su_kien_de_cho
     from .machine import su_kien_bao_ve
     try:
         sk = su_kien_bao_ve(bl) if bl else []
     except Exception:
         sk = []
+    # 0004: bài khung ngắn bắt đầu ở NGHIEM/XETDAU: y' đề cho được nhắc lại nguyên văn (cần de_bai trong payload)
+    sk = sk + su_kien_de_cho(de_bai, buoc_bat_dau)
     lo = []
     khoi = thang if isinstance(thang, list) else [{"ma_buoc": k, "cac_cap": v} for k, v in (thang or {}).items()]
     for b in khoi:
