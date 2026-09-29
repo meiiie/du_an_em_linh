@@ -74,6 +74,22 @@ def _doc_vn(ws):
     return tong + cur
 
 
+# 0003: "không" đứng trước động từ / tính từ là phủ định ("hàm số không đạt cực trị", "y' không đổi dấu"),
+# không đọc thành số 0 (trước đây "số" + "không" -> "số 0" khớp giá trị bảo vệ 0 -> chặn nhầm câu thang mẫu).
+_SAU_PHU_DINH = {"đạt", "có", "phải", "đổi", "tồn", "xác", "đồng", "nghịch", "tăng", "giảm", "chứa", "phụ", "cần",
+                 "được", "thể", "đúng", "cùng", "hề", "liên", "thỏa", "thoả", "thuộc", "nằm", "làm", "bị", "đơn", "xảy",
+                 "tính", "viết", "ghi", "nối", "dùng", "thay", "chia", "rõ", "biết", "hiểu", "còn", "hợp", "cắt"}
+
+
+def _khong_phu_dinh(words, end):
+    if words[end] != words[end].rstrip(".,;:!?()"):
+        return False   # "bằng không." / "bằng không," -> số 0
+    k = end + 1
+    while k < len(words) and words[k].isspace():
+        k += 1
+    return k < len(words) and words[k].strip(".,;:!?()").lower() in _SAU_PHU_DINH
+
+
 def _so_chu(t):
     toks = re.findall(r"\S+|\s+", t)
     out = []
@@ -107,6 +123,8 @@ def _so_chu(t):
                 truoc = out[k].strip(".,;:!?()").lower()
             nhieu_tu = len(seq) > 1 and any(w in ("mười", "mươi", "trăm", "phẩy") for w in seq)
             v = _doc_vn(seq) if (truoc in _KICH or nhieu_tu or seq[0] in ("mười",)) else None
+            if seq == ["không"] and _khong_phu_dinh(words, end):
+                v = None   # 0003: "hàm số không đạt cực trị" là phủ định, không phải "hàm số 0 đạt cực trị"
             if v is not None:
                 last = words[end]
                 tail = last[len(last.rstrip(".,;:!?()")):]
@@ -259,17 +277,200 @@ _KHONG = r"(không có|không tồn tại|chẳng có|không hề có|không đ�
 _NGAN = re.compile(r"^\s*(không|có|đúng|sai|chưa|rồi|ừ|ừm|vâng|dạ|yes|no|yep|nope|đúng rồi|không có|có ạ|không ạ)[\s.!?…]*$", re.I)
 
 
-def _vi_pham_phu_dinh(ban_nhap, phu_dinh, cau_hs):
+# ------------------------------------------------------------------ bản vá 0003 (Kiểm định, 29/09)
+# (a) điểm thử nêu số cụ thể mà giữa hai điểm liên tiếp luôn có mốc -> suy ra được mốc ("Thử lần lượt x = -4, -2, 2").
+# (b) câu điều kiện có điều kiện ĐÚNG với bài (tính theo sự kiện) = khẳng định kết luận (thang mẫu README §4 quy tắc 5):
+#     "Nếu tử là hằng số khác 0 thì y' = 0 vô nghiệm" ở hàm bậc nhất/bậc nhất -> lộ NGHIEM vô nghiệm.
+# (c) câu điều kiện chung (nói về "điểm đó", "x₀", "mốc nào … thì") hoặc có điều kiện SAI với bài không phải khẳng định
+#     về bài -> không xét luật phủ định ("nếu không đổi dấu thì hàm số không đạt cực trị tại điểm đó").
+# Thêm: lộ bằng lời có đối chiếu sự kiện (số nghiệm, nghiệm kép, y' luôn dương/âm, luôn đồng/nghịch biến,
+#     TXĐ = ℝ, loại điểm khỏi TXĐ, "còn thiếu điểm lớn hơn").
+_SO = r"-?\s?\d+(?:[.,]\d+)?(?:/\d+)?"
+_MO_DK = re.compile(r"\b(?:nếu|hễ|giả sử|trường hợp|if|when)\b"
+                    r"|\b(?:mốc|điểm|khoảng|nghiệm|giá trị|nhân tử|số|ô|dòng|cột|hệ số|phương trình)\s+nào\b(?=[^?]*\bthì\b)")
+_CUC_BO = re.compile(r"(?:điểm|khoảng|mốc|chỗ|nơi|nghiệm)\s+(?:đó|ấy|này)|\btại đó\b|\bở đó\b|x₀|x_\{?0\}?|\bx0\b"
+                     r"|\bmột điểm\b|\bmột khoảng\b|\bhai bên\b|\bđi qua\b|\bqua điểm\b|\bk\b")
+
+
+def _gia_tri_so(s):
+    s = s.replace(" ", "").replace(",", ".")
+    if "/" in s:
+        a, b = s.split("/")
+        return float(a) / float(b)
+    return float(s)
+
+
+def _ngu_canh(bai, phu_dinh):
+    """Tính các điều kiện theo sự kiện bài (không suy từ chỗ thiếu sự kiện, chỉ từ các khoảng phủ kín trục số)."""
+    L = _L()
+    diem = {"NGHIEM": set(), "DCD": set(), "DCT": set()}
+    kh = []
+    for a, b in bai["su_kien"]:
+        if a in diem:
+            diem[a].add(round(float(L.num(str(b))), 9))
+        elif a in ("DB", "NB"):
+            u, v = L.parse_khoang(str(b))
+            kh.append((float(u) if u.is_finite else float("-inf"), float(v) if v.is_finite else float("inf"), a))
+    kh.sort()
+    phu = bool(kh) and kh[0][0] == float("-inf") and kh[-1][1] == float("inf") and all(
+        abs(kh[i][1] - kh[i + 1][0]) < 1e-9 for i in range(len(kh) - 1))
+    dac_biet = diem["NGHIEM"] | diem["DCD"] | diem["DCT"]
+    dau_mut = {round(x, 9) for u, v, _a in kh for x in (u, v) if x not in (float("inf"), float("-inf"))}
+    lo = sorted(round(kh[i][1], 9) for i in range(len(kh) - 1)
+                if phu and not any(abs(kh[i][1] - d) < 1e-9 for d in dac_biet))
+    co_ct = bool(diem["DCD"] or diem["DCT"])
+    pd = set(phu_dinh)
+    if phu and not co_ct:
+        pd.add("KHONG_CUC_TRI")
+        if not diem["NGHIEM"]:
+            pd.add("KHONG_NGHIEM")
+    if phu and co_ct and not diem["DCD"]:
+        pd.add("KHONG_CUC_DAI")
+    if phu and co_ct and not diem["DCT"]:
+        pd.add("KHONG_CUC_TIEU")
+    loai_kh = {a for _u, _v, a in kh}
+    if phu and loai_kh == {"DB"}:
+        pd.add("KHONG_NGHICH_BIEN")
+    if phu and loai_kh == {"NB"}:
+        pd.add("KHONG_DONG_BIEN")
+    return {
+        "moc": sorted(dac_biet | dau_mut),
+        "n_nghiem": len(diem["NGHIEM"]),
+        "phu_dinh": [x for x in _PHU_DINH if x in pd] + [x for x in phu_dinh if x not in _PHU_DINH],
+        "khong_nghiem": "KHONG_NGHIEM" in pd,
+        "khong_cuc_tri": "KHONG_CUC_TRI" in pd,
+        "tu_hang": "KHONG_NGHIEM" in pd and bool(lo) and not co_ct,
+        "kep": bool(diem["NGHIEM"]) and not co_ct and not lo,
+        "lo": lo,
+        "txd_r": phu and not lo,
+        "chi": (loai_kh.pop() if phu and len(loai_kh) == 1 else None),
+    }
+
+
+def _dk_dung(a, ctx):
+    """Điều kiện của câu "nếu A thì B" đúng / sai với bài; None nếu không đánh giá được."""
+    if re.search(r"tử(?: số)?(?: của (?:y'|đạo hàm))?(?: chỉ)?(?: là| bằng)?(?: một)? (?:hằng số|hằng|số khác 0|số khác không)"
+                 r"|tử(?: số)?(?: của (?:y'|đạo hàm))? không (?:chứa|phụ thuộc)", a):
+        return ctx["tu_hang"]
+    if "nghiệm kép" in a:
+        return ctx["kep"]
+    if re.search(r"không đổi dấu", a):
+        return ctx["khong_cuc_tri"]
+    if re.search(r"vô nghiệm|không có (?:nghiệm|điểm tới hạn)|(?:δ|delta|biệt thức)'?\s*(?:<\s*0|âm)"
+                 r"|(?:y'|đạo hàm)\s*(?:luôn|với mọi x)\s*(?:>|<|dương|âm)", a):
+        return ctx["khong_nghiem"]
+    if re.search(r"(?:δ|delta|biệt thức)'?\s*(?:>\s*0|dương)|(?:hai|2) nghiệm phân biệt", a):
+        return ctx["n_nghiem"] == 2
+    return None
+
+
+def _tach_cau(t):
+    return [c for c in re.split(r"(?<=[.?!;:])\s+|\n+", t) if c.strip()]
+
+
+def _khang_dinh(cau, ctx):
+    """Phần khẳng định về bài của một câu: bỏ câu điều kiện chung / điều kiện sai với bài;
+    câu điều kiện đúng với bài thì giữ kết luận (quy tắc 5); điều kiện không đánh giá được thì giữ nguyên như cũ."""
+    mos = list(_MO_DK.finditer(cau))
+    if not mos:
+        return cau
+    out = [cau[:mos[0].start()]]
+    for i, m in enumerate(mos):
+        seg = cau[m.start(): mos[i + 1].start() if i + 1 < len(mos) else len(cau)]
+        k = re.search(r"\bthì\b|\bthen\b", seg)
+        a, c = (seg[:k.start()], seg[k.end():]) if k else (seg, "")
+        if c and _CUC_BO.search(c):
+            continue
+        v = _dk_dung(a, ctx)
+        if v is True:
+            out.append(" " + c)
+        elif v is False or _CUC_BO.search(a) or m.group(0).endswith("nào"):
+            continue
+        else:
+            out.append(" " + seg)
+    return "".join(out)
+
+
+def _vi_pham_phu_dinh(ban_nhap, phu_dinh, cau_hs, ctx=None):
     t = unicodedata.normalize("NFC", ban_nhap or "").lower()
+    if ctx is not None:
+        phu_dinh = ctx["phu_dinh"]
+        cac_cau = [_khang_dinh(c, ctx) for c in _tach_cau(t)]
+    else:
+        cac_cau = [t]
     for loai in phu_dinh:
         chu = _PHU_DINH.get(loai)
         if not chu:
             continue
-        if re.search(_KHONG + r"[^.?!]{0,40}" + chu, t) or re.search(chu + r"[^.?!]{0,30}(không có|không tồn tại|none)", t):
-            return "phu_dinh"
+        for c in cac_cau:
+            if re.search(_KHONG + r"[^.?!;:]{0,40}" + chu, c) or re.search(chu + r"[^.?!;:]{0,30}(không có|không tồn tại|none)", c):
+                return "phu_dinh"
+            if loai == "KHONG_NGHIEM" and re.search(r"vô nghiệm|\bno (?:real )?(?:roots?|solutions?)\b", c):
+                return "phu_dinh"
         # câu trả lời ngắn "không"/"không có" cho câu hỏi có nhắc đúng chủ đề
         if _NGAN.match(t) and cau_hs and re.search(chu, unicodedata.normalize("NFC", cau_hs).lower()):
             return "tra_loi_ngan"
+    return None
+
+
+_GOI_THU = re.compile(r"\b(?:thử|thay|chọn|lấy|test|try|plug|pick|choose|substitut)")
+
+
+def _vi_pham_diem_thu(ban_nhap, ctx):
+    """(a) >= 2 điểm thử cụ thể, không trùng mốc, giữa mỗi cặp liên tiếp đều có mốc -> suy ra được mốc."""
+    moc = ctx["moc"]
+    if not moc:
+        return None
+    for c in _tach_cau(chuan_hoa_them(ban_nhap)):
+        if not _GOI_THU.search(c):
+            continue
+        diem = set()
+        for m in re.finditer(r"x\s*(?:=|bằng|là)\s*(%s(?:\s*(?:,|;|và|hoặc|rồi|and|or)\s*(?:x\s*(?:=|bằng)\s*)?%s)*)" % (_SO, _SO), c):
+            for so in re.findall(_SO, m.group(1)):
+                diem.add(round(_gia_tri_so(so), 9))
+        diem = sorted(diem)
+        if len(diem) < 2 or any(abs(d - x) < 1e-9 for d in diem for x in moc):
+            continue
+        if all(any(diem[i] < x < diem[i + 1] for x in moc) for i in range(len(diem) - 1)):
+            return "diem_thu"
+    return None
+
+
+def _vi_pham_loi(ban_nhap, ctx):
+    """Lộ bằng lời (không có số của đáp án) đối chiếu với sự kiện bài; bỏ qua câu hỏi và câu điều kiện chung."""
+    for goc in _tach_cau(unicodedata.normalize("NFC", ban_nhap or "").lower()):
+        if goc.rstrip().endswith("?"):
+            continue
+        c = _khang_dinh(goc, ctx)
+        s = chuan_hoa_them(c)
+        n = ctx["n_nghiem"]
+        for m in re.finditer(r"(?:có|gồm|được|ra|thấy)\s+(\d+)\s+(?:nghiệm|điểm tới hạn)", s):
+            if n and int(m.group(1)) == n:
+                return "so_luong"
+        if ctx["kep"] and re.search(r"(?:có|là|được)\s+(?:1\s+|một\s+)?nghiệm kép", c):
+            return "so_luong"
+        chi = ctx["chi"]
+        if chi:
+            dau = r"(?:dương|>\s*0|lớn hơn 0)" if chi == "DB" else r"(?:âm|<\s*0|nhỏ hơn 0)"
+            if re.search(r"(?:y'|y′|đạo hàm)[^.;,]{0,25}(?:luôn|lúc nào cũng|với mọi x)\s*(?:luôn\s*)?" + dau, c):
+                return "loi"
+            bien = r"(?:đồng biến|tăng)" if chi == "DB" else r"(?:nghịch biến|giảm)"
+            if re.search(r"(?:luôn|lúc nào cũng)\s+" + bien + r"|" + bien +
+                         r"\s+trên\s+(?:(?:từng|mỗi)\s+khoảng|(?:cả\s+|toàn\s+bộ\s+)?(?:ℝ|\\mathbb\{r\}|r\b|tập xác định|trục số))", c):
+                return "loi"
+        if ctx["txd_r"] and re.search(r"(?:tập xác định|txđ|\bd\b)\s*(?:là|=|bằng)\s*(?:ℝ|\\mathbb\{r\}|r\b|mọi số thực|tất cả (?:các )?số thực"
+                                      r"|toàn bộ trục số|cả trục số)", c):
+            return "loi"
+        for m in re.finditer(r"x\s*(?:≠|!=|\\neq|khác)\s*(%s)|(?:loại|bỏ|trừ)\s+(?:đi\s+)?(?:điểm\s+)?(?:x\s*=\s*)?(%s)"
+                             r"|\\?\{\s*(%s)\s*\\?\}|mẫu[^.;]{0,25}(?:=|bằng)\s*0[^.;]{0,15}x\s*=\s*(%s)" % (_SO, _SO, _SO, _SO), s):
+            so = next(g for g in m.groups() if g)
+            if m.group(1) and ("mẫu" in s[max(0, m.start() - 25):m.start()] or re.search(r"[\w)]$", s[:m.start()])):
+                continue   # "điều kiện mẫu số 2x khác 0" chỉ nhắc lại điều kiện của đề, không phải giá trị bị loại
+            if any(abs(_gia_tri_so(so) - x) < 1e-9 for x in ctx["lo"]):
+                return "loi"
+        if re.search(r"thiếu\s+(?:\d+\s+|một\s+)?(?:điểm|nghiệm|mốc)\s+(?:lớn|nhỏ|ở giữa|âm|dương|bên)"
+                     r"|còn\s+(?:\d+|một|hai|ba)\s+(?:điểm|nghiệm|mốc)[^.?!]{0,30}(?:chưa|thiếu|quên|sót)", c):
+            return "xac_nhan" if re.search(r"đúng rồi|đúng", c) else "loi"
     return None
 
 
@@ -304,7 +505,9 @@ def loc_ban_nhap(ban_nhap, su_kien, cau_hs=None):
         # Thiếu câu HS: câu nháp chỉ là "không"/"có" không đánh giá được -> chặn
         if cau_hs is None and _NGAN.match(unicodedata.normalize("NFC", ban_nhap or "")):
             return {"cho_phep": False, "lop_chinh": "ngu_canh", "lop_phu": "chuoi", "loi": False, "ly_do": "THIEU_NGU_CANH"}
-        ly_do = _vi_pham_phu_dinh(ban_nhap, phu_dinh, cau_hs) or _vi_pham(ban_nhap, bai, cau_hs)
+        ctx = _ngu_canh(bai, phu_dinh)
+        ly_do = (_vi_pham_phu_dinh(ban_nhap, phu_dinh, cau_hs, ctx) or _vi_pham(ban_nhap, bai, cau_hs)
+                 or _vi_pham_diem_thu(ban_nhap, ctx) or _vi_pham_loi(ban_nhap, ctx))
         # ly_do chỉ là LOẠI quyết định (theo bản vá Kiểm định): LO_DAP_AN / XAC_NHAN / THIEU_NGU_CANH / SU_KIEN_LOI / DAU_VAO_KHONG_HOP_LE / LOI_KIEM_TRA / None
         return {"cho_phep": ly_do is None, "lop_chinh": "sympy", "lop_phu": "chuoi", "loi": False,
                 "ly_do": None if ly_do is None else ("XAC_NHAN" if ly_do == "xac_nhan" else "LO_DAP_AN")}
