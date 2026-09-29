@@ -14,7 +14,9 @@ def _run(kind, payload):
         return verify(payload)
     if kind == "filter":
         from app.leakfilter import loc_ban_nhap
-        return loc_ban_nhap(payload.get("ban_nhap") or "", payload.get("su_kien") or [], payload.get("cau_hs"))
+        # Chốt 29/09: trường chuẩn là `cau_hoc_sinh`; `cau_hs` giữ làm bí danh cũ
+        cau = payload.get("cau_hoc_sinh", payload.get("cau_hs"))
+        return loc_ban_nhap(payload.get("ban_nhap") or "", payload.get("su_kien") or [], cau)
     if kind == "generate":
         from app.generator import sinh
         return sinh(payload)

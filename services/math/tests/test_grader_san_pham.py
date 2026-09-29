@@ -66,7 +66,9 @@ def test_cap_dong_dao_ham_va_khong_lo_dap_an():
     assert r["loai_ket_qua"] == "SAI_BIEN_DOI"
     blob = json.dumps(r, ensure_ascii=False)
     assert "3*x**2 - 6*x" not in blob
-    assert "-2" not in blob or True
+    # B-23: kiểm thật — không lộ dạng đúng của dòng sai (3x(x-2)) trong đầu ra
+    assert "x-2" not in blob.replace(" ", "")
+    assert "x - 2" not in blob
     # đường đúng khác (phân tích nhân tử) vẫn đạt
     payload["cac_buoc"][1]["cac_dong"][1]["latex"] = "3x(x-2)"
     ok = grade(payload)

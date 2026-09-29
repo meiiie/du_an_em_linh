@@ -52,7 +52,7 @@ if [ "$ok" != 1 ]; then
   exit 1
 fi
 
-pnpm seed
+pnpm seed || echo "Seed không chạy (xem log phía trên); giữ nguyên dữ liệu hiện có." >&2
 
 kill "$BOOT_PID" 2>/dev/null || true
 wait "$BOOT_PID" 2>/dev/null || true

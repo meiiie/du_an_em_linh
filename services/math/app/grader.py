@@ -25,7 +25,8 @@ _MAP_LOAI = {
     "khong_tuong_duong": "SAI_BIEN_DOI",
     "sai_mien_xac_dinh": "SAI_BIEN_DOI",
     "sai_dau_o_khoang": "SAI_DAU",
-    "sai_o_tai_diem": "SAI_GIA_TRI",
+    # ma-loi-DH.csv v0.2: ERR.DH.25 (ghi 0 tại điểm y' không xác định, hoặc || tại nghiệm) thuộc loại SAI_DAU
+    "sai_o_tai_diem": "SAI_DAU",
     "sai_o_chieu_bien_thien": "SAI_BIEN_DOI",
     "sai_tap_xac_dinh": "SAI_TXD",
     "khac_tap": "SAI_GIA_TRI",
@@ -225,6 +226,7 @@ def _parse_nghiem_lines(lines):
             continue
         # SP-04: x \in \{1;3\}, S = \{1; 3\}; bỏ tiền tố "y' không xác định tại"
         raw = re.sub(r"^.*?(không xác định|khong xac dinh)\s*(tại|tai)?\s*", "", raw, flags=re.I) if is_kxd else raw
+        raw = raw.replace("\\left", "").replace("\\right", "")
         raw = re.sub(r"(x|S)\s*(\\in|∈|=)\s*\\?\{", "", raw)
         raw = raw.replace("\\{", "").replace("\\}", "").replace("{", "").replace("}", "") if re.search(r"\\\{|\\\}", line.get("latex") or "") else raw
         parts = re.split(r"\\lor|\\vee|\\quad|;| hoặc | hoac |,| và | va ", raw)
@@ -236,7 +238,6 @@ def _parse_nghiem_lines(lines):
             if token is None:
                 continue
             # bỏ phần thừa sau số
-            token = re.split(r"[^0-9+\-*/().a-zA-Z]", token)[0] if False else token
             if re.fullmatch(r"[+\-]?\d+(?:\.\d+)?(?:/\d+)?", token) or re.fullmatch(r"[+\-]?\(\d+\)/\(\d+\)", token):
                 found.append(token)
         if not found and raw.strip():
@@ -300,17 +301,35 @@ def _parse_ket_luan(step):
     cd, ct, gcd, gct = [], [], [], []
     saw = set()
     chuan = []
-    for line in lines:
+    khai_ds = list(step.get("khai_bao") or [])
+    _NHAN_TU_KHAI = {"dong_bien": "DONG_BIEN", "nghich_bien": "NGHICH_BIEN", "cuc_dai": "CUC_DAI", "cuc_tieu": "CUC_TIEU"}
+    for vi_tri, line in enumerate(lines):
         raw = line.get("latex") or ""
         t = raw.lower()
         intervals = _interval_strings(raw)
         has_union = ("\\cup" in raw) or ("∪" in raw) or (" U " in raw)
         nhan = (line.get("loai") or "").upper()
+        # Client cũ (6eb8b06) không gửi nhãn ô: dòng i ứng khai_bao[i] (4 ô theo thứ tự). Chỉ dùng khi số dòng khớp
+        # và dòng không tự nói loại bằng từ khoá.
+        m_trong = re.match(r"^\s*(?:không|khong)\s+(dong_bien|nghich_bien|cuc_dai|cuc_tieu)\s*$", t)
+        if not nhan and m_trong:
+            # ô trống UI cũ gửi "không <khoá>"
+            nhan = _NHAN_TU_KHAI[m_trong.group(1)]
+        khong_tu_khoa = not re.search(r"đồng biến|dong bien|nghịch biến|nghich bien|cực|cuc (dai|tieu)", t)
+        if not nhan and khong_tu_khoa and len(khai_ds) == len(lines):
+            nhan = _NHAN_TU_KHAI.get(khai_ds[vi_tri], "")
+        elif not nhan and khong_tu_khoa and len(lines) == 4:
+            # UI luôn gửi đủ 4 ô theo thứ tự Đồng biến / Nghịch biến / Cực đại / Cực tiểu
+            nhan = ("DONG_BIEN", "NGHICH_BIEN", "CUC_DAI", "CUC_TIEU")[vi_tri]
         if nhan in _NHAN_KL:
             # SP-03: ô có nhãn -> hiểu nội dung theo nhãn. Ô trống / "không có" / "Hàm số không có cực trị" = danh sách rỗng.
             key = _NHAN_KL[nhan]
+            rong = (not raw.strip()) or (not re.search(r"\d|oo|infty|∞", t) and bool(re.search(r"không|khong|∅|emptyset|varnothing|rỗng|rong|trống|none|^\s*-+\s*$", t)))
+            if rong and claims and key not in claims:
+                # Ô đề không hỏi, để trống: bỏ qua, không làm hỏng bước
+                chuan.append({"dong": line.get("dong", 0), "trang_thai_chuan_hoa": "OK"})
+                continue
             saw.add(key)
-            rong = (not raw.strip()) or (not re.search(r"\d|oo|infty|∞", t) and bool(re.search(r"không|khong|∅|emptyset|varnothing", t)))
             if key in ("dong_bien", "nghich_bien"):
                 if not rong and not intervals:
                     return None, [{"dong": line.get("dong", 0), "trang_thai_chuan_hoa": "THAT_BAI"}]
@@ -565,6 +584,135 @@ def _overlay_may(student_bl, den):
 
 
 def grade(payload):
+    r = _grade_core(payload)
+    try:
+        if r.get("ket_qua") == "DAT":
+            r = _diem_ngoai_txd(payload, r) or r
+        _hau_xu_ly(payload, r)
+    except Exception:
+        pass  # hậu xử lý chỉ tinh chỉnh vị trí; lỗi ở đây không được đổi kết quả chấm
+    return r
+
+
+def _diem_ngoai_txd(payload, r):
+    """Điểm HS ghi ở bước NGHIEM (nghiệm hoặc điểm y' không xác định) mà nằm NGOÀI tập xác định là mốc thừa
+    (ERR.DH.24, DIEM_THUA, B.DH.NGHIEM), vd x/(x+3) ghi x = -3 là điểm y' không xác định."""
+    den = payload.get("nop_toi") or "B.DH.KETLUAN"
+    if den not in ORDER or ORDER.index(den) < ORDER.index("B.DH.NGHIEM"):
+        return None
+    f = K.P(payload.get("ham"))
+    cf = K.dieu_kien(f)
+    _r, _k, chuan, _loi = _parse_nghiem_lines(_buoc_theo_ma(payload, "B.DH.NGHIEM").get("cac_dong") or [])
+    for c in chuan or []:
+        for v in (c.get("chuoi_chuan_hoa") or "").split(","):
+            if not v or v == "rong":
+                continue
+            if K.gia_tri(f, {K.x: K.P(v)}, cf) is None:
+                bs = _buoc("B.DH.NGHIEM", c.get("dong", 0), None)
+                vd = [{"id": "VD1", "loai_ket_qua": "DIEM_THUA", "buoc_sai": bs, "ma_loi": "ERR.DH.24", "do_tin_cay": 0.8,
+                       "ky_nang": "T12.DH.02"}]
+                return _pack("SAI", "DIEM_THUA", bs, "thua_nghiem_vi_pham_dkxd", _per(den, "B.DH.NGHIEM"), r.get("chuan_hoa") or [],
+                             nop_toi=den, cac_van_de=vd, ma_loi_tin=("ERR.DH.24", 0.8),
+                             thong_bao="Có điểm em ghi ở bước điểm tới hạn không thuộc tập xác định. Em đối chiếu từng điểm với tập xác định.")
+    return None
+
+
+def _buoc_theo_ma(payload, ma):
+    for st in payload.get("cac_buoc") or []:
+        if st.get("ma_buoc") == ma:
+            return st
+    return {}
+
+
+def _dong_chua_moc(payload, gia_tri):
+    """Dòng (0-based) ở bước NGHIEM mà HS ghi giá trị này."""
+    _r, _k, chuan, _loi = _parse_nghiem_lines(_buoc_theo_ma(payload, "B.DH.NGHIEM").get("cac_dong") or [])
+    for c in chuan or []:
+        for v in (c.get("chuoi_chuan_hoa") or "").split(","):
+            if v and v != "rong" and _bang(v, gia_tri):
+                return c.get("dong", 0)
+    return None
+
+
+def _dong_ket_luan_sai(payload):
+    """Ô kết luận đầu tiên (theo thứ tự Đồng biến → Nghịch biến → Cực đại → Cực tiểu) có nội dung khác lời giải máy."""
+    import re
+    step = _buoc_theo_ma(payload, "B.DH.KETLUAN")
+    kl, _ = _parse_ket_luan(step)
+    may = bai_lam_may(payload.get("ham"))
+    if kl is None or not may:
+        return None
+    km = may["ket_luan"]
+    dong_cua = {}
+    ds = _idx(step.get("cac_dong") or [])
+    khai_ds = list(step.get("khai_bao") or [])
+    for vi_tri, line in enumerate(ds):
+        nhan = (line.get("loai") or "").upper()
+        key = _NHAN_KL.get(nhan)
+        t0 = (line.get("latex") or "").lower()
+        if not key and len(khai_ds) == len(ds) and not re.search(r"đồng biến|dong bien|nghịch biến|nghich bien|cực|cuc (dai|tieu)", t0):
+            key = khai_ds[vi_tri] if khai_ds[vi_tri] in ("dong_bien", "nghich_bien", "cuc_dai", "cuc_tieu") else None
+        if not key:
+            t = (line.get("latex") or "").lower()
+            key = ("dong_bien" if re.search(r"đồng biến|dong bien", t) else "nghich_bien" if re.search(r"nghịch biến|nghich bien", t)
+                   else "cuc_dai" if re.search(r"cực đại|cuc dai", t) else "cuc_tieu" if re.search(r"cực tiểu|cuc tieu", t) else None)
+        if key and key not in dong_cua:
+            dong_cua[key] = line.get("dong", 0)
+
+    def ds_khoang(d, k):
+        if d.get(k + "_tren_tap"):
+            return _khoang_chuan(str(d[k + "_tren_tap"]).split(" U "))
+        return _khoang_chuan(d.get(k))
+
+    sai = []
+    for key in ("dong_bien", "nghich_bien"):
+        if key in kl or key + "_tren_tap" in kl:
+            if ds_khoang(kl, key) != ds_khoang(km, key) or (bool(kl.get(key + "_tren_tap")) and not km.get(key + "_tren_tap")):
+                sai.append(key)
+    for key in ("cuc_dai", "cuc_tieu"):
+        if key + "_x" in kl or "gia_tri_" + key in kl:
+            if not (_cung_ds(kl.get(key + "_x"), km.get(key + "_x")) and
+                    (not kl.get("gia_tri_" + key) or _cung_ds(kl.get("gia_tri_" + key), km.get("gia_tri_" + key)))):
+                sai.append(key)
+    for key in sai:
+        if key in dong_cua:
+            return dong_cua[key]
+    return None
+
+
+def _hau_xu_ly(payload, r):
+    """Chốt 29/09: (1) mốc thừa có trong nghiệm HS (ERR.DH.24, B.DH.NGHIEM): o = {X, k} của mốc; kèm `dong_lien_quan`
+    = dòng nghiệm chứa mốc (0-based).
+    (2) lỗi kết luận chỉ ra đúng ô (dong = chỉ số ô) thay cho dòng 0."""
+    if r.get("ket_qua") != "SAI":
+        return
+    cells = {(c.get("hang"), c.get("k")): c.get("gia_tri") for c in _cells(_buoc_theo_ma(payload, "B.DH.XETDAU"))}
+    ds = r.get("cac_van_de") or []
+    dkl = None
+    for v in ds + [r]:
+        bs = v.get("buoc_sai") or {}
+        o = bs.get("o") or {}
+        if v.get("loai_ket_qua") == "DIEM_THUA" and bs.get("ma_buoc") == "B.DH.NGHIEM" and o.get("hang") == "X" and o.get("k") is not None:
+            gt = cells.get(("X", o["k"]))
+            dong = _dong_chua_moc(payload, gt) if gt is not None else None
+            if dong is not None:
+                # Chốt No 11:28: vấn đề giữ o = {X, k} của mốc thừa (UI tô đỏ ô đó), bước B.DH.NGHIEM.
+                # Dòng nghiệm chứa mốc ghi thêm ở `dong_lien_quan` để UI chỉ chỗ cần sửa; không thành vấn đề thứ hai.
+                v["dong_lien_quan"] = dong
+        if v.get("loai_ket_qua") == "SAI_KET_LUAN" and bs.get("ma_buoc") == "B.DH.KETLUAN":
+            if dkl is None:
+                dkl = _dong_ket_luan_sai(payload)
+            if dkl is not None:
+                v["buoc_sai"] = _buoc("B.DH.KETLUAN", dkl, None)
+                if v is r:
+                    ten = {"DONG_BIEN": "Đồng biến", "NGHICH_BIEN": "Nghịch biến", "CUC_DAI": "Cực đại", "CUC_TIEU": "Cực tiểu"}
+                    nhan = next((str(l.get("loai") or "").upper() for l in _buoc_theo_ma(payload, "B.DH.KETLUAN").get("cac_dong") or []
+                                 if l.get("dong") == dkl), "")
+                    r["thong_bao"] = ("Bước kết luận: ô %s cần xem lại." % ten[nhan]) if nhan in ten else \
+                        "Bước kết luận, dòng %d cần xem lại." % (dkl + 1)
+
+
+def _grade_core(payload):
     den = payload.get("nop_toi") or "B.DH.KETLUAN"
     if den not in ORDER:
         den = "B.DH.KETLUAN"
@@ -800,6 +948,15 @@ def bai_lam_sang_payload(bl, ham=None):
                     bit += ", y = %s" % ys[i]
                 bits.append(bit)
             dong_kl.append({"dong": n, "latex": "cực tiểu tại " + "; ".join(bits)})
+    # Dạng ô của app (v1.3 S32-S37): {db, nb, cd, ct} gửi nguyên chữ HS gõ, kèm nhãn ô — đúng như UI gửi.
+    klo = bl.get("ket_luan_o")
+    if klo:
+        dong_kl, khai = [], []
+        for key, loai, ten in (("db", "DONG_BIEN", "dong_bien"), ("nb", "NGHICH_BIEN", "nghich_bien"),
+                               ("cd", "CUC_DAI", "cuc_dai"), ("ct", "CUC_TIEU", "cuc_tieu")):
+            if key in klo:
+                khai.append(ten)
+                dong_kl.append({"dong": len(dong_kl), "latex": str(klo.get(key) or ""), "loai": loai})
     return {
         "ham": ham,
         "nop_toi": "B.DH.KETLUAN",

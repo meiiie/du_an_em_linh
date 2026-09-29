@@ -244,15 +244,49 @@ def _vi_pham(ban_nhap, bai, cau_hs):
     return None
 
 
+# Sự kiện phủ định (29/09): "không có cực trị", "không có khoảng nghịch biến"… Không có giá trị số nên xử lý riêng,
+# không đưa vào lớp SymPy của loc.py.
+_PHU_DINH = {
+    "KHONG_CUC_TRI": r"(cực trị|cực đại|cực tiểu|extrem|turning point|local (max|min))",
+    "KHONG_CUC_DAI": r"(cực đại|local max)",
+    "KHONG_CUC_TIEU": r"(cực tiểu|local min)",
+    "KHONG_DONG_BIEN": r"(đồng biến|tăng|increasing)",
+    "KHONG_NGHICH_BIEN": r"(nghịch biến|giảm|decreasing)",
+    "KHONG_NGHIEM": r"(nghiệm|điểm tới hạn|y' ?= ?0|root)",
+}
+_KHONG = r"(không có|không tồn tại|chẳng có|không hề có|không đạt|no |none|does not have|doesn't have|has no|there (is|are) no|không\s+\w+\s+(cực|nghiệm))"
+_NGAN = re.compile(r"^\s*(không|có|đúng|sai|chưa|rồi|ừ|ừm|vâng|dạ|yes|no|yep|nope|đúng rồi|không có|có ạ|không ạ)[\s.!?…]*$", re.I)
+
+
+def _vi_pham_phu_dinh(ban_nhap, phu_dinh, cau_hs):
+    t = unicodedata.normalize("NFC", ban_nhap or "").lower()
+    for loai in phu_dinh:
+        chu = _PHU_DINH.get(loai)
+        if not chu:
+            continue
+        if re.search(_KHONG + r"[^.?!]{0,40}" + chu, t) or re.search(chu + r"[^.?!]{0,30}(không có|không tồn tại|none)", t):
+            return "phu_dinh"
+        # câu trả lời ngắn "không"/"không có" cho câu hỏi có nhắc đúng chủ đề
+        if _NGAN.match(t) and cau_hs and re.search(chu, unicodedata.normalize("NFC", cau_hs).lower()):
+            return "tra_loi_ngan"
+    return None
+
+
 def loc_ban_nhap(ban_nhap, su_kien, cau_hs=None):
     try:
-        bai = {"su_kien": _pairs(su_kien)}
-        ly_do = _vi_pham(ban_nhap, bai, cau_hs)
+        cac = _pairs(su_kien)
+        phu_dinh = [a for a, _b in cac if str(a).startswith("KHONG_")]
+        bai = {"su_kien": [(a, b) for a, b in cac if not str(a).startswith("KHONG_")]}
+        # Thiếu câu HS: câu nháp chỉ là "không"/"có" không đánh giá được -> chặn
+        if cau_hs is None and _NGAN.match(unicodedata.normalize("NFC", ban_nhap or "")):
+            return {"cho_phep": False, "lop_chinh": "ngu_canh", "lop_phu": "chuoi", "loi": False, "ly_do": "THIEU_NGU_CANH"}
+        ly_do = _vi_pham_phu_dinh(ban_nhap, phu_dinh, cau_hs) or _vi_pham(ban_nhap, bai, cau_hs)
+        # ly_do chỉ là LOẠI quyết định (theo bản vá Kiểm định): LO_DAP_AN / XAC_NHAN / THIEU_NGU_CANH / LOI_KIEM_TRA / None
         return {"cho_phep": ly_do is None, "lop_chinh": "sympy", "lop_phu": "chuoi", "loi": False,
-                "ly_do": ly_do and ("xac_nhan" if ly_do == "xac_nhan" else "lo_dap_an")}
+                "ly_do": None if ly_do is None else ("XAC_NHAN" if ly_do == "xac_nhan" else "LO_DAP_AN")}
     except Exception:
-        # FAIL CLOSED: không kiểm được thì không cho qua
-        return {"cho_phep": False, "lop_chinh": "sympy", "lop_phu": "chuoi", "loi": True, "ly_do": "loi_bo_loc"}
+        # FAIL CLOSED: không kiểm được (nạp bộ lọc, đọc sự kiện, parse số, so SymPy) thì CHẶN
+        return {"cho_phep": False, "lop_chinh": "sympy", "lop_phu": "chuoi", "loi": True, "ly_do": "LOI_KIEM_TRA"}
 
 
 def _pairs(su_kien):

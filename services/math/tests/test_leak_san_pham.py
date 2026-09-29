@@ -77,7 +77,7 @@ def test_khong_chan_goi_y_hop_le(t):
                                   "Correct!", "Gần đúng rồi em."])
 def test_chan_xac_nhan_khi_hs_neu_dap_an(nhap):
     r = loc_ban_nhap(nhap, SK_A, "em ra x = 1 và x = 3 đúng không ạ?")
-    assert r["cho_phep"] is False and r["ly_do"] == "xac_nhan"
+    assert r["cho_phep"] is False and r["ly_do"] == "XAC_NHAN"
     r = loc_ban_nhap(nhap, SK_C, "cực tiểu có phải là âm mười bảy không?")
     assert r["cho_phep"] is False
 
@@ -129,3 +129,36 @@ def test_so_0_dung_dau_khong_lam_lot():
     assert loc_ban_nhap("Nghịch biến trên (01; 03).", SK_A)["cho_phep"] is False
     r = loc_ban_nhap("Em xem lại bài 08 trong vở nhé.", SK_A)
     assert r["cho_phep"] is True and r["loi"] is False
+
+
+# --- 29/09: cau_hoc_sinh, THIEU_NGU_CANH, sự kiện phủ định KHONG_CUC_TRI ---------------------------------
+SK_HUU_TI = [["DB", "(-oo;-3)"], ["DB", "(-3;oo)"], ["KHONG_CUC_TRI", ""], ["KHONG_NGHICH_BIEN", ""], ["KHONG_NGHIEM", ""]]
+
+
+def test_thieu_cau_hoc_sinh_tra_loi_ngan_bi_chan():
+    r = loc_ban_nhap("Không.", SK_HUU_TI, None)
+    assert r["cho_phep"] is False and r["ly_do"] == "THIEU_NGU_CANH"
+    r = loc_ban_nhap("có", SK_HUU_TI, None)
+    assert r["cho_phep"] is False and r["ly_do"] == "THIEU_NGU_CANH"
+
+
+def test_khong_cuc_tri_bi_chan():
+    for nhap in ("Hàm này không có cực trị đâu em.", "Hàm số không có điểm cực trị.", "This function has no local maximum.",
+                 "Cực trị thì không có."):
+        assert loc_ban_nhap(nhap, SK_HUU_TI, "cho em hỏi")["cho_phep"] is False, nhap
+
+
+def test_tra_loi_ngan_dung_chu_de_bi_chan():
+    assert loc_ban_nhap("Không có.", SK_HUU_TI, "hàm này có cực trị không ạ?")["cho_phep"] is False
+
+
+def test_goi_y_hop_le_van_qua():
+    assert loc_ban_nhap("Em xét dấu y' trên từng khoảng của tập xác định rồi đọc bảng.", SK_HUU_TI, "em làm tiếp sao ạ")["cho_phep"] is True
+
+
+def test_su_kien_may_co_khong_cuc_tri():
+    from app.machine import bai_lam_may, su_kien_bao_ve
+    sk = su_kien_bao_ve(bai_lam_may("x/(x+3)"))
+    assert ["KHONG_CUC_TRI", ""] in sk
+    sk3 = su_kien_bao_ve(bai_lam_may("x**3-6*x**2+9*x+2"))
+    assert not any(a == "KHONG_CUC_TRI" for a, _ in sk3)

@@ -37,6 +37,9 @@ export default async function HsHome({ searchParams }: { searchParams: Promise<{
     chuaXong.sort((a, b) => {
       if (a.id === goi.problem.id) return -1;
       if (b.id === goi.problem.id) return 1;
+      const ha = giao.find((g) => g.problemId === a.id)?.dueAt?.getTime() ?? Infinity;
+      const hb = giao.find((g) => g.problemId === b.id)?.dueAt?.getTime() ?? Infinity;
+      if (ha !== hb) return ha - hb;
       return MUC4.indexOf(a.mucDo4 as Muc4) - MUC4.indexOf(b.mucDo4 as Muc4);
     });
   }
@@ -74,7 +77,13 @@ export default async function HsHome({ searchParams }: { searchParams: Promise<{
         <div className="mt-6 min-w-0 lg:mt-0 lg:pl-8">
           <SoNav active={so} nGiao={chuaXong.length} />
           {so === "giao" ? (
-            <SoBaiGiao danhSach={chuaXong} idGoi={goi?.problem.id} />
+            <SoBaiGiao
+              danhSach={chuaXong}
+              idGoi={goi?.problem.id}
+              giao={Object.fromEntries(
+                giao.map((a) => [a.problemId, { bo: a.setName ?? null, han: a.dueAt ? a.dueAt.toISOString() : null }]),
+              )}
+            />
           ) : (
             <SoKyNang rows={knHang} dangYeu={goi?.problem.skillCode} />
           )}

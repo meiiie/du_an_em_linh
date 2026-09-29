@@ -195,6 +195,20 @@ def su_kien_bao_ve(bl):
         sk.append(["NGHIEM", str(s)])
     for s in bl.get("y_phay_khong_xd") or []:
         sk.append(["NGHIEM", str(s)])
+    # Sự kiện phủ định: kết luận "không có …" cũng là đáp án phải giữ kín
+    if not (kl.get("cuc_dai_x") or kl.get("cuc_tieu_x")):
+        sk.append(["KHONG_CUC_TRI", ""])
+    else:
+        if not kl.get("cuc_dai_x"):
+            sk.append(["KHONG_CUC_DAI", ""])
+        if not kl.get("cuc_tieu_x"):
+            sk.append(["KHONG_CUC_TIEU", ""])
+    if "dong_bien" in kl and not kl.get("dong_bien") and not kl.get("dong_bien_tren_tap"):
+        sk.append(["KHONG_DONG_BIEN", ""])
+    if "nghich_bien" in kl and not kl.get("nghich_bien") and not kl.get("nghich_bien_tren_tap"):
+        sk.append(["KHONG_NGHICH_BIEN", ""])
+    if not (bl.get("y_phay_bang_0") or bl.get("y_phay_khong_xd")):
+        sk.append(["KHONG_NGHIEM", ""])
     return sk
 
 

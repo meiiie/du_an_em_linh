@@ -1,28 +1,58 @@
 /** Gia sư: luật trước, thang gợi ý, rồi mới API. Không đọc lời giải. */
 
-const ANSWER_RE =
-  /đáp án|dap an|kết quả là gì|ket qua la gi|giải hộ|giai ho|làm giúp|lam giup|nói luôn|noi luon|cho em đáp|cho đáp|in ra lời giải|loi giai|khoảng đồng biến|khoang dong bien|cực đại tại|cuc dai tai/i;
-
-const HINT_RE = /gợi ý|goi y|hint|gợi em|chỉ em bước|chi em buoc/i;
-
+/**
+ * Nhận diện ý định (thử gia sư giai đoạn 2, N3/N8): chỉ bắt MẪU XIN, không bắt cụm chủ đề
+ * ("khoảng đồng biến nghĩa là gì" là câu khái niệm, không phải xin đáp án).
+ */
+const ANSWER_RE = new RegExp(
+  [
+    "đáp án", "dap an", "cho em (xin )?(kết quả|lời giải|bảng|các khoảng|khoảng|nghiệm|giá trị)", "giải (hộ|giúp|dùm)",
+    "làm (hộ|giúp|dùm)", "nói luôn", "in (ra )?lời giải", "lời giải đầy đủ", "loi giai", "bảng biến thiên mẫu", "bảng mẫu",
+    "kết quả (là gì|bằng bao nhiêu)", "bằng bao nhiêu", "là bao nhiêu", "từ (số )?mấy", "số mấy", "mấy điểm cực trị",
+    "có cực trị không", "âm hay dương\\?", "tăng hay giảm", "chọn một thôi", "trả lời có hoặc không", "nói .?đúng.? hoặc .?sai",
+    "bài tương tự với số y hệt", "giải thích ngược từ kết quả", "liệt kê các khoảng",
+    "\\banswer\\b", "\\bsolution\\b", "what are the", "just the numbers", "solve (it|this)", "tell me the",
+  ].join("|"),
+  "i",
+);
+const JAILBREAK_RE = /bỏ qua (mọi |tất cả )?(hướng dẫn|chỉ dẫn|luật)|ignore (the |all |previous |your )|developer mode|\[system\]|protected_facts|máy giải toán không giới hạn|thầy (giáo|cô)? ?cho phép|em là giáo viên/i;
+const HINT_RE = /gợi ý|goi y|\bhint\b|gợi em|chỉ em bước|chi em buoc|không biết bắt đầu|bắt đầu từ đâu/i;
 const WHERE_RE = /sai chỗ|sai cho|chỗ nào|cho nao|vì sao sai|vi sao sai|em sai/i;
+const KHAI_NIEM_RE = /nghĩa là (gì|sao)|là gì|là sao|định nghĩa|khái niệm|hiểu thế nào|tại sao phải|vì sao phải|what does .* mean/i;
+const CUA_BAI_NAY = /(hàm|bài) (số )?này|của nó|\bthis function\b/i;
+const KIEM_RE = /(đúng (không|chưa|chứ)|phải không|có phải|đúng hông|is (it|this) (right|correct))/i;
 
 /** «Đừng nêu đáp án» là ràng buộc, không phải xin đáp án. */
-const TU_CHOI_DAP_AN =
-  /(đừng|chớ|chơ|không|khong)\s+.{0,28}(đáp án|dap an|lời giải|loi giai|khoảng đồng biến|cực đại tại)/i;
+const TU_CHOI_DAP_AN = /(đừng|chớ|không|khong)\s+.{0,28}(đáp án|dap an|lời giải|loi giai)/i;
+
+export type YDinh = "XIN_DAP_AN" | "KIEM_KET_QUA" | "KHAI_NIEM" | "GOI_Y" | "SAI_CHO" | "KHAC";
+
+export function yDinh(text: string): YDinh {
+  const t = (text || "").trim();
+  if (!t) return "KHAC";
+  const coSo = /\d|\(|;|âm |dương |một|hai|ba\b/i.test(t);
+  if (JAILBREAK_RE.test(t)) return "XIN_DAP_AN";
+  // Câu hỏi khái niệm CHUNG ("... nghĩa là gì", "định nghĩa", "khái niệm") không nhắc tới bài này -> trả lời khái niệm (A14, A15).
+  // Câu hỏi mẩu kết quả CỦA BÀI NÀY (A11, C06, D02, B04) vẫn là xin đáp án.
+  if (/nghĩa là (gì|sao)|định nghĩa|khái niệm/i.test(t) && !CUA_BAI_NAY.test(t) && !/đáp án|lời giải|kết quả/i.test(t)) return "KHAI_NIEM";
+  if (!TU_CHOI_DAP_AN.test(t) && ANSWER_RE.test(t)) return "XIN_DAP_AN";
+  if (KIEM_RE.test(t) && coSo) return "KIEM_KET_QUA";
+  if (HINT_RE.test(t)) return "GOI_Y";
+  if (WHERE_RE.test(t)) return "SAI_CHO";
+  if (KHAI_NIEM_RE.test(t)) return CUA_BAI_NAY.test(t) ? "XIN_DAP_AN" : "KHAI_NIEM";
+  return "KHAC";
+}
 
 export function xinDapAn(text: string) {
-  const t = (text || "").trim();
-  if (TU_CHOI_DAP_AN.test(t)) return false;
-  return ANSWER_RE.test(t);
+  return yDinh(text) === "XIN_DAP_AN";
 }
 
 export function xinGoiY(text: string) {
-  return HINT_RE.test(text) && !xinDapAn(text);
+  return yDinh(text) === "GOI_Y";
 }
 
 export function xinSaiCho(text: string) {
-  return WHERE_RE.test(text) && !xinDapAn(text);
+  return yDinh(text) === "SAI_CHO";
 }
 
 /** VanLehn / Andes: gợi ý khi em hỏi. Aleven: không bottom-out đáp án. */
@@ -30,11 +60,11 @@ export const GOI_Y_MAC_DINH: Record<string, [string, string, string]> = {
   "B.DH.TXD": [
     "Bước này chỉ hỏi hàm còn nghĩa ở đâu. Em nhìn từng thành phần: chia, căn, log.",
     "Em viết điều kiện tồn tại rồi lấy phần giao. Đa thức thường không bị loại điểm.",
-    "Nếu không có mẫu hay căn chẵn, tập xác định là cả đường thẳng thực. Em viết ký hiệu đó, đừng nhảy sang đạo hàm.",
+    "",
   ],
   "B.DH.DAOHAM": [
-    "Em chỉ tính $y'$. Tách tổng rồi lấy từng hạng tử.",
-    "Nhớ $(x^n)' = n x^{n-1}$ và hằng số có đạo hàm $0$. Đếm lại số hạng sau khi hạ bậc.",
+    "Em chỉ tính $y'$. Hàm có dạng tổng, tích hay thương? Chọn quy tắc hợp với dạng đó.",
+    "Tổng: đạo hàm từng hạng tử, $(x^n)' = n x^{n-1}$. Thương: $(u/v)' = (u'v - uv')/v^2$.",
     "Viết một dòng $y' = \\ldots$ đủ mọi hạng tử. Chưa giải $y' = 0$ ở bước này.",
   ],
   "B.DH.NGHIEM": [
@@ -54,26 +84,27 @@ export const GOI_Y_MAC_DINH: Record<string, [string, string, string]> = {
   ],
 };
 
+/** Chỉ dùng khi bài KHÔNG có thang gợi ý đã kiểm định trong hint_levels. Cấp trống trả null. */
 export function goiYBuoc(ma: string, cap: number, daKiem?: string | null) {
   const n = Math.min(3, Math.max(1, cap));
   if (daKiem) return daKiem;
-  const hang = GOI_Y_MAC_DINH[ma] || GOI_Y_MAC_DINH["B.DH.DAOHAM"];
-  return hang[n - 1];
+  const hang = GOI_Y_MAC_DINH[ma] || GOI_Y_MAC_DINH["B.DH.TXD"];
+  return hang[n - 1] || null;
 }
 
 /** Aleven / Help Tutor: gợi ý nguyên lý, không operative bottom-out. */
 export function cauHoiXocratis(ma: string) {
   const hang: Record<string, string> = {
     "B.DH.TXD": "Em tự hỏi: chỗ nào của hàm có thể làm mất nghĩa?",
-    "B.DH.DAOHAM": "Em tự hỏi: mỗi hạng tử hạ bậc thế nào, hằng số đi đâu?",
+    "B.DH.DAOHAM": "Em tự hỏi: hàm có dạng tổng, tích hay thương, và quy tắc nào dùng cho dạng đó?",
     "B.DH.NGHIEM": "Em tự hỏi: ngoài y′ = 0, còn điểm nào y′ mất nghĩa trên tập xác định?",
     "B.DH.XETDAU": "Em tự hỏi: trên mỗi khoảng, một số thử cho dấu gì?",
     "B.DH.KETLUAN": "Em tự hỏi: dấu đổi ở mốc nào, và có bị loại điểm không?",
   };
-  return hang[ma] || hang["B.DH.DAOHAM"];
+  return hang[ma] || hang["B.DH.TXD"];
 }
 
-export function chinhSachXinDapAn(lan: number, goiY: string | null, chuaNop = false) {
+export function chinhSachXinDapAn(lan: number, goiY: string | null, chuaNop = false, baiDe?: string | null) {
   const nop = chuaNop ? " Em nộp bước đang làm trước, mình mới tô được chỗ sai." : "";
   const goi = goiY ? `\n\n**Gợi ý.** ${goiY}` : "";
   if (lan <= 1) {
@@ -86,11 +117,13 @@ export function chinhSachXinDapAn(lan: number, goiY: string | null, chuaNop = fa
       goi || "\n\nEm viết lại dòng đó, chưa cần ra kết quả cuối."
     }`;
   }
-  return "Mình không đưa đáp án của bài này. Em có thể nghỉ vài phút, làm một bài dễ hơn, hoặc bấm Gửi thầy cô.";
+  return `Mình không đưa đáp án của bài này. Em có thể nghỉ vài phút, ${baiDe ? `làm bài dễ hơn «${baiDe}»` : "làm một bài dễ hơn"}, hoặc bấm Gửi thầy cô.`;
 }
 
 export function mauGiaSu(opts: {
   state: string;
+  daNop: boolean;
+  ketQua: string | null;
   thongBao: string | null;
   loai: string | null;
   maLoi: string | null;
@@ -100,30 +133,53 @@ export function mauGiaSu(opts: {
   goiY: string | null;
   cap: number;
   maBuoc: string;
+  tenBuoc: string;
   xinSai?: boolean;
+  soVanDeKhac?: number;
 }) {
+  const goi = opts.goiY ? `\n\n**Gợi ý.** ${opts.goiY}` : "";
+  // N1: chưa nộp thì không nói "vừa nộp" hay "chưa ổn"
+  if (!opts.daNop) {
+    return `Em chưa nộp bước nào của bài này. Em đang ở bước ${opts.tenBuoc}: viết bước đó rồi bấm Nộp, mình mới chấm và tô được chỗ cần sửa.${goi}`;
+  }
+  if (opts.ketQua === "DAT") {
+    if (opts.state === "TONG_KET") {
+      return "Em đã đi hết các bước của bài này. Em thử nói lại bằng lời: em đã dùng dấu của y′ để kết luận thế nào?";
+    }
+    return `Các bước em đã nộp đều đạt. Giờ em làm bước ${opts.tenBuoc} rồi nộp.${goi}`;
+  }
+  if (opts.ketQua === "KHONG_KIEM_DUOC") {
+    return `${opts.thongBao || "Máy chưa đọc được dòng vừa nộp."} Em viết lại theo mẫu gợi ý trong ô rồi nộp lại.${goi}`;
+  }
+  const con = opts.soVanDeKhac ? ` Sửa xong chỗ này, còn ${opts.soVanDeKhac} chỗ cần xem lại.` : "";
+  if (opts.loai === "SAI_THU_TU_MOC") {
+    return `Các mốc trên hàng x chưa theo thứ tự tăng dần. Em sắp lại các mốc từ trái sang phải trước, rồi mới xét dấu từng khoảng.${con}${goi}`;
+  }
   if (opts.loai === "DAU_DOI_TRONG_KHOANG") {
-    return "Ở bước nghiệm, có một khoảng mà y′ đổi dấu bên trong. Em tìm lại các điểm làm y′ bằng 0 hoặc không xác định. Mình không bảo em sửa dấu trước.";
+    return `Có một khoảng em dựng mà y′ đổi dấu bên trong. Em tìm lại các điểm làm y′ bằng 0 hoặc không xác định. Mình không bảo em sửa dấu trước.${con}${goi}`;
   }
   const loi =
-    opts.maLoi && opts.tenLoi && opts.doTinCay != null && opts.doTinCay >= opts.nguong
-      ? ` Có thể em đang gặp lỗi: ${opts.tenLoi}.`
-      : opts.thongBao
-        ? ""
-        : " Dòng hoặc ô này chưa ổn, em kiểm tra lại.";
-  if (opts.xinSai && opts.thongBao) {
-    return `${opts.thongBao}${loi} Mình chỉ tô bước đang sai, không sửa hộ từng số.`;
-  }
-  if (opts.cap > 0 && opts.goiY) {
-    return `${opts.thongBao || "Mình xem bước em vừa nộp."}${loi}\n\n**Gợi ý.** ${opts.goiY}`;
-  }
-  if (opts.state === "TONG_KET") {
-    return "Em đã đi hết các bước của bài này. Em thử nói lại bằng lời: em đã dùng dấu của y′ để kết luận thế nào?";
-  }
-  if (!opts.thongBao) {
-    return `${goiYBuoc(opts.maBuoc, 1)} Em làm rồi nộp bước đó, mình mới chấm được.`;
-  }
-  return `${opts.thongBao}${loi} Em sửa rồi nộp lại bước đó nhé.`;
+    opts.maLoi && opts.tenLoi && opts.doTinCay != null && opts.doTinCay >= opts.nguong ? ` Có thể em đang gặp lỗi: ${opts.tenLoi}.` : "";
+  const tb = opts.thongBao || `Bước ${opts.tenBuoc} chưa ổn, em kiểm tra lại.`;
+  if (opts.xinSai) return `${tb}${loi} Mình chỉ tô chỗ đang sai, không sửa hộ từng số.${con}`;
+  return `${tb}${loi}${con}${goi || " Em sửa rồi nộp lại bước đó nhé."}`;
+}
+
+/** Câu khái niệm (N3): trả lời bằng thẻ công thức/tài liệu lớp, không đụng số của bài. */
+export function traLoiKhaiNiem(text: string, the: { ten: string; noiDung: string }[]) {
+  const t = text.toLowerCase();
+  const chon =
+    the.find((c) => t.includes("đồng biến") && /đơn điệu|đồng biến/i.test(c.ten + c.noiDung)) ||
+    the.find((c) => /cực (đại|tiểu|trị)/.test(t) && /cực trị/i.test(c.ten)) ||
+    the.find((c) => /tới hạn/.test(t) && /tới hạn/i.test(c.ten)) ||
+    the.find((c) => /đạo hàm|y'|y′/.test(t) && /đạo hàm/i.test(c.ten)) ||
+    the[0];
+  if (!chon) return "Đây là câu hỏi khái niệm. Em mở Kho công thức của lớp, mục liên quan, đọc định nghĩa rồi hỏi lại mình chỗ chưa rõ.";
+  return `Theo «${chon.ten}» trong kho công thức của lớp: ${chon.noiDung}\n\nEm thử diễn đạt lại bằng lời của mình, rồi áp vào bước đang làm.`;
+}
+
+export function traLoiKiemKetQua(tenBuoc: string) {
+  return `Mình không xác nhận đúng hay sai từng kết quả qua tin nhắn. Em ghi kết quả vào bước ${tenBuoc} rồi bấm Nộp: bộ chấm sẽ tô đúng dòng hoặc ô cần sửa.`;
 }
 
 export const HE_THONG_GIA_SU =

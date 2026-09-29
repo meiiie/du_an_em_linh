@@ -137,6 +137,8 @@ export const problems = pgTable("problems", {
   statementText: text("statement_text").notNull(),
   statementLatex: text("statement_latex").notNull(),
   hamSympy: text("ham_sympy"),
+  // SP-06(d): dạng trả lời. TU_LUAN_5_BUOC = khung 5 bước; TN_DUNG_SAI, TRA_LOI_NGAN... là dạng khác (chưa có khung làm trên app)
+  dangTraLoi: text("dang_tra_loi").notNull().default("TU_LUAN_5_BUOC"),
   origin: text("origin").notNull(),
   status: text("status").notNull(),
   contentHash: text("content_hash").notNull(),
@@ -212,6 +214,10 @@ export const assignments = pgTable("assignments", {
   problemId: uuid("problem_id").notNull(),
   studentId: uuid("student_id").notNull(),
   status: text("status").notNull(),
+  setName: text("set_name"),
+  dueAt: timestamp("due_at", { withTimezone: true }),
+  assignedBy: uuid("assigned_by"),
+  assignedAt: timestamp("assigned_at", { withTimezone: true }),
 });
 
 export const submissionSteps = pgTable("submission_steps", {
@@ -272,6 +278,7 @@ export const gradingResults = pgTable("grading_results", {
   doTinCay: real("do_tin_cay"),
   perBuoc: jsonb("per_buoc"),
   thongBao: text("thong_bao"),
+  cacVanDe: jsonb("cac_van_de"),
 });
 
 export const tutorSessions = pgTable("tutor_sessions", {
@@ -283,6 +290,8 @@ export const tutorSessions = pgTable("tutor_sessions", {
   answerRequests: integer("answer_requests").notNull(),
   sameErrorRepeats: integer("same_error_repeats").notNull(),
   lastBuoc: text("last_buoc"),
+  hintCaps: jsonb("hint_caps"),
+  answerRequestsBuoc: text("answer_requests_buoc"),
   startedAt: timestamp("started_at", { withTimezone: true }).defaultNow().notNull(),
 });
 

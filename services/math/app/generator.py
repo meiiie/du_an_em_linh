@@ -13,7 +13,8 @@ GOI_Y = {
     "B.DH.TXD": [
         "Hàm này có mẫu số hoặc căn bậc hai không? Hãy viết điều kiện để biểu thức có nghĩa.",
         "Tập xác định là những x làm cho mẫu khác 0 và biểu thức dưới căn không âm. Ghi thành một dòng.",
-        "Viết tập xác định dạng D = ℝ hoặc D = ℝ \\ {a} (bỏ đi các điểm làm mẫu bằng 0).",
+        # SP-17: cấp 3 TXĐ để trống (mọi cấp 3 đều lộ kết quả) -> hết thang thì chuyển bài tương tự
+        None,
     ],
     "B.DH.DAOHAM": [
         "Em tính đạo hàm từng hạng tử bằng quy tắc nào?",
@@ -51,6 +52,14 @@ def _hints(bl=None):
                 "(u/v)' = (u'v − uv')/v². Em xác định u, v rồi tính u', v' trước.",
                 "Viết u, v, u', v' mỗi thứ một dòng nháp, rồi thế vào công thức thương và rút gọn tử số.",
             ]
+            # Phân thức: điểm tới hạn đến từ tử (y' = 0) và mẫu (y' không xác định); dấu = dấu tử / dấu mẫu
+            goi["B.DH.NGHIEM"][1:] = [
+                "y' là một phân thức: tử số bằng 0 cho nghiệm của y' = 0, mẫu số bằng 0 cho điểm y' không xác định. "
+                "Điểm nào không thuộc tập xác định thì không phải điểm tới hạn.",
+                "Rút gọn y' thành một phân thức, rồi xét riêng tử số và mẫu số. Nếu tử là hằng số khác 0 thì y' = 0 vô nghiệm.",
+            ]
+            goi["B.DH.XETDAU"][1] = ("Dấu của một thương là dấu của tử chia dấu của mẫu. Mẫu có dạng bình phương thì luôn dương "
+                                   "tại mọi điểm thuộc tập xác định.")
         else:
             goi["B.DH.DAOHAM"][1] = "Nhớ (x^n)' = n·x^(n-1), đạo hàm của tổng bằng tổng các đạo hàm, hằng số có đạo hàm 0."
         try:
@@ -62,8 +71,22 @@ def _hints(bl=None):
                                    "rồi chọn mũi tên tương ứng." % ", ".join(thu))
     out = []
     for ma, caps in goi.items():
-        out.append({"ma_buoc": ma, "cac_cap": [{"cap": i + 1, "noi_dung": caps[i]} for i in range(3)]})
+        out.append({"ma_buoc": ma, "cac_cap": [
+            {"cap": i + 1, "noi_dung": caps[i]} if caps[i] else
+            {"cap": i + 1, "noi_dung": None, "ly_do_trong": "Cấp này để trống theo Sư phạm: nói thêm là lộ kết quả."}
+            for i in range(3)]})
     return out
+
+
+def _phan_so(s):
+    """Mốc (chuỗi máy sinh) -> Fraction, không dùng eval (F-01)."""
+    from fractions import Fraction
+    from app.paths import load_kiem
+    v = load_kiem().P(str(s).replace("^", "**"))
+    try:
+        return Fraction(str(v))
+    except (ValueError, ZeroDivisionError):
+        return Fraction(float(v)).limit_denominator(100)
 
 
 def _diem_thu(bl):
@@ -74,11 +97,11 @@ def _diem_thu(bl):
     for i in range(len(moc) - 1):
         a, b = moc[i], moc[i + 1]
         if a in ("-oo",):
-            v = Fraction(str(eval(b.replace("^", "**")))) - 1
+            v = _phan_so(b) - 1
         elif b in ("+oo", "oo"):
-            v = Fraction(str(eval(a.replace("^", "**")))) + 1
+            v = _phan_so(a) + 1
         else:
-            fa, fb = Fraction(str(eval(a))), Fraction(str(eval(b)))
+            fa, fb = _phan_so(a), _phan_so(b)
             v = (fa + fb) / 2
             import math
             c = math.floor(fa) + 1
@@ -138,11 +161,14 @@ def sinh(payload):
     hints = _hints(bl)
     for block in hints:
         for cap in block["cac_cap"]:
-            quyet = loc_ban_nhap(cap["noi_dung"], sk)
+            if not cap.get("noi_dung"):
+                continue
+            quyet = loc_ban_nhap(cap["noi_dung"], sk, "")
             cap["qua_loc"] = quyet["cho_phep"]
             if not quyet["cho_phep"]:
-                cap["noi_dung"] = "Em đọc lại đề và làm nốt bước đang dở. Mình không đưa kết quả của bước này."
-                cap["qua_loc"] = True
+                # Không thay bằng câu chung: để trống cấp này (không tạo dòng gợi ý), hết thang thì chuyển bài tương tự
+                cap["noi_dung"] = None
+                cap["ly_do_trong"] = "Bộ lọc chặn vì có thể lộ kết quả (%s)." % quyet.get("ly_do")
     lx = latex_ham(ham)
     return {
         "dang": dang,

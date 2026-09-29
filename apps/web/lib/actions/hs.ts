@@ -6,6 +6,8 @@ import { requireRole } from "../auth";
 import { db } from "../db";
 import {
   auditLogs,
+  classSettings,
+  solutions,
   escalations,
   gradingResults,
   inputEvents,
@@ -16,12 +18,13 @@ import {
   submissions,
   tutorMessages,
 } from "../db/schema";
-import { assertMayLearn, loadConfig, nghiDoanMo, applyMastery } from "../learning";
+import { assertMayLearn, loadConfig, nghiDoanMo, applyMastery, recommend } from "../learning";
 import { mathJob, type GradeResult } from "../math";
 import type { AiPublicConfig } from "../ai-catalog";
 import { caiDatGiaSuCongKhaiCho, chayHoiGiaSu, sessionFor } from "../gia-su-luot";
 import { taiNguyenKhoLop } from "../kho-lop";
 import { docTrichDanLuu, xemKhoTheoKhung } from "../kien-thuc";
+import { loiGiaiHocSinh } from "../loi-giai";
 
 type Line = { dong: number; latex: string; loai?: string };
 type Cell = { hang: string; k: number; gia_tri: string };
@@ -56,7 +59,9 @@ export async function nopBuoc(problemId: string, body: StepPayload) {
       cac_buoc: body.cac_buoc,
     });
   } catch (e) {
-    return { ok: false as const, thong_bao: e instanceof Error ? e.message : "Không gọi được dịch vụ toán." };
+    // B-20: chi tiết lỗi dịch vụ toán chỉ vào log, học sinh nhận câu chung
+    console.error("grade lỗi", e instanceof Error ? e.message : e);
+    return { ok: false as const, thong_bao: "Máy chấm đang bận. Em thử lại sau ít giây nhé." };
   }
   const subId = crypto.randomUUID();
   const finished = graded.ket_qua === "DAT" && body.nop_toi === "B.DH.KETLUAN" && !graded.chua_xong;
@@ -81,7 +86,7 @@ export async function nopBuoc(problemId: string, body: StepPayload) {
         latex: line.latex,
         rawInput: line.latex,
         normalizedInput: norm?.chuoi_chuan_hoa || null,
-        normalizerVersion: "norm-0.1",
+        normalizerVersion: graded.phien_ban_chuan_hoa || "norm-0.2",
         normalizeStatus: norm?.trang_thai_chuan_hoa || null,
       });
     }
@@ -125,11 +130,13 @@ export async function nopBuoc(problemId: string, body: StepPayload) {
     doTinCay: graded.do_tin_cay,
     perBuoc: graded.per_buoc,
     thongBao: graded.thong_bao,
+    cacVanDe: graded.cac_van_de ?? null,
   });
   await applyMastery({
     studentId: user.id,
     submissionId: subId,
     problemSkill: p.skillCode,
+    problemMuc: p.mucDo4,
     ketQua: graded.ket_qua,
     buocSai: graded.buoc_sai,
     maLoi: graded.ma_loi,
@@ -138,10 +145,27 @@ export async function nopBuoc(problemId: string, body: StepPayload) {
     finished,
   });
   revalidatePath("/hs");
+  let tiepTheo: { id: string; code: string; lyDo: string } | null = null;
+  if (finished) {
+    const goi = await recommend(user.id, problemId);
+    if (goi) tiepTheo = { id: goi.problem.id, code: goi.problem.code, lyDo: goi.lyDo };
+  }
+  // F-05: lời giải chỉ rời máy chủ SAU khi HS xong bài và lớp bật "mở lời giải sau khi nộp"
+  let loiGiai: string | null = null;
+  if (finished) {
+    const st = await db.select().from(classSettings).limit(1);
+    if (st[0]?.moLoiGiaiSauKhiNop === true) {
+      const sol = (await db.select().from(solutions).where(eq(solutions.problemId, problemId)).limit(1))[0];
+      loiGiai = loiGiaiHocSinh(sol?.baiLam, sol?.finalAnswer);
+    }
+  }
   return {
     ok: true as const,
     ket_qua: graded.ket_qua,
     loai_ket_qua: graded.loai_ket_qua,
+    cac_van_de: graded.cac_van_de ?? [],
+    tiep_theo: tiepTheo,
+    loi_giai: loiGiai,
     buoc_sai: graded.buoc_sai,
     ma_loi: graded.ma_loi,
     thong_bao: lyDo ? `${graded.thong_bao} Bài này bị đánh dấu đoán mò nên không tính lên mức.` : graded.thong_bao,
@@ -159,10 +183,10 @@ export async function caiDatGiaSuCongKhai(): Promise<AiPublicConfig> {
 export async function hoiGiaSu(
   problemId: string,
   text: string,
-  tuyChon?: { provider?: string; model?: string },
+  tuyChon?: { provider?: string; model?: string; maBuoc?: string },
 ) {
   const user = await requireRole("HS");
-  return chayHoiGiaSu({ user, problemId, text, provider: tuyChon?.provider, model: tuyChon?.model });
+  return chayHoiGiaSu({ user, problemId, text, provider: tuyChon?.provider, model: tuyChon?.model, maBuoc: tuyChon?.maBuoc });
 }
 
 export async function khoLopCongKhai() {

@@ -105,9 +105,24 @@ def normalize_expr(raw):
         t = t.replace(name + "*(", name + "(")
     t = re.sub(r"(\))(\()", r"\1*\2", t)
     t = re.sub(r"(\))([a-zA-Z])", r"\1*\2", t)
-    if not t or not re.fullmatch(r"[0-9a-zA-Z+\-*/().,_=<>!| ]+", t):
-        # vẫn cho ** và dấu chấm
-        if not re.fullmatch(r"[0-9a-zA-Z+\-*/().,_*=<>]+", t):
+    return _chi_bieu_thuc_toan(t)
+
+
+# F-01: chỉ những tên này được đi tiếp tới SymPy. Mọi chữ ghép khác (vd "frac3" do LaTeX hỏng, "__class__")
+# làm chuỗi bị từ chối -> None -> KHONG_KIEM_DUOC; không bao giờ SAI vì lỗi chuẩn hoá, không bao giờ eval.
+TEN_TRANG = frozenset({"x", "sqrt", "Abs", "log", "ln", "sin", "cos", "tan", "cot", "exp", "pi", "e", "E", "oo"})
+
+
+def _chi_bieu_thuc_toan(t):
+    if not t or len(t) > 300:
+        return None
+    if not re.fullmatch(r"[0-9a-zA-Z+\-*/().]+", t):
+        return None
+    # dấu chấm chỉ được nằm giữa hai chữ số (số thập phân)
+    if re.search(r"(?<![0-9])\.|\.(?![0-9])", t):
+        return None
+    for ten in re.findall(r"[A-Za-z]+", t):
+        if ten not in TEN_TRANG:
             return None
     return t
 

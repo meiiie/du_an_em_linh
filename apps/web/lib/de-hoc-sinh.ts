@@ -67,7 +67,8 @@ export function nhanMuc4(code: string | null | undefined) {
 export function hamLatex(statementLatex: string | null | undefined) {
   const raw = (statementLatex || "").trim();
   if (!raw) return "";
-  if (raw.startsWith("\\") || raw.includes("=")) return raw;
+  // Phân thức (\frac…) cũng cần "y =" đứng trước; chỉ giữ nguyên khi chuỗi đã có dấu "=".
+  if (raw.includes("=")) return raw;
   return `y = ${raw}`;
 }
 

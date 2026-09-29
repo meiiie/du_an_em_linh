@@ -27,10 +27,82 @@ LOC = dict(x=x, a=a, b=b, k=k, C=C, pi=pi, E=E, e=E, oo=oo, Abs=Abs, sqrt=sqrt, 
 EPS = 1e-35
 
 
+# --- An toàn đầu vào (F-01, 29/09) -------------------------------------------------------------
+# parse_expr dùng eval. Chuỗi tới đây có thể đến từ học sinh, nên TRƯỚC khi gọi parse_expr phải kiểm cây cú pháp:
+# chỉ cho số, tên (không bắt đầu bằng "_", không phải tên dựng sẵn của Python), phép toán, và lời gọi tới hàm
+# toán trong danh sách trắng. Cấm thuộc tính (a.b), chỉ số (a[b]), lambda, comprehension, chuỗi ký tự, từ khoá
+# tham số, lũy thừa hằng quá lớn. Vi phạm -> ValueError (tầng trên trả KHONG_KIEM_DUOC, không bao giờ chấm).
+import ast as _ast
+import os
+import builtins as _builtins
+
+DO_DAI_TOI_DA = 400
+HAM_CHO_PHEP = frozenset({
+    'sqrt', 'Abs', 'log', 'ln', 'exp', 'sin', 'cos', 'tan', 'cot', 'Ne', 'Eq', 'binomial', 'factorial',
+    'Integer', 'Rational', 'Float', 'Symbol', 'root', 'cbrt', 'sign', 'Max', 'Min', 'floor', 'ceiling',
+    'asin', 'acos', 'atan', 'Interval', 'Union', 'FiniteSet', 'Mod', 'Piecewise',
+})
+_TEN_CAM = frozenset(n for n in dir(_builtins) if n not in HAM_CHO_PHEP) | {
+    'lambda', 'sympy', 'os', 'sys', 'subprocess', 'importlib', 'globals', 'locals', 'vars', 'getattr',
+    'setattr', 'delattr', 'eval', 'exec', 'compile', 'open', 'input', 'breakpoint', 'help', 'exit', 'quit',
+    'type', 'object', 'dir', 'memoryview', 'bytearray', 'bytes', 'classmethod', 'staticmethod', 'super',
+    'property', 'sympify', 'parse_expr', 'lambdify', 'init_printing', 'var', 'symbols', 'preview', 'plot',
+}
+_NUT_CHO_PHEP = (
+    _ast.Expression, _ast.BinOp, _ast.UnaryOp, _ast.Compare, _ast.BoolOp, _ast.Tuple, _ast.Name, _ast.Load,
+    _ast.Constant, _ast.Call,
+    _ast.Add, _ast.Sub, _ast.Mult, _ast.Div, _ast.Pow, _ast.Mod, _ast.FloorDiv, _ast.USub, _ast.UAdd,
+    _ast.Eq, _ast.NotEq, _ast.Lt, _ast.LtE, _ast.Gt, _ast.GtE, _ast.And, _ast.Or,
+)
+
+
+def _co_ten(nut):
+    return any(isinstance(n, _ast.Name) for n in _ast.walk(nut))
+
+
+def kiem_an_toan(s):
+    """Ném ValueError nếu chuỗi không phải biểu thức toán an toàn."""
+    s = str(s)
+    if len(s) > DO_DAI_TOI_DA:
+        raise ValueError('biểu thức quá dài')
+    if '__' in s or "'" in s or '"' in s or '\\' in s or '[' in s or ']' in s or ';' in s or '@' in s:
+        raise ValueError('ký tự không cho phép')
+    try:
+        cay = _ast.parse(s.strip(), mode='eval')
+    except SyntaxError as e:
+        raise ValueError('cú pháp không hợp lệ') from e
+    for nut in _ast.walk(cay):
+        if not isinstance(nut, _NUT_CHO_PHEP):
+            raise ValueError('cấu trúc không cho phép: %s' % type(nut).__name__)
+        if isinstance(nut, _ast.Name):
+            if nut.id.startswith('_') or nut.id in _TEN_CAM or len(nut.id) > 12:
+                raise ValueError('tên không cho phép: %s' % nut.id)
+        elif isinstance(nut, _ast.Constant):
+            v = nut.value
+            if isinstance(v, bool) or not isinstance(v, (int, float)):
+                raise ValueError('hằng không cho phép')
+            if isinstance(v, int) and abs(v) >= 10 ** 15:
+                raise ValueError('số quá lớn')
+        elif isinstance(nut, _ast.Call):
+            if not isinstance(nut.func, _ast.Name) or nut.func.id not in HAM_CHO_PHEP or nut.keywords:
+                raise ValueError('lời gọi không cho phép')
+        elif isinstance(nut, _ast.BinOp) and isinstance(nut.op, _ast.Pow):
+            mu = nut.right
+            if isinstance(mu, _ast.UnaryOp):
+                mu = mu.operand
+            if isinstance(mu, _ast.Constant) and isinstance(mu.value, (int, float)) and abs(mu.value) > 64:
+                raise ValueError('số mũ quá lớn')
+            if not _co_ten(nut.right) and any(isinstance(n, _ast.BinOp) and isinstance(n.op, _ast.Pow)
+                                              for n in _ast.walk(nut.right)):
+                raise ValueError('lũy thừa tầng không cho phép')
+    return s
+
+
 def P(s, extra=None):
     d = dict(LOC)
     if extra:
         d.update(extra)
+    kiem_an_toan(s)
     return parse_expr(str(s), local_dict=d, transformations=TRANS)
 
 
@@ -580,6 +652,10 @@ _NS_DEM = dict(product=itertools.product, permutations=itertools.permutations,
 
 def kiem_dem(khong_gian, gia_tri_ai, su_kien=None):
     """Liệt kê không gian mẫu (mô hình hóa do người soạn, độc lập với AI)."""
+    # F-01: kiem_dem dùng eval cho mô hình do người soạn viết; KHÔNG có đường gọi từ dịch vụ (app/). Chỉ mở
+    # khi chạy bộ kiểm của Kiểm định (biến môi trường), để không ai vô tình nối nó với dữ liệu HS.
+    if os.environ.get('HOC_TOAN_CHO_KIEM_DEM') != '1':
+        return ket_qua('KHONG_KIEM_DUOC', 'dem', 'kiem_dem bị tắt trong dịch vụ (cần HOC_TOAN_CHO_KIEM_DEM=1)')
     ns = {'__builtins__': {}}
     ns.update(_NS_DEM)
     omega = list(eval(khong_gian, ns))

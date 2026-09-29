@@ -1,7 +1,7 @@
 "use server";
 
 import { createHash } from "crypto";
-import { eq } from "drizzle-orm";
+import { and, eq, inArray } from "drizzle-orm";
 import { mkdir, writeFile } from "fs/promises";
 import path from "path";
 import { revalidatePath } from "next/cache";
@@ -11,7 +11,9 @@ import { laNhaKhoa, parseProvider } from "../ai-catalog";
 import { probeProvider } from "../ai-harness";
 import { db, sql } from "../db";
 import {
+  assignments,
   auditLogs,
+  enrollments,
   classSettings,
   contentReviews,
   documents,
@@ -164,15 +166,25 @@ export async function duyetBai(problemId: string, note: string) {
   });
   const runs = await db.select().from(verificationRuns).where(eq(verificationRuns.problemId, problemId));
   const run = [...runs].sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())[0];
-  if (run) {
-    const tiers = await db.select().from(verificationTierResults).where(eq(verificationTierResults.runId, run.id));
-    for (const t of tiers) {
-      if (t.status === "KHONG_KIEM_DUOC") {
-        await db
-          .update(verificationTierResults)
-          .set({ status: "GV_DUYET", reasonText: `GV_DUYET bởi ${user.displayName}: ${note}` })
-          .where(eq(verificationTierResults.id, t.id));
-      }
+  // Không có kết quả kiểm định (hoặc kết quả đã cũ vì kho đổi) = không phát hành. GV chỉ duyệt thay tầng KHÔNG KIỂM ĐƯỢC;
+  // tầng SAI thì không duyệt được.
+  if (!run || run.stale) {
+    await audit(user.id, "DUYET_BI_CHAN", "problem", problemId, !run ? "chưa có lần kiểm định" : "kết quả kiểm định đã cũ");
+    revalidatePath("/gv/duyet");
+    return;
+  }
+  const tiers = await db.select().from(verificationTierResults).where(eq(verificationTierResults.runId, run.id));
+  if (tiers.length < 3 || tiers.some((t) => t.status === "SAI")) {
+    await audit(user.id, "DUYET_BI_CHAN", "problem", problemId, "có tầng SAI hoặc thiếu tầng");
+    revalidatePath("/gv/duyet");
+    return;
+  }
+  for (const t of tiers) {
+    if (t.status === "KHONG_KIEM_DUOC") {
+      await db
+        .update(verificationTierResults)
+        .set({ status: "GV_DUYET", reasonText: `GV_DUYET bởi ${user.displayName}: ${note}` })
+        .where(eq(verificationTierResults.id, t.id));
     }
   }
   await db.update(problems).set({ status: "DA_PHAT_HANH" }).where(eq(problems.id, problemId));
@@ -226,7 +238,16 @@ export async function sinhBienThe(form: FormData) {
     trang_thai_phat_hanh: string;
     trang_thai_tong: string;
     tang: { tang: number; trang_thai: string; ly_do?: string; loai_ket_qua?: string; buoc_sai?: unknown; trich_dan?: unknown; cong_thuc?: unknown }[];
-  }>("verify", { ham: gen.ham, bai_lam: gen.bai_lam, ...corpus });
+  }>("verify", { ham: gen.ham, bai_lam: gen.bai_lam, thang_goi_y: gen.thang_goi_y || [], ...corpus });
+  // Không có kết quả kiểm định đủ 3 tầng = không phát hành (chỉ tin DA_PHAT_HANH khi cả 3 tầng DAT/GV_DUYET)
+  const tangOk =
+    Array.isArray(verified?.tang) &&
+    verified.tang.length === 3 &&
+    verified.tang.every((t) => t.trang_thai === "DAT" || t.trang_thai === "GV_DUYET");
+  const coSai = Array.isArray(verified?.tang) && verified.tang.some((t) => t.trang_thai === "SAI");
+  const trangThai =
+    verified?.trang_thai_phat_hanh === "DA_PHAT_HANH" && tangOk ? "DA_PHAT_HANH" : coSai ? "BI_CHAN" : "CHO_GIAO_VIEN_DUYET";
+  verified.trang_thai_phat_hanh = trangThai;
   const id = crypto.randomUUID();
   const code = `GEN-${dang}-${seed}-${id.slice(0, 8)}`;
   const contentHash = hashContent({ de: gen.de_bai, bl: gen.bai_lam, hints: gen.thang_goi_y });
@@ -255,6 +276,8 @@ export async function sinhBienThe(form: FormData) {
   });
   for (const block of gen.thang_goi_y) {
     for (const cap of block.cac_cap) {
+      // SP-08: cấp gợi ý rỗng (có ly_do_trong) không tạo dòng gợi ý
+      if (!cap.noi_dung || !String(cap.noi_dung).trim()) continue;
       await db.insert(hintLevels).values({ problemId: id, maBuoc: block.ma_buoc, cap: cap.cap, noiDung: cap.noi_dung });
     }
   }
@@ -392,3 +415,78 @@ export async function ngatKetNoiAi() {
 }
 
 
+
+/**
+ * Giao bộ bài (brief: giáo viên duyệt và giao bộ bài theo mức). Chỉ giao bài ĐÃ PHÁT HÀNH.
+ * Đích: cả lớp (mọi HS trong các lớp của giáo viên) hoặc một học sinh; có tên bộ và hạn nộp.
+ * Bài đã giao cho học sinh đó thì cập nhật tên bộ/hạn, không nhân đôi.
+ */
+export async function giaoBoBai(form: FormData) {
+  const user = await requireRole("GV");
+  const ids = form.getAll("problemId").map(String).filter(Boolean);
+  const dich = String(form.get("dich") || "lop");
+  const ten = String(form.get("tenBo") || "").trim().slice(0, 120) || "Bộ bài";
+  const hanRaw = String(form.get("han") || "").trim();
+  const han = hanRaw ? new Date(`${hanRaw}T23:59:00+07:00`) : null;
+  if (!ids.length) redirect("/gv/ngan-hang?loi=" + encodeURIComponent("Chọn ít nhất một bài"));
+  if (han && Number.isNaN(han.getTime())) redirect("/gv/ngan-hang?loi=" + encodeURIComponent("Hạn nộp không hợp lệ"));
+
+  const pubs = await db
+    .select({ id: problems.id })
+    .from(problems)
+    .where(and(inArray(problems.id, ids), eq(problems.status, "DA_PHAT_HANH")));
+  const hopLe = pubs.map((p) => p.id);
+  if (!hopLe.length) redirect("/gv/ngan-hang?loi=" + encodeURIComponent("Chỉ giao được bài đã phát hành"));
+
+  // Chỉ giao cho học sinh thuộc lớp mà giáo viên này dạy (cách ly dữ liệu theo lớp)
+  const lopGv = await db
+    .select({ classId: enrollments.classId })
+    .from(enrollments)
+    .where(and(eq(enrollments.userId, user.id), eq(enrollments.roleInClass, "GV")));
+  const lopIds = lopGv.map((l) => l.classId);
+  const hsTrongLop = lopIds.length
+    ? await db
+        .select({ userId: enrollments.userId })
+        .from(enrollments)
+        .where(and(inArray(enrollments.classId, lopIds), eq(enrollments.roleInClass, "HS")))
+    : [];
+  const tapHs = new Set(hsTrongLop.map((h) => h.userId));
+  const hsIds = dich === "lop" ? [...tapHs] : tapHs.has(dich) ? [dich] : [];
+  if (!hsIds.length) redirect("/gv/ngan-hang?loi=" + encodeURIComponent("Không có học sinh hợp lệ để giao"));
+
+  const daCo = await db
+    .select()
+    .from(assignments)
+    .where(and(inArray(assignments.studentId, hsIds), inArray(assignments.problemId, hopLe)));
+  const khoa = new Map(daCo.map((a) => [`${a.studentId}|${a.problemId}`, a.id]));
+  const now = new Date();
+  let moi = 0;
+  for (const hs of hsIds) {
+    for (const pid of hopLe) {
+      const id = khoa.get(`${hs}|${pid}`);
+      if (id) {
+        await db
+          .update(assignments)
+          .set({ setName: ten, dueAt: han, assignedBy: user.id, assignedAt: now, status: "assigned" })
+          .where(eq(assignments.id, id));
+      } else {
+        moi++;
+        await db.insert(assignments).values({
+          id: crypto.randomUUID(),
+          problemId: pid,
+          studentId: hs,
+          status: "assigned",
+          setName: ten,
+          dueAt: han,
+          assignedBy: user.id,
+          assignedAt: now,
+        });
+      }
+    }
+  }
+  await audit(user.id, "GIAO_BO_BAI", "assignment_set", ten, `${hopLe.length} bài × ${hsIds.length} HS (mới ${moi})`);
+  revalidatePath("/gv/ngan-hang");
+  revalidatePath("/hs/bai");
+  revalidatePath("/hs");
+  redirect("/gv/ngan-hang?da_giao=" + encodeURIComponent(ten));
+}

@@ -256,7 +256,12 @@ def _kiem_luy_thua(ct):
         return None
     rhs = m.group(1)
     rhs = rhs.replace("{", "(").replace("}", ")").replace("\\cdot", "*").replace("^", "**").replace(" ", "")
+    # F-01: công thức do giáo viên nhập; chỉ cho chữ n, x và phép toán, kiểm cây cú pháp trước parse_expr.
+    if not re.fullmatch(r"[0-9nx+\-*/()]+", rhs):
+        return None
     try:
+        from app.paths import load_kiem
+        load_kiem().kiem_an_toan(rhs)
         n, x = symbols("n x")
         e = parse_expr(rhs, local_dict={"n": n, "x": x}, transformations=standard_transformations + (implicit_multiplication_application,))
         return bool(simplify(e - n * x ** (n - 1)) == 0)
@@ -343,6 +348,13 @@ def verify(payload):
         "do_tin_cay": g.get("do_tin_cay"),
         "ly_do": g.get("thong_bao"),
     }
+    if t1["trang_thai"] == "DAT" and payload.get("thang_goi_y"):
+        lo = kiem_thang_goi_y(payload.get("thang_goi_y"), bl)
+        if lo:
+            t1 = dict(t1, trang_thai="SAI", loai_ket_qua="THANG_GOI_Y_LO", thang_goi_y_lo=lo,
+                      ly_do="Thang gợi ý có câu lộ kết quả của bài (%d câu) — sửa thang rồi kiểm lại." % len(lo))
+        else:
+            t1 = dict(t1, thang_goi_y="Mọi cấp gợi ý qua bộ lọc lộ đáp án theo sự kiện bảo vệ của lời giải.")
     t2 = tang_2(payload.get("tai_lieu") or [], bl)
     t3 = tang_3(payload.get("cong_thuc") or [], bl)
     tang = [t1, t2, t3]
@@ -353,3 +365,28 @@ def verify(payload):
         "tang": tang,
         "phien_ban_chuan_hoa": g.get("phien_ban_chuan_hoa"),
     }
+
+
+def kiem_thang_goi_y(thang, bl):
+    """DAC-TA §7.1/§9.1: thang gợi ý đi cùng lời giải qua kiểm định. Mỗi câu gợi ý được so với sự kiện bảo vệ của lời giải
+    (bộ lọc lộ đáp án, fail closed). Trả danh sách câu bị chặn (rỗng = sạch)."""
+    from .leakfilter import loc_ban_nhap
+    from .machine import su_kien_bao_ve
+    try:
+        sk = su_kien_bao_ve(bl) if bl else []
+    except Exception:
+        sk = []
+    lo = []
+    khoi = thang if isinstance(thang, list) else [{"ma_buoc": k, "cac_cap": v} for k, v in (thang or {}).items()]
+    for b in khoi:
+        for c in (b or {}).get("cac_cap") or []:
+            nd = (c or {}).get("noi_dung")
+            if not nd:
+                continue
+            try:
+                q = loc_ban_nhap(nd, sk, "")
+            except Exception:
+                q = {"cho_phep": False, "ly_do": "LOI_BO_LOC"}
+            if not q.get("cho_phep"):
+                lo.append({"ma_buoc": b.get("ma_buoc"), "cap": c.get("cap"), "ly_do": q.get("ly_do")})
+    return lo
