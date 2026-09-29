@@ -474,6 +474,186 @@ def _vi_pham_loi(ban_nhap, ctx):
     return None
 
 
+# ------------------------------------------------------------------ bản vá 0004 (Kiểm định, 29/09)
+# Câu gợi ý không được viết ra biểu thức của y' (hay tử số của y', dạng rút gọn / phân tích nhân tử) BẰNG đạo hàm thật
+# của hàm (thiet-ke-ai-v0 mục 24). So bằng SymPy với sự kiện YPHAY (đạo hàm thật, do su_kien_bao_ve tính từ hàm):
+#   - biểu thức có x, hoặc biểu thức sau "y' =", "đạo hàm là": cancel(bt - y') == 0 -> chặn;
+#   - biểu thức sau "tử số (của y') là / =": bt / tử(y') là hằng số DƯƠNG -> chặn ("Tử số của y' là −2").
+# Biểu thức SAI (khác đạo hàm thật) không bị luật này chặn: không lộ đáp án, chấm sai là việc của bộ chấm (quyết định 0004).
+# Ngoại lệ (Sư phạm + AI, mục 24): bài khung ngắn có buoc_bat_dau là B.DH.NGHIEM / B.DH.XETDAU thì y' là dữ kiện đề cho;
+# sự kiện YPHAY_DE giữ NGUYÊN VĂN dòng y' của đề. Câu nhắc lại đúng nguyên văn (hoặc một phần nguyên văn, vd tử số như đề
+# viết) thì qua; viết dạng đã rút gọn / phân tích / khai triển khác đề thì vẫn chặn. So nguyên văn = cùng cây biểu thức
+# khi đọc KHÔNG rút gọn (evaluate=False): bỏ khoảng trắng / dấu ngoặc thừa, không bỏ thứ tự hạng tử hay nhân tử.
+_SU_KIEN_BT = ("YPHAY", "YPHAY_DE")
+_BUOC_Y_PHAY_DE = ("B.DH.NGHIEM", "B.DH.XETDAU")
+_MU = {"⁰": "0", "¹": "1", "²": "2", "³": "3", "⁴": "4", "⁵": "5", "⁶": "6", "⁷": "7", "⁸": "8", "⁹": "9"}
+_BT_KY_TU = r"[0-9x+\-*/^().·×{}§ ]"
+_BT_TOI_DA = 160
+_BT_SO_TOI_DA = 12
+
+
+def _tien_xu_ly_bt(t, che_chu=True):
+    """Chuẩn hóa ký hiệu để tìm biểu thức: dấu trừ, lũy thừa chữ nhỏ, lệnh LaTeX, chữ có 'x' (xét, x-quang) -> che."""
+    t = unicodedata.normalize("NFC", t or "")
+    for a, b in (("−", "-"), ("–", "-"), ("—", "-"), ("′", "'"), ("$", " "), ("\\left", ""), ("\\right", ""),
+                 ("\\cdot", "*"), ("\\times", "*"), ("\\,", " "), ("\\;", " "), ("\\ ", " ")):
+        t = t.replace(a, b)
+    t = re.sub(r"\\[dt]?frac", "§", t)
+    t = re.sub(r"[⁰¹²³⁴⁵⁶⁷⁸⁹]+", lambda m: "^" + "".join(_MU[c] for c in m.group(0)) + " ", t)
+    t = re.sub(r"(?<=\d),(?=\d)", ".", t)          # 0,5 -> 0.5
+    if not che_chu:
+        return t
+    # chữ chứa x (xét, xác, max) không phải biến x
+    t = re.sub(r"[^\W\d_]+", lambda m: m.group(0) if m.group(0) == "x" else "¤" * len(m.group(0)), t)
+    return t
+
+
+def _doi_bt(s):
+    """Chuỗi biểu thức (đã tiền xử lý) -> cú pháp SymPy tường minh, hoặc None."""
+    s = s.strip()
+    # \frac{A}{B} -> ((A)/(B)), xử lý lồng nhau từ trong ra
+    for _ in range(8):
+        m = re.search(r"§\s*\{([^{}§]*)\}\s*\{([^{}§]*)\}", s)
+        if not m:
+            break
+        s = s[:m.start()] + "((%s)/(%s))" % (m.group(1), m.group(2)) + s[m.end():]
+    if "§" in s:
+        return None
+    s = s.replace("{", "(").replace("}", ")").replace("·", "*").replace("×", "*").replace("^", "**")
+    s = re.sub(r"\s+", "", s)
+    s = re.sub(r"(?<=[\dx)])(?=[x(])", "*", s)      # 3x, 3(x, x(, )(, )x
+    s = re.sub(r"(?<=[x)])(?=\d)", "*", s)          # x2 hiếm gặp, )2
+    s = s.replace("***", "**")
+    if not s or s.count("(") != s.count(")") or not re.search(r"[\dx]", s):
+        return None
+    return s
+
+
+def _cac_bt(t):
+    """[(vị trí bắt đầu, chuỗi SymPy)] các đoạn biểu thức trong câu đã tiền xử lý (tách ở dấu '=' ',' ';' và chữ)."""
+    out = []
+    for m in re.finditer(r"%s+" % _BT_KY_TU, t):
+        doan = m.group(0)
+        st = m.start() + len(doan) - len(doan.lstrip(" "))
+        doan = doan.strip(" ")
+        doan = re.sub(r"[.\s]+$", "", doan)
+        if not doan or len(doan) > _BT_TOI_DA:
+            continue
+        s = _doi_bt(doan)
+        if s:
+            out.append((st, s))
+        if len(out) >= _BT_SO_TOI_DA:
+            break
+    return out
+
+
+def _doc_bt(s, rut_gon=True):
+    """Đọc chuỗi SymPy bằng bộ phân tích an toàn của loc.py. Không đọc được (chuỗi không phải biểu thức) -> None."""
+    L = _L()
+    from sympy import Symbol
+    x = Symbol("x")
+    try:
+        e = L.phan_tich_an_toan(s, {"x": x})
+    except L.DauVaoKhongHopLe:
+        return None
+    if rut_gon:
+        return e
+    # cây nguyên văn: chuỗi đã qua kiem_chuoi_an_toan ở trên, đọc lại không rút gọn với cùng từ điển tên
+    loc_ = dict(L._HANG_CHO_PHEP)
+    loc_.update(L._HAM_CHO_PHEP)
+    loc_["x"] = x
+    from sympy import Add, Mul, Pow
+    glob_ = dict(L._GLOBAL_TOI_THIEU)
+    glob_.update(Add=Add, Mul=Mul, Pow=Pow)   # evaluate=False sinh lời gọi Add/Mul/Pow tường minh
+    glob_["__builtins__"] = {}
+    s2 = L.kiem_chuoi_an_toan(s, ["x"])
+    return L._parse_expr_goc(s2, local_dict=loc_, global_dict=glob_, transformations=L._BIEN_DOI_AN_TOAN, evaluate=False)
+
+
+def _doc_bt_cau(s, rut_gon=True):
+    """Đọc một đoạn của CÂU NHÁP. Đoạn chữ lẫn ký hiệu không phải biểu thức (lỗi cú pháp) -> None, không chặn cả câu;
+    sự kiện YPHAY / YPHAY_DE hỏng thì vẫn fail closed (SU_KIEN_LOI) ở loc_ban_nhap."""
+    try:
+        return _doc_bt(s, rut_gon)
+    except Exception:
+        return None
+
+
+def _y_phay_su_kien(su_kien_bt):
+    yp, de = None, []
+    for a, b in su_kien_bt:
+        if a == "YPHAY":
+            s = _doi_bt(_tien_xu_ly_bt(str(b)))
+            e = _doc_bt(s) if s else None
+            if e is None:
+                raise ValueError("YPHAY")
+            yp = e
+        elif a == "YPHAY_DE":
+            s = _doi_bt(_tien_xu_ly_bt(str(b)))
+            e = _doc_bt(s, rut_gon=False) if s else None
+            if e is None:
+                raise ValueError("YPHAY_DE")
+            de.append(e)
+    return yp, de
+
+
+def _nguyen_van_de(s, de):
+    if not de:
+        return False
+    e = _doc_bt_cau(s, rut_gon=False)
+    if e is None:
+        return False
+    from sympy import preorder_traversal
+    return any(e == n for d in de for n in preorder_traversal(d))
+
+
+_TRUOC_Y_PHAY = re.compile(r"(?:y\s*'|f\s*'\s*\(\s*x\s*\)|đạo hàm(?:\s+(?:y\s*'|của hàm số|của hàm|bằng))?)\s*(?:=|là|bằng|:)\s*$")
+_TRUOC_TU = re.compile(r"tử(?:\s*(?:số|thức))?(?:\s+(?:của\s+)?(?:y\s*'|f\s*'\s*\(\s*x\s*\)|đạo hàm))?\s*(?:=|là|bằng|:)\s*$")
+
+
+def _vi_pham_y_phay(ban_nhap, su_kien_bt):
+    if not any(a == "YPHAY" for a, _b in su_kien_bt):
+        return None
+    yp, de = _y_phay_su_kien(su_kien_bt)
+    from sympy import Symbol, cancel, fraction, together
+    tu_yp = fraction(cancel(together(yp)))[0]
+    goc = unicodedata.normalize("NFC", ban_nhap or "").lower()
+    t = _tien_xu_ly_bt(goc)
+    t_chu = _tien_xu_ly_bt(goc, che_chu=False)   # cùng độ dài với t, giữ chữ để đọc cụm đứng trước biểu thức
+    for st, s in _cac_bt(t):
+        truoc = t_chu[max(0, st - 40):st]
+        la_tu = bool(_TRUOC_TU.search(truoc))
+        la_yp = not la_tu and bool(_TRUOC_Y_PHAY.search(truoc))
+        if "x" not in s and not (la_tu or la_yp):
+            continue
+        e = _doc_bt_cau(s)
+        if e is None or e.free_symbols - {Symbol("x")}:
+            continue
+        lo = False
+        if not la_tu and cancel(together(e - yp)) == 0:
+            lo = True
+        elif la_tu and e != 0:
+            r = cancel(together(e / tu_yp))
+            lo = bool(r.is_number and r.is_positive)
+        if lo and not _nguyen_van_de(s, de):
+            return "y_phay"
+    return None
+
+
+def su_kien_de_cho(de_bai, buoc_bat_dau):
+    """Sự kiện YPHAY_DE (NGUYÊN VĂN dòng y' của đề) cho bài khung ngắn bắt đầu ở B.DH.NGHIEM / B.DH.XETDAU; ngược lại []."""
+    if buoc_bat_dau not in _BUOC_Y_PHAY_DE or not isinstance(de_bai, str):
+        return []
+    t = unicodedata.normalize("NFC", de_bai)
+    m = re.search(r"(?:y\s*['′]|f\s*['′]\s*\(\s*x\s*\))\s*=\s*([0-9x+\-−–*/^().·× ⁰¹²³⁴⁵⁶⁷⁸⁹]+)", t)
+    if not m:
+        return []
+    bt = re.sub(r"[.\s]+$", "", m.group(1)).strip()
+    if not bt or ly_do_tu_choi(bt) or _doi_bt(_tien_xu_ly_bt(bt)) is None:
+        return []
+    return [["YPHAY_DE", bt]]
+
+
 _BAN_NHAP_TOI_DA = 4000
 _DAU_HIEU_CODE = re.compile(r"__|\blambda\b|\bimport\b|\b(?:eval|exec|open|compile|getattr|setattr|globals|locals|vars|input)\s*\("
                             r"|\bsubprocess\b|\bos\.\w|\bsys\.\w|\(\s*\)\s*\."
@@ -493,11 +673,14 @@ def loc_ban_nhap(ban_nhap, su_kien, cau_hs=None):
         cac = _pairs(su_kien)
         if any(not re.fullmatch(r"[A-Z][A-Z_]{0,30}", str(a)) or ly_do_tu_choi(b) for a, b in cac):
             return {"cho_phep": False, "lop_chinh": "dau_vao", "lop_phu": "chuoi", "loi": False, "ly_do": DAU_VAO_KHONG_HOP_LE}
+        # 0004: sự kiện biểu thức (YPHAY, YPHAY_DE) tách riêng, không đưa vào lớp số / phủ định
+        bt = [(a, b) for a, b in cac if a in _SU_KIEN_BT]
+        cac = [(a, b) for a, b in cac if a not in _SU_KIEN_BT]
         phu_dinh = [a for a, _b in cac if str(a).startswith("KHONG_")]
         bai = {"su_kien": [(a, b) for a, b in cac if not str(a).startswith("KHONG_")]}
         # Sự kiện bảo vệ phải đọc được TRƯỚC khi so (Sư phạm 11:54): hỏng -> chặn, ly_do SU_KIEN_LOI
         # (vd "1  sqrt(2)" do replace("+", "") cũ; không để lẫn với lỗi kiểm bản nháp).
-        if not _su_kien_doc_duoc(bai["su_kien"]):
+        if not _su_kien_doc_duoc(bai["su_kien"]) or not _bt_doc_duoc(bt):
             return {"cho_phep": False, "lop_chinh": "sympy", "lop_phu": "chuoi", "loi": True, "ly_do": "SU_KIEN_LOI"}
         # F-01 (bản vá Kiểm định): bản nháp có dấu hiệu code / quá dài -> chặn (không bao giờ thực thi; câu lạ không tới HS).
         if not isinstance(ban_nhap, str) or len(ban_nhap) > _BAN_NHAP_TOI_DA or _DAU_HIEU_CODE.search(ban_nhap):
@@ -507,7 +690,7 @@ def loc_ban_nhap(ban_nhap, su_kien, cau_hs=None):
             return {"cho_phep": False, "lop_chinh": "ngu_canh", "lop_phu": "chuoi", "loi": False, "ly_do": "THIEU_NGU_CANH"}
         ctx = _ngu_canh(bai, phu_dinh)
         ly_do = (_vi_pham_phu_dinh(ban_nhap, phu_dinh, cau_hs, ctx) or _vi_pham(ban_nhap, bai, cau_hs)
-                 or _vi_pham_diem_thu(ban_nhap, ctx) or _vi_pham_loi(ban_nhap, ctx))
+                 or _vi_pham_diem_thu(ban_nhap, ctx) or _vi_pham_loi(ban_nhap, ctx) or _vi_pham_y_phay(ban_nhap, bt))
         # ly_do chỉ là LOẠI quyết định (theo bản vá Kiểm định): LO_DAP_AN / XAC_NHAN / THIEU_NGU_CANH / SU_KIEN_LOI / DAU_VAO_KHONG_HOP_LE / LOI_KIEM_TRA / None
         return {"cho_phep": ly_do is None, "lop_chinh": "sympy", "lop_phu": "chuoi", "loi": False,
                 "ly_do": None if ly_do is None else ("XAC_NHAN" if ly_do == "xac_nhan" else "LO_DAP_AN")}
@@ -530,6 +713,16 @@ def _su_kien_doc_duoc(cap):
                 return False   # loại sự kiện lạ
         except Exception:
             return False
+    return True
+
+
+def _bt_doc_duoc(bt):
+    # 0004: YPHAY / YPHAY_DE phải đọc được bằng bộ phân tích an toàn; hỏng -> SU_KIEN_LOI (lỗi nạp bộ lọc vẫn bay ra)
+    L = _L()
+    try:
+        _y_phay_su_kien(bt)
+    except (ValueError, L.DauVaoKhongHopLe):
+        return False
     return True
 
 

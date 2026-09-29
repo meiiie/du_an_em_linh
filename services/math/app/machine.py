@@ -217,7 +217,21 @@ def su_kien_bao_ve(bl):
         sk.append(["KHONG_NGHICH_BIEN", ""])
     if not (bl.get("y_phay_bang_0") or bl.get("y_phay_khong_xd")):
         sk.append(["KHONG_NGHIEM", ""])
+    # 0004: đạo hàm thật (tính lại từ hàm, không tin bl["dao_ham"]) để bộ lọc chặn câu viết ra biểu thức y'
+    yp = _y_phay_that(bl)
+    if yp:
+        sk.append(["YPHAY", yp])
     return sk
+
+
+def _y_phay_that(bl):
+    from sympy import diff
+    from app.dau_vao import ly_do_tu_choi
+    try:
+        s = str(simplify(diff(K.P(str(bl.get("ham"))), K.x))).replace(" ", "")
+    except Exception:
+        return None
+    return None if ly_do_tu_choi(s) else s
 
 
 def _so_sk(s):

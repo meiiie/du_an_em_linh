@@ -210,6 +210,8 @@ async function napBai(opts: {
     thang_goi_y: opts.hints,
     // bài khung ngắn: tầng 1 chấm đúng khung học sinh làm (từ buoc_bat_dau)
     ...(opts.buocBatDau ? { buoc_bat_dau: opts.buocBatDau } : {}),
+    // 0004: đề để bộ lọc biết dòng y' đề cho (khung ngắn bắt đầu ở NGHIEM/XETDAU được nhắc lại nguyên văn)
+    de_bai: opts.text,
     ...opts.corpus,
   });
   const id = crypto.randomUUID();
@@ -778,7 +780,12 @@ async function main() {
   }[];
   const khungNganLoi: string[] = [];
   for (const ex of khungNgan) {
-    const solved = await math<{ dat?: boolean; bai_lam?: unknown; su_kien?: unknown }>("solve", { ham: ex.de_bai.ham_so_sympy });
+    // 0004: gửi đề + buoc_bat_dau để su_kien có YPHAY_DE (nguyên văn dòng y' đề cho) cho bộ lọc lúc gia sư chạy
+    const solved = await math<{ dat?: boolean; bai_lam?: unknown; su_kien?: unknown }>("solve", {
+      ham: ex.de_bai.ham_so_sympy,
+      de_bai: ex.de_bai.van_ban,
+      buoc_bat_dau: ex.buoc_bat_dau,
+    });
     if (!solved.dat || !solved.bai_lam) throw new Error(`Không giải được ${ex.id}`);
     const row = await napBai({
       code: ex.id,
