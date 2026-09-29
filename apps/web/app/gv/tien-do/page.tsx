@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { eq } from "drizzle-orm";
+import { and, eq, inArray } from "drizzle-orm";
 import { buttonClasses } from "@/components/ui/button";
 import { PageHeader } from "@/components/ui/page-header";
 import { requireRole } from "@/lib/auth";
@@ -8,6 +8,7 @@ import { ghiNhatKy } from "@/lib/actions/hs";
 import { tenKyNangNgan } from "@/lib/de-hoc-sinh";
 import { db } from "@/lib/db";
 import { enrollments, masteryStates, skills, users } from "@/lib/db/schema";
+import { caiDatLopCuaGv, lopGvDay } from "@/lib/lop";
 import { LABEL3, LABEL4, TO3, type Muc4 } from "@/lib/levels";
 
 export const dynamic = "force-dynamic";
@@ -18,14 +19,20 @@ export const metadata: Metadata = {
 
 export default async function Page({ searchParams }: { searchParams: Promise<{ muc?: string }> }) {
   const u = await requireRole("GV");
-  await ghiNhatKy(u.id, "XEM_TIEN_DO", "class", "12A1", "xem ma trận kỹ năng");
+  const { lop } = await caiDatLopCuaGv(u);
+  await ghiNhatKy(u.id, "XEM_TIEN_DO", "class", lop?.id || "-", "xem ma trận kỹ năng");
   const sp = await searchParams;
   const view3 = sp.muc === "3";
-  const ens = await db.select().from(enrollments).where(eq(enrollments.roleInClass, "HS"));
-  const allUsers = await db.select().from(users);
+  // F-08: chỉ HS của lớp GV này dạy
+  const lops = await lopGvDay(u.id);
+  const ens = lops.length
+    ? await db.select().from(enrollments).where(and(eq(enrollments.roleInClass, "HS"), inArray(enrollments.classId, lops)))
+    : [];
+  const hsIds = [...new Set(ens.map((e) => e.userId))];
+  const allUsers = hsIds.length ? await db.select().from(users).where(inArray(users.id, hsIds)) : [];
   const name = new Map(allUsers.map((x) => [x.id, x.displayName]));
   const skillRows = (await db.select().from(skills)).filter((s) => s.isCore);
-  const states = await db.select().from(masteryStates);
+  const states = hsIds.length ? await db.select().from(masteryStates).where(inArray(masteryStates.studentId, hsIds)) : [];
   return (
     <main data-testid="tien-do">
       <PageHeader

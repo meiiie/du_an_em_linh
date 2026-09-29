@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { caiDatLopCuaHs } from "@/lib/lop";
 import { eq } from "drizzle-orm";
 import { notFound } from "next/navigation";
 import { SolveClient } from "@/components/solve-client";
@@ -7,7 +8,7 @@ import type { AiPublicConfig } from "@/lib/ai-catalog";
 import { cauHinhCongKhai } from "@/lib/ai-harness";
 import { requireRole } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { classSettings, problems, solutions } from "@/lib/db/schema";
+import { problems, solutions } from "@/lib/db/schema";
 import { hamLatex } from "@/lib/de-hoc-sinh";
 import { trangThaiPhieu } from "@/lib/hs-du-lieu";
 import { loiGiaiHocSinh } from "@/lib/loi-giai";
@@ -45,13 +46,14 @@ export default async function LuyenPage({ params }: { params: Promise<{ id: stri
       </div>
     );
   }
-  const settings = await db.select().from(classSettings);
-  const showSolution = settings[0]?.moLoiGiaiSauKhiNop === true;
+  // F-08: cài đặt của lớp HS này
+  const setting = await caiDatLopCuaHs(u.id);
+  const showSolution = setting?.moLoiGiaiSauKhiNop === true;
   const ai: AiPublicConfig = cauHinhCongKhai({
-    classProvider: settings[0]?.aiProvider,
-    classModel: settings[0]?.aiModel,
-    allowLocal: settings[0]?.aiAllowLocal,
-    classApiKey: settings[0]?.aiApiKey,
+    classProvider: setting?.aiProvider,
+    classModel: setting?.aiModel,
+    allowLocal: setting?.aiAllowLocal,
+    classApiKey: setting?.aiApiKey,
   });
   // F-05: chỉ đưa lời giải vào trang khi CHÍNH HS này đã xong bài; chưa xong thì lời giải không có trong HTML/RSC.
   const daXong = showSolution ? (await trangThaiPhieu(u.id, p.id)).finished : false;

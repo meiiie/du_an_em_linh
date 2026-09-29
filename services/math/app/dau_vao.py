@@ -9,7 +9,7 @@ Danh sách trắng:
 - ký tự: chữ cái (mọi bảng chữ, gồm tiếng Việt), chữ số, khoảng trắng và dấu toán/LaTeX liệt kê ở _DAU;
 - từ ASCII: âm tiết tiếng Việt không dấu hợp lệ, hoặc tên toán/LaTeX trong _TU_TOAN; từ có chữ không phải ASCII
   (tiếng Việt có dấu) được nhận;
-- '_' chỉ trong y_{CĐ}, y_{CT}, x_{1} (theo sau là '{' hoặc cđ/ct); nháy đơn chỉ là dấu phẩy đạo hàm (y', f'(x));
+- '_' chỉ trong y_{CĐ}, y_{CT}, x_{1}, x_1 = … (theo sau là '{', cđ/ct hoa-thường, hoặc 1–2 chữ số rồi = , ; )); nháy đơn chỉ là dấu phẩy đạo hàm (y', f'(x));
 - không có '.' nối tên (x.subs), không có tháp lũy thừa, số mũ >= 1000, số quá 15 chữ số; tối đa 300 ký tự/ô.
 """
 import re
@@ -30,7 +30,8 @@ _AM_TIET = re.compile(
     r"(?:uye|uya|uyu|uoi|uou|ieu|yeu|oai|oay|oao|oeo|uay|uai|ai|ao|au|ay|eo|eu|ia|ie|iu|oa|oe|oi|oo|ua|ue|ui|uo|uu|uy|ya|ye|[aeiouy])"
     r"(?:ch|ng|nh|[cmnpt])?$"
 )
-_GACH_DUOI_OK = re.compile(r"_(?=\s*\{|\s*(?:c\s*[dđt]|C\s*[DĐT])\b)")
+# 0002d: thêm chỉ số chữ hoa/thường lẫn lộn (Ct, cT) và chỉ số số không có {} ở vị trí nhãn (x_1 = 1); "x_1 + 1" vẫn bị từ chối
+_GACH_DUOI_OK = re.compile(r"_(?=\s*\{|\s*[cC]\s*[dDđĐtT](?![A-Za-z0-9_])|\s*\d{1,2}\s*(?:=|,|;|\)|$))")
 _THAP = re.compile(r"(?:\*\*|\^)\s*[\(\{]?\s*[\w.+\-]+\s*[\)\}]?\s*(?:\*\*|\^)")
 _MU_LON = re.compile(r"(?:\*\*|\^)\s*[\(\{]?\s*[+\-]?\s*\d{4,}")
 _SO_DAI = re.compile(r"\d{16,}")

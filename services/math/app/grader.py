@@ -280,7 +280,10 @@ def _doc_cuc_tri(raw):
     """Đọc ô cực đại/cực tiểu: "x = 1, y = 6", "x=1; y_{CĐ}=6", "(1; 6)", "1". Trả (các x, các y)."""
     import re
     t = raw.replace("$", "").replace("\\", "").replace("−", "-").lower()
-    t = re.sub(r"_\{?\s*c[dđt]\s*\}?", "", t)
+    # 0002d: x_{CT}, x_CT, x_1, x_{2}, và dạng MathLive x_{\text{CT}}, x_{\mathrm{CD}} (dấu \ đã bỏ ở trên)
+    t = re.sub(r"_\{?\s*(?:(?:text|mathrm|rm)\s*\{\s*)?c[dđt]\s*\}?\s*\}?", "", t)
+    t = re.sub(r"_\{?\s*\d{1,2}\s*\}?(?=\s*=)", "", t)   # chỉ số số chỉ bỏ khi là nhãn: x_1 = 1
+    t = re.sub(r"(?<![a-z])f(?=\s*=)", "y", t)   # 0002d: f_{CT} = −26 (sau khi bỏ chỉ số) đọc như y_{CT}
     xs = re.findall(r"x\s*=\s*(%s)" % _SO, t)
     ys = re.findall(r"y\s*=\s*(%s)" % _SO, t)
     if not xs:
@@ -623,9 +626,26 @@ _DAU_HIEU_CODE_CHUNG = (r"__|\blambda\b|\bimport\b|\b(?:eval|exec|open|compile|g
                         r"Symbol|Integer|Float|Rational|Function|Lambda|sympify|parse_expr|lambdify|factorial)\s*\(|"
                         r"\b[A-Za-z_]\w*\s*\(\s*[\'\"]|\(\s*\)\s*\.|\.\s*__|[\"`]|\'\s*\w+\s*\'|"
                         r"(?:\*\*|\^)\s*\{?\s*\d+\s*\}?\s*(?:\*\*|\^)|(?:\*\*|\^)\s*\(?\s*\d{3,}|\d\s*\*\*\s*\d{2,}")
-# ô công thức / hàm số: không có tên chứa '_' (x_1 là tên lạ); dòng LaTeX: cho phép y_{CD} và nhãn x_1, x_{2} đứng trước = , ; ) và là
-_DAU_HIEU_CODE_O = re.compile(_DAU_HIEU_CODE_CHUNG + r"|\b(?![yY]_)[A-Za-z]\w*_\w")
-_DAU_HIEU_CODE_DONG = re.compile(_DAU_HIEU_CODE_CHUNG + r"|\b(?![yYxX]_)[A-Za-z]\w*_\w|\b[xX]_(?!\{?\d{1,2}\}?\s*(?:=|,|;|\)|và\b|là\b|$))")
+# 0002d (Sư phạm 29/09 12:47): ký hiệu SGK và nhãn ô của hệ KHÔNG phải dấu hiệu code. Trước khi quét, thay:
+#  - chỉ số của x / y / f: chữ CĐ, CD, CT (hoa/thường, có/không dấu), có hoặc không có {} (cho phép \text{…} /
+#    \mathrm{…} trong {}): x_{CT}, x_CT, y_{CĐ}, f_{ct}; hoặc số 1–2 chữ số ĐỨNG Ở VỊ TRÍ NHÃN (trước = , ; ) và là):
+#    x_1 = 1, x_{2} = 3;
+#  - nhãn ô danh sách trắng của hệ (UI cũ gửi "không cuc_dai"): dong_bien, nghich_bien, cuc_dai, cuc_tieu, gia_tri_cuc_dai,
+#    gia_tri_cuc_tieu, cuc_dai_x, cuc_tieu_x, dong_bien_tren_tap, nghich_bien_tren_tap.
+# Phần còn lại: MỌI dấu '_' khác vẫn là dấu hiệu code (tên kiểu __class__, x_y, os_system, g_{1}, x_{CT}_{1} ...).
+_CHI_SO_SGK = re.compile(r"(?<![A-Za-z0-9_\\])([xXyYfF])_(?:\{\s*(?:\\(?:text|mathrm|rm)\s*\{\s*)?[cC]\s*[dDđĐtT]\s*\}?\s*\}"
+                         r"|[cC][dDđĐtT](?![A-Za-z0-9_{])"
+                         # chỉ số số chỉ ở vị trí NHÃN (x_1 = 1, x_{2}; …): "x_1 + 1" (ca M20 bộ độc hại) vẫn bị chặn
+                         r"|(?:\{\s*\d{1,2}\s*\}|\d{1,2})(?=\s*(?:=|,|;|\)|và\b|là\b|$)))")
+_NHAN_O_HE = re.compile(r"(?<![A-Za-z0-9_])(?:gia_tri_cuc_dai|gia_tri_cuc_tieu|cuc_dai_x|cuc_tieu_x|cuc_dai|cuc_tieu|"
+                        r"dong_bien_tren_tap|nghich_bien_tren_tap|dong_bien|nghich_bien)(?![A-Za-z0-9_])")
+_DAU_HIEU_CODE_O = re.compile(_DAU_HIEU_CODE_CHUNG + r"|_")
+_DAU_HIEU_CODE_DONG = _DAU_HIEU_CODE_O
+
+
+def _bo_ky_hieu_hop_le(t):
+    """Thay chỉ số SGK (giữ chữ cái gốc) và nhãn ô của hệ bằng chữ thường, để phần quét '_' chỉ còn thấy tên lạ."""
+    return _NHAN_O_HE.sub("nhan", _CHI_SO_SGK.sub(lambda m: m.group(1), t))
 
 
 def _chuoi_nguoi_nhap(payload):
@@ -647,7 +667,7 @@ def _chuoi_doc_hai(payload):
         if t is None:
             continue
         t = str(t)
-        if len(t) > _CHUOI_TOI_DA or (_DAU_HIEU_CODE_DONG if la_dong else _DAU_HIEU_CODE_O).search(t):
+        if len(t) > _CHUOI_TOI_DA or (_DAU_HIEU_CODE_DONG if la_dong else _DAU_HIEU_CODE_O).search(_bo_ky_hieu_hop_le(t)):
             return True
     return False
 

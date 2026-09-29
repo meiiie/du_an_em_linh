@@ -41,6 +41,8 @@ export async function POST(req: Request) {
     await tx`delete from submissions where student_id = any(${ids}::uuid[])`;
     await tx`delete from escalations where student_id = any(${ids}::uuid[])`;
     await tx`update mastery_states set stuck_counter = 0, last_error_codes = '[]'::jsonb where student_id = any(${ids}::uuid[])`;
+    // F-10: xoá bộ đếm hạn mức (gia sư, nộp bước) của các HS này và mọi khoá đăng nhập đang tính
+    await tx`delete from rate_limit_events where khoa = any(${ids.flatMap((i) => [`gia_su:${i}`, `nop_buoc:${i}`])}::text[]) or khoa like 'dang_nhap:%'`;
   });
   return Response.json({ ok: true, so_hs: ids.length });
 }

@@ -24,6 +24,9 @@ services:
         value: "1"
       - key: HOSTNAME
         value: "0.0.0.0"
+      # F-10: khoá AES-256-GCM cho khoá API của lớp (Render sinh 256 bit base64; không đổi sau khi có dữ liệu)
+      - key: APP_ENC_KEY
+        generateValue: true
 
 databases:
   - name: hoc-toan-pg
