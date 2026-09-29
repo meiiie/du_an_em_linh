@@ -158,9 +158,15 @@ math-field {
   font-size: 1.05rem;
 }
 
-math-field::part(menu-toggle),
-math-field::part(virtual-keyboard-toggle) {
+math-field::part(menu-toggle) {
   display: none;
+}
+
+/* Bàn phím ảo chỉ cần trên thiết bị chạm; máy tính có bàn phím thật. */
+@media (pointer: fine) {
+  math-field::part(virtual-keyboard-toggle) {
+    display: none;
+  }
 }
 
 .cong-thuc .katex-display {
@@ -200,6 +206,12 @@ math-field::part(virtual-keyboard-toggle) {
 .cell-bad {
   outline: 2px solid var(--mark);
   background: #fde8e4;
+}
+
+/* Ô chỉ sai do lỗi gốc (hệ quả): viền nét đứt trung tính, không tô đỏ, không tính là lỗi riêng. */
+.cell-he-qua {
+  outline: 2px dashed var(--muted);
+  outline-offset: -2px;
 }
 
 .tabular {

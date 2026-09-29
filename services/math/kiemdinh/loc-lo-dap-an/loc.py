@@ -14,12 +14,28 @@ TR = standard_transformations + (rationalize,)
 DIR = os.path.dirname(os.path.abspath(__file__))
 
 
+_SO_0_DAU = re.compile(r'(?<![\d.])0+(?=\d)')
+
+
+def bo_so_0_dau(s):
+    """'08' -> '8', '-02' -> '-2', '(01)/(02)' -> '(1)/(2)'; giữ nguyên '0', '0.5', '10' (bản vá Kiểm định)."""
+    return _SO_0_DAU.sub('', s)
+
+
+_SO_AN_TOAN = re.compile(r'[0-9+\-*/().]*(sqrt\([0-9+\-*/().]+\)[0-9+\-*/().]*)*')
+
+
 def num(s):
+    """Số trong câu nháp/sự kiện -> SymPy. F-01: chỉ nhận chữ số, + - * / ( ) . và sqrt(...); không bao giờ
+    đưa chuỗi khác vào parse_expr (eval). Số có 0 đứng đầu ('08') được bỏ 0 để không làm hỏng phép so."""
     s = s.replace(' ', '')
     if s in ('oo', '+oo'):
         return oo
     if s == '-oo':
         return -oo
+    if not s or len(s) > 60 or not _SO_AN_TOAN.fullmatch(s) or '**' in s:
+        raise ValueError('không phải số: %r' % s)
+    s = bo_so_0_dau(s)
     return nsimplify(parse_expr(s, transformations=TR), rational=True)
 
 

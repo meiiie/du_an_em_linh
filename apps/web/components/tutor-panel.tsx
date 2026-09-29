@@ -52,6 +52,7 @@ async function docSseHoi(opts: {
   text: string;
   provider: string;
   model?: string;
+  maBuoc?: string;
   signal: AbortSignal;
   onBuoc: (b: GiaSuBuocSse) => void;
 }): Promise<KetHoi> {
@@ -63,6 +64,7 @@ async function docSseHoi(opts: {
       text: opts.text,
       provider: opts.provider,
       model: opts.model,
+      maBuoc: opts.maBuoc,
     }),
     signal: opts.signal,
   });
@@ -104,12 +106,15 @@ export function TutorPanel({
   ai,
   open,
   onClose,
+  maBuoc,
 }: {
   problemId: string;
   initialChat: { role: "hs" | "gia_su"; text: string; trichDan?: TrichDanHien[] }[];
   ai: AiPublicConfig;
   open: boolean;
   onClose: () => void;
+  /** SP-09: bước học sinh đang làm, để gợi ý đúng bước. */
+  maBuoc?: string;
 }) {
   const [chat, setChat] = useState<Msg[]>(initialChat.length ? initialChat : [LOI_CHAO]);
   const [ask, setAsk] = useState("");
@@ -267,6 +272,7 @@ export function TutorPanel({
         text,
         provider,
         model: ai.classModel || undefined,
+        maBuoc,
         signal: ac.signal,
         onBuoc: (b) => {
           if (my === seq.current) setBuocSse(b);

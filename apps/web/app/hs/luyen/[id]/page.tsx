@@ -9,12 +9,13 @@ import { requireRole } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { classSettings, problems, solutions } from "@/lib/db/schema";
 import { hamLatex } from "@/lib/de-hoc-sinh";
+import { trangThaiPhieu } from "@/lib/hs-du-lieu";
 import { loiGiaiHocSinh } from "@/lib/loi-giai";
 
 export const dynamic = "force-dynamic";
 
 export default async function LuyenPage({ params }: { params: Promise<{ id: string }> }) {
-  await requireRole("HS");
+  const u = await requireRole("HS");
   const { id } = await params;
   const rows = await db.select().from(problems).where(eq(problems.id, id)).limit(1);
   const p = rows[0];
@@ -29,10 +30,18 @@ export default async function LuyenPage({ params }: { params: Promise<{ id: stri
       </div>
     );
   }
-  if (p.status !== "DA_PHAT_HANH" || !p.hamSympy) {
+  if (p.status !== "DA_PHAT_HANH" || !p.hamSympy || (p.dangTraLoi && p.dangTraLoi !== "TU_LUAN_5_BUOC")) {
+    const dangKhac = p.dangTraLoi && p.dangTraLoi !== "TU_LUAN_5_BUOC";
     return (
       <div className="border-y border-line py-6">
-        <p>Bài chưa mở để làm.</p>
+        <p>
+          {dangKhac
+            ? "Dạng câu này (không theo khung 5 bước) chưa có khung làm bài trên ứng dụng. Em làm ra giấy và nộp thầy cô."
+            : "Bài chưa mở để làm."}
+        </p>
+        <Link href="/hs" className="mt-2 inline-block text-sm underline underline-offset-2">
+          Về trang học
+        </Link>
       </div>
     );
   }
@@ -44,8 +53,10 @@ export default async function LuyenPage({ params }: { params: Promise<{ id: stri
     allowLocal: settings[0]?.aiAllowLocal,
     classApiKey: settings[0]?.aiApiKey,
   });
-  const sol = showSolution ? (await db.select().from(solutions).where(eq(solutions.problemId, p.id)).limit(1))[0] : null;
-  const loiGiai = showSolution ? loiGiaiHocSinh(sol?.baiLam, sol?.finalAnswer) : null;
+  // F-05: chỉ đưa lời giải vào trang khi CHÍNH HS này đã xong bài; chưa xong thì lời giải không có trong HTML/RSC.
+  const daXong = showSolution ? (await trangThaiPhieu(u.id, p.id)).finished : false;
+  const sol = daXong ? (await db.select().from(solutions).where(eq(solutions.problemId, p.id)).limit(1))[0] : null;
+  const loiGiai = daXong ? loiGiaiHocSinh(sol?.baiLam, sol?.finalAnswer) : null;
   const lichSu = await lichSuGiaSu(p.id);
   return (
     <main>

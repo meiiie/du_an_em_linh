@@ -160,8 +160,10 @@ function parseCsv(text: string) {
 
 type HintBlock = { ma_buoc: string; cac_cap: { cap: number; noi_dung?: string | null; ly_do_trong?: string | null }[] };
 
+/** SP-08: cấp gợi ý rỗng (chỉ có ly_do_trong) KHÔNG tạo dòng gợi ý; ly_do_trong là ghi chú cho người soạn, không phải gợi ý. */
 function hintText(cap: { noi_dung?: string | null; ly_do_trong?: string | null }) {
-  return cap.noi_dung || cap.ly_do_trong || "Em tự viết lại bước đang dở. Mình không đưa kết quả của bước này.";
+  const t = (cap.noi_dung || "").trim();
+  return t || null;
 }
 
 async function napBai(opts: {
@@ -174,6 +176,7 @@ async function napBai(opts: {
   text: string;
   latex: string;
   ham: string | null;
+  dangTraLoi?: string;
   origin: string;
   baiLam: unknown;
   facts: unknown;
@@ -183,6 +186,8 @@ async function napBai(opts: {
   const verified = await math<Verify>("verify", {
     ham: opts.ham,
     bai_lam: opts.baiLam,
+    // Chốt 11:25 c: thang gợi ý đi cùng lời giải qua kiểm định 3 tầng (câu lộ kết quả -> không phát hành)
+    thang_goi_y: opts.hints,
     ...opts.corpus,
   });
   const id = crypto.randomUUID();
@@ -199,6 +204,7 @@ async function napBai(opts: {
     statementText: opts.text,
     statementLatex: opts.latex,
     hamSympy: opts.ham,
+    dangTraLoi: opts.dangTraLoi || "TU_LUAN_5_BUOC",
     origin: opts.origin,
     status: verified.trang_thai_phat_hanh,
     contentHash: hash,
@@ -212,11 +218,13 @@ async function napBai(opts: {
   });
   for (const block of opts.hints) {
     for (const cap of block.cac_cap) {
+      const noiDung = hintText(cap);
+      if (!noiDung) continue;
       await db.insert(hintLevels).values({
         problemId: id,
         maBuoc: block.ma_buoc,
         cap: cap.cap,
-        noiDung: hintText(cap),
+        noiDung,
       });
     }
   }
@@ -258,8 +266,11 @@ async function main() {
         await sql.end();
         return;
       }
-    } catch {
-      /* bảng chưa có thì migrate phải chạy trước */
+    } catch (e) {
+      // F-11: đếm lỗi thì KHÔNG seed (seed có TRUNCATE mọi bảng) — thoát để không xoá dữ liệu thật.
+      console.error("Không đếm được users; bỏ qua seed để không xoá dữ liệu.", e instanceof Error ? e.message : e);
+      await sql.end();
+      process.exit(1);
     }
   }
 
@@ -281,6 +292,7 @@ async function main() {
     muc_do_4: string;
     muc_do_bo_3: string | null;
     muc_bloom: string | null;
+    dang_cau?: string;
     de_bai: { van_ban: string; latex: string; ham_so_sympy: string | null };
     thang_goi_y?: HintBlock[];
   }[];
@@ -408,10 +420,21 @@ async function main() {
     }
   }
 
-  const header = csv[0];
-  if (header[0] !== "ma_loi") throw new Error("CSV mã lỗi không đúng tiêu đề");
+  // Đọc CSV mã lỗi theo TÊN cột (bản 0.2 thêm ma_buoc_phu, ky_nang_phu, nhom_loi_chung; không phụ thuộc vị trí).
+  const header = csv[0].map((h) => h.trim());
+  const cot = (ten: string) => {
+    const i = header.indexOf(ten);
+    if (i < 0) throw new Error(`CSV mã lỗi thiếu cột ${ten}`);
+    return i;
+  };
+  const [iMa, iKn, iBuoc, iMoTa, iGoi] = ["ma_loi", "ky_nang_chinh", "ma_buoc", "mo_ta", "goi_y_sua"].map(cot);
   for (const row of csv.slice(1)) {
-    const [code, skill, buoc, mota, , goi] = row;
+    if (!row[iMa]) continue;
+    const code = row[iMa];
+    const skill = row[iKn];
+    const buoc = row[iBuoc];
+    const mota = row[iMoTa];
+    const goi = row[iGoi];
     await db.insert(errorTypes).values({
       code,
       skillCode: skill || null,
@@ -517,7 +540,7 @@ async function main() {
     ["Đạo hàm lũy thừa", "(x^n)' = n x^{n-1}", "Đạo hàm của x mũ n là n nhân x mũ n trừ 1. Hằng số có đạo hàm bằng 0."],
     ["Đạo hàm tổng", "(u+v)' = u' + v'", "Đạo hàm của tổng bằng tổng các đạo hàm."],
     ["Đạo hàm thương", "(u/v)' = (u'v - uv') / v^2", "Với thương, tử là u'v trừ uv', mẫu là v bình."],
-    ["Đơn điệu", "y' \\ge 0 \\Rightarrow \\text{đồng biến}", "Hàm đồng biến trên khoảng khi đạo hàm không âm và bằng 0 tại hữu hạn điểm; nghịch biến khi đạo hàm không dương theo cùng quy tắc."],
+    ["Đơn điệu", "y' \\ge 0,\\ y' = 0 \\text{ chỉ tại hữu hạn điểm} \\Rightarrow \\text{đồng biến}", "Hàm đồng biến trên khoảng khi đạo hàm không âm và bằng 0 tại hữu hạn điểm; nghịch biến khi đạo hàm không dương theo cùng quy tắc."],
     ["Cực trị", "+ \\to - : \\text{cực đại}", "Đạo hàm đổi từ dương sang âm thì cực đại; từ âm sang dương thì cực tiểu. Đạo hàm bằng 0 mà không đổi dấu thì chưa phải cực trị."],
     ["Điểm tới hạn", "y'=0 \\text{ hoặc } y' \\text{ không xác định}", "Điểm tới hạn gồm nghiệm của đạo hàm bằng 0 và điểm thuộc tập xác định mà đạo hàm không xác định."],
   ];
@@ -569,6 +592,8 @@ async function main() {
       text: ex.de_bai.van_ban,
       latex: ex.de_bai.latex,
       ham,
+      // Bài tự luận có hàm máy giải được -> khung 5 bước; còn lại giữ dạng câu của Sư phạm (TN_DUNG_SAI, TRA_LOI_NGAN)
+      dangTraLoi: ham && (ex.dang_cau || "TU_LUAN") === "TU_LUAN" ? "TU_LUAN_5_BUOC" : ex.dang_cau || "KHAC",
       origin: "SUPHAM",
       baiLam,
       facts,
@@ -580,19 +605,20 @@ async function main() {
 
   const may = [
     {
+      // SP-06: bài làm đủ quy trình 5 bước là VẬN DỤNG (02-anh-xa), kể cả hàm bậc hai; mã bài giữ nguyên cho dữ liệu cũ
       code: "DH12-NB-01",
       ham: "x**2",
-      muc4: "NHAN_BIET",
-      muc3: "BIET",
-      bloom: "NHAN_BIET",
+      muc4: "VAN_DUNG",
+      muc3: "VAN_DUNG",
+      bloom: "VAN_DUNG",
       skill: "T12.DH.03",
     },
     {
       code: "DH12-TH-02",
       ham: "x**3 - 3*x",
-      muc4: "THONG_HIEU",
-      muc3: "HIEU",
-      bloom: "THONG_HIEU",
+      muc4: "VAN_DUNG",
+      muc3: "VAN_DUNG",
+      bloom: "VAN_DUNG",
       skill: "T12.DH.03",
     },
   ];
@@ -784,6 +810,10 @@ async function main() {
         problemId,
         studentId: student,
         status: "assigned",
+        setName: "Bộ bài mẫu — Tính đơn điệu",
+        dueAt: new Date(Date.now() + 7 * 24 * 3600 * 1000),
+        assignedBy: GV,
+        assignedAt: new Date(),
       });
     }
   }

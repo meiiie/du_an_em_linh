@@ -13,9 +13,12 @@ type Bai = {
 export function SoBaiGiao({
   danhSach,
   idGoi,
+  giao = {},
 }: {
   danhSach: Bai[];
   idGoi?: string;
+  /** problemId → tên bộ và hạn nộp (do giáo viên giao) */
+  giao?: Record<string, { bo: string | null; han: string | null }>;
 }) {
   return (
     <section aria-labelledby="bai-giao">
@@ -35,7 +38,16 @@ export function SoBaiGiao({
                 testId={`bai-${p.code}`}
                 mark={p.id === idGoi}
                 title={ham ? <Tex tex={ham} /> : p.statementText}
-                meta={nhanMuc4(p.mucDo4)}
+                kicker={giao[p.id]?.bo || undefined}
+                meta={
+                  giao[p.id]?.han
+                    ? `${nhanMuc4(p.mucDo4)} · hạn ${new Date(giao[p.id].han as string).toLocaleDateString("vi-VN", {
+                        timeZone: "Asia/Ho_Chi_Minh",
+                        day: "2-digit",
+                        month: "2-digit",
+                      })}`
+                    : nhanMuc4(p.mucDo4)
+                }
               />
             );
           })}

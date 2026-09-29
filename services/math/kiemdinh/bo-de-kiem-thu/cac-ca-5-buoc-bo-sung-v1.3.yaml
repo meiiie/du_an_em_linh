@@ -1,0 +1,570 @@
+# Bộ BỔ SUNG v1.3 cho bài làm 5 bước – mốc hàng X không tăng dần (loai_ket_qua SAI_THU_TU_MOC).
+# Soạn 29/09/2026 theo chốt của No. KHÔNG thay đổi các ca đã đóng băng trong cac-ca-5-buoc.yaml (v1.2).
+# Do Kiểm định SOẠN MÔ PHỎNG, không lấy từ log AI/học sinh thật.
+# Bản sửa 29/09 ~11:10: nhãn S17, S18 ghi CẢ lỗi gốc lẫn ô hệ quả (cac_van_de_nhan); thêm S19–S25.
+# Bản sửa 29/09 ~11:25 (chốt No 11:01): thêm S26–S29 (SAI_BIEN_DOI, mũi tên suy từ ô dấu sai, DIEM_THUA ERR.DH.24 / ERR.DH.31); `dong` trong nhãn đếm từ 0; mỗi vấn đề có ma_loi/ky_nang khi đã chốt.
+# Bản sửa 29/09 ~11:30 (No 11:02): thêm S30 (mốc thừa, hai ô hai bên cùng dấu đúng -> chỉ DIEM_THUA) và S31 (SAI_TXD + DIEM_THIEU + SAI_THU_TU_MOC; API phải trả đủ mọi lỗi gốc theo thứ tự bước).
+# NHÃN (buoc_sai_nhan, cac_van_de_nhan) TÍNH BẰNG SymPy bởi giai-doan-2/sinh_nhan_v13.py theo định nghĩa ở docstring
+# của file đó (không dùng bộ kiểm của ta hay code repo). Tạo file: giai-doan-2/tao_bo_v13.py.
+# QUY ƯỚC CHỈ SỐ = quy ước code (docs/chi-so-o-bang.md, commit 6eb8b06): k từ 0; hàng X chỉ đếm điểm theo thứ tự học
+# sinh nhập; hàng DAU_YPHAY/BIEN_THIEN k chẵn = khoảng, k lẻ = điểm. KHÔNG cần quy đổi.
+# `bang.moc` ghi đúng thứ tự học sinh nhập (app không tự sắp). `dau[j]` = ô khoảng thứ j theo cột học sinh.
+# buoc_sai_nhan = vấn đề báo ĐẦU TIÊN trong cac_van_de_nhan (để adapter cũ vẫn chạy).
+# Ô "chỉ sai vì vị trí" = sai so với khoảng học sinh dựng nhưng khớp đáp án cùng k sau khi sắp mốc tăng dần
+#   -> loại theo kết quả kiểm + nguyen_nhan: SAI_THU_TU_MOC, không trừ điểm lần hai. Ô vẫn sai sau khi sắp: lỗi riêng.
+# Ô khoảng mà y' đổi dấu bên trong khoảng học sinh dựng ghi DAU_DOI_TRONG_KHOANG; y' không đổi dấu nhưng ô khác dấu ghi SAI_DAU.
+# Mã lỗi theo supham/ma-loi-DH.csv bản 29/09 11:00 (31 mã): ERR.DH.30 = SAI_THU_TU_MOC, ERR.DH.24/ERR.DH.31 = DIEM_THUA.
+phien_ban: 1.3-bosung-thu-tu-moc
+quy_uoc_chi_so: code-k0
+nguon: soan_mo_phong
+ca:
+- id: S17
+  nhan: sai
+  mo_ta: Hàng X ghi 2 rồi 0 (đảo thứ tự), đủ điểm; hàng dấu +,-,+ chép theo bảng đúng; kết luận đúng
+  ma_loi_supham: ERR.DH.30
+  ky_nang: T12.DH.03
+  bai_lam:
+    ham: x**3 - 3*x**2 + 2
+    TXD: R
+    dao_ham: 3*x**2 - 6*x
+    y_phay_bang_0: ['0', '2']
+    y_phay_khong_xd: []
+    bang:
+      moc: [-oo, '2', '0', oo]
+      dau: [+, '-', +]
+    ket_luan: &id003
+      dong_bien: [(-oo; 0), (2; +oo)]
+      nghich_bien: [(0; 2)]
+      cuc_dai_x: ['0']
+      cuc_tieu_x: ['2']
+  buoc_sai_nhan: &id001
+    ma_buoc: B.DH.XETDAU
+    dong: null
+    o: {hang: X, k: 1}
+  loai_ket_qua_nhan: [SAI_THU_TU_MOC, DAU_DOI_TRONG_KHOANG]
+  cac_van_de_nhan:
+  - loai_ket_qua: SAI_THU_TU_MOC
+    buoc_sai: *id001
+    ma_loi: ERR.DH.30
+    ky_nang: T12.DH.03
+  - loai_ket_qua: DAU_DOI_TRONG_KHOANG
+    buoc_sai:
+      ma_buoc: B.DH.XETDAU
+      dong: null
+      o: {hang: DAU_YPHAY, k: 0}
+    nguyen_nhan: SAI_THU_TU_MOC
+  - loai_ket_qua: DAU_DOI_TRONG_KHOANG
+    buoc_sai:
+      ma_buoc: B.DH.XETDAU
+      dong: null
+      o: {hang: DAU_YPHAY, k: 4}
+    nguyen_nhan: SAI_THU_TU_MOC
+  tham_chieu_sympy:
+    C: ['0', '2']
+    diem_ngoai_D: []
+    y_phay: 3*x*(x - 2)
+- id: S18
+  nhan: sai
+  mo_ta: Hàng X ghi 0, -1, 1 (điểm -1 đặt sau 0), đủ điểm; hàng dấu +,-,+,- chép theo bảng đúng; kết luận đúng
+  ma_loi_supham: ERR.DH.30
+  ky_nang: T12.DH.03
+  bai_lam:
+    ham: -x**4 + 2*x**2
+    TXD: R
+    dao_ham: -4*x**3 + 4*x
+    y_phay_bang_0: ['-1', '0', '1']
+    y_phay_khong_xd: []
+    bang:
+      moc: [-oo, '0', '-1', '1', oo]
+      dau: [+, '-', +, '-']
+    ket_luan: &id005
+      dong_bien: [(-oo; -1), (0; 1)]
+      nghich_bien: [(-1; 0), (1; +oo)]
+      cuc_dai_x: ['-1', '1']
+      cuc_tieu_x: ['0']
+  buoc_sai_nhan: &id002
+    ma_buoc: B.DH.XETDAU
+    dong: null
+    o: {hang: X, k: 1}
+  loai_ket_qua_nhan: [SAI_THU_TU_MOC, DAU_DOI_TRONG_KHOANG]
+  cac_van_de_nhan:
+  - loai_ket_qua: SAI_THU_TU_MOC
+    buoc_sai: *id002
+    ma_loi: ERR.DH.30
+    ky_nang: T12.DH.03
+  - loai_ket_qua: DAU_DOI_TRONG_KHOANG
+    buoc_sai:
+      ma_buoc: B.DH.XETDAU
+      dong: null
+      o: {hang: DAU_YPHAY, k: 0}
+    nguyen_nhan: SAI_THU_TU_MOC
+  - loai_ket_qua: DAU_DOI_TRONG_KHOANG
+    buoc_sai:
+      ma_buoc: B.DH.XETDAU
+      dong: null
+      o: {hang: DAU_YPHAY, k: 4}
+    nguyen_nhan: SAI_THU_TU_MOC
+  tham_chieu_sympy:
+    C: ['-1', '0', '1']
+    diem_ngoai_D: []
+    y_phay: 4*x*(1 - x**2)
+- id: S19
+  nhan: dung
+  mo_ta: 'Đối chứng: mốc đúng thứ tự 0, 2; có hàng biến thiên; kết luận đúng'
+  ma_loi_supham: null
+  ky_nang: null
+  bai_lam:
+    ham: x**3 - 3*x**2 + 2
+    TXD: R
+    dao_ham: 3*x**2 - 6*x
+    y_phay_bang_0: ['0', '2']
+    y_phay_khong_xd: []
+    bang:
+      moc: [-oo, '0', '2', oo]
+      dau: [+, '-', +]
+      chieu: [tang, giam, tang]
+    ket_luan: *id003
+  buoc_sai_nhan: null
+  loai_ket_qua_nhan: [DAT]
+  cac_van_de_nhan: []
+  tham_chieu_sympy:
+    C: ['0', '2']
+    diem_ngoai_D: []
+    y_phay: 3*x*(x - 2)
+- id: S20
+  nhan: sai
+  mo_ta: 'Mốc trùng: hàng X ghi 0, 0, 2 (không tăng ngặt); các ô dấu đúng trên khoảng học sinh dựng'
+  ma_loi_supham: ERR.DH.30
+  ky_nang: T12.DH.03
+  bai_lam:
+    ham: x**3 - 3*x**2 + 2
+    TXD: R
+    dao_ham: 3*x**2 - 6*x
+    y_phay_bang_0: ['0', '2']
+    y_phay_khong_xd: []
+    bang:
+      moc: [-oo, '0', '0', '2', oo]
+      dau: [+, '-', '-', +]
+    ket_luan: *id003
+  buoc_sai_nhan: &id004
+    ma_buoc: B.DH.XETDAU
+    dong: null
+    o: {hang: X, k: 1}
+  loai_ket_qua_nhan: [SAI_THU_TU_MOC]
+  cac_van_de_nhan:
+  - loai_ket_qua: SAI_THU_TU_MOC
+    buoc_sai: *id004
+    ma_loi: ERR.DH.30
+    ky_nang: T12.DH.03
+  tham_chieu_sympy:
+    C: ['0', '2']
+    diem_ngoai_D: []
+    y_phay: 3*x*(x - 2)
+- id: S21
+  nhan: sai
+  mo_ta: 'Vừa sai thứ tự vừa thiếu mốc: -x^4+2x^2, hàng X ghi 1, -1 (thiếu 0, đảo thứ tự); bước nghiệm cũng thiếu 0'
+  ma_loi_supham: ERR.DH.30
+  ky_nang: T12.DH.03
+  bai_lam:
+    ham: -x**4 + 2*x**2
+    TXD: R
+    dao_ham: -4*x**3 + 4*x
+    y_phay_bang_0: ['-1', '1']
+    y_phay_khong_xd: []
+    bang:
+      moc: [-oo, '1', '-1', oo]
+      dau: [+, '-', '-']
+    ket_luan: *id005
+  buoc_sai_nhan: &id006
+    ma_buoc: B.DH.NGHIEM
+    dong: null
+    o: {hang: X, k: null}
+  loai_ket_qua_nhan: [DIEM_THIEU, SAI_THU_TU_MOC, DAU_DOI_TRONG_KHOANG]
+  cac_van_de_nhan:
+  - loai_ket_qua: DIEM_THIEU
+    buoc_sai: *id006
+    so_diem_thieu: 1
+  - loai_ket_qua: SAI_THU_TU_MOC
+    buoc_sai:
+      ma_buoc: B.DH.XETDAU
+      dong: null
+      o: {hang: X, k: 1}
+    ma_loi: ERR.DH.30
+    ky_nang: T12.DH.03
+  - loai_ket_qua: DAU_DOI_TRONG_KHOANG
+    buoc_sai:
+      ma_buoc: B.DH.XETDAU
+      dong: null
+      o: {hang: DAU_YPHAY, k: 0}
+    nguyen_nhan: SAI_THU_TU_MOC
+  - loai_ket_qua: DAU_DOI_TRONG_KHOANG
+    buoc_sai:
+      ma_buoc: B.DH.XETDAU
+      dong: null
+      o: {hang: DAU_YPHAY, k: 2}
+    nguyen_nhan: DIEM_THIEU
+  - loai_ket_qua: DAU_DOI_TRONG_KHOANG
+    buoc_sai:
+      ma_buoc: B.DH.XETDAU
+      dong: null
+      o: {hang: DAU_YPHAY, k: 4}
+    nguyen_nhan: SAI_THU_TU_MOC
+  tham_chieu_sympy:
+    C: ['-1', '0', '1']
+    diem_ngoai_D: []
+    y_phay: 4*x*(1 - x**2)
+- id: S22
+  nhan: dung
+  mo_ta: 'Đối chứng hàm có điểm không xác định: (x^2+1)/x, hàng X -1, 0, 1 đúng thứ tự, ô tại 0 là ||'
+  ma_loi_supham: null
+  ky_nang: null
+  bai_lam:
+    ham: (x**2 + 1)/x
+    TXD: R \ {0}
+    dao_ham: (x**2 - 1)/x**2
+    y_phay_bang_0: ['-1', '1']
+    y_phay_khong_xd: []
+    bang:
+      moc: [-oo, '-1', '0', '1', oo]
+      dau: [+, '-', '-', +]
+      dau_tai_diem: ['0', '||', '0']
+      chieu: [tang, giam, giam, tang]
+    ket_luan: &id007
+      dong_bien: [(-oo; -1), (1; +oo)]
+      nghich_bien: [(-1; 0), (0; 1)]
+      cuc_dai_x: ['-1']
+      cuc_tieu_x: ['1']
+  buoc_sai_nhan: null
+  loai_ket_qua_nhan: [DAT]
+  cac_van_de_nhan: []
+  tham_chieu_sympy:
+    C: ['-1', '0', '1']
+    diem_ngoai_D: ['0']
+    y_phay: 1 - 1/x**2
+- id: S23
+  nhan: sai
+  mo_ta: (x^2+1)/x, hàng X ghi 0, -1, 1 (sai thứ tự); dấu và ô tại điểm chép theo bảng đúng; chiều khớp dấu
+  ma_loi_supham: ERR.DH.30
+  ky_nang: T12.DH.03
+  bai_lam:
+    ham: (x**2 + 1)/x
+    TXD: R \ {0}
+    dao_ham: (x**2 - 1)/x**2
+    y_phay_bang_0: ['-1', '1']
+    y_phay_khong_xd: []
+    bang:
+      moc: [-oo, '0', '-1', '1', oo]
+      dau: [+, '-', '-', +]
+      dau_tai_diem: ['||', '0', '0']
+      chieu: [tang, giam, giam, tang]
+    ket_luan: *id007
+  buoc_sai_nhan: &id008
+    ma_buoc: B.DH.XETDAU
+    dong: null
+    o: {hang: X, k: 1}
+  loai_ket_qua_nhan: [SAI_THU_TU_MOC, DAU_DOI_TRONG_KHOANG]
+  cac_van_de_nhan:
+  - loai_ket_qua: SAI_THU_TU_MOC
+    buoc_sai: *id008
+    ma_loi: ERR.DH.30
+    ky_nang: T12.DH.03
+  - loai_ket_qua: DAU_DOI_TRONG_KHOANG
+    buoc_sai:
+      ma_buoc: B.DH.XETDAU
+      dong: null
+      o: {hang: DAU_YPHAY, k: 0}
+    nguyen_nhan: SAI_THU_TU_MOC
+  tham_chieu_sympy:
+    C: ['-1', '0', '1']
+    diem_ngoai_D: ['0']
+    y_phay: 1 - 1/x**2
+- id: S24
+  nhan: sai
+  mo_ta: 'Sai thứ tự (2, 0) và ô khoảng thứ 2 ghi + (vẫn sai sau khi sắp: đúng là -)'
+  ma_loi_supham: ERR.DH.30
+  ky_nang: T12.DH.03
+  bai_lam:
+    ham: x**3 - 3*x**2 + 2
+    TXD: R
+    dao_ham: 3*x**2 - 6*x
+    y_phay_bang_0: ['0', '2']
+    y_phay_khong_xd: []
+    bang:
+      moc: [-oo, '2', '0', oo]
+      dau: [+, +, +]
+    ket_luan: *id003
+  buoc_sai_nhan: &id009
+    ma_buoc: B.DH.XETDAU
+    dong: null
+    o: {hang: X, k: 1}
+  loai_ket_qua_nhan: [SAI_THU_TU_MOC, DAU_DOI_TRONG_KHOANG, SAI_DAU]
+  cac_van_de_nhan:
+  - loai_ket_qua: SAI_THU_TU_MOC
+    buoc_sai: *id009
+    ma_loi: ERR.DH.30
+    ky_nang: T12.DH.03
+  - loai_ket_qua: DAU_DOI_TRONG_KHOANG
+    buoc_sai:
+      ma_buoc: B.DH.XETDAU
+      dong: null
+      o: {hang: DAU_YPHAY, k: 0}
+    nguyen_nhan: SAI_THU_TU_MOC
+  - loai_ket_qua: SAI_DAU
+    buoc_sai:
+      ma_buoc: B.DH.XETDAU
+      dong: null
+      o: {hang: DAU_YPHAY, k: 2}
+  - loai_ket_qua: DAU_DOI_TRONG_KHOANG
+    buoc_sai:
+      ma_buoc: B.DH.XETDAU
+      dong: null
+      o: {hang: DAU_YPHAY, k: 4}
+    nguyen_nhan: SAI_THU_TU_MOC
+  tham_chieu_sympy:
+    C: ['0', '2']
+    diem_ngoai_D: []
+    y_phay: 3*x*(x - 2)
+- id: S25
+  nhan: sai
+  mo_ta: Sai thứ tự (2, 0) và hàng biến thiên mâu thuẫn hàng dấu ở ô khoảng thứ 2 (dấu -, chiều tăng)
+  ma_loi_supham: ERR.DH.30
+  ky_nang: T12.DH.03
+  bai_lam:
+    ham: x**3 - 3*x**2 + 2
+    TXD: R
+    dao_ham: 3*x**2 - 6*x
+    y_phay_bang_0: ['0', '2']
+    y_phay_khong_xd: []
+    bang:
+      moc: [-oo, '2', '0', oo]
+      dau: [+, '-', +]
+      chieu: [tang, tang, tang]
+    ket_luan: *id003
+  buoc_sai_nhan: &id010
+    ma_buoc: B.DH.XETDAU
+    dong: null
+    o: {hang: X, k: 1}
+  loai_ket_qua_nhan: [SAI_THU_TU_MOC, DAU_DOI_TRONG_KHOANG, SAI_BIEN_DOI]
+  cac_van_de_nhan:
+  - loai_ket_qua: SAI_THU_TU_MOC
+    buoc_sai: *id010
+    ma_loi: ERR.DH.30
+    ky_nang: T12.DH.03
+  - loai_ket_qua: DAU_DOI_TRONG_KHOANG
+    buoc_sai:
+      ma_buoc: B.DH.XETDAU
+      dong: null
+      o: {hang: DAU_YPHAY, k: 0}
+    nguyen_nhan: SAI_THU_TU_MOC
+  - loai_ket_qua: DAU_DOI_TRONG_KHOANG
+    buoc_sai:
+      ma_buoc: B.DH.XETDAU
+      dong: null
+      o: {hang: DAU_YPHAY, k: 4}
+    nguyen_nhan: SAI_THU_TU_MOC
+  - loai_ket_qua: SAI_BIEN_DOI
+    buoc_sai:
+      ma_buoc: B.DH.XETDAU
+      dong: null
+      o: {hang: BIEN_THIEN, k: 2}
+  tham_chieu_sympy:
+    C: ['0', '2']
+    diem_ngoai_D: []
+    y_phay: 3*x*(x - 2)
+- id: S26
+  nhan: sai
+  mo_ta: Mốc và dấu đúng thứ tự, hàng biến thiên mâu thuẫn hàng dấu đúng ở ô khoảng thứ 3 (dấu +, chiều giảm)
+  ma_loi_supham: null
+  ky_nang: null
+  bai_lam:
+    ham: x**3 - 3*x**2 + 2
+    TXD: R
+    dao_ham: 3*x**2 - 6*x
+    y_phay_bang_0: ['0', '2']
+    y_phay_khong_xd: []
+    bang:
+      moc: [-oo, '0', '2', oo]
+      dau: [+, '-', +]
+      chieu: [tang, giam, giam]
+    ket_luan: *id003
+  buoc_sai_nhan: &id011
+    ma_buoc: B.DH.XETDAU
+    dong: null
+    o: {hang: BIEN_THIEN, k: 4}
+  loai_ket_qua_nhan: [SAI_BIEN_DOI]
+  cac_van_de_nhan:
+  - loai_ket_qua: SAI_BIEN_DOI
+    buoc_sai: *id011
+  tham_chieu_sympy:
+    C: ['0', '2']
+    diem_ngoai_D: []
+    y_phay: 3*x*(x - 2)
+- id: S27
+  nhan: sai
+  mo_ta: 'Ô dấu khoảng thứ 2 ghi + (sai, đúng là -), mũi tên suy đúng từ ô dấu sai (tăng): chỉ SAI_DAU, không lỗi hàng biến thiên'
+  ma_loi_supham: null
+  ky_nang: null
+  bai_lam:
+    ham: x**3 - 3*x**2 + 2
+    TXD: R
+    dao_ham: 3*x**2 - 6*x
+    y_phay_bang_0: ['0', '2']
+    y_phay_khong_xd: []
+    bang:
+      moc: [-oo, '0', '2', oo]
+      dau: [+, +, +]
+      chieu: [tang, tang, tang]
+    ket_luan: *id003
+  buoc_sai_nhan: &id012
+    ma_buoc: B.DH.XETDAU
+    dong: null
+    o: {hang: DAU_YPHAY, k: 2}
+  loai_ket_qua_nhan: [SAI_DAU]
+  cac_van_de_nhan:
+  - loai_ket_qua: SAI_DAU
+    buoc_sai: *id012
+  tham_chieu_sympy:
+    C: ['0', '2']
+    diem_ngoai_D: []
+    y_phay: 3*x*(x - 2)
+- id: S28
+  nhan: sai
+  mo_ta: Mốc thừa x = 1 có trong danh sách nghiệm học sinh viết ở bước NGHIEM (0, 1, 2); dấu các ô đúng
+  ma_loi_supham: ERR.DH.24
+  ky_nang: T12.DH.02
+  bai_lam:
+    ham: x**3 - 3*x**2 + 2
+    TXD: R
+    dao_ham: 3*x**2 - 6*x
+    y_phay_bang_0: ['0', '1', '2']
+    y_phay_khong_xd: []
+    bang:
+      moc: [-oo, '0', '1', '2', oo]
+      dau: [+, '-', '-', +]
+    ket_luan: *id003
+  buoc_sai_nhan: &id013
+    ma_buoc: B.DH.NGHIEM
+    dong: null
+    o: {hang: X, k: 1}
+  loai_ket_qua_nhan: [DIEM_THUA]
+  cac_van_de_nhan:
+  - loai_ket_qua: DIEM_THUA
+    buoc_sai: *id013
+    ma_loi: ERR.DH.24
+    ky_nang: T12.DH.02
+  tham_chieu_sympy:
+    C: ['0', '2']
+    diem_ngoai_D: []
+    y_phay: 3*x*(x - 2)
+- id: S29
+  nhan: sai
+  mo_ta: Bước NGHIEM đúng (0, 2) nhưng học sinh tự thêm mốc x = 1 vào bảng; dấu các ô đúng
+  ma_loi_supham: ERR.DH.31
+  ky_nang: T12.DH.03
+  bai_lam:
+    ham: x**3 - 3*x**2 + 2
+    TXD: R
+    dao_ham: 3*x**2 - 6*x
+    y_phay_bang_0: ['0', '2']
+    y_phay_khong_xd: []
+    bang:
+      moc: [-oo, '0', '1', '2', oo]
+      dau: [+, '-', '-', +]
+    ket_luan: *id003
+  buoc_sai_nhan: &id014
+    ma_buoc: B.DH.XETDAU
+    dong: null
+    o: {hang: X, k: 1}
+  loai_ket_qua_nhan: [DIEM_THUA]
+  cac_van_de_nhan:
+  - loai_ket_qua: DIEM_THUA
+    buoc_sai: *id014
+    ma_loi: ERR.DH.31
+    ky_nang: T12.DH.03
+  tham_chieu_sympy:
+    C: ['0', '2']
+    diem_ngoai_D: []
+    y_phay: 3*x*(x - 2)
+- id: S30
+  nhan: sai
+  mo_ta: 'x^3-3x: mốc thừa x = 0 có trong danh sách nghiệm bước NGHIEM (-1, 0, 1); học sinh ghi cùng dấu ĐÚNG (-) ở cả hai khoảng hai bên mốc thừa'
+  ma_loi_supham: ERR.DH.24
+  ky_nang: T12.DH.02
+  bai_lam:
+    ham: x**3 - 3*x
+    TXD: R
+    dao_ham: 3*x**2 - 3
+    y_phay_bang_0: ['-1', '0', '1']
+    y_phay_khong_xd: []
+    bang:
+      moc: [-oo, '-1', '0', '1', oo]
+      dau: [+, '-', '-', +]
+      chieu: [tang, giam, giam, tang]
+    ket_luan:
+      dong_bien: [(-oo; -1), (1; +oo)]
+      nghich_bien: [(-1; 1)]
+      cuc_dai_x: ['-1']
+      cuc_tieu_x: ['1']
+  buoc_sai_nhan: &id015
+    ma_buoc: B.DH.NGHIEM
+    dong: null
+    o: {hang: X, k: 1}
+  loai_ket_qua_nhan: [DIEM_THUA]
+  cac_van_de_nhan:
+  - loai_ket_qua: DIEM_THUA
+    buoc_sai: *id015
+    ma_loi: ERR.DH.24
+    ky_nang: T12.DH.02
+  tham_chieu_sympy:
+    C: ['-1', '1']
+    diem_ngoai_D: []
+    y_phay: 3*x**2 - 3
+- id: S31
+  nhan: sai
+  mo_ta: 'Nhiều lỗi gốc: (x^2+1)/x, TXĐ ghi R (sai), bước nghiệm chỉ có 1 (thiếu -1), hàng X ghi 1, 0 (thiếu -1 và sai thứ tự)'
+  ma_loi_supham: ERR.DH.30
+  ky_nang: T12.DH.03
+  bai_lam:
+    ham: (x**2 + 1)/x
+    TXD: R
+    dao_ham: (x**2 - 1)/x**2
+    y_phay_bang_0: ['1']
+    y_phay_khong_xd: []
+    bang:
+      moc: [-oo, '1', '0', oo]
+      dau: [+, '-', +]
+    ket_luan: *id007
+  buoc_sai_nhan: &id016 {ma_buoc: B.DH.TXD, dong: 0, o: null}
+  loai_ket_qua_nhan: [SAI_TXD, DIEM_THIEU, SAI_THU_TU_MOC, DAU_DOI_TRONG_KHOANG]
+  cac_van_de_nhan:
+  - loai_ket_qua: SAI_TXD
+    buoc_sai: *id016
+  - loai_ket_qua: DIEM_THIEU
+    buoc_sai:
+      ma_buoc: B.DH.NGHIEM
+      dong: null
+      o: {hang: X, k: null}
+    so_diem_thieu: 1
+  - loai_ket_qua: SAI_THU_TU_MOC
+    buoc_sai:
+      ma_buoc: B.DH.XETDAU
+      dong: null
+      o: {hang: X, k: 1}
+    ma_loi: ERR.DH.30
+    ky_nang: T12.DH.03
+  - loai_ket_qua: DAU_DOI_TRONG_KHOANG
+    buoc_sai:
+      ma_buoc: B.DH.XETDAU
+      dong: null
+      o: {hang: DAU_YPHAY, k: 0}
+    nguyen_nhan: DIEM_THIEU
+  - loai_ket_qua: DAU_DOI_TRONG_KHOANG
+    buoc_sai:
+      ma_buoc: B.DH.XETDAU
+      dong: null
+      o: {hang: DAU_YPHAY, k: 4}
+    nguyen_nhan: SAI_THU_TU_MOC
+  tham_chieu_sympy:
+    C: ['-1', '0', '1']
+    diem_ngoai_D: ['0']
+    y_phay: 1 - 1/x**2

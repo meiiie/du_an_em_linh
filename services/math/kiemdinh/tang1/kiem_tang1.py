@@ -27,10 +27,82 @@ LOC = dict(x=x, a=a, b=b, k=k, C=C, pi=pi, E=E, e=E, oo=oo, Abs=Abs, sqrt=sqrt, 
 EPS = 1e-35
 
 
+# --- An toàn đầu vào (F-01, 29/09) -------------------------------------------------------------
+# parse_expr dùng eval. Chuỗi tới đây có thể đến từ học sinh, nên TRƯỚC khi gọi parse_expr phải kiểm cây cú pháp:
+# chỉ cho số, tên (không bắt đầu bằng "_", không phải tên dựng sẵn của Python), phép toán, và lời gọi tới hàm
+# toán trong danh sách trắng. Cấm thuộc tính (a.b), chỉ số (a[b]), lambda, comprehension, chuỗi ký tự, từ khoá
+# tham số, lũy thừa hằng quá lớn. Vi phạm -> ValueError (tầng trên trả KHONG_KIEM_DUOC, không bao giờ chấm).
+import ast as _ast
+import os
+import builtins as _builtins
+
+DO_DAI_TOI_DA = 400
+HAM_CHO_PHEP = frozenset({
+    'sqrt', 'Abs', 'log', 'ln', 'exp', 'sin', 'cos', 'tan', 'cot', 'Ne', 'Eq', 'binomial', 'factorial',
+    'Integer', 'Rational', 'Float', 'Symbol', 'root', 'cbrt', 'sign', 'Max', 'Min', 'floor', 'ceiling',
+    'asin', 'acos', 'atan', 'Interval', 'Union', 'FiniteSet', 'Mod', 'Piecewise',
+})
+_TEN_CAM = frozenset(n for n in dir(_builtins) if n not in HAM_CHO_PHEP) | {
+    'lambda', 'sympy', 'os', 'sys', 'subprocess', 'importlib', 'globals', 'locals', 'vars', 'getattr',
+    'setattr', 'delattr', 'eval', 'exec', 'compile', 'open', 'input', 'breakpoint', 'help', 'exit', 'quit',
+    'type', 'object', 'dir', 'memoryview', 'bytearray', 'bytes', 'classmethod', 'staticmethod', 'super',
+    'property', 'sympify', 'parse_expr', 'lambdify', 'init_printing', 'var', 'symbols', 'preview', 'plot',
+}
+_NUT_CHO_PHEP = (
+    _ast.Expression, _ast.BinOp, _ast.UnaryOp, _ast.Compare, _ast.BoolOp, _ast.Tuple, _ast.Name, _ast.Load,
+    _ast.Constant, _ast.Call,
+    _ast.Add, _ast.Sub, _ast.Mult, _ast.Div, _ast.Pow, _ast.Mod, _ast.FloorDiv, _ast.USub, _ast.UAdd,
+    _ast.Eq, _ast.NotEq, _ast.Lt, _ast.LtE, _ast.Gt, _ast.GtE, _ast.And, _ast.Or,
+)
+
+
+def _co_ten(nut):
+    return any(isinstance(n, _ast.Name) for n in _ast.walk(nut))
+
+
+def kiem_an_toan(s):
+    """Ném ValueError nếu chuỗi không phải biểu thức toán an toàn."""
+    s = str(s)
+    if len(s) > DO_DAI_TOI_DA:
+        raise ValueError('biểu thức quá dài')
+    if '__' in s or "'" in s or '"' in s or '\\' in s or '[' in s or ']' in s or ';' in s or '@' in s:
+        raise ValueError('ký tự không cho phép')
+    try:
+        cay = _ast.parse(s.strip(), mode='eval')
+    except SyntaxError as e:
+        raise ValueError('cú pháp không hợp lệ') from e
+    for nut in _ast.walk(cay):
+        if not isinstance(nut, _NUT_CHO_PHEP):
+            raise ValueError('cấu trúc không cho phép: %s' % type(nut).__name__)
+        if isinstance(nut, _ast.Name):
+            if nut.id.startswith('_') or nut.id in _TEN_CAM or len(nut.id) > 12:
+                raise ValueError('tên không cho phép: %s' % nut.id)
+        elif isinstance(nut, _ast.Constant):
+            v = nut.value
+            if isinstance(v, bool) or not isinstance(v, (int, float)):
+                raise ValueError('hằng không cho phép')
+            if isinstance(v, int) and abs(v) >= 10 ** 15:
+                raise ValueError('số quá lớn')
+        elif isinstance(nut, _ast.Call):
+            if not isinstance(nut.func, _ast.Name) or nut.func.id not in HAM_CHO_PHEP or nut.keywords:
+                raise ValueError('lời gọi không cho phép')
+        elif isinstance(nut, _ast.BinOp) and isinstance(nut.op, _ast.Pow):
+            mu = nut.right
+            if isinstance(mu, _ast.UnaryOp):
+                mu = mu.operand
+            if isinstance(mu, _ast.Constant) and isinstance(mu.value, (int, float)) and abs(mu.value) > 64:
+                raise ValueError('số mũ quá lớn')
+            if not _co_ten(nut.right) and any(isinstance(n, _ast.BinOp) and isinstance(n.op, _ast.Pow)
+                                              for n in _ast.walk(nut.right)):
+                raise ValueError('lũy thừa tầng không cho phép')
+    return s
+
+
 def P(s, extra=None):
     d = dict(LOC)
     if extra:
         d.update(extra)
+    kiem_an_toan(s)
     return parse_expr(str(s), local_dict=d, transformations=TRANS)
 
 
@@ -580,6 +652,10 @@ _NS_DEM = dict(product=itertools.product, permutations=itertools.permutations,
 
 def kiem_dem(khong_gian, gia_tri_ai, su_kien=None):
     """Liệt kê không gian mẫu (mô hình hóa do người soạn, độc lập với AI)."""
+    # F-01: kiem_dem dùng eval cho mô hình do người soạn viết; KHÔNG có đường gọi từ dịch vụ (app/). Chỉ mở
+    # khi chạy bộ kiểm của Kiểm định (biến môi trường), để không ai vô tình nối nó với dữ liệu HS.
+    if os.environ.get('HOC_TOAN_CHO_KIEM_DEM') != '1':
+        return ket_qua('KHONG_KIEM_DUOC', 'dem', 'kiem_dem bị tắt trong dịch vụ (cần HOC_TOAN_CHO_KIEM_DEM=1)')
     ns = {'__builtins__': {}}
     ns.update(_NS_DEM)
     omega = list(eval(khong_gian, ns))
@@ -937,7 +1013,123 @@ def _sai5(ma, dong, o, loai, chi_tiet, phan_chung=None, bang_chung=None):
     return r
 
 
-def kiem_5_buoc(bl):
+def _van_de_thua(j, p, nghiem_hs):
+    """Điểm thừa ở hàng X (chốt 29/09, đã đóng băng): nếu điểm cũng có trong nghiệm học sinh viết ở B.DH.NGHIEM thì
+    đúng MỘT vấn đề ERR.DH.24 tại B.DH.NGHIEM (ô X vẫn tô đỏ nhưng không trừ lần hai); chỉ thêm ở bảng thì ERR.DH.31
+    tại B.DH.XETDAU."""
+    if _thuoc(p, nghiem_hs):
+        ma, ml, kn = 'B.DH.NGHIEM', 'ERR.DH.24', 'T12.DH.02'
+    else:
+        ma, ml, kn = 'B.DH.XETDAU', 'ERR.DH.31', 'T12.DH.03'
+    return dict(loai_ket_qua='DIEM_THUA', buoc_sai=_bs(ma, None, dict(hang='x', k=2 * (j + 1))), diem=[str(p)], ma_loi=ml, ky_nang=kn)
+
+
+def _k_thu_tu(diem_hs):
+    """Chỉ số (từ 0) của điểm đầu tiên nhỏ hơn hoặc bằng điểm liền trước; None nếu tăng ngặt."""
+    for j in range(1, len(diem_hs)):
+        try:
+            tang_ngat = bool(S(diem_hs[j] - diem_hs[j - 1]) > 0)
+        except Exception:
+            tang_ngat = float(diem_hs[j]) > float(diem_hs[j - 1])
+        if not tang_ngat:
+            return j
+    return None
+
+
+def _kiem_bang_sai_thu_tu(f, cf, bang, moc, diem_hs, k_thu_tu, khong0, khongxd, pt_, thieu, thua, nghiem_hs):
+    """Hàng X không tăng dần (luật 3.4 d, chốt 29/09).
+
+    - Gốc theo thứ tự bước: DIEM_THIEU / DIEM_THUA (tập mốc so như tập hợp) rồi SAI_THU_TU_MOC tại k của điểm
+      đầu tiên <= điểm liền trước.
+    - Ô dấu được kiểm theo cột CHÍNH học sinh dựng (khoảng giữa hai mốc liền kề của học sinh). Ô sai theo cột đó:
+      loại theo kết quả kiểm (DAU_DOI_TRONG_KHOANG nếu y' đổi dấu bên trong, SAI_DAU nếu không); nếu khớp đáp án
+      cùng k sau khi sắp tăng dần thì là hệ quả, nguyen_nhan trỏ SAI_THU_TU_MOC (hoặc DIEM_THIEU khi khoảng đã sắp
+      vẫn chứa điểm thiếu); còn sai sau khi sắp là lỗi riêng.
+    - Mũi tên chỉ bị báo khi trái hàng dấu của chính học sinh (SAI_BIEN_DOI).
+    """
+    ky = {'+': 1, '-': -1, '||': None, 'khong_xd': None, '0': 0}
+    kc = {'tang': 1, 'giam': -1, 'khong_xd': None, '||': None}
+
+    def dau_khoang(l, r):
+        if not bool(S(r - l) > 0):
+            l, r = r, l
+        if not bool(S(r - l) > 0):
+            return 'rong'
+        ph = [d for d in pt_['doan'] if Interval.open(d['l'], d['r']).intersect(Interval.open(l, r)) != EmptySet]
+        ds_ = set(d['dau'] if d['trong_D'] else None for d in ph)
+        return next(iter(ds_)) if len(ds_) == 1 else 'tron'
+
+    def o_diem(p):
+        if gia_tri(f, {x: p}, cf) is None or _thuoc(p, khongxd):
+            return '||'
+        if _thuoc(p, khong0):
+            return '0'
+        return '?'
+
+    sap = sorted(diem_hs, key=lambda p: float(p))
+    moc_sap = [moc[0]] + sap + [moc[-1]]
+    n = len(diem_hs)
+    van_de = []
+    id_thieu = None
+    if thieu:
+        id_thieu = 'VD1'
+        van_de.append(dict(id=id_thieu, loai_ket_qua='DIEM_THIEU', buoc_sai=_bs('B.DH.NGHIEM', None, dict(hang='x', k=None)),
+                           diem=[str(p) for p in thieu], so_diem_thieu=len(thieu)))
+    thua_sau = []
+    for j, p in thua[:1]:
+        v = _van_de_thua(j, p, nghiem_hs)
+        if v['buoc_sai']['ma_buoc'] == 'B.DH.NGHIEM':
+            v['id'] = 'VD%d' % (len(van_de) + 1)
+            van_de.append(v)
+        else:
+            thua_sau.append(v)  # trong XETDAU, SAI_THU_TU_MOC đứng trước
+    id_goc = 'VD%d' % (len(van_de) + 1)
+    van_de.append(dict(id=id_goc, loai_ket_qua='SAI_THU_TU_MOC', buoc_sai=_bs('B.DH.XETDAU', None, dict(hang='x', k=2 * (k_thu_tu + 1))),
+                       ma_loi='ERR.DH.30', ky_nang='T12.DH.03'))
+    for v in thua_sau:
+        v['id'] = 'VD%d' % (len(van_de) + 1)
+        van_de.append(v)
+    o_dau = []  # (k kiểm định, vấn đề)
+    dau_ai = bang['dau']
+    for j in range(n + 1):
+        s_ai = ky.get(dau_ai[j], 'khong_hop_le')
+        rieng = dau_khoang(moc[j], moc[j + 1])
+        if rieng == 'rong' or s_ai == rieng:
+            continue
+        loai = 'DAU_DOI_TRONG_KHOANG' if rieng == 'tron' else 'SAI_DAU'
+        dung_sap = dau_khoang(moc_sap[j], moc_sap[j + 1])
+        v = dict(loai_ket_qua=loai, buoc_sai=_bs('B.DH.XETDAU', None, dict(hang="dau_y'", k=2 * j + 1)))
+        if dung_sap == 'tron' and id_thieu:
+            v['nguyen_nhan'] = id_thieu
+        elif s_ai == dung_sap:
+            v['nguyen_nhan'] = id_goc
+        o_dau.append((2 * j + 1, v))
+    if 'dau_tai_diem' in bang:
+        for j in range(n):
+            gt = bang['dau_tai_diem'][j]
+            if gt == o_diem(diem_hs[j]):
+                continue
+            v = dict(loai_ket_qua='SAI_GIA_TRI', buoc_sai=_bs('B.DH.XETDAU', None, dict(hang="dau_y'", k=2 * (j + 1))))
+            if gt == o_diem(sap[j]):
+                v['nguyen_nhan'] = id_goc
+            o_dau.append((2 * (j + 1), v))
+    o_chieu = []
+    if 'chieu' in bang:
+        for j in range(n + 1):
+            if kc.get(bang['chieu'][j], 'x') != ky.get(dau_ai[j], 'khong_hop_le'):
+                o_chieu.append((2 * j + 1, dict(loai_ket_qua='SAI_BIEN_DOI', buoc_sai=_bs('B.DH.XETDAU', None, dict(hang='bien_thien', k=2 * j + 1)))))
+    for _, v in sorted(o_dau, key=lambda t: t[0]) + o_chieu:
+        v['id'] = 'VD%d' % (len(van_de) + 1)
+        van_de.append(v)
+    dau_bs = van_de[0]['buoc_sai']
+    r = _sai5(dau_bs['ma_buoc'], None, dau_bs['o'], 'sai_thu_tu_moc',
+              'Mốc hàng X không tăng dần (điểm thứ %d không lớn hơn điểm liền trước)' % k_thu_tu,
+              dict(so_van_de=len(van_de)), 'so_sanh_thu_tu')
+    r['cac_van_de'] = van_de
+    return r
+
+
+def kiem_5_buoc(bl, bo_qua_txd=False):
     from sympy import limit
     f = P(bl['ham'])
     cf = dieu_kien(f)
@@ -947,9 +1139,26 @@ def kiem_5_buoc(bl):
     # Bước 1 – TXĐ
     A = parse_tap(bl['TXD'])
     r1 = _so_tap(A, D, lambda p: gia_tri(f, {x: p}, cf) is not None, ten_ai='bài làm', loai='tap_xac_dinh')
-    if r1['trang_thai'] != 'DAT':
+    if r1['trang_thai'] != 'DAT' and not bo_qua_txd:
         if r1['trang_thai'] == 'SAI':
-            return _sai5('B.DH.TXD', 1, None, 'sai_tap_xac_dinh', r1['chi_tiet'], r1['phan_chung'], r1['bang_chung'])
+            r = _sai5('B.DH.TXD', 1, None, 'sai_tap_xac_dinh', r1['chi_tiet'], r1['phan_chung'], r1['bang_chung'])
+            # API trả đủ mọi lỗi gốc theo thứ tự bước (S31): chấm tiếp các bước sau như thể TXĐ đúng
+            try:
+                sau = kiem_5_buoc(bl, bo_qua_txd=True)
+            except Exception:
+                sau = None
+            van_de = [dict(id='VD1', loai_ket_qua='SAI_TXD', buoc_sai=r['buoc_sai'])]
+            if sau and sau['trang_thai'] == 'SAI':
+                ds = sau.get('cac_van_de') or [dict(id='VD1', loai_ket_qua=loai_ket_qua(sau)[0], buoc_sai=sau['buoc_sai'])]
+                doi = {v['id']: 'VD%d' % (i + 2) for i, v in enumerate(ds)}
+                for v in ds:
+                    v = dict(v, id=doi[v['id']])
+                    if v.get('nguyen_nhan'):
+                        v['nguyen_nhan'] = doi.get(v['nguyen_nhan'], v['nguyen_nhan'])
+                    van_de.append(v)
+            if len(van_de) > 1:
+                r['cac_van_de'] = van_de
+            return r
         return r1
     # Bước 2 – đạo hàm
     r2 = kiem_dao_ham(bl['ham'], bl['dao_ham'])
@@ -990,7 +1199,16 @@ def kiem_5_buoc(bl):
         loi3.append("y' = 0: bài làm %s, máy %s" % (_tap_str(A0), _tap_str(khong0)))
     if not _cung_tap(Ax, khongxd):
         loi3.append("y' không xác định (trong TXĐ): bài làm %s, máy %s" % (_tap_str(Ax), _tap_str(khongxd)))
-    if loi3:
+    _bang3 = bl.get('bang')
+    _sai_thu_tu_bang = bool(_bang3) and _k_thu_tu([P(m) for m in _bang3['moc'][1:-1]]) is not None
+    _thua_trong_bang = False
+    if loi3 and _bang3:
+        _x_bang = [P(m) for m in _bang3['moc'][1:-1]]
+        _th3 = [p for p in khong0 if not _thuoc(p, A0)] + [p for p in khongxd if not _thuoc(p, Ax)]
+        _tu3 = [p for p in A0 if not _thuoc(p, khong0)] + [p for p in Ax if not _thuoc(p, khongxd)]
+        _thua_trong_bang = not _th3 and bool(_tu3) and all(_thuoc(p, _x_bang) for p in _tu3)
+    if loi3 and not _sai_thu_tu_bang and not _thua_trong_bang:
+        # v1.3 (S21): vừa thiếu nghiệm vừa sai thứ tự mốc -> chấm theo bảng để báo đủ các gốc
         thieu3 = [p for p in khong0 if not _thuoc(p, A0)] + [p for p in khongxd if not _thuoc(p, Ax)]
         thua3 = [p for p in A0 if not _thuoc(p, khong0)] + [p for p in Ax if not _thuoc(p, khongxd)]
         r = _sai5('B.DH.NGHIEM', 3, None, 'sai_diem_toi_han', '; '.join(loi3),
@@ -1023,22 +1241,38 @@ def kiem_5_buoc(bl):
         ds_ = set(d['dau'] if d['trong_D'] else None for d in ph)
         o_khoang.append(dict(k=2 * j - 1, khoang='(%s; %s)' % (l, r), dau=(next(iter(ds_)) if len(ds_) == 1 else 'tron'), phan=ph))
     doi_trong = [dict(k=o['k'], khoang=o['khoang']) for o in o_khoang if o['dau'] == 'tron']
+    # (d) thứ tự mốc (chốt 29/09): app không tự sắp.
+    k_thu_tu = _k_thu_tu(diem_hs)
+    nghiem_hs = [P(v) for v in (bl.get('y_phay_bang_0') or [])] + [P(v) for v in (bl.get('y_phay_khong_xd') or [])]
+    if k_thu_tu is not None:
+        return _kiem_bang_sai_thu_tu(f, cf, bang, moc, diem_hs, k_thu_tu, khong0, khongxd, pt_, thieu, thua, nghiem_hs)
     if thieu or thua:
-        o = dict(hang='x', k=(2 * (thua[0][0] + 1) if thua else None),
-                 diem_thieu=[str(p) for p in thieu], diem_thua=[str(p) for _, p in thua])
         van_de = []
         if thieu:
-            van_de.append(dict(id='VD1', loai_ket_qua='DIEM_THIEU', buoc_sai=_bs('B.DH.NGHIEM', None, dict(hang='x', k=None)), diem=[str(p) for p in thieu]))
-        if thua:
-            van_de.append(dict(id='VD%d' % (len(van_de) + 1), loai_ket_qua='DIEM_THUA', buoc_sai=_bs('B.DH.NGHIEM', None, dict(hang='x', k=2 * (thua[0][0] + 1))), diem=[str(p) for _, p in thua]))
+            van_de.append(dict(id='VD1', loai_ket_qua='DIEM_THIEU', buoc_sai=_bs('B.DH.NGHIEM', None, dict(hang='x', k=None)),
+                               diem=[str(p) for p in thieu], so_diem_thieu=len(thieu)))
+        for j, p in thua[:1]:
+            v = _van_de_thua(j, p, nghiem_hs)
+            v['id'] = 'VD%d' % (len(van_de) + 1)
+            van_de.append(v)
         for dt in doi_trong:
             van_de.append(dict(id='VD%d' % (len(van_de) + 1), loai_ket_qua='DAU_DOI_TRONG_KHOANG', nguyen_nhan='VD1' if thieu else None,
                                buoc_sai=_bs('B.DH.XETDAU', None, dict(hang="dau_y'", k=dt['k'])), khoang=dt['khoang']))
-        r = _sai5('B.DH.NGHIEM', None, o, 'sai_hang_x_bang',
+        if not thieu:
+            # chỉ có điểm thừa: ô khoảng hai bên chỉ bị báo khi dấu thật sự sai (S30)
+            _ky = {'+': 1, '-': -1, '||': None, 'khong_xd': None, '0': 0}
+            for o in o_khoang:
+                if o['dau'] != 'tron' and _ky.get(bang['dau'][(o['k'] - 1) // 2], 'khong_hop_le') != o['dau']:
+                    van_de.append(dict(id='VD%d' % (len(van_de) + 1), loai_ket_qua='SAI_DAU',
+                                       buoc_sai=_bs('B.DH.XETDAU', None, dict(hang="dau_y'", k=o['k'])), khoang=o['khoang']))
+        dau_bs = van_de[0]['buoc_sai']
+        r = _sai5(dau_bs['ma_buoc'], None, dau_bs['o'], 'sai_hang_x_bang',
                   'Hàng x của bảng: thiếu %s, thừa %s' % (_tap_str(thieu), _tap_str([p for _, p in thua])),
                   dict(tap_diem_dung=_tap_str(dung_x), dau_doi_trong_khoang=doi_trong), 'solveset+gioi_han_mot_phia')
         r['cac_van_de'] = van_de
         return r
+    ky = {'+': 1, '-': -1, '||': None, 'khong_xd': None, '0': 0}
+    kc = {'tang': 1, 'giam': -1, 'khong_xd': None, '||': None}
     ky = {'+': 1, '-': -1, '||': None, 'khong_xd': None, '0': 0}
     dau_ai = bang['dau']
     for o in o_khoang:
@@ -1064,9 +1298,8 @@ def kiem_5_buoc(bl):
                 return _sai5('B.DH.XETDAU', None, dict(hang="dau_y'", k=2 * (j + 1), diem=str(p)), 'sai_o_tai_diem',
                              "Ô %d (x = %s): bài làm ghi '%s', đúng là '%s'" % (2 * (j + 1), p, bang['dau_tai_diem'][j], dung_o), None, 'the_diem_chinh_xac')
     if 'chieu' in bang:
-        kc = {'tang': 1, 'giam': -1, 'khong_xd': None, '||': None}
         for o in o_khoang:
-            if kc.get(bang['chieu'][(o['k'] - 1) // 2], 'x') != o['dau']:
+            if kc.get(bang['chieu'][(o['k'] - 1) // 2], 'x') != ky.get(dau_ai[(o['k'] - 1) // 2], 'khong_hop_le'):
                 return _sai5('B.DH.XETDAU', None, dict(hang='bien_thien', k=o['k'], khoang=o['khoang']), 'sai_o_chieu_bien_thien',
                              "Ô %d %s: chiều '%s' không khớp dấu y' %s" % (o['k'], o['khoang'], bang['chieu'][(o['k'] - 1) // 2], o['dau']),
                              None, 'diem_thu_huu_ti+dau_chinh_xac')
@@ -1089,8 +1322,12 @@ def kiem_5_buoc(bl):
 _MAP = dict(khong_tuong_duong='SAI_BIEN_DOI', sai_mien_xac_dinh='SAI_BIEN_DOI', sai_o_chieu_bien_thien='SAI_BIEN_DOI',
             thua_nghiem_vi_pham_dkxd='DIEM_THUA', thua_nghiem_khong_thoa='DIEM_THUA',
             mat_nghiem='DIEM_THIEU', mat_ho_nghiem='DIEM_THIEU',
-            sai_tap_xac_dinh='SAI_TXD', sai_dau_o_khoang='SAI_DAU', dau_doi_trong_khoang='DAU_DOI_TRONG_KHOANG',
+            sai_tap_xac_dinh='SAI_TXD', sai_dau_o_khoang='SAI_DAU', dau_doi_trong_khoang='DAU_DOI_TRONG_KHOANG', sai_thu_tu_moc='SAI_THU_TU_MOC',
             cuc_tri_sai='SAI_KET_LUAN', don_dieu_sai='SAI_KET_LUAN', ket_luan_sai='SAI_KET_LUAN')
+
+
+THU_TU_LOAI = ['SAI_TXD', 'DIEM_THIEU', 'DIEM_THUA', 'SAI_THU_TU_MOC', 'SAI_DAU', 'SAI_GIA_TRI', 'SAI_BIEN_DOI',
+               'DAU_DOI_TRONG_KHOANG', 'SAI_KET_LUAN']
 
 
 def loai_ket_qua(r, kieu=None):
@@ -1100,9 +1337,37 @@ def loai_ket_qua(r, kieu=None):
         return ['KHONG_KIEM_DUOC']
     lk = r['loai_kiem']
     if 'cac_van_de' in r:
-        return sorted(set(v['loai_ket_qua'] for v in r['cac_van_de']), key=['DIEM_THIEU', 'DIEM_THUA', 'DAU_DOI_TRONG_KHOANG'].index)
+        # v1.3: liệt kê mọi loại (kể cả ô hệ quả) theo thứ tự xuất hiện trong cac_van_de (gốc theo bước rồi ô theo k)
+        loai = []
+        for v in r['cac_van_de']:
+            if v['loai_ket_qua'] not in loai:
+                loai.append(v['loai_ket_qua'])
+        return loai
     if lk == 'khac_tap':
         return ['SAI_TXD'] if kieu == 'tap_xac_dinh' else ['SAI_GIA_TRI']
     if lk == 'sai_diem_toi_han':
         return ['DIEM_THIEU_HOAC_THUA']
     return [_MAP.get(lk, 'SAI_GIA_TRI')]
+
+
+# ------------------------------------------------------------------ chỉ số ô ra ngoài (giao ước 29/09)
+_HANG_RA = {'x': 'X', "dau_y'": 'DAU_YPHAY', 'bien_thien': 'BIEN_THIEN'}
+_HANG_VAO = {'x': 'X', 'X': 'X', "dau_y'": 'DAU_YPHAY', 'dau_yphay': 'DAU_YPHAY', 'DAU_YPHAY': 'DAU_YPHAY',
+             'bien_thien': 'BIEN_THIEN', 'BIEN_THIEN': 'BIEN_THIEN'}
+
+
+def o_ra_ngoai(o):
+    """Đổi ô nội bộ (k từ 1, xen kẽ khoảng/điểm, hàng chữ thường) sang ô giao ước 29/09:
+    hang viết HOA (X / DAU_YPHAY / BIEN_THIEN), k đếm từ 0.
+    - X: k là chỉ số điểm trong hàng X (0 = điểm đầu tiên sau -oo).
+    - DAU_YPHAY, BIEN_THIEN: k xen kẽ khoảng/điểm, 0 = khoảng đầu tiên, 1 = điểm đầu tiên, ...
+    Nhận cả tên cũ chữ thường làm bí danh; đầu ra chỉ dùng tên HOA."""
+    if not o or 'hang' not in o:
+        return o
+    hang = _HANG_VAO.get(o['hang'], o['hang'])
+    k = o.get('k')
+    if k is not None and hang == 'X':
+        k = k // 2 - 1
+    elif k is not None:
+        k = k - 1
+    return dict(hang=hang, k=k)

@@ -10,8 +10,9 @@ class HealthOut(BaseModel):
 
 
 class JobIn(BaseModel):
+    # Payload job vẫn là dict tự do (grade/verify/filter), nhưng timeout bị chặn trần 20 s (F-01/B-21).
     model_config = ConfigDict(extra="allow")
-    timeout_s: int | None = Field(default=None, ge=1, le=60)
+    timeout_s: int | None = Field(default=None, ge=1, le=20)
 
 
 class GradeOut(BaseModel):

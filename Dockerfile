@@ -3,6 +3,9 @@
 
 FROM python:3.12-slim-bookworm
 
+# pnpm do corepack tải về nằm ở thư mục chung, đọc được bởi user không root lúc chạy
+ENV COREPACK_HOME=/opt/corepack
+
 RUN apt-get update \
   && apt-get install -y --no-install-recommends curl ca-certificates xz-utils \
   && rm -rf /var/lib/apt/lists/* \
@@ -27,9 +30,16 @@ COPY scripts/start-free.sh /app/scripts/start-free.sh
 WORKDIR /app/apps/web
 RUN pnpm build
 
+# F-01: chạy bằng user không root. Chỉ thư mục dữ liệu tải lên và cache Next ghi được.
+RUN useradd --system --uid 10001 --home-dir /app --shell /usr/sbin/nologin app \
+  && mkdir -p /app/data/uploads /app/apps/web/.next/cache \
+  && chown -R app:app /app/data /app/apps/web/.next \
+  && chmod -R a+rX /opt/corepack
+
 WORKDIR /app
 ENV NODE_ENV=production
 ENV MATH_SERVICE_URL=http://127.0.0.1:8000
 ENV SEED_IF_EMPTY=1
 EXPOSE 3000
+USER app
 CMD ["bash", "/app/scripts/start-free.sh"]

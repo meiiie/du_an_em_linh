@@ -21,6 +21,9 @@ updates:
     open-pull-requests-limit: 3
     labels:
       - enhancement
+    ignore:
+      # SymPy 1.14 ghim mpmath 1.3.0; bộ kiểm định và bộ nghiệm thu dùng đúng cặp này (PR #15 đã đóng)
+      - dependency-name: mpmath
 
   - package-ecosystem: github-actions
     directory: /

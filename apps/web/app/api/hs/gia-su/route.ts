@@ -18,7 +18,7 @@ export async function POST(req: Request) {
   if (!user || !user.roles.includes("HS")) {
     return new Response(JSON.stringify({ ok: false, tra_loi: "Chưa vào lớp." }), { status: 401 });
   }
-  let body: { problemId?: string; text?: string; provider?: string; model?: string };
+  let body: { problemId?: string; text?: string; provider?: string; model?: string; maBuoc?: string };
   try {
     body = (await req.json()) as typeof body;
   } catch {
@@ -44,6 +44,7 @@ export async function POST(req: Request) {
           text,
           provider: body.provider,
           model: body.model,
+          maBuoc: typeof body.maBuoc === "string" ? body.maBuoc : undefined,
           signal: req.signal,
           onTrangThai: (buoc) => gui("trang_thai", { buoc }),
         });

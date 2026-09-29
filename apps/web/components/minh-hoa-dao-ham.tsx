@@ -4,10 +4,10 @@ import { useState } from "react";
 import { cn } from "@/lib/cn";
 import { Tex } from "./tex";
 
-const X0 = -2.2;
-const X1 = 2.2;
-const Y0 = -3.4;
-const Y1 = 3.4;
+const X0 = -4.2;
+const X1 = 4.2;
+const Y0 = -1.4;
+const Y1 = 1.4;
 const W = 360;
 const H = 280;
 
@@ -17,19 +17,20 @@ function sx(x: number) {
 function sy(y: number) {
   return H - ((y - Y0) / (Y1 - Y0)) * H;
 }
+// SP-10: hàm minh hoạ KHÔNG có trong ngân hàng bài (không phải đa thức), để trang công khai không lộ bài được giao.
 function f(x: number) {
-  return x * x * x - 3 * x;
+  return (2 * x) / (x * x + 1);
 }
 function fp(x: number) {
-  return 3 * x * x - 3;
+  return (2 * (1 - x * x)) / ((x * x + 1) * (x * x + 1));
 }
 function so(n: number) {
   return new Intl.NumberFormat("vi-VN", { maximumFractionDigits: 2 }).format(n);
 }
 
-/** Hình minh họa trên trang chủ — hàm khác bài đang chấm, không gắn nhãn cực trị. */
+/** Hình minh họa trên trang chủ — y = 2x/(x²+1), không thuộc ngân hàng bài; không gắn nhãn cực trị. */
 export function MinhHoaDaoHam({ className }: { className?: string }) {
-  const [x, setX] = useState(1);
+  const [x, setX] = useState(2);
   const y = f(x);
   const yp = fp(x);
   const pts: string[] = [];
@@ -37,20 +38,20 @@ export function MinhHoaDaoHam({ className }: { className?: string }) {
     const t = X0 + ((X1 - X0) * i) / 80;
     pts.push(`${sx(t).toFixed(1)},${sy(f(t)).toFixed(1)}`);
   }
-  const span = 0.65;
+  const span = 1;
   const x1 = x - span;
   const x2 = x + span;
 
   return (
     <figure id="hinh" className={cn("min-w-0", className)}>
       <div className="cong-thuc overflow-x-auto text-[1.75rem] leading-tight sm:text-[2.5rem]" translate="no">
-        <Tex tex="y = x^{3} - 3x" />
+        <Tex tex="y = \dfrac{2x}{x^{2} + 1}" />
       </div>
       <svg
         viewBox={`0 0 ${W} ${H}`}
         className="mt-6 w-full"
         role="img"
-        aria-label={`Đồ thị y = x^3 − 3x tại x = ${so(x)}, đạo hàm ${so(yp)}`}
+        aria-label={`Đồ thị y = 2x/(x² + 1) tại x = ${so(x)}, đạo hàm ${so(yp)}`}
       >
         <line x1={sx(X0)} y1={sy(0)} x2={sx(X1)} y2={sy(0)} stroke="#E2E3E6" strokeWidth="1" />
         <line x1={sx(0)} y1={sy(Y0)} x2={sx(0)} y2={sy(Y1)} stroke="#E2E3E6" strokeWidth="1" />
@@ -79,8 +80,8 @@ export function MinhHoaDaoHam({ className }: { className?: string }) {
         <span className="sr-only">Vị trí x trên đường cong</span>
         <input
           type="range"
-          min={-2}
-          max={2}
+          min={-4}
+          max={4}
           step={0.1}
           value={x}
           onChange={(e) => setX(Number(e.target.value))}
