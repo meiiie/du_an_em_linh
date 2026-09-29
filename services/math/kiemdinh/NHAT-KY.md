@@ -20,3 +20,7 @@ Giờ ghi theo giờ Việt Nam (UTC+7).
 - 29/09 ~12:25: áp bản vá gộp của Kiểm định `kiemdinh/ban-va/0002-f01-loc-su-kien-bao-ve-4e4af19.patch` lên main 507874c (git apply --3way).
   Xung đột: `kiem_tang1.py` giữ bản trên main (đã có bộ phân tích an toàn tham chiếu từ ap_f01; bỏ các khối kiem_an_toan/cổng HOC_TOAN_CHO_KIEM_DEM cũ của 0002);
   `grader.py` giữ cổng danh sách trắng và thêm lớp `_chuoi_doc_hai` của 0002 chạy sau cổng. machine.py, leakfilter.py, loc.py và 3 file test áp nguyên văn.
+
+## 2026-09-29 12:45 (UTC+7) — áp 0002b + 0002c của Kiểm định lên be60d79
+- 0002b (sha256 f3e1247b…7935): machine.py và loc.py đã có sẵn trong main qua 0002 (PR #34), `git apply -3` không đổi gì; chỉ thêm `tests/test_0002b_su_kien_txd_vo_ti.py`. Sửa một chỗ trong test: sự kiện hỏng trên main bị chặn với ly_do `SU_KIEN_LOI` (lớp của 0002), nên thêm mã này vào bộ mã được chấp nhận. Hành vi vẫn là chặn (cho_phep=False).
+- 0002c (sha256 e2ab5eb4…e728): áp nguyên văn: grader.py (luật dấu U kèm cờ `toan_dung`, `buoc_bat_dau`), normalizer.py (chữ 'u' giữa hai khoảng trong TXĐ), kiem_tang1.py, test_0002c.

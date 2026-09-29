@@ -310,7 +310,7 @@ def _parse_ket_luan(step):
         raw = line.get("latex") or ""
         t = raw.lower()
         intervals = _interval_strings(raw)
-        has_union = ("\\cup" in raw) or ("∪" in raw) or (" U " in raw)
+        has_union = ("\\cup" in raw) or ("∪" in raw) or (" U " in raw) or bool(re.search(r"[\)\]]\s*[uU]\s*[\(\[]", raw))
         nhan = (line.get("loai") or "").upper()
         # Client cũ (6eb8b06) không gửi nhãn ô: dòng i ứng khai_bao[i] (4 ô theo thứ tự). Chỉ dùng khi số dòng khớp
         # và dòng không tự nói loại bằng từ khoá.
@@ -463,12 +463,37 @@ def _bang_tu_o(cells):
     return bang, None
 
 
+def _bu_buoc_truoc(payload):
+    """Bài khung ngắn (DAC-TA §3.4(a), 29/09): `buoc_bat_dau` = bước đầu tiên học sinh làm. Các bước TRƯỚC nó do đề cho sẵn,
+    không chấm: nếu payload không có thì lấy từ lời giải máy (TXĐ, y', nghiệm) để chấm các bước sau."""
+    bd = payload.get("buoc_bat_dau")
+    if not bd or bd == ORDER[0]:
+        return {}
+    may = bai_lam_may(payload.get("ham"))
+    if not may:
+        return {}
+    bd_i = ORDER.index(bd)
+    steps = {s.get("ma_buoc") for s in payload.get("cac_buoc") or []}
+    bu = {}
+    if bd_i >= 1 and "B.DH.TXD" not in steps:
+        bu["TXD"] = may["TXD"]
+    if bd_i >= 2 and "B.DH.DAOHAM" not in steps:
+        bu["dao_ham"] = may["dao_ham"]
+    if bd_i >= 3 and "B.DH.NGHIEM" not in steps:
+        bu["y_phay_bang_0"] = list(may.get("y_phay_bang_0") or [])
+        bu["y_phay_khong_xd"] = list(may.get("y_phay_khong_xd") or [])
+    return bu
+
+
 def payload_to_bai_lam(payload, den):
     """Trả (bai_lam | None, loi_som | None). loi_som là kết quả chấm nếu hỏng trước SymPy."""
     steps = {s["ma_buoc"]: s for s in payload["cac_buoc"]}
     ham = payload["ham"]
     chuan = []
     den_i = ORDER.index(den)
+    bu = _bu_buoc_truoc(payload)
+    if bu:
+        return _payload_to_bai_lam_bu(payload, den, steps, bu)
 
     txd_lines = _idx((steps.get("B.DH.TXD") or {}).get("cac_dong") or [])
     if not txd_lines:
@@ -639,6 +664,74 @@ def _kkd_dau_vao(payload, ma, dong, o, chi_tiet):
     return r
 
 
+def _payload_to_bai_lam_bu(payload, den, steps, bu):
+    """payload_to_bai_lam cho bài bắt đầu giữa chừng: bước trước buoc_bat_dau lấy từ `bu` (lời giải máy), bước học sinh làm
+    đọc như thường bằng chính payload_to_bai_lam (các bước máy được chèn dưới dạng dòng đã chuẩn hóa sẵn)."""
+    import copy
+    p2 = copy.deepcopy(payload)
+    p2.pop("buoc_bat_dau", None)
+    them = []
+    if "TXD" in bu:
+        them.append({"ma_buoc": "B.DH.TXD", "_may": True, "cac_dong": [{"dong": 0, "latex": _txd_latex(bu["TXD"])}]})
+    if "dao_ham" in bu:
+        them.append({"ma_buoc": "B.DH.DAOHAM", "_may": True, "cac_dong": [{"dong": 0, "latex": _bt_latex(bu["dao_ham"])}]})
+    if "y_phay_bang_0" in bu:
+        dong = []
+        if bu["y_phay_bang_0"]:
+            dong.append({"dong": 0, "latex": "x \\in \\{%s\\}" % ";".join(_bt_latex(v) for v in bu["y_phay_bang_0"])})
+        else:
+            dong.append({"dong": 0, "latex": "không có nghiệm"})
+        for i, v in enumerate(bu["y_phay_khong_xd"]):
+            dong.append({"dong": i + 1, "latex": "y' không xác định tại %s" % _bt_latex(v), "loai": "KHONG_XD"})
+        them.append({"ma_buoc": "B.DH.NGHIEM", "_may": True, "cac_dong": dong})
+    p2["cac_buoc"] = them + list(p2.get("cac_buoc") or [])
+    bl, som = payload_to_bai_lam(p2, den)
+    if bl is not None:
+        # giá trị máy dùng đúng như máy tính (không qua bộ chuẩn hóa)
+        for k in ("TXD", "dao_ham", "y_phay_bang_0", "y_phay_khong_xd"):
+            if k in bu:
+                bl[k] = bu[k]
+        if "dao_ham" in bu:
+            bl["_exprs"] = [bu["dao_ham"]]
+        if "y_phay_bang_0" in bu:
+            bl["_last_nghiem"] = 0
+        bl["_chuan"] = [c for c in bl.get("_chuan") or [] if c.get("ma_buoc") not in {s["ma_buoc"] for s in them}]
+    return bl, som
+
+
+def _txd_latex(t):
+    t = str(t).strip()
+    if t == "R":
+        return "\\mathbb{R}"
+    if t.startswith("R \\"):
+        return "\\mathbb{R}\\setminus\\{%s\\}" % t[t.index("{") + 1:t.rindex("}")].replace(", ", ";")
+    return t
+
+
+def _bt_latex(e):
+    """Biểu thức SymPy của máy -> LaTeX để đi qua bộ chuẩn hóa như dòng học sinh."""
+    import sympy as _sp
+    return _sp.latex(K.P(str(e)))
+
+
+def _ve_buoc_bat_dau(payload, r):
+    """Vấn đề rơi vào bước do đề cho sẵn (trước buoc_bat_dau) được gắn về bước bắt đầu: vd bài bắt đầu ở B.DH.XETDAU thiếu
+    mốc -> DIEM_THIEU ở B.DH.XETDAU, o = {X, null}; thừa mốc -> ERR.DH.31 (DAC-TA §3.4(a))."""
+    bd = payload.get("buoc_bat_dau")
+    if not bd or bd not in ORDER or bd == ORDER[0] or r.get("ket_qua") != "SAI":
+        return
+    bd_i = ORDER.index(bd)
+    for v in (r.get("cac_van_de") or []) + [r]:
+        bs = v.get("buoc_sai") or {}
+        if bs.get("ma_buoc") in ORDER and ORDER.index(bs["ma_buoc"]) < bd_i:
+            o = bs.get("o")
+            if v.get("loai_ket_qua") == "DIEM_THIEU" and bd == "B.DH.XETDAU":
+                o = {"hang": "X", "k": None}
+            v["buoc_sai"] = _buoc(bd, None if o else bs.get("dong"), o)
+            if v.get("loai_ket_qua") == "DIEM_THUA" and v.get("ma_loi") == "ERR.DH.24" and bd == "B.DH.XETDAU":
+                v["ma_loi"], v["ky_nang"] = "ERR.DH.31", "T12.DH.03"
+
+
 def grade(payload):
     if not isinstance(payload, dict) or not isinstance(payload.get("cac_buoc"), list):
         return _kkd_dau_vao(payload if isinstance(payload, dict) else {}, None, None, None, "payload sai khuôn")
@@ -652,8 +745,11 @@ def grade(payload):
             tc = (None, None, None, "không quét được chuỗi")
     if tc:
         return _kkd_dau_vao(payload, *tc)
+    if "buoc_bat_dau" in payload and payload.get("buoc_bat_dau") not in ORDER:
+        return _kkd_dau_vao(payload, None, None, None, "buoc_bat_dau không hợp lệ")
     del K._TU_CHOI[:]
     r = _grade_core(payload)
+    _ve_buoc_bat_dau(payload, r)
     try:
         if r.get("ket_qua") == "DAT":
             r = _diem_ngoai_txd(payload, r) or r
@@ -821,6 +917,17 @@ def _grade_core(payload):
     if buoc_sai and buoc_sai["ma_buoc"] == "B.DH.DAOHAM":
         buoc_sai = _buoc("B.DH.DAOHAM", 0, None)
     ma_tin, tb = _ma_loi_chi_tiet(r, lk, loai, clean)
+    if r.get("dau_U"):
+        # Luật dấu U (Sư phạm 29/09 12:13): luôn ERR.DH.07; cờ toan_dung cho gia sư chọn câu nhắn và cho mô hình
+        # học sinh (toan_dung = true: lỗi quy ước trình bày, không trừ mức hiểu kỹ năng như ca sai toán).
+        ma_tin = ("ERR.DH.07", _TIN_CAY_LUAT)
+        out = _pack("SAI", loai, buoc_sai, lk or loai, _per(den, buoc_sai["ma_buoc"] if buoc_sai else den), bl.get("_chuan") or [],
+                    nop_toi=den, ma_loi_tin=ma_tin, thong_bao=tb)
+        out["toan_dung"] = bool(r.get("toan_dung"))
+        for v in out["cac_van_de"]:
+            if v.get("loai_ket_qua") == "SAI_KET_LUAN":
+                v["toan_dung"] = bool(r.get("toan_dung"))
+        return out
     return _pack("SAI", loai, buoc_sai, lk or loai, _per(den, buoc_sai["ma_buoc"] if buoc_sai else den), bl.get("_chuan") or [], nop_toi=den,
                  ma_loi_tin=ma_tin, thong_bao=tb)
 

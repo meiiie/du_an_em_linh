@@ -140,6 +140,8 @@ def normalize_domain(raw):
     t = t.replace("\\mathbb{R}", "R").replace("\\mathbb R", "R").replace("ℝ", "R")
     t = t.replace("\\setminus", " \\ ")
     t = t.replace("\\cup", " U ").replace("∪", " U ")
+    # 0002c (Sư phạm 29/09 12:26): TXĐ gõ chữ u thường giữa hai khoảng cũng là dấu hợp -> DAT như U / ∪
+    t = re.sub(r"([\)\]])\s*u\s*([\(\[])", r"\1 U \2", t)
     t = t.replace("\\{", "{").replace("\\}", "}")
     t = t.replace("\\infty", "oo").replace("∞", "oo")
     t = t.replace("−", "-").replace("–", "-")
