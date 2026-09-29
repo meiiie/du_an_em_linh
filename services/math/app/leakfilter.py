@@ -511,6 +511,12 @@ def _tien_xu_ly_bt(t, che_chu=True):
 def _doi_bt(s):
     """Chuỗi biểu thức (đã tiền xử lý) -> cú pháp SymPy tường minh, hoặc None."""
     s = s.strip()
+    # 0004b (sửa kèm): ^{2} -> ^(2) trước, để \frac{x^{2}-2x-3}{(x-1)^{2}} (LaTeX kiểu MathLive) còn tách được
+    for _ in range(8):
+        s2 = re.sub(r"\^\s*\{([^{}§]*)\}", r"^(\1)", s)
+        if s2 == s:
+            break
+        s = s2
     # \frac{A}{B} -> ((A)/(B)), xử lý lồng nhau từ trong ra
     for _ in range(8):
         m = re.search(r"§\s*\{([^{}§]*)\}\s*\{([^{}§]*)\}", s)
@@ -529,19 +535,48 @@ def _doi_bt(s):
     return s
 
 
+def _cat_ngoac_mep(doan):
+    """Bỏ '(' thừa ở cuối / ')' thừa ở đầu, rồi ')' thừa ở cuối / '(' thừa ở đầu, tới khi số ngoặc cân. Trả (đoạn, số ký tự
+    bỏ ở đầu)."""
+    bo = 0
+    for _ in range(20):
+        if doan.count("(") == doan.count(")"):
+            break
+        if doan.endswith("("):
+            doan = doan[:-1].rstrip(" ")
+        elif doan.startswith(")"):
+            n = len(doan)
+            doan = doan[1:].lstrip(" ")
+            bo += n - len(doan)
+        elif doan.count(")") > doan.count("(") and doan.endswith(")"):
+            doan = doan[:-1].rstrip(" ")
+        elif doan.count("(") > doan.count(")") and doan.startswith("("):
+            n = len(doan)
+            doan = doan[1:].lstrip(" ")
+            bo += n - len(doan)
+        else:
+            break
+    doan = re.sub(r"[.\s]+$", "", doan)
+    return doan, bo
+
+
 def _cac_bt(t):
-    """[(vị trí bắt đầu, chuỗi SymPy)] các đoạn biểu thức trong câu đã tiền xử lý (tách ở dấu '=' ',' ';' và chữ)."""
+    """[(vị trí bắt đầu, chuỗi SymPy, đoạn gốc đã tiền xử lý)] các đoạn biểu thức trong câu đã tiền xử lý (tách ở dấu '=' ',' ';' và chữ)."""
     out = []
     for m in re.finditer(r"%s+" % _BT_KY_TU, t):
         doan = m.group(0)
         st = m.start() + len(doan) - len(doan.lstrip(" "))
         doan = doan.strip(" ")
         doan = re.sub(r"[.\s]+$", "", doan)
+        # 0004b (sửa kèm): đoạn lệch ngoặc do chữ chen giữa ("3x² − 12x + 9 (em chép lại)", "(đạo hàm 3x² − 12x + 9)")
+        # -> bỏ ngoặc thừa ở mép thay vì bỏ qua cả đoạn
+        doan, bo = _cat_ngoac_mep(doan)
+        st += bo
         if not doan or len(doan) > _BT_TOI_DA:
             continue
         s = _doi_bt(doan)
         if s:
-            out.append((st, s))
+            out.append((st, s, doan))
         if len(out) >= _BT_SO_TOI_DA:
             break
     return out
@@ -611,16 +646,17 @@ _TRUOC_Y_PHAY = re.compile(r"(?:y\s*'|f\s*'\s*\(\s*x\s*\)|đạo hàm(?:\s+(?:y\
 _TRUOC_TU = re.compile(r"tử(?:\s*(?:số|thức))?(?:\s+(?:của\s+)?(?:y\s*'|f\s*'\s*\(\s*x\s*\)|đạo hàm))?\s*(?:=|là|bằng|:)\s*$")
 
 
-def _vi_pham_y_phay(ban_nhap, su_kien_bt):
+def _vi_pham_y_phay(ban_nhap, su_kien_bt, dong_hoc_sinh=None):
     if not any(a == "YPHAY" for a, _b in su_kien_bt):
         return None
     yp, de = _y_phay_su_kien(su_kien_bt)
+    hs = _bt_hoc_sinh(dong_hoc_sinh)
     from sympy import Symbol, cancel, fraction, together
     tu_yp = fraction(cancel(together(yp)))[0]
     goc = unicodedata.normalize("NFC", ban_nhap or "").lower()
     t = _tien_xu_ly_bt(goc)
     t_chu = _tien_xu_ly_bt(goc, che_chu=False)   # cùng độ dài với t, giữ chữ để đọc cụm đứng trước biểu thức
-    for st, s in _cac_bt(t):
+    for st, s, doan in _cac_bt(t):
         truoc = t_chu[max(0, st - 40):st]
         la_tu = bool(_TRUOC_TU.search(truoc))
         la_yp = not la_tu and bool(_TRUOC_Y_PHAY.search(truoc))
@@ -635,9 +671,121 @@ def _vi_pham_y_phay(ban_nhap, su_kien_bt):
         elif la_tu and e != 0:
             r = cancel(together(e / tu_yp))
             lo = bool(r.is_number and r.is_positive)
-        if lo and not _nguyen_van_de(s, de):
+        # 0004b: ngoại lệ chỉ gỡ ĐÚNG đoạn này (các đoạn khác và các luật khác vẫn chạy trên cả câu)
+        if lo and not _nguyen_van_de(s, de) and _chuan_nguyen_van(doan) not in hs:
             return "y_phay"
     return None
+
+
+# ------------------------------------------------------------------ bản vá 0004b (Kiểm định, 29/09, luật No chốt)
+# Ngoại lệ "gia sư nhắc NGUYÊN VĂN câu của học sinh": một đoạn biểu thức đáng lẽ bị luật y' (YPHAY) chặn được qua nếu nó
+# trùng nguyên văn một biểu thức TRỌN VẸN học sinh đã viết trong bài nộp (trường `dong_hoc_sinh`: cả dòng, hoặc nguyên một
+# vế của dấu '='). So bằng CHUỖI đã chuẩn hóa ký hiệu (_chuan_nguyen_van), KHÔNG dùng SymPy: chỉ bỏ qua khoảng trắng,
+# cách viết LaTeX (\cdot, \left, \right, $, ^{2} ~ ^2, \frac{a}{b} ~ (a)/(b)), ký hiệu nhân (*, ·, ×, nhân ngầm) và ký
+# hiệu mũ (², ^2). Rút gọn / khai triển / phân tích / đổi thứ tự / chia hằng số -> khác chuỗi -> vẫn chặn. Dẫn MỘT PHẦN (vd
+# chỉ tử số của phân thức học sinh viết) -> vẫn chặn. Không có dòng học sinh / không khớp -> chặn như 0004.
+# Dòng học sinh chỉ được xử lý bằng thao tác chuỗi (không bao giờ đọc bằng SymPy / eval).
+_HS_SO_DONG_TOI_DA = 80
+_HS_DONG_TOI_DA = 400
+_NGUYEN_TO = r"(?:\d+(?:\.\d+)?|x)"
+
+
+def _khop_ngoac(t, i):
+    """Vị trí ')' khớp với '(' tại i, hoặc -1."""
+    d = 0
+    for j in range(i, len(t)):
+        if t[j] == "(":
+            d += 1
+        elif t[j] == ")":
+            d -= 1
+            if d == 0:
+                return j
+    return -1
+
+
+def _la_so_hang_don(c):
+    """c là nguyên tố (số, x), nhóm ngoặc trọn, hoặc lũy thừa của một trong hai (đặt trong ngoặc hay không cũng như nhau
+    khi đứng làm tử / mẫu của phép chia)."""
+    if re.fullmatch(_NGUYEN_TO, c):
+        return True
+    if re.fullmatch(_NGUYEN_TO + r"\^" + r"(?:%s|\([^()]*\))" % _NGUYEN_TO, c):
+        return True
+    if c.startswith("("):
+        j = _khop_ngoac(c, 0)
+        if j == len(c) - 1:
+            return True
+        if j > 0 and c[j + 1:j + 2] == "^":
+            mu = c[j + 2:]
+            return bool(re.fullmatch(_NGUYEN_TO, mu)) or (mu.startswith("(") and _khop_ngoac(mu, 0) == len(mu) - 1)
+    return False
+
+
+def _bo_ngoac_thua(t):
+    """Bỏ cặp ngoặc bao một số hạng đơn (số, x, nhóm ngoặc, lũy thừa) khi cặp đó không kề dấu '^' (không đổi nghĩa)."""
+    for _ in range(40):
+        doi = False
+        i = 0
+        while i < len(t):
+            if t[i] == "(":
+                j = _khop_ngoac(t, i)
+                if j < 0:
+                    return t
+                trong = t[i + 1:j]
+                ke_mu = (i > 0 and t[i - 1] == "^") or t[j + 1:j + 2] == "^"
+                la_nguyen_to = bool(re.fullmatch(_NGUYEN_TO, trong))
+                if trong and (la_nguyen_to or (not ke_mu and _la_so_hang_don(trong))):
+                    t = t[:i] + trong + t[j + 1:]
+                    doi = True
+                    continue
+            i += 1
+        if not doi:
+            break
+    return t
+
+
+def _chuan_nguyen_van(t):
+    """Chuỗi chuẩn hóa KÝ HIỆU (không phải đại số) để so nguyên văn. Đầu vào: chuỗi thô hoặc đã qua _tien_xu_ly_bt."""
+    t = _tien_xu_ly_bt(str(t or "").lower(), che_chu=False)
+    t = t.replace("\\displaystyle", "").replace("**", "^")
+    t = re.sub(r"\s+", "", t)
+    for _ in range(12):                       # ^{2} -> ^(2) trước, để \frac{...}{(x-1)^{2}} còn tách được
+        t2 = re.sub(r"\^\{([^{}§]*)\}", r"^(\1)", t)
+        if t2 == t:
+            break
+        t = t2
+    # \frac{A}{B} (đã thành §{A}{B}) -> A/B, tử / mẫu chỉ bọc ngoặc khi không phải số hạng đơn; lồng nhau từ trong ra
+    for _ in range(12):
+        m = re.search(r"§\{([^{}§]*)\}\{([^{}§]*)\}", t)
+        if not m:
+            break
+        a, b = (c.replace("{", "(").replace("}", ")") for c in (m.group(1), m.group(2)))
+        a, b = (_bo_ngoac_thua(c) for c in (a, b))
+        a, b = (c if _la_so_hang_don(c) else "(%s)" % c for c in (a, b))
+        t = t[:m.start()] + "%s/%s" % (a, b) + t[m.end():]
+    t = t.replace("{", "(").replace("}", ")")
+    # ký hiệu nhân: bỏ, trừ khi nằm giữa hai chữ số (2·3 khác 23)
+    t = re.sub(r"[*·×]", "*", t)
+    t = re.sub(r"(?<!\d)\*|\*(?!\d)", "", t)
+    t = _bo_ngoac_thua(t)
+    t = re.sub(r"[.,;:!?]+$", "", t)
+    return t
+
+
+def _bt_hoc_sinh(dong_hoc_sinh):
+    """Tập chuỗi nguyên văn (đã chuẩn hóa ký hiệu) của các biểu thức TRỌN VẸN học sinh viết: cả dòng và từng vế của '='.
+    Trường sai kiểu / rỗng -> tập rỗng (không có ngoại lệ: như 0004)."""
+    out = set()
+    if not isinstance(dong_hoc_sinh, (list, tuple)):
+        return out
+    for d in list(dong_hoc_sinh)[:_HS_SO_DONG_TOI_DA]:
+        if not isinstance(d, str) or not d.strip() or len(d) > _HS_DONG_TOI_DA:
+            continue
+        d = re.sub(r"\\(?:Leftrightarrow|iff|Rightarrow|implies)|⇔|⇒|<=>|=>", "=", d)
+        for c in [d] + d.split("="):
+            k = _chuan_nguyen_van(c)
+            if k and re.search(r"[\dx]", k):
+                out.add(k)
+    return out
 
 
 def su_kien_de_cho(de_bai, buoc_bat_dau):
@@ -664,7 +812,7 @@ _DAU_HIEU_CODE = re.compile(r"__|\blambda\b|\bimport\b|\b(?:eval|exec|open|compi
                             r"|\b(?![yY]_)\w+_\w+\b|[\"\'`]\s*\w+\s*[\"\'`]")
 
 
-def loc_ban_nhap(ban_nhap, su_kien, cau_hs=None):
+def loc_ban_nhap(ban_nhap, su_kien, cau_hs=None, dong_hoc_sinh=None):
     try:
         # F-01: bản nháp có dấu hiệu code / quá dài, hoặc giá trị sự kiện không qua cổng danh sách trắng -> chặn.
         # Không bao giờ thực thi; chặn để câu lạ không tới học sinh và sự kiện hỏng không làm bộ so "không khớp".
@@ -690,7 +838,7 @@ def loc_ban_nhap(ban_nhap, su_kien, cau_hs=None):
             return {"cho_phep": False, "lop_chinh": "ngu_canh", "lop_phu": "chuoi", "loi": False, "ly_do": "THIEU_NGU_CANH"}
         ctx = _ngu_canh(bai, phu_dinh)
         ly_do = (_vi_pham_phu_dinh(ban_nhap, phu_dinh, cau_hs, ctx) or _vi_pham(ban_nhap, bai, cau_hs)
-                 or _vi_pham_diem_thu(ban_nhap, ctx) or _vi_pham_loi(ban_nhap, ctx) or _vi_pham_y_phay(ban_nhap, bt))
+                 or _vi_pham_diem_thu(ban_nhap, ctx) or _vi_pham_loi(ban_nhap, ctx) or _vi_pham_y_phay(ban_nhap, bt, dong_hoc_sinh))
         # ly_do chỉ là LOẠI quyết định (theo bản vá Kiểm định): LO_DAP_AN / XAC_NHAN / THIEU_NGU_CANH / SU_KIEN_LOI / DAU_VAO_KHONG_HOP_LE / LOI_KIEM_TRA / None
         return {"cho_phep": ly_do is None, "lop_chinh": "sympy", "lop_phu": "chuoi", "loi": False,
                 "ly_do": None if ly_do is None else ("XAC_NHAN" if ly_do == "xac_nhan" else "LO_DAP_AN")}
