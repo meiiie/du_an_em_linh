@@ -94,6 +94,8 @@ export function SolveClient({
   tienTrinh = null,
   capGoiY,
   deXuatGuiGv,
+  kyNang = null,
+  daNop,
 }: {
   problemId: string;
   title: string;
@@ -110,6 +112,9 @@ export function SolveClient({
   capGoiY?: Record<string, number>;
   /** UXT-07-k: bước đã đủ điều kiện «Gửi thầy cô» (đọc từ phiên gia sư lúc mở trang). */
   deXuatGuiGv?: string[];
+  /** REQUIRED-TESTIDS (UXT-07-l): mã kỹ năng của bài và HS đang đăng nhập đã có lượt nộp bài này chưa. */
+  kyNang?: string | null;
+  daNop?: boolean;
 }) {
   const batDau = Math.max(0, buocBatDau ? ORDER.indexOf(buocBatDau as (typeof ORDER)[number]) : 0);
   const tt = tienTrinh;
@@ -372,7 +377,7 @@ export function SolveClient({
         </ol>
       </nav>
 
-      <section data-testid="solve-screen" className="sach-toan min-w-0 pb-[calc(5.5rem+env(safe-area-inset-bottom))] md:pb-0">
+      <section data-testid="solve-screen" data-ky-nang={kyNang || undefined} data-da-nop={daNop === undefined ? undefined : String(daNop)} data-buoc-bat-dau={buocBatDau || ORDER[0]} className="sach-toan min-w-0 pb-[calc(5.5rem+env(safe-area-inset-bottom))] md:pb-0">
         <p className="sr-only">{title}</p>
         <h1 className="text-pretty text-xl font-semibold tracking-tight">
           <span className="font-mono text-sm font-normal tabular text-muted">{soBuoc(ma)}</span>

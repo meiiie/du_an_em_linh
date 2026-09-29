@@ -113,7 +113,7 @@ export default async function GvHome() {
                 <span className="font-medium">
                   {c.ten} — {c.kyNang}
                   {c.buoc ? ` · bước ${c.buoc}` : ""}
-                </span>
+                </span>{" "}
                 <span className="mt-0.5 text-xs text-muted">
                   <span data-truong="bai">{c.bai ? c.bai.code : "Không gắn bài"}</span>
                   {" · "}
@@ -126,7 +126,7 @@ export default async function GvHome() {
                     {c.luc}
                   </span>
                 </span>
-              </Link>
+              </Link>{" "}
               <form action={daXuLyCanhBao.bind(null, c.id)} className="flex shrink-0 items-center">
                 <button
                   type="submit"
