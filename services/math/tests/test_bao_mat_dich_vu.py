@@ -67,10 +67,12 @@ def test_gioi_han_tai_nguyen_ap_vao_tien_trinh_con():
 
 def test_tien_trinh_con_khong_ghi_duoc_file(tmp_path):
     f = tmp_path / "co.txt"
-    ma = "open(%r, 'w').write('1' * 10)" % str(f)
+    ma = ("import sys\ntry:\n    h = open(%r, 'w')\n    h.write('1' * 10)\n    h.flush()\n    print('GHI_DUOC')\n"
+          "except OSError:\n    print('KHONG_GHI_DUOC')\n    sys.exit(0)\n") % str(f)
     out = subprocess.run([sys.executable, "-c", ma], capture_output=True, text=True, preexec_fn=sandbox._gioi_han(5), timeout=20)
-    # RLIMIT_FSIZE = 0: không ghi được byte nào (tạo file rỗng vẫn được; chặn thực thi là việc của bộ phân tích an toàn)
-    assert "File too large" in out.stderr
+    # RLIMIT_FSIZE = 0: không ghi được byte nào (OSError, hoặc tiến trình bị SIGXFSZ giết tùy nền tảng).
+    # Tạo file rỗng vẫn được; chặn thực thi là việc của bộ phân tích an toàn.
+    assert "GHI_DUOC" not in out.stdout.split()
     assert not f.exists() or f.stat().st_size == 0
 
 
