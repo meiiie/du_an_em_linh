@@ -20,6 +20,7 @@ import {
   X,
 } from "lucide-react";
 import { BrandMark } from "@/components/brand-mark";
+import { NutDatLaiTest } from "@/components/nut-dat-lai-test";
 import { dangXuat } from "@/lib/actions/auth";
 import { cn } from "@/lib/cn";
 import { navActive, type NavItem } from "@/lib/nav";
@@ -45,6 +46,7 @@ export function AppShell({
   items,
   badges,
   phien,
+  datLaiTest,
   children,
 }: {
   role: "HS" | "GV";
@@ -52,6 +54,8 @@ export function AppShell({
   items: NavItem[];
   badges?: Record<string, number>;
   phien?: string;
+  /** Chỉ truyền khi chế độ test (APP_ENV=test, không Render): hiện nút đặt lại dữ liệu thử. email null = mọi HS (GV). */
+  datLaiTest?: { email: string | null };
   children: ReactNode;
 }) {
   const pathname = usePathname();
@@ -155,6 +159,7 @@ export function AppShell({
               v{phien}
             </p>
           ) : null}
+          {datLaiTest ? <NutDatLaiTest email={datLaiTest.email} /> : null}
           <form action={dangXuat} className="mt-2 hidden lg:block">
             <button className="inline-flex min-h-11 items-center text-sm text-chalk/70 hover:text-chalk" type="submit">
               Thoát

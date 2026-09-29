@@ -1,3 +1,4 @@
+import { cheDoTest } from "@/lib/che-do-test";
 import { sql } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
@@ -7,14 +8,8 @@ export const dynamic = "force-dynamic";
  * Bật khi APP_ENV=test (hoặc NODE_ENV=test) VÀ không chạy trên Render. Bản host không bao giờ bật (trả 404).
  * Body JSON tuỳ chọn: { "email": "hs.an@..." } để chỉ đặt lại một học sinh; bỏ trống = mọi học sinh (vai HS).
  */
-function batDuoc() {
-  const laTest = process.env.APP_ENV === "test" || process.env.NODE_ENV === "test";
-  const laHost = Boolean(process.env.RENDER || process.env.RENDER_SERVICE_ID || process.env.RENDER_EXTERNAL_URL);
-  return laTest && !laHost;
-}
-
 export async function POST(req: Request) {
-  if (!batDuoc()) return new Response("Not found", { status: 404 });
+  if (!cheDoTest()) return new Response("Not found", { status: 404 });
   let email: string | null = null;
   try {
     const body = (await req.json()) as { email?: string };
