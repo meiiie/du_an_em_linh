@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import Markdown from "react-markdown";
 import rehypeKatex from "rehype-katex";
 import remarkBreaks from "remark-breaks";
@@ -55,6 +56,14 @@ function mdGoc(opts: { trichDan: TrichDanHien[]; onChonSo?: (so: number) => void
           >
             {so}
           </a>
+        );
+      }
+      // Bài dễ hơn gia sư đề xuất (UXT-07-l, cấp gợi ý trống): link nội bộ tới trang luyện của đúng một bài.
+      if (href && /^\/hs\/luyen\/[0-9a-f-]{8,}$/i.test(href)) {
+        return (
+          <Link href={href} data-testid="tutor-bai-de-hon" className="inline-flex min-h-11 items-center font-medium underline underline-offset-2">
+            {children}
+          </Link>
         );
       }
       if (href && /^https?:\/\//i.test(href)) {
