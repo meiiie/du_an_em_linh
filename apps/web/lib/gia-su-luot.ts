@@ -22,6 +22,7 @@ import { assertMayLearn, baiDeHonMotMuc, loadConfig } from "./learning";
 import { BUOC } from "./levels";
 import { boDauHop, locBanGiaSu } from "./loi-gia-su";
 import { callLLM } from "./llm";
+import { KHOA_KET, laNhacLaiGoiY, taoCanhBaoKetBuoc } from "./ket-buoc";
 import { mathJob } from "./math";
 import type { GiaSuBuocSse } from "./sse";
 import {
@@ -45,6 +46,8 @@ export type HoiGiaSuKet =
       /** Bước gia sư vừa nói tới và số cấp của thang bước đó (chỉ báo 'cấp n/3' trên khung gợi ý, UX-07). */
       ma_buoc?: string;
       so_cap?: number;
+      /** UXT-07-k: bước này đã đủ điều kiện «Gửi thầy cô» (đã tạo cảnh báo kẹt). */
+      de_xuat_gui_gv?: boolean;
       offline: boolean;
       provider: string;
       error: string | null;
@@ -166,6 +169,9 @@ export async function chayHoiGiaSu(opts: {
   const yd = yDinh(text);
   const xin = yd === "XIN_DAP_AN";
   const goi = yd === "GOI_Y";
+  // UXT-07-a/d: chip «Gợi ý bước này» là NHẮC LẠI cấp đang mở của bước (mở cấp 1 nếu chưa có); chỉ «Gợi ý thêm», câu xin gợi ý
+  // gõ tay, hoặc thử lại vẫn sai mới lên cấp (chốt 11:25 a).
+  const nhacLai = goi && laNhacLaiGoiY(text);
   const hoiSai = yd === "SAI_CHO";
   // SP-09 / N5: cấp gợi ý theo (bước, loại lỗi); số lần xin đáp án đặt lại khi sang bước khác
   const loaiNay = grade?.ketQua === "SAI" && (grade.buocSai as { ma_buoc?: string } | null)?.ma_buoc === buoc ? grade.loaiKetQua || "SAI" : "CHUNG";
@@ -191,20 +197,34 @@ export async function chayHoiGiaSu(opts: {
     grade?.ketQua === "SAI" && (grade.buocSai as { ma_buoc?: string } | null)?.ma_buoc === buoc && capCu > 0 && caps[khoaThu] !== undefined && String(caps[khoaThu]) !== subId;
   // Chuyển giáo viên theo phiên (chốt 11:37): cùng bước, sau khi hết thang, thêm 2 lần xin hoặc 2 lần thử sai -> gợi ý Gửi thầy cô
   // và tạo MỘT cảnh báo kẹt cho bước đó.
-  const khoaHet = `${buoc}|HET`;
+  const khoaHet = KHOA_KET.dem(buoc);
   let soLanSauHet = caps[khoaHet] || 0;
-  const daHetThang = capCu >= soCap;
-  if (thuSaiMoi && !xin) {
-    if (capMoi < soCap) capMoi += 1;
-    else soLanSauHet += 1;
+  // Hết thang tính theo BƯỚC (không theo loại lỗi): nộp sai sau khi hết thang đổi khóa cấp sang loại lỗi mới, nhưng bước
+  // vẫn là "đã hết thang" để đếm tới «Gửi thầy cô» (UXT-07-k, chốt 11:50).
+  const daHetThang = capCu >= soCap || caps[KHOA_KET.daHet(buoc)] === 1;
+  // Mỗi bài nộp sai MỚI ở bước này sau khi hết thang được đếm đúng một lần (lúc nộp — ketSauNopSai — hoặc ở lượt gia sư này).
+  const khoaSaiDem = KHOA_KET.saiDem(buoc);
+  const mocSai = caps[khoaSaiDem] ?? caps[khoaThu];
+  const saiMoiSauHet =
+    daHetThang &&
+    grade?.ketQua === "SAI" &&
+    (grade.buocSai as { ma_buoc?: string } | null)?.ma_buoc === buoc &&
+    mocSai !== undefined &&
+    String(mocSai) !== subId;
+  if (saiMoiSauHet) {
+    soLanSauHet += 1;
+    caps[khoaSaiDem] = subId as unknown as number;
   }
+  if (thuSaiMoi && !xin && capMoi < soCap) capMoi += 1;
   if (xin) {
     answerRequests += 1;
     state = "XIN_DAP_AN";
     if (daHetThang) soLanSauHet += 1;
   } else if (goi) {
-    if (!thuSaiMoi) {
-      if (capMoi < soCap) capMoi += 1;
+    if (!thuSaiMoi && !saiMoiSauHet) {
+      if (nhacLai && capMoi > 0 && capMoi < soCap) {
+        // nhắc lại cấp hiện tại, không tăng
+      } else if (capMoi < soCap) capMoi += 1;
       else {
         hetThang = true;
         soLanSauHet += 1;
@@ -215,6 +235,10 @@ export async function chayHoiGiaSu(opts: {
     state = "TONG_KET";
   } else if (grade?.ketQua === "SAI") {
     state = capMoi > 0 ? `GOI_Y_${capMoi}` : "GIAI_THICH_LOI";
+  }
+  if (capMoi >= soCap && caps[KHOA_KET.daHet(buoc)] !== 1) {
+    caps[KHOA_KET.daHet(buoc)] = 1;
+    if (caps[khoaSaiDem] === undefined) caps[khoaSaiDem] = subId as unknown as number;
   }
   // N4: gợi ý lấy từ thang ĐÃ KIỂM ĐỊNH của chính bài; chỉ khi bài không có thang mới dùng câu mặc định
   const capHien = xin ? capCu : capMoi;
@@ -277,22 +301,24 @@ export async function chayHoiGiaSu(opts: {
   const mo = nhanTrichDan(kho);
   const vanDe = ((grade?.cacVanDe as { nguyen_nhan?: string }[] | null) || []).filter((v) => !v.nguyen_nhan);
   const chuyenGv = soLanSauHet >= 2;
-  const baiDe = (xin && answerRequests >= 3) || hetThang || capRong ? await baiDeHon(user.id, prob[0]) : null;
+  const baiDe = (xin && (answerRequests >= 3 || daHetThang)) || hetThang || capRong ? await baiDeHon(user.id, prob[0]) : null;
   if (chuyenGv) {
     state = "CHUYEN_GIAO_VIEN";
     draft = `Em đã dùng hết gợi ý của bước ${tenBuoc} mà vẫn vướng. Em bấm «Gửi thầy cô» để thầy cô xem cùng em; mình đã báo thầy cô là em đang kẹt ở bước này.`;
-    const khoaBao = `${buoc}|BAO_GV`;
+    const khoaBao = KHOA_KET.baoGv(buoc);
     if (!caps[khoaBao]) {
-      await db.insert(escalations).values({
-        id: crypto.randomUUID(),
-        studentId: user.id,
-        skillCode: prob[0].skillCode || "T12.DH.03",
-        reason: `Kẹt ở bước ${tenBuoc} bài ${prob[0].code}: đã hết thang gợi ý, xin thêm/thử lại vẫn chưa được.`,
-      });
+      await taoCanhBaoKetBuoc({ studentId: user.id, problem: prob[0], maBuoc: buoc, tenBuoc });
       caps[khoaBao] = 1;
     }
   } else if (xin) {
     draft = chinhSachXinDapAn(answerRequests, goiY, !grade, baiDe ? `${baiDe.code} (/hs/luyen/${baiDe.id})` : null);
+    // UXT-07-l: đã hết thang của bước mà vẫn xin đáp án -> chỉ tới một bài dễ hơn cụ thể (link), chưa nói tới thầy cô
+    // (đề xuất «Gửi thầy cô» chỉ khi đủ 2 lần sau hết thang, UXT-07-k).
+    if (daHetThang && answerRequests < 3) {
+      draft += baiDe
+        ? `\n\nEm đã mở hết các gợi ý của bước ${tenBuoc}. Em thử [bài dễ hơn «${baiDe.code}»](/hs/luyen/${baiDe.id}) rồi quay lại bài này.`
+        : `\n\nEm đã mở hết các gợi ý của bước ${tenBuoc}. Hiện chưa có bài dễ hơn cùng kỹ năng đã mở cho em; em thử một bài tương tự trong mục Đề bài.`;
+    }
   } else if (yd === "KIEM_KET_QUA") {
     draft = traLoiKiemKetQua(tenBuoc);
   } else if (yd === "KHAI_NIEM") {
@@ -463,6 +489,7 @@ export async function chayHoiGiaSu(opts: {
     cap: persistCap ? capMoi : capCu,
     ma_buoc: buoc,
     so_cap: soCap,
+    de_xuat_gui_gv: Boolean(caps[KHOA_KET.baoGv(buoc)]),
     offline,
     provider: nha,
     error: llmError,

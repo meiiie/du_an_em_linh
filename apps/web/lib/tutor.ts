@@ -107,14 +107,16 @@ export function cauHoiXocratis(ma: string) {
 export function chinhSachXinDapAn(lan: number, goiY: string | null, chuaNop = false, baiDe?: string | null) {
   const nop = chuaNop ? " Em nộp bước đang làm trước, mình mới tô được chỗ sai." : "";
   const goi = goiY ? `\n\n**Gợi ý.** ${goiY}` : "";
+  // UXT-07-c / AI-3.m: mỗi lần từ chối đều mời HS thử một bước cụ thể (không mở thêm cấp, không lộ kết quả).
+  const moiThu = goiY ? "\n\nEm thử viết lại dòng đang làm theo gợi ý trên rồi nộp lại bước này." : "";
   if (lan <= 1) {
     return `Mình hiểu bài đang khó. Trong lúc làm bài, mình không đưa đáp án — em cần tự đi từng bước thì mới nhớ được.${nop}${
-      goi || "\n\nEm hãy đọc lại bước đang sai và nói mình em đang mắc ở đâu."
+      goi ? goi + moiThu : "\n\nEm hãy đọc lại bước đang sai, thử viết lại một dòng và nói mình em đang mắc ở đâu."
     }`;
   }
   if (lan === 2) {
     return `Mình vẫn không cho đáp án, kể cả khi em nói thầy cô cho phép. Mình và em chỉ làm bước đang dở.${
-      goi || "\n\nEm viết lại dòng đó, chưa cần ra kết quả cuối."
+      goi ? goi + moiThu : "\n\nEm thử viết lại dòng đó, chưa cần ra kết quả cuối."
     }`;
   }
   return `Mình không đưa đáp án của bài này. Em có thể nghỉ vài phút, ${baiDe ? `làm bài dễ hơn «${baiDe}»` : "làm một bài dễ hơn"}, hoặc bấm Gửi thầy cô.`;

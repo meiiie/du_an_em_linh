@@ -9,6 +9,7 @@ export function WorkRow({
   meta,
   testId,
   mark,
+  data,
 }: {
   href: string;
   kicker?: ReactNode;
@@ -16,11 +17,14 @@ export function WorkRow({
   meta?: ReactNode;
   testId?: string;
   mark?: boolean;
+  /** Thuộc tính data-* thêm cho test (vd data-ky-nang, data-da-nop). */
+  data?: Record<`data-${string}`, string | undefined>;
 }) {
   return (
     <Link
       href={href}
       data-testid={testId}
+      {...data}
       className={cn(
         "flex min-h-11 items-start justify-between gap-4 border-b border-line py-3 last:border-0 hover:bg-wash focus-visible:bg-wash",
         mark && "border-l-2 border-l-ink bg-wash pl-3",

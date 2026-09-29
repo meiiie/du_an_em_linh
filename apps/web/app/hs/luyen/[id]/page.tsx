@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { caiDatLopCuaHs } from "@/lib/lop";
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import { notFound } from "next/navigation";
 import { SolveClient } from "@/components/solve-client";
 import { lichSuGiaSu } from "@/lib/actions/hs";
@@ -8,11 +8,12 @@ import type { AiPublicConfig } from "@/lib/ai-catalog";
 import { cauHinhCongKhai } from "@/lib/ai-harness";
 import { requireRole } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { problems, solutions } from "@/lib/db/schema";
+import { problems, solutions, submissions } from "@/lib/db/schema";
 import { hamLatex } from "@/lib/de-hoc-sinh";
 import { trangThaiPhieu } from "@/lib/hs-du-lieu";
 import { loiGiaiHocSinh } from "@/lib/loi-giai";
 import { capGoiYTheoBuoc } from "@/lib/gia-su-luot";
+import { buocDaDeXuatGuiGv } from "@/lib/ket-buoc";
 import { tienTrinhBai } from "@/lib/tien-trinh";
 import { BUOC } from "@/lib/levels";
 
@@ -65,7 +66,16 @@ export default async function LuyenPage({ params }: { params: Promise<{ id: stri
   const lichSu = await lichSuGiaSu(p.id);
   // UX-06 / UX-07: tải lại mở đúng bước đang dở và đúng cấp gợi ý (dựng từ lượt nộp gần nhất và phiên gia sư).
   const batDau = p.buocBatDau ? Math.max(0, BUOC.findIndex((b) => b.ma === p.buocBatDau)) : 0;
-  const [tienTrinh, capGoiY] = await Promise.all([tienTrinhBai(u.id, p.id, batDau), capGoiYTheoBuoc(u.id, p.id)]);
+  const [tienTrinh, capGoiY, deXuatGuiGv, motLuot] = await Promise.all([
+    tienTrinhBai(u.id, p.id, batDau),
+    capGoiYTheoBuoc(u.id, p.id),
+    buocDaDeXuatGuiGv(u.id, p.id),
+    db
+      .select({ id: submissions.id })
+      .from(submissions)
+      .where(and(eq(submissions.studentId, u.id), eq(submissions.problemId, p.id)))
+      .limit(1),
+  ]);
   return (
     <main>
       <SolveClient
@@ -79,6 +89,9 @@ export default async function LuyenPage({ params }: { params: Promise<{ id: stri
         buocBatDau={p.buocBatDau}
         tienTrinh={tienTrinh}
         capGoiY={capGoiY}
+        deXuatGuiGv={deXuatGuiGv}
+        kyNang={p.skillCode}
+        daNop={motLuot.length > 0}
       />
     </main>
   );
