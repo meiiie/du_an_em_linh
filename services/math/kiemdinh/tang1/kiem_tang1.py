@@ -1611,7 +1611,25 @@ def _kiem_5_buoc_loi(bl, bo_qua_txd=False):
                              "Ô %d %s: chiều '%s' không khớp dấu y' %s" % (o['k'], o['khoang'], bang['chieu'][(o['k'] - 1) // 2], o['dau']),
                              None, 'diem_thu_huu_ti+dau_chinh_xac')
     # Bước 5 – kết luận
-    kl = bl['ket_luan']
+    kl = _chuan_dau_U(bl['ket_luan'])
+    # Luật dấu U (Sư phạm chốt 29/09 12:13; DAC-TA §3.4(e)): kết luận ĐƠN ĐIỆU nối các khoảng bằng U / ∪ / \cup
+    # (khóa *_tren_tap) luôn SAI_KET_LUAN, ERR.DH.07, kể cả khi đúng về toán; cờ toan_dung = hàm số thật sự đơn điệu
+    # đúng chiều trên cả tập đó. Chỉ áp cho bước kết luận; TXĐ viết bằng U không bị ảnh hưởng.
+    for k_u in ('dong_bien', 'nghich_bien'):
+        if kl.get(k_u + '_tren_tap') is None:
+            continue
+        r_u = kiem_don_dieu(bl['ham'], **{k_u + '_tren_tap': kl[k_u + '_tren_tap']})
+        if r_u['trang_thai'] not in ('DAT', 'SAI'):
+            return r_u
+        toan_dung = r_u['trang_thai'] == 'DAT'
+        r = _sai5('B.DH.KETLUAN', 5, None, 'don_dieu_sai',
+                  'Kết luận %s dùng dấu U nối các khoảng (%s): quy ước không cho phép (ERR.DH.07). %s' % (
+                      'đồng biến' if k_u == 'dong_bien' else 'nghịch biến', kl[k_u + '_tren_tap'],
+                      'Về toán: hàm số đơn điệu đúng chiều trên cả tập đó (toan_dung = true).' if toan_dung
+                      else 'Về toán cũng sai (toan_dung = false): %s' % r_u['chi_tiet']),
+                  r_u['phan_chung'], r_u['bang_chung'])
+        r.update(ma_loi='ERR.DH.07', toan_dung=toan_dung, dau_U=k_u)
+        return r
     r_dd = kiem_don_dieu(bl['ham'], kl.get('dong_bien'), kl.get('nghich_bien'), kl.get('dong_bien_tren_tap'), kl.get('nghich_bien_tren_tap')) \
         if any(t in kl for t in ('dong_bien', 'nghich_bien', 'dong_bien_tren_tap', 'nghich_bien_tren_tap')) else None
     r_ct = kiem_cuc_tri(bl['ham'], kl.get('cuc_dai_x'), kl.get('cuc_tieu_x'), kl.get('gia_tri_cuc_dai'), kl.get('gia_tri_cuc_tieu')) \
@@ -1623,6 +1641,24 @@ def _kiem_5_buoc_loi(bl, bo_qua_txd=False):
         if r and r['trang_thai'] != 'DAT':
             return r
     return ket_qua('DAT', 'bai_lam_5_buoc', 'Cả 5 bước hợp lệ', bang_chung='nhieu_phuong_phap')
+
+
+_MAU_DAU_U = _re_at.compile(r'[\)\]]\s*(?:[uU]|∪|\\cup)\s*[\(\[]')
+
+
+def _chuan_dau_U(kl):
+    """Luật dấu U: phần tử danh sách dong_bien / nghich_bien có dấu U / ∪ / \\cup giữa hai khoảng -> chuyển sang khóa
+    *_tren_tap (các khoảng nối bằng ' U ')."""
+    out = dict(kl or {})
+    for k in ('dong_bien', 'nghich_bien'):
+        v = out.get(k)
+        if isinstance(v, list) and any(isinstance(t, str) and _MAU_DAU_U.search(t) for t in v):
+            ds = []
+            for t in v:
+                ds += [p_.strip() for p_ in _re_at.split(r'\s*(?:∪|\\cup|\bU\b|\bu\b)\s*', str(t)) if p_.strip()]
+            out.pop(k)
+            out[k + '_tren_tap'] = ' U '.join(ds)
+    return out
 
 
 # ------------------------------------------------------------------ ánh xạ sang loai_ket_qua (giao ước nhóm 27/09)
