@@ -73,6 +73,7 @@ export function SolveClient({
   loiGiai = null,
   initialChat = [],
   ai = AI_MAC_DINH,
+  buocBatDau = null,
 }: {
   problemId: string;
   title: string;
@@ -81,8 +82,11 @@ export function SolveClient({
   loiGiai?: string | null;
   initialChat?: { role: "hs" | "gia_su"; text: string; trichDan?: TrichDanHien[] }[];
   ai?: AiPublicConfig;
+  /** Bài khung ngắn: bước đầu tiên HS làm; các bước trước là dữ kiện đề cho (UXT-07-l). */
+  buocBatDau?: string | null;
 }) {
-  const [step, setStep] = useState(0);
+  const batDau = Math.max(0, buocBatDau ? ORDER.indexOf(buocBatDau as (typeof ORDER)[number]) : 0);
+  const [step, setStep] = useState(batDau);
   const [txd, setTxd] = useState("");
   const [dh, setDh] = useState<string[]>([""]);
   const [roots, setRoots] = useState<{ latex: string; loai: "NGHIEM" | "KHONG_XD" }[]>([{ latex: "", loai: "NGHIEM" }]);
@@ -107,12 +111,12 @@ export function SolveClient({
   function payload(nopToi: string): StepPayload {
     const until = ORDER.indexOf(nopToi as (typeof ORDER)[number]);
     const cac_buoc: StepPayload["cac_buoc"] = [];
-    if (until >= 0) cac_buoc.push({ ma_buoc: "B.DH.TXD", cac_dong: [{ dong: 0, latex: txd }] });
-    if (until >= 1) {
+    if (until >= 0 && batDau <= 0) cac_buoc.push({ ma_buoc: "B.DH.TXD", cac_dong: [{ dong: 0, latex: txd }] });
+    if (until >= 1 && batDau <= 1) {
       const lines = dh.map((latex, i) => ({ dong: i, latex })).filter((l) => l.latex.trim());
       cac_buoc.push({ ma_buoc: "B.DH.DAOHAM", cac_dong: lines.length ? lines : [{ dong: 0, latex: "" }] });
     }
-    if (until >= 2) {
+    if (until >= 2 && batDau <= 2) {
       const lines = roots
         .filter((r) => r.latex.trim())
         .map((r, i) => ({ dong: i, latex: r.loai === "KHONG_XD" ? `y' không xác định tại ${r.latex}` : r.latex, loai: r.loai }));
@@ -234,13 +238,19 @@ export function SolveClient({
             const dang = i === step;
             const sai = badStep === b.ma;
             const xong = i < step && !sai;
+            const deCho = i < batDau;
             return (
               <li key={b.ma} className="shrink-0 sm:shrink">
                 <button
                   type="button"
                   data-testid={`step-${b.ma}`}
+                  data-de-cho={deCho ? "1" : undefined}
                   aria-current={dang ? "step" : undefined}
-                  onClick={() => setStep(i)}
+                  aria-disabled={deCho || undefined}
+                  title={deCho ? "Đề đã cho sẵn bước này" : undefined}
+                  onClick={() => {
+                    if (!deCho) setStep(i);
+                  }}
                   className={cn(
                     "flex min-h-11 items-center gap-2 border-b-2 bg-transparent px-2 text-left text-sm leading-5 transition-colors duration-150 sm:grid sm:w-full sm:grid-cols-[1.25rem_minmax(0,1fr)] sm:border-b-0 sm:border-l-2 sm:px-3",
                     sai
@@ -255,6 +265,7 @@ export function SolveClient({
                   <span className="font-mono text-xs tabular text-muted">{soBuoc(b.ma)}</span>
                   <span className="sm:hidden">{tenBuocNgan(b.ma)}</span>
                   <span className="hidden sm:inline">{tenBuocTrang(b.ma)}</span>
+                  {deCho ? <span className="text-xs text-muted">đề cho</span> : null}
                 </button>
               </li>
             );
@@ -270,6 +281,12 @@ export function SolveClient({
           {ten}
         </h1>
         {loi ? <p className="mt-2 max-w-[42ch] text-sm leading-relaxed text-muted">{loi}</p> : null}
+        {batDau > 0 ? (
+          <p data-testid="de-cho-san" className="mt-2 max-w-[60ch] text-sm leading-relaxed text-muted">
+            Đề đã cho sẵn: {BUOC.slice(0, batDau).map((b) => tenBuocTrang(b.ma).toLowerCase()).join(", ")} (xem đề bên dưới). Em bắt đầu từ bước{" "}
+            {tenBuocTrang(ORDER[batDau]).toLowerCase()}.
+          </p>
+        ) : null}
         <p className="cong-thuc mt-8 max-w-[65ch] overflow-x-auto text-[1.5rem] leading-tight sm:text-[2.25rem]" translate="no">
           <Tex tex={latex} block />
         </p>

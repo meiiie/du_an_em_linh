@@ -1,13 +1,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { and, eq, inArray } from "drizzle-orm";
+import { and, eq, inArray, sql } from "drizzle-orm";
 import { buttonClasses } from "@/components/ui/button";
 import { PageHeader } from "@/components/ui/page-header";
 import { requireRole } from "@/lib/auth";
 import { ghiNhatKy } from "@/lib/actions/hs";
 import { tenKyNangNgan } from "@/lib/de-hoc-sinh";
 import { db } from "@/lib/db";
-import { enrollments, masteryStates, skills, users } from "@/lib/db/schema";
+import { enrollments, gradingResults, masteryStates, skills, submissions, users } from "@/lib/db/schema";
 import { caiDatLopCuaGv, lopGvDay } from "@/lib/lop";
 import { LABEL3, LABEL4, TO3, type Muc4 } from "@/lib/levels";
 
@@ -33,6 +33,15 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ m
   const name = new Map(allUsers.map((x) => [x.id, x.displayName]));
   const skillRows = (await db.select().from(skills)).filter((s) => s.isCore);
   const states = hsIds.length ? await db.select().from(masteryStates).where(inArray(masteryStates.studentId, hsIds)) : [];
+  // §(23): lỗi trình bày dấu U (toán đúng) đếm riêng, không tính vào mức
+  const trinhBay = hsIds.length
+    ? await db
+        .select({ hs: submissions.studentId, n: sql<number>`count(*)::int` })
+        .from(gradingResults)
+        .innerJoin(submissions, eq(submissions.id, gradingResults.submissionId))
+        .where(and(eq(gradingResults.toanDung, true), inArray(submissions.studentId, hsIds)))
+        .groupBy(submissions.studentId)
+    : [];
   return (
     <main data-testid="tien-do">
       <PageHeader
@@ -104,6 +113,22 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ m
           </tbody>
         </table>
       </div>
+      <section className="mt-8" data-testid="loi-trinh-bay-u">
+        <h2 className="text-sm font-medium">Lỗi trình bày: dùng U khi kết luận (toán đúng)</h2>
+        <p className="mt-1 text-sm text-muted">Đếm riêng, không tính vào mức. Học sinh viết lại tách khoảng, nối bằng «và» thì mới xong bài.</p>
+        {trinhBay.length ? (
+          <ul className="mt-2 divide-y divide-line border-y border-line text-sm">
+            {trinhBay.map((r) => (
+              <li key={r.hs} className="flex justify-between py-2">
+                <span>{name.get(r.hs)}</span>
+                <span className="tabular">{r.n} lần</span>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="mt-2 text-sm text-muted">Chưa có.</p>
+        )}
+      </section>
     </main>
   );
 }

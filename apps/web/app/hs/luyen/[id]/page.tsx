@@ -70,6 +70,7 @@ export default async function LuyenPage({ params }: { params: Promise<{ id: stri
         loiGiai={loiGiai}
         initialChat={lichSu.messages}
         ai={ai}
+        buocBatDau={p.buocBatDau}
       />
     </main>
   );

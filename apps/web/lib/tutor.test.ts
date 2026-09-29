@@ -21,3 +21,18 @@ test("đừng nêu đáp án không phải xin đáp án", () => {
   assert.equal(xinGoiY("Gợi ý bước này"), true);
   assert.equal(xinSaiCho("Em sai chỗ nào?"), true);
 });
+
+test("§(23) dấu U: toan_dung=true -> câu trình bày; false -> hỏi TXĐ; thiếu cờ -> trung tính; không câu nào viết U", async () => {
+  const { cauNhanDauU, CAU_DAU_U_TOAN_DUNG } = await import("./tutor");
+  assert.equal(cauNhanDauU(true), CAU_DAU_U_TOAN_DUNG);
+  assert.equal(
+    cauNhanDauU(true),
+    'Kết luận của em đúng về toán, nhưng theo cách trình bày của SGK em viết tách từng khoảng và nối bằng chữ "và", không dùng U.',
+  );
+  assert.equal(cauNhanDauU(false), "Hàm số có xác định tại mọi điểm của khoảng em viết không?");
+  for (const c of [cauNhanDauU(false), cauNhanDauU(null), cauNhanDauU(undefined)]) {
+    assert.ok(!/đúng về toán/i.test(c), "không nói 'đúng về toán' khi cờ không phải true");
+    assert.ok(!/[)\]]\s*(?:U|∪|\\cup)\s*[([]/.test(c));
+  }
+  assert.ok(/tập xác định/i.test(cauNhanDauU(null)));
+});

@@ -43,6 +43,13 @@ export type StepPayload = {
   events: Ev[];
 };
 
+const ORDER_BUOC = ["B.DH.TXD", "B.DH.DAOHAM", "B.DH.NGHIEM", "B.DH.XETDAU", "B.DH.KETLUAN"];
+
+/** Lần chấm rơi vào luật dấu U (0002c): bộ chấm gắn cờ toan_dung (true/false). Không có cờ = không phải ca dấu U. */
+function laDauU(g: GradeResult) {
+  return g.ket_qua === "SAI" && typeof g.toan_dung === "boolean";
+}
+
 export async function nopBuoc(problemId: string, body: StepPayload) {
   const user = await requireRole("HS");
   await assertMayLearn(user);
@@ -59,10 +66,13 @@ export async function nopBuoc(problemId: string, body: StepPayload) {
   const lyDo = nghiDoanMo(body.events || [], cfg.nguong_doan_mo_so_lan_doi_o);
   let graded: GradeResult;
   try {
+    // Bài khung ngắn: buoc_bat_dau lấy từ bài trong DB (không tin client); bước trước đó do đề cho, không gửi, không chấm
+    const batDau = p.buocBatDau && ORDER_BUOC.includes(p.buocBatDau) ? ORDER_BUOC.indexOf(p.buocBatDau) : 0;
     graded = await mathJob<GradeResult>("grade", {
       ham: p.hamSympy,
       nop_toi: body.nop_toi,
-      cac_buoc: body.cac_buoc,
+      cac_buoc: batDau ? body.cac_buoc.filter((b) => ORDER_BUOC.indexOf(b.ma_buoc) >= batDau) : body.cac_buoc,
+      ...(batDau ? { buoc_bat_dau: p.buocBatDau } : {}),
     });
   } catch (e) {
     // B-20: chi tiết lỗi dịch vụ toán chỉ vào log, học sinh nhận câu chung
@@ -137,8 +147,11 @@ export async function nopBuoc(problemId: string, body: StepPayload) {
     perBuoc: graded.per_buoc,
     thongBao: graded.thong_bao,
     cacVanDe: graded.cac_van_de ?? null,
+    toanDung: laDauU(graded) ? graded.toan_dung : null,
   });
-  await applyMastery({
+  // §(23): ERR.DH.07 dấu U — toan_dung=true là lỗi trình bày: không cập nhật mức (không trừ, không cộng) lần này.
+  // toan_dung=false: lỗi toán, xử lý bình thường. Bài chưa xong (SAI) cho tới khi HS viết lại tách khoảng.
+  if (!(laDauU(graded) && graded.toan_dung === true)) await applyMastery({
     studentId: user.id,
     submissionId: subId,
     problemSkill: p.skillCode,
@@ -177,6 +190,7 @@ export async function nopBuoc(problemId: string, body: StepPayload) {
     ma_loi: graded.ma_loi,
     thong_bao: lyDo ? `${graded.thong_bao} Bài này bị đánh dấu đoán mò nên không tính lên mức.` : graded.thong_bao,
     per_buoc: graded.per_buoc,
+    toan_dung: laDauU(graded) ? graded.toan_dung ?? null : null,
     finished,
     nghi_doan_mo: Boolean(lyDo),
   };

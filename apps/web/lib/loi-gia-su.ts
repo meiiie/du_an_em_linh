@@ -17,9 +17,17 @@ export function boLoiTuGioiThieu(raw: string): string {
   return s || "Em nói mình đang mắc chỗ nào ở bước này.";
 }
 
-/** Lưu và hiện: gỡ chào, che khóa, rồi mới chuẩn hóa công thức. */
+/**
+ * §(23): gia sư không bao giờ viết dấu hợp giữa hai khoảng trong kết luận đơn điệu (SGK viết tách khoảng, nối bằng "và").
+ * Thay ") U (", ") ∪ (", ") \cup (" (cả ngoặc vuông) bằng ") và (".
+ */
+export function boDauHop(raw: string): string {
+  return (raw || "").replace(/([)\]])\s*(?:\\cup|∪|\bU\b)\s*([(\[])/g, "$1 và $2");
+}
+
+/** Lưu và hiện: gỡ chào, che khóa, bỏ dấu hợp giữa khoảng, rồi mới chuẩn hóa công thức. */
 export function locBanGiaSu(raw: string): string {
-  return anKhoa(boLoiTuGioiThieu(raw));
+  return boDauHop(anKhoa(boLoiTuGioiThieu(raw)));
 }
 
 /** Bỏ mã bước khỏi mặt phiếu — An không cần B.DH.DAOHAM. */

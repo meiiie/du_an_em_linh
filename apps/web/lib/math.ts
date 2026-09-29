@@ -24,6 +24,8 @@ export type GradeResult = {
   per_buoc: Record<string, string>;
   thong_bao: string;
   chua_xong?: boolean;
+  /** Luật dấu U (0002c): true = kết luận đúng về toán, chỉ sai trình bày (U/∪); false = sai toán; thiếu = không áp dụng. */
+  toan_dung?: boolean;
   phien_ban_chuan_hoa?: string;
   chuan_hoa?: { ma_buoc: string; dong: number; trang_thai_chuan_hoa: string; chuoi_chuan_hoa?: string }[];
 };

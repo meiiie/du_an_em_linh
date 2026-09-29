@@ -58,3 +58,12 @@ test("gỡ chào và tự giới thiệu, giữ việc", () => {
   assert.match(boLoiTuGioiThieu("Mình là gia sư AI."), /mắc chỗ nào/);
   assert.equal(locBanGiaSu("Em nhớ sk-abcdefghijklmnop rồi.").includes("sk-"), false);
 });
+
+test("§(23) gia sư không viết dấu hợp giữa hai khoảng", async () => {
+  const { boDauHop, locBanGiaSu } = await import("./loi-gia-su");
+  assert.equal(boDauHop("đồng biến trên (-∞; -1) ∪ (3; +∞)."), "đồng biến trên (-∞; -1) và (3; +∞).");
+  assert.equal(boDauHop("$(-\\infty;1) \\cup (1;+\\infty)$"), "$(-\\infty;1) và (1;+\\infty)$");
+  assert.equal(boDauHop("(-oo; 0) U [2; 5]"), "(-oo; 0) và [2; 5]");
+  assert.equal(boDauHop("Um, em thử lại"), "Um, em thử lại");
+  assert.ok(!/∪/.test(locBanGiaSu("Nghịch biến trên (-1; 1) ∪ (1; 3)")));
+});
