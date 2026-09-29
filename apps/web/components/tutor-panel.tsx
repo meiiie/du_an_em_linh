@@ -446,6 +446,7 @@ export function TutorPanel({
           id="tutor-input"
           ref={box}
           data-testid="tutor-input"
+          maxLength={1000}
           rows={1}
           value={ask}
           onChange={(e) => ghiDraft(e.target.value)}

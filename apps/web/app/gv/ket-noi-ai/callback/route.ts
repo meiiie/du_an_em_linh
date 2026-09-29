@@ -4,6 +4,7 @@ import { NextResponse } from "next/server";
 import { requireRole } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { auditLogs, classSettings } from "@/lib/db/schema";
+import { caiDatLopCuaGv } from "@/lib/lop";
 import { docHoSoChatGpt, doiCodeLayToken } from "@/lib/openai-oauth";
 
 export async function GET(req: Request) {
@@ -25,7 +26,9 @@ export async function GET(req: Request) {
   const tok = await doiCodeLayToken({ code, verifier });
   if (!tok.ok) return fail(tok.loi);
   const hoSo = await docHoSoChatGpt(tok.accessToken);
-  const rows = await db.select().from(classSettings);
+  // F-08: chỉ ghi vào lớp GV này dạy
+  const { setting } = await caiDatLopCuaGv(user);
+  const rows = setting ? [setting] : [];
   if (rows[0]) {
     await db
       .update(classSettings)

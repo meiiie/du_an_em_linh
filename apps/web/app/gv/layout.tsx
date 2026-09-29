@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
-import { eq, isNull } from "drizzle-orm";
+import { and, eq, inArray, isNull } from "drizzle-orm";
 import { AppShell } from "@/components/app-shell";
 import { requireRole } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { escalations, problems } from "@/lib/db/schema";
+import { hsCuaGv } from "@/lib/lop";
 import { GV_NAV } from "@/lib/nav";
 import { SITE_VERSION } from "@/lib/site";
 
@@ -14,7 +15,11 @@ export const metadata: Metadata = {
 export default async function Layout({ children }: { children: React.ReactNode }) {
   const u = await requireRole("GV");
   const queue = await db.select().from(problems).where(eq(problems.status, "CHO_GIAO_VIEN_DUYET"));
-  const stuck = await db.select().from(escalations).where(isNull(escalations.handledAt));
+  // F-08: chỉ cảnh báo của HS thuộc lớp GV này dạy
+  const hsIds = await hsCuaGv(u.id);
+  const stuck = hsIds.length
+    ? await db.select().from(escalations).where(and(isNull(escalations.handledAt), inArray(escalations.studentId, hsIds)))
+    : [];
   return (
     <AppShell
       role="GV"

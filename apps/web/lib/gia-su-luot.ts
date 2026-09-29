@@ -1,10 +1,11 @@
 import { and, desc, eq } from "drizzle-orm";
+import { GIOI_HAN, dungMotLuot, khoDb } from "./gioi-han";
+import { caiDatLopCuaHs } from "./lop";
 import type { SessionUser } from "./auth";
 import { resolveProvider } from "./ai-catalog";
 import { cauHinhCongKhai } from "./ai-harness";
 import { db } from "./db";
 import {
-  classSettings,
   errorTypes,
   escalations,
   gradingResults,
@@ -75,8 +76,9 @@ export async function sessionFor(studentId: string, problemId: string) {
   return (await db.select().from(tutorSessions).where(eq(tutorSessions.id, id)))[0];
 }
 
-export async function caiDatAiLop() {
-  const row = (await db.select().from(classSettings).limit(1))[0];
+/** F-08: cài đặt AI của lớp HS này (không lấy dòng đầu của cả bảng). */
+export async function caiDatAiLop(hsId: string) {
+  const row = await caiDatLopCuaHs(hsId);
   return {
     classProvider: resolveProvider({ classProvider: row?.aiProvider }),
     classModel: row?.aiModel || null,
@@ -85,8 +87,8 @@ export async function caiDatAiLop() {
   };
 }
 
-export async function caiDatGiaSuCongKhaiCho() {
-  const lop = await caiDatAiLop();
+export async function caiDatGiaSuCongKhaiCho(hsId: string) {
+  const lop = await caiDatAiLop(hsId);
   return cauHinhCongKhai(lop);
 }
 
@@ -106,6 +108,21 @@ export async function chayHoiGiaSu(opts: {
 }): Promise<HoiGiaSuKet> {
   const { user, problemId, text, signal } = opts;
   await assertMayLearn(user);
+  // F-10: câu hỏi ≤ 1000 ký tự; hạn mức 30 câu / 10 phút và 300 câu / ngày mỗi HS (không gọi mô hình khi vượt)
+  const tuChoi = (tra_loi: string, error: string): HoiGiaSuKet => ({
+    ok: false,
+    tra_loi,
+    offline: true,
+    provider: "offline",
+    error,
+    trich_dan: [],
+  });
+  if (text.length > GIOI_HAN.doDaiCauHoi) {
+    return tuChoi(`Câu hỏi dài quá ${GIOI_HAN.doDaiCauHoi} ký tự. Em hỏi ngắn lại, mỗi lần một ý nhé.`, "qua_dai");
+  }
+  if (!(await dungMotLuot(khoDb, `gia_su:${user.id}`, GIOI_HAN.giaSuNgan, GIOI_HAN.giaSuNgay))) {
+    return tuChoi("Em đã hỏi nhiều trong thời gian ngắn. Em tự làm thử bước đang tô rồi hỏi lại sau ít phút nhé.", "het_han_muc");
+  }
   const bao = async (buoc: GiaSuBuocSse) => {
     if (daDung(signal)) return;
     await opts.onTrangThai?.(buoc);
@@ -200,7 +217,7 @@ export async function chayHoiGiaSu(opts: {
   const goiY = capHien > 0 ? (hints.length ? hints.find((h) => h.cap === capHien)?.noiDung || null : goiYBuoc(buoc, capHien)) : null;
   const err = grade?.maLoi ? (await db.select().from(errorTypes).where(eq(errorTypes.code, grade.maLoi)).limit(1))[0] : null;
   const cfg = await loadConfig();
-  const lop = await caiDatAiLop();
+  const lop = await caiDatAiLop(user.id);
   const provider = resolveProvider({
     classProvider: lop.classProvider,
     sessionProvider: opts.provider,

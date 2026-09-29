@@ -1,12 +1,14 @@
 "use server";
 
 import { and, asc, eq } from "drizzle-orm";
+import { GIOI_HAN, dungMotLuot, khoDb } from "../gioi-han";
+import { caiDatLopCuaHs } from "../lop";
+import { trongPhienCua } from "../rls";
 import { revalidatePath } from "next/cache";
 import { requireRole } from "../auth";
 import { db } from "../db";
 import {
   auditLogs,
-  classSettings,
   solutions,
   escalations,
   gradingResults,
@@ -44,6 +46,10 @@ export type StepPayload = {
 export async function nopBuoc(problemId: string, body: StepPayload) {
   const user = await requireRole("HS");
   await assertMayLearn(user);
+  // F-10: 40 lần nộp / phút mỗi HS (chặn spam máy chấm)
+  if (!(await dungMotLuot(khoDb, `nop_buoc:${user.id}`, GIOI_HAN.nopBuoc))) {
+    return { ok: false as const, thong_bao: "Em nộp nhanh quá. Đợi một phút rồi nộp lại nhé." };
+  }
   const prob = await db.select().from(problems).where(eq(problems.id, problemId)).limit(1);
   const p = prob[0];
   if (!p || p.status !== "DA_PHAT_HANH" || !p.hamSympy) {
@@ -153,8 +159,9 @@ export async function nopBuoc(problemId: string, body: StepPayload) {
   // F-05: lời giải chỉ rời máy chủ SAU khi HS xong bài và lớp bật "mở lời giải sau khi nộp"
   let loiGiai: string | null = null;
   if (finished) {
-    const st = await db.select().from(classSettings).limit(1);
-    if (st[0]?.moLoiGiaiSauKhiNop === true) {
+    // F-08: cài đặt của lớp HS này
+    const st = await caiDatLopCuaHs(user.id);
+    if (st?.moLoiGiaiSauKhiNop === true) {
       const sol = (await db.select().from(solutions).where(eq(solutions.problemId, problemId)).limit(1))[0];
       loiGiai = loiGiaiHocSinh(sol?.baiLam, sol?.finalAnswer);
     }
@@ -176,8 +183,8 @@ export async function nopBuoc(problemId: string, body: StepPayload) {
 }
 
 export async function caiDatGiaSuCongKhai(): Promise<AiPublicConfig> {
-  await requireRole("HS");
-  return caiDatGiaSuCongKhaiCho();
+  const u = await requireRole("HS");
+  return caiDatGiaSuCongKhaiCho(u.id);
 }
 
 export async function hoiGiaSu(
@@ -205,11 +212,11 @@ export async function lichSuGiaSu(problemId: string) {
   const user = await requireRole("HS");
   await assertMayLearn(user);
   const sess = await sessionFor(user.id, problemId);
-  const rows = await db
-    .select()
-    .from(tutorMessages)
-    .where(eq(tutorMessages.sessionId, sess.id))
-    .orderBy(asc(tutorMessages.createdAt));
+  // F-08 RLS: đọc tin nhắn trong phiên app.user_id = HS này (chính sách 0010 chặn tin của phiên HS khác)
+  const rows = await trongPhienCua(user.id, async (tx) =>
+    tx<{ role: string; content: string; citation: unknown }[]>`
+      select role, content, citation from tutor_messages where session_id = ${sess.id} order by created_at asc`,
+  );
   return {
     messages: rows.map((r) => ({
       role: r.role as "hs" | "gia_su",
