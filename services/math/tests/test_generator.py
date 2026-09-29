@@ -15,8 +15,10 @@ def test_goi_y_theo_bai_va_khong_bi_thay_cau_chung():
     caps = {b["ma_buoc"]: [c["noi_dung"] for c in b["cac_cap"]] for b in r["thang_goi_y"]}
     assert "tách tổng" not in " ".join(caps["B.DH.DAOHAM"]).lower()
     assert "thương" in caps["B.DH.DAOHAM"][0]
-    assert "y' đồng biến" not in caps["B.DH.XETDAU"][1] and "thương" in caps["B.DH.XETDAU"][1]
-    assert "Thử lần lượt x =" in caps["B.DH.XETDAU"][2]
+    # Thang mẫu Sư phạm (29/09): cấp 2 XETDAU là công cụ xét dấu tử/mẫu; cấp 3 KHÔNG nêu điểm thử cụ thể
+    # ("Thử lần lượt x = …" lộ vị trí mốc, nằm trong tham_so_cam của thang mẫu)
+    assert "y' đồng biến" not in caps["B.DH.XETDAU"][1] and "mẫu số" in caps["B.DH.XETDAU"][1]
+    assert "Thử lần lượt x =" not in caps["B.DH.XETDAU"][2]
     for dang in ("bac_ba", "trung_phuong", "huu_ti"):
         for seed in (1, 2, 3, 4, 5):
             r = sinh({"dang": dang, "seed": seed})
