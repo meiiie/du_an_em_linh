@@ -276,6 +276,13 @@ _NHAN_KL = {"DONG_BIEN": "dong_bien", "NGHICH_BIEN": "nghich_bien", "CUC_DAI": "
 _SO = r"[+\-−]?\d+(?:[.,]\d+)?(?:/\d+)?"
 
 
+def _tung_do_chu(t):
+    """0002e: tung độ viết bằng lời trong ô / dòng cực trị: "giá trị cực đại bằng 6", "giá trị cực tiểu là −26"."""
+    import re
+    t = t.replace("−", "-")
+    return re.findall(r"giá trị cực (?:đại|tiểu)(?: của hàm số)?\s*(?:là|bằng|=)\s*(%s)" % _SO, t)
+
+
 def _doc_cuc_tri(raw):
     """Đọc ô cực đại/cực tiểu: "x = 1, y = 6", "x=1; y_{CĐ}=6", "(1; 6)", "1". Trả (các x, các y)."""
     import re
@@ -286,6 +293,11 @@ def _doc_cuc_tri(raw):
     t = re.sub(r"(?<![a-z])f(?=\s*=)", "y", t)   # 0002d: f_{CT} = −26 (sau khi bỏ chỉ số) đọc như y_{CT}
     xs = re.findall(r"x\s*=\s*(%s)" % _SO, t)
     ys = re.findall(r"y\s*=\s*(%s)" % _SO, t)
+    # 0002e: "f(-1) = 6", "y_{CĐ} = y(-1) = 6" -> điểm -1, tung độ 6; "giá trị cực đại bằng 6" -> chỉ tung độ
+    for a, b in re.findall(r"(?<![a-z])[yf]\s*\(\s*(%s)\s*\)\s*=\s*(%s)" % (_SO, _SO), t):
+        xs.append(a)
+        ys.append(b)
+    ys += _tung_do_chu(t)
     if not xs:
         m = re.fullmatch(r"\s*\(\s*(%s)\s*[;,]\s*(%s)\s*\)\s*" % (_SO, _SO), t)
         if m:
@@ -307,6 +319,7 @@ def _parse_ket_luan(step):
     cd, ct, gcd, gct = [], [], [], []
     saw = set()
     chuan = []
+    chi_y = {}   # 0002e: ô cực trị chỉ có tung độ {key: {"ys": [...], "dong": i}}
     khai_ds = list(step.get("khai_bao") or [])
     _NHAN_TU_KHAI = {"dong_bien": "DONG_BIEN", "nghich_bien": "NGHICH_BIEN", "cuc_dai": "CUC_DAI", "cuc_tieu": "CUC_TIEU"}
     for vi_tri, line in enumerate(lines):
@@ -349,6 +362,12 @@ def _parse_ket_luan(step):
             else:
                 if not rong:
                     xs, ys = _doc_cuc_tri(raw)
+                    if not xs and ys:
+                        # 0002e (Sư phạm 29/09 13:10): ô chỉ ghi tung độ (y_{CĐ} = 6, f_{CT} = −26) vẫn đọc được -> chấm ở
+                        # _cham_chi_tung_do (ERR.DH.11 nếu tung độ đúng, ERR.DH.22 nếu sai), không KHONG_KIEM_DUOC.
+                        chi_y.setdefault(key, {"ys": [v.replace(",", ".") for v in ys], "dong": line.get("dong", 0)})
+                        chuan.append({"dong": line.get("dong", 0), "trang_thai_chuan_hoa": "OK"})
+                        continue
                     if not xs:
                         return None, [{"dong": line.get("dong", 0), "trang_thai_chuan_hoa": "THAT_BAI"}]
                     (cd if key == "cuc_dai" else ct).extend(xs)
@@ -377,11 +396,23 @@ def _parse_ket_luan(step):
             ys = re.findall(r"y\s*(?:=|cd|cđ|_{cd}|_{cđ})?\s*=?\s*([+\-]?\d+(?:[.,]\d+)?)", t.replace("_{", "").replace("}", ""))
             # lấy số sau 'y'
             ys = re.findall(r"y\s*(?:_\s*\{?\s*c[dđ]\s*\}?)?\s*=\s*([+\-]?\d+(?:[.,]\d+)?)", raw.lower().replace("\\", ""))
+            if not re.search(r"x\s*=", t):
+                xs2, ys2 = _doc_cuc_tri(raw)
+                if not xs2 and ys2:   # 0002e: "cực đại y_{CĐ} = 6", "giá trị cực đại bằng 6"
+                    chi_y.setdefault("cuc_dai", {"ys": ys2, "dong": line.get("dong", 0)})
+                    chuan.append({"dong": line.get("dong", 0), "trang_thai_chuan_hoa": "OK"})
+                    continue
             gcd.extend(ys)
         elif re.search(r"cực tiểu|cuc tieu", t):
             saw.add("cuc_tieu")
             ct.extend(re.findall(r"x\s*=\s*([+\-]?\d+(?:[.,]\d+)?(?:/\d+)?)", t.replace("$", "")))
             ys = re.findall(r"y\s*(?:_\s*\{?\s*ct\s*\}?)?\s*=\s*([+\-]?\d+(?:[.,]\d+)?)", raw.lower().replace("\\", ""))
+            if not re.search(r"x\s*=", t):
+                xs2, ys2 = _doc_cuc_tri(raw)
+                if not xs2 and ys2:   # 0002e
+                    chi_y.setdefault("cuc_tieu", {"ys": ys2, "dong": line.get("dong", 0)})
+                    chuan.append({"dong": line.get("dong", 0), "trang_thai_chuan_hoa": "OK"})
+                    continue
             gct.extend(ys)
         elif raw.strip():
             return None, [{"dong": line.get("dong", 0), "trang_thai_chuan_hoa": "THAT_BAI"}]
@@ -396,6 +427,11 @@ def _parse_ket_luan(step):
             kl["nghich_bien_tren_tap"] = nb_tap
         else:
             kl["nghich_bien"] = [s.replace(",", ".") for s in nb]
+    for key in chi_y:
+        # ô chỉ tung độ: vị trí/giá trị để _grade_core điền trung tính từ lời giải máy rồi chấm riêng
+        if not (cd if key == "cuc_dai" else ct):
+            saw.discard(key)
+        kl["_chi_tung_do"] = chi_y
     if "cuc_dai" in claims or "cuc_dai" in saw:
         kl["cuc_dai_x"] = [s.replace(",", ".") for s in cd]
         if gcd:
@@ -831,6 +867,7 @@ def _dong_ket_luan_sai(payload):
     if kl is None or not may:
         return None
     km = may["ket_luan"]
+    chi_y = kl.pop("_chi_tung_do", None) or {}   # 0002e: ô chỉ tung độ
     dong_cua = {}
     ds = _idx(step.get("cac_dong") or [])
     khai_ds = list(step.get("khai_bao") or [])
@@ -858,6 +895,11 @@ def _dong_ket_luan_sai(payload):
             if ds_khoang(kl, key) != ds_khoang(km, key) or (bool(kl.get(key + "_tren_tap")) and not km.get(key + "_tren_tap")):
                 sai.append(key)
     for key in ("cuc_dai", "cuc_tieu"):
+        if key in chi_y:
+            if not all(any(_bang(y, v) for v in (km.get("gia_tri_" + key) or [])) for y in chi_y[key]["ys"]):
+                sai.append(key)
+                dong_cua[key] = chi_y[key]["dong"]
+            continue
         if key + "_x" in kl or "gia_tri_" + key in kl:
             if not (_cung_ds(kl.get(key + "_x"), km.get(key + "_x")) and
                     (not kl.get("gia_tri_" + key) or _cung_ds(kl.get("gia_tri_" + key), km.get("gia_tri_" + key)))):
@@ -887,7 +929,8 @@ def _hau_xu_ly(payload, r):
                 # Chốt No 11:28: vấn đề giữ o = {X, k} của mốc thừa (UI tô đỏ ô đó), bước B.DH.NGHIEM.
                 # Dòng nghiệm chứa mốc ghi thêm ở `dong_lien_quan` để UI chỉ chỗ cần sửa; không thành vấn đề thứ hai.
                 v["dong_lien_quan"] = dong
-        if v.get("loai_ket_qua") == "SAI_KET_LUAN" and bs.get("ma_buoc") == "B.DH.KETLUAN":
+        if (v.get("loai_ket_qua") == "SAI_KET_LUAN" or (v.get("loai_ket_qua") == "SAI_GIA_TRI" and v.get("ma_loi") == "ERR.DH.22")) \
+                and bs.get("ma_buoc") == "B.DH.KETLUAN" and v.get("ma_loi") != "ERR.DH.11":
             if dkl is None:
                 dkl = _dong_ket_luan_sai(payload)
             if dkl is not None:
@@ -907,9 +950,19 @@ def _grade_core(payload):
     bl, som = payload_to_bai_lam(payload, den)
     if som:
         return som
+    chi_y = (bl.get("ket_luan") or {}).pop("_chi_tung_do", None) if isinstance(bl.get("ket_luan"), dict) else None
     full = _overlay_may(bl, den)
     if full is None:
         return _pack("KHONG_KIEM_DUOC", "KHONG_KIEM_DUOC", None, "khong_giai_duoc", {}, bl.get("_chuan") or [], nop_toi=den)
+    if chi_y:
+        # 0002e: ô chỉ tung độ -> bộ kiểm thấy ô đó trung tính (vị trí + giá trị của lời giải máy); tung độ HS chấm sau.
+        kl_m = (bai_lam_may(bl["ham"]) or {}).get("ket_luan") or {}
+        full["ket_luan"] = dict(full.get("ket_luan") or {})
+        for key in chi_y:
+            full["ket_luan"][key + "_x"] = list(kl_m.get(key + "_x") or [])
+            full["ket_luan"]["gia_tri_" + key] = list(kl_m.get("gia_tri_" + key) or [])
+            if not full["ket_luan"]["gia_tri_" + key]:
+                full["ket_luan"].pop("gia_tri_" + key)
     # bỏ khóa nội bộ
     clean = {k: v for k, v in full.items() if not k.startswith("_")}
     try:
@@ -917,6 +970,8 @@ def _grade_core(payload):
     except Exception as ex:
         return _pack("KHONG_KIEM_DUOC", "KHONG_KIEM_DUOC", None, "loi_cong_cu", {}, bl.get("_chuan") or [], nop_toi=den)
     last_n = bl.get("_last_nghiem", 0)
+    if r["trang_thai"] == "DAT" and chi_y and den == "B.DH.KETLUAN":
+        return _cham_chi_tung_do(chi_y, bl["ham"], bl.get("_chuan") or [], den)
     if r["trang_thai"] == "DAT":
         return _pack("DAT", "DAT", None, "dat", _per(den), bl.get("_chuan") or [], chua_xong=den != "B.DH.KETLUAN", nop_toi=den)
     if r.get("cac_van_de"):
@@ -937,6 +992,8 @@ def _grade_core(payload):
     if buoc_sai and buoc_sai["ma_buoc"] == "B.DH.DAOHAM":
         buoc_sai = _buoc("B.DH.DAOHAM", 0, None)
     ma_tin, tb = _ma_loi_chi_tiet(r, lk, loai, clean)
+    if ma_tin and ma_tin[0] == "ERR.DH.22" and loai == "SAI_KET_LUAN":
+        loai = "SAI_GIA_TRI"   # 0002e (Sư phạm 13:10): tung độ sai, có hay không có hoành độ -> SAI_GIA_TRI, ERR.DH.22
     if r.get("dau_U"):
         # Luật dấu U (Sư phạm 29/09 12:13): luôn ERR.DH.07; cờ toan_dung cho gia sư chọn câu nhắn và cho mô hình
         # học sinh (toan_dung = true: lỗi quy ước trình bày, không trừ mức hiểu kỹ năng như ca sai toán).
@@ -950,6 +1007,35 @@ def _grade_core(payload):
         return out
     return _pack("SAI", loai, buoc_sai, lk or loai, _per(den, buoc_sai["ma_buoc"] if buoc_sai else den), bl.get("_chuan") or [], nop_toi=den,
                  ma_loi_tin=ma_tin, thong_bao=tb)
+
+
+_TEN_O_CT = {"cuc_dai": ("Cực đại", "cực đại"), "cuc_tieu": ("Cực tiểu", "cực tiểu")}
+
+
+def _cham_chi_tung_do(chi_y, ham, chuan, den):
+    """0002e (Sư phạm chốt 29/09 13:10). Ô cực đại/cực tiểu chỉ ghi tung độ, mọi phần khác của bài đã đúng:
+    - tung độ sai (không phải giá trị cực trị loại đó của hàm) -> SAI_GIA_TRI, ERR.DH.22;
+    - tung độ đúng, thiếu hoành độ -> SAI_KET_LUAN, ERR.DH.11 (nhầm điểm cực trị với giá trị cực trị). Câu nhắn hỏi
+      "Hàm số đạt cực đại tại điểm nào?", không nhắc lại giá trị.
+    Chưa có ngoại lệ "đề chỉ hỏi giá trị cực đại" (khai_bao chỉ có cuc_dai/cuc_tieu): luôn cần hoành độ."""
+    kl_m = (bai_lam_may(ham) or {}).get("ket_luan") or {}
+    thu_tu = [k for k in ("cuc_dai", "cuc_tieu") if k in chi_y]
+    for key in thu_tu:
+        dung = kl_m.get("gia_tri_" + key) or []
+        if not dung or not all(any(_bang(y, v) for v in dung) for y in chi_y[key]["ys"]):
+            if not (kl_m.get(key + "_x") or []):
+                # hàm không có cực trị loại này mà HS ghi một giá trị: kết luận sai (có cực trị khi không có)
+                bs = _buoc("B.DH.KETLUAN", chi_y[key]["dong"], None)
+                return _pack("SAI", "SAI_KET_LUAN", bs, "cuc_tri_sai", _per(den, "B.DH.KETLUAN"), chuan, nop_toi=den,
+                             thong_bao="Bước kết luận: ô %s cần xem lại." % _TEN_O_CT[key][0])
+            bs = _buoc("B.DH.KETLUAN", chi_y[key]["dong"], None)
+            return _pack("SAI", "SAI_GIA_TRI", bs, "cuc_tri_sai", _per(den, "B.DH.KETLUAN"), chuan, nop_toi=den,
+                         ma_loi_tin=("ERR.DH.22", 0.8), thong_bao="Bước kết luận: ô %s cần xem lại." % _TEN_O_CT[key][0])
+    key = thu_tu[0]
+    bs = _buoc("B.DH.KETLUAN", chi_y[key]["dong"], None)
+    return _pack("SAI", "SAI_KET_LUAN", bs, "cuc_tri_sai", _per(den, "B.DH.KETLUAN"), chuan, nop_toi=den,
+                 ma_loi_tin=("ERR.DH.11", 0.85),
+                 thong_bao="Bước kết luận: ô %s mới có giá trị, còn thiếu điểm. Hàm số đạt %s tại điểm nào?" % _TEN_O_CT[key])
 
 
 def _bang(a, b):
