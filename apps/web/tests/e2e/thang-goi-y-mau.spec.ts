@@ -9,14 +9,17 @@ import { moSoBaiGiao, vaoLop } from "./vao-lop";
 test.describe("thang gợi ý mẫu", () => {
   test.use({ viewport: { width: 1280, height: 800 } });
 
-  test.beforeEach(async ({ request }) => {
-    const r = await request.post("/api/test/reset", { data: { email: "hs.binh@demo.local" } });
-    expect(r.ok()).toBe(true);
-  });
+  // Đặt lại bài làm của HS khi có /api/test/reset (APP_ENV=test). CI không bật APP_ENV=test (route trả 404) nên mỗi
+  // ca dùng một HS riêng, trên DB vừa seed, chưa nộp sai TXĐ/đạo hàm ở bài này.
+  async function datLai(request: import("@playwright/test").APIRequestContext, email: string) {
+    const r = await request.post("/api/test/reset", { data: { email } });
+    if (r.status() !== 404) expect(r.ok()).toBe(true);
+  }
 
-  async function moBai(page: import("@playwright/test").Page) {
+  async function moBai(page: import("@playwright/test").Page, email: string) {
+    await datLai(page.request, email);
     await page.goto("/dang-nhap");
-    await vaoLop(page, "hs.binh@demo.local", "hocsinh123");
+    await vaoLop(page, email, "hocsinh123");
     await page.waitForURL(/\/hs/);
     await moSoBaiGiao(page);
     await page.getByTestId("bai-DH12-03-VD-01").click();
@@ -24,7 +27,7 @@ test.describe("thang gợi ý mẫu", () => {
   }
 
   test("đạo hàm sai → gợi ý cấp 1 của thang riêng DAOHAM (SAI_GIA_TRI hoặc SAI_BIEN_DOI theo bộ chấm), không phải thang chung", async ({ page }) => {
-    await moBai(page);
+    await moBai(page, "hs.binh@demo.local");
     await page.getByTestId("latex-txd").fill("\\mathbb{R}");
     await page.getByTestId("nop-buoc").click();
     await expect(page.getByTestId("cham-thong-bao")).toContainText("hợp lệ");
@@ -41,7 +44,7 @@ test.describe("thang gợi ý mẫu", () => {
   });
 
   test("TXĐ sai của đa thức → cấp 1, 2 của thang SAI_TXD; cấp 3 để trống → bài dễ hơn hoặc Gửi thầy cô, không câu rỗng", async ({ page }) => {
-    await moBai(page);
+    await moBai(page, "hs.chi@demo.local");
     await page.getByTestId("latex-txd").fill("(0;+\\infty)");
     await page.getByTestId("nop-buoc").click();
     await expect(page.getByTestId("cham-thong-bao")).not.toContainText("hợp lệ");
