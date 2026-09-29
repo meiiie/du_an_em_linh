@@ -283,3 +283,46 @@ def test_lo_bang_loi_bi_chan(cau, sk, ly_do):
 ])
 def test_lo_bang_loi_khong_chan_nham(cau, sk):
     assert not chan(cau, sk)
+
+
+# ------------------------------------------------------------------ đường thật của app: /v1/goi-y (thang mẫu, #40)
+HAM_THANG = ["x**3+3*x**2-9*x+1", "x**3+3*x", "x**3-3*x**2+3*x", "x**4-2*x**2+1", "3*x**4+5*x**2-2", "(x+4)/(x-1)"]
+
+
+def _o_thang_mau():
+    from app import thang_mau
+    out = []
+    for dang in ("bac_ba", "trung_phuong", "huu_ti"):
+        doc = thang_mau.nap(dang)
+        for mb, buoc in (doc.get("thang") or {}).items():
+            for loai, t in buoc.items():
+                if loai == "_meta" or not isinstance(t, dict):
+                    continue
+                for cap in (1, 2, 3):
+                    if (t.get(str(cap)) or {}).get("noi_dung"):
+                        out.append((dang, mb, loai, cap))
+    return out
+
+
+def test_goi_y_thang_mau_moi_cau_qua_loc_khong_lui_cap():
+    """Mọi câu thang mẫu đã điền (cấp có nội dung) phải tới học sinh đúng cấp: không bị bộ lọc chặn rồi lùi cấp.
+    Trước 0003: KETLUAN/SAI_KET_LUAN/3, XETDAU/chung/3, XETDAU/DIEM_THUA/3 bị chặn nhầm (phủ định trong câu điều kiện,
+    "hàm số không đạt" đọc thành "hàm số 0 đạt")."""
+    from app import thang_mau
+    from app.generator import latex_ham
+    from app.machine import bai_lam_may, su_kien_bao_ve
+    o = _o_thang_mau()
+    assert len(o) > 100
+    loi = []
+    for ham in HAM_THANG:
+        dang = thang_mau.dang_cua(ham)
+        sk = [{"loai": a, "gia_tri": b} for a, b in su_kien_bao_ve(bai_lam_may(ham))]
+        de = "Tìm các khoảng đồng biến, nghịch biến và cực trị của hàm số $y = %s$." % latex_ham(ham)
+        for d, mb, loai, cap in o:
+            if d != dang:
+                continue
+            r = thang_mau.goi_y({"ham": ham, "de_bai": de, "ma_buoc": mb, "loai_ket_qua": loai, "cap": cap, "su_kien": sk})
+            chan = [n for n in r["nhat_ky"] if n.get("ly_do") != "KHONG_DIEN_DUOC"]
+            if chan:
+                loi.append((ham, mb, loai, cap, chan))
+    assert loi == []
