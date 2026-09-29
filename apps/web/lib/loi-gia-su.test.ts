@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { chuanHoaLatexGiaSu } from "./loi-gia-su";
+import { boLoiTuGioiThieu, chuanHoaLatexGiaSu, locBanGiaSu } from "./loi-gia-su";
 
 test("đổi \\[ \\] và \\( \\) sang $ cho KaTeX", () => {
   const vao = "Nguyên lý: \\((x^n)' = n x^{n-1}\\).\n\\[y = x^n\\]";
@@ -49,4 +49,12 @@ test("siết $ có khoảng trắng, không đụng $$", () => {
   const ra = chuanHoaLatexGiaSu("Nhớ $ (x^n)' = n x^{n-1} $ rồi dừng.");
   assert.match(ra, /\$\(x\^n\)' = n x\^\{n-1\}\$/);
   assert.equal(ra.includes("$ ("), false);
+});
+
+test("gỡ chào và tự giới thiệu, giữ việc", () => {
+  assert.equal(boLoiTuGioiThieu("Chào em, mình là AI gợi ý. Em tính $y'$."), "Em tính $y'$.");
+  assert.match(boLoiTuGioiThieu("Chào em, mình nhắc nguyên lý đạo hàm."), /nhắc nguyên lý/);
+  assert.equal(boLoiTuGioiThieu(""), "");
+  assert.match(boLoiTuGioiThieu("Mình là gia sư AI."), /mắc chỗ nào/);
+  assert.equal(locBanGiaSu("Em nhớ sk-abcdefghijklmnop rồi.").includes("sk-"), false);
 });

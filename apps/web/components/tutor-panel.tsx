@@ -26,7 +26,7 @@ type KetHoi = {
 
 const LOI_CHAO: Msg = {
   role: "gia_su",
-  text: "Mình đọc công thức và tài liệu lớp. Sửa bài, không đưa đáp án.",
+  text: "Mình đọc công thức và tài liệu lớp. Sửa bài và giảng, không đưa đáp án.",
 };
 
 const LOI_KHONG_NOI: KetHoi = { ok: false, tra_loi: "Không nối được gia sư. Không gửi lại.", offline: true };
@@ -352,7 +352,7 @@ export function TutorPanel({
         </select>
       </label>
 
-      <div className="mt-3 flex shrink-0 gap-2 overflow-x-auto md:flex-wrap">
+      <div className="mt-3 flex shrink-0 flex-wrap gap-2">
         <Button type="button" variant="secondary" size="sm" data-testid="chip-goi-y" disabled={thinking} className="shrink-0" onClick={() => sendChat("Gợi ý bước này")}>
           Gợi ý bước này
         </Button>

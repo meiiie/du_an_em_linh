@@ -1,3 +1,4 @@
+import { anKhoa } from "./an-khoa";
 import { db } from "./db";
 import { llmCalls } from "./db/schema";
 import { completeChat, parseProvider, type AiProviderId, type ChatMessage } from "./ai-harness";
@@ -6,10 +7,12 @@ import { completeChat, parseProvider, type AiProviderId, type ChatMessage } from
 const NAME_RE = /\b(an|bình|binh|chi)\b/gi;
 
 export function redact(text: string) {
-  return text
-    .replace(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi, "[email]")
-    .replace(/\b0\d{8,10}\b/g, "[sdt]")
-    .replace(NAME_RE, "[ten]");
+  return anKhoa(
+    text
+      .replace(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi, "[email]")
+      .replace(/\b0\d{8,10}\b/g, "[sdt]")
+      .replace(NAME_RE, "[ten]"),
+  );
 }
 
 /** Prompt hệ thống giữ nguyên — chữ «giáo viên» là nghề, không phải tên học sinh. */

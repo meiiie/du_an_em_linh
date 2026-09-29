@@ -9,6 +9,12 @@ __pycache__/
 .env
 .env.local
 .env*.local
+.env.production
+zaiapikey.txt
+*apikey*.txt
+*.pem
+*.p12
+secrets/
 data/uploads/
 playwright-report/
 test-results/
