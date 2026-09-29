@@ -34,6 +34,7 @@ _GACH_DUOI_OK = re.compile(r"_(?=\s*\{|\s*(?:c\s*[dđt]|C\s*[DĐT])\b)")
 _THAP = re.compile(r"(?:\*\*|\^)\s*[\(\{]?\s*[\w.+\-]+\s*[\)\}]?\s*(?:\*\*|\^)")
 _MU_LON = re.compile(r"(?:\*\*|\^)\s*[\(\{]?\s*[+\-]?\s*\d{4,}")
 _SO_DAI = re.compile(r"\d{16,}")
+_O_TRONG_UI_CU = re.compile(r"^\s*(?:không|khong)\s+(?:dong_bien|nghich_bien|cuc_dai|cuc_tieu)\s*$", re.I)
 _THUOC_TINH = re.compile(r"[A-Za-z0-9)\]]\.[A-Za-z_]{2,}|\.\s*[A-Za-z_]{2,}\s*\(")
 
 
@@ -46,6 +47,8 @@ def ly_do_tu_choi(s, do_dai_toi_da=DO_DAI_TOI_DA):
     t = unicodedata.normalize("NFC", str(s))
     if len(t) > do_dai_toi_da:
         return "quá dài (%d ký tự)" % len(t)
+    if _O_TRONG_UI_CU.match(t):
+        return None  # ô trống của UI cũ (6eb8b06) gửi "không <khoá>", vd "không cuc_dai"
     for i, ch in enumerate(t):
         if ch.isalnum() or ch.isspace() or ch in _DAU:
             if ch == "'" and not (i > 0 and (t[i - 1].isalpha() or t[i - 1] in "'′)}")):

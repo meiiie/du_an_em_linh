@@ -107,7 +107,7 @@ def test_payload_sai_khuon_khong_kiem_duoc(payload):
 @pytest.mark.parametrize("s", ["x^{2} - 3x + 2", "\\frac{1}{x-1}", "(-\\infty; 0) \\cup (2; +\\infty)", "x = 1; x = 3",
                                "cực đại tại x = 0, y_{CĐ} = 2", "Hàm số đồng biến trên (0;2)", "y' = 3x^2 - 6x",
                                "y' không xác định tại x = 1", "\\mathbb{R} \\setminus \\{1\\}", "Hàm số không có cực trị",
-                               "dong bien tren khoang (0; 2)", "x_{1} = 0", "1 \\pm \\sqrt{2}", "TANG"])
+                               "dong bien tren khoang (0; 2)", "x_{1} = 0", "1 \\pm \\sqrt{2}", "TANG", "không cuc_dai", "khong nghich_bien"])
 def test_cong_nhan_bai_lam_binh_thuong(s):
     assert ly_do_tu_choi(s) is None, s
 
