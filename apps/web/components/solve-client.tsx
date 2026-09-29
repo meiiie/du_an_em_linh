@@ -109,7 +109,7 @@ export function SolveClient({
   /** UX-06: tiến trình dựng lại từ lượt nộp gần nhất (tải lại / vào lại mở đúng bước đang dở). */
   tienTrinh?: TienTrinh | null;
   /** UX-07: cấp gợi ý đã mở theo bước (phiên gia sư trên máy chủ). */
-  capGoiY?: Record<string, number>;
+  capGoiY?: Record<string, { cap: number; soCap: number }>;
   /** UXT-07-k: bước đã đủ điều kiện «Gửi thầy cô» (đọc từ phiên gia sư lúc mở trang). */
   deXuatGuiGv?: string[];
   /** REQUIRED-TESTIDS (UXT-07-l): mã kỹ năng của bài và HS đang đăng nhập đã có lượt nộp bài này chưa. */
@@ -271,10 +271,26 @@ export function SolveClient({
   const vanDe = grade?.ket_qua === "SAI" ? grade.cac_van_de || [] : [];
   const goc = vanDe.filter((v) => !v.nguyen_nhan);
   const gocHien = moHet ? goc : goc.slice(0, 1);
-  const idHien = new Set(gocHien.map((v) => v.id));
+  // UXT-04-b: mốc thừa tự thêm vào bảng (DIEM_THUA ở Xét dấu) — ô dấu SAI ở hai khoảng kề mốc đó hiện cùng lúc, chỉ viền nét đứt
+  // (không đỏ, không tính vào "còn N chỗ").
+  const thuaHien = gocHien.filter(
+    (v) => v.loai_ket_qua === "DIEM_THUA" && v.buoc_sai.ma_buoc === "B.DH.XETDAU" && v.buoc_sai.o?.hang === "X" && v.buoc_sai.o.k != null,
+  );
+  const keThua = goc.filter((v) => {
+    const o = v.buoc_sai.o;
+    if (gocHien.includes(v) || o?.hang !== "DAU_YPHAY" || o.k == null) return false;
+    return thuaHien.some((t) => o.k === 2 * (t.buoc_sai.o!.k as number) || o.k === 2 * (t.buoc_sai.o!.k as number) + 2);
+  });
+  const idHien = new Set([...gocHien, ...keThua].map((v) => v.id));
   const hien = vanDe.filter((v) => idHien.has(v.id) || (v.nguyen_nhan && idHien.has(v.nguyen_nhan)));
-  const conLai = goc.length - gocHien.length;
-  const coThuTu = hien.some((v) => v.loai_ket_qua === "SAI_THU_TU_MOC");
+  const conLai = goc.length - gocHien.length - keThua.length;
+  // UXT-04-d: lỗi gốc nằm ở bước TRƯỚC bước đang mở (vd thiếu điểm ở Nghiệm khi đang ở Xét dấu) -> nút quay lại bước đó.
+  const gocDau = gocHien[0];
+  const buocQuayLai =
+    grade?.ket_qua === "SAI" && gocDau && ORDER.indexOf(gocDau.buoc_sai.ma_buoc as (typeof ORDER)[number]) >= 0 &&
+    ORDER.indexOf(gocDau.buoc_sai.ma_buoc as (typeof ORDER)[number]) < step
+      ? gocDau.buoc_sai.ma_buoc
+      : null;
   const coThua = hien.some((v) => v.loai_ket_qua === "DIEM_THUA" && v.buoc_sai.o?.hang === "X");
   const loaiTheoId = new Map(vanDe.map((v) => [v.id, v.loai_ket_qua]));
 
@@ -313,6 +329,23 @@ export function SolveClient({
   function cellBad(hang: string, k: number) {
     return oTrangThai(hang, k).kieu === "bad";
   }
+  /** Thuộc tính đo được của ô bảng (tieu-chi-ux quy_uoc.do_luong: data-trang-thai sai | net-dut). */
+  function oAttr(hang: string, k: number) {
+    const t = oTrangThai(hang, k);
+    return {
+      "data-hang": hang,
+      "data-k": k,
+      "data-trang-thai": t.kieu === "bad" ? "sai" : t.kieu === "he_qua" ? "net-dut" : undefined,
+      "data-ly-do":
+        t.kieu === "he_qua"
+          ? t.nhan === "sắp lại mốc trước"
+            ? "sap-lai-moc"
+            : t.nhan === "dấu đổi trong khoảng"
+              ? "doi-dau-trong-khoang"
+              : "dau-sai"
+          : undefined,
+    };
+  }
   function oClass(hang: string, k: number) {
     const t = oTrangThai(hang, k).kieu;
     return t === "bad" ? "cell-bad" : t === "he_qua" ? "cell-he-qua" : "";
@@ -320,6 +353,15 @@ export function SolveClient({
 
   const ma = ORDER[step];
   const ten = tenBuocTrang(ma);
+  // Sau khi bấm «Quay lại bước …»: đưa focus vào ô nhập đầu tiên còn trống của bước đó (UXT-04-d).
+  const canFocus = useRef(false);
+  useEffect(() => {
+    if (!canFocus.current) return;
+    canFocus.current = false;
+    const vung = document.querySelector('[data-testid="solve-screen"]');
+    const cac = Array.from(vung?.querySelectorAll<HTMLInputElement>('input[data-testid^="latex-"]') ?? []);
+    (cac.find((i) => !i.value.trim()) ?? cac[0])?.focus();
+  }, [step]);
   const loi = loiBuoc(ma);
   const dat = grade?.ket_qua === "DAT";
 
@@ -398,7 +440,7 @@ export function SolveClient({
         <div className="mt-8 space-y-4">
           {ma === "B.DH.TXD" && (
             <div className={lineBad("B.DH.TXD", 0) ? "cell-bad p-2" : ""}>
-              <MathInput testId="latex-txd" label="D" nhe value={txd} onChange={setTxd} />
+              <MathInput testId="latex-txd" label="D" nhe value={txd} onChange={setTxd} sai={lineBad("B.DH.TXD", 0)} />
             </div>
           )}
           {ma === "B.DH.DAOHAM" && (
@@ -409,6 +451,7 @@ export function SolveClient({
                     testId={i === 0 ? "latex-dh" : `latex-dh-${i}`}
                     label={i === 0 ? "y′" : `Dòng ${i + 1}`}
                     nhe={i === 0}
+                    sai={lineBad("B.DH.DAOHAM", i)}
                     value={line}
                     onChange={(v) => setDh(dh.map((x, j) => (j === i ? v : x)))}
                   />
@@ -434,6 +477,7 @@ export function SolveClient({
                     <MathInput
                       testId={i === 0 ? "latex-nghiem" : `latex-nghiem-${i}`}
                       label={r.loai === "KHONG_XD" ? "Điểm y′ không xác định" : "Nghiệm y′ = 0"}
+                      sai={lineBad("B.DH.NGHIEM", i)}
                       value={r.latex}
                       onChange={(v) => setRoots(roots.map((x, j) => (j === i ? { ...x, latex: v } : x)))}
                     />
@@ -490,14 +534,15 @@ export function SolveClient({
               <div className="mt-4 overflow-x-auto">
                 <table className="w-full min-w-[320px] border-collapse text-center text-sm">
                   <tbody>
-                    <tr data-testid="hang-x" className={coThuTu ? "cell-bad" : ""}>
+                    {/* UXT-03-b: chỉ ô X sai thứ tự đỏ; không tô cả hàng x. */}
+                    <tr data-testid="hang-x">
                       <th scope="row" className={NHAN_BANG}>x</th>
                       {Array.from({ length: sorted.length * 2 + 1 }, (_, k) => {
                         if (k % 2 === 1) {
                           const idx = (k - 1) / 2;
                           const p = sorted[idx];
                           return (
-                            <td key={k} data-testid={`x-${idx}`} className={`p-1 font-semibold ${cellBad("X", idx) ? "cell-bad" : ""}`}>
+                            <td key={k} data-testid={`x-${idx}`} {...oAttr("X", idx)} className={`p-1 font-semibold ${cellBad("X", idx) ? "cell-bad" : ""}`}>
                               {p}
                               <button
                                 type="button"
@@ -536,6 +581,7 @@ export function SolveClient({
                             key={k}
                             colSpan={sorted.length === 0 ? 2 : undefined}
                             data-testid={`o-dau-${k}`}
+                            {...oAttr("DAU_YPHAY", k)}
                             role="group"
                             aria-label={`Dấu y′ ${viTri}${cur ? `: ${TEN_DAU[cur] || cur}` : ""}`}
                             className={`p-1 ${oClass("DAU_YPHAY", k)}`}
@@ -583,10 +629,14 @@ export function SolveClient({
                             key={k}
                             colSpan={sorted.length === 0 ? 2 : undefined}
                             data-testid={`o-mui-${k}`}
+                            {...oAttr("BIEN_THIEN", k)}
                             role="group"
                             aria-label={`Chiều biến thiên ${moTaViTri(sorted, k)}`}
                             className={`p-1 ${oClass("BIEN_THIEN", k)}`}
                           >
+                            {oTrangThai("BIEN_THIEN", k).nhan ? (
+                              <span className="mb-1 block text-[0.65rem] leading-tight text-muted">{oTrangThai("BIEN_THIEN", k).nhan}</span>
+                            ) : null}
                             <div className="flex justify-center gap-1">
                               {[
                                 ["TANG", "↗"],
@@ -643,6 +693,7 @@ export function SolveClient({
                       <MathInput
                         testId={id}
                         label={label}
+                        sai={lineBad("B.DH.KETLUAN", i)}
                         value={kl[key]}
                         onChange={(v) => setKl((cu) => ({ ...cu, [key]: v }))}
                         placeholder="x = …, y = …, hoặc: không có"
@@ -678,7 +729,7 @@ export function SolveClient({
           )}
         </div>
 
-        {grade && (grade.finished || dat || !buocCham || buocCham === ma) ? (
+        {grade && (grade.finished || dat || !buocCham || buocCham === ma || buocQuayLai) ? (
           <p
             key={`${grade.ket_qua}-${grade.thong_bao}`}
             data-testid="cham-thong-bao"
@@ -694,6 +745,22 @@ export function SolveClient({
                 ? `Bước ${tenBuocTrang(buocCham)} đã nộp hợp lệ. Em làm tiếp bước này.`
                 : grade.thong_bao}
           </p>
+        ) : null}
+
+        {buocQuayLai ? (
+          <Button
+            type="button"
+            variant="secondary"
+            data-testid="quay-lai-buoc"
+            data-buoc={buocQuayLai}
+            className="mt-2 min-h-11"
+            onClick={() => {
+              canFocus.current = true;
+              setStep(ORDER.indexOf(buocQuayLai as (typeof ORDER)[number]));
+            }}
+          >
+            Quay lại bước {buocQuayLai === "B.DH.NGHIEM" ? "Nghiệm" : tenBuocTrang(buocQuayLai)}
+          </Button>
         ) : null}
 
         {conLai > 0 ? (

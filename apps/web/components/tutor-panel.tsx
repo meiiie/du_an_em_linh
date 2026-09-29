@@ -130,7 +130,7 @@ export function TutorPanel({
   /** SP-09: bước học sinh đang làm, để gợi ý đúng bước. */
   maBuoc?: string;
   /** UX-07: cấp gợi ý đã mở của từng bước (lưu ở phiên gia sư trên máy chủ), để tải lại vẫn thấy đúng cấp. */
-  capBanDau?: Record<string, number>;
+  capBanDau?: Record<string, { cap: number; soCap: number }>;
   /** UXT-07-k: các bước đã đủ điều kiện «Gửi thầy cô» (hết thang + 2 lần xin/nộp sai; máy đã báo thầy cô). */
   deXuatGuiGv?: string[];
 }) {
@@ -143,7 +143,7 @@ export function TutorPanel({
   const [lastError, setLastError] = useState<string | null>(null);
   const [hienXuong, setHienXuong] = useState(false);
   const [capTheoBuoc, setCapTheoBuoc] = useState<Record<string, { cap: number; soCap: number }>>(() =>
-    Object.fromEntries(Object.entries(capBanDau || {}).map(([k, v]) => [k, { cap: v, soCap: 3 }])),
+    Object.fromEntries(Object.entries(capBanDau || {}).map(([k, v]) => [k, { cap: v.cap, soCap: v.soCap }])),
   );
   const [buocGuiGv, setBuocGuiGv] = useState<string[]>(deXuatGuiGv || []);
   useEffect(() => {

@@ -63,5 +63,24 @@ test.describe("thang gợi ý mẫu", () => {
     await expect(log).toContainText(/bài dễ hơn «|Gửi thầy cô/);
     await expect(log).not.toContainText(/cấp 3\/3|ly_do_trong|siêu dữ liệu/);
     await page.screenshot({ path: `${SHOTS}/hs-thang-mau-cap-rong.png`, fullPage: true });
+
+    // AI-5: thang TXĐ chỉ có 2 cấp có câu (cấp 3 trống) → chỉ báo đọc "2/2" cả lúc đang làm lẫn sau tải lại, và sau tải lại
+    // bước vẫn được coi là hết gợi ý (không hiện «Gợi ý thêm»).
+    await expect(page.getByTestId("goi-y-cap")).toHaveText(/cấp 2\/2/);
+    await expect(page.getByTestId("goi-y-them")).toHaveCount(0);
+    // Hết thang + thêm lần xin → «Gửi thầy cô» (một cảnh báo kẹt); sau tải lại vẫn hiện, chỉ báo vẫn "2/2".
+    for (let i = 0; i < 3 && !(await page.getByTestId("de-xuat-gui-gv").isVisible()); i++) {
+      const truoc = await log.locator("[data-testid=tutor-md]").count();
+      await page.getByTestId("chip-goi-y").click();
+      await expect(log.locator("[data-testid=tutor-md]")).toHaveCount(truoc + 1);
+      await expect(page.getByTestId("chip-goi-y")).toBeEnabled();
+    }
+    await expect(page.getByTestId("de-xuat-gui-gv")).toBeVisible();
+    await page.reload();
+    await expect(page.getByTestId("solve-screen")).toBeVisible();
+    await page.getByTestId("mo-gia-su").click();
+    await expect(page.getByTestId("goi-y-cap")).toHaveText(/cấp 2\/2/);
+    await expect(page.getByTestId("goi-y-them")).toHaveCount(0);
+    await expect(page.getByTestId("de-xuat-gui-gv")).toBeVisible();
   });
 });

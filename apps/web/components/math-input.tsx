@@ -28,6 +28,7 @@ export function MathInput({
   placeholder = "Gõ bằng bàn phím, ví dụ 3x^2-12x+9",
   title,
   xemTruoc = true,
+  sai = false,
 }: {
   value: string;
   onChange: (v: string) => void;
@@ -39,6 +40,8 @@ export function MathInput({
   title?: string;
   /** Dòng "Máy hiểu là…" (tắt cho ô lẫn chữ tiếng Việt như ô cực trị). */
   xemTruoc?: boolean;
+  /** Dòng này đang bị chấm sai (UXT-04-c: tô đúng dòng, không tô cả khối). */
+  sai?: boolean;
 }) {
   const ref = useRef<MathFieldEl | null>(null);
   const onChangeRef = useRef(onChange);
@@ -134,6 +137,7 @@ export function MathInput({
         autoCorrect="off"
         spellCheck={false}
         aria-label={`${label} — Gõ bằng bàn phím`}
+        aria-invalid={sai || undefined}
       />
       {xemTruoc && value.trim() ? (
         <span className="mt-1 block text-xs text-muted" data-testid={`hieu-${testId}`}>
