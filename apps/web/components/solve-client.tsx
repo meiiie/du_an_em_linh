@@ -93,6 +93,9 @@ export function SolveClient({
   buocBatDau = null,
   tienTrinh = null,
   capGoiY,
+  deXuatGuiGv,
+  kyNang = null,
+  daNop,
 }: {
   problemId: string;
   title: string;
@@ -107,6 +110,11 @@ export function SolveClient({
   tienTrinh?: TienTrinh | null;
   /** UX-07: cấp gợi ý đã mở theo bước (phiên gia sư trên máy chủ). */
   capGoiY?: Record<string, number>;
+  /** UXT-07-k: bước đã đủ điều kiện «Gửi thầy cô» (đọc từ phiên gia sư lúc mở trang). */
+  deXuatGuiGv?: string[];
+  /** REQUIRED-TESTIDS (UXT-07-l): mã kỹ năng của bài và HS đang đăng nhập đã có lượt nộp bài này chưa. */
+  kyNang?: string | null;
+  daNop?: boolean;
 }) {
   const batDau = Math.max(0, buocBatDau ? ORDER.indexOf(buocBatDau as (typeof ORDER)[number]) : 0);
   const tt = tienTrinh;
@@ -130,6 +138,7 @@ export function SolveClient({
   // Bước đã đạt theo lượt chấm gần nhất (dấu ✓ trên thanh bước, UXT-06-a/b).
   const [perBuoc, setPerBuoc] = useState<Record<string, string>>(tt?.perBuoc ?? {});
   const [xongBai, setXongBai] = useState(Boolean(tt?.finished));
+  const [buocGuiGv, setBuocGuiGv] = useState<string[]>(deXuatGuiGv ?? []);
   // UXT-06-c: nháp chưa nộp (mốc, dấu, mũi tên, các ô) giữ qua tải lại — lưu cục bộ, gắn với lượt nộp gần nhất.
   const khoaNhap = `nhap:${problemId}`;
   const subRef = useRef<string | null>(tt?.subId ?? null);
@@ -243,6 +252,10 @@ export function SolveClient({
       return;
     }
     setGrade(res);
+    if (res.de_xuat_gui_gv && res.buoc_de_xuat) {
+      const b = res.buoc_de_xuat;
+      setBuocGuiGv((cu) => (cu.includes(b) ? cu : [...cu, b]));
+    }
     setBuocCham(res.buoc_sai?.ma_buoc ?? ma);
     if (res.per_buoc) setPerBuoc(res.per_buoc);
     if (res.finished) setXongBai(true);
@@ -364,7 +377,7 @@ export function SolveClient({
         </ol>
       </nav>
 
-      <section data-testid="solve-screen" className="sach-toan min-w-0 pb-[calc(5.5rem+env(safe-area-inset-bottom))] md:pb-0">
+      <section data-testid="solve-screen" data-ky-nang={kyNang || undefined} data-da-nop={daNop === undefined ? undefined : String(daNop)} data-buoc-bat-dau={buocBatDau || ORDER[0]} className="sach-toan min-w-0 pb-[calc(5.5rem+env(safe-area-inset-bottom))] md:pb-0">
         <p className="sr-only">{title}</p>
         <h1 className="text-pretty text-xl font-semibold tracking-tight">
           <span className="font-mono text-sm font-normal tabular text-muted">{soBuoc(ma)}</span>
@@ -749,6 +762,7 @@ export function SolveClient({
       onClose={() => setOpenTutor(false)}
       maBuoc={ma}
       capBanDau={capGoiY}
+      deXuatGuiGv={buocGuiGv}
     />
     </>
   );

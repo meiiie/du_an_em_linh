@@ -1,13 +1,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { and, eq, inArray, sql } from "drizzle-orm";
+import { and, eq, inArray, isNull, sql } from "drizzle-orm";
 import { buttonClasses } from "@/components/ui/button";
 import { PageHeader } from "@/components/ui/page-header";
 import { requireRole } from "@/lib/auth";
 import { ghiNhatKy } from "@/lib/actions/hs";
 import { tenKyNangNgan } from "@/lib/de-hoc-sinh";
 import { db } from "@/lib/db";
-import { enrollments, gradingResults, masteryStates, skills, submissions, users } from "@/lib/db/schema";
+import { enrollments, escalations, gradingResults, masteryStates, skills, submissions, users } from "@/lib/db/schema";
 import { caiDatLopCuaGv, lopGvDay } from "@/lib/lop";
 import { LABEL3, LABEL4, TO3, type Muc4 } from "@/lib/levels";
 
@@ -42,6 +42,24 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ m
         .where(and(eq(gradingResults.toanDung, true), inArray(submissions.studentId, hsIds)))
         .groupBy(submissions.studentId)
     : [];
+  // UX-09-e: ô (HS × kỹ năng) có cảnh báo kẹt / lời nhờ chưa xử lý mang dấu «kẹt»
+  const moKet = hsIds.length
+    ? await db
+        .select({ hs: escalations.studentId, kn: escalations.skillCode })
+        .from(escalations)
+        .where(and(isNull(escalations.handledAt), inArray(escalations.studentId, hsIds)))
+    : [];
+  const ket = new Set(moKet.map((k) => `${k.hs}|${k.kn}`));
+  const DauKet = () => (
+    <span
+      data-ket="true"
+      aria-label="Đang kẹt, có cảnh báo chưa xử lý"
+      title="Đang kẹt, có cảnh báo chưa xử lý"
+      className="ml-2 inline-block rounded-button border border-mark px-1.5 text-xs font-medium text-mark"
+    >
+      kẹt
+    </span>
+  );
   return (
     <main data-testid="tien-do">
       <PageHeader
@@ -68,7 +86,10 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ m
                 return (
                   <li key={s.code} className="flex justify-between gap-4">
                     <span className="text-muted">{tenKyNangNgan(s.code, s.name)}</span>
-                    <span>{label}</span>
+                    <span>
+                      <span>{label}</span>
+                      {ket.has(`${e.userId}|${s.code}`) ? <DauKet /> : null}
+                    </span>
                   </li>
                 );
               })}
@@ -94,17 +115,20 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ m
                 <td className="p-3 font-medium">{name.get(e.userId)}</td>
                 {skillRows.map((s) => {
                   const st = states.find((x) => x.studentId === e.userId && x.skillCode === s.code);
+                  const dau = ket.has(`${e.userId}|${s.code}`) ? <DauKet /> : null;
                   if (!st)
                     return (
-                      <td key={s.code} className="p-3 text-muted">
-                        —
+                      <td key={s.code} className="p-3">
+                        <span className="text-muted">—</span>
+                        {dau}
                       </td>
                     );
                   const muc4 = st.currentMucDo4 as Muc4;
                   const label = view3 ? LABEL3[TO3[muc4]] : LABEL4[muc4];
                   return (
                     <td key={s.code} className="p-3">
-                      {label}
+                      <span>{label}</span>
+                      {dau}
                     </td>
                   );
                 })}

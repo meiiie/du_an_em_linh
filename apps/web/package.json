@@ -12,7 +12,7 @@
     "db:migrate": "tsx scripts/migrate.ts",
     "seed": "tsx scripts/seed.ts",
     "test:e2e": "playwright test",
-    "test:unit": "tsx --test lib/ai-harness.test.ts lib/llm.test.ts lib/sse.test.ts lib/loi-gia-su.test.ts lib/tutor.test.ts lib/kien-thuc.test.ts lib/de-hoc-sinh.test.ts lib/counsel.test.ts lib/citations.test.ts lib/lich.test.ts lib/sota-gia-su.test.ts lib/do-chinh-xac.test.ts lib/ma-hoa.test.ts lib/gioi-han.test.ts lib/che-do-test.test.ts",
+    "test:unit": "tsx --test lib/ai-harness.test.ts lib/llm.test.ts lib/sse.test.ts lib/loi-gia-su.test.ts lib/tutor.test.ts lib/kien-thuc.test.ts lib/de-hoc-sinh.test.ts lib/counsel.test.ts lib/citations.test.ts lib/lich.test.ts lib/sota-gia-su.test.ts lib/do-chinh-xac.test.ts lib/ma-hoa.test.ts lib/gioi-han.test.ts lib/che-do-test.test.ts lib/canh-bao-hien.test.ts",
     "test:do": "tsx scripts/do-chinh-xac.ts"
   },
   "dependencies": {

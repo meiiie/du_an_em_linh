@@ -25,6 +25,7 @@ type KetHoi = {
   cap?: number;
   ma_buoc?: string;
   so_cap?: number;
+  de_xuat_gui_gv?: boolean;
 };
 
 const TEN_BUOC_CAP: Record<string, string> = {
@@ -119,6 +120,7 @@ export function TutorPanel({
   onClose,
   maBuoc,
   capBanDau,
+  deXuatGuiGv,
 }: {
   problemId: string;
   initialChat: { role: "hs" | "gia_su"; text: string; trichDan?: TrichDanHien[] }[];
@@ -129,6 +131,8 @@ export function TutorPanel({
   maBuoc?: string;
   /** UX-07: cấp gợi ý đã mở của từng bước (lưu ở phiên gia sư trên máy chủ), để tải lại vẫn thấy đúng cấp. */
   capBanDau?: Record<string, number>;
+  /** UXT-07-k: các bước đã đủ điều kiện «Gửi thầy cô» (hết thang + 2 lần xin/nộp sai; máy đã báo thầy cô). */
+  deXuatGuiGv?: string[];
 }) {
   const [chat, setChat] = useState<Msg[]>(initialChat.length ? initialChat : [LOI_CHAO]);
   const [ask, setAsk] = useState("");
@@ -141,6 +145,12 @@ export function TutorPanel({
   const [capTheoBuoc, setCapTheoBuoc] = useState<Record<string, { cap: number; soCap: number }>>(() =>
     Object.fromEntries(Object.entries(capBanDau || {}).map(([k, v]) => [k, { cap: v, soCap: 3 }])),
   );
+  const [buocGuiGv, setBuocGuiGv] = useState<string[]>(deXuatGuiGv || []);
+  useEffect(() => {
+    if (!deXuatGuiGv?.length) return;
+    setBuocGuiGv((cu) => [...new Set([...cu, ...deXuatGuiGv])]);
+  }, [deXuatGuiGv]);
+  const hienDeXuatGv = Boolean(maBuoc && buocGuiGv.includes(maBuoc));
   const capNay = maBuoc ? capTheoBuoc[maBuoc] : undefined;
   const hetCap = Boolean(capNay && capNay.cap >= capNay.soCap);
   const seq = useRef(0);
@@ -264,6 +274,10 @@ export function TutorPanel({
       const c = res.cap;
       setCapTheoBuoc((m) => ({ ...m, [b]: { cap: Math.min(c, res.so_cap || 3), soCap: res.so_cap || 3 } }));
     }
+    if (res.ok && res.de_xuat_gui_gv && res.ma_buoc) {
+      const b = res.ma_buoc;
+      setBuocGuiGv((cu) => (cu.includes(b) ? cu : [...cu, b]));
+    }
     if (res.ok) {
       setLastOffline(Boolean(res.offline));
       setLastError(res.error ?? null);
@@ -324,7 +338,7 @@ export function TutorPanel({
     ganDay.current = true;
     setChat((c) => [...c, { role: "hs", text: "Gửi thầy cô giúp em" }]);
     setThinking(true);
-    const res = await guiThayCo(problemId);
+    const res = await guiThayCo(problemId, maBuoc);
     if (my !== seq.current) return;
     setThinking(false);
     setChat((c) => [...c, { role: "gia_su", text: res.tra_loi }]);
@@ -422,6 +436,29 @@ export function TutorPanel({
           · bước {TEN_BUOC_CAP[maBuoc] || "đang làm"}
           {hetCap ? " · đã dùng hết gợi ý của bước này" : null}
         </p>
+      ) : null}
+
+      {hienDeXuatGv && maBuoc ? (
+        <div
+          className="mt-3 flex shrink-0 flex-wrap items-center justify-between gap-2 border-l-2 border-mark bg-wash px-3 py-2 text-sm"
+          data-testid="de-xuat-gui-thay-co"
+          role="status"
+        >
+          <p className="min-w-0 flex-1">
+            Em đã dùng hết gợi ý của bước {TEN_BUOC_CAP[maBuoc] || "đang làm"} mà vẫn vướng. Mình đã báo thầy cô; em bấm «Gửi thầy cô» để nhờ
+            thầy cô xem cùng.
+          </p>
+          <Button
+            type="button"
+            size="sm"
+            data-testid="de-xuat-gui-gv"
+            disabled={thinking}
+            className="min-h-11 shrink-0"
+            onClick={nhoThayCo}
+          >
+            Gửi thầy cô
+          </Button>
+        </div>
       ) : null}
 
       <div

@@ -5,7 +5,7 @@ import { Tex } from "@/components/tex";
 import { WorkRow } from "@/components/work-row";
 import { requireRole } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { problems } from "@/lib/db/schema";
+import { problems, submissions } from "@/lib/db/schema";
 import { hamLatex, nhanMuc4 } from "@/lib/de-hoc-sinh";
 
 export const dynamic = "force-dynamic";
@@ -15,8 +15,11 @@ export const metadata: Metadata = {
 };
 
 export default async function Page() {
-  await requireRole("HS");
+  const u = await requireRole("HS");
   const pubs = await db.select().from(problems).where(eq(problems.status, "DA_PHAT_HANH"));
+  const daNop = new Set(
+    (await db.selectDistinct({ pid: submissions.problemId }).from(submissions).where(eq(submissions.studentId, u.id))).map((r) => r.pid),
+  );
   return (
     <main>
       <PageHeader title="Đề bài" />
@@ -30,6 +33,7 @@ export default async function Page() {
               testId={`catalog-${p.code}`}
               title={ham ? <Tex tex={ham} /> : p.statementText}
               meta={nhanMuc4(p.mucDo4)}
+              data={{ "data-ky-nang": p.skillCode || undefined, "data-da-nop": String(daNop.has(p.id)) }}
             />
           );
         })}
