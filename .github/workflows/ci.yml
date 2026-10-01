@@ -18,6 +18,18 @@ env:
   NEXT_TELEMETRY_DISABLED: "1"
 
 jobs:
+  harness:
+    name: Harness — hook Claude Code
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Test hook (.claude/hooks)
+        run: node --test .claude/hooks/*.test.mjs
+
   toan:
     name: Dịch vụ toán
     runs-on: ubuntu-latest
