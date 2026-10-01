@@ -6,7 +6,7 @@ Nguyên tắc: **strangler theo luồng**. v0 (`apps/web`) vẫn chạy để de
 
 | Pha | Kết quả | Năng lực | Điều kiện xong |
 | --- | --- | --- | --- |
-| **P0** — đang làm | Hiến chương, quy trình, 5 lab, harness Claude Code, ADR 011; nhãn GitHub; Spec Kit | — | PR harness và PR Spec Kit được merge |
+| **P0** — đang làm | Hiến chương, quy trình, 5 lab, harness Claude Code, ADR 011; nhãn GitHub (đã đồng bộ); Spec Kit | — | #52 (harness) rồi #53 (Spec Kit) được merge |
 | **P1** | Khung chạy được: `services/core` (identity port từ LMS, Flyway, PostgreSQL 18), `apps/frontend` (đăng nhập, khung trang), Compose 3 dịch vụ, CI theo đường dẫn, staging | Nền tảng | GV và HS đăng nhập end-to-end trên staging; CI xanh cả 4 job |
 | **P2** | Luồng B trên v2: làm bài khung bước + gia sư + bộ lọc | C5, C7 | e2e `luong-hoc-sinh`, `gia-su-harness` xanh trên v2; bộ AI 70 ca đạt; 0 lộ trong bộ dụ đáp án |
 | **P3** | Luồng A + E: kho tài liệu, bảng công thức, ngân hàng 4 dạng câu, cổng 3 tầng, bảng lớp, giao bài | C1–C5 | e2e phát hành, duyệt, giao bài xanh; đề ôn đúng tỉ lệ CV 7991 |

@@ -48,7 +48,7 @@ yêu cầu ─► (lab nếu cần) ─► issue có tiêu chí ─► nhánh �
 
 ## 4. Chuẩn GitHub
 
-- Nhánh: `feat/` `fix/` `docs/` `chore/` `refactor/` `test/` + tên ngắn kebab-case, sống < 7 ngày. Không chồng PR.
+- Nhánh: `feat/` `fix/` `docs/` `chore/` `refactor/` `test/` + tên ngắn kebab-case, sống < 7 ngày. Không chồng PR. Ngoại lệ: epic Spec Kit dùng nhánh `NNN-<slug>` do `/speckit-git-feature` tạo (`.specify/memory/constitution.md`).
 - Commit: Conventional Commits, tiêu đề tiếng Việt được phép, có trailer `Co-Authored-By` khi agent viết. Squash merge, lịch sử tuyến tính (release-please đọc tiêu đề squash).
 - PR: điền đủ `.github/PULL_REQUEST_TEMPLATE.md`. Có số đo thật (lệnh + kết quả), ảnh 390/1280 nếu đụng UI.
 - Nhãn: `.github/labels.json` (`priority/*`, `status/*`, `area/*`, `lab/*`). Đồng bộ: `node scripts/github/sync-labels.mjs` (chủ repo chạy).
