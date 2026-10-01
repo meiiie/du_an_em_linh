@@ -132,6 +132,25 @@ describe('guard.mjs', () => {
     ['message token starting with -n', 'allow', bash(`git commit -m "-n không còn bị hiểu nhầm" -m "${TRAILER}"`.replace('"-n', '"fix: -n'))],
     ['commit -nm cluster', 'deny', bash(`git commit -nm "fix: x" -m "${TRAILER}"`)],
     ['push -uf cluster', 'deny', bash('git push -uf origin feat/x')],
+    // Review #52 (Codex P1, 3rd pass): git may only *report on* secret paths.
+    ['git diff --no-index .env', 'deny', bash(`git diff --no-index ${ENV} ${ENV}.example`)],
+    ['git show HEAD:.env', 'deny', bash(`git show HEAD:${ENV}`)],
+    ['git log -p -- .env', 'deny', bash(`git log -p -- ${ENV}`)],
+    ['git rm .env (not --cached)', 'deny', bash(`git rm ${ENV}`)],
+    ['git status .env', 'allow', bash(`git status --short ${ENV}`)],
+    ['git check-ignore .env', 'allow', bash(`git check-ignore -v ${ENV}`)],
+    ['git ls-files .env', 'allow', bash(`git ls-files ${ENV}`)],
+    ['commit message mentioning a secret path', 'allow', bash(`git commit -m "docs: không commit apps/web/${ENV}.local" -m "${TRAILER}"`)],
+    // Review #52 (Codex P1, 3rd pass): push modes that can reach main.
+    ['push --all', 'deny', bash('git push origin --all')],
+    ['push --mirror', 'deny', bash('git push origin --mirror')],
+    ['push --prune', 'deny', bash('git push --prune origin feat/x')],
+    ['push --repo=origin main', 'deny', bash('git push --repo=origin main')],
+    ['push --repo origin main', 'deny', bash('git push --repo origin main')],
+    ['push --repo=origin feature', 'allow', bash('git push --repo=origin feat/x')],
+    ['push -o value then branch', 'allow', bash('git push -o ci.skip origin feat/x')],
+    ['push delete main', 'deny', bash('git push origin :main')],
+    ['push feature to main', 'deny', bash('git push origin feat/x:main')],
     ['push -o option is not force', 'allow', bash('git push -ofoo origin feat/x')],
   ];
   for (const [name, expected, payload] of cases) {

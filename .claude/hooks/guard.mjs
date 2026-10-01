@@ -152,7 +152,9 @@ function pushForces(token) {
   return false;
 }
 
-const SAFE_WITH_SECRET = /^(ls|dir|Get-ChildItem|gci|touch|test|\[|stat|Test-Path|git)$/i;
+const SAFE_WITH_SECRET = /^(ls|dir|Get-ChildItem|gci|touch|test|\[|stat|Test-Path)$/i;
+// Git subcommands that only report on a path, never print its contents.
+const GIT_SAFE_WITH_SECRET = new Set(['status', 'check-ignore', 'ls-files']);
 const INTERPRETERS = /^(python3?|py|node|deno|bun|perl|ruby|php|bash|sh|zsh|pwsh|powershell)(\.exe)?$/i;
 const DANGER_RM = ['/', '~', '.', '..', '*', '.git'];
 let dir = cwd;
@@ -172,7 +174,7 @@ for (const words of segments(command)) {
 
   // Reading, copying from, or writing to a secret path (cp .env.example .env would overwrite a
   // developer's real keys) all need a human.
-  if (operands.some(isSecret) && !SAFE_WITH_SECRET.test(head)) deny(SECRET_READ);
+  if (head !== 'git' && operands.some(isSecret) && !SAFE_WITH_SECRET.test(head)) deny(SECRET_READ);
   if (INTERPRETERS.test(head) && rest.some(mentionsSecret)) deny(SECRET_READ);
   if (head === 'rm' && rest.some((w) => /^-\w*[rR]/.test(w)) && operands.some((w) => DANGER_RM.includes(w.replace(/\/+$/, '') || '/')))
     deny('Lệnh xóa đệ quy nhắm vào thư mục gốc, repo hoặc .git bị chặn.');
@@ -202,10 +204,35 @@ for (const words of segments(command)) {
     if (args.some(isSecret)) deny('Không stage file bí mật.');
   }
 
+  // Paths named by the git command: `<rev>:<path>` (git show HEAD:.env) counts; message values
+  // after -m / -F (also -am, --message) do not.
+  const gitPaths = [];
+  for (let k = 0; k < args.length; k += 1) {
+    const a = args[k];
+    if (/^(-[A-Za-z]*[mF]|--message|--file)$/.test(a)) k += 1;
+    else if (!a.startsWith('-')) gitPaths.push(a.slice(a.lastIndexOf(':') + 1));
+  }
+  if (gitPaths.some(isSecret) && !(GIT_SAFE_WITH_SECRET.has(sub) || (sub === 'rm' && args.includes('--cached')))) deny(SECRET_READ);
+
   if (sub === 'push') {
     if (args.some((a) => a === '--force' || a.startsWith('+') || (/^-[A-Za-z]/.test(a) && pushForces(a))))
       deny('Không push --force. Dùng --force-with-lease trên nhánh của mình (QUY-TRINH §6).');
-    const refspecs = args.filter((a) => !a.startsWith('-')).slice(1);
+    if (args.some((a) => ['--all', '--branches', '--mirror', '--prune'].includes(a)))
+      deny('Không push hàng loạt (--all, --branches, --mirror, --prune): có thể cập nhật hoặc xóa main. Push đúng nhánh của mình.');
+    // With --repo every positional is a refspec; options that take a value consume the next token.
+    const VALUE_OPTS = new Set(['-o', '--push-option', '--receive-pack', '--exec']);
+    let explicitRepo = false;
+    const positional = [];
+    for (let k = 0; k < args.length; k += 1) {
+      const a = args[k];
+      if (a === '--repo') {
+        explicitRepo = true;
+        k += 1;
+      } else if (a.startsWith('--repo=')) explicitRepo = true;
+      else if (VALUE_OPTS.has(a)) k += 1;
+      else if (!a.startsWith('-')) positional.push(a);
+    }
+    const refspecs = explicitRepo ? positional : positional.slice(1);
     const targetsMain = refspecs.some((r) => /(^|:)(refs\/heads\/)?(main|master)$/.test(r));
     const pushesCurrent = refspecs.length === 0 || refspecs.some((r) => r === 'HEAD' || r === '@');
     const branch = pushesCurrent ? git(repo, ['rev-parse', '--abbrev-ref', 'HEAD']) : '';
