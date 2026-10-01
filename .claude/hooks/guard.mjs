@@ -1,6 +1,8 @@
 // PreToolUse guard: turns the hard rules of docs/QUY-TRINH.md §4 and docs/HIEN-CHUONG.md III–IV
 // into deterministic denials. Hooks run in every permission mode, so this is the layer that holds
 // even when permission rules are bypassed or anchored at a different working directory.
+// It is an accident guard, not a security boundary: a shell command has unbounded spellings. The
+// boundary is server-side (branch ruleset on main, secret-scanning push protection).
 // Reads the hook payload on stdin; prints a deny decision or exits 0. Internal errors fail open.
 import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
@@ -42,8 +44,46 @@ const mentionsSecret = (text) => [...String(text).matchAll(/(?<![\w$])\.env(?:\.
 
 const SECRET_READ = 'Không đọc / ghi file bí mật (.env, khóa, *.pem). Tên biến xem ở .env.example (hiến chương III).';
 
+// gitignore-style glob → RegExp (*, **, ?, {a,b}, [..]); enough to test whether a glob can select a secret.
+function globRegex(glob) {
+  const body = (g) => {
+    let re = '';
+    for (let i = 0; i < g.length; i += 1) {
+      const c = g[i];
+      if (c === '*') {
+        if (g[i + 1] === '*') {
+          re += '.*';
+          i += 1;
+          if (g[i + 1] === '/') i += 1;
+        } else re += '[^/]*';
+      } else if (c === '?') re += '[^/]';
+      else if (c === '{' && g.indexOf('}', i) > i) {
+        const end = g.indexOf('}', i);
+        re += `(?:${g.slice(i + 1, end).split(',').map(body).join('|')})`;
+        i = end;
+      } else if (c === '[' && g.indexOf(']', i) > i) {
+        const end = g.indexOf(']', i);
+        re += g.slice(i, end + 1).replace(/^\[!/, '[^');
+        i = end;
+      } else re += c.replace(/[.+^$()|\\{}[\]]/g, '\\$&');
+    }
+    return re;
+  };
+  return new RegExp(`^(?:${body(glob)})$`);
+}
+const SECRET_SAMPLES = ['.env', '.env.local', '.env.production', 'server.pem', 'id.key', 'cert.p12', 'zaiapikey.txt', 'secrets/token.txt'];
+
 // ---- File tools -------------------------------------------------------------------------------
 if (['Read', 'Grep', 'Edit', 'Write', 'NotebookEdit'].includes(tool)) {
+  // A ripgrep glob overrides .gitignore, so `glob: ".env*"` over a directory would read secrets.
+  if (tool === 'Grep' && input.glob) {
+    let re = null;
+    try {
+      re = globRegex(String(input.glob));
+    } catch {}
+    if (!re || SECRET_SAMPLES.some((s) => re.test(s)))
+      deny('Glob của Grep khớp được file bí mật (glob của ripgrep ghi đè .gitignore). Thu hẹp glob, ví dụ "*.ts".');
+  }
   const raw = input.file_path ?? input.notebook_path ?? input.path;
   if (raw) {
     const target = posix(path.resolve(cwd, raw));
@@ -67,6 +107,20 @@ const command = String(input.command ?? '')
   .replace(/<<-?[ \t]*(['"]?)([A-Za-z_]\w*)\1[^\n]*\n([\s\S]*?)\n[ \t]*\2[ \t]*(?=\n|$)/g, (_, _q, _t, body) => keep(body))
   .replace(/@(['"])\n([\s\S]*?)\n\1@/g, (_, _q, body) => keep(body));
 
+// Command substitutions found while tokenizing — $(…) outside single quotes, and `…` in Bash —
+// are queued so their inner commands get checked like top-level ones.
+const SUBS = [];
+function substitutionEnd(cmd, i) {
+  if (cmd[i] === '`') return tool === 'Bash' ? cmd.indexOf('`', i + 1) : -1;
+  if (cmd[i] !== '$' || cmd[i + 1] !== '(') return -1;
+  let depth = 0;
+  for (let j = i + 1; j < cmd.length; j += 1) {
+    if (cmd[j] === '(') depth += 1;
+    else if (cmd[j] === ')' && --depth === 0) return j;
+  }
+  return -1;
+}
+
 // Split into segments on unquoted && || ; | and newlines; quoted text stays inside one token.
 function segments(cmd) {
   const out = [];
@@ -86,7 +140,13 @@ function segments(cmd) {
   };
   for (let i = 0; i < cmd.length; i += 1) {
     const c = cmd[i];
-    if (quote === "'") {
+    const subEnd = quote === "'" ? -1 : substitutionEnd(cmd, i);
+    if (subEnd > i) {
+      SUBS.push(c === '`' ? cmd.slice(i + 1, subEnd) : cmd.slice(i + 2, subEnd));
+      cur += cmd.slice(i, subEnd + 1);
+      started = true;
+      i = subEnd;
+    } else if (quote === "'") {
       if (c === "'") quote = null;
       else cur += c;
     } else if (quote === '"') {
@@ -157,10 +217,64 @@ const SAFE_WITH_SECRET = /^(ls|dir|Get-ChildItem|gci|touch|test|\[|stat|Test-Pat
 const GIT_SAFE_WITH_SECRET = new Set(['status', 'check-ignore', 'ls-files']);
 const INTERPRETERS = /^(python3?|py|node|deno|bun|perl|ruby|php|bash|sh|zsh|pwsh|powershell)(\.exe)?$/i;
 const DANGER_RM = ['/', '~', '.', '..', '*', '.git'];
+
+// Launchers run the command that follows them; they and VAR=value prefixes are peeled off so
+// `env GIT_TRACE=1 git push origin main` is judged as `git push origin main`.
+const LAUNCHERS = new Set(['env', 'command', 'builtin', 'exec', 'nohup', 'time', 'nice', 'timeout', 'sudo', 'doas', 'stdbuf', 'xargs', '&']);
+const LAUNCHER_VALUE_OPTS = {
+  env: ['-u', '-C', '-S'],
+  nice: ['-n'],
+  timeout: ['-s', '-k'],
+  sudo: ['-u', '-g', '-C', '-h', '-p', '-r', '-t', '-U'],
+  xargs: ['-I', '-n', '-L', '-P', '-d', '-E', '-s', '-a'],
+};
+function unwrap(tokens) {
+  const w = [...tokens];
+  const nested = [];
+  let viaXargs = false;
+  for (;;) {
+    while (w.length && /^[A-Za-z_][A-Za-z0-9_]*=/.test(w[0])) w.shift();
+    if (!w.length || !LAUNCHERS.has(w[0])) return { words: w, nested, viaXargs };
+    const name = w.shift();
+    if (name === 'xargs') viaXargs = true;
+    while (w.length && w[0].startsWith('-')) {
+      const opt = w.shift();
+      if ((LAUNCHER_VALUE_OPTS[name] ?? []).includes(opt)) {
+        const value = w.shift();
+        if (name === 'env' && opt === '-S' && value) nested.push(value); // env -S "cmd args"
+      }
+    }
+    if (name === 'timeout' && w.length) w.shift(); // DURATION
+  }
+}
+
+// Nested command strings — substitutions (SUBS), bash -c, pwsh -Command, cmd /c, eval — join the queue.
+const queue = segments(command);
+let budget = 200;
 let dir = cwd;
 
-for (const words of segments(command)) {
+while ((queue.length || SUBS.length) && budget-- > 0) {
+  while (SUBS.length) queue.push(...segments(SUBS.shift()));
+  if (!queue.length) continue;
+  const { words, nested, viaXargs } = unwrap(queue.shift());
+  for (const n of nested) queue.push(...segments(n));
+  if (!words.length) continue;
   const [head, ...rest] = words;
+  if (/^(bash|sh|zsh|dash|ksh)(\.exe)?$/i.test(head)) {
+    const c = rest.findIndex((a) => /^-[A-Za-z]*c[A-Za-z]*$/.test(a));
+    if (c >= 0 && rest[c + 1] !== undefined) queue.push(...segments(rest[c + 1]));
+  }
+  if (/^(pwsh|powershell)(\.exe)?$/i.test(head)) {
+    const c = rest.findIndex((a) => /^-(c|command|ec|encodedcommand)$/i.test(a));
+    if (c >= 0 && /^-(ec|encodedcommand)$/i.test(rest[c])) deny('Không chạy PowerShell -EncodedCommand: hook không đọc được nội dung lệnh.');
+    if (c >= 0) queue.push(...segments(rest.slice(c + 1).join(' ')));
+  }
+  if (/^cmd(\.exe)?$/i.test(head)) {
+    const c = rest.findIndex((a) => /^\/[ck]$/i.test(a));
+    if (c >= 0) queue.push(...segments(rest.slice(c + 1).join(' ')));
+  }
+  if (/^(eval|Invoke-Expression|iex)$/i.test(head)) queue.push(...segments(rest.join(' ')));
+  if (viaXargs && (head === 'git' || head === 'gh')) deny('Không chạy git / gh qua xargs: hook không kiểm được đối số đến từ stdin.');
   if (head === 'cd' || head === 'Set-Location' || head === 'pushd') {
     if (rest[0]) dir = path.resolve(dir, rest[0]);
     continue;
@@ -179,7 +293,16 @@ for (const words of segments(command)) {
   if (head === 'rm' && rest.some((w) => /^-\w*[rR]/.test(w)) && operands.some((w) => DANGER_RM.includes(w.replace(/\/+$/, '') || '/')))
     deny('Lệnh xóa đệ quy nhắm vào thư mục gốc, repo hoặc .git bị chặn.');
 
-  if (head === 'gh' && rest[0] === 'pr' && rest[1] === 'merge') deny('Agent không tự merge PR. Chủ repo merge sau khi duyệt (QUY-TRINH §1).');
+  if (head === 'gh') {
+    // Inherited flags (-R / --repo, --hostname) may come before the subcommand.
+    const g = [];
+    for (let k = 0; k < rest.length; k += 1) {
+      if (['-R', '--repo', '--hostname'].includes(rest[k])) k += 1;
+      else if (!rest[k].startsWith('-')) g.push(rest[k]);
+    }
+    const apiMerge = g[0] === 'api' && rest.some((a) => /^\/?repos\/[^\s]+\/pulls\/\d+\/merge$/.test(a) || /^query=[\s\S]*\b(mergePullRequest|enablePullRequestAutoMerge)\b/.test(a));
+    if ((g[0] === 'pr' && g[1] === 'merge') || apiMerge) deny('Agent không tự merge PR. Chủ repo merge sau khi duyệt (QUY-TRINH §1).');
+  }
   if (head !== 'git') continue;
 
   // Resolve `git -C <dir>` and other global flags before the subcommand.
@@ -251,6 +374,8 @@ for (const words of segments(command)) {
       if (LONG[a] && args[k + 1] !== undefined) sources.push({ kind: LONG[a], value: args[(k += 1)] });
       else if (eq > 0 && LONG[a.slice(0, eq)]) sources.push({ kind: LONG[a.slice(0, eq)], value: a.slice(eq + 1) });
       else if (a === '--all') bulk = true;
+      else if (/^--(fixup|squash)(=|$)/.test(a))
+        deny('Không dùng git commit --fixup / --squash: PR được squash khi merge; viết commit mới theo Conventional Commits.');
       else if (/^-[A-Za-z]/.test(a)) {
         const s = commitShort(a);
         noVerify ||= s.noVerify;
@@ -286,8 +411,8 @@ for (const words of segments(command)) {
       }
     }
     if (!messages.length && args.includes('--amend') && args.includes('--no-edit')) {
-      const head = git(repo, ['log', '-1', '--format=%B', 'HEAD']);
-      if (head) messages.push(head);
+      const headMessage = git(repo, ['log', '-1', '--format=%B', 'HEAD']);
+      if (headMessage) messages.push(headMessage);
     }
     if (!messages.length) continue;
     const full = messages.join('\n\n');
