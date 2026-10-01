@@ -1,0 +1,22 @@
+[
+  { "name": "priority/p0", "color": "B60205", "description": "Nghiêm trọng: chặn demo hoặc ảnh hưởng an toàn học sinh" },
+  { "name": "priority/p1", "color": "D93F0B", "description": "Cao: ảnh hưởng luồng chính" },
+  { "name": "priority/p2", "color": "FBCA04", "description": "Trung bình: hoàn thiện" },
+  { "name": "status/codex-spec", "color": "5319E7", "description": "Codex đã viết spec, chưa có người nhận" },
+  { "name": "status/claude-implementing", "color": "1D76DB", "description": "Claude Code đang hiện thực" },
+  { "name": "status/claude-pr-ready", "color": "0E8A16", "description": "PR sẵn sàng, chờ chủ repo review" },
+  { "name": "status/blocked", "color": "000000", "description": "Cần chủ repo quyết định hoặc thiếu thông tin" },
+  { "name": "area/math", "color": "0052CC", "description": "services/math: CAS, cổng 3 tầng, bộ lọc" },
+  { "name": "area/tutor", "color": "0052CC", "description": "Luồng gia sư AI" },
+  { "name": "area/web", "color": "0052CC", "description": "apps/web: v0 Next.js" },
+  { "name": "area/core", "color": "0052CC", "description": "services/core: v2 Spring Boot" },
+  { "name": "area/frontend", "color": "0052CC", "description": "apps/frontend: v2 Angular" },
+  { "name": "area/harness", "color": "0052CC", "description": ".claude, CI, quy trình làm việc" },
+  { "name": "lab/design", "color": "C5DEF5", "description": "Lab Thiết kế (UI/UX)" },
+  { "name": "lab/pedagogy", "color": "C5DEF5", "description": "Lab Sư phạm" },
+  { "name": "lab/evals", "color": "C5DEF5", "description": "Lab Kiểm định & Đánh giá" },
+  { "name": "lab/research", "color": "C5DEF5", "description": "Lab Nghiên cứu" },
+  { "name": "lab/decisions", "color": "C5DEF5", "description": "Lab Quyết định" },
+  { "name": "adr", "color": "BFD4F2", "description": "Cần hoặc kèm ADR" },
+  { "name": "breaking-change", "color": "B60205", "description": "Đổi hợp đồng API, migration đã phát hành hoặc mô hình quyền" }
+]
