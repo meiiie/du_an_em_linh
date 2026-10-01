@@ -2,6 +2,8 @@
 
 Repo dùng **GitHub Flow**. `main` luôn là bản có thể demo / deploy. Một việc → một nhánh → một pull request vào `main`.
 
+Quy trình đầy đủ cho người, agent và lab: [`docs/QUY-TRINH.md`](docs/QUY-TRINH.md). Nguyên tắc không thương lượng: [`docs/HIEN-CHUONG.md`](docs/HIEN-CHUONG.md).
+
 ## Nhánh
 
 | Nhánh | Việc |

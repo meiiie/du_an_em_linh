@@ -109,6 +109,10 @@ Chủ repo bật bảo vệ nhánh và mô tả repo: [`docs/GITHUB.md`](docs/GI
 
 | Tài liệu | Nội dung |
 | --- | --- |
+| [`docs/product/MUC-TIEU.md`](docs/product/MUC-TIEU.md) | Mục tiêu sản phẩm (sơ đồ khách), đối chiếu nguyên mẫu, câu hỏi mở |
+| [`docs/HIEN-CHUONG.md`](docs/HIEN-CHUONG.md) | Hiến chương kỹ thuật — nguyên tắc không thương lượng, cổng chất lượng |
+| [`docs/QUY-TRINH.md`](docs/QUY-TRINH.md) | Quy trình người + agent + lab |
+| [`labs/`](labs/README.md) | Lab thiết kế, sư phạm, kiểm định, nghiên cứu, quyết định |
 | [`CHANGELOG.md`](CHANGELOG.md) | Nhật ký phiên bản |
 | [`docs/PHIEN-BAN.md`](docs/PHIEN-BAN.md) | SemVer, Conventional Commits, release-please |
 | [`CONTRIBUTING.md`](CONTRIBUTING.md) | Nhánh, PR, lệnh |
@@ -116,7 +120,8 @@ Chủ repo bật bảo vệ nhánh và mô tả repo: [`docs/GITHUB.md`](docs/GI
 | [`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md) | Contributor Covenant 2.1 |
 | [`docs/DESIGN.md`](docs/DESIGN.md) | Token, lưới 8 px, nút 40/44 |
 | [`docs/AI-HARNESS.md`](docs/AI-HARNESS.md) | Nhà AI, không fallback, không lộ đáp án |
-| [`docs/adr/`](docs/adr/) | Quyết định đã khóa |
+| [`docs/adr/`](docs/adr/) | Quyết định kiến trúc (ADR 011 — kiến trúc v2: Angular + Spring Boot + dịch vụ toán) |
+| [`docs/product/LO-TRINH.md`](docs/product/LO-TRINH.md) | Lộ trình v2 theo pha, điều kiện xong từng pha |
 | [`docs/CODEMAP.md`](docs/CODEMAP.md) | Bản đồ mã (cho agent) |
 | [`AGENTS.md`](AGENTS.md) | Quy ước agent |
 
