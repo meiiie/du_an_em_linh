@@ -72,18 +72,29 @@ function globRegex(glob) {
   return new RegExp(`^(?:${body(glob)})$`);
 }
 const SECRET_SAMPLES = ['.env', '.env.local', '.env.production', 'server.pem', 'id.key', 'cert.p12', 'zaiapikey.txt', 'secrets/token.txt'];
+const HAS_GLOB = /[*?[{]/;
+// Can this glob select a secret? Tested under any directory prefix: the glob's own literal prefix
+// and a few sample depths, so `apps/**/.env*` is caught as well as `.env*`.
+function globSelectsSecret(glob, { dotfilesNeedDot = false } = {}) {
+  let re;
+  try {
+    re = globRegex(glob);
+  } catch {
+    return true;
+  }
+  const literal = glob.slice(0, glob.search(HAS_GLOB) + 1).replace(/[^/]*$/, '');
+  const prefixes = ['', 'a/', 'a/b/', literal, `${literal}x/`, `${literal}x/y/`];
+  // Shell globs (bash, no dotglob) never match a leading dot unless the pattern starts with one.
+  const base = glob.split('/').pop() ?? '';
+  const samples = dotfilesNeedDot && !base.startsWith('.') ? SECRET_SAMPLES.filter((s) => !s.split('/').pop().startsWith('.')) : SECRET_SAMPLES;
+  return prefixes.some((p) => samples.some((s) => re.test(p + s)));
+}
 
 // ---- File tools -------------------------------------------------------------------------------
 if (['Read', 'Grep', 'Edit', 'Write', 'NotebookEdit'].includes(tool)) {
   // A ripgrep glob overrides .gitignore, so `glob: ".env*"` over a directory would read secrets.
-  if (tool === 'Grep' && input.glob) {
-    let re = null;
-    try {
-      re = globRegex(String(input.glob));
-    } catch {}
-    if (!re || SECRET_SAMPLES.some((s) => re.test(s)))
-      deny('Glob của Grep khớp được file bí mật (glob của ripgrep ghi đè .gitignore). Thu hẹp glob, ví dụ "*.ts".');
-  }
+  if (tool === 'Grep' && input.glob && globSelectsSecret(String(input.glob)))
+    deny('Glob của Grep khớp được file bí mật (glob của ripgrep ghi đè .gitignore). Dùng glob có đuôi file cụ thể, ví dụ "src/**/*.ts".');
   const raw = input.file_path ?? input.notebook_path ?? input.path;
   if (raw) {
     const target = posix(path.resolve(cwd, raw));
@@ -99,12 +110,13 @@ if (tool !== 'Bash' && tool !== 'PowerShell') process.exit(0);
 // ---- Shell commands ---------------------------------------------------------------------------
 const CONVENTIONAL = /^(feat|fix|docs|chore|refactor|perf|test|build|ci|style|revert|hotfix)(\([^)]+\))?!?: \S/;
 
-// Pull heredoc / here-string bodies out first so their text is never parsed as commands.
+// Pull heredoc / here-string bodies out first so their text is never parsed as commands. The rest
+// of the heredoc's first line stays (cat <<'EOF' > .env).
 const bodies = [];
 const keep = (body) => ` __BODY_${bodies.push(body) - 1}__`;
 const command = String(input.command ?? '')
   .replace(/\r\n/g, '\n')
-  .replace(/<<-?[ \t]*(['"]?)([A-Za-z_]\w*)\1[^\n]*\n([\s\S]*?)\n[ \t]*\2[ \t]*(?=\n|$)/g, (_, _q, _t, body) => keep(body))
+  .replace(/<<-?[ \t]*(['"]?)([A-Za-z_]\w*)\1([^\n]*)\n([\s\S]*?)\n[ \t]*\2[ \t]*(?=\n|$)/g, (_, _q, _t, rest, body) => keep(body) + rest)
   .replace(/@(['"])\n([\s\S]*?)\n\1@/g, (_, _q, body) => keep(body));
 
 // Command substitutions found while tokenizing — $(…) outside single quotes, and `…` in Bash —
@@ -121,22 +133,41 @@ function substitutionEnd(cmd, i) {
   return -1;
 }
 
-// Split into segments on unquoted && || ; | and newlines; quoted text stays inside one token.
+// Split into segments on unquoted && || ; | & (Bash) and newlines; quoted text stays inside one
+// token. Each segment also lists the files its unquoted redirections open (> f, 2>>f, &>f, >|f, < f).
 function segments(cmd) {
   const out = [];
   let tokens = [];
+  let redirects = [];
   let cur = '';
   let started = false;
   let quote = null;
+  let redirectAt = -1; // index in `cur` of its first unquoted < or >
+  let targetNext = false; // the previous token ended with a redirection operator: this token is its file
   const endToken = () => {
-    if (started) tokens.push(cur);
+    if (started) {
+      if (targetNext) redirects.push(cur);
+      targetNext = false;
+      if (redirectAt >= 0) {
+        for (const [, op, amp, target] of cur.slice(redirectAt).matchAll(/([<>]+)([|&]?)([^<>]*)/g)) {
+          if (op.startsWith('<<')) continue; // heredoc / here-string: text, not a file
+          if (amp === '&' && /^(\d+-?|-)$/.test(target)) continue; // 2>&1, >&-: descriptors, not files
+          if (target) redirects.push(target);
+          else targetNext = true;
+        }
+      }
+      tokens.push(cur);
+    }
     cur = '';
     started = false;
+    redirectAt = -1;
   };
   const endSegment = () => {
     endToken();
-    if (tokens.length) out.push(tokens);
+    if (tokens.length) out.push(Object.assign(tokens, { redirects }));
     tokens = [];
+    redirects = [];
+    targetNext = false;
   };
   for (let i = 0; i < cmd.length; i += 1) {
     const c = cmd[i];
@@ -162,11 +193,16 @@ function segments(cmd) {
     } else if (c === '&' && cmd[i + 1] === '&') {
       endSegment();
       i += 1;
+    } else if (c === '&' && tool === 'Bash' && cmd[i + 1] !== '>' && !/[<>]$/.test(cur)) {
+      endSegment(); // `a & b` runs b too; 2>&1, &>f and >&2 are redirections
+    } else if (c === '|' && redirectAt >= 0 && cur.endsWith('>')) {
+      cur += c; // >| writes even under noclobber; not a pipe
     } else if (c === '|' || c === ';' || c === '\n') {
       if (c === '|' && cmd[i + 1] === '|') i += 1;
       endSegment();
     } else if (/\s/.test(c)) endToken();
     else {
+      if (redirectAt < 0 && (c === '<' || c === '>')) redirectAt = cur.length;
       cur += c;
       started = true;
     }
@@ -197,6 +233,7 @@ function commitShort(token) {
     else if (c === 'a') r.all = true;
     else if (c === 'e') r.edit = true;
     else if ('mFCc'.includes(c)) {
+      if (c === 'c') r.edit = true; // -c = --reedit-message: reuse, then open the editor
       const kind = c === 'm' ? 'message' : c === 'F' ? 'file' : 'reuse';
       r.values.push({ kind, value: token.slice(i + 1) || undefined });
       return r;
@@ -213,7 +250,13 @@ function pushForces(token) {
   return false;
 }
 
-const SAFE_WITH_SECRET = /^(ls|dir|Get-ChildItem|gci|touch|test|\[|stat|Test-Path)$/i;
+// Commands that name a path without reading its contents (redirections are checked separately).
+const SAFE_WITH_SECRET = /^(ls|dir|Get-ChildItem|gci|touch|test|\[|stat|Test-Path|echo|printf|Write-Output|Write-Host)$/i;
+// A glob operand the shell (or the command) can expand to a secret: cat .env*, head apps/*/.env.*
+// Tokens with whitespace were quoted text (messages, inline code), not globs.
+const secretGlob = (op) => HAS_GLOB.test(op) && !/\s/.test(op) && globSelectsSecret(posix(op), { dotfilesNeedDot: tool === 'Bash' });
+const secretGlobReason = (g) =>
+  `"${g}" có thể khớp file bí mật (.env*, *.pem, *.key, *apikey*.txt). Dùng đường dẫn cụ thể hoặc glob có đuôi file, ví dụ "src/*.ts".`;
 // Git subcommands that only report on a path, never print its contents.
 const GIT_SAFE_WITH_SECRET = new Set(['status', 'check-ignore', 'ls-files']);
 const INTERPRETERS = /^(python3?|py|node|deno|bun|perl|ruby|php|bash|sh|zsh|pwsh|powershell)(\.exe)?$/i;
@@ -257,7 +300,11 @@ let dir = cwd;
 while ((queue.length || SUBS.length) && budget-- > 0) {
   while (SUBS.length) queue.push(...segments(SUBS.shift()));
   if (!queue.length) continue;
-  const { words, nested, viaXargs } = unwrap(queue.shift());
+  const seg = queue.shift();
+  // A redirection opens its file before the command runs (> truncates it, < reads it), so the
+  // target is checked whatever the command: git status > .env, ls > .env, : > .env.
+  if (seg.redirects.some((t) => isSecret(t) || secretGlob(t))) deny(SECRET_READ);
+  const { words, nested, viaXargs } = unwrap(seg);
   for (const n of nested) queue.push(...segments(n));
   if (!words.length) continue;
   const [head, ...rest] = words;
@@ -288,8 +335,12 @@ while ((queue.length || SUBS.length) && budget-- > 0) {
     .filter(Boolean);
 
   // Reading, copying from, or writing to a secret path (cp .env.example .env would overwrite a
-  // developer's real keys) all need a human.
-  if (head !== 'git' && operands.some(isSecret) && !SAFE_WITH_SECRET.test(head)) deny(SECRET_READ);
+  // developer's real keys) all need a human. So does a glob that can expand to one.
+  if (head !== 'git' && !SAFE_WITH_SECRET.test(head)) {
+    if (operands.some(isSecret)) deny(SECRET_READ);
+    const g = operands.find(secretGlob);
+    if (g) deny(secretGlobReason(g));
+  }
   if (INTERPRETERS.test(head) && rest.some(mentionsSecret)) deny(SECRET_READ);
   if (head === 'rm' && rest.some((w) => /^-\w*[rR]/.test(w)) && operands.some((w) => DANGER_RM.includes(w.replace(/\/+$/, '') || '/')))
     deny('Lệnh xóa đệ quy nhắm vào thư mục gốc, repo hoặc .git bị chặn.');
@@ -343,7 +394,11 @@ while ((queue.length || SUBS.length) && budget-- > 0) {
     else if (/^--[^=]+=/.test(a)) gitPaths.push(a.slice(a.indexOf('=') + 1));
     else if (!a.startsWith('-')) gitPaths.push(a.slice(a.lastIndexOf(':') + 1));
   }
-  if (gitPaths.some(isSecret) && !(GIT_SAFE_WITH_SECRET.has(sub) || (sub === 'rm' && args.includes('--cached')))) deny(SECRET_READ);
+  if (!(GIT_SAFE_WITH_SECRET.has(sub) || (sub === 'rm' && args.includes('--cached')))) {
+    if (gitPaths.some(isSecret)) deny(SECRET_READ);
+    const g = gitPaths.find(secretGlob);
+    if (g) deny(secretGlobReason(g));
+  }
 
   if (sub === 'push') {
     if (args.some((a) => a === '--force' || a.startsWith('+') || (/^-[A-Za-z]/.test(a) && pushForces(a))))
@@ -380,6 +435,7 @@ while ((queue.length || SUBS.length) && budget-- > 0) {
     for (let k = 0; k < args.length; k += 1) {
       const a = args[k];
       const eq = a.indexOf('=');
+      if (/^--reedit-message(=|$)/.test(a)) edit = true; // = -c: reuse a message, then open the editor
       if (LONG[a] && args[k + 1] !== undefined) sources.push({ kind: LONG[a], value: args[(k += 1)] });
       else if (eq > 0 && LONG[a.slice(0, eq)]) sources.push({ kind: LONG[a.slice(0, eq)], value: a.slice(eq + 1) });
       else if (a === '--all') bulk = true;
