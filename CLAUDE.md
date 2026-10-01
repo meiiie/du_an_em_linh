@@ -6,7 +6,7 @@
 
 Harness theo hướng dẫn chính thức của Anthropic (2026): [large codebases](https://claude.com/blog/how-claude-code-works-in-large-codebases-best-practices-and-where-to-start), [steering](https://claude.com/blog/steering-claude-code-skills-hooks-rules-subagents-and-more). Quy ước: sự thật và quy ước ở đây; quy trình ở skill; ràng buộc theo vùng ở rule; điều bắt buộc ở hook.
 
-- **Mở phiên** ở gốc repo khi việc chạm nhiều phần; ở `apps/web` hoặc `services/math` khi chỉ ở đó (CLAUDE.md lớp dưới tự nạp). Hook và quyền chỉ có hiệu lực khi phiên mở trong repo này.
+- **Mở phiên ở gốc repo.** Claude Code chỉ nạp `.claude/settings.json` (hook, quyền) của thư mục mở phiên, không kế thừa từ thư mục cha: mở ở `apps/web` hay `services/math` là mất hook bảo vệ. `CLAUDE.md` / `AGENTS.md` của thư mục con vẫn tự nạp khi Claude đọc file ở đó.
 - **Hook** (`.claude/settings.json`, test: `node --test .claude/hooks/*.test.mjs`):
   - `SessionStart` → `session-context.mjs`: nhánh, tệp chưa commit, PR đang mở.
   - `PreToolUse` → `guard.mjs` chặn: push lên `main`, `--force`, `--no-verify`, `gh pr merge`, `git add -A`, commit sai Conventional Commits hoặc thiếu `Co-Authored-By`, đọc / ghi / sao chép file bí mật, sửa tay `services/math/kiemdinh/ket-qua/`.
