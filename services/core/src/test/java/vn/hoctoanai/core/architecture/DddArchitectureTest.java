@@ -18,6 +18,7 @@ import org.junit.jupiter.api.Test;
  * <p>Chép từ {@code LMS_hohulili@34c3f0f2:backend/src/test/java/com/example/lms/architecture/DddArchitectureTest.java}
  * (MIT): đổi gói; bỏ hậu tố {@code V2}/{@code V3} của LMS; luật tên adapter trước chỉ là ghi chú nay được kiểm;
  * domain → application và application → web phủ cả tầng thay vì chỉ {@code domain.model} / {@code application.usecase}.
+ * Thêm: controller chỉ dùng DTO; mọi {@code @Entity} phải tên {@code *JpaEntity} (LMS chỉ kiểm vị trí của lớp đã đúng tên).
  */
 @DisplayName("Luật DDD")
 class DddArchitectureTest {
@@ -113,18 +114,37 @@ class DddArchitectureTest {
     }
 
     @Nested
+    @DisplayName("Biên web")
+    class WebBoundaryRules {
+
+        @Test
+        @DisplayName("Controller chỉ làm việc với DTO: không phụ thuộc domain hay persistence")
+        void controllersOnlyUseDtos() {
+            noClasses().that()
+                .areAnnotatedWith("org.springframework.web.bind.annotation.RestController")
+                .should()
+                .dependOnClassesThat()
+                .resideInAnyPackage("..domain..", "..infrastructure.persistence..")
+                .because("controller nhận / trả record DTO của application; ánh xạ domain ↔ DTO nằm ở use case")
+                .check(importedClasses);
+        }
+
+    }
+
+    @Nested
     @DisplayName("Entity JPA")
     class JpaEntityRules {
 
         @Test
-        @DisplayName("Entity *JpaEntity nằm trong infrastructure.persistence.entity")
-        void jpaEntitiesShouldBeInInfrastructure() {
+        @DisplayName("Mọi @Entity tên *JpaEntity và nằm trong infrastructure.persistence.entity")
+        void jpaEntitiesShouldBeNamedAndPlaced() {
             classes().that()
                 .areAnnotatedWith("jakarta.persistence.Entity")
-                .and()
-                .haveSimpleNameEndingWith("JpaEntity")
                 .should()
+                .haveSimpleNameEndingWith("JpaEntity")
+                .andShould()
                 .resideInAPackage("..infrastructure.persistence.entity..")
+                .because("JpaRepository<XJpaEntity, UUID>: tên phân biệt entity với model domain")
                 .check(importedClasses);
         }
 
