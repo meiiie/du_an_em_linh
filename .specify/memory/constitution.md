@@ -7,7 +7,7 @@ Theo dõi: mỗi lần sửa docs/HIEN-CHUONG.md phải sửa bảng dưới đ�
 
 # Hiến chương — bản dùng cho Spec Kit
 
-> **Nguồn chuẩn:** [`docs/HIEN-CHUONG.md`](../../docs/HIEN-CHUONG.md) — 8 nguyên tắc, cổng chất lượng, cách sửa đổi. File này chỉ chuyển hiến chương sang dạng `/speckit-plan` và `/speckit-analyze` dùng được. Hai file lệch nhau thì `docs/HIEN-CHUONG.md` thắng.
+> **Nguồn chuẩn:** [`docs/HIEN-CHUONG.md`](../../docs/HIEN-CHUONG.md) — 8 nguyên tắc, cổng chất lượng, cách sửa đổi. File này chỉ chuyển hiến chương sang dạng `/speckit-plan` và `/speckit-analyze` dùng được. Hai file lệch nhau thì `docs/HIEN-CHUONG.md` thắng. Khi `docs/HIEN-CHUONG.md` chưa có trên nhánh đang làm (nó vào `main` qua PR #52), bảng dưới đây là chuẩn tạm thời.
 
 ## Constitution Check
 
@@ -20,7 +20,7 @@ Mỗi `plan.md` phải trả lời **CÓ** cho mọi dòng áp dụng; dòng kh�
 | III | Người học là trẻ vị thành niên | Không dữ liệu thật trong repo và test; xóa định danh trước khi gửi nhà cung cấp AI; học sinh biết đang học cùng AI; giáo viên ghi đè được phân loại; khóa chỉ ở biến môi trường? |
 | IV | Bằng chứng | Mỗi tiêu chí nghiệm thu có cách đo (lệnh, bộ ca, eval); quyết định khó đảo ngược có ADR? |
 | V | Tiếng Việt đúng lứa tuổi | Chữ giao diện tiếng Việt có dấu, đúng giọng người dùng, mỗi chữ một việc? |
-| VI | Ranh giới kiến trúc | Đúng dịch vụ (frontend không logic nghiệp vụ; core giữ trạng thái và quyền; math thuần hàm); ArchUnit xanh; Angular signal-first; migration chỉ thêm? |
+| VI | Ranh giới kiến trúc | Đúng dịch vụ và migration chỉ thêm? Theo vùng chạm tới — v0: `apps/web` không gọi SymPy trực tiếp, mọi việc CAS qua `services/math` (sandbox, ADR 002); v2 (ADR 011): `apps/frontend` không logic nghiệp vụ, `services/core` giữ trạng thái và quyền (ArchUnit xanh), Angular signal-first; mọi bản: `services/math` thuần hàm. Vùng không chạm ghi «Không áp dụng». |
 | VII | Thay đổi nhỏ | Chia thành nhiều PR một ý; không trừu tượng hóa suy đoán; giữ `data-testid` đã khóa? |
 | VIII | Truy cập được | WCAG 2.2 AA; mục tiêu chạm 44 px; kiểm ở 390 px và 1280 px? |
 
