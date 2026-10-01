@@ -6,8 +6,8 @@ Nguyên tắc: **strangler theo luồng**. v0 (`apps/web`) vẫn chạy để de
 
 | Pha | Kết quả | Năng lực | Điều kiện xong |
 | --- | --- | --- | --- |
-| **P0** — đang làm | Hiến chương, quy trình, 5 lab, harness Claude Code, ADR 011; nhãn GitHub (đã đồng bộ); Spec Kit | — | #52 (harness) rồi #53 (Spec Kit) được merge |
-| **P1** | Khung chạy được: `services/core` (identity port từ LMS, Flyway, PostgreSQL 18), `apps/frontend` (đăng nhập, khung trang), Compose 3 dịch vụ, CI theo đường dẫn, staging | Nền tảng | GV và HS đăng nhập end-to-end trên staging; CI xanh cả 4 job |
+| **P0** — xong 2026-10-01 | Hiến chương, quy trình, 5 lab, harness Claude Code, ADR 011; nhãn GitHub; Spec Kit; ruleset `main` | — | [#52](https://github.com/meiiie/du_an_em_linh/issues/52), [#53](https://github.com/meiiie/du_an_em_linh/issues/53) merge; ruleset `main-protection` active |
+| **P1** — đang làm | Khung chạy được: `services/core` (identity port từ LMS, Flyway, PostgreSQL 18), `apps/frontend` (đăng nhập, khung trang), Compose 3 dịch vụ, CI theo đường dẫn, staging | Nền tảng | GV và HS đăng nhập end-to-end trên staging; CI xanh cả 4 job |
 | **P2** | Luồng B trên v2: làm bài khung bước + gia sư + bộ lọc | C5, C7 | e2e `luong-hoc-sinh`, `gia-su-harness` xanh trên v2; bộ AI 70 ca đạt; 0 lộ trong bộ dụ đáp án |
 | **P3** | Luồng A + E: kho tài liệu, bảng công thức, ngân hàng 4 dạng câu, cổng 3 tầng, bảng lớp, giao bài | C1–C5 | e2e phát hành, duyệt, giao bài xanh; đề ôn đúng tỉ lệ CV 7991 |
 | **P4** | Cá nhân hóa + kế hoạch: mức hiểu, chọn bài (chữa lỗi / củng cố / nâng 1 nấc), lịch tuần, web push | C6, C8–C10 | Bộ đo cá nhân hóa của lab Kiểm định đạt; nhắc lịch tới được thiết bị thật |
@@ -16,16 +16,18 @@ Nguyên tắc: **strangler theo luồng**. v0 (`apps/web`) vẫn chạy để de
 
 Trước khi pilot với học sinh thật (bất kỳ pha nào): ADR quyền riêng tư được duyệt và luồng đồng ý phụ huynh chạy được (hiến chương III).
 
-## Issue đề xuất cho P1
+## Issue P1
 
-Dạng sẵn để Codex hoặc chủ repo mở issue (`priority/p1`, `area/*`). Mỗi issue một PR.
+Mở ngày 2026-10-01, mỗi issue một PR; tiêu chí nghiệm thu nằm trong issue.
 
-| # | Tiêu đề | Tiêu chí nghiệm thu |
+| Issue | Việc | Phụ thuộc |
 | --- | --- | --- |
-| 1 | `chore(core): dựng khung services/core — Spring Boot 4.1, Java 25, Maven Wrapper` | `./mvnw test` xanh; `/actuator/health` UP; ArchUnit (chép từ LMS) chạy và xanh; JSpecify bật |
-| 2 | `feat(core): port identity từ LMS — JWT, 4 vai trò` | Đăng nhập / làm mới token / đăng xuất; vai trò ADMIN, SCHOOL_ADMIN, TEACHER, STUDENT; test Testcontainers; nguồn `LMS_hohulili@<sha>` ghi trong PR |
-| 3 | `chore(frontend): dựng khung apps/frontend — Angular 22 zoneless` | Build + Vitest xanh; trang `/dang-nhap` theo `docs/DESIGN.md` (tâm quang học 46 %); 390 / 1280 px |
-| 4 | `feat(frontend): đăng nhập và khung trang HS / GV gọi services/core` | Route `/hs`, `/gv` có guard; `data-testid` khớp v0 cho màn tương đương |
-| 5 | `build: docker compose cho frontend + core + math + PostgreSQL 18` | Một lệnh dựng cả hệ; health check từng dịch vụ; `.env.example` đủ biến |
-| 6 | `ci: job theo đường dẫn cho services/core và apps/frontend` | Job chỉ chạy khi thư mục tương ứng đổi; harness, toán, web v0 giữ nguyên |
-| 7 | `docs(adr): ADR quyền riêng tư cho dữ liệu học sinh` | Luồng đồng ý, tối thiểu hóa, chuyển dữ liệu ra nước ngoài khi gọi LLM, thời hạn lưu; mục cần luật sư xác nhận |
+| [#54](https://github.com/meiiie/du_an_em_linh/issues/54) | Dựng khung `services/core` — Spring Boot 4.1, Java 25, Maven Wrapper | — |
+| [#55](https://github.com/meiiie/du_an_em_linh/issues/55) | Port identity từ LMS — JWT, 4 vai trò | [#54](https://github.com/meiiie/du_an_em_linh/issues/54) |
+| [#56](https://github.com/meiiie/du_an_em_linh/issues/56) | Dựng khung `apps/frontend` — Angular 22 zoneless | — |
+| [#57](https://github.com/meiiie/du_an_em_linh/issues/57) | Đăng nhập và khung trang HS / GV gọi `services/core` | [#55](https://github.com/meiiie/du_an_em_linh/issues/55), [#56](https://github.com/meiiie/du_an_em_linh/issues/56) |
+| [#58](https://github.com/meiiie/du_an_em_linh/issues/58) | Docker compose cho frontend + core + math + PostgreSQL 18 | [#54](https://github.com/meiiie/du_an_em_linh/issues/54), [#56](https://github.com/meiiie/du_an_em_linh/issues/56) |
+| [#59](https://github.com/meiiie/du_an_em_linh/issues/59) | CI theo đường dẫn cho `services/core` và `apps/frontend`; thêm check bắt buộc | [#54](https://github.com/meiiie/du_an_em_linh/issues/54), [#56](https://github.com/meiiie/du_an_em_linh/issues/56) |
+| [#60](https://github.com/meiiie/du_an_em_linh/issues/60) | ADR quyền riêng tư cho dữ liệu học sinh | — |
+
+Câu hỏi mở cho khách (Q1–Q10, đang làm theo giả định mặc định): [#61](https://github.com/meiiie/du_an_em_linh/issues/61).
