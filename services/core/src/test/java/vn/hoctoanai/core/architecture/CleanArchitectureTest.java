@@ -1,6 +1,7 @@
 package vn.hoctoanai.core.architecture;
 
 import static com.tngtech.archunit.base.DescribedPredicate.not;
+import static com.tngtech.archunit.core.domain.JavaClass.Predicates.resideInAPackage;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.classes;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noClasses;
 
@@ -101,6 +102,16 @@ class CleanArchitectureTest {
                 .dependOnClassesThat()
                 .resideInAPackage("..infrastructure..")
                 .because("port, dịch vụ, DTO và use case ghi chỉ dùng domain và port; adapter ở infrastructure hiện thực port")
+                .check(importedClasses);
+        }
+
+        @Test
+        @DisplayName("Use case đọc Get* chỉ được dùng infrastructure.persistence")
+        void queryUseCasesOnlyReadPersistence() {
+            noClasses().that(QUERY_USE_CASES)
+                .should()
+                .dependOnClassesThat(resideInAPackage("..infrastructure..").and(not(resideInAPackage("..infrastructure.persistence.."))))
+                .because("ngoại lệ CQRS chỉ để đọc thẳng CSDL; client, web, cấu hình vẫn qua port")
                 .check(importedClasses);
         }
 
