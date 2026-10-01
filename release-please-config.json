@@ -8,6 +8,7 @@
       "changelog-path": "CHANGELOG.md",
       "extra-files": [
         "apps/web/package.json",
+        "services/core/pom.xml",
         {
           "type": "toml",
           "path": "services/math/pyproject.toml",
