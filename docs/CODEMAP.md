@@ -8,9 +8,21 @@ Harness (Anthropic 2026): tệp này là mục lục để agent biết chỗ m�
 | --- | --- |
 | `AGENTS.md` | Nguồn chuẩn cho mọi agent |
 | `CLAUDE.md` | Nhập AGENTS + ghi chú Claude Code |
-| `.claude/settings.json` | `permissions.deny` bí mật |
-| `.claude/rules/` | Luật theo đường dẫn |
-| `.cursor/skills/` | Skill on-demand (FE, a11y, FastAPI) |
+| `docs/HIEN-CHUONG.md` | Hiến chương kỹ thuật: 8 nguyên tắc, cổng chất lượng — đứng trên mọi quy ước |
+| `docs/QUY-TRINH.md` | Quy trình người + agent + lab: lệnh kích hoạt, chuẩn GitHub, kịch bản xử lý |
+| `docs/product/MUC-TIEU.md` | Mục tiêu sản phẩm đọc từ sơ đồ khách: năng lực C1–C10, đối chiếu v0, câu hỏi mở |
+| `docs/product/LO-TRINH.md` | Lộ trình v2 theo pha P0–P5, issue đề xuất cho P1 |
+| `apps/frontend/`, `services/core/` | v2 (ADR 011) — dựng ở pha P1; chưa có trong cây |
+| `labs/` | 5 lab (design, pedagogy, evals, research, decisions) — ghi chú có ngày, nâng lên `docs/` khi chốt |
+| `.claude/settings.json` | `permissions.deny` (bí mật, lockfile) + hook `SessionStart`, `PreToolUse` |
+| `.claude/hooks/` | `guard.mjs` (chặn thao tác cấm), `session-context.mjs` (trạng thái repo), `researcher-scope.mjs`; test `hooks.test.mjs` |
+| `.claude/rules/` | Luật theo đường dẫn (toán, gia sư, migration, tài liệu, dữ liệu sư phạm, UI) |
+| `.claude/skills/` | Skill dự án: `implement-issue`, `ship-check`, `lab`, `retro`, `tutor-safety`, `math-engine`, `math-pedagogy`, `research-sota`, `decision-record`, `design-study` |
+| `.claude/agents/` | Subagent: `pedagogy-reviewer`, `math-verifier`, `privacy-reviewer`, `design-critic`, `researcher` |
+| `.cursor/skills/` | Skill on-demand cho Cursor (FE, a11y, FastAPI) |
+| `.coderabbit.yaml` | Review tự động theo vùng, bám hiến chương |
+| `.github/labels.json` + `scripts/github/sync-labels.mjs` | Bộ nhãn ưu tiên / trạng thái / vùng / lab |
+| `.github/rulesets/main-protection.json` | Ruleset bảo vệ `main` (ranh giới phía máy chủ) — áp dụng theo `docs/GITHUB.md` |
 | `docs/DESIGN.md` | Token, lưới, nút, tâm quang học (46% / 3:2) |
 | `docs/doi-chieu-thiet-ke.md` | Khớp / cố ý chưa làm |
 | `docs/adr/` | Quyết định đã khóa |
@@ -25,7 +37,7 @@ Harness (Anthropic 2026): tệp này là mục lục để agent biết chỗ m�
 | `release-please-config.json` | Một sản phẩm, extra-files web + math + CITATION |
 | `docs/TRIEN-KHAI.md` | Render, Neon, giữ thức |
 | `docs/KIEM-THU.md` | Số liệu lần dựng nguyên mẫu |
-| `.github/workflows/ci.yml` | phiên bản + pytest + typecheck/lint/unit + Playwright e2e |
+| `.github/workflows/ci.yml` | test hook harness + phiên bản + pytest + typecheck/lint/unit + Playwright e2e |
 | `.github/workflows/phat-hanh.yml` | release-please trên `main` |
 | `.github/workflows/cd.yml` | Sau CI xanh → hook Render + ping trang chủ |
 | `.github/workflows/giu-thuc.yml` | Cron 10 phút ping `/api/suc-khoe` (chỉ chạy trên `main`) |

@@ -1,0 +1,132 @@
+# CodeRabbit — reviewer tự động trong pipeline Codex → Claude Code → CodeRabbit → chủ repo (docs/QUY-TRINH.md).
+# Chỉ có hiệu lực khi app CodeRabbit được cài cho repo. Docs: https://docs.coderabbit.ai/guides/configure-coderabbit
+# Nguyên tắc: review bằng tiếng Việt, bám hiến chương và ADR, ưu tiên tín hiệu hơn số lượng bình luận.
+
+language: "vi-VN"
+
+reviews:
+  profile: "chill"
+  request_changes_workflow: false
+  high_level_summary: true
+  review_status: true
+  poem: false
+  collapse_walkthrough: false
+  # Thủ công theo docs/QUY-TRINH.md: gõ "@coderabbitai review" một lần khi CI đã xong,
+  # tránh review dang dở trên các push trung gian.
+  auto_review:
+    enabled: false
+    drafts: false
+    base_branches:
+      - "main"
+
+  path_filters:
+    - "!**/node_modules/**"
+    - "!**/.next/**"
+    - "!**/.venv/**"
+    - "!pnpm-lock.yaml"
+    - "!**/*.tsbuildinfo"
+    - "!services/math/kiemdinh/ket-qua/**"
+
+  path_instructions:
+    - path: "**/*"
+      instructions: |
+        Hiến chương docs/HIEN-CHUONG.md đứng trên mọi quy ước. Chặn (yêu cầu sửa) khi vi phạm nguyên tắc I–III:
+        lộ đáp án tới học sinh, nội dung toán chưa qua cổng 3 tầng, dữ liệu học sinh thật hoặc khóa lộ ra ngoài.
+        Không bình luận thuần thẩm mỹ. Mỗi bình luận nêu căn cứ (hiến chương, ADR, rule) và cách sửa.
+
+    - path: "services/math/**/*.py"
+      instructions: |
+        Dịch vụ toán (ADR 002, .claude/rules/math-service.md):
+        - Tiến trình HTTP không import sympy / sympify; mọi việc SymPy qua app/sandbox.py → job_runner.py có hạn giờ.
+        - Đúng/sai do bộ chấm CAS quyết định, không do LLM.
+        - Bộ lọc lộ đáp án chạy trên mọi câu gia sư, fail-closed.
+        - k ô bảng 0-based trong mã, YAML kiemdinh 1-based (docs/chi-so-o-bang.md).
+        - Đổi chấm / cổng / bộ lọc: PR phải có số chạy pnpm test:math và bộ kiemdinh liên quan.
+
+    - path: "services/math/kiemdinh/**"
+      instructions: |
+        Dữ liệu của lab Kiểm định. Bộ ca đóng băng bằng SHA-256: không được sửa bộ ca cho khớp kết quả.
+        Thay đổi chỉ hợp lệ khi là bản vá nguyên văn có mã (vd kd-0004b) nêu trong issue, và có dòng tương ứng trong NHAT-KY.md.
+
+    - path: "data/supham/**"
+      instructions: |
+        Dữ liệu của lab Sư phạm. YCCĐ phải trích nguyên văn CT GDPT 2018 kèm trang. Mỗi mã lỗi cần dấu hiệu nhận biết
+        kiểm được bằng CAS. Chỉ sửa qua bản vá có mã. Không dữ liệu học sinh thật.
+
+    - path: "apps/web/lib/{tutor,gia-su-luot,ai-harness,ai-catalog,llm,kien-thuc,kho-lop,citations,loi-gia-su}*.ts"
+      instructions: |
+        Luồng gia sư (ADR 003, 007, 010; docs/AI-HARNESS.md):
+        - Prompt không chứa lời giải chuẩn, protected_facts, đáp án nội bộ.
+        - Thứ tự: luật xin đáp án → thang 3 cấp (không bottom-out) → kho lớp → nhà đã chọn → bộ lọc CAS.
+        - Không fallback thầm, không retry gọi lại mô hình, không stream token tới học sinh.
+        - Xóa định danh trước khi gửi ra ngoài; khóa không vào log, prompt, trình duyệt.
+        - PR đổi vùng này phải có bảng kết quả bộ ca dụ đáp án (skill tutor-safety).
+
+    - path: "apps/web/**/*.{tsx,css}"
+      instructions: |
+        Giao diện (docs/DESIGN.md, hiến chương V, VIII):
+        - Chữ tiếng Việt có dấu, giọng lớp 12 / phòng giáo viên; không thuật ngữ kỹ thuật, không câu giải thích UI thừa.
+        - Lưới 8 px; nút cao 40, chạm 44 với pointer coarse, bán kính 6; dùng Button / buttonClasses.
+        - Giữ data-testid và heading e2e đã khóa (AGENTS.md).
+        - WCAG 2.2 AA: focus thấy được, nhãn cho điều khiển, aria-live khi chấm, prefers-reduced-motion.
+
+    - path: "services/core/**/*.java"
+      instructions: |
+        Backend v2 (ADR 011, skill spring-core, rule spring-core):
+        - Clean Architecture + DDD: domain không import application / infrastructure / Spring / JPA; ArchUnit phải xanh.
+        - JpaRepository<XJpaEntity, UUID> — không dùng domain model làm entity ("Not a managed type").
+        - Controller nhận / trả record DTO; kiểm quyền theo lớp trong use case (IDOR), không chỉ @PreAuthorize vai trò.
+        - Đúng / sai toán do services/math quyết định; lỗi gọi dịch vụ toán không được coi là đạt.
+        - Gia sư: prompt không có trường lời giải; không fallback / retry sang nhà khác; lọc trước khi hiện.
+        - Boot 4: spring-boot-starter-webmvc, spring-boot-starter-flyway, Jackson 3 tools.jackson, @MockitoBean.
+        - Test persistence bằng Testcontainers, không mock JpaRepository.
+
+    - path: "apps/frontend/**/*.{ts,html,scss,css}"
+      instructions: |
+        Frontend v2 (ADR 011, skill angular-frontend):
+        - Angular 22 signal-first: không zone.js, standalone: true, @Input/@Output/@ViewChild, *ngIf/*ngFor, constructor injection.
+        - Form mới bằng Signal Forms; widget truy cập bằng @angular/aria.
+        - Client không tính đúng / sai, không giữ đáp án; gia sư chỉ hiện câu đã lọc, SSE trạng thái.
+        - Chữ tiếng Việt có dấu theo docs/DESIGN.md; 390 / 1280 px; chạm 44 px.
+
+    - path: "services/core/**/db/migration/**"
+      instructions: |
+        Flyway chỉ thêm (V<n>__<viec>.sql), không sửa migration đã gộp.
+
+    - path: "apps/web/drizzle/**"
+      instructions: |
+        Migration chỉ thêm, không sửa migration đã gộp. Bảng dữ liệu học sinh: RLS hoặc kiểm vai trò như ADR 006.
+
+    - path: ".claude/**"
+      instructions: |
+        Harness Claude Code. Hook phải có ca kiểm thử trong .claude/hooks/*.test.mjs và fail-open khi lỗi nội bộ.
+        CLAUDE.md / AGENTS.md gốc dưới 200 dòng; quy trình dài để ở skill, ràng buộc theo vùng để ở rule.
+
+    - path: "docs/**/*.md"
+      instructions: |
+        Tài liệu tiếng Việt có dấu, tên công nghệ giữ tiếng Anh. Số liệu kèm lệnh, SHA, ngày; nguồn ngoài kèm ngày truy cập.
+        ADR đã chấp nhận không viết lại nội dung, chỉ đổi trạng thái hoặc thay bằng ADR mới.
+
+    - path: ".github/workflows/*.yml"
+      instructions: |
+        Không bỏ job kiểm thử (harness, toan, web, e2e). Quyền workflow tối thiểu (contents: read trừ khi cần).
+
+  tools:
+    languagetool:
+      enabled: false
+    markdownlint:
+      enabled: true
+    shellcheck:
+      enabled: true
+    ruff:
+      enabled: true
+    eslint:
+      enabled: true
+
+chat:
+  auto_reply: true
+
+knowledge_base:
+  opt_out: false
+  learnings:
+    scope: "auto"

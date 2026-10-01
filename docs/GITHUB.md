@@ -15,11 +15,20 @@ Các mục này nằm trên dashboard, không nằm trong git. Vào **Settings**
 - **Code security** → Enable **Private vulnerability reporting**
 - Dependabot đã có `.github/dependabot.yml` — bật Dependabot alerts nếu GitHub hỏi
 
-## Branches → `main`
+## Branches → `main` (ruleset)
 
-- Require a pull request before merging
-- Require status checks: workflow **Kiểm thử**
-- Do not allow bypassing (trừ chủ repo khi cứu sự cố)
+Kiểm ngày 2026-10-01: `main` **chưa có** branch protection hay ruleset; secret scanning và push protection đã bật. Hook trong `.claude/` chỉ là hàng rào chống nhầm phía máy dev — ranh giới thật phải nằm trên GitHub.
+
+Ruleset sẵn trong repo: [`.github/rulesets/main-protection.json`](../.github/rulesets/main-protection.json) — chặn xóa nhánh, chặn force-push, lịch sử tuyến tính, bắt buộc PR, bắt buộc mọi luồng review đã resolve, bắt buộc 4 job CI xanh (Harness, Dịch vụ toán, Web, Playwright e2e) và nhánh cập nhật với `main`.
+
+- **0 approval bắt buộc:** PR của agent mở dưới tài khoản chủ repo; GitHub không cho tự approve PR của mình.
+- **Không bypass, kể cả admin:** agent dùng token của chủ repo, nên bypass cho admin cũng là bypass cho agent. Cứu sự cố: tạm tắt ruleset rồi bật lại.
+
+Áp dụng (chủ repo, **sau khi** PR có job Harness đã merge, nếu không PR cũ sẽ chờ một check không bao giờ chạy):
+
+```bash
+gh api -X POST repos/meiiie/du_an_em_linh/rulesets --input .github/rulesets/main-protection.json
+```
 
 ## Actions
 
