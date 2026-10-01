@@ -26,3 +26,8 @@ coverage/
 .idea/
 .vscode/
 !.vscode/extensions.json
+
+# Claude Code — cấu hình cá nhân, không commit (bài học LMS: settings.local.json từng lộ token)
+.claude/settings.local.json
+.claude/worktrees/
+CLAUDE.local.md
