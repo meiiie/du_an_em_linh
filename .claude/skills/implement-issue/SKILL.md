@@ -31,7 +31,7 @@ Hàng đợi (issue mở chưa có nhãn `status/*`):
 7. Chạy `/ship-check`. Đỏ → sửa nguyên nhân gốc, không bỏ qua test.
 8. Stage từng đường dẫn; commit Conventional Commits bằng heredoc, kết thúc trailer `Co-Authored-By` (hook kiểm).
 9. `git push -u origin <nhánh>`; `gh pr create` theo `.github/PULL_REQUEST_TEMPLATE.md`: `Closes #N`, số đo thật (lệnh + kết quả + SHA), ảnh 390/1280 nếu đụng UI.
-10. `gh pr checks` cho tới khi xong; `gh pr view --comments` đọc CodeRabbit; xử lý từng bình luận theo `docs/QUY-TRINH.md` §6, mỗi mối lo một commit.
+10. `gh pr checks` cho tới khi xong. Kích hoạt CodeRabbit (repo đang ở chế độ thủ công): `gh pr comment <PR> --body "@coderabbitai review"`. Đọc review của Codex và CodeRabbit: `gh api repos/meiiie/du_an_em_linh/pulls/<PR>/comments` (bình luận inline) và `gh pr view <PR> --comments`. Kiểm chứng từng điều trước khi sửa (`docs/QUY-TRINH.md` §6), mỗi mối lo một commit, trả lời từng bình luận kèm SHA hoặc bằng chứng.
 11. Xong: đổi nhãn sang `status/claude-pr-ready`; bình luận issue: link PR + bằng chứng từng tiêu chí. Với «check đi»: quay lại «Chọn việc».
 
 ## Dừng và hỏi khi

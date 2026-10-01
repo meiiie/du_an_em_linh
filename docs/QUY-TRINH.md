@@ -7,9 +7,9 @@
 | Ai | Làm | Không làm |
 | --- | --- | --- |
 | Chủ repo (`@meiiie`) | Định hướng, duyệt ADR / spec / thiết kế, **merge** | — |
-| Codex | Rà soát mã theo luồng, viết issue có tiêu chí nghiệm thu, dẫn nguồn | Viết mã, merge |
+| Codex | Rà soát mã theo luồng, viết issue có tiêu chí nghiệm thu, dẫn nguồn; **tự review mọi PR** qua connector GitHub (nhãn P1 / P2) | Viết mã, merge |
 | Claude Code | Hiện thực issue thành PR, chạy cổng, trả lời review; điều phối lab khi được giao | Tự mở việc ngoài issue, merge, đẩy `main` |
-| CodeRabbit | Review tự động theo `.coderabbit.yaml` | Duyệt thay người |
+| CodeRabbit | Review theo `.coderabbit.yaml`. Repo OSS đang ở chế độ thủ công: gõ `@coderabbitai review` trên PR; review tăng dần, push giữa chừng làm nó dừng | Duyệt thay người |
 | Lab | Sản xuất tri thức, đặc tả, bộ ca; bàn giao qua issue + tệp trong `labs/` | Sửa mã sản phẩm trực tiếp |
 
 Năm lab, mỗi lab một thư mục, chi tiết ở [`labs/README.md`](../labs/README.md):
@@ -53,7 +53,7 @@ yêu cầu ─► (lab nếu cần) ─► issue có tiêu chí ─► nhánh �
 - PR: điền đủ `.github/PULL_REQUEST_TEMPLATE.md`. Có số đo thật (lệnh + kết quả), ảnh 390/1280 nếu đụng UI.
 - Nhãn: `.github/labels.json` (`priority/*`, `status/*`, `area/*`, `lab/*`). Đồng bộ: `node scripts/github/sync-labels.mjs` (chủ repo chạy).
 
-**Hook chặn tất định** (`.claude/hooks/guard.mjs`): đẩy lên `main`, `push --force` (trừ `--force-with-lease`), `--no-verify`, `gh pr merge`, `git add -A` / `git add .`, commit sai định dạng hoặc thiếu `Co-Authored-By`, đọc / ghi file bí mật, sửa tay kết quả kiểm định trong `services/math/kiemdinh/ket-qua/`.
+**Hook chặn tất định** (`.claude/hooks/guard.mjs`, chạy ở mọi chế độ quyền): đẩy lên `main`, `push --force` (trừ `--force-with-lease`), `--no-verify`, `gh pr merge`, stage hàng loạt (`git add -A` / `-u` / `.`, `git commit -a`), commit sai định dạng hoặc thiếu `Co-Authored-By` (mọi nguồn thông điệp: `-m`, `-F`, `-C`, `--amend --no-edit`), mọi thao tác đọc / ghi / sao chép file bí mật (kể cả `cp .env.example .env` — thiết lập `.env` là việc của người), sửa tay kết quả kiểm định trong `services/math/kiemdinh/ket-qua/`.
 
 ## 5. Cổng chất lượng
 
