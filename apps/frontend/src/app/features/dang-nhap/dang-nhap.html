@@ -1,0 +1,111 @@
+<main class="trang">
+  <a class="skip-link" href="#form-dang-nhap">Bỏ qua đến form đăng nhập</a>
+  <div class="khung">
+    <!-- Tâm quang học ≈ 46 % chiều cao: dư trên : dư dưới = 2 : 3 (docs/DESIGN.md). -->
+    <div class="truc">
+      <div class="du du-tren" aria-hidden="true"></div>
+      <section class="khoi" aria-labelledby="tieu-de-dang-nhap">
+        <p class="sr-only" aria-live="polite">Bước {{ buoc() === 'email' ? 1 : 2 }} / 2</p>
+        <a routerLink="/" class="ve-trang-chu" [attr.aria-label]="'Về trang chủ ' + tenSanPham">
+          <app-brand-mark size="lg" />
+        </a>
+        <h1 id="tieu-de-dang-nhap">Đăng nhập</h1>
+
+        @if (buoc() === 'email') {
+          <form id="form-dang-nhap" class="form" (submit)="sangMatKhau($event)">
+            <label class="truong">
+              <span class="nhan">Email</span>
+              <input
+                #oEmail
+                class="o-nhap"
+                type="email"
+                autocomplete="username"
+                enterkeyhint="next"
+                spellcheck="false"
+                autocapitalize="none"
+                autocorrect="off"
+                placeholder="hs.an@demo.local"
+                data-testid="email"
+                [formField]="f.email"
+              />
+            </label>
+            <button appButton size="lg" block type="submit" [disabled]="!f.email().value().trim()">Tiếp tục</button>
+          </form>
+        } @else {
+          <form id="form-dang-nhap" class="form" (submit)="vaoHoc($event)">
+            <label class="truong">
+              <span class="nhan">Email</span>
+              <span class="o-kem-nut">
+                <input class="o-nhap" type="email" autocomplete="username" readonly data-testid="email" [value]="f.email().value()" />
+                <button type="button" class="nut-trong-o" aria-label="Sửa email" title="Sửa email" (click)="quayLai()">
+                  <!-- Biểu tượng Lucide (ISC), cùng bộ với v0. -->
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z" />
+                    <path d="m15 5 4 4" />
+                  </svg>
+                </button>
+              </span>
+            </label>
+            <label class="truong">
+              <span class="nhan">Mật khẩu</span>
+              <span class="o-kem-nut">
+                <input
+                  #oMatKhau
+                  id="o-mat-khau"
+                  class="o-nhap"
+                  autocomplete="current-password"
+                  enterkeyhint="go"
+                  placeholder="Nhập mật khẩu"
+                  data-testid="password"
+                  [type]="hienMatKhau() ? 'text' : 'password'"
+                  [formField]="f.matKhau"
+                />
+                <button
+                  type="button"
+                  class="nut-trong-o"
+                  aria-controls="o-mat-khau"
+                  [attr.aria-pressed]="hienMatKhau()"
+                  [attr.aria-label]="hienMatKhau() ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'"
+                  [title]="hienMatKhau() ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'"
+                  (click)="hienMatKhau.set(!hienMatKhau())"
+                >
+                  @if (hienMatKhau()) {
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                      <path d="M10.733 5.076a10.744 10.744 0 0 1 11.205 6.575 1 1 0 0 1 0 .696 10.747 10.747 0 0 1-1.444 2.49" />
+                      <path d="M14.084 14.158a3 3 0 0 1-4.242-4.242" />
+                      <path d="M17.479 17.499a10.75 10.75 0 0 1-15.417-5.151 1 1 0 0 1 0-.696 10.75 10.75 0 0 1 4.446-5.143" />
+                      <path d="m2 2 20 20" />
+                    </svg>
+                  } @else {
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                      <path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0" />
+                      <circle cx="12" cy="12" r="3" />
+                    </svg>
+                  }
+                </button>
+              </span>
+            </label>
+            <div class="nhom-nut">
+              <button appButton size="lg" block type="submit">Vào học</button>
+              <button appButton variant="secondary" size="lg" block type="button" (click)="quayLai()">Quay lại</button>
+            </div>
+          </form>
+        }
+
+        <ul class="tai-khoan-thu" aria-label="Tài khoản thử">
+          @for (tk of taiKhoanThu; track tk.email) {
+            <li>
+              <button appButton variant="secondary" type="button" class="chip" (click)="chonEmail(tk.email)">{{ tk.nhan }}</button>
+            </li>
+          }
+        </ul>
+      </section>
+      <div class="du du-duoi" aria-hidden="true"></div>
+    </div>
+    <footer class="chan">
+      <span>Toán 12 · đơn điệu và cực trị</span>
+      <span aria-hidden="true">·</span>
+      <span>Tài khoản thử — không có học sinh thật</span>
+    </footer>
+  </div>
+</main>

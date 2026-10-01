@@ -7,7 +7,7 @@ paths:
 
 # apps/frontend — Angular 22
 
-Quyết định: ADR 011. Ràng buộc ngắn: `.claude/rules/angular-frontend.md`. Thiết kế: `docs/DESIGN.md` + lab Thiết kế. Lệnh build / test chốt ở issue dựng khung (pha P1); mặc định chạy trong pnpm workspace của repo.
+Quyết định: ADR 011. Ràng buộc ngắn: `.claude/rules/angular-frontend.md`. Thiết kế: `docs/DESIGN.md` + lab Thiết kế. Lệnh: `pnpm --filter frontend dev | build | test` (Node `^22.22.3 || ^24.15.0 || >=26`); bản đồ và gotcha: `apps/frontend/AGENTS.md`.
 
 ## Mặc định của Angular 22 — đừng viết lại
 
