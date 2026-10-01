@@ -18,22 +18,22 @@ import org.junit.jupiter.api.Test;
 @DisplayName("Mọi gói có @NullMarked")
 class NullMarkedPackagesTest {
 
-	private static final ArchCondition<JavaClass> IN_NULL_MARKED_PACKAGE = new ArchCondition<>("nằm trong gói có @NullMarked") {
-		@Override
-		public void check(JavaClass javaClass, ConditionEvents events) {
-			if (!javaClass.getPackage().isAnnotatedWith(NullMarked.class)) {
-				String message = "gói %s thiếu @NullMarked trong package-info.java (lớp %s)"
-					.formatted(javaClass.getPackageName(), javaClass.getName());
-				events.add(SimpleConditionEvent.violated(javaClass, message));
-			}
-		}
-	};
+    private static final ArchCondition<JavaClass> IN_NULL_MARKED_PACKAGE = new ArchCondition<>("nằm trong gói có @NullMarked") {
+        @Override
+        public void check(JavaClass javaClass, ConditionEvents events) {
+            if (!javaClass.getPackage().isAnnotatedWith(NullMarked.class)) {
+                String message = "gói %s thiếu @NullMarked trong package-info.java (lớp %s)"
+                    .formatted(javaClass.getPackageName(), javaClass.getName());
+                events.add(SimpleConditionEvent.violated(javaClass, message));
+            }
+        }
+    };
 
-	@Test
-	void everyPackageIsNullMarked() {
-		classes().should(IN_NULL_MARKED_PACKAGE)
-			.check(new ClassFileImporter().withImportOption(ImportOption.Predefined.DO_NOT_INCLUDE_TESTS)
-				.importPackages("vn.hoctoanai.core"));
-	}
+    @Test
+    void everyPackageIsNullMarked() {
+        classes().should(IN_NULL_MARKED_PACKAGE)
+            .check(new ClassFileImporter().withImportOption(ImportOption.Predefined.DO_NOT_INCLUDE_TESTS)
+                .importPackages("vn.hoctoanai.core"));
+    }
 
 }

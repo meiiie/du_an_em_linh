@@ -12,22 +12,22 @@ import org.springframework.test.web.servlet.assertj.MockMvcTester;
 @AutoConfigureMockMvc
 class CoreApplicationTests {
 
-	@Autowired
-	private MockMvcTester mvc;
+    @Autowired
+    private MockMvcTester mvc;
 
-	@Test
-	void healthIsUp() {
-		assertThat(mvc.get().uri("/actuator/health"))
-			.hasStatusOk()
-			.bodyJson()
-			.extractingPath("$.status")
-			.isEqualTo("UP");
-	}
+    @Test
+    void healthIsUp() {
+        assertThat(mvc.get().uri("/actuator/health"))
+            .hasStatusOk()
+            .bodyJson()
+            .extractingPath("$.status")
+            .isEqualTo("UP");
+    }
 
-	@Test
-	void probesAreUp() {
-		assertThat(mvc.get().uri("/actuator/health/liveness")).hasStatusOk();
-		assertThat(mvc.get().uri("/actuator/health/readiness")).hasStatusOk();
-	}
+    @Test
+    void probesAreUp() {
+        assertThat(mvc.get().uri("/actuator/health/liveness")).hasStatusOk();
+        assertThat(mvc.get().uri("/actuator/health/readiness")).hasStatusOk();
+    }
 
 }
