@@ -18,9 +18,9 @@ import org.junit.jupiter.api.Test;
  * Luật phụ thuộc Clean Architecture: domain ← application ← infrastructure.
  *
  * <p>Chép từ {@code LMS_hohulili@34c3f0f2:backend/src/test/java/com/example/lms/architecture/CleanArchitectureTest.java}
- * (MIT): đổi gói, bỏ danh sách nợ kỹ thuật của LMS. Luật «không phụ thuộc infrastructure» của LMS chỉ phủ use case ghi
- * và DTO; ở đây phủ mọi lớp application (port, dịch vụ, DTO, use case). Giữ ngoại lệ CQRS của LMS: use case đọc
- * ({@code Get*}, kể cả lớp lồng) được đọc thẳng tầng persistence.
+ * (MIT): đổi gói, bỏ danh sách nợ kỹ thuật của LMS. LMS chỉ cấm Spring / JPA / infrastructure ở {@code domain.model}
+ * và chỉ cấm infrastructure ở use case ghi + DTO; ở đây phủ cả tầng domain và mọi lớp application (port, dịch vụ,
+ * DTO, use case). Giữ ngoại lệ CQRS của LMS: use case đọc ({@code Get*}, kể cả lớp lồng) được đọc thẳng persistence.
  */
 @DisplayName("Luật Clean Architecture")
 class CleanArchitectureTest {
@@ -50,50 +50,38 @@ class CleanArchitectureTest {
     class DomainLayerRules {
 
         @Test
-        @DisplayName("Model domain không phụ thuộc infrastructure")
+        @DisplayName("Domain không phụ thuộc infrastructure")
         void domainShouldNotDependOnInfrastructure() {
             noClasses().that()
-                .resideInAPackage("..domain.model..")
+                .resideInAPackage("..domain..")
                 .should()
                 .dependOnClassesThat()
                 .resideInAPackage("..infrastructure..")
-                .because("model domain là Java thuần, không phụ thuộc hạ tầng")
+                .because("model, port, dịch vụ, sự kiện của domain là Java thuần, không phụ thuộc hạ tầng")
                 .check(importedClasses);
         }
 
         @Test
-        @DisplayName("Repository (port) của domain không phụ thuộc infrastructure")
-        void domainRepositoriesShouldNotDependOnInfrastructure() {
-            noClasses().that()
-                .resideInAPackage("..domain.repository..")
-                .should()
-                .dependOnClassesThat()
-                .resideInAPackage("..infrastructure..")
-                .because("port của domain không import entity JPA hay Spring Data")
-                .check(importedClasses);
-        }
-
-        @Test
-        @DisplayName("Model domain không phụ thuộc Spring")
+        @DisplayName("Domain không phụ thuộc Spring")
         void domainShouldNotDependOnSpring() {
             noClasses().that()
-                .resideInAPackage("..domain.model..")
+                .resideInAPackage("..domain..")
                 .should()
                 .dependOnClassesThat()
                 .resideInAPackage("org.springframework..")
-                .because("model domain độc lập framework")
+                .because("domain độc lập framework; nối bean ở infrastructure")
                 .check(importedClasses);
         }
 
         @Test
-        @DisplayName("Model domain không phụ thuộc JPA / Hibernate")
+        @DisplayName("Domain không phụ thuộc JPA / Hibernate")
         void domainShouldNotDependOnJpa() {
             noClasses().that()
-                .resideInAPackage("..domain.model..")
+                .resideInAPackage("..domain..")
                 .should()
                 .dependOnClassesThat()
                 .resideInAnyPackage("jakarta.persistence..", "org.hibernate..")
-                .because("model domain không dùng annotation JPA; entity là *JpaEntity ở infrastructure")
+                .because("domain không dùng annotation JPA; entity là *JpaEntity ở infrastructure")
                 .check(importedClasses);
         }
 
