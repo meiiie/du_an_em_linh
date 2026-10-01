@@ -190,11 +190,12 @@ const git = (dir, args) => {
 // Short-option cluster of `git commit`, e.g. -am"msg" → a, then message "msg". An option that takes
 // an argument ends the scan: the rest of the cluster (or the next token) is its value, as in git.
 function commitShort(token) {
-  const r = { noVerify: false, all: false, values: [] };
+  const r = { noVerify: false, all: false, edit: false, values: [] };
   for (let i = 1; i < token.length; i += 1) {
     const c = token[i];
     if (c === 'n') r.noVerify = true;
     else if (c === 'a') r.all = true;
+    else if (c === 'e') r.edit = true;
     else if ('mFCc'.includes(c)) {
       const kind = c === 'm' ? 'message' : c === 'F' ? 'file' : 'reuse';
       r.values.push({ kind, value: token.slice(i + 1) || undefined });
@@ -305,15 +306,17 @@ while ((queue.length || SUBS.length) && budget-- > 0) {
   }
   if (head !== 'git') continue;
 
-  // Resolve `git -C <dir>` and other global flags before the subcommand.
+  // Resolve global options before the subcommand; several take a separate value (git -h).
+  const GIT_GLOBAL_VALUE = new Set(['-C', '-c', '--git-dir', '--work-tree', '--namespace', '--super-prefix', '--config-env', '--attr-source']);
   let repo = dir;
+  const repoOpts = []; // --git-dir / --work-tree, reused when asking git for the current branch
   let i = 0;
   while (i < rest.length && rest[i].startsWith('-')) {
-    if (rest[i] === '-C' && rest[i + 1]) {
-      repo = path.resolve(dir, rest[i + 1]);
-      i += 2;
-    } else if (rest[i] === '-c') i += 2;
-    else i += 1;
+    const opt = rest[i];
+    if (opt === '-C' && rest[i + 1]) repo = path.resolve(dir, rest[i + 1]);
+    if ((opt === '--git-dir' || opt === '--work-tree') && rest[i + 1]) repoOpts.push(`${opt}=${rest[i + 1]}`);
+    if (/^--(git-dir|work-tree)=/.test(opt)) repoOpts.push(opt);
+    i += GIT_GLOBAL_VALUE.has(opt) ? 2 : 1;
   }
   const sub = rest[i];
   const args = rest.slice(i + 1);
@@ -327,12 +330,17 @@ while ((queue.length || SUBS.length) && budget-- > 0) {
     if (args.some(isSecret)) deny('Không stage file bí mật.');
   }
 
-  // Paths named by the git command: `<rev>:<path>` (git show HEAD:.env) counts; message values
-  // after -m / -F (also -am, --message) do not.
+  // Paths named by the git command: operands, `<rev>:<path>` (git show HEAD:.env), and values of
+  // path-bearing options (--output=.env would truncate the file). Message values after -m / -F
+  // (also -am, --message=) are text, not paths.
+  const PATH_VALUE_OPTS = new Set(['--output', '--output-directory', '-o']);
   const gitPaths = [];
   for (let k = 0; k < args.length; k += 1) {
     const a = args[k];
     if (/^(-[A-Za-z]*[mF]|--message|--file)$/.test(a)) k += 1;
+    else if (/^--(message|file)=/.test(a)) continue;
+    else if (PATH_VALUE_OPTS.has(a)) gitPaths.push(args[(k += 1)] ?? '');
+    else if (/^--[^=]+=/.test(a)) gitPaths.push(a.slice(a.indexOf('=') + 1));
     else if (!a.startsWith('-')) gitPaths.push(a.slice(a.lastIndexOf(':') + 1));
   }
   if (gitPaths.some(isSecret) && !(GIT_SAFE_WITH_SECRET.has(sub) || (sub === 'rm' && args.includes('--cached')))) deny(SECRET_READ);
@@ -358,7 +366,7 @@ while ((queue.length || SUBS.length) && budget-- > 0) {
     const refspecs = explicitRepo ? positional : positional.slice(1);
     const targetsMain = refspecs.some((r) => /(^|:)(refs\/heads\/)?(main|master)$/.test(r));
     const pushesCurrent = refspecs.length === 0 || refspecs.some((r) => r === 'HEAD' || r === '@');
-    const branch = pushesCurrent ? git(repo, ['rev-parse', '--abbrev-ref', 'HEAD']) : '';
+    const branch = pushesCurrent ? git(repo, [...repoOpts, 'rev-parse', '--abbrev-ref', 'HEAD']) : '';
     if (targetsMain || branch === 'main' || branch === 'master')
       deny('Không push lên main. Tạo nhánh feat/ fix/ docs/ chore/ rồi mở PR (QUY-TRINH §4).');
   }
@@ -366,6 +374,7 @@ while ((queue.length || SUBS.length) && budget-- > 0) {
   if (sub === 'commit') {
     let noVerify = false;
     let bulk = false;
+    let edit = false;
     const sources = []; // { kind: 'message' | 'file' | 'reuse', value }
     const LONG = { '--message': 'message', '--file': 'file', '--reuse-message': 'reuse', '--reedit-message': 'reuse' };
     for (let k = 0; k < args.length; k += 1) {
@@ -374,17 +383,20 @@ while ((queue.length || SUBS.length) && budget-- > 0) {
       if (LONG[a] && args[k + 1] !== undefined) sources.push({ kind: LONG[a], value: args[(k += 1)] });
       else if (eq > 0 && LONG[a.slice(0, eq)]) sources.push({ kind: LONG[a.slice(0, eq)], value: a.slice(eq + 1) });
       else if (a === '--all') bulk = true;
+      else if (a === '--edit') edit = true;
       else if (/^--(fixup|squash)(=|$)/.test(a))
         deny('Không dùng git commit --fixup / --squash: PR được squash khi merge; viết commit mới theo Conventional Commits.');
       else if (/^-[A-Za-z]/.test(a)) {
         const s = commitShort(a);
         noVerify ||= s.noVerify;
         bulk ||= s.all;
+        edit ||= s.edit;
         for (const v of s.values) sources.push({ kind: v.kind, value: v.value ?? args[(k += 1)] });
       }
     }
     if (noVerify) deny('Không bỏ qua hook git (git commit -n = --no-verify).');
     if (bulk) deny('Không dùng git commit -a / --all: stage từng đường dẫn rồi commit, tránh kéo theo thay đổi của việc khác.');
+    if (edit) deny('Không dùng git commit -e / --edit: thông điệp phải cố định (-m với heredoc) để hook kiểm được.');
 
     // Every way git takes a message is checked: -m, -F <file> / -F - (heredoc), -C / -c <commit>, --amend --no-edit.
     const messages = [];
@@ -414,7 +426,7 @@ while ((queue.length || SUBS.length) && budget-- > 0) {
       const headMessage = git(repo, ['log', '-1', '--format=%B', 'HEAD']);
       if (headMessage) messages.push(headMessage);
     }
-    if (!messages.length) continue;
+    if (!messages.length) deny('git commit cần thông điệp cố định (-m với heredoc) để hook kiểm được; không mở trình soạn thảo.');
     const full = messages.join('\n\n');
     const subject = (full.split('\n').find((l) => l.trim()) ?? '').trim();
     if (!CONVENTIONAL.test(subject))

@@ -184,6 +184,18 @@ describe('guard.mjs', () => {
     // Review #52 (Codex P2, 4th pass): autosquash messages.
     ['commit --fixup', 'deny', bash('git commit --fixup HEAD')],
     ['commit --squash=', 'deny', bash('git commit --squash=HEAD')],
+    // Review #52 (Codex, 5th pass): path-valued git options, separated global values, editor messages.
+    ['git diff --output=.env', 'deny', bash(`git diff --output=${ENV}`)],
+    ['git diff --output .env', 'deny', bash(`git diff --output ${ENV}`)],
+    ['git format-patch -o secrets/', 'deny', bash('git format-patch -o secrets/ HEAD~1')],
+    ['--message= mentioning a secret path is text', 'allow', bash(`git commit --message="docs: không commit apps/web/${ENV}.local" -m "${TRAILER}"`)],
+    ['git --git-dir .git push origin main', 'deny', bash('git --git-dir .git push origin main')],
+    ['git --work-tree . --git-dir .git push main', 'deny', bash('git --work-tree . --git-dir .git push origin main')],
+    ['plain git commit (editor)', 'deny', bash('git commit')],
+    ['git commit --amend (editor)', 'deny', bash('git commit --amend')],
+    ['commit -e', 'deny', bash(`git commit -e -m "fix: x" -m "${TRAILER}"`)],
+    ['commit --edit', 'deny', bash(`git commit --edit -m "fix: x" -m "${TRAILER}"`)],
+    ['commit -em cluster', 'deny', bash(`git commit -em "fix: x" -m "${TRAILER}"`)],
     // Review #52 (Codex P1, 4th pass): Grep globs override .gitignore.
     ['Grep glob .env* over a directory', 'deny', { tool_name: 'Grep', tool_input: { pattern: 'KEY', path: REPO, glob: `${ENV}*` }, cwd: REPO }],
     ['Grep glob *', 'deny', { tool_name: 'Grep', tool_input: { pattern: 'KEY', path: REPO, glob: '*' }, cwd: REPO }],

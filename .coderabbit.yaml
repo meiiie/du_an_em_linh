@@ -11,8 +11,10 @@ reviews:
   review_status: true
   poem: false
   collapse_walkthrough: false
+  # Thủ công theo docs/QUY-TRINH.md: gõ "@coderabbitai review" một lần khi CI đã xong,
+  # tránh review dang dở trên các push trung gian.
   auto_review:
-    enabled: true
+    enabled: false
     drafts: false
     base_branches:
       - "main"
