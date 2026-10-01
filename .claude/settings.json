@@ -11,6 +11,17 @@
       "Read(*.p12)",
       "Read(*apikey*.txt)",
       "Read(**/secrets/**)",
+      "Read(//**/.env)",
+      "Read(//**/.env.local)",
+      "Read(//**/.env.*.local)",
+      "Read(//**/.env.development)",
+      "Read(//**/.env.dev)",
+      "Read(//**/.env.production)",
+      "Read(//**/.env.prod)",
+      "Read(//**/.env.test)",
+      "Read(//**/*.pem)",
+      "Read(//**/*.key)",
+      "Read(//**/*.p12)",
       "Edit(.env)",
       "Edit(.env.*)",
       "Edit(!.env.example)",
@@ -25,8 +36,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node",
-            "args": ["${CLAUDE_PROJECT_DIR}/.claude/hooks/session-context.mjs"],
+            "command": "node \"${CLAUDE_PROJECT_DIR}/.claude/hooks/session-context.mjs\"",
             "timeout": 15,
             "statusMessage": "Đọc trạng thái repo và PR đang mở"
           }
@@ -35,12 +45,11 @@
     ],
     "PreToolUse": [
       {
-        "matcher": "Edit|Write|NotebookEdit|Bash|PowerShell",
+        "matcher": "Read|Grep|Edit|Write|NotebookEdit|Bash|PowerShell",
         "hooks": [
           {
             "type": "command",
-            "command": "node",
-            "args": ["${CLAUDE_PROJECT_DIR}/.claude/hooks/guard.mjs"],
+            "command": "node \"${CLAUDE_PROJECT_DIR}/.claude/hooks/guard.mjs\"",
             "timeout": 10
           }
         ]

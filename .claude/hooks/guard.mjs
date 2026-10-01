@@ -1,5 +1,7 @@
 // PreToolUse guard: turns the hard rules of docs/QUY-TRINH.md §4 and docs/HIEN-CHUONG.md III–IV
-// into deterministic denials. Reads the hook payload on stdin; prints a deny decision or exits 0.
+// into deterministic denials. Hooks run in every permission mode, so this is the layer that holds
+// even when permission rules are bypassed or anchored at a different working directory.
+// Reads the hook payload on stdin; prints a deny decision or exits 0. Internal errors fail open.
 import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
@@ -35,13 +37,20 @@ const isSecret = (p) => {
     parts.includes('secrets')
   );
 };
+// A `.env…` reference inside inline code, e.g. python -c "open('.env')"; ignores process.env, import.meta.env.
+const mentionsSecret = (text) => [...String(text).matchAll(/(?<![\w$])\.env(?:\.[\w-]+)*/g)].some((m) => isSecret(m[0]));
+
+const SECRET_READ = 'Không đọc / ghi file bí mật (.env, khóa, *.pem). Tên biến xem ở .env.example (hiến chương III).';
 
 // ---- File tools -------------------------------------------------------------------------------
-if (tool === 'Edit' || tool === 'Write' || tool === 'NotebookEdit') {
-  const target = posix(path.resolve(cwd, input.file_path ?? input.notebook_path ?? ''));
-  if (isSecret(target)) deny('Không ghi file bí mật (.env, khóa, *.pem). Mẫu biến nằm ở .env.example (hiến chương III).');
-  if (target.includes('/services/math/kiemdinh/ket-qua/'))
-    deny('Kết quả kiểm định chỉ do script chạy bộ ca ghi, không sửa tay (hiến chương IV). Chạy lại bộ ca để cập nhật.');
+if (['Read', 'Grep', 'Edit', 'Write', 'NotebookEdit'].includes(tool)) {
+  const raw = input.file_path ?? input.notebook_path ?? input.path;
+  if (raw) {
+    const target = posix(path.resolve(cwd, raw));
+    if (isSecret(target)) deny(SECRET_READ);
+    if (tool !== 'Read' && tool !== 'Grep' && target.includes('/services/math/kiemdinh/ket-qua/'))
+      deny('Kết quả kiểm định chỉ do script chạy bộ ca ghi, không sửa tay (hiến chương IV). Chạy lại bộ ca để cập nhật.');
+  }
   process.exit(0);
 }
 
@@ -118,8 +127,37 @@ const git = (dir, args) => {
   }
 };
 
-const READERS = /^(cat|type|more|less|head|tail|Get-Content|gc|Select-String|sls|grep|rg|findstr|source)$/i;
+// Short-option cluster of `git commit`, e.g. -am"msg" → a, then message "msg". Options after which
+// the rest of the cluster is an argument end the scan (git's own parsing rule).
+function commitShort(token) {
+  const r = { noVerify: false, usesFile: false, message: undefined, needsNext: false };
+  for (let i = 1; i < token.length; i += 1) {
+    const c = token[i];
+    if (c === 'n') r.noVerify = true;
+    else if (c === 'm') {
+      const rest = token.slice(i + 1);
+      if (rest) r.message = rest;
+      else r.needsNext = true;
+      return r;
+    } else if ('FCc'.includes(c)) {
+      r.usesFile = true;
+      return r;
+    } else if ('Stu'.includes(c) || !/[A-Za-z]/.test(c)) return r;
+  }
+  return r;
+}
+// Short-option cluster of `git push`: -f forces; -o takes the rest as its argument.
+function pushForces(token) {
+  for (let i = 1; i < token.length; i += 1) {
+    if (token[i] === 'f') return true;
+    if (token[i] === 'o' || !/[A-Za-z]/.test(token[i])) return false;
+  }
+  return false;
+}
+
+const SAFE_WITH_SECRET = /^(ls|dir|Get-ChildItem|gci|touch|test|\[|stat|Test-Path|git)$/i;
 const COPIERS = /^(cp|copy|Copy-Item|cpi)$/i;
+const INTERPRETERS = /^(python3?|py|node|deno|bun|perl|ruby|php|bash|sh|zsh|pwsh|powershell)(\.exe)?$/i;
 const DANGER_RM = ['/', '~', '.', '..', '*', '.git'];
 let dir = cwd;
 
@@ -130,9 +168,17 @@ for (const words of segments(command)) {
     continue;
   }
 
-  const operands = rest.filter((w) => !w.startsWith('-'));
-  if (READERS.test(head) && operands.some(isSecret)) deny('Không đọc file bí mật qua shell (.env, khóa). Dùng .env.example để biết tên biến.');
-  if (COPIERS.test(head) && operands.length && isSecret(operands[0])) deny('Không sao chép file bí mật ra chỗ khác.');
+  // Operands with redirection marks stripped: `< .env`, `<.env`, `2>> out.txt`.
+  const operands = rest
+    .filter((w) => !/^-/.test(w))
+    .map((w) => w.replace(/^\d*[<>]+&?/, ''))
+    .filter(Boolean);
+
+  if (operands.some(isSecret) && !SAFE_WITH_SECRET.test(head)) {
+    if (!COPIERS.test(head)) deny(SECRET_READ);
+    if (isSecret(operands[0])) deny('Không sao chép file bí mật ra chỗ khác.');
+  }
+  if (INTERPRETERS.test(head) && rest.some(mentionsSecret)) deny(SECRET_READ);
   if (head === 'rm' && rest.some((w) => /^-\w*[rR]/.test(w)) && operands.some((w) => DANGER_RM.includes(w.replace(/\/+$/, '') || '/')))
     deny('Lệnh xóa đệ quy nhắm vào thư mục gốc, repo hoặc .git bị chặn.');
 
@@ -154,8 +200,14 @@ for (const words of segments(command)) {
 
   if (args.includes('--no-verify')) deny('Không bỏ qua hook git (--no-verify). Sửa nguyên nhân thay vì lách (QUY-TRINH §4).');
 
+  if (sub === 'add') {
+    if (args.some((a) => ['-A', '--all', '.', ':/', '*', ':/*'].includes(a)))
+      deny('Stage từng đường dẫn cụ thể thay vì git add -A / git add . (tránh kéo theo bí mật và file rác).');
+    if (args.some(isSecret)) deny('Không stage file bí mật.');
+  }
+
   if (sub === 'push') {
-    if (args.some((a) => a === '--force' || a === '-f' || a.startsWith('+') || (/^-[a-z]+$/.test(a) && a.includes('f'))))
+    if (args.some((a) => a === '--force' || a.startsWith('+') || (/^-[A-Za-z]/.test(a) && pushForces(a))))
       deny('Không push --force. Dùng --force-with-lease trên nhánh của mình (QUY-TRINH §6).');
     const refspecs = args.filter((a) => !a.startsWith('-')).slice(1);
     const targetsMain = refspecs.some((r) => /(^|:)(refs\/heads\/)?(main|master)$/.test(r));
@@ -165,23 +217,25 @@ for (const words of segments(command)) {
       deny('Không push lên main. Tạo nhánh feat/ fix/ docs/ chore/ rồi mở PR (QUY-TRINH §4).');
   }
 
-  if (sub === 'add' && args.some((a) => ['-A', '--all', '.', ':/', '*', ':/*'].includes(a)))
-    deny('Stage từng đường dẫn cụ thể thay vì git add -A / git add . (tránh kéo theo bí mật và file rác).');
-
   if (sub === 'commit') {
-    if (args.some((a) => /^-[a-zA-Z]+$/.test(a) && a.includes('n')))
-      deny('Không bỏ qua hook git (git commit -n = --no-verify).');
-    const usesFile = args.some(
-      (a) => ['-F', '--file', '-C', '-c', '--reuse-message', '--reedit-message'].includes(a) || /^--(file|reuse-message|reedit-message)=/.test(a),
-    );
-    if (usesFile || (args.includes('--amend') && args.includes('--no-edit'))) continue;
+    let noVerify = false;
+    let usesFile = false;
     const messages = [];
-    args.forEach((a, k) => {
-      const next = args[k + 1];
-      if ((a === '--message' || /^-[a-zA-Z]*m$/.test(a)) && next !== undefined) messages.push(messageOf(next));
+    for (let k = 0; k < args.length; k += 1) {
+      const a = args[k];
+      if (a === '--message' && args[k + 1] !== undefined) messages.push(messageOf(args[(k += 1)]));
       else if (a.startsWith('--message=')) messages.push(messageOf(a.slice('--message='.length)));
-    });
-    if (!messages.length) continue;
+      else if (['--file', '--reuse-message', '--reedit-message'].includes(a) || /^--(file|reuse-message|reedit-message)=/.test(a)) usesFile = true;
+      else if (/^-[A-Za-z]/.test(a)) {
+        const s = commitShort(a);
+        noVerify ||= s.noVerify;
+        usesFile ||= s.usesFile;
+        if (s.message !== undefined) messages.push(messageOf(s.message));
+        else if (s.needsNext && args[k + 1] !== undefined) messages.push(messageOf(args[(k += 1)]));
+      }
+    }
+    if (noVerify) deny('Không bỏ qua hook git (git commit -n = --no-verify).');
+    if (usesFile || (args.includes('--amend') && args.includes('--no-edit')) || !messages.length) continue;
     const full = messages.join('\n\n');
     const subject = (full.split('\n').find((l) => l.trim()) ?? '').trim();
     if (!CONVENTIONAL.test(subject))

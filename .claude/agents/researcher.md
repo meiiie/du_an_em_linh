@@ -9,8 +9,7 @@ hooks:
     - matcher: "Write|Edit"
       hooks:
         - type: command
-          command: node
-          args: ["${CLAUDE_PROJECT_DIR}/.claude/hooks/researcher-scope.mjs", "${CLAUDE_PROJECT_DIR}"]
+          command: node "${CLAUDE_PROJECT_DIR}/.claude/hooks/researcher-scope.mjs" "${CLAUDE_PROJECT_DIR}"
 color: purple
 ---
 

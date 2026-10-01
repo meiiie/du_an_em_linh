@@ -85,7 +85,35 @@ describe('guard.mjs', () => {
     ['PowerShell here-string bad', 'deny', ps(`git commit -m @'\nthêm hook\n'@`)],
     ['rm -rf .git', 'deny', bash('rm -rf .git')],
     ['rm -rf node_modules', 'allow', bash('rm -rf apps/web/node_modules')],
-    ['Read tool ignored', 'allow', { tool_name: 'Read', tool_input: { file_path: path.join(REPO, 'README.md') }, cwd: REPO }],
+    ['Read normal file', 'allow', { tool_name: 'Read', tool_input: { file_path: path.join(REPO, 'README.md') }, cwd: REPO }],
+    // Review #52 (Codex P1): Read / Grep tools are guarded too — hooks run in every permission mode.
+    ['Read nested .env.local', 'deny', file('Read', `apps/web/${ENV}.local`)],
+    ['Read .env.example', 'allow', file('Read', `${ENV}.example`)],
+    ['Read .env above cwd', 'deny', { tool_name: 'Read', tool_input: { file_path: `../${ENV}` }, cwd: path.join(REPO, 'apps') }],
+    ['Grep a secret file', 'deny', { tool_name: 'Grep', tool_input: { pattern: 'KEY', path: path.join(REPO, ENV) }, cwd: REPO }],
+    ['Grep a directory', 'allow', { tool_name: 'Grep', tool_input: { pattern: 'KEY', path: path.join(REPO, 'apps/web') }, cwd: REPO }],
+    // Review #52 (Codex P1): any command touching a secret path, not only a reader allowlist.
+    ['sed reads .env', 'deny', bash(`sed -n '1p' ${ENV}`)],
+    ['awk reads nested .env.local', 'deny', bash(`awk '{print}' apps/web/${ENV}.local`)],
+    ['input redirect < .env', 'deny', bash(`cat < ${ENV}`)],
+    ['attached redirect <.env', 'deny', bash(`wc -l <${ENV}`)],
+    ['loop reading .env', 'deny', bash(`while read l; do echo "$l"; done < ${ENV}`)],
+    ['python inline opens .env', 'deny', bash(`python -c "print(open('${ENV}').read())"`)],
+    ['node inline process.env', 'allow', bash('node -e "console.log(process.env.HOME)"')],
+    ['write to .env via echo', 'deny', bash(`echo X > ${ENV}`)],
+    ['ls .env', 'allow', bash(`ls -la ${ENV}`)],
+    ['test -f .env', 'allow', bash(`test -f ${ENV} && echo ok`)],
+    ['cat .env.example', 'allow', bash(`cat ${ENV}.example`)],
+    ['git add -f .env', 'deny', bash(`git add -f ${ENV}`)],
+    ['git rm --cached .env', 'allow', bash(`git rm --cached ${ENV}`)],
+    // Review #52 (Codex P2): attached short options.
+    ['commit -m"WIP" attached', 'deny', bash('git commit -m"WIP"')],
+    ['commit -am"..." attached + trailer', 'allow', bash(`git commit -am"docs: sửa lỗi chính tả" -m "${TRAILER}"`)],
+    ['attached message with letter n is not -n', 'allow', bash(`git commit -m"fix: thêm nút" -m "${TRAILER}"`)],
+    ['message token starting with -n', 'allow', bash(`git commit -m "-n không còn bị hiểu nhầm" -m "${TRAILER}"`.replace('"-n', '"fix: -n'))],
+    ['commit -nm cluster', 'deny', bash(`git commit -nm "fix: x" -m "${TRAILER}"`)],
+    ['push -uf cluster', 'deny', bash('git push -uf origin feat/x')],
+    ['push -o option is not force', 'allow', bash('git push -ofoo origin feat/x')],
   ];
   for (const [name, expected, payload] of cases) {
     test(name, () => assert.equal(runHook('guard.mjs', payload), expected));
