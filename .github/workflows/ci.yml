@@ -30,6 +30,38 @@ jobs:
       - name: Test hook (.claude/hooks)
         run: node --test .claude/hooks/*.test.mjs
 
+  core:
+    name: Core — Maven + image
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: services/core
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: "25"
+          cache: maven
+          cache-dependency-path: services/core/pom.xml
+      - name: Build và test (gồm ArchUnit)
+        run: ./mvnw -B -ntp verify
+      - name: Image chạy không root, health UP
+        run: |
+          docker build -t hoc-toan-core:ci .
+          test "$(docker run --rm --entrypoint id hoc-toan-core:ci -u)" = 1001
+          docker run -d --name core -p 8080:8080 hoc-toan-core:ci
+          for i in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:8080/actuator/health | grep -q '"status":"UP"'; then
+              echo "health UP sau $i lần thử"
+              exit 0
+            fi
+            sleep 2
+          done
+          docker logs core
+          exit 1
+
   toan:
     name: Dịch vụ toán
     runs-on: ubuntu-latest

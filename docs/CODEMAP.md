@@ -11,8 +11,9 @@ Harness (Anthropic 2026): tệp này là mục lục để agent biết chỗ m�
 | `docs/HIEN-CHUONG.md` | Hiến chương kỹ thuật: 8 nguyên tắc, cổng chất lượng — đứng trên mọi quy ước |
 | `docs/QUY-TRINH.md` | Quy trình người + agent + lab: lệnh kích hoạt, chuẩn GitHub, kịch bản xử lý |
 | `docs/product/MUC-TIEU.md` | Mục tiêu sản phẩm đọc từ sơ đồ khách: năng lực C1–C10, đối chiếu v0, câu hỏi mở |
-| `docs/product/LO-TRINH.md` | Lộ trình v2 theo pha P0–P5, issue đề xuất cho P1 |
-| `apps/frontend/`, `services/core/` | v2 (ADR 011) — dựng ở pha P1; chưa có trong cây |
+| `docs/product/LO-TRINH.md` | Lộ trình v2 theo pha P0–P5, issue P1 |
+| `services/core/` | v2 (ADR 011): Spring Boot 4.1, Java 25 — xem mục `services/core` |
+| `apps/frontend/` | v2 (ADR 011): Angular 22 — dựng ở pha P1, chưa có trong cây |
 | `labs/` | 5 lab (design, pedagogy, evals, research, decisions) — ghi chú có ngày, nâng lên `docs/` khi chốt |
 | `.claude/settings.json` | `permissions.deny` (bí mật, lockfile) + hook `SessionStart`, `PreToolUse` |
 | `.claude/hooks/` | `guard.mjs` (chặn thao tác cấm), `session-context.mjs` (trạng thái repo), `researcher-scope.mjs`; test `hooks.test.mjs` |
@@ -84,6 +85,10 @@ Next.js 15. Server action nói chuyện với Postgres và `MATH_SERVICE_URL`.
 ## services/math
 
 Xem `services/math/AGENTS.md`. HTTP mỏng; CAS trong sandbox.
+
+## services/core
+
+Xem `services/core/AGENTS.md`. Gói gốc `vn.hoctoanai.core`; module nghiệp vụ là gói con ba tầng `domain` → `application` → `infrastructure`, ArchUnit kiểm. Khung chưa có module (identity: issue #55).
 
 ## Luồng chính
 

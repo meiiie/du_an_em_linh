@@ -7,7 +7,7 @@ paths:
 
 # services/core — Spring Boot 4.1 · Java 25
 
-Quyết định: ADR 011. Ràng buộc ngắn: `.claude/rules/spring-core.md`. Gói gốc và lệnh build chốt ở issue dựng khung (pha P1, `docs/product/LO-TRINH.md`); mặc định Maven Wrapper như LMS: `cd services/core && ./mvnw test`.
+Quyết định: ADR 011. Ràng buộc ngắn: `.claude/rules/spring-core.md`. Gói gốc `vn.hoctoanai.core`; lệnh `cd services/core && ./mvnw verify` (Maven Wrapper 3.9.16 — LMS gọi `mvn` cài sẵn, wrapper giữ máy dev và CI cùng phiên bản). Lệnh và gotcha: `services/core/AGENTS.md`.
 
 ## Kiến trúc (giữ chuẩn LMS — Clean Architecture + DDD)
 
