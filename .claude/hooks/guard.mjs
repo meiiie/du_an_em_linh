@@ -251,7 +251,7 @@ function pushForces(token) {
 }
 
 // Commands that name a path without reading its contents (redirections are checked separately).
-const SAFE_WITH_SECRET = /^(ls|dir|Get-ChildItem|gci|touch|test|\[|stat|Test-Path|echo|printf|Write-Output|Write-Host)$/i;
+const SAFE_WITH_SECRET = /^(ls|dir|Get-ChildItem|gci|test|\[|stat|Test-Path|echo|printf|Write-Output|Write-Host)$/i;
 // A glob operand the shell (or the command) can expand to a secret: cat .env*, head apps/*/.env.*
 // Tokens with whitespace were quoted text (messages, inline code), not globs.
 const secretGlob = (op) => HAS_GLOB.test(op) && !/\s/.test(op) && globSelectsSecret(posix(op), { dotfilesNeedDot: tool === 'Bash' });
@@ -352,7 +352,40 @@ while ((queue.length || SUBS.length) && budget-- > 0) {
       if (['-R', '--repo', '--hostname'].includes(rest[k])) k += 1;
       else if (!rest[k].startsWith('-')) g.push(rest[k]);
     }
-    const apiMerge = g[0] === 'api' && rest.some((a) => /^\/?repos\/[^\s]+\/pulls\/\d+\/merge$/.test(a) || /^query=[\s\S]*\b(mergePullRequest|enablePullRequestAutoMerge)\b/.test(a));
+    let apiMerge = false;
+    if (g[0] === 'api') {
+      // Every request-body form of gh api: -f / -F / --raw-field / --field (separate, attached or
+      // with =), key=@file, --input <file | ->, heredoc bodies. Unreadable GraphQL input is refused.
+      const texts = [];
+      let unreadable = false;
+      for (let k = 0; k < rest.length; k += 1) {
+        const a = rest[k];
+        const input = a === '--input' || a.startsWith('--input=');
+        let value;
+        if (['-f', '-F', '--raw-field', '--field', '--input'].includes(a)) value = rest[(k += 1)];
+        else if (/^--(raw-field|field|input)=/.test(a)) value = a.slice(a.indexOf('=') + 1);
+        else if (/^-[fF]./.test(a)) value = a.slice(2);
+        else value = a;
+        if (value === undefined) continue;
+        const file = input ? value : value.match(/^[^=]*=@(.+)$/)?.[1];
+        if (file === '-') {
+          const body = words.find((w) => /__BODY_\d+__/.test(w));
+          if (body) texts.push(messageOf(body));
+          else unreadable = true;
+        } else if (file !== undefined) {
+          try {
+            texts.push(readFileSync(path.resolve(dir, file), 'utf8'));
+          } catch {
+            unreadable = true;
+          }
+        } else texts.push(value.replace(/__BODY_(\d+)__/g, (_, n) => bodies[Number(n)]));
+      }
+      const graphql = rest.some((a) => /(^|\/)graphql$/.test(a));
+      if (graphql && unreadable) deny('Không kiểm được thân yêu cầu GraphQL (file / stdin không đọc được lúc chạy hook). Truyền query bằng -f query=… hoặc file có sẵn.');
+      apiMerge =
+        rest.some((a) => /(^|\/)repos\/[^/\s]+\/[^/\s]+\/(pulls\/\d+\/merge|merges)\/?(\?.*)?$/.test(a)) ||
+        (graphql && texts.some((t) => /\b(mergePullRequest|enablePullRequestAutoMerge|mergeBranch)\b/.test(t)));
+    }
     if ((g[0] === 'pr' && g[1] === 'merge') || apiMerge) deny('Agent không tự merge PR. Chủ repo merge sau khi duyệt (QUY-TRINH §1).');
   }
   if (head !== 'git') continue;

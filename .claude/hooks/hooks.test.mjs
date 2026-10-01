@@ -30,6 +30,10 @@ const onMain = tempRepo('main');
 const onFeature = tempRepo('feat/x');
 writeFileSync(path.join(onFeature, 'msg-ok.txt'), `docs: thông điệp từ file\n\n${TRAILER}\n`);
 writeFileSync(path.join(onFeature, 'msg-bad.txt'), 'WIP\n');
+const MERGE_MUTATION = 'mutation { mergePullRequest(input: {pullRequestId: "x"}) { clientMutationId } }';
+writeFileSync(path.join(onFeature, 'merge.graphql'), MERGE_MUTATION);
+writeFileSync(path.join(onFeature, 'merge.json'), JSON.stringify({ query: MERGE_MUTATION }));
+writeFileSync(path.join(onFeature, 'ruleset.json'), '{"name": "main-protection"}');
 after(() => {
   rmSync(onMain, { recursive: true, force: true });
   rmSync(onFeature, { recursive: true, force: true });
@@ -232,6 +236,19 @@ describe('guard.mjs', () => {
     ['commit --reedit-message=HEAD (editor)', 'deny', bash('git commit --reedit-message=HEAD')],
     ['commit --reedit-message HEAD (editor)', 'deny', bash('git commit --reedit-message HEAD')],
     ['commit --reuse-message=HEAD', 'allow', bash('git commit --reuse-message=HEAD')],
+    // Review #52 (Codex, 7th pass): every gh api request-body form; touch writes.
+    ['gh api graphql --raw-field=query=merge', 'deny', bash(`gh api graphql --raw-field='query=${MERGE_MUTATION}'`)],
+    ['gh api graphql -fquery= attached', 'deny', bash(`gh api graphql '-fquery=${MERGE_MUTATION}'`)],
+    ['gh api graphql -F query=@file', 'deny', bash('gh api graphql -F query=@merge.graphql')],
+    ['gh api graphql --input file', 'deny', bash('gh api graphql --input merge.json')],
+    ['gh api graphql --input - heredoc', 'deny', bash(`gh api graphql --input - <<'EOF'\n${JSON.stringify({ query: MERGE_MUTATION })}\nEOF`)],
+    ['gh api graphql -f query="$(cat heredoc)"', 'deny', bash(`gh api graphql -f query="$(cat <<'EOF'\n${MERGE_MUTATION}\nEOF\n)"`)],
+    ['gh api graphql --input unreadable', 'deny', bash('gh api graphql --input khong-co.json')],
+    ['gh api full-URL REST merge', 'deny', bash('gh api -X PUT https://api.github.com/repos/o/r/pulls/52/merge')],
+    ['gh api graphql read query', 'allow', bash(`gh api graphql -f query='query { viewer { login } }'`)],
+    ['gh api REST --input existing file', 'allow', bash('gh api -X POST repos/o/r/rulesets --input ruleset.json')],
+    ['gh api REST comment mentioning the mutation', 'allow', bash(`gh api repos/o/r/issues/52/comments -f body='chặn mergePullRequest'`)],
+    ['touch .env', 'deny', bash(`touch ${ENV}`)],
   ];
   for (const [name, expected, payload] of cases) {
     test(name, () => assert.equal(runHook('guard.mjs', payload), expected));
