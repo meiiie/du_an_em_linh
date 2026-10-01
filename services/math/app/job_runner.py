@@ -16,7 +16,8 @@ def _run(kind, payload):
         from app.leakfilter import loc_ban_nhap
         # Chốt 29/09: trường chuẩn là `cau_hoc_sinh`; `cau_hs` giữ làm bí danh cũ
         cau = payload.get("cau_hoc_sinh", payload.get("cau_hs"))
-        return loc_ban_nhap(payload.get("ban_nhap") or "", payload.get("su_kien") or [], cau)
+        # 0004b: `dong_hoc_sinh` = các dòng bài nộp của học sinh (list[str], tùy chọn) -> ngoại lệ nhắc nguyên văn của luật y'
+        return loc_ban_nhap(payload.get("ban_nhap") or "", payload.get("su_kien") or [], cau, payload.get("dong_hoc_sinh"))
     if kind == "generate":
         from app.generator import sinh
         return sinh(payload)

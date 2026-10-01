@@ -12,6 +12,7 @@ import {
   hintLevels,
   problems,
   solutions,
+  submissionSteps,
   submissions,
   tutorMessages,
   tutorSessions,
@@ -245,6 +246,18 @@ export async function chayHoiGiaSu(opts: {
   let goiY = capHien > 0 ? (hints.length ? hints.find((h) => h.cap === capHien)?.noiDung || null : goiYBuoc(buoc, capHien)) : null;
   const facts = await db.select().from(solutions).where(eq(solutions.problemId, problemId)).limit(1);
   const suKien = (facts[0]?.protectedFacts as unknown[] | null) || [];
+  // 0004b (Kiểm định): các dòng bài nộp GẦN NHẤT của học sinh (dữ liệu server, không lấy từ câu mô hình) -> bộ lọc cho qua
+  // biểu thức y' mà gia sư nhắc NGUYÊN VĂN một dòng / một vế học sinh đã viết.
+  const dongHocSinh = latestSub[0]
+    ? (
+        await db
+          .select({ latex: submissionSteps.latex })
+          .from(submissionSteps)
+          .where(eq(submissionSteps.submissionId, latestSub[0].id))
+      )
+        .map((r) => r.latex)
+        .filter(Boolean)
+    : [];
   // Thang mẫu Sư phạm (supham/thang-goi-y-mau, 52 thang): khi bước này vừa nộp SAI với một loại kết quả có thang RIÊNG
   // (DIEM_THIEU, SAI_DAU, SAI_KET_LUAN…), gợi ý lấy từ thang riêng đó thay cho thang chung của bài. Câu đã qua bộ lọc lộ
   // đáp án ở dịch vụ toán (bị chặn thì lùi cấp / về thang chung). Cấp để trống (null) -> không hiện câu nào, đề xuất
@@ -423,6 +436,7 @@ export async function chayHoiGiaSu(opts: {
       ban_nhap: draft,
       su_kien: suKien,
       cau_hoc_sinh: text,
+      dong_hoc_sinh: dongHocSinh,
     });
     if (!filtered.cho_phep) {
       blocked = true;
@@ -435,6 +449,7 @@ export async function chayHoiGiaSu(opts: {
         ban_nhap: draft,
         su_kien: suKien,
         cau_hoc_sinh: text,
+        dong_hoc_sinh: dongHocSinh,
       });
       if (!again.cho_phep) {
         draft = "Em đọc lại đề và chỉ ra bước em đang làm. Mình không đưa kết quả.";
