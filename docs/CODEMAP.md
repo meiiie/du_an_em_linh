@@ -22,6 +22,7 @@ Harness (Anthropic 2026): tệp này là mục lục để agent biết chỗ m�
 | `.cursor/skills/` | Skill on-demand cho Cursor (FE, a11y, FastAPI) |
 | `.coderabbit.yaml` | Review tự động theo vùng, bám hiến chương |
 | `.github/labels.json` + `scripts/github/sync-labels.mjs` | Bộ nhãn ưu tiên / trạng thái / vùng / lab |
+| `.github/rulesets/main-protection.json` | Ruleset bảo vệ `main` (ranh giới phía máy chủ) — áp dụng theo `docs/GITHUB.md` |
 | `docs/DESIGN.md` | Token, lưới, nút, tâm quang học (46% / 3:2) |
 | `docs/doi-chieu-thiet-ke.md` | Khớp / cố ý chưa làm |
 | `docs/adr/` | Quyết định đã khóa |

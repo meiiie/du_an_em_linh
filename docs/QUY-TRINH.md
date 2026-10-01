@@ -53,6 +53,8 @@ yêu cầu ─► (lab nếu cần) ─► issue có tiêu chí ─► nhánh �
 - PR: điền đủ `.github/PULL_REQUEST_TEMPLATE.md`. Có số đo thật (lệnh + kết quả), ảnh 390/1280 nếu đụng UI.
 - Nhãn: `.github/labels.json` (`priority/*`, `status/*`, `area/*`, `lab/*`). Đồng bộ: `node scripts/github/sync-labels.mjs` (chủ repo chạy).
 
+**Hai lớp bảo vệ.** Ranh giới thật nằm trên GitHub: ruleset `main-protection` (`docs/GITHUB.md`) và secret-scanning push protection. Hook chỉ là hàng rào chống nhầm phía máy dev — một lệnh shell có vô số cách viết, nên đừng coi hook là bảo mật tuyệt đối.
+
 **Hook chặn tất định** (`.claude/hooks/guard.mjs`, chạy ở mọi chế độ quyền): đẩy lên `main`, `push --force` (trừ `--force-with-lease`), `--no-verify`, `gh pr merge`, stage hàng loạt (`git add -A` / `-u` / `.`, `git commit -a`), commit sai định dạng hoặc thiếu `Co-Authored-By` (mọi nguồn thông điệp: `-m`, `-F`, `-C`, `--amend --no-edit`), mọi thao tác đọc / ghi / sao chép file bí mật (kể cả `cp .env.example .env` — thiết lập `.env` là việc của người), sửa tay kết quả kiểm định trong `services/math/kiemdinh/ket-qua/`.
 
 ## 5. Cổng chất lượng
