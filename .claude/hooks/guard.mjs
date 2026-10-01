@@ -127,20 +127,17 @@ const git = (dir, args) => {
   }
 };
 
-// Short-option cluster of `git commit`, e.g. -am"msg" → a, then message "msg". Options after which
-// the rest of the cluster is an argument end the scan (git's own parsing rule).
+// Short-option cluster of `git commit`, e.g. -am"msg" → a, then message "msg". An option that takes
+// an argument ends the scan: the rest of the cluster (or the next token) is its value, as in git.
 function commitShort(token) {
-  const r = { noVerify: false, usesFile: false, message: undefined, needsNext: false };
+  const r = { noVerify: false, all: false, values: [] };
   for (let i = 1; i < token.length; i += 1) {
     const c = token[i];
     if (c === 'n') r.noVerify = true;
-    else if (c === 'm') {
-      const rest = token.slice(i + 1);
-      if (rest) r.message = rest;
-      else r.needsNext = true;
-      return r;
-    } else if ('FCc'.includes(c)) {
-      r.usesFile = true;
+    else if (c === 'a') r.all = true;
+    else if ('mFCc'.includes(c)) {
+      const kind = c === 'm' ? 'message' : c === 'F' ? 'file' : 'reuse';
+      r.values.push({ kind, value: token.slice(i + 1) || undefined });
       return r;
     } else if ('Stu'.includes(c) || !/[A-Za-z]/.test(c)) return r;
   }
@@ -156,7 +153,6 @@ function pushForces(token) {
 }
 
 const SAFE_WITH_SECRET = /^(ls|dir|Get-ChildItem|gci|touch|test|\[|stat|Test-Path|git)$/i;
-const COPIERS = /^(cp|copy|Copy-Item|cpi)$/i;
 const INTERPRETERS = /^(python3?|py|node|deno|bun|perl|ruby|php|bash|sh|zsh|pwsh|powershell)(\.exe)?$/i;
 const DANGER_RM = ['/', '~', '.', '..', '*', '.git'];
 let dir = cwd;
@@ -174,10 +170,9 @@ for (const words of segments(command)) {
     .map((w) => w.replace(/^\d*[<>]+&?/, ''))
     .filter(Boolean);
 
-  if (operands.some(isSecret) && !SAFE_WITH_SECRET.test(head)) {
-    if (!COPIERS.test(head)) deny(SECRET_READ);
-    if (isSecret(operands[0])) deny('Không sao chép file bí mật ra chỗ khác.');
-  }
+  // Reading, copying from, or writing to a secret path (cp .env.example .env would overwrite a
+  // developer's real keys) all need a human.
+  if (operands.some(isSecret) && !SAFE_WITH_SECRET.test(head)) deny(SECRET_READ);
   if (INTERPRETERS.test(head) && rest.some(mentionsSecret)) deny(SECRET_READ);
   if (head === 'rm' && rest.some((w) => /^-\w*[rR]/.test(w)) && operands.some((w) => DANGER_RM.includes(w.replace(/\/+$/, '') || '/')))
     deny('Lệnh xóa đệ quy nhắm vào thư mục gốc, repo hoặc .git bị chặn.');
@@ -201,8 +196,9 @@ for (const words of segments(command)) {
   if (args.includes('--no-verify')) deny('Không bỏ qua hook git (--no-verify). Sửa nguyên nhân thay vì lách (QUY-TRINH §4).');
 
   if (sub === 'add') {
-    if (args.some((a) => ['-A', '--all', '.', ':/', '*', ':/*'].includes(a)))
-      deny('Stage từng đường dẫn cụ thể thay vì git add -A / git add . (tránh kéo theo bí mật và file rác).');
+    const pathspecs = args.filter((a) => !a.startsWith('-'));
+    if (args.some((a) => ['-A', '--all', '.', ':/', '*', ':/*'].includes(a)) || (args.some((a) => a === '-u' || a === '--update') && !pathspecs.length))
+      deny('Stage từng đường dẫn cụ thể thay vì git add -A / -u / . (tránh kéo theo bí mật, file rác, thay đổi của việc khác).');
     if (args.some(isSecret)) deny('Không stage file bí mật.');
   }
 
@@ -219,23 +215,54 @@ for (const words of segments(command)) {
 
   if (sub === 'commit') {
     let noVerify = false;
-    let usesFile = false;
-    const messages = [];
+    let bulk = false;
+    const sources = []; // { kind: 'message' | 'file' | 'reuse', value }
+    const LONG = { '--message': 'message', '--file': 'file', '--reuse-message': 'reuse', '--reedit-message': 'reuse' };
     for (let k = 0; k < args.length; k += 1) {
       const a = args[k];
-      if (a === '--message' && args[k + 1] !== undefined) messages.push(messageOf(args[(k += 1)]));
-      else if (a.startsWith('--message=')) messages.push(messageOf(a.slice('--message='.length)));
-      else if (['--file', '--reuse-message', '--reedit-message'].includes(a) || /^--(file|reuse-message|reedit-message)=/.test(a)) usesFile = true;
+      const eq = a.indexOf('=');
+      if (LONG[a] && args[k + 1] !== undefined) sources.push({ kind: LONG[a], value: args[(k += 1)] });
+      else if (eq > 0 && LONG[a.slice(0, eq)]) sources.push({ kind: LONG[a.slice(0, eq)], value: a.slice(eq + 1) });
+      else if (a === '--all') bulk = true;
       else if (/^-[A-Za-z]/.test(a)) {
         const s = commitShort(a);
         noVerify ||= s.noVerify;
-        usesFile ||= s.usesFile;
-        if (s.message !== undefined) messages.push(messageOf(s.message));
-        else if (s.needsNext && args[k + 1] !== undefined) messages.push(messageOf(args[(k += 1)]));
+        bulk ||= s.all;
+        for (const v of s.values) sources.push({ kind: v.kind, value: v.value ?? args[(k += 1)] });
       }
     }
     if (noVerify) deny('Không bỏ qua hook git (git commit -n = --no-verify).');
-    if (usesFile || (args.includes('--amend') && args.includes('--no-edit')) || !messages.length) continue;
+    if (bulk) deny('Không dùng git commit -a / --all: stage từng đường dẫn rồi commit, tránh kéo theo thay đổi của việc khác.');
+
+    // Every way git takes a message is checked: -m, -F <file> / -F - (heredoc), -C / -c <commit>, --amend --no-edit.
+    const messages = [];
+    for (const { kind, value } of sources) {
+      if (value === undefined) continue;
+      if (kind === 'message') messages.push(messageOf(value));
+      else if (kind === 'file') {
+        if (value === '-') {
+          const body = words.find((w) => /__BODY_\d+__/.test(w));
+          if (!body) deny('Không kiểm được thông điệp commit đọc từ stdin. Dùng git commit -m "$(cat <<\'EOF\' … EOF)".');
+          messages.push(messageOf(body));
+        } else {
+          if (isSecret(value)) deny(SECRET_READ);
+          try {
+            messages.push(readFileSync(path.resolve(repo, value), 'utf8'));
+          } catch {
+            deny('Không đọc được file thông điệp để kiểm (file chưa tồn tại lúc chạy hook?). Dùng git commit -m với heredoc.');
+          }
+        }
+      } else {
+        const reused = git(repo, ['log', '-1', '--format=%B', value]);
+        if (!reused) deny('Không đọc được thông điệp của commit được dùng lại để kiểm.');
+        messages.push(reused);
+      }
+    }
+    if (!messages.length && args.includes('--amend') && args.includes('--no-edit')) {
+      const head = git(repo, ['log', '-1', '--format=%B', 'HEAD']);
+      if (head) messages.push(head);
+    }
+    if (!messages.length) continue;
     const full = messages.join('\n\n');
     const subject = (full.split('\n').find((l) => l.trim()) ?? '').trim();
     if (!CONVENTIONAL.test(subject))

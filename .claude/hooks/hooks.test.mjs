@@ -1,7 +1,7 @@
 // Tests for the Claude Code hooks in this folder. Run: node --test .claude/hooks/*.test.mjs
 import assert from 'node:assert/strict';
 import { execFileSync, spawnSync } from 'node:child_process';
-import { mkdtempSync, rmSync } from 'node:fs';
+import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { after, describe, test } from 'node:test';
@@ -22,12 +22,14 @@ function tempRepo(branch) {
   const dir = mkdtempSync(path.join(tmpdir(), 'hook-test-'));
   const g = (...a) => execFileSync('git', ['-C', dir, ...a], { stdio: 'ignore' });
   g('init', '-b', branch);
-  g('-c', 'user.email=t@example.com', '-c', 'user.name=t', 'commit', '--allow-empty', '-m', 'init');
+  g('-c', 'user.email=t@example.com', '-c', 'user.name=t', 'commit', '--allow-empty', '-m', 'chore: init', '-m', TRAILER);
   return dir;
 }
 
 const onMain = tempRepo('main');
 const onFeature = tempRepo('feat/x');
+writeFileSync(path.join(onFeature, 'msg-ok.txt'), `docs: thông điệp từ file\n\n${TRAILER}\n`);
+writeFileSync(path.join(onFeature, 'msg-bad.txt'), 'WIP\n');
 after(() => {
   rmSync(onMain, { recursive: true, force: true });
   rmSync(onFeature, { recursive: true, force: true });
@@ -50,7 +52,11 @@ describe('guard.mjs', () => {
     ['cat .env', 'deny', bash(`cat ${ENV}`)],
     ['grep .env', 'deny', bash(`grep KEY apps/web/${ENV}`)],
     ['PowerShell Get-Content .env', 'deny', ps(`Get-Content "C:\\repo\\${ENV}"`)],
-    ['cp .env.example .env', 'allow', bash(`cp ${ENV}.example ${ENV}`)],
+    // Review #52 (Codex P1, 2nd pass): copying onto .env would overwrite a developer's real keys.
+    ['cp .env.example .env', 'deny', bash(`cp ${ENV}.example ${ENV}`)],
+    ['printf > .env', 'deny', bash(`printf 'TOKEN=x' > ${ENV}`)],
+    ['tee .env', 'deny', bash(`echo x | tee ${ENV}`)],
+    ['mv onto .env', 'deny', bash(`mv tmp.txt ${ENV}`)],
     ['cp .env elsewhere', 'deny', bash(`cp ${ENV} /tmp/x.txt`)],
     ['cat README', 'allow', bash('cat README.md | head -20')],
     ['push origin main', 'deny', bash('git push origin main')],
@@ -78,8 +84,20 @@ describe('guard.mjs', () => {
     ['commit two -m', 'allow', bash(`git commit -m "feat(lab): them lab" -m "${TRAILER}"`)],
     ['commit one-line no trailer', 'deny', bash('git commit -m "fix: sua loi"')],
     ['commit -am WIP', 'deny', bash('git commit -am "WIP"')],
-    ['commit -F', 'allow', bash('git commit -F .git/MSG')],
-    ['commit --amend --no-edit', 'allow', bash('git commit --amend --no-edit')],
+    // Review #52 (Codex P2, 2nd pass): every message source is validated.
+    ['commit -F valid file', 'allow', bash('git commit -F msg-ok.txt')],
+    ['commit --file= invalid file', 'deny', bash('git commit --file=msg-bad.txt')],
+    ['commit -F missing file', 'deny', bash('git commit -F khong-co.txt')],
+    ['commit -F secret file', 'deny', bash(`git commit -F ${ENV}`)],
+    ['commit -F - heredoc ok', 'allow', bash(`git commit -F - <<'EOF'\nchore(x): qua stdin\n\n${TRAILER}\nEOF`)],
+    ['commit -F - heredoc bad', 'deny', bash(`git commit -F - <<'EOF'\nWIP\nEOF`)],
+    ['commit --amend --no-edit (HEAD conforms)', 'allow', bash('git commit --amend --no-edit')],
+    ['commit -C HEAD (reused message conforms)', 'allow', bash('git commit -C HEAD')],
+    // Review #52 (Codex P2, 2nd pass): no bulk staging.
+    ['git add -u (pathless)', 'deny', bash('git add -u')],
+    ['git add -u with path', 'allow', bash('git add -u apps/web')],
+    ['commit -a', 'deny', bash(`git commit -a -m "fix: x" -m "${TRAILER}"`)],
+    ['commit --all', 'deny', bash(`git commit --all -m "fix: x" -m "${TRAILER}"`)],
     ['commit escaped quotes', 'allow', bash(`git commit -m "fix(gv): sửa \\"Đã xử lý\\"" -m "${TRAILER}"`)],
     ['PowerShell here-string ok', 'allow', ps(`git commit -m @'\nchore(harness): thêm hook\n\n${TRAILER}\n'@`)],
     ['PowerShell here-string bad', 'deny', ps(`git commit -m @'\nthêm hook\n'@`)],
@@ -108,7 +126,8 @@ describe('guard.mjs', () => {
     ['git rm --cached .env', 'allow', bash(`git rm --cached ${ENV}`)],
     // Review #52 (Codex P2): attached short options.
     ['commit -m"WIP" attached', 'deny', bash('git commit -m"WIP"')],
-    ['commit -am"..." attached + trailer', 'allow', bash(`git commit -am"docs: sửa lỗi chính tả" -m "${TRAILER}"`)],
+    ['commit -m"..." attached + trailer', 'allow', bash(`git commit -m"docs: sửa lỗi chính tả" -m "${TRAILER}"`)],
+    ['commit -am"..." is bulk staging', 'deny', bash(`git commit -am"docs: sửa lỗi chính tả" -m "${TRAILER}"`)],
     ['attached message with letter n is not -n', 'allow', bash(`git commit -m"fix: thêm nút" -m "${TRAILER}"`)],
     ['message token starting with -n', 'allow', bash(`git commit -m "-n không còn bị hiểu nhầm" -m "${TRAILER}"`.replace('"-n', '"fix: -n'))],
     ['commit -nm cluster', 'deny', bash(`git commit -nm "fix: x" -m "${TRAILER}"`)],
