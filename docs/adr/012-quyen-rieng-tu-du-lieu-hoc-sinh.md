@@ -37,12 +37,15 @@ Phân tích, chấm 4 phương án, độ nhạy, câu hỏi cho luật sư: [`l
 - **Quyền chủ thể trong ứng dụng:** xem, sửa, tải về, xóa, rút đồng ý, theo thời hạn NĐ 356 (xóa: 20 ngày). Xóa và hết hạn lưu chạy tự động, có nhật ký.
   - Nhật ký xóa và rút đồng ý chỉ chứa mã giả danh, lưu ngoài dữ liệu được sao lưu.
   - Khôi phục bản sao lưu thì phát lại nhật ký này trước khi mở lại dịch vụ, để dữ liệu đã xóa không sống lại.
+  - Yêu cầu xóa và rút đồng ý được gửi tới mọi bên xử lý đã nhận dữ liệu của người đó (kênh nhắc lịch, nhà LLM nếu có lưu, OCR ngoài nếu có).
+  - Theo dõi xác nhận và thời hạn của từng bên. Yêu cầu chỉ hoàn tất khi mọi bên đã xác nhận xóa.
 - **Minh bạch và giám sát AI.**
   - Mọi câu gia sư gắn nhãn «Gia sư AI».
   - Giáo viên xem và ghi đè mức hiểu, gợi ý bài; mỗi gợi ý có lý do xem được.
 - **Bảo mật.**
   - CSDL của `services/core`: `ENABLE` + `FORCE` RLS cho mọi bảng dữ liệu học sinh, kể cả bảng mới.
     - Chính sách **đóng mặc định**: thiếu ngữ cảnh người dùng (`app.user_id`) thì không thấy dòng nào.
+    - Ngữ cảnh đặt **trong từng giao dịch** bằng `set_config('app.user_id', …, true)`, như `apps/web/lib/rls.ts`; không đặt ở mức phiên kết nối, vì pool tái dùng kết nối sẽ mang ngữ cảnh của học sinh trước. Truy cập dữ liệu học sinh ngoài giao dịch bị từ chối.
     - Khác v0: hàm `rls_duoc_xem_hs` của migration 0010 cho qua mọi dòng khi chưa đặt ngữ cảnh (để chạy tác vụ hệ thống), nên không làm mốc an toàn cho dữ liệu thật.
     - Tác vụ bảo trì (migration, seed, báo cáo tổng hợp) dùng vai trò CSDL riêng, có kiểm soát.
     - Vai trò CSDL của ứng dụng không phải superuser và không có `BYPASSRLS` (cả hai đều bỏ qua RLS).
