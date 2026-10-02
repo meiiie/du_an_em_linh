@@ -1,13 +1,15 @@
 # -*- coding: utf-8 -*-
 """Job kiem_dong_cong_thuc (ADR 013, #83, T042b–T042c).
 
-Bảng 6 dòng của v0 phải DAT cả 6 ở tầng 1 và tầng 2 với 4 tài liệu của lớp (3 của v0 + sp-tai-lieu-0001).
-Ca âm: quy tắc sai bị SAI kèm phản ví dụ; loại máy chưa biết, tài liệu `chua_ro`, đầu vào độc không bao giờ DAT.
-«Hết giờ → không DAT» do sandbox (test_sandbox.py) và client của core (#82, T009) bảo đảm: kết quả hết giờ không có `dong`.
+Bảng 6 dòng của v0 phải DAT cả 6 ở hai tầng với 5 tài liệu của lớp (3 của v0, sp-tai-lieu-0001, sp-tai-lieu-0002).
+Ca âm và ca rà độc lập (math-verifier trên #101): định lí chỉ DAT khi khớp danh mục; câu máy không đọc trọn không bao
+giờ DAT; quy tắc sai bị SAI kèm phản ví dụ đúng mệnh đề đã viết.
+«Hết giờ → không DAT» do sandbox (test_sandbox.py) và client của core (#82) bảo đảm: kết quả hết giờ không có `dong`.
 """
 import io
 import json
 import os
+import re
 
 import pytest
 
@@ -50,15 +52,19 @@ TAI_LIEU_V0 = [
 ]
 
 
-def _tai_lieu_sp(quyen=None):
-    """sp-tai-lieu-0001: tệp dữ liệu nếu #85 đã áp bản vá, không thì đọc thẳng từ bản vá của lab (#84)."""
-    p = os.path.join(REPO, "data", "supham", "tai-lieu", "sp-tai-lieu-0001.json")
+def _tai_lieu_sp(ma="sp-tai-lieu-0001", quyen=None):
+    """Tài liệu của lab Sư phạm: tệp dữ liệu nếu #85 đã áp bản vá, không thì đọc thẳng từ bản vá (#84, #103)."""
+    p = os.path.join(REPO, "data", "supham", "tai-lieu", ma + ".json")
     if os.path.exists(p):
         doc = json.load(io.open(p, encoding="utf-8"))
     else:
-        patch = io.open(os.path.join(REPO, "labs", "pedagogy", "ban-va", "sp-tai-lieu-0001.patch"), encoding="utf-8").read()
+        patch = io.open(os.path.join(REPO, "labs", "pedagogy", "ban-va", ma + ".patch"), encoding="utf-8").read()
         doc = json.loads("\n".join(d[1:] for d in patch.splitlines() if d.startswith("+") and not d.startswith("+++")))
     return {"id": doc["ma"], "license_status": quyen or doc["licenseStatus"], "text": doc["textContent"]}
+
+
+def _tai_lieu_lop():
+    return TAI_LIEU_V0 + [_tai_lieu_sp("sp-tai-lieu-0001"), _tai_lieu_sp("sp-tai-lieu-0002")]
 
 
 def _dong(*rows):
@@ -70,24 +76,45 @@ def _chay(rows, tai_lieu):
     return {d["id"]: d for d in kq["dong"]}, kq
 
 
-def test_bang_v0_dat_ca_6_o_hai_tang():
-    kq, _ = _chay(BANG_V0, TAI_LIEU_V0 + [_tai_lieu_sp()])
+def _nguon(d):
+    t2 = d["tang2"]
+    return {t["tai_lieu"] for t in [t2["trich_dan"]] + t2.get("trich_dan_them", [])}
+
+
+# ------------------------------------------------------------------ bảng v0
+def test_bang_v0_dat_ca_6_o_hai_tang_voi_5_tai_lieu():
+    kq, _ = _chay(BANG_V0, _tai_lieu_lop())
     for ma, loai in (("d-1", "DANG_THUC"), ("d-2", "DANG_THUC"), ("d-3", "DANG_THUC"),
                      ("d-4", "DINH_LI"), ("d-5", "DINH_LI"), ("d-6", "DINH_LI")):
         d = kq[ma]
         assert d["loai"] == loai, (ma, d)
         assert d["tang1"]["trang_thai"] == "DAT", (ma, d["tang1"])
         assert d["tang2"]["trang_thai"] == "DAT", (ma, d["tang2"])
-    # căn cứ tầng 2 là đúng tài liệu: 3 đẳng thức từ sp-tai-lieu-0001, 3 định lí từ ghi chú đơn điệu của v0
-    assert {kq[m]["tang2"]["trich_dan"]["tai_lieu"] for m in ("d-1", "d-2", "d-3")} == {"sp-tai-lieu-0001"}
-    assert {kq[m]["tang2"]["trich_dan"]["tai_lieu"] for m in ("d-4", "d-5", "d-6")} == {"v0-don-dieu"}
+    assert [_nguon(kq[m]) for m in ("d-1", "d-2", "d-3")] == [{"sp-tai-lieu-0001"}] * 3
+    assert _nguon(kq["d-4"]) == {"v0-don-dieu"}
+    assert _nguon(kq["d-5"]) == {"v0-don-dieu", "sp-tai-lieu-0002"}
+    assert _nguon(kq["d-6"]) == {"sp-tai-lieu-0002"}
+    assert {kq[m]["tang1"]["muc_bang_chung"] for m in ("d-1", "d-2", "d-3")} == {"CAS"}
+    assert {kq[m]["tang1"]["muc_bang_chung"] for m in ("d-4", "d-5", "d-6")} == {"DANH_MUC"}
+
+
+def test_thieu_sp_tai_lieu_0002_thi_d5_d6_thieu_can_cu():
+    # Lý do có bản vá sp-tai-lieu-0002 (#103): mọi mệnh đề của dòng định lí phải có đoạn trích.
+    kq, _ = _chay(BANG_V0, TAI_LIEU_V0 + [_tai_lieu_sp("sp-tai-lieu-0001")])
+    assert [kq[m]["tang2"]["trang_thai"] for m in ("d-1", "d-2", "d-3", "d-4")] == ["DAT"] * 4
+    assert [kq[m]["tang2"]["trang_thai"] for m in ("d-5", "d-6")] == ["KHONG_KIEM_DUOC"] * 2
+    assert "không đổi dấu" in kq["d-5"]["tang2"]["ly_do"]
+
+
+def test_chi_tai_lieu_v0_thi_ba_dang_thuc_thieu_can_cu():
+    # Lý do có bản vá sp-tai-lieu-0001 (#84): tài liệu của v0 không phát biểu lũy thừa, tổng, thương.
+    kq, _ = _chay(BANG_V0, TAI_LIEU_V0)
+    assert [kq[m]["tang2"]["trang_thai"] for m in ("d-1", "d-2", "d-3")] == ["KHONG_KIEM_DUOC"] * 3
+    assert kq["d-4"]["tang2"]["trang_thai"] == "DAT"
 
 
 def test_tai_lieu_chia_doan_theo_cau_van_dat_va_trich_dung_doan():
-    # Core gửi tài liệu đã chia đoạn (`doan`). Phát biểu dòng lũy thừa dài hai câu nên không nằm trọn trong một
-    # đoạn câu; LaTeX của dòng vẫn nằm trọn trong một đoạn nên tầng 2 vẫn đạt, và trích dẫn trỏ đúng đoạn đó.
-    import re
-
+    # Core gửi tài liệu đã chia đoạn (`doan`). Mỗi câu của phát biểu phải nằm nguyên văn trong một đoạn được phép.
     sp_doc = _tai_lieu_sp()
     cau = [c.strip() for c in re.split(r"(?<=[.;])\s+", sp_doc["text"]) if c.strip()]
     chia = {"id": sp_doc["id"], "license_status": "tu_soan", "doan": [{"id": "p-%d" % i, "text": c} for i, c in enumerate(cau)]}
@@ -98,72 +125,10 @@ def test_tai_lieu_chia_doan_theo_cau_van_dat_va_trich_dung_doan():
         assert t2["trich_dan"]["doan"].startswith("p-") and lt in t2["trich_dan"]["trich"], (ma, t2)
 
 
-def test_chi_tai_lieu_v0_thi_ba_dang_thuc_thieu_can_cu():
-    # Lý do có bản vá sp-tai-lieu-0001 (#84): tài liệu của v0 không phát biểu lũy thừa, tổng, thương.
-    kq, _ = _chay(BANG_V0, TAI_LIEU_V0)
-    assert [kq[m]["tang2"]["trang_thai"] for m in ("d-1", "d-2", "d-3")] == ["KHONG_KIEM_DUOC"] * 3
-    assert [kq[m]["tang2"]["trang_thai"] for m in ("d-4", "d-5", "d-6")] == ["DAT"] * 3
-
-
-def test_dinh_li_dat_ghi_ro_khong_phai_chung_minh():
-    kq, _ = _chay(BANG_V0[3:], TAI_LIEU_V0)
-    assert all("không phải chứng minh" in kq[m]["tang1"]["can_cu"] for m in ("d-4", "d-5", "d-6"))
-
-
-def test_thuong_doi_dau_tu_so_la_SAI_kem_phan_vi_du():
-    kq, _ = _chay([("s", "Đạo hàm thương", r"(u/v)' = (uv' - u'v) / v^2", "")], [])
-    t1 = kq["s"]["tang1"]
-    assert (kq["s"]["loai"], t1["trang_thai"]) == ("DANG_THUC", "SAI")
-    assert t1["phan_vi_du"]["hieu_hai_ve"] != "0"
-
-
-def test_frac_latex_dung_dat():
-    kq, _ = _chay([("q", "Thương", r"\left(\frac{u}{v}\right)' = \frac{u'v-uv'}{v^2}", "")], [])
-    assert kq["q"]["tang1"]["trang_thai"] == "DAT"
-
-
-def test_dong_bien_suy_ra_dao_ham_duong_la_SAI_phan_vi_du_x3():
-    kq, _ = _chay([("m", "Đảo", "", "Nếu hàm đồng biến trên khoảng thì y' > 0 trên khoảng đó.")], [])
-    t1 = kq["m"]["tang1"]
-    assert (kq["m"]["loai"], t1["trang_thai"]) == ("DINH_LI", "SAI")
-    assert t1["phan_vi_du"]["ham"] == "y = x**3"
-
-
-def test_thieu_dieu_kien_huu_han_diem_la_SAI():
-    kq, _ = _chay([("m", "Thiếu điều kiện", "", "Nếu y' ≥ 0 trên khoảng thì hàm đồng biến trên khoảng đó.")], [])
-    t1 = kq["m"]["tang1"]
-    assert t1["trang_thai"] == "SAI"
-    assert t1["phan_vi_du"]["ham"] == "y = 1"  # hàm hằng: y' = 0 ≥ 0 nhưng không đồng biến
-
-
-def test_dao_ham_duong_suy_ra_nghich_bien_la_SAI():
-    kq, _ = _chay([("m", "Ngược chiều", r"y' > 0 \Rightarrow \text{nghịch biến}", "")], [])
-    assert kq["m"]["tang1"]["trang_thai"] == "SAI"
-
-
-def test_cuc_tri_nguoc_la_SAI():
-    kq, _ = _chay([("c", "Ngược", "", "Đạo hàm đổi từ dương sang âm thì cực tiểu.")], [])
-    t1 = kq["c"]["tang1"]
-    assert t1["trang_thai"] == "SAI"
-    assert t1["phan_vi_du"]["thuc_te"] == "cực đại"
-
-
-def test_khong_doi_dau_van_la_cuc_tri_la_SAI():
-    kq, _ = _chay([("c", "Sai", "", "Đạo hàm bằng 0 mà không đổi dấu thì vẫn là cực trị.")], [])
-    t1 = kq["c"]["tang1"]
-    assert t1["trang_thai"] == "SAI"
-    assert t1["phan_vi_du"]["ham"] == "y = x**3"
-
-
-def test_loai_may_chua_biet_khong_kiem_duoc():
-    kq, _ = _chay([("k", "Nguyên hàm", r"\int x^n dx = \frac{x^{n+1}}{n+1} + C", "Nguyên hàm của x mũ n.")], [])
-    assert (kq["k"]["loai"], kq["k"]["tang1"]["trang_thai"], kq["k"]["tang2"]["trang_thai"]) == \
-        ("KHONG_BIET", "KHONG_KIEM_DUOC", "KHONG_KIEM_DUOC")
-
-
-def test_dinh_nghia_toi_han_thieu_thanh_phan_khong_dat():
-    kq, _ = _chay([("t", "Điểm tới hạn", "", "Điểm tới hạn là nghiệm của đạo hàm bằng 0.")], [])
-    assert kq["t"]["tang1"]["trang_thai"] == "KHONG_KIEM_DUOC"
+def test_dong_dang_thuc_latex_dung_loi_sai_khong_khoa_duoc():
+    # Rà #101, mục 12: phát biểu bằng lời của dòng phải có nguyên văn trong tài liệu được phép.
+    kq, _ = _chay([("l5", "Thương", r"(u/v)' = (u'v - uv') / v^2", "Với thương, tử là uv' trừ u'v, mẫu là v bình.")], _tai_lieu_lop())
+    assert (kq["l5"]["tang1"]["trang_thai"], kq["l5"]["tang2"]["trang_thai"]) == ("DAT", "KHONG_KIEM_DUOC")
 
 
 def test_tai_lieu_chua_ro_khong_lam_can_cu_tang_2():
@@ -173,8 +138,87 @@ def test_tai_lieu_chua_ro_khong_lam_can_cu_tang_2():
 
 
 def test_cong_thuc_dung_nhung_khong_co_trong_tai_lieu():
-    kq, _ = _chay([("p", "Tích", r"(uv)' = u'v + uv'", "")], TAI_LIEU_V0 + [_tai_lieu_sp()])
+    kq, _ = _chay([("p", "Tích", r"(uv)' = u'v + uv'", "")], _tai_lieu_lop())
     assert (kq["p"]["tang1"]["trang_thai"], kq["p"]["tang2"]["trang_thai"]) == ("DAT", "KHONG_KIEM_DUOC")
+
+
+# ------------------------------------------------------------------ tầng 1: bộ ca của lượt rà độc lập (#101)
+DAT, SAI, KKD = "DAT", "SAI", "KHONG_KIEM_DUOC"
+CA = [
+    ("T1", DAT, r"y' > 0 \Rightarrow \text{đồng biến}", ""),
+    ("T2", DAT, "", "Nếu hàm số đồng biến trên khoảng K thì y' ≥ 0 trên K."),
+    ("T4", SAI, "", "Nếu hàm đồng biến trên khoảng thì y' > 0 trên khoảng đó."),
+    ("T5", DAT, "", "Nếu y' ≥ 0 trên khoảng K và y' = 0 chỉ tại hữu hạn điểm thì hàm đồng biến trên K."),
+    ("T-thieu-huu-han", SAI, "", "Nếu y' ≥ 0 trên khoảng thì hàm đồng biến trên khoảng đó."),
+    ("T15", SAI, "", "Hàm đồng biến trên khoảng K khi và chỉ khi y' ≥ 0 trên K và y' = 0 chỉ tại hữu hạn điểm."),
+    ("T16", SAI, "", "Nếu hàm đồng biến trên khoảng K thì y' ≥ 0 trên K và y' = 0 chỉ tại hữu hạn điểm."),
+    ("T17", SAI, "", "Nếu y' > 0 trên tập xác định thì hàm số đồng biến trên tập xác định."),
+    ("T18", KKD, "", "Nếu y' < 0 với mọi x > 0 thì hàm đồng biến khi x > 0."),
+    ("T19", DAT, "", "Nếu y' < 0 với mọi x thuộc khoảng (0; +∞) thì hàm nghịch biến trên khoảng (0; +∞)."),
+    ("T21", KKD, "", "Nếu y' > 0 trên khoảng thì hàm không đồng biến trên khoảng đó."),
+    ("T22", KKD, "", "Nếu y' ≥ 0 trên khoảng thì hàm chưa chắc đồng biến."),
+    ("T23", DAT, "", "Nếu hàm đồng biến trên khoảng K thì y' > 0 hoặc y' = 0 trên K."),
+    ("T24", DAT, "", "Nếu hàm đồng biến trên khoảng thì đạo hàm dương hoặc bằng 0 trên khoảng đó."),
+    ("T27", KKD, "", "Nếu y'(1) > 0 thì hàm đồng biến trên ℝ."),
+    ("T28", KKD, "", "Nếu y' ≥ 0 và y' = 0 không chỉ tại hữu hạn điểm thì hàm đồng biến."),
+    ("T35", KKD, "", "Nếu y' > 0 trên khoảng thì hàm đồng biến và đạt cực đại tại mọi điểm."),
+    ("T36", KKD, "", "Mọi nghiệm của y' = 0 đều là cực trị."),
+    ("NB-nguoc", SAI, r"y' > 0 \Rightarrow \text{nghịch biến}", ""),
+    ("C5", SAI, r"- \to + : \text{cực đại}", ""),
+    ("C8", DAT, "", "Đạo hàm bằng 0 mà không đổi dấu thì không có cực trị."),
+    ("C9", DAT, "", "Đạo hàm bằng 0 mà không đổi dấu thì hàm không đạt cực trị tại đó."),
+    ("C10", SAI, "", "Đạo hàm đổi từ dương sang âm thì cực đại, từ âm sang dương thì cực đại."),
+    ("C11", SAI, "", "Hàm đạt cực tiểu khi y' đổi từ dương sang âm."),
+    ("C12", KKD, "", "Đạo hàm đổi từ dương sang âm thì không phải là cực đại."),
+    ("C15", SAI, "", "Đạo hàm đổi từ dương sang âm thì cực đại, kể cả khi x0 không thuộc tập xác định."),
+    ("C19", KKD, "", "Nếu y' đổi dấu từ dương sang âm tại x0 thì f(x0) là giá trị lớn nhất."),
+    ("C22", DAT, "", "Hàm số đạt cực đại tại x0 khi y' đổi dấu từ dương sang âm khi x qua x0."),
+    ("C24", KKD, r"+ \to - \Leftrightarrow \text{cực đại}", ""),
+    ("KD-van", SAI, "", "Đạo hàm bằng 0 mà không đổi dấu thì vẫn là cực trị."),
+    ("TH-du", DAT, "", "Điểm tới hạn là điểm thuộc tập xác định mà tại đó đạo hàm bằng 0 hoặc đạo hàm không xác định."),
+    ("TH2", KKD, "", "Điểm tới hạn là điểm mà y' = 0 hoặc y' không xác định."),
+    ("TH3", SAI, "", "Điểm tới hạn là điểm thuộc tập xác định mà y' = 0 hoặc hàm số không xác định."),
+    ("TH5", SAI, "", "Điểm tới hạn gồm nghiệm của y' = 0 và điểm y' không xác định, kể cả điểm không thuộc tập xác định."),
+    ("TH6", KKD, "", "Mọi điểm tới hạn đều là cực trị."),
+    ("D27", DAT, r"(u(x)v(x))' = u'(x)v(x) + u(x)v'(x)", ""),
+    ("D28", DAT, r"(u(x)+v(x))' = u'(x) + v'(x)", ""),
+    ("D29", DAT, r"\left(\frac{u(x)}{v(x)}\right)' = \frac{u'(x)v(x)-u(x)v'(x)}{v(x)^2}", ""),
+    ("D35", SAI, r"(u(x))' = u + u'(x)", ""),
+    ("D-quen-v'", SAI, r"(u/v)' = u'/v", ""),
+    ("D-tich-sai", SAI, r"(uv)' = u'v'", ""),
+    ("D-dfrac-prime", DAT, r"\left(\dfrac{u}{v}\right)^{\prime} = \dfrac{u'v-uv'}{v^2}", ""),
+    ("D-thuong-doi-dau", SAI, r"(u/v)' = (uv' - u'v) / v^2", ""),
+]
+
+
+@pytest.mark.parametrize("ma,mong,latex,loi", CA, ids=[c[0] for c in CA])
+def test_tang_1_bo_ca_ra_doc_lap(ma, mong, latex, loi):
+    tieu_de = "Điểm tới hạn" if ma.startswith("TH") else ""
+    d = kiem_dong_cong_thuc({"dong": [{"id": ma, "tieu_de": tieu_de, "latex": latex, "phat_bieu": loi}]})["dong"][0]
+    assert d["tang1"]["trang_thai"] == mong, d["tang1"]
+
+
+def test_phan_vi_du_dung_menh_de_da_viet():
+    # «đồng biến ⇒ y' > 0»: x³; «y' ≥ 0 ⇒ đồng biến»: hàm hằng; «ĐB ⇒ hữu hạn điểm»: x − sin x; trên TXĐ: (2x − 1)/(x + 1)
+    def pv(loi, latex=""):
+        return kiem_dong_cong_thuc({"dong": [{"id": "a", "latex": latex, "phat_bieu": loi}]})["dong"][0]["tang1"]["phan_vi_du"]
+    assert pv("Nếu hàm đồng biến trên khoảng thì y' > 0 trên khoảng đó.")["ham"] == "y = x**3"
+    assert pv("Nếu y' ≥ 0 trên khoảng thì hàm đồng biến trên khoảng đó.")["ham"] == "y = 1"
+    assert pv("Nếu hàm đồng biến trên khoảng K thì y' ≥ 0 trên K và y' = 0 chỉ tại hữu hạn điểm.")["ham"] == "y = x - sin(x)"
+    tren_txd = pv("Nếu y' > 0 trên tập xác định thì hàm số đồng biến trên tập xác định.")
+    assert tren_txd["ham"] == "y = (2*x - 1)/(x + 1)" and tren_txd["gia_tri"] == ["5", "-1"]
+    nguoc = pv("", r"- \to + : \text{cực đại}")
+    assert (nguoc["x0"], nguoc["doi_dau"], nguoc["thuc_te"]) == ("1", "- sang +", "cực tiểu")
+
+
+def test_cau_khong_doc_tron_ghi_ro_ly_do():
+    d = kiem_dong_cong_thuc({"dong": [{"id": "a", "latex": "", "phat_bieu": "Nếu y' > 0 trên khoảng thì hàm đồng biến. Mọi nghiệm của y' = 0 đều là cực trị."}]})["dong"][0]
+    assert d["tang1"]["trang_thai"] == KKD and "chưa đọc trọn" in d["tang1"]["ly_do"]
+
+
+def test_loai_may_chua_biet_khong_kiem_duoc():
+    kq, _ = _chay([("k", "Nguyên hàm", r"\int x^n dx = \frac{x^{n+1}}{n+1} + C", "Nguyên hàm của x mũ n.")], [])
+    assert (kq["k"]["loai"], kq["k"]["tang1"]["trang_thai"], kq["k"]["tang2"]["trang_thai"]) == ("KHONG_BIET", KKD, KKD)
 
 
 @pytest.mark.parametrize("latex", [
@@ -185,7 +229,7 @@ def test_cong_thuc_dung_nhung_khong_co_trong_tai_lieu():
 ])
 def test_dau_vao_doc_khong_bao_gio_DAT(latex):
     kq, _ = _chay([("x", "Độc", latex, "")], [])
-    assert kq["x"]["tang1"]["trang_thai"] != "DAT"
+    assert kq["x"]["tang1"]["trang_thai"] != DAT
 
 
 def test_gioi_han_so_dong():
@@ -202,4 +246,4 @@ def test_router_kiem_dong_cong_thuc():
     r = TestClient(app).post("/v1/kiem-dong-cong-thuc", json={"dong": _dong(BANG_V0[1]), "tai_lieu": [_tai_lieu_sp()]})
     assert r.status_code == 200
     d = r.json()["dong"][0]
-    assert (d["loai"], d["tang1"]["trang_thai"], d["tang2"]["trang_thai"]) == ("DANG_THUC", "DAT", "DAT")
+    assert (d["loai"], d["tang1"]["trang_thai"], d["tang2"]["trang_thai"]) == ("DANG_THUC", DAT, DAT)

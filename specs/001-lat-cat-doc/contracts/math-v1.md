@@ -81,12 +81,22 @@ Thuần hàm. Core gọi khi giáo viên bấm khóa bảng nháp (T042) và khi
 ```json
 {
   "dong": [
-    {"id": "d-1", "loai": "DANG_THUC", "tang1": {"trang_thai": "DAT", "can_cu": "SymPy: hiệu rút gọn bằng 0 với u(x), v(x)"}, "tang2": {"trang_thai": "DAT", "trich_dan": {"tai_lieu": "tl-1", "doan": "p-12"}}},
-    {"id": "d-4", "loai": "DINH_LI", "tang1": {"trang_thai": "DAT", "can_cu": "ngữ nghĩa khớp quy tắc đơn điệu; 0 phản ví dụ trên 40 hàm mẫu"}, "tang2": {"trang_thai": "DAT", "trich_dan": {"tai_lieu": "tl-1", "doan": "p-7"}}}
-  ]
+    {"id": "d-1", "loai": "DANG_THUC",
+     "tang1": {"trang_thai": "DAT", "muc_bang_chung": "CAS", "can_cu": "SymPy: d/dx(u/v) − ((Du*v-u*Dv)/v^2) rút gọn bằng 0 với u(x), v(x) ký hiệu"},
+     "tang2": {"trang_thai": "DAT", "trich_dan": {"tai_lieu": "tl-1", "doan": "p-12", "trich": "…"}, "trich_dan_them": [{"tai_lieu": "tl-1", "doan": "p-13", "trich": "…"}]}},
+    {"id": "d-4", "loai": "DINH_LI",
+     "tang1": {"trang_thai": "DAT", "muc_bang_chung": "DANH_MUC", "can_cu": "«y' ≥ 0, y' = 0 chỉ tại hữu hạn điểm ⇒ đồng biến» khớp DD2. …"},
+     "tang2": {"trang_thai": "DAT", "trich_dan": {"tai_lieu": "tl-2", "doan": "p-7", "trich": "…"}}},
+    {"id": "d-9", "loai": "DINH_LI",
+     "tang1": {"trang_thai": "SAI", "can_cu": "Phản ví dụ cho «đồng biến ⇒ y' > 0».", "phan_vi_du": {"ham": "y = x**3", "khoang": "Reals"}},
+     "tang2": {"trang_thai": "KHONG_KIEM_DUOC", "ly_do": "…"}}
+  ],
+  "bo_qua": [{"tai_lieu": "tl-3", "ly_do": "quyen_khong_hop_le"}]
 }
 ```
 
-- `loai` ∈ `DANG_THUC`, `DINH_LI` (loại máy đã biết: đơn điệu, cực trị, điểm tới hạn), `KHONG_BIET`.
-- `KHONG_BIET` → tầng 1 `KHONG_KIEM_DUOC`. Tài liệu `chua_ro` không được dùng ở tầng 2.
+- `loai` ∈ `DANG_THUC`, `DINH_LI` (đơn điệu, dấu hiệu cực trị, định nghĩa điểm tới hạn), `KHONG_BIET` (tầng 1 `KHONG_KIEM_DUOC`, kèm mệnh đề máy chưa đọc trọn).
+- **Tầng 1, đẳng thức** (`muc_bang_chung = CAS`): `DAT` khi d/dx E − R rút gọn bằng 0. `SAI` chỉ khi thế hàm mẫu ra hiệu khác 0; kết quả kèm `phan_vi_du` và `may_doc` (vế máy đã đọc).
+- **Tầng 1, định lí** (`muc_bang_chung = DANH_MUC`, thế giới đóng): `DAT` chỉ khi **mọi** mệnh đề của dòng (LaTeX và lời) đọc được trọn và khớp danh mục định lí của chủ đề (`DANH_MUC_DINH_LI` trong `app/dong_cong_thuc.py`: DD1–DD3 đơn điệu trên khoảng, CT1–CT2 dấu hiệu cực trị, TH định nghĩa điểm tới hạn đủ ba thành phần). Không khớp thì máy tìm phản ví dụ trên bộ hàm mẫu: có thì `SAI` kèm phản ví dụ đúng mệnh đề đã viết, không có thì `KHONG_KIEM_DUOC`. Phủ định, lượng từ, điều kiện tại một điểm, phát biểu trên cả tập xác định, phần câu còn thuật ngữ toán chưa đọc đều không bao giờ `DAT`. Cách làm này chặt hơn câu «không có phản ví dụ thì DAT» của ADR 013 phần Hệ quả (rà `math-verifier` trên #101: bộ mẫu không phủ được định lí tổng quát, ví dụ y = x − sin x).
+- **Tầng 2:** chỉ dùng tài liệu có quyền dùng hợp lệ; `chua_ro` không làm căn cứ và được liệt kê trong `bo_qua`. Đẳng thức: có đoạn chứa nguyên văn LaTeX **và** mỗi câu của phát biểu có nguyên văn trong một đoạn. Định lí: **mọi** mệnh đề của dòng có đoạn phát biểu cùng mệnh đề. Trích dẫn chính ở `trich_dan`, các đoạn còn lại ở `trich_dan_them`.
 - Core chỉ khóa bảng khi mọi dòng có `tang1` và `tang2` đều `DAT`; ngược lại trả 422 kèm danh sách dòng chưa qua.
