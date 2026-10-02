@@ -126,9 +126,21 @@ def test_tai_lieu_chia_doan_theo_cau_van_dat_va_trich_dung_doan():
 
 
 def test_dong_dang_thuc_latex_dung_loi_sai_khong_khoa_duoc():
-    # Rà #101, mục 12: phát biểu bằng lời của dòng phải có nguyên văn trong tài liệu được phép.
-    kq, _ = _chay([("l5", "Thương", r"(u/v)' = (u'v - uv') / v^2", "Với thương, tử là uv' trừ u'v, mẫu là v bình.")], _tai_lieu_lop())
-    assert (kq["l5"]["tang1"]["trang_thai"], kq["l5"]["tang2"]["trang_thai"]) == ("DAT", "KHONG_KIEM_DUOC")
+    # Rà #101, mục 12; Codex trên #101 (b06490a): lời sai không được DAT ở tầng 1 dù tài liệu lớp chép lại câu sai đó.
+    sai = "Với thương, tử là uv' trừ u'v, mẫu là v bình."
+    chep_sai = {"id": "tl-sai", "license_status": "tu_soan", "text": "Đạo hàm thương: $(u/v)' = (u'v - uv') / v^2$. " + sai}
+    kq, _ = _chay([("l5", "Thương", r"(u/v)' = (u'v - uv') / v^2", sai)], _tai_lieu_lop() + [chep_sai])
+    t1 = kq["l5"]["tang1"]
+    assert (t1["trang_thai"], kq["l5"]["tang2"]["trang_thai"]) == ("KHONG_KIEM_DUOC", "DAT")
+    assert "danh mục câu đọc" in t1["ly_do"]
+
+
+def test_loi_cua_dong_dang_thuc_chi_nhan_cau_doc_cua_dung_cong_thuc():
+    # Câu đọc đúng của quy tắc tổng không được dùng cho dòng quy tắc thương.
+    kq, _ = _chay([("t", "Thương", r"(u/v)' = (u'v - uv') / v^2", "Đạo hàm của tổng bằng tổng các đạo hàm.")], [])
+    assert kq["t"]["tang1"]["trang_thai"] == "KHONG_KIEM_DUOC"
+    kq, _ = _chay([("t", "Tổng", r"(u(x)+v(x))' = u'(x) + v'(x)", "Đạo hàm của tổng bằng tổng các đạo hàm.")], [])
+    assert kq["t"]["tang1"]["trang_thai"] == "DAT"
 
 
 def test_tai_lieu_chua_ro_khong_lam_can_cu_tang_2():
@@ -309,6 +321,25 @@ def test_tang_2_can_cu_dung_menh_de(dong, doan, mong):
     kq, _ = _chay([dong], [{"id": "tl-x", "license_status": "tu_soan", "text": doan}])
     d = kq[dong[0]]
     assert (d["tang1"]["trang_thai"], d["tang2"]["trang_thai"]) == mong, d["tang2"]
+
+
+DONG_DB_K = ("r", "", "", "Nếu y' > 0 trên khoảng K thì hàm đồng biến trên K.")
+
+
+@pytest.mark.parametrize("dong,tai_lieu", [
+    # Codex trên #101 (b06490a): đoạn core gửi có câu phủ nhận mệnh đề vừa nêu
+    (DONG_DB_K, {"doan": [{"id": "p-1", "text": "Nếu y' > 0 trên khoảng K thì hàm đồng biến trên K. Mệnh đề trên là sai."}]}),
+    # câu phủ nhận ở đoạn sau, hay trong tài liệu chưa chia đoạn
+    (DONG_DB_K, {"doan": [{"id": "p-1", "text": "Nếu y' > 0 trên khoảng K thì hàm đồng biến trên K."},
+                          {"id": "p-2", "text": "Mệnh đề trên là sai."}]}),
+    (DONG_DB_K, {"text": "Nếu y' > 0 trên khoảng K thì hàm đồng biến trên K. Học sinh hay nhầm điều này."}),
+    (DONG_TONG, {"text": "Đạo hàm tổng: $(u+v)' = u' + v'$. Công thức trên không đúng."}),
+], ids=["cung-doan", "doan-sau", "chua-chia-doan", "dang-thuc"])
+def test_tai_lieu_co_cau_phu_nhan_khong_lam_can_cu(dong, tai_lieu):
+    kq, toan_bo = _chay([dong], [dict(tai_lieu, id="tl-x", license_status="tu_soan")])
+    d = kq[dong[0]]
+    assert (d["tang1"]["trang_thai"], d["tang2"]["trang_thai"]) == (DAT, KKD)
+    assert toan_bo["bo_qua"] == [{"tai_lieu": "tl-x", "ly_do": "co_cau_phu_nhan"}]
 
 
 @pytest.mark.skipif(os.name == "nt", reason="sandbox dùng preexec_fn và resource: chỉ chạy trên Linux (CI)")

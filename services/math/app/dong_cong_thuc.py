@@ -4,8 +4,8 @@
 Tầng 1 — máy kiểm, không LLM:
   DANG_THUC   dòng dạng `(E)' = R` (lũy thừa, tổng, hiệu, tích, thương, hằng số nhân…). E, R đọc bằng bộ phân tích an
               toàn của tầng 1 (F-01): u, v (cả u(x), v(x)) là hàm ký hiệu; u', v' là đạo hàm; n nguyên dương; k, c hằng
-              số. DAT chỉ khi d/dx E − R rút gọn bằng 0 (chứng minh bằng CAS). SAI chỉ khi thế hàm mẫu ra hai vế khác
-              nhau tại một điểm hữu tỉ.
+              số. DAT chỉ khi d/dx E − R rút gọn bằng 0 (chứng minh bằng CAS) VÀ mỗi câu lời của dòng là câu đọc đã
+              kiểm của chính E (DANH_MUC_CAU_DOC). SAI chỉ khi thế hàm mẫu ra hai vế khác nhau tại một điểm hữu tỉ.
   DINH_LI     thế giới đóng cho định lí: máy đọc từng mệnh đề của dòng (đơn điệu, dấu hiệu cực trị, định nghĩa điểm tới
               hạn). DAT chỉ khi MỌI mệnh đề đọc được trọn và khớp danh mục định lí SGK của chủ đề (DANH_MUC_DINH_LI).
               Đọc trọn nghĩa là: đúng chiều suy ra («A chỉ khi B» là A ⇒ B), hai vế cùng một khoảng, và sau khi bỏ các
@@ -44,6 +44,15 @@ DANH_MUC_DINH_LI = {
     "CT1": "y' đổi dấu từ + sang − khi x qua x0 ⇒ x0 là điểm cực đại; từ − sang + ⇒ cực tiểu",
     "CT2": "y'(x0) = 0 mà y' không đổi dấu khi x qua x0 ⇒ x0 không là điểm cực trị",
     "TH": "điểm tới hạn là điểm thuộc tập xác định mà tại đó y' = 0 hoặc y' không xác định",
+}
+# Câu đọc đã kiểm của công thức (thế giới đóng cho lời của dòng đẳng thức). Máy không đọc nghĩa lời tiếng Việt, nên mỗi
+# câu trong phát biểu của dòng phải là một câu đọc đã kiểm của chính biểu thức được lấy đạo hàm (khóa, so bằng CAS).
+# Nguồn nguyên văn: bảng khóa của v0 (apps/web/scripts/seed.ts@3bfc584, dòng 612–614) và bản vá sp-tai-lieu-0001 của
+# lab Sư phạm (rà math-verifier, #100). Thêm câu mới là việc của lab Kiểm định, kèm lượt rà math-verifier.
+DANH_MUC_CAU_DOC = {
+    "x^n": ("Đạo hàm của x mũ n là n nhân x mũ n trừ 1.", "Hằng số có đạo hàm bằng 0."),
+    "u+v": ("Đạo hàm của tổng bằng tổng các đạo hàm.",),
+    "u/v": ("Với thương, tử là u'v trừ uv', mẫu là v bình.",),
 }
 _DD_TRONG_DANH_MUC = {}
 for _h in (1, -1):
@@ -203,7 +212,7 @@ def _tach_dang_thuc(latex):
     return (e, r) if e and r else None
 
 
-def _kiem_dang_thuc(e_str, r_str):
+def _kiem_dang_thuc(e_str, r_str, loi=""):
     import sympy as sp
     from app.paths import load_kiem
 
@@ -230,10 +239,23 @@ def _kiem_dang_thuc(e_str, r_str):
         bang_0 = sp.simplify(hieu) == 0
     except Exception:
         bang_0 = False
-    if bang_0:
-        return {"trang_thai": "DAT", "muc_bang_chung": "CAS",
-                "can_cu": "SymPy: d/dx(%s) − (%s) rút gọn bằng 0 với u(x), v(x) ký hiệu, n nguyên dương." % (e_str, r_str)}
-    return {"trang_thai": "KHONG_KIEM_DUOC", "ly_do": "Không rút gọn được về 0 và không tìm thấy phản ví dụ.", "may_doc": doc_duoc}
+    if not bang_0:
+        return {"trang_thai": "KHONG_KIEM_DUOC", "ly_do": "Không rút gọn được về 0 và không tìm thấy phản ví dụ.", "may_doc": doc_duoc}
+    duoc_phep = set()
+    for khoa, cau in DANH_MUC_CAU_DOC.items():
+        try:
+            if sp.simplify(e - kt.phan_tich_an_toan(_bieu_thuc(khoa), them)) == 0:
+                duoc_phep.update(_khoa_loi(c) for c in cau)
+        except ValueError:
+            continue
+    la = [c for c in _cau_cua_loi(loi) if _khoa_loi(c) not in duoc_phep]
+    if la:
+        return {"trang_thai": "KHONG_KIEM_DUOC",
+                "ly_do": "Công thức đúng nhưng câu «%s» của phát biểu chưa có trong danh mục câu đọc đã kiểm của công thức này; "
+                         "máy không đọc nghĩa lời (thêm câu qua lab Kiểm định)." % la[0][:120]}
+    return {"trang_thai": "DAT", "muc_bang_chung": "CAS",
+            "can_cu": "SymPy: d/dx(%s) − (%s) rút gọn bằng 0 với u(x), v(x) ký hiệu, n nguyên dương%s." % (
+                e_str, r_str, "; lời của dòng khớp danh mục câu đọc đã kiểm" if loi.strip() else "")}
 
 
 def _phan_vi_du_dang_thuc(hieu, x, n, k, c, u, v):
@@ -755,6 +777,16 @@ def _tang_1_dinh_li(menh, khong_doc, mau):
 
 
 # ------------------------------------------------------------------ tầng 2
+# Câu nói một điều là sai (khác phủ định thông thường như «không đổi dấu»): «Mệnh đề trên là sai.», «Học sinh hay nhầm…».
+_PHU_NHAN = re.compile(r"\b(?:sai|nhầm|ngộ nhận)\b|\b(?:không|chưa)\s+(?:đúng|chính xác)\b")
+
+
+def _co_cau_phu_nhan(text):
+    """Đoạn có mệnh đề máy không đọc thành định lí mà nói điều gì đó sai: phân cực của đoạn không rõ."""
+    _, khong_doc = _doc_dong(text)
+    return any(_PHU_NHAN.search(c) for c in khong_doc)
+
+
 def _cac_doan(tai_lieu):
     """Đoạn của tài liệu được phép (tài liệu, đoạn, vị trí, chữ) và danh sách tài liệu bỏ qua."""
     doan, bo_qua = [], []
@@ -768,6 +800,10 @@ def _cac_doan(tai_lieu):
             # Tài liệu chưa chia đoạn: từng mệnh đề (trích ngắn, có vị trí), rồi cả văn bản cho câu dài nhiều mệnh đề.
             text = str(doc.get("text") or doc.get("noi_dung") or "")[:DO_DAI_DOAN_TOI_DA]
             cac = [{"id": None, "vi_tri": pos, "text": cl} for pos, cl in _tach_menh_de(text)] + [{"id": None, "vi_tri": 0, "text": text}]
+        if any(_co_cau_phu_nhan(str(d.get("text") or "")[:DO_DAI_DOAN_TOI_DA]) for d in cac):
+            # «Mệnh đề trên là sai.» có thể nói về câu bất kỳ trong tài liệu: không dùng tài liệu này làm căn cứ.
+            bo_qua.append({"tai_lieu": doc.get("id"), "ly_do": "co_cau_phu_nhan"})
+            continue
         for d in cac:
             if len(doan) >= SO_DOAN_TOI_DA:
                 break
@@ -879,7 +915,7 @@ def _mot_dong(dong, doan, mau):
         return "KHONG_BIET", t, dict(t)
     dt = _tach_dang_thuc(latex) if latex else None
     if dt:
-        return "DANG_THUC", _kiem_dang_thuc(*dt), _tang_2("DANG_THUC", dong, None, doan)
+        return "DANG_THUC", _kiem_dang_thuc(dt[0], dt[1], loi), _tang_2("DANG_THUC", dong, None, doan)
     menh, khong_doc = _doc_dong(latex + ". " + loi, str(dong.get("tieu_de") or ""))
     if menh:
         return "DINH_LI", _tang_1_dinh_li(menh, khong_doc, mau()), _tang_2("DINH_LI", dong, menh, doan)
