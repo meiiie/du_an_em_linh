@@ -70,3 +70,44 @@ def test_filter_khong_chan_luy_thua_di_1():
         "su_kien": su_kien,
     })
     assert lo["cho_phep"] is False
+
+
+def _giu_moi_suat(timeout):
+    import threading
+
+    from app.sandbox import SO_JOB_DONG_THOI
+
+    giu = [threading.Thread(target=run_sympy_job, args=("spin", {"giay": 30}, timeout)) for _ in range(SO_JOB_DONG_THOI)]
+    for t in giu:
+        t.start()
+    return giu
+
+
+def test_het_suat_tra_ban_truoc_han_chot():
+    """#104: mọi suất bận thì job mới không chờ quá hạn chót của chính nó."""
+    import time
+
+    giu = _giu_moi_suat(6)
+    time.sleep(0.5)
+    bat_dau = time.monotonic()
+    r = run_sympy_job("spin", {"giay": 30}, timeout=3)
+    tong = time.monotonic() - bat_dau
+    for t in giu:
+        t.join()
+    assert r["trang_thai"] == "KHONG_KIEM_DUOC"
+    assert tong <= 3.2, tong
+
+
+def test_cho_suat_tru_vao_thoi_gian_chay():
+    """#104: job lấy được suất muộn chỉ chạy phần còn lại; chờ + chạy + dọn ≤ hạn chót."""
+    import time
+
+    giu = _giu_moi_suat(2)
+    time.sleep(0.3)
+    bat_dau = time.monotonic()
+    r = run_sympy_job("spin", {"giay": 30}, timeout=5)
+    tong = time.monotonic() - bat_dau
+    for t in giu:
+        t.join()
+    assert r["trang_thai"] == "KHONG_KIEM_DUOC"
+    assert tong <= 5.3, tong
