@@ -34,3 +34,4 @@ design/
 
 - [`studies/2026-10-01-brief-v2.md`](studies/2026-10-01-brief-v2.md) — brief cho giao diện v2 trên Angular.
 - [`references/README.md`](references/README.md) — danh mục tham chiếu khởi đầu.
+- [`audits/2026-10-02-dang-nhap-v2.md`](audits/2026-10-02-dang-nhap-v2.md) — `/dang-nhap` bản Angular so với `docs/DESIGN.md`: số đo 390 / 1280 px, 3 phát hiện mức thấp.

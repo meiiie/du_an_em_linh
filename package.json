@@ -20,6 +20,11 @@
     "onlyBuiltDependencies": [
       "esbuild",
       "unrs-resolver"
+    ],
+    "ignoredBuiltDependencies": [
+      "@parcel/watcher",
+      "lmdb",
+      "msgpackr-extract"
     ]
   },
   "scripts": {
