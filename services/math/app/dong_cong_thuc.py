@@ -8,9 +8,11 @@ Tầng 1 — máy kiểm, không LLM:
               kiểm của chính E (DANH_MUC_CAU_DOC). SAI chỉ khi thế hàm mẫu ra hai vế khác nhau tại một điểm hữu tỉ.
   DINH_LI     thế giới đóng cho định lí: máy đọc từng mệnh đề của dòng (đơn điệu, dấu hiệu cực trị, định nghĩa điểm tới
               hạn). DAT chỉ khi MỌI mệnh đề đọc được trọn và khớp danh mục định lí SGK của chủ đề (DANH_MUC_DINH_LI).
-              Đọc trọn nghĩa là: đúng chiều suy ra («A chỉ khi B» là A ⇒ B), hai vế cùng một khoảng, và sau khi bỏ các
-              cụm đã nhận diện chỉ còn từ đệm (_TU_DEM_*). Bộ hàm mẫu chỉ dùng để tìm phản ví dụ cho SAI. Câu máy không
-              đọc trọn (phủ định, lượng từ, điều kiện tại một điểm, từ lạ) → KHONG_KIEM_DUOC, không bao giờ DAT.
+              Đọc trọn nghĩa là: đúng chiều suy ra («A chỉ khi B» là A ⇒ B), hai vế cùng một khoảng («khoảng đó» trỏ
+              về khoảng đứng trước), và mỗi vế khớp trọn một mẫu có vị trí: chủ ngữ của «đổi dấu» là y' / đạo hàm, vế
+              điều kiện chỉ gồm dấu của y', vế đơn điệu chỉ gồm chủ ngữ hàm số. Bộ hàm mẫu chỉ dùng để tìm phản ví dụ
+              cho SAI. Câu máy không đọc trọn (phủ định, lượng từ, điều kiện tại một điểm, từ lạ) → KHONG_KIEM_DUOC,
+              không bao giờ DAT.
   KHONG_BIET  loại máy chưa biết → KHONG_KIEM_DUOC (thêm loại mới là việc của lab Kiểm định).
 Tầng 2 — tài liệu được phép (quyền dùng hợp lệ như `verify.py`; `chua_ro` không làm căn cứ):
   đẳng thức: có đoạn phát biểu trọn công thức của dòng («nhãn: $công thức$», công thức đóng khung khớp trọn, nhãn không
@@ -82,9 +84,12 @@ _LATEX_TU = (
 )
 
 
+_BO_NGOAC = re.compile(r"\\(?:left|right)(?![a-zA-Z])")
+
+
 def _chu(t):
     """LaTeX lẫn lời → chuỗi chữ thường để nhận mệnh đề."""
-    t = _nfc(t).replace("\\left", " ").replace("\\right", " ")
+    t = _BO_NGOAC.sub(" ", _nfc(t))
     t = re.sub(r"\^\s*\{\s*\\prime\s*\}", "'", t).replace("\\prime", "'")
     t = re.sub(r"\\(?:text|mathrm|textrm|mbox)\s*\{([^{}]*)\}", r" \1 ", t)
     for a, b in _LATEX_TU:
@@ -96,7 +101,7 @@ def _chu(t):
 
 
 def _khoa_cong_thuc(s):
-    return re.sub(r"\s+", "", _nfc(s).replace("\\left", "").replace("\\right", ""))
+    return re.sub(r"\s+", "", _BO_NGOAC.sub("", _nfc(s)))
 
 
 def _khoa_loi(s):
@@ -197,7 +202,7 @@ def _bieu_thuc(s):
 
 
 def _tach_dang_thuc(latex):
-    s = _nfc(latex).replace("\\left", " ").replace("\\right", " ")
+    s = _BO_NGOAC.sub(" ", _nfc(latex))
     s = re.sub(r"\^\s*\{\s*\\prime\s*\}", "'", s).replace("\\prime", "'")
     s = s.replace("\\cdot", "*").replace("\\times", "*")
     for a in ("\\,", "\\;", "\\!", "\\ "):
@@ -286,7 +291,7 @@ def _phan_vi_du_dang_thuc(hieu, x, n, k, c, u, v):
             if v0.subs(x, d) == 0:
                 continue
             gt = sp.simplify(bt.subs(x, d))
-            if gt.is_number and gt.is_finite and gt != 0:
+            if gt.is_number and gt.is_finite and gt.is_real and gt != 0:
                 return {"u": str(u0), "v": str(v0), "n": int(n0), "k": str(k0), "c": int(c0), "x": str(d),
                         "hieu_hai_ve": str(gt)}
     return None
@@ -300,28 +305,36 @@ _KE_THUA = r"theo cùng quy tắc|tương tự|cũng vậy|như trên"
 _PHU_DINH_DD = re.compile(r"(?:không|chưa|chẳng)\s+(?:chắc\s+)?(?:phải\s+)?(?:là\s+)?(?:hàm\s+(?:số\s+)?)?(?:đồng biến|nghịch biến|tăng|giảm)")
 _DIEM = re.compile(r"(?:y|f)\s*'\s*\(\s*(?!x\s*\))|\btại\s+(?:x\s*=|x0\b|x_0|x\s*_\s*0|điểm\b)")
 _MIEN = re.compile(r"tập xác định|miền xác định|\btxđ\b|\btrên\s+d\b|\\mathbb\s*\{\s*r\s*\}\s*\\setminus|ℝ\s*\\|\br\s*\\\s*\{")
+_DAU_MUT = r"[-+]?\s*(?:\d+(?:[.,]\d+)?|∞|[a-z][a-z0-9_]{0,2})"
+# Khoảng tường minh chỉ có dạng «(a; b)». Ngoặc chứa thứ khác («(ℝ\{0})», «(x ≠ 0)», «(không xác định)») không phải khoảng.
+_KHOANG_TM = r"\(\s*" + _DAU_MUT + r"\s*;\s*" + _DAU_MUT + r"\s*\)"
 _KHOANG = re.compile(
-    r"trên\s+từng\s+khoảng(?:\s+xác định|\s+của\s+(?:tập xác định|txđ|d\b)|\s+(?:đó|này)\b)?|với\s+mọi\s+x\s+thuộc\s+(?:khoảng\s+)?(?:k\b|\([^()]*\)|đó\b|này\b)|"
-    r"trên\s+(?:một\s+)?(?:khoảng|đoạn|nửa khoảng)(?:\s+(?:đó|này|k\b|\([^()]*\)))?|trên\s+k\b|trên\s+\([^()]*\)|"
-    r"trên\s+(?:r|ℝ)\b|trên\s+\\mathbb\s*\{\s*r\s*\}")
+    r"trên\s+(?:từng|mỗi)\s+khoảng(?:\s+xác định|\s+của\s+(?:tập xác định|txđ|d\b)|\s+(?:đó|này)\b)?|"
+    r"với\s+mọi\s+x\s+(?:thuộc|∈)\s+(?:khoảng\s+)?(?:k\b|" + _KHOANG_TM + r"|đó\b|này\b)|"
+    r"trên\s+(?:một\s+)?(?:khoảng|đoạn|nửa khoảng)(?:\s+(?:đó|này|k\b|" + _KHOANG_TM + r"))?|trên\s+k\b|"
+    r"trên\s+" + _KHOANG_TM + r"|trên\s+(?:r|ℝ)\b|trên\s+\\mathbb\s*\{\s*r\s*\}")
 _DK_KY_HIEU = re.compile(
     r"(?:y|f)\s*'(?:\s*\(\s*x\s*\))?\s*(≥|>|≤|<)\s*0(?P<hoac>\s*(?:hoặc|hay)\s*(?:(?:y|f)\s*'(?:\s*\(\s*x\s*\))?\s*)?(?:=|bằng)\s*0)?")
 _DK_LOI = re.compile(
-    r"(?:đạo hàm(?:\s+của\s+hàm(?:\s+số)?)?(?:\s+(?:f|y))?|(?:y|f)\s*')\s+"
-    r"(không âm|không dương|dương|âm|lớn hơn (?:0|không)|nhỏ hơn (?:0|không)|bé hơn (?:0|không))"
+    r"(?:đạo hàm(?:\s+của\s+hàm(?:\s+số)?)?(?:\s+(?:f|y))?|(?:y|f)\s*'(?:\s*\(\s*x\s*\))?)\s+"
+    r"(không âm|không dương|lớn hơn hoặc bằng (?:0|không)|nhỏ hơn hoặc bằng (?:0|không)|bé hơn hoặc bằng (?:0|không)|"
+    r"dương|âm|lớn hơn (?:0|không)|nhỏ hơn (?:0|không)|bé hơn (?:0|không))"
     r"(?P<hoac>\s*(?:hoặc|hay)\s*(?:bằng\s*0|=\s*0))?")
+# «y' = 0 chỉ tại hữu hạn điểm»: phải có phần «= 0 / bằng 0». «y' ≥ 0 tại hữu hạn điểm» là câu khác (sai), không đọc.
 _HUU_HAN = re.compile(
-    r"(?:,\s*)?(?:và\s+)?(?:(?:y|f)\s*'\s*=\s*0\s*)?(?:chỉ\s+)?(?:bằng\s+0\s+)?(?:chỉ\s+)?tại\s+hữu hạn\s+điểm")
+    r"(?:,\s*)?(?:và\s+)?(?:chỉ\s+)?(?:(?:y|f)\s*'(?:\s*\(\s*x\s*\))?\s*(?:=|bằng)\s*0|(?:đạo hàm\s+)?bằng\s+0)\s+"
+    r"(?:chỉ\s+)?tại\s+(?:một\s+số\s+)?hữu hạn\s+điểm(?:\s+(?:của|thuộc)\s+(?:khoảng\s+)?k\b)?")
 _HUU_HAN_PHU_DINH = re.compile(r"(?:không|chưa)\s+(?:chỉ\s+)?(?:tại\s+)?hữu hạn|vô\s+(?:hạn|số)")
 _DON_DIEU = re.compile(r"đồng biến|nghịch biến|\btăng\b|\bgiảm\b")
 
 
 _PHU_DINH = re.compile(r"\b(?:không|chưa|chẳng)\b")
 
-# Thế giới đóng cho từ vựng: sau khi bỏ các cụm đã nhận diện, mệnh đề chỉ được còn các từ đệm này. Từ nối còn sót
-# («nếu», «khi», «thì», «chỉ», «trừ»…) là câu lồng hay đổi chiều suy ra; từ lạ («sai», «giả sử»…) có thể đổi nghĩa câu.
-_TU_DEM_VE = frozenset("hàm số y f x là sẽ của trên nó".split())
-_TU_DEM_CUC_TRI = frozenset("hàm số y f x là đạt đó điểm của tại".split())
+# Đọc theo mẫu có vị trí, không theo túi từ. Vế điều kiện chỉ gồm cụm dấu của y' (và khoảng, «y' = 0 chỉ tại hữu hạn
+# điểm»): sau khi bỏ các cụm đó chỉ được còn «trên» (của «trên tập xác định»). Vế đơn điệu chỉ gồm chủ ngữ hàm số và
+# «đồng biến / nghịch biến». Thừa số khác («f(x)f'(x) > 0», «hàm số x f(x)») làm vế không đọc được.
+_DU_DIEU_KIEN = frozenset({"trên"})
+_CHU_NGU_DD = re.compile(r"(?:hàm(?: số)?(?: (?:f|y))?(?: ?\( ?x ?\))?|f ?\( ?x ?\)|f|y)?(?: sẽ)?(?: trên)?")
 
 
 def _con_thuat_ngu(t):
@@ -337,7 +350,7 @@ def _tu_la(t, dem):
 
 def _khoa_mot(s):
     """Một cụm khoảng → khóa: 'TUNG' (từng khoảng xác định), 'DO' (khoảng đó), khoảng tường minh, 'K', 'R', 'CHUNG:…'."""
-    if re.search(r"từng\s+khoảng", s):
+    if re.search(r"(?:từng|mỗi)\s+khoảng", s):
         return "TUNG"
     if re.search(r"\b(?:đó|này)\s*$", s):
         return "DO"
@@ -408,7 +421,7 @@ def _ve(t, truoc=None):
     def lay_loi(m):
         tu = m.group(1)
         dau = 1 if tu in ("không âm", "dương") or tu.startswith("lớn") else -1
-        dk.append((dau, tu not in ("không âm", "không dương") and not m.group("hoac")))
+        dk.append((dau, tu not in ("không âm", "không dương") and "hoặc bằng" not in tu and not m.group("hoac")))
         return " "
 
     t = _DK_KY_HIEU.sub(lay_ky_hieu, t)
@@ -427,12 +440,12 @@ def _ve(t, truoc=None):
                 return None
             huu_han = truoc[3]
             t = re.sub(_KE_THUA, " ", t)
-        if _tu_la(t, _TU_DEM_VE):
+        if _tu_la(t, _DU_DIEU_KIEN):
             return None
         return ("D", dau, chat, False if chat else huu_han), khoa
     if len(dd) == 1:
-        t = _DON_DIEU.sub(" ", t)
-        if _tu_la(t, _TU_DEM_VE):
+        con = re.sub(r"[\s,.:;]+", " ", _DON_DIEU.sub(" ", t)).strip()
+        if not _CHU_NGU_DD.fullmatch(con):
             return None
         return ("M", 1 if dd[0] in ("đồng biến", "tăng") else -1), khoa
     return None
@@ -442,48 +455,55 @@ _CHI_KHI = re.compile(r"\bchỉ\s+(?:khi|nếu)\b")
 
 
 def _tach_suy_ra(cl):
-    """Một mệnh đề → danh sách (điều kiện, kết luận, tiền đề); rỗng khi không rõ chiều suy ra. «A chỉ khi B» là A ⇒ B
-    (điều kiện cần), ngược chiều với «A khi B». Tiền đề là phần đứng trước «nếu / khi … thì», phải được đọc trọn."""
+    """Một mệnh đề → danh sách (điều kiện, kết luận, tiền đề, điều kiện đứng trước?); rỗng khi không rõ chiều suy ra.
+    «A chỉ khi B» là A ⇒ B (điều kiện cần), ngược chiều với «A khi B». Tiền đề là phần đứng trước «nếu / khi … thì»,
+    phải được đọc trọn. Cờ cuối cho biết thứ tự trong câu, để «khoảng đó» chỉ trỏ về khoảng đứng trước nó."""
     m = re.fullmatch(r"(.*?)\s*(?:⇔|khi và chỉ khi|nếu và chỉ nếu)\s*(.*)", cl)
     if m:
-        return [(m.group(2), m.group(1), ""), (m.group(1), m.group(2), "")]
+        return [(m.group(2), m.group(1), "", False), (m.group(1), m.group(2), "", True)]
     if _CHI_KHI.search(cl):
         m = re.fullmatch(r"(.+?)\s*\bchỉ\s+(?:khi|nếu)\b\s*(.+)", cl)
-        return [(m.group(1), m.group(2), "")] if m and not _CHI_KHI.search(m.group(2)) else []
+        return [(m.group(1), m.group(2), "", True)] if m and not _CHI_KHI.search(m.group(2)) else []
     m = re.fullmatch(r"(.*?)\s*(?:⇒|suy ra)\s*(.*)", cl)
     if m:
-        return [(m.group(1), m.group(2), "")]
+        return [(m.group(1), m.group(2), "", True)]
     m = re.fullmatch(r"(.*?)\b(?:nếu|khi)\b(.*?)\bthì\b(.*)", cl)
     if m:
-        return [(m.group(2), m.group(3), m.group(1))]
+        return [(m.group(2), m.group(3), m.group(1), True)]
     m = re.fullmatch(r"(.*?)\bkhi\b(.*)", cl)
     if m:
-        return [(m.group(2), m.group(1), "")]
+        return [(m.group(2), m.group(1), "", False)]
     m = re.fullmatch(r"(.+?)\bnếu\b(.+)", cl)
     if m:
-        return [(m.group(2), m.group(1), "")]
+        return [(m.group(2), m.group(1), "", False)]
     m = re.fullmatch(r"(.*?)\bthì\b(.*)", cl)
     if m:
-        return [(m.group(1), m.group(2), "")]
+        return [(m.group(1), m.group(2), "", True)]
     return []
 
 
 def _don_dieu_cua_menh_de(cl, truoc):
     """Mọi cặp suy ra của mệnh đề phải đọc trọn; trả danh sách (điều kiện, kết luận, khóa khoảng) hoặc None.
-    Hai vế (và tiền đề) phải nói về cùng một khoảng: nêu khoảng khác nhau thì không chứng minh được cùng miền."""
+    Hai vế (và tiền đề) phải nói về cùng một khoảng: nêu khoảng khác nhau thì không chứng minh được cùng miền. «Khoảng
+    đó» phải trỏ về một khoảng đứng TRƯỚC nó trong câu («y' > 0 trên khoảng đó thì đồng biến trên ℝ» không đọc)."""
     cap = _tach_suy_ra(cl)
     if not cap:
         return None
     out = []
-    for a, c, tien in cap:
+    for a, c, tien, dk_truoc in cap:
         kt = _khoa_tien_de(tien)
         va, vc = _ve(a, truoc), _ve(c, truoc)
         if kt is False or not va or not vc or {va[0][0], vc[0][0]} != {"D", "M"}:
             return None
-        cac = (kt, va[1], vc[1])
-        khoa = {k for k in cac if k not in (None, "DO")}
-        # Khác khoảng thì không chứng minh được cùng miền; «khoảng đó» không có khoảng nào để trỏ về thì không đọc.
-        if len(khoa) > 1 or ("DO" in cac and not khoa):
+        khoa, da_neu = set(), False
+        for k in (kt, va[1], vc[1]) if dk_truoc else (kt, vc[1], va[1]):
+            if k == "DO":
+                if not da_neu:
+                    return None
+            elif k is not None:
+                khoa.add(k)
+                da_neu = True
+        if len(khoa) > 1:
             return None
         out.append((va[0], vc[0], next(iter(khoa)) if khoa else None))
         truoc = va[0] if va[0][0] == "D" else vc[0]
@@ -493,15 +513,37 @@ def _don_dieu_cua_menh_de(cl, truoc):
 _DUONG_AM = r"(?:dương|\+)\s*(?:sang|→)\s*(?:âm|-)"
 _AM_DUONG = r"(?:âm|-)\s*(?:sang|→)\s*(?:dương|\+)"
 _DOI_DAU = _DUONG_AM + "|" + _AM_DUONG
-_KD_DUNG = re.compile(r"(?:không|chưa)\s+(?:phải\s+)?(?:là\s+)?(?:(?:có|đạt|chắc)\s+(?:là\s+)?)?(?:điểm\s+)?cực trị")
-_KD_SAI = re.compile(r"(?:vẫn|luôn|có thể|cũng)\s+(?:là\s+)?(?:có\s+)?(?:đạt\s+)?(?:điểm\s+)?cực trị")
 # Câu nói ngược giả thiết của dấu hiệu cực trị: kết luận «vẫn đúng» cả khi x0 nằm ngoài tập xác định (SAI, phản ví dụ 1/x²).
 _NGUOC_GIA_THIET = re.compile(
     r"kể cả\s+(?:khi\s+)?(?:(?:x0|x_0|điểm(?:\s+đó)?)\s+)?(?:không thuộc|nằm ngoài|ngoài)\s+(?:tập xác định|txđ|d\b)")
 # «khi x qua x0», «khi đi qua một điểm trong»: thuộc mẫu đổi dấu, không phải từ nối «khi».
 _QUA = re.compile(
     r"\bkhi\s+(?:x\s+)?(?:đi\s+)?qua(?:\s+(?:một\s+)?điểm(?:\s+trong)?)?(?:\s+(?:x0|x_0))?|(?:\bx\s+)?(?:đi\s+)?\bqua\s+(?:x0|x_0)")
-_Y0 = r"(?:(?:y|f)\s*'(?:\s*\(\s*x0\s*\))?|đạo hàm(?:\s+tại\s+x0)?)\s*(?:=|bằng)\s*0"
+# Chủ ngữ của «đổi dấu / không đổi dấu» chỉ là đạo hàm: y', f'(x), «đạo hàm (của hàm số f)». «Hàm số đổi dấu», «y đổi
+# dấu», «đạo hàm của đạo hàm đổi dấu» là câu khác (sai), không đọc.
+_DAO_HAM = r"(?:y\s*'(?:\s*\(\s*x\s*\))?|f\s*'(?:\s*\(\s*x\s*\))?|đạo hàm(?:\s+của\s+hàm(?:\s+số)?(?:\s+(?:f|y))?)?)"
+_X0 = r"(?:x0|x_0)"
+_CT_DK = re.compile(
+    r"(?:" + _DAO_HAM + r"\s+)?(?:đổi\s+dấu\s+|đổi\s+)?(?:từ\s+)?(?P<mau>" + _DOI_DAU + r")(?:\s+tại\s+(?:" + _X0 + r"|điểm\s+đó))?")
+_CT_KL = re.compile(
+    r"(?:(?:" + _X0 + r"|đó|nó)\s+)?(?:(?:hàm(?:\s+số)?(?:\s+(?:f|y))?|f|y)\s+)?(?:đạt\s+|có\s+)?(?:là\s+)?(?:một\s+)?"
+    r"(?:điểm\s+)?(?P<kl>cực đại|cực tiểu)(?:\s+(?:tại\s+(?:" + _X0 + r"|điểm\s+đó|đó)|của\s+hàm(?:\s+số)?(?:\s+(?:f|y))?))?")
+_KD_DK = re.compile(
+    r"(?:(?:y|f)\s*'(?:\s*\(\s*" + _X0 + r"\s*\))?|đạo hàm(?:\s+tại\s+" + _X0 + r")?)\s*(?:=|bằng)\s*0(?:\s+tại\s+" + _X0 + r")?"
+    r"\s+(?:mà|và)\s+(?:" + _DAO_HAM + r"\s+)?không\s+đổi\s+dấu(?:\s+tại\s+" + _X0 + r")?")
+# Kết luận của CT2, mang nghĩa tại x0: «(x0) không là (điểm) cực trị», «chưa phải cực trị», «hàm không đạt cực trị tại
+# đó», «không có cực trị (tại x0)». «Hàm số không có cực trị» (nói cả hàm) và «chưa chắc / có thể là cực trị» không đọc.
+_TAI_X0 = r"(?:\s+tại\s+(?:" + _X0 + r"|đó|điểm\s+đó))"
+_KD_KL_DUNG = re.compile(
+    r"(?:" + _X0 + r"\s+)?(?:không|chưa)\s+(?:phải\s+)?(?:là\s+)?(?:điểm\s+)?cực trị(?:\s+của\s+hàm(?:\s+số)?)?" + _TAI_X0 + r"?"
+    r"|(?:hàm(?:\s+số)?\s+)?không\s+(?:đạt|có)\s+cực trị" + _TAI_X0 + r"|không\s+có\s+cực trị")
+_KD_KL_SAI = re.compile(
+    r"(?:" + _X0 + r"\s+)?(?:vẫn|luôn|cũng)\s+(?:là\s+)?(?:điểm\s+)?cực trị" + _TAI_X0 + r"?"
+    r"|(?:hàm(?:\s+số)?\s+)?(?:vẫn|luôn|cũng)\s+(?:đạt|có)\s+cực trị" + _TAI_X0 + r"?")
+
+
+def _gon(t):
+    return re.sub(r"\s+", " ", t).strip(" ,")
 
 
 def _mot_chieu(t):
@@ -509,48 +551,34 @@ def _mot_chieu(t):
     cap = _tach_suy_ra(t)
     if not cap:
         m = re.fullmatch(r"(.*?)\s*(?::|\blà\b)\s*(.*)", t)
-        cap = [(m.group(1), m.group(2), "")] if m else []
+        cap = [(m.group(1), m.group(2), "", True)] if m else []
     if len(cap) != 1 or cap[0][2].strip():
         return None
-    return cap[0][0], cap[0][1]
+    return _gon(cap[0][0]), _gon(cap[0][1])
 
 
 def _mot_manh_cuc_tri(manh):
-    """CT1 đúng chiều: mẫu đổi dấu ở phần điều kiện, «cực đại / cực tiểu» ở phần kết luận. ('CT', mẫu, kết luận) hay None."""
+    """CT1 đúng chiều và đúng mẫu: «(y' / đạo hàm) đổi dấu từ + sang − ⇒ x0 là (điểm) cực đại». ('CT', mẫu, kết luận)."""
     chieu = _mot_chieu(_QUA.sub(" ", manh))
     if not chieu:
         return None
-    dk, kl = chieu
-    mau = [1] * len(re.findall(_DUONG_AM, dk)) + [-1] * len(re.findall(_AM_DUONG, dk))
-    ket = [1 if k == "cực đại" else -1 for k in re.findall(r"cực đại|cực tiểu", kl)]
-    if len(mau) != 1 or len(ket) != 1 or re.search(r"cực", dk) or re.search(_DOI_DAU, kl):
+    m_dk, m_kl = _CT_DK.fullmatch(chieu[0]), _CT_KL.fullmatch(chieu[1])
+    if not m_dk or not m_kl:
         return None
-    du_dk = re.sub(_DOI_DAU + r"|(?:đổi\s+)?dấu|đổi|đạo hàm|(?:y|f)\s*'|\btừ\b|x0|x_0", " ", dk)
-    du_kl = re.sub(r"cực đại|cực tiểu|x0|x_0", " ", kl)
-    if _tu_la(du_dk, _TU_DEM_CUC_TRI) or _tu_la(du_kl, _TU_DEM_CUC_TRI):
-        return None
-    return ("CT", mau[0], ket[0])
+    return ("CT", 1 if re.fullmatch(_DUONG_AM, m_dk.group("mau")) else -1, 1 if m_kl.group("kl") == "cực đại" else -1)
 
 
 def _khong_doi_dau(cl):
-    """CT2 đúng chiều: «y'(x0) = 0 mà y' không đổi dấu ⇒ (không | vẫn) là cực trị». [('KD', đúng?)] hoặc None.
-    Điều kiện phải nêu y' = 0 (hàm có đạo hàm tại x0); câu ngược chiều («không cực trị thì …») không đọc."""
-    if not re.search(r"cực trị", cl) or re.search(r"cực đại|cực tiểu|" + _DOI_DAU, cl):
-        return None
+    """CT2 đúng chiều và đúng mẫu: «y'(x0) = 0 mà y' không đổi dấu ⇒ x0 không là cực trị» ([('KD', True)]), hoặc câu
+    nói ngược «… thì vẫn là cực trị» ([('KD', False)]). Điều kiện phải nêu y' = 0 (hàm có đạo hàm tại x0)."""
     chieu = _mot_chieu(_QUA.sub(" ", cl))
-    if not chieu:
+    if not chieu or not _KD_DK.fullmatch(chieu[0]):
         return None
-    dk, kl = chieu
-    if not re.search(r"không đổi dấu", dk) or not re.search(_Y0, dk) or re.search(r"cực trị", dk):
-        return None
-    dung, sai = bool(_KD_DUNG.search(kl)), bool(_KD_SAI.search(kl))
-    if dung == sai:
-        return None
-    du_dk = re.sub(r"không đổi dấu|" + _Y0 + r"|(?:y|f)\s*'|đạo hàm|\bmà\b|\bvà\b|x0|x_0", " ", dk)
-    du_kl = _KD_SAI.sub(" ", _KD_DUNG.sub(" ", kl))
-    if _tu_la(du_dk, _TU_DEM_CUC_TRI) or _tu_la(du_kl, _TU_DEM_CUC_TRI):
-        return None
-    return [("KD", dung)]
+    if _KD_KL_DUNG.fullmatch(chieu[1]):
+        return [("KD", True)]
+    if _KD_KL_SAI.fullmatch(chieu[1]):
+        return [("KD", False)]
+    return None
 
 
 def _cuc_tri_cua_menh_de(cl):
@@ -576,7 +604,7 @@ def _cuc_tri_cua_menh_de(cl):
 
 
 _Y0_TH = r"(?:y\s*'|đạo hàm)\s*(?:=|bằng)\s*0"
-_KXD_TH = r"(?:y\s*'|đạo hàm)\s+không xác định"
+_KXD_TH = r"(?:y\s*'|đạo hàm)\s+không\s+(?:xác định|tồn tại)"
 _MIEN_TH = r"thuộc\s+(?:tập xác định|txđ|d)"
 _DAU_TH = r"điểm tới hạn(?:\s+của\s+hàm(?:\s+số)?)?\s+"
 _CAC = r"(?:(?:các|những)\s+)?"
@@ -589,14 +617,18 @@ _TH_DINH_NGHIA = (
                + r"điểm\s+" + _MIEN_TH + r"\s+" + _TAI_DO + _KXD_TH),
 )
 _TH_TOM_TAT = re.compile(_Y0_TH + r"\s+(?:hoặc|hay)\s+" + _KXD_TH)
+# Định nghĩa nói ngược điều kiện «thuộc tập xác định»: chỉ xét câu có dạng định nghĩa («điểm tới hạn là / gồm …»), để câu
+# đúng như «khi tìm điểm tới hạn, loại các điểm không thuộc tập xác định» không bị xếp SAI.
+_TH_DAU_DINH_NGHIA = re.compile(_DAU_TH + r"(?:là|gồm|bao gồm|có thể là)\b")
 _TH_SAI = re.compile(r"không thuộc\s+(?:tập xác định|txđ|d\b)|ngoài\s+(?:tập xác định|txđ)|hàm số không xác định")
 
 
 def _toi_han_cua_menh_de(cl, co_tieu_de):
     """('TH',) khi mệnh đề là định nghĩa điểm tới hạn đọc trọn; ('TH_TOM_TAT',) cho dạng ký hiệu «y' = 0 hoặc y' không
-    xác định» của dòng có tiêu đề điểm tới hạn; ('TH_SAI',) khi nói điểm ngoài tập xác định (hay nơi hàm không xác định)."""
+    xác định» của dòng có tiêu đề điểm tới hạn; ('TH_SAI',) khi định nghĩa nói điểm ngoài tập xác định (hay nơi hàm
+    không xác định) là điểm tới hạn."""
     t = cl.strip(" .;:,")
-    if ("điểm tới hạn" in t or co_tieu_de) and _TH_SAI.search(t):
+    if _TH_DAU_DINH_NGHIA.match(t) and _TH_SAI.search(t):
         con = re.sub(_KXD_TH, " ", _TH_SAI.sub(" ", t))
         return [("TH_SAI",)] if not _PHU_DINH.search(con) else None  # «không phải là điểm không thuộc…»: không đọc
     if "điểm tới hạn" in t:
@@ -606,28 +638,28 @@ def _toi_han_cua_menh_de(cl, co_tieu_de):
     return None
 
 
+def _doc_menh_de(cl, truoc, co_tieu_de):
+    """Một mệnh đề → (danh sách mệnh đề đọc được hoặc None, mệnh đề điều kiện để «theo cùng quy tắc» trỏ về)."""
+    dd = _don_dieu_cua_menh_de(cl, truoc)
+    if dd:
+        for dk, kl, _ in dd:
+            truoc = dk if dk[0] == "D" else kl
+        return [("DD", dk, kl, khoang) for dk, kl, khoang in dd], truoc
+    return (_cuc_tri_cua_menh_de(cl) or _toi_han_cua_menh_de(cl, co_tieu_de)), truoc
+
+
 def _doc_dong(text, tieu_de=""):
     """Đọc mọi mệnh đề của dòng. Trả (danh sách mệnh đề, danh sách mệnh đề không đọc được)."""
     co_tieu_de = "tới hạn" in _chu(tieu_de)
     menh, khong_doc, truoc = [], [], None
     for _, cl in _tach_menh_de(_chu(text)):
-        dd = _don_dieu_cua_menh_de(cl, truoc)
-        if dd:
-            for dk, kl, khoang in dd:
-                menh.append(("DD", dk, kl, khoang))
-                truoc = dk if dk[0] == "D" else kl
-            continue
-        ct = _cuc_tri_cua_menh_de(cl)
-        if ct:
-            menh.extend(ct)
-            continue
-        th = _toi_han_cua_menh_de(cl, co_tieu_de)
-        if th:
-            menh.extend(th)
-            continue
-        # Thế giới đóng: mệnh đề không nhận ra đều là «chưa đọc trọn», kể cả khi không có từ nào trong _THUAT_NGU
-        # («Hàm số này là hàm chẵn.»). Đoạn tài liệu bỏ qua danh sách này; dòng bảng thì không DAT được.
-        khong_doc.append(cl)
+        ms, truoc = _doc_menh_de(cl, truoc, co_tieu_de)
+        if ms:
+            menh.extend(ms)
+        else:
+            # Thế giới đóng: mệnh đề không nhận ra đều là «chưa đọc trọn», kể cả khi không có từ nào trong _THUAT_NGU
+            # («Hàm số này là hàm chẵn.»). Đoạn tài liệu bỏ qua danh sách này; dòng bảng thì không DAT được.
+            khong_doc.append(cl)
     return list(dict.fromkeys(menh)), khong_doc
 
 
@@ -717,9 +749,11 @@ def _ten_ve(ve):
     return ten + (", y' = 0 chỉ tại hữu hạn điểm" if ve[3] else "")
 
 
-def _phan_vi_du_don_dieu(dk, kl, mien, mau):
+def _phan_vi_du_don_dieu(dk, kl, khoang, mau):
+    """Phản ví dụ đúng mệnh đề đã viết: khoảng tổng quát thì mọi khoảng của bộ mẫu; ℝ thì chỉ mẫu trên ℝ; tập xác
+    định thì mẫu có tập xác định rời; khoảng cụ thể hay «từng khoảng xác định» thì không tìm (bộ mẫu không bám)."""
     sp, x = mau.sp, mau.x
-    if mien:
+    if khoang == "MIEN":
         if dk[0] == "D" and kl[0] == "M":
             for f, gian_doan, (a, b) in mau.mien_roi:
                 D = sp.Union(sp.Interval.open(-sp.oo, gian_doan), sp.Interval.open(gian_doan, sp.oo))
@@ -728,7 +762,11 @@ def _phan_vi_du_don_dieu(dk, kl, mien, mau):
                     return {"ham": "y = %s" % f, "mien": "ℝ \\ {%s}" % gian_doan,
                             "cap_diem": [str(a), str(b)], "gia_tri": [str(fa), str(fb)]}
         return None
+    if not _khoang_chung(khoang) and khoang != "R":
+        return None
     for f, I in mau.khoang:
+        if khoang == "R" and I != sp.S.Reals:
+            continue
         if mau.dung(dk, f, I) and not mau.dung(kl, f, I):
             return {"ham": "y = %s" % f, "khoang": str(I)}
     return None
@@ -763,7 +801,7 @@ def _tang_1_dinh_li(menh, khong_doc, mau):
                 if ma:
                     can_cu.append("«%s ⇒ %s» khớp %s." % (_ten_ve(dk), _ten_ve(kl), ma))
                     continue
-                pv = _phan_vi_du_don_dieu(dk, kl, mien, mau)
+                pv = _phan_vi_du_don_dieu(dk, kl, khoang, mau)
                 if pv:
                     return {"trang_thai": "SAI", "can_cu": "Phản ví dụ cho «%s ⇒ %s»%s." % (_ten_ve(dk), _ten_ve(kl), " trên tập xác định" if mien else ""),
                             "phan_vi_du": pv}
@@ -833,10 +871,26 @@ def _trich(tl, dn, vt, text):
     return out
 
 
+def _dung_danh_muc(m):
+    """Mệnh đề đọc được và đúng theo danh mục (DD1–DD3 trên khoảng, CT1, CT2, TH)."""
+    if m[0] == "DD":
+        return m[3] != "MIEN" and (m[1], m[2]) in _DD_TRONG_DANH_MUC
+    if m[0] == "CT":
+        return m[1] == m[2]
+    if m[0] == "KD":
+        return m[1]
+    return m[0] == "TH"
+
+
 def _menh_de_doan(text):
-    """Mệnh đề đọc được của một đoạn tài liệu (để làm căn cứ), không tính dạng tóm tắt hay mệnh đề sai."""
-    menh, _ = _doc_dong(text)
-    return {m for m in menh if m[0] in ("DD", "CT", "KD", "TH")}
+    """Mệnh đề làm căn cứ của một đoạn tài liệu: chỉ lấy từ mệnh đề mà MỌI phần đều đúng theo danh mục. «Hàm đồng biến
+    ⇔ y' > 0» sai một chiều, nên chiều đúng của nó cũng không làm căn cứ; dạng tóm tắt và mệnh đề sai không tính."""
+    out, truoc = set(), None
+    for _, cl in _tach_menh_de(_chu(text)):
+        ms, truoc = _doc_menh_de(cl, truoc, False)
+        if ms and all(_dung_danh_muc(m) for m in ms):
+            out.update(ms)
+    return out
 
 
 def _ho_tro(p, m):
@@ -848,19 +902,22 @@ def _ho_tro(p, m):
 
 
 _TOAN = re.compile(r"\$\$(.+?)\$\$|\$(.+?)\$|\\\((.+?)\\\)|\\\[(.+?)\\\]")
-# Nhãn trước công thức không được phủ định hay nói sai («Sai lầm thường gặp:», «Không phải:»).
-_NHAN_NGUOC = re.compile(r"\b(?:không|chưa|chẳng|sai|nhầm|lỗi|đừng|tránh)\b|thay vì|\?")
+# Nhãn trước công thức chỉ gồm tên quy tắc và điều kiện («Đạo hàm thương, tại các điểm có v khác 0:»). Nhãn khác
+# («Sai lầm thường gặp:», «Bạn An viết:», «Chứng minh hoặc bác bỏ:») không khẳng định công thức.
+_TU_NHAN = frozenset(
+    "đạo hàm lũy thừa của với n nguyên dương hằng số nhân tổng hiệu tích thương cũng vậy tại các điểm có u v k x "
+    "khác 0 quy tắc công thức và".split())
 
 
 def _phat_bieu_cong_thuc(text, khoa):
     """Đoạn phát biểu công thức có khóa `khoa`: một mệnh đề của đoạn có dạng «nhãn: $công thức$» hay «$công thức$» —
-    công thức đóng khung, khớp trọn (không là phần của công thức dài hơn), đứng cuối mệnh đề; nhãn không phủ định."""
+    công thức đóng khung, khớp trọn (không là phần của công thức dài hơn), đứng cuối mệnh đề; nhãn chỉ là tên quy tắc."""
     for _, cl in _tach_menh_de(text):
         for m in _TOAN.finditer(cl):
             if _khoa_cong_thuc(next(g for g in m.groups() if g is not None)) != khoa or cl[m.end():].strip(" .;:"):
                 continue
             nhan = cl[:m.start()].strip()
-            if nhan and (not nhan.endswith(":") or _TOAN.search(nhan) or _NHAN_NGUOC.search(nhan.lower())):
+            if nhan and (not nhan.endswith(":") or _TOAN.search(nhan) or _tu_la(nhan.lower(), _TU_NHAN)):
                 continue
             return True
     return False

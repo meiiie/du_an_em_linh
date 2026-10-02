@@ -243,6 +243,52 @@ CA = [
     ("D-chia-0", KKD, r"(1/0)' = 0", ""),
     ("D-mau-0", KKD, r"(u/(v-v))' = 0", ""),
     ("D-mau-dong-nhat-0", KKD, r"(1/((x+1)^2 - x^2 - 2x - 1))' = 0", ""),
+    # Rà đối kháng math-verifier trên #101 (d186e58, 188 ca): đọc theo mẫu có vị trí, không theo túi từ.
+    # DN1, DN2: chủ ngữ của «đổi dấu / không đổi dấu» phải là y' hay đạo hàm
+    ("DN1-ham-so", KKD, "", "Nếu hàm số đổi dấu từ dương sang âm khi x qua x0 thì x0 là điểm cực đại."),
+    ("DN1-y", KKD, "", "Nếu y đổi dấu từ dương sang âm khi x qua x0 thì x0 là điểm cực đại."),
+    ("DN1-dh-dh", KKD, "", "Nếu đạo hàm của đạo hàm đổi dấu từ dương sang âm khi x qua x0 thì x0 là điểm cực đại."),
+    ("DN1-ff'", KKD, "", "Nếu f(x)f'(x) đổi dấu từ dương sang âm khi x qua x0 thì x0 là điểm cực đại."),
+    ("DN1-kl-xf", KKD, "", "Nếu y' đổi dấu từ dương sang âm khi x qua x0 thì x0 là điểm cực đại của x f(x)."),
+    ("DN2-ham-so", KKD, "", "Đạo hàm bằng 0 mà hàm số không đổi dấu thì không có cực trị."),
+    ("DN2-y", KKD, "", "Nếu y' = 0 tại x0 mà y không đổi dấu khi x qua x0 thì hàm số không đạt cực trị tại điểm đó."),
+    ("DN2-kl-xf", KKD, "", "Đạo hàm bằng 0 mà không đổi dấu thì hàm số x f(x) không có cực trị."),
+    # DN3: thừa số còn sót bên cạnh y'
+    ("DN3-ff'", KKD, "", "Nếu f(x)f'(x) > 0 với mọi x thuộc K thì hàm số f(x) đồng biến trên K."),
+    ("DN3-yy'", KKD, "", "Nếu yy' > 0 trên khoảng K thì hàm đồng biến trên K."),
+    ("DN3-dd3-ff'", KKD, "", "Nếu hàm số f(x) đồng biến trên K thì f(x)f'(x) ≥ 0 trên K."),
+    ("DN3-kl-xf", KKD, "", "Nếu f'(x) > 0 với mọi x thuộc K thì hàm số x f(x) đồng biến trên K."),
+    # DN4: «tại hữu hạn điểm» phải đi với «y' = 0»
+    ("DN4-ge", KKD, "", "Nếu y' ≥ 0 tại hữu hạn điểm thì hàm đồng biến trên K."),
+    ("DN4-gt", KKD, "", "Nếu y' > 0 tại hữu hạn điểm thì hàm đồng biến trên K."),
+    # DN5: «khoảng đó» phải trỏ về khoảng đứng trước nó
+    ("DN5-R", KKD, "", "Nếu y' > 0 trên khoảng đó thì hàm đồng biến trên ℝ."),
+    ("DN5-dd3", KKD, "", "Nếu hàm đồng biến trên khoảng này thì y' ≥ 0 trên ℝ."),
+    # DN6: ngoặc không phải khoảng
+    ("DN6-R0", KKD, "", "Nếu y' > 0 trên (ℝ\\{0}) thì hàm đồng biến trên (ℝ\\{0})."),
+    ("DN6-x0", KKD, "", "Nếu y' > 0 trên (x ≠ 0) thì hàm đồng biến trên (x ≠ 0)."),
+    ("DN6-kxd", KKD, "", "Trên khoảng (không xác định), nếu y' > 0 thì hàm đồng biến."),
+    # DN9, DN10: CT2 yếu hơn hay nói cả hàm số
+    ("DN9-chua-chac", KKD, "", "Đạo hàm bằng 0 mà không đổi dấu thì chưa chắc là cực trị."),
+    ("DN10-ca-ham", KKD, "", "Nếu y'(x0) = 0 mà y' không đổi dấu khi x qua x0 thì hàm số không có cực trị."),
+    ("E5-co-the", KKD, "", "Đạo hàm bằng 0 mà không đổi dấu thì có thể là cực trị."),
+    # SN1: câu đúng nhắc «không thuộc tập xác định» không phải định nghĩa sai
+    ("TH-SN1-loai", KKD, "", "Điểm tới hạn là điểm thuộc tập xác định mà tại đó đạo hàm bằng 0 hoặc đạo hàm không xác định. "
+     "Khi tìm điểm tới hạn, loại bỏ các điểm không thuộc tập xác định."),
+    ("TH-SN1-hs-kxd", KKD, "", "Điểm tới hạn là điểm thuộc tập xác định mà tại đó đạo hàm bằng 0 hoặc đạo hàm không xác định. "
+     "Điểm mà hàm số không xác định thì bị loại."),
+    # SN2: khoảng cụ thể thì bộ mẫu không bám khoảng của dòng, không đưa phản ví dụ của khoảng khác
+    ("K9-cu-the", KKD, "", "Nếu hàm đồng biến trên khoảng (1; +∞) thì y' > 0 trên khoảng (1; +∞)."),
+    # cách viết SGK đọc được sau lượt này
+    ("SGK-thuoc-ky-hieu", DAT, "", "Nếu f'(x) > 0 với mọi x ∈ K thì hàm số f(x) đồng biến trên K."),
+    ("SGK-moi-khoang", DAT, "", "Nếu y' > 0 trên mỗi khoảng xác định thì hàm đồng biến trên từng khoảng đó."),
+    ("SGK-ct2-x0", DAT, "", "Nếu y'(x0) = 0 mà y' không đổi dấu khi x qua x0 thì x0 không là điểm cực trị."),
+    ("SGK-ct1-dat-tai", DAT, "", "Nếu y' đổi dấu từ dương sang âm khi x qua x0 thì hàm số đạt cực đại tại x0."),
+    ("SGK-mot-so-huu-han", DAT, r"y' \ge 0,\ y' = 0 \text{ chỉ tại một số hữu hạn điểm} \Rightarrow \text{đồng biến}", ""),
+    ("SGK-lon-hon-hoac-bang", DAT, "",
+     "Nếu đạo hàm lớn hơn hoặc bằng 0 trên khoảng K và bằng 0 chỉ tại hữu hạn điểm thì hàm đồng biến trên K."),
+    ("TH-khong-ton-tai", DAT, "", "Điểm tới hạn là điểm thuộc tập xác định mà tại đó đạo hàm bằng 0 hoặc đạo hàm không tồn tại."),
+    ("LaTeX-rightarrow", DAT, r"+ \rightarrow - : \text{cực đại}", ""),
 ]
 
 
@@ -327,6 +373,38 @@ def test_tang_2_can_cu_dung_menh_de(dong, doan, mong):
     kq, _ = _chay([dong], [{"id": "tl-x", "license_status": "tu_soan", "text": doan}])
     d = kq[dong[0]]
     assert (d["tang1"]["trang_thai"], d["tang2"]["trang_thai"]) == mong, d["tang2"]
+
+
+C8 = ("r", "", "", "Đạo hàm bằng 0 mà không đổi dấu thì không có cực trị.")
+CT1 = ("r", "", "", "Nếu y' đổi dấu từ dương sang âm khi x qua x0 thì x0 là điểm cực đại.")
+
+
+@pytest.mark.parametrize("dong,doan,mong", [
+    # Rà math-verifier trên #101: đoạn tài liệu sai không làm căn cứ, kể cả khi một phần của nó trùng định lí
+    (("r", "", "", "Nếu y' > 0 trên khoảng K thì hàm đồng biến trên K."),
+     "Hàm đồng biến trên khoảng K khi và chỉ khi y' > 0 trên K.", (DAT, KKD)),
+    (("r", "", "", "Nếu hàm số đồng biến trên khoảng K thì y' ≥ 0 trên K."),
+     "Hàm đồng biến trên khoảng K khi và chỉ khi y' ≥ 0 trên K.", (DAT, KKD)),
+    (C8, "Đạo hàm bằng 0 mà không đổi dấu thì chưa chắc là cực trị.", (DAT, KKD)),
+    (CT1, "Nếu hàm số đổi dấu từ dương sang âm khi x qua x0 thì x0 là điểm cực đại.", (DAT, KKD)),
+    (C8, "Đạo hàm bằng 0 mà hàm số không đổi dấu thì không có cực trị.", (DAT, KKD)),
+    (DONG_TONG, "Bạn An viết: $(u+v)' = u' + v'$.", (DAT, KKD)),
+    (DONG_TONG, "Chứng minh hoặc bác bỏ: $(u+v)' = u' + v'$.", (DAT, KKD)),
+    (DONG_TONG, "Hiểu lầm thường gặp: $(u+v)' = u' + v'$.", (DAT, KKD)),
+    # câu CT2 kiểu SGK (x0 ở kết luận) giờ làm căn cứ được
+    (C8, "Nếu y'(x0) = 0 mà y' không đổi dấu khi x qua x0 thì x0 không là điểm cực trị.", (DAT, DAT)),
+], ids=["dn8-dd1", "dn8-dd3", "dn9-chua-chac", "dn7-ham-doi-dau", "dn7-kd-ham-so", "dn11-ban-an", "dn11-chung-minh",
+        "dn11-hieu-lam", "ct2-sgk"])
+def test_tang_2_doan_sai_khong_lam_can_cu(dong, doan, mong):
+    kq, _ = _chay([dong], [{"id": "tl-x", "license_status": "tu_soan", "text": doan}])
+    d = kq[dong[0]]
+    assert (d["tang1"]["trang_thai"], d["tang2"]["trang_thai"]) == mong, d["tang2"]
+
+
+def test_phan_vi_du_dang_thuc_la_so_thuc():
+    # Rà math-verifier trên #101 (SN2): (c^x)' = x c^{x-1} sai, nhưng phản ví dụ phải là số thực (c = -2, x = 1/2 thì phức).
+    t1 = kiem_dong_cong_thuc({"dong": [{"id": "w2", "latex": r"(c^x)' = x c^{x-1}", "phat_bieu": ""}]})["dong"][0]["tang1"]
+    assert t1["trang_thai"] == SAI and "I" not in t1["phan_vi_du"]["hieu_hai_ve"], t1
 
 
 DONG_DB_K = ("r", "", "", "Nếu y' > 0 trên khoảng K thì hàm đồng biến trên K.")
