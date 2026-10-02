@@ -6,6 +6,7 @@ import java.util.List;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.annotation.Profile;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import vn.hoctapcanman.core.identity.application.port.PasswordHasher;
@@ -20,6 +21,7 @@ import vn.hoctapcanman.core.identity.domain.repository.UserRepository;
  */
 @Component
 @Profile("dev")
+@Order(1) // trước LopThuSeeder: lớp thử cần tài khoản có sẵn
 public class TaiKhoanThuSeeder implements ApplicationRunner {
 
     private record TaiKhoan(String email, String ten, Role vaiTro, String matKhau) {}
