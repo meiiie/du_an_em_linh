@@ -9,7 +9,7 @@ Bảng PostgreSQL 18 của `services/core`, Flyway chỉ thêm. Tên bảng và 
 | `classes` | `id`, `name`, `grade`, `school_year` | «12A1 thử» |
 | `enrollments` | `class_id`, `user_id`, `role_in_class` (`TEACHER`, `STUDENT`) | PK (`class_id`, `user_id`) |
 | `class_settings` | `class_id`, `reveal_solution_after_submit` (mặc định `false`), `ai_provider` (mặc định `offline`), `ai_allow_local` | Nhà AI chỉ chọn trong danh sách máy chủ bật |
-| `escalations` | `id`, `class_id`, `student_id`, `skill_code`, `problem_id`, `step_code`, `kind` (`KET`, `NHO_GV`), `reason`, `created_at`, `handled_at`, `handled_by` | Cảnh báo cho giáo viên của lớp: kẹt (mastery ghi) và «gửi thầy cô» (tutor ghi), qua port `CanhBaoGiaoVien` |
+| `escalations` | `id`, `class_id`, `student_id`, `skill_code`, `problem_code`, `step_code`, `kind` (`KET`, `NHO_GV`), `reason`, `created_at`, `handled_at`, `handled_by` | Cảnh báo cho giáo viên của lớp: kẹt (mastery ghi) và «gửi thầy cô» (tutor ghi), qua port `CanhBaoGiaoVien`. Tham chiếu bài và kỹ năng bằng mã, không khóa ngoại sang `V4` (bảng nằm ở `V3`, module khác) |
 
 ## content (`V4__content.sql`)
 

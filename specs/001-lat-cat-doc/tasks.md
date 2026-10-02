@@ -200,6 +200,7 @@ Tất cả ─▶ e2e «một vòng» và nghiệm thu
 ```
 
 - MVP sau Phase 3: An làm bài theo bước trên v2 với nội dung đã nhập.
+- Số `V<n>` của migration trong các việc là dự kiến. PR lấy số kế tiếp trên `main` khi rebase: Flyway mặc định `outOfOrder=false`, không áp migration có số nhỏ hơn số đã áp, nên mastery merge trước tutor thì mastery lấy `V6`.
 - Song song được: `kiem_dong_cong_thuc` (math) với classroom và client toán (core); `kiem_loi_giang` (math) với `practice` (core); các màn giáo viên US3, US4, US7 với các màn học sinh.
 - Kiểm trước câu gợi ý (T034b) nghe sự kiện miền, nên US2 và US3 merge theo thứ tự nào cũng được.
 - ADR 013 đã chấp nhận (2026-10-02). Chặn duy nhất: job `kiem_loi_giang` chờ bản vá KD-0005 của lab Kiểm định.
