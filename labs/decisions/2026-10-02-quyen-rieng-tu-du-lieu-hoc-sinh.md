@@ -26,7 +26,10 @@ Trước khi có học sinh thật, sản phẩm xử lý dữ liệu cá nhân 
 
 ### Sản phẩm (mã và ADR hiện có)
 
-- v0 chỉ dùng dữ liệu tổng hợp ([ADR 006](../../docs/adr/006-du-lieu-tong-hop.md)), đã có móc `consent_records`, `audit_logs`; RLS bật nhưng chưa `FORCE`.
+- v0 chỉ dùng dữ liệu tổng hợp ([ADR 006](../../docs/adr/006-du-lieu-tong-hop.md)), đã có móc `consent_records`, `audit_logs`.
+- RLS ở v0: migration `apps/web/drizzle/0010_rls_du_lieu_hoc_sinh.sql` (PR #35, F-08) đã `ENABLE` + `FORCE ROW LEVEL SECURITY` cho `submissions`, `tutor_sessions`, `tutor_messages`, `mastery_states`, `grading_results`.
+  - Câu «chưa `FORCE`» trong ADR 006 đã cũ.
+  - Theo chính migration, superuser Postgres luôn bỏ qua RLS.
 - Gia sư gửi tới nhà LLM ([ADR 007](../../docs/adr/007-ai-providers.md), [009](../../docs/adr/009-khoa-lap-trinh-openrouter-zai.md)):
   - nhà đang có: OpenAI (Hoa Kỳ), OpenRouter (Hoa Kỳ, chuyển tiếp tới nhiều nhà), Z.AI (Trung Quốc);
   - nội dung gửi: đề, bước học sinh viết, mã lỗi, gợi ý đã kiểm. Không gửi lời giải ([ADR 003](../../docs/adr/003-gia-su-khong-doc-loi-giai.md)).
@@ -116,7 +119,8 @@ Lý do các điểm then chốt:
    - giáo viên xem và ghi đè mức hiểu, gợi ý bài; mỗi gợi ý có lý do xem được;
    - nhật ký tương tác AI lưu theo thời hạn ở mục 7.
 9. **Bảo mật:**
-   - `FORCE` RLS trên bảng dữ liệu học sinh; kiểm quyền theo lớp ở use case (chống IDOR);
+   - CSDL mới của `services/core` (Flyway) giữ mức của v0: `ENABLE` + `FORCE` RLS cho mọi bảng dữ liệu học sinh, gồm bảng tương ứng 5 bảng của migration 0010 và bảng mới (đồng ý, lịch, ảnh OCR); vai trò CSDL của ứng dụng không phải superuser, không có `BYPASSRLS`;
+   - kiểm quyền theo lớp ở use case (chống IDOR);
    - mã hóa khi lưu và khi truyền; nhật ký kiểm toán mọi lần đọc dữ liệu học sinh;
    - kế hoạch ứng phó sự cố: báo A05, báo chủ thể khi luật yêu cầu.
 10. **Hồ sơ trước pilot:**

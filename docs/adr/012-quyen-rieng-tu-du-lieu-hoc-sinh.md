@@ -30,7 +30,8 @@ Phân tích, chấm 4 phương án, độ nhạy, câu hỏi cho luật sư: [`l
   - Mọi câu gia sư gắn nhãn «Gia sư AI».
   - Giáo viên xem và ghi đè mức hiểu, gợi ý bài; mỗi gợi ý có lý do xem được.
 - **Bảo mật.**
-  - `FORCE` RLS trên bảng dữ liệu học sinh; kiểm quyền theo lớp ở use case.
+  - CSDL của `services/core` giữ mức RLS của v0 (migration 0010: `ENABLE` + `FORCE`) cho mọi bảng dữ liệu học sinh, kể cả bảng mới; vai trò CSDL của ứng dụng không phải superuser.
+  - Kiểm quyền theo lớp ở use case.
   - Mã hóa khi lưu và khi truyền; nhật ký kiểm toán mọi lần đọc.
   - Kế hoạch ứng phó sự cố.
 - **Trước ngày pilot ít nhất 2 tháng:**
@@ -39,7 +40,7 @@ Phân tích, chấm 4 phương án, độ nhạy, câu hỏi cho luật sư: [`l
 
 ## Hệ quả
 
-- ADR 006 giữ hiệu lực cho tới khi có hồ sơ và bản ghi đồng ý đầu tiên. `consent_records` của v0 là móc, v2 viết lại ở `services/core`.
+- ADR 006 giữ hiệu lực cho tới khi có hồ sơ và bản ghi đồng ý đầu tiên. `consent_records` của v0 là móc, v2 viết lại ở `services/core`. Câu «RLS chưa `FORCE`» của ADR 006 đã cũ: migration 0010 đã bật `FORCE` cho 5 bảng dữ liệu học của v0.
 - Việc mới, mỗi việc một issue khi ADR được chấp nhận:
   - mô hình đồng ý và quyền chủ thể ở `services/core`;
   - bộ khử định danh, có bộ đo tỉ lệ lọt ở `labs/evals`;
