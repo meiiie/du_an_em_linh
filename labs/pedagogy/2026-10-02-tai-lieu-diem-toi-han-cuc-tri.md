@@ -2,7 +2,7 @@
 
 | | |
 | --- | --- |
-| Trạng thái | chấp nhận (2026-10-02, PR đóng #103, bản 2 sau hai lượt rà độc lập); «đã nâng» khi #85 áp bản vá vào `data/supham/` |
+| Trạng thái | đã nâng (2026-10-02, #85 T011d): áp nguyên văn vào [`data/supham/tai-lieu/sp-tai-lieu-0002.json`](../../data/supham/tai-lieu/sp-tai-lieu-0002.json). Chấp nhận ở PR đóng #103, bản 2 sau hai lượt rà độc lập |
 | Người làm | Claude Code, vai lab Sư phạm |
 | Câu hỏi | Lấy đâu căn cứ tầng 2 cho hai mệnh đề của bảng v0 mà tài liệu hiện có không phát biểu? |
 | Issue | #103 (epic #79); dùng ở #85 (T011d áp bản vá) và #83 (bảng 6 dòng phải `DAT` cả 6) |

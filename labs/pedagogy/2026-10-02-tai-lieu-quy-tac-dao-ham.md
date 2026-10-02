@@ -2,7 +2,7 @@
 
 | | |
 | --- | --- |
-| Trạng thái | chấp nhận (2026-10-02, PR đóng #84, sau hai lượt rà độc lập); thành «đã nâng» khi #85 áp bản vá vào `data/supham/` |
+| Trạng thái | đã nâng (2026-10-02, #85 T011d): áp nguyên văn vào [`data/supham/tai-lieu/sp-tai-lieu-0001.json`](../../data/supham/tai-lieu/sp-tai-lieu-0001.json). Chấp nhận ở PR đóng #84, sau hai lượt rà độc lập |
 | Người làm | Claude Code, vai lab Sư phạm |
 | Câu hỏi | Lấy đâu căn cứ tầng 2 cho ba dòng đẳng thức của bảng công thức v0 (lũy thừa, tổng, thương)? |
 | Issue | #84 (epic #79); dùng ở #85 (T011d: áp bản vá, nạp làm tài liệu thứ tư của lớp) và #83 (bảng 6 dòng phải `DAT` cả 6) |

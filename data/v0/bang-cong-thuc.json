@@ -1,0 +1,48 @@
+{
+  "version": 1,
+  "note": "Bảng khóa kèm chủ đề đạo hàm — đơn điệu và cực trị",
+  "formulas": [
+    {
+      "ma": "d-1",
+      "skillCode": "T12.DH.03",
+      "title": "Đạo hàm lũy thừa",
+      "latex": "(x^n)' = n x^{n-1}",
+      "noiDung": "Đạo hàm của x mũ n là n nhân x mũ n trừ 1. Hằng số có đạo hàm bằng 0."
+    },
+    {
+      "ma": "d-2",
+      "skillCode": "T12.DH.03",
+      "title": "Đạo hàm tổng",
+      "latex": "(u+v)' = u' + v'",
+      "noiDung": "Đạo hàm của tổng bằng tổng các đạo hàm."
+    },
+    {
+      "ma": "d-3",
+      "skillCode": "T12.DH.03",
+      "title": "Đạo hàm thương",
+      "latex": "(u/v)' = (u'v - uv') / v^2",
+      "noiDung": "Với thương, tử là u'v trừ uv', mẫu là v bình."
+    },
+    {
+      "ma": "d-4",
+      "skillCode": "T12.DH.03",
+      "title": "Đơn điệu",
+      "latex": "y' \\ge 0,\\ y' = 0 \\text{ chỉ tại hữu hạn điểm} \\Rightarrow \\text{đồng biến}",
+      "noiDung": "Hàm đồng biến trên khoảng khi đạo hàm không âm và bằng 0 tại hữu hạn điểm; nghịch biến khi đạo hàm không dương theo cùng quy tắc."
+    },
+    {
+      "ma": "d-5",
+      "skillCode": "T12.DH.03",
+      "title": "Cực trị",
+      "latex": "+ \\to - : \\text{cực đại}",
+      "noiDung": "Đạo hàm đổi từ dương sang âm thì cực đại; từ âm sang dương thì cực tiểu. Đạo hàm bằng 0 mà không đổi dấu thì chưa phải cực trị."
+    },
+    {
+      "ma": "d-6",
+      "skillCode": "T12.DH.03",
+      "title": "Điểm tới hạn",
+      "latex": "y'=0 \\text{ hoặc } y' \\text{ không xác định}",
+      "noiDung": "Điểm tới hạn gồm nghiệm của đạo hàm bằng 0 và điểm thuộc tập xác định mà đạo hàm không xác định."
+    }
+  ]
+}
