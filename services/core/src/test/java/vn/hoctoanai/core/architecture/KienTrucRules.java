@@ -146,7 +146,7 @@ final class KienTrucRules {
     static final ArchRule REPOSITORY_CHI_QUAN_LY_JPA_ENTITY = classes().that()
         .areInterfaces().and().areAssignableTo(SPRING_DATA_REPOSITORY)
         .should(chiQuanLyJpaEntity())
-        .as("Repository Spring Data chỉ quản lý *JpaEntity trong infrastructure.persistence.entity")
+        .as("Repository Spring Data chỉ quản lý @Entity *JpaEntity trong infrastructure.persistence.entity")
         .because("JpaRepository<DomainModel, …> làm hỏng khởi động: «Not a managed type» (bài học LMS)");
 
     static final List<ArchRule> CLEAN = List.of(
@@ -218,7 +218,7 @@ final class KienTrucRules {
     }
 
     private static ArchCondition<JavaClass> chiQuanLyJpaEntity() {
-        return new ArchCondition<>("chỉ quản lý *JpaEntity trong infrastructure.persistence.entity") {
+        return new ArchCondition<>("chỉ quản lý @Entity *JpaEntity trong infrastructure.persistence.entity") {
             @Override
             public void check(JavaClass repository, ConditionEvents events) {
                 for (JavaType supertype : repository.getInterfaces()) {
@@ -228,10 +228,11 @@ final class KienTrucRules {
                         continue;
                     }
                     JavaClass entity = parameterized.getActualTypeArguments().getFirst().toErasure();
-                    boolean dung = entity.getSimpleName().endsWith("JpaEntity")
+                    boolean dung = entity.isAnnotatedWith(JPA_ENTITY)
+                        && entity.getSimpleName().endsWith("JpaEntity")
                         && entity.getPackageName().contains(".infrastructure.persistence.entity");
                     if (!dung) {
-                        String message = "%s quản lý %s — phải là *JpaEntity trong infrastructure.persistence.entity"
+                        String message = "%s quản lý %s — phải là @Entity tên *JpaEntity trong infrastructure.persistence.entity"
                             .formatted(repository.getName(), entity.getName());
                         events.add(SimpleConditionEvent.violated(repository, message));
                     }
