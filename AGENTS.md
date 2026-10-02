@@ -43,10 +43,11 @@ pnpm test:web                       # typecheck + lint + unit
 pnpm --filter web test:e2e
 pnpm test:khoa                      # quét khóa trong git
 (cd services/core && ./mvnw verify)  # v2 core: build + test + ArchUnit (JDK 25)
+pnpm --filter frontend build && pnpm --filter frontend test  # v2 frontend (Node 24)
 node --test .claude/hooks/*.test.mjs  # test hook của harness
 ```
 
-Lệnh cục bộ: `apps/web/AGENTS.md`, `services/math/AGENTS.md`, `services/core/AGENTS.md`. Chạy test của đúng thư mục đã đụng, không chạy cả repo khi không cần.
+Lệnh cục bộ: `apps/web/AGENTS.md`, `services/math/AGENTS.md`, `services/core/AGENTS.md`, `apps/frontend/AGENTS.md`. Chạy test của đúng thư mục đã đụng, không chạy cả repo khi không cần.
 
 ## Cách làm
 

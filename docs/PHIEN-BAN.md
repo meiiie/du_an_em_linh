@@ -6,6 +6,7 @@ Một sản phẩm, **một** số SemVer (`MAJOR.MINOR.PATCH`). `0.y.z` = nguy�
 | --- | --- |
 | `package.json` | Số chuẩn (root) |
 | `apps/web/package.json` | Cùng số |
+| `apps/frontend/package.json` | Cùng số |
 | `services/math/pyproject.toml` | Cùng số |
 | `services/core/pom.xml` | Cùng số (dòng có `x-release-please-version`) |
 | `CITATION.cff` | Cùng số khi trích dẫn NCKH |
