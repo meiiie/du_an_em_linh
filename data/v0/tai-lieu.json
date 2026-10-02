@@ -1,0 +1,29 @@
+[
+  {
+    "ma": "v0-don-dieu",
+    "title": "Ghi chú tự soạn: đơn điệu và cực trị",
+    "kind": "tu_soan",
+    "source": "giáo viên thử",
+    "licenseStatus": "tu_soan",
+    "version": 1,
+    "textContent": "Ghi chú tự soạn cho lớp 12A1 thử, không chép sách. Với hàm số xác định trên một khoảng: nếu đạo hàm không âm trên khoảng đó và chỉ bằng 0 tại hữu hạn điểm thì hàm đồng biến; nếu đạo hàm không dương và chỉ bằng 0 tại hữu hạn điểm thì hàm nghịch biến. Lập bảng xét dấu của đạo hàm trên từng khoảng xác định bởi nghiệm y' = 0 và điểm y' không xác định. Nếu đạo hàm đổi từ dương sang âm khi đi qua một điểm trong thì đó là cực đại; từ âm sang dương là cực tiểu. Điểm cực trị phải nằm trong một khoảng mở chứa trong tập xác định."
+  },
+  {
+    "ma": "v0-de-mau",
+    "title": "Đề mẫu tự soạn — cùng dạng đa thức bậc ba",
+    "kind": "de_mau",
+    "source": "giáo viên thử",
+    "licenseStatus": "tu_soan",
+    "version": 1,
+    "textContent": "Đề tự soạn, không chép sách. Dạng: tìm khoảng đồng biến, nghịch biến của y = ax^3 + bx^2 + cx + d với a khác 0. Học sinh đi đủ năm bước: tập xác định, đạo hàm, nghiệm y′, bảng xét dấu, kết luận. Yêu cầu cần đạt công khai (CT GDPT môn Toán 2018, TT 32/2018/TT-BGDĐT, lớp 12): nhận biết đơn điệu từ dấu y′; thể hiện trên bảng biến thiên. Không dùng làm lời giải chuẩn cho gia sư."
+  },
+  {
+    "ma": "v0-phuong-phap",
+    "title": "Tham khảo phương pháp — ôn đơn điệu thế nào",
+    "kind": "tham_khao",
+    "source": "ghi chú lớp thử",
+    "licenseStatus": "tu_soan",
+    "version": 1,
+    "textContent": "Văn bản tự soạn. Mỗi buổi tự viết lại quy tắc đạo hàm rồi làm một bài, không mở đáp án trước. Gia sư chỉ gợi ý quy trình, không đưa kết quả. Khi kẹt cùng bước ba lần thì gửi thầy cô, chưa chuyển mức khó hơn."
+  }
+]

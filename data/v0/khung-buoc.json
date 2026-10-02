@@ -1,0 +1,42 @@
+[
+  {
+    "maBuoc": "B.DH.TXD",
+    "topicCode": "DH12",
+    "thuTu": 1,
+    "dangNhap": "DONG",
+    "skillCode": "T12.DH.02",
+    "moTa": "Tập xác định"
+  },
+  {
+    "maBuoc": "B.DH.DAOHAM",
+    "topicCode": "DH12",
+    "thuTu": 2,
+    "dangNhap": "DONG",
+    "skillCode": "T12.DH.02",
+    "moTa": "Tính đạo hàm"
+  },
+  {
+    "maBuoc": "B.DH.NGHIEM",
+    "topicCode": "DH12",
+    "thuTu": 3,
+    "dangNhap": "DONG",
+    "skillCode": "T12.DH.02",
+    "moTa": "Nghiệm y′ = 0 và điểm y′ không xác định"
+  },
+  {
+    "maBuoc": "B.DH.XETDAU",
+    "topicCode": "DH12",
+    "thuTu": 4,
+    "dangNhap": "BANG",
+    "skillCode": "T12.DH.03",
+    "moTa": "Bảng xét dấu"
+  },
+  {
+    "maBuoc": "B.DH.KETLUAN",
+    "topicCode": "DH12",
+    "thuTu": 5,
+    "dangNhap": "DONG",
+    "skillCode": "T12.DH.03",
+    "moTa": "Kết luận đơn điệu và cực trị"
+  }
+]

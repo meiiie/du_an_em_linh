@@ -1,0 +1,17 @@
+{
+  "key": "bkt",
+  "version": 1,
+  "value": {
+    "p_t": 0.12,
+    "p_g": 0.2,
+    "p_s": 0.1,
+    "nguong_tin_cay_ma_loi": 0.65,
+    "so_luot_ket": 3,
+    "nguong_doan_mo_so_lan_doi_o": 4,
+    "nguong_muc": {
+      "THONG_HIEU": 0.4,
+      "VAN_DUNG": 0.62,
+      "VAN_DUNG_CAO": 0.82
+    }
+  }
+}
