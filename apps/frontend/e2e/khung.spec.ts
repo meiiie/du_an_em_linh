@@ -84,3 +84,17 @@ test('điện thoại: ngăn kéo mở bằng mo-sidebar, đóng bằng dong-sid
   await page.keyboard.press('Escape');
   await expect(ray).not.toHaveClass(/\bmo\b/);
 });
+
+test.describe('giảm chuyển động', () => {
+  test.use({ reducedMotion: 'reduce' });
+
+  test('điện thoại: mở ngăn kéo thì tiêu điểm vào dong-sidebar, Esc thì về mo-sidebar', async ({ page }) => {
+    test.skip((page.viewportSize()?.width ?? 1280) >= 1024, 'màn rộng không có ngăn kéo');
+    await vaoLop(page, 'hs.an@demo.local', 'hocsinh123');
+    await page.getByTestId('mo-sidebar').click();
+    await expect(page.getByTestId('dong-sidebar')).toBeFocused();
+    await page.keyboard.press('Escape');
+    await expect(page.getByTestId('sidebar')).not.toHaveClass(/\bmo\b/);
+    await expect(page.getByTestId('mo-sidebar')).toBeFocused();
+  });
+});

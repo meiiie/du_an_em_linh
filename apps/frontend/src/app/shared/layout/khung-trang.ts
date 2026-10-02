@@ -204,15 +204,19 @@ const MAN_HINH_RONG = '(min-width: 64rem)';
       overscroll-behavior: contain;
       transform: translateX(-100%);
       visibility: hidden;
+      /* Đóng: trượt ra xong mới ẩn (visibility trễ 200 ms). */
       transition:
         transform 200ms,
-        visibility 200ms;
+        visibility 0s 200ms;
     }
 
     .ray.mo {
       top: 0;
       transform: none;
       visibility: visible;
+      /* Mở: hiện ngay, không chuyển tiếp visibility. Nếu chuyển tiếp, khung đầu vẫn hidden và focus() vào nút đóng
+         (afterNextRender) bị trình duyệt bỏ qua. */
+      transition: transform 200ms;
     }
 
     .ray :focus-visible {

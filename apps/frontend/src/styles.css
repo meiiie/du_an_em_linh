@@ -163,7 +163,9 @@ body {
   *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
+    /* 0s, không phải 0.01ms: `transition-property` mặc định là `all`, nên 0.01ms bật chuyển tiếp mọi thuộc tính cho mọi
+       phần tử. Khi đó `visibility` kế thừa vẫn hidden ở khung đầu, và focus() vào nút trong ngăn kéo vừa mở bị bỏ qua. */
+    transition-duration: 0s !important;
     scroll-behavior: auto !important;
   }
 }
