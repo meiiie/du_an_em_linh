@@ -35,3 +35,4 @@ Một chủ đề chỉ được giao cho Build khi đủ gói sau, và lab Ki�
 
 - [`2026-10-01-ke-hoach-mo-rong-noi-dung.md`](2026-10-01-ke-hoach-mo-rong-noi-dung.md) — kế hoạch mở rộng từ một chủ đề ra chương trình Toán 12.
 - [`2026-10-02-tai-lieu-quy-tac-dao-ham.md`](2026-10-02-tai-lieu-quy-tac-dao-ham.md) — bản vá `sp-tai-lieu-0001`: tài liệu tự soạn làm căn cứ tầng 2 cho quy tắc lũy thừa, tổng, thương (#84).
+- [`2026-10-02-tai-lieu-diem-toi-han-cuc-tri.md`](2026-10-02-tai-lieu-diem-toi-han-cuc-tri.md) — bản vá `sp-tai-lieu-0002`: căn cứ tầng 2 cho định nghĩa điểm tới hạn và «không đổi dấu thì chưa phải cực trị» (#103).

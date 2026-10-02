@@ -1,0 +1,15 @@
+diff --git a/data/supham/tai-lieu/sp-tai-lieu-0002.json b/data/supham/tai-lieu/sp-tai-lieu-0002.json
+new file mode 100644
+index 0000000..fef9b90
+--- /dev/null
++++ b/data/supham/tai-lieu/sp-tai-lieu-0002.json
+@@ -0,0 +1,9 @@
++{
++  "ma": "sp-tai-lieu-0002",
++  "title": "Ghi chú tự soạn: điểm tới hạn và dấu hiệu cực trị",
++  "kind": "tu_soan",
++  "source": "lab Sư phạm",
++  "licenseStatus": "tu_soan",
++  "version": 1,
++  "textContent": "Ghi chú tự soạn cho lớp 12A1 thử, không chép sách. Điểm tới hạn gồm nghiệm của đạo hàm bằng 0 và điểm thuộc tập xác định mà đạo hàm không xác định. Bảng xét dấu của y' có hàng x gồm các điểm tới hạn và các điểm bị loại khỏi tập xác định, xếp từ nhỏ đến lớn. Đạo hàm bằng 0 mà không đổi dấu thì chưa phải cực trị. Ôn lại khi cần: Toán 12, cực trị của hàm số; Toán 10, tập xác định của hàm số."
++}
