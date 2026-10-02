@@ -12,8 +12,9 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtAut
 import org.springframework.security.web.SecurityFilterChain;
 
 /**
- * API không trạng thái: bearer JWT (OAuth2 Resource Server), không session, không CSRF vì không dùng cookie. Mở:
- * đăng nhập, làm mới, đăng xuất, health. Còn lại phải đăng nhập.
+ * API không trạng thái: bearer JWT (OAuth2 Resource Server), không session. Tắt CSRF của Spring Security: chỉ làm mới
+ * và đăng xuất đọc cookie (refresh token, {@code SameSite=Strict}), và hai endpoint này tự đòi header chống CSRF
+ * ({@code AuthController}). Mở: đăng nhập, làm mới, đăng xuất, health. Còn lại phải đăng nhập.
  */
 @Configuration(proxyBeanMethods = false)
 public class SecurityConfig {

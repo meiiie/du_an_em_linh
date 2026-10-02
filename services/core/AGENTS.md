@@ -18,7 +18,7 @@ Windows: `mvnw.cmd verify`. Cần JDK 25 (`JAVA_HOME`); wrapper tự tải Maven
 | --- | --- |
 | `src/main/java/vn/hoctoanai/core/CoreApplication.java` | Điểm vào |
 | `src/main/java/vn/hoctoanai/core/<module>/` | Module nghiệp vụ: `domain` → `application` → `infrastructure` |
-| `.../identity/` | Đăng nhập (#55): `/api/auth/login`, `/refresh`, `/logout`, `/api/me`; access token JWT HS256 15 phút, refresh token ngẫu nhiên lưu băm, xoay vòng, thu hồi khi đăng xuất |
+| `.../identity/` | Đăng nhập (#55): `/api/auth/login`, `/refresh`, `/logout`, `/api/me`; access token JWT HS256 15 phút trong thân phản hồi; refresh token ngẫu nhiên lưu băm, xoay vòng trong phiên, thu hồi khi đăng xuất, chỉ đi trong cookie `hta_refresh` (HttpOnly, SameSite=Strict, Path=/api/auth); `/refresh` và `/logout` đòi header `X-Requested-With` (#57) |
 | `.../shared/infrastructure/` | Dùng chung: `Clock` (UTC) |
 | `src/main/resources/db/migration/` | Flyway, chỉ thêm: `V1__identity.sql` (`users`, `auth_sessions`, `refresh_tokens`) |
 | `src/main/resources/application-dev.yaml` | Profile `dev`: CSDL cục bộ; `TaiKhoanThuSeeder` tạo 4 tài khoản tổng hợp |
