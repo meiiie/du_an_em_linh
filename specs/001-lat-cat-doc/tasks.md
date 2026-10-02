@@ -113,7 +113,7 @@ description: "Danh sách việc của epic P2 — lát cắt dọc một chủ �
 ### Issue — Cột gia sư (frontend)
 
 - [ ] T038 [US2] `fe/features/hoc-sinh/luyen/gia-su/`: cột phải, tờ toàn màn dưới `lg` (`tutor-panel`, `tutor-log`, `tutor-input`, `tutor-send`, `tutor-composer`, `dong-gia-su`, `chip-goi-y`, `tutor-che-do`); đọc SSE bằng `fetch` + `ReadableStream`; Dừng = `AbortController`; Escape; `aria-live` cho trạng thái
-- [ ] T039 [US2] `fe/features/hoc-sinh/kho/`: «Công thức» và tài liệu (`#ct-…`, `#tl-…`), badge `[n]` mở đúng đoạn không rời phiếu
+- [ ] T039 [US2] `fe/features/hoc-sinh/kho/`: trang «Công thức và tài liệu» (nhãn menu «Công thức», `nav-hs-kho`; đích `#ct-…`, `#tl-…`), badge `[n]` mở đúng đoạn không rời phiếu
 - [ ] T040 [P] [US2] e2e `apps/frontend/e2e/gia-su.spec.ts`: bản tương đương `gia-su-harness` (composer, nhà lỗi không chuyển, kho) với nhà giả
 
 ---

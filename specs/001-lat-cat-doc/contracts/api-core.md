@@ -60,5 +60,5 @@ data: {"noiDung":"…câu đã lọc và đã qua cổng…","trichDan":[{"n":1,
 | DELETE | `/api/gv/hoc-sinh/{id}/muc/{kyNang}` | — | gỡ ghi đè (ghi người, thời điểm) | 34 |
 | POST | `/api/gv/hoc-sinh/{id}/bai-ke` | `{maBai, lyDo}` (bài đã phát hành) | bài kế chọn tay | 35 |
 | GET | `/api/gv/cai-dat` | — | `{moLoiGiaiSauKhiNop, nhaAi, choPhepMayCucBo, cacNhaDuocBat[]}` | 6, 19 |
-| PUT | `/api/gv/cai-dat` | như trên (`nhaAi` ∈ `cacNhaDuocBat`) | cài đặt | 6, 19 |
+| PUT | `/api/gv/cai-dat` | như trên (`nhaAi` ∈ `cacNhaDuocBat`) | cài đặt; 422 khi `choPhepMayCucBo=true` mà máy chủ không bật `app.tutor.allow-local` (chạy trong container: luôn tắt, research R3) | 6, 19 |
 | GET | `/api/gv/gia-su` | — | trạng thái từng nhà do máy chủ bật (thử `GET /models`), không có khóa | 19 |

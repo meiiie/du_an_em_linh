@@ -256,20 +256,22 @@ Giáo viên xem bảng lớp theo kỹ năng × mức, đổi sang 3 mức Biế
 
 ## Phụ lục — màn tương đương với v0
 
-| v0 | Tiêu đề / testid giữ lại | v2 trong P2 |
-| --- | --- | --- |
-| `/hs` | «Chào <tên>», `nav-hs-lo-trinh`, `mo-sidebar`, `tab-bai-giao` | có |
-| `/hs/bai` | «Đề bài», `nav-hs-bai` | có |
-| `/hs/luyen/[id]` | `solve-screen`, `nop-buoc`, `cham-thong-bao`, `latex-txd`, `latex-dh`, `mo-gia-su`, `tutor-*`, `chip-goi-y` | có |
-| `/hs/lich` | «Lịch học», `lich-tuan`, `nav-hs-lich` | có |
-| `/hs/kho` | «Công thức», `nav-hs-kho` | có |
-| `/gv` | «Lớp 12A1 thử», `canh-bao-ket`, `san-sang-ai` | có |
-| `/gv/duyet` | «Duyệt», `hang-doi`, `duyet-<mã bài>` | có |
-| `/gv/ngan-hang` | «Đề bài», `nav-gv-ngan-hang` | có |
-| `/gv/tai-lieu` | «Tài liệu» | có |
-| `/gv/cong-thuc` | «Công thức» | có |
-| `/gv/tien-do` | «Mức», `tien-do`, `toggle-muc` | có |
-| `/gv/hoc-sinh/[id]` | trang từng học sinh | có |
-| `/gv/cai-dat` | «Cài lớp», `mo-loi-giai`, `ai-provider-offline` | có, bỏ phần dán khóa |
-| `/gv/ket-noi-ai` | «Gia sư» | thay bằng trạng thái nhà do máy chủ quản lý |
-| `/gv/sinh-bai` | «Tạo đề» | P3 |
+Nhãn menu và `nav-*` lấy từ `apps/web/lib/nav.ts`; tiêu đề trang là `<h1>` (`PageHeader` hoặc trang) của v0, đối chiếu 2026-10-02.
+
+| v0 | Nhãn menu, testid | Tiêu đề trang (h1) | testid khác giữ lại | v2 trong P2 |
+| --- | --- | --- | --- | --- |
+| `/hs` | «Học», `nav-hs-lo-trinh` | «Chào <tên>» | `mo-sidebar`, `tab-bai-giao` | có |
+| `/hs/bai` | «Đề bài», `nav-hs-bai` | «Đề bài» | — | có |
+| `/hs/luyen/[id]` | — | tiêu đề bài | `solve-screen`, `nop-buoc`, `cham-thong-bao`, `latex-txd`, `latex-dh`, `mo-gia-su`, `tutor-*`, `chip-goi-y` | có |
+| `/hs/lich` | «Lịch», `nav-hs-lich` | «Lịch học» | `lich-tuan` | có |
+| `/hs/kho` | «Công thức», `nav-hs-kho` | «Công thức và tài liệu» | — | có |
+| `/gv` | «Lớp», `nav-gv-tong-quan` | «Lớp 12A1 thử» | `canh-bao-ket`, `san-sang-ai` | có |
+| `/gv/duyet` | «Duyệt», `nav-gv-duyet` | «Duyệt» | `hang-doi`, `duyet-<mã bài>` | có |
+| `/gv/ngan-hang` | «Đề bài», `nav-gv-ngan-hang` | «Đề bài» | — | có |
+| `/gv/tai-lieu` | «Tài liệu», `nav-gv-tai-lieu` | «Tài liệu» | — | có |
+| `/gv/cong-thuc` | «Công thức», `nav-gv-cong-thuc` | «Công thức» | — | có |
+| `/gv/tien-do` | «Mức», `nav-gv-tien-do` | «Mức lớp», «Mức lớp · 3 mức» | `tien-do`, `toggle-muc` | có |
+| `/gv/hoc-sinh/[id]` | — | trang từng học sinh | — | có |
+| `/gv/cai-dat` | «Cài lớp», `nav-gv-cai-dat` | «Cài đặt lớp» | `mo-loi-giai`, `ai-provider-offline` | có, bỏ phần dán khóa |
+| `/gv/ket-noi-ai` | «Gia sư», `nav-gv-ket-noi-ai` | «Kết nối ChatGPT» | — | ngoại lệ FR-033: thay bằng trạng thái nhà do máy chủ quản lý (research R3), tiêu đề v2 «Gia sư»; giữ route và nhãn menu |
+| `/gv/sinh-bai` | «Tạo đề», `nav-gv-sinh-bai` | «Tạo đề» | — | P3 |
