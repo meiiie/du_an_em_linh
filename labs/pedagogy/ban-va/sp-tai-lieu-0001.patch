@@ -1,0 +1,15 @@
+diff --git a/data/supham/tai-lieu/sp-tai-lieu-0001.json b/data/supham/tai-lieu/sp-tai-lieu-0001.json
+new file mode 100644
+index 0000000..f54e7f3
+--- /dev/null
++++ b/data/supham/tai-lieu/sp-tai-lieu-0001.json
+@@ -0,0 +1,9 @@
++{
++  "ma": "sp-tai-lieu-0001",
++  "title": "Ghi chú tự soạn: quy tắc tính đạo hàm",
++  "kind": "tu_soan",
++  "source": "lab Sư phạm",
++  "licenseStatus": "tu_soan",
++  "version": 1,
++  "textContent": "Ghi chú tự soạn cho lớp 12A1 thử, không chép sách. Dùng khi tính đạo hàm của hàm đa thức và hàm phân thức trong chủ đề đơn điệu và cực trị; u, v là các hàm số có đạo hàm trên khoảng đang xét, k là hằng số. Đạo hàm lũy thừa, với n nguyên dương: $(x^n)' = n x^{n-1}$. Đạo hàm của x mũ n là n nhân x mũ n trừ 1. Hằng số có đạo hàm bằng 0. Hằng số nhân với hàm: $(k u)' = k u'$. Đạo hàm tổng: $(u+v)' = u' + v'$. Đạo hàm của tổng bằng tổng các đạo hàm. Với hiệu cũng vậy: $(u-v)' = u' - v'$. Đạo hàm thương, tại các điểm có v khác 0: $(u/v)' = (u'v - uv') / v^2$. Với thương, tử là u'v trừ uv', mẫu là v bình. Tính xong đạo hàm thì tìm các điểm mà y' bằng 0 hoặc không xác định, rồi xét dấu y' theo ghi chú «đơn điệu và cực trị» của lớp. Ôn lại khi cần: Toán 11, các quy tắc tính đạo hàm."
++}
