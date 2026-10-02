@@ -20,7 +20,7 @@ description: "Danh sách việc của epic P2 — lát cắt dọc một chủ �
 - [ ] T001 Thêm Spring AI BOM 2.0.1 và starter OpenAI vào `services/core/pom.xml`; tắt thử lại (`spring.ai.retry.max-attempts=1`) trong `application.yaml`
 - [ ] T002 [P] Thêm `katex` ^0.16.22 và `mathlive` ^0.107.1 (cùng bản v0) vào `apps/frontend/package.json`; khai CSS KaTeX trong `angular.json`
 - [ ] T003 [P] `compose.v2.yaml` và `.env.example`: biến `LLM_*`, `OPENROUTER_API_KEY`, `ZAI_API_KEY` cho core (trống = chỉ `offline`); không có khóa trong git
-- [ ] T003b Đóng gói nội dung vào ảnh core: ngữ cảnh build là gốc repo, `services/core/Dockerfile.dockerignore` (chỉ `services/core/`, `data/supham/`), `COPY data/supham /app/noi-dung`; sửa `compose.v2.yaml` và job CI «Core — Maven + image» (`docker build -f services/core/Dockerfile .`)
+- [ ] T003b Đóng gói nội dung vào ảnh core: ngữ cảnh build là gốc repo, `services/core/Dockerfile.dockerignore` (chỉ `services/core/`, `data/supham/`, `data/v0/`), `COPY` vào `/app/noi-dung/{supham,v0}`; sửa `compose.v2.yaml` và job CI «Core — Maven + image» (`docker build -f services/core/Dockerfile .`)
 
 ---
 
@@ -42,7 +42,8 @@ description: "Danh sách việc của epic P2 — lát cắt dọc một chủ �
 
 - [ ] T010 `V4__content.sql`: `topics`, `skills`, `skill_prerequisites`, `error_types`, `step_templates`, `problems`, `solutions`, `hint_levels`, `documents`, `document_passages`, `formula_sheets`, `formulas`, `verification_runs`, `verification_tier_results`, `content_reviews`
 - [ ] T011 `core/content/domain/`: bài và chuyển trạng thái (data-model §content), bảng công thức có phiên bản, kết quả kiểm có cờ «cũ»
-- [ ] T012 `core/content/infrastructure/import/`: importer đọc `${app.content.source}` (ảnh: `/app/noi-dung`; test: `../../data/supham`) như `apps/web/scripts/seed.ts` (cả biến thể `/v1/generate` hạt giống cố định và 3 bài demo), idempotent theo mã + dấu vân tay; chạy `/v1/verify` từng bài
+- [ ] T011b Chép **nguyên văn** các hằng nội dung của `apps/web/scripts/seed.ts` (khung 5 bước, cấu hình BKT, 3 tài liệu, 6 dòng bảng công thức) ra `data/v0/*.json` kèm `data/v0/NGUON.md` (đường dẫn, dòng, SHA); không sửa chữ
+- [ ] T012 `core/content/infrastructure/import/`: importer đọc `${app.content.source}` (ảnh: `/app/noi-dung`; test: `../../data`), gồm `supham/` và `v0/`, như `apps/web/scripts/seed.ts` (cả biến thể `/v1/generate` hạt giống cố định và 3 bài demo), idempotent theo mã + dấu vân tay; chạy `/v1/verify` từng bài
 - [ ] T013 [P] Script một lần `specs/001-lat-cat-doc/doi-chieu/xuat-v0.ts` (chạy trên v0): xuất (mã bài, dấu vân tay, trạng thái cổng) ra `doi-chieu/v0-bai.json`
 - [ ] T014 `core-test/content/NhapNoiDungTest.java`: nhập trên Testcontainers + dịch vụ toán giả; so `v0-bai.json`
 - [ ] T015 `core/content/application/`: port đọc bài cho học sinh **không** có lời giải; ArchUnit thêm luật: DTO của học sinh không phụ thuộc `Solution`
@@ -115,7 +116,8 @@ description: "Danh sách việc của epic P2 — lát cắt dọc một chủ �
 ### Issue — Tài liệu, bảng công thức, ngân hàng (core + frontend)
 
 - [ ] T041 [US3] `core/content/`: tải PDF (≤ 10 MB) → trích chữ bằng Apache PDFBox 3.0.8 trong core (research R9) → đoạn có vị trí; quyền dùng bắt buộc; `chua_ro` không làm căn cứ
-- [ ] T042 [US3] `core/content/`: bảng công thức nháp → khóa chỉ khi mọi dòng `DAT` ở tầng 1 và tầng 2 (ADR 013), 422 kèm dòng chưa qua → phiên bản mới → đánh dấu «cũ» các kết quả kiểm trước
+- [ ] T042 [US3] `core/content/`: bảng công thức nháp → khóa chỉ khi mọi dòng `DAT` ở tầng 1 và tầng 2 (ADR 013: đẳng thức kiểm tương đương; định lí loại đã biết kiểm ngữ nghĩa + tìm phản ví dụ), 422 kèm dòng chưa qua → phiên bản mới → đánh dấu «cũ» các kết quả kiểm trước
+- [ ] T042b [US3] `services/math`: job kiểm dòng bảng công thức (tầng 1 cho đẳng thức và định lí loại đã biết) dùng lại bộ nhận dạng của `verify.py`; bảng 6 dòng của v0 phải `DAT` cả 6
 - [ ] T043 [US3] API `GET/POST /api/gv/tai-lieu`, `GET/PUT /api/gv/cong-thuc`, `POST /api/gv/cong-thuc/khoa`, `GET /api/gv/ngan-hang`, `POST /api/gv/ngan-hang/kiem`, `POST /api/gv/giao-bai`
 - [ ] T044 [US3] `fe/features/giao-vien/{tai-lieu,cong-thuc,ngan-hang}/` (giữ tiêu đề v0: «Tài liệu», «Công thức», «Đề bài»)
 - [ ] T045 [P] [US3] Test: khóa bảng tạo phiên bản và «cũ»; tài liệu `chua_ro` bị bỏ qua; tài liệu vừa nạp được gia sư trích dẫn (spec US3 kịch bản 5)
@@ -136,7 +138,7 @@ description: "Danh sách việc của epic P2 — lát cắt dọc một chủ �
 
 ### Issue — Module `mastery` (core)
 
-- [ ] T049 [US5] `V7__mastery.sql`: `mastery_config`, `mastery_states`, `mastery_events`, `escalations`
+- [ ] T049 [US5] `V7__mastery.sql`: `mastery_config`, `mastery_states`, `mastery_events`, `escalations`, `mastery_overrides`, `next_problem_overrides`
 - [ ] T050 [US5] `core/mastery/`: BKT chép `apps/web/lib/learning.ts` đúng tham số (research R7); ngưỡng 4 mức; mức Bloom lưu kèm; kẹt; hoàn thành kỹ năng / chủ đề
 - [ ] T051 [US5] `core/mastery/`: bài kế (chép `de-hoc-sinh.ts`) với lý do; bất biến «không quá 1 nấc»
 - [ ] T052 [P] [US5] Script `specs/001-lat-cat-doc/doi-chieu/bkt-v0.ts` xuất tệp vàng; `core-test/mastery/DoiChieuBktV0Test.java` so từng bước
@@ -162,6 +164,8 @@ description: "Danh sách việc của epic P2 — lát cắt dọc một chủ �
 - [ ] T058 [US7] API `GET /api/gv/lop`, `GET /api/gv/tien-do?muc=4|3`, `GET /api/gv/hoc-sinh/{id}`, `GET/PUT /api/gv/cai-dat`, `GET /api/gv/gia-su`
 - [ ] T059 [US7] `fe/features/giao-vien/{lop,tien-do,hoc-sinh,cai-dat,gia-su}/` («Lớp 12A1 thử», `canh-bao-ket`, `san-sang-ai`, `tien-do`, `toggle-muc`, `mo-loi-giai`, `ai-provider-offline`)
 - [ ] T060 [P] [US7] e2e: 4 mức / 3 mức, cảnh báo kẹt có tên Chi, giáo viên lớp khác bị từ chối
+- [ ] T060b [US7] `core/mastery/`: ghi đè mức và bài kế (`mastery_overrides`, `next_problem_overrides` trong `V7__mastery.sql`), API `PUT/DELETE /api/gv/hoc-sinh/{id}/muc/{kyNang}`, `POST /api/gv/hoc-sinh/{id}/bai-ke`; màn học sinh của giáo viên có thao tác ghi đè
+- [ ] T060c [P] [US7] Test: bài kế theo mức ghi đè; bài chọn tay hiện trước với lý do «thầy cô giao»; nhật ký người, thời điểm, lý do; gỡ ghi đè
 
 ---
 

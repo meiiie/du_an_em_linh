@@ -55,7 +55,10 @@ data: {"noiDung":"…câu đã lọc và đã qua cổng…","trichDan":[{"n":1,
 | PUT | `/api/gv/cong-thuc` | bản nháp các dòng | bản nháp | 1 |
 | POST | `/api/gv/cong-thuc/khoa` | — | phiên bản mới + kết quả tầng 1, 2 từng dòng; 422 nếu dòng nào chưa qua (ADR 013) | 1 |
 | GET | `/api/gv/tien-do` | `?muc=4\|3` | ma trận học sinh × kỹ năng → mức (3 mức chỉ đổi khi hiển thị) | 29 |
-| GET | `/api/gv/hoc-sinh/{id}` | — | bài đã nộp, lỗi từng bước, các lượt gia sư | 30 |
+| GET | `/api/gv/hoc-sinh/{id}` | — | bài đã nộp, lỗi từng bước, các lượt gia sư, mức máy tính và mức ghi đè | 30 |
+| PUT | `/api/gv/hoc-sinh/{id}/muc/{kyNang}` | `{muc4, lyDo}` (bắt buộc lý do) | ghi đè đang hiệu lực | 34 |
+| DELETE | `/api/gv/hoc-sinh/{id}/muc/{kyNang}` | — | gỡ ghi đè (ghi người, thời điểm) | 34 |
+| POST | `/api/gv/hoc-sinh/{id}/bai-ke` | `{maBai, lyDo}` (bài đã phát hành) | bài kế chọn tay | 35 |
 | GET | `/api/gv/cai-dat` | — | `{moLoiGiaiSauKhiNop, nhaAi, choPhepMayCucBo, cacNhaDuocBat[]}` | 6, 19 |
 | PUT | `/api/gv/cai-dat` | như trên (`nhaAi` ∈ `cacNhaDuocBat`) | cài đặt | 6, 19 |
 | GET | `/api/gv/gia-su` | — | trạng thái từng nhà do máy chủ bật (thử `GET /models`), không có khóa | 19 |

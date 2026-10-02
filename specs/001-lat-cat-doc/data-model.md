@@ -19,7 +19,7 @@ Bảng PostgreSQL 18 của `services/core`, Flyway chỉ thêm. Tên bảng và 
 | `skill_prerequisites` | `skill_code`, `prerequisite_code`, `min_level` | |
 | `error_types` | `code`, `skill_code`, `step_code`, `name`, `fix_hint`, `result_types` | Từ `ma-loi-DH.csv` |
 | `step_templates` | `step_code`, `topic_code`, `ordinal`, `input_kind`, `skill_code`, `description` | 5 bước `B.DH.*` |
-| `problems` | `id`, `code`, `skill_code`, `extra_skill_codes`, `level4`, `level3`, `bloom_level`, `difficulty`, `statement_text`, `statement_latex`, `function_sympy`, `answer_form` (`TU_LUAN_5_BUOC`), `start_step`, `origin`, `status`, `content_hash` | `status`: xem chuyển trạng thái |
+| `problems` | `id`, `code`, `skill_code`, `extra_skill_codes`, `level4`, `level3`, `bloom_level`, `difficulty`, `statement_text`, `statement_latex`, `function_sympy`, `answer_form` (`TU_LUAN_5_BUOC`), `start_step`, `origin`, `status`, `content_hash` | `status` dùng đúng mã phát hành của v0: `NHAP`, `DA_PHAT_HANH`, `BI_CHAN`, `CHO_GIAO_VIEN_DUYET` |
 | `solutions` | `problem_id`, `worked_solution`, `protected_facts`, `final_answer` | **Không bao giờ** vào DTO của học sinh khi đang làm, không vào prompt |
 | `hint_levels` | `problem_id`, `step_code`, `level` (1–3), `text` | Thang đã kiểm |
 | `documents` | `id`, `class_id`, `title`, `kind`, `source`, `license_status`, `file_ref`, `text_content`, `version`, `uploaded_by`, `created_at` | `license_status = chua_ro` → không làm căn cứ |
@@ -30,13 +30,16 @@ Bảng PostgreSQL 18 của `services/core`, Flyway chỉ thêm. Tên bảng và 
 | `verification_tier_results` | `run_id`, `tier` (1–3), `status`, `result_type`, `wrong_steps`, `error_code`, `confidence`, `reason`, `citation`, `raw` | Căn cứ từng tầng |
 | `content_reviews` | `id`, `run_id`, `content_hash`, `reviewer_id`, `decision` (`GV_DUYET`), `note`, `at` | Bắt buộc `note`; chỉ cho run `subject_kind = PROBLEM` (công thức trong lời gia sư không duyệt riêng, ADR 013) |
 
-**Chuyển trạng thái của bài** (`problems.status`):
+**Hai lớp trạng thái, giữ mã của v0** (`services/math/app/verify.py`, `cong_phat_hanh`):
+
+- kết quả kiểm (`verification_runs.overall_status`, từng tầng): `DAT`, `SAI`, `KHONG_KIEM_DUOC`, sau duyệt là `GV_DUYET`;
+- trạng thái phát hành (`verification_runs.publish_status`, chép sang `problems.status`): `DA_PHAT_HANH`, `BI_CHAN`, `CHO_GIAO_VIEN_DUYET`.
 
 ```text
-NHAP ──kiểm──▶ DAT ──────────────▶ PHAT_HANH
-          ├──▶ SAI (BI_CHAN) ──sửa nội dung──▶ NHAP
-          └──▶ CHO_DUYET ──GV duyệt (note)──▶ PHAT_HANH
-Đổi bảng công thức: kết quả kiểm cũ → stale = true; bài PHAT_HANH giữ nguyên, hiện «cần kiểm lại».
+NHAP ──/v1/verify──▶ DA_PHAT_HANH            (mọi tầng DAT)
+               ├──▶ BI_CHAN                  (một tầng SAI) ──sửa nội dung──▶ NHAP
+               └──▶ CHO_GIAO_VIEN_DUYET      (còn KHONG_KIEM_DUOC) ──GV duyệt (note, GV_DUYET)──▶ DA_PHAT_HANH
+Đổi bảng công thức: kết quả kiểm cũ → stale = true; bài DA_PHAT_HANH giữ nguyên, hiện «cần kiểm lại».
 ```
 
 ## practice (`V5__practice.sql`)
@@ -69,7 +72,10 @@ NHAP ──kiểm──▶ DAT ──────────────▶ PHA
 | `mastery_events` | `id`, `student_id`, `skill_code`, `submission_id`, `delta`, `rule_applied`, `wrong_steps`, `error_code`, `confidence`, `guess_suspected` | |
 | `escalations` | `id`, `student_id`, `skill_code`, `problem_id`, `step_code`, `kind` (`KET`, `NHO_GV`), `reason`, `created_at`, `handled_at`, `handled_by` | Cảnh báo kẹt và «gửi thầy cô» |
 
-Đề xuất bài kế tính khi đọc (không lưu bảng riêng): (bài, lý do ∈ {`CHUA_LOI`, `CUNG_CO`, `NANG_1_NAC`, `DE_HON`}). Bất biến: mức của bài đề xuất ≤ mức hiện tại của kỹ năng + 1.
+| `mastery_overrides` | `id`, `student_id`, `skill_code`, `level4`, `reason`, `teacher_id`, `created_at`, `removed_at`, `removed_by` | Ghi đè mức của giáo viên (FR-034); bản ghi đang hiệu lực là bản chưa gỡ mới nhất |
+| `next_problem_overrides` | `id`, `student_id`, `problem_id`, `reason`, `teacher_id`, `created_at`, `consumed_at` | Bài kế chọn tay (FR-035); hết hiệu lực khi học sinh mở bài |
+
+Đề xuất bài kế tính khi đọc: bài kế chọn tay của giáo viên (nếu có) trước, rồi đề xuất của máy (bài, lý do ∈ {`CHUA_LOI`, `CUNG_CO`, `NANG_1_NAC`, `DE_HON`, `THAY_CO_GIAO`}). Máy dùng mức ghi đè nếu có. Bất biến: mức của bài máy đề xuất ≤ mức đang dùng của kỹ năng + 1.
 
 ## planner (`V8__planner.sql`)
 

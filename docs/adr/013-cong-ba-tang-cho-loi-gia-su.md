@@ -40,7 +40,11 @@ Chọn **A**.
 ## Hệ quả
 
 - Job mới `POST /v1/kiem-loi-giang` (không trạng thái): đầu vào là câu đã qua lọc, các dòng bảng đã khóa (LaTeX, phát biểu, mã dòng, trích dẫn), các dòng bài làm của học sinh, dữ kiện bảo vệ của bài; đầu ra là câu đã làm sạch và phán quyết từng biểu thức.
-- Bảng công thức: lúc khóa, mỗi dòng chạy tầng 1 (SymPy) và tầng 2 (tìm đoạn trong tài liệu được phép). Chỉ khóa được bảng khi **mọi dòng đạt `DAT` ở cả hai tầng**; `SAI` hay `KHONG_KIEM_DUOC` ở dòng nào thì giáo viên phải sửa dòng đó hoặc bổ sung tài liệu. Đây cũng là cách giáo viên «duyệt» công thức cho gia sư.
+- Bảng công thức: lúc khóa, mỗi dòng chạy tầng 1 và tầng 2. Chỉ khóa được bảng khi **mọi dòng đạt `DAT` ở cả hai tầng**; `SAI` hay `KHONG_KIEM_DUOC` ở dòng nào thì giáo viên phải sửa dòng đó hoặc bổ sung tài liệu. Đây cũng là cách giáo viên «duyệt» công thức cho gia sư.
+  - Tầng 1 với dòng **đẳng thức** (quy tắc lũy thừa, tổng, thương…): SymPy kiểm tương đương, dùng hàm ký hiệu `u(x)`, `v(x)`.
+  - Tầng 1 với dòng **định lí hay định nghĩa** thuộc loại máy đã biết (đơn điệu, cực trị, điểm tới hạn; bộ nhận dạng tầng 3 của `verify.py`): so phát biểu với ngữ nghĩa có sẵn của máy (chiều suy luận, điều kiện) rồi tìm phản ví dụ trên bộ hàm mẫu của chủ đề; không có phản ví dụ thì `DAT`, có thì `SAI`. Máy không chứng minh định lí; đây là kiểm nhất quán có giới hạn và được ghi rõ trong căn cứ.
+  - Dòng thuộc loại máy chưa biết: `KHONG_KIEM_DUOC`, chặn khóa. Thêm loại mới là việc của lab Kiểm định.
+  - Bảng 6 dòng của v0 (3 đẳng thức, 3 định lí hay định nghĩa) phải khóa được theo quy tắc này; nếu không, importer báo lỗi thay vì khóa thiếu.
 - Bộ ca lời giảng mới (≥ 100 câu, 5 loại; spec SC-004) do lab Kiểm định soạn thành **bản vá có mã** (KD-0005, kèm SHA-256), rà độc lập; PR hiện thực chỉ áp nguyên văn bản vá vào `services/math/kiemdinh/`, rồi chạy trong cổng merge của `services/math`.
 - ADR 003 (gia sư không đọc lời giải) và ADR 010 (SSE trạng thái) giữ nguyên.
 

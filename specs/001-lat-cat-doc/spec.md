@@ -133,6 +133,8 @@ Giáo viên xem bảng lớp theo kỹ năng × mức, đổi sang 3 mức Biế
 1. **Given** lớp có An, Bình, Chi, **When** giáo viên mở «Mức», **Then** thấy bảng kỹ năng × 4 mức; bấm đổi thấy 3 mức, không ghi gì thêm vào hồ sơ học sinh.
 2. **Given** Chi đang kẹt, **When** giáo viên mở trang lớp, **Then** cảnh báo kẹt có tên Chi và dẫn tới trang của Chi.
 3. **Given** giáo viên lớp khác, **When** mở trang của An, **Then** bị từ chối.
+4. **Given** giáo viên thấy mức «Vận dụng» của Chi ở một kỹ năng là chưa đúng, **When** giáo viên đặt lại thành «Thông hiểu» kèm lý do, **Then** bài kế của Chi tính theo mức giáo viên đặt, hệ thống ghi ai đặt, lúc nào, vì sao; giáo viên gỡ được lần đặt đó.
+5. **Given** giáo viên muốn Chi làm một bài cụ thể, **When** giáo viên chọn bài đó làm bài kế kèm lý do, **Then** trang «Học» của Chi hiện bài đó đầu tiên với lý do «thầy cô giao», thay cho đề xuất của máy.
 
 ---
 
@@ -200,6 +202,8 @@ Giáo viên xem bảng lớp theo kỹ năng × mức, đổi sang 3 mức Biế
 - **FR-029**: Giáo viên MUST xem bảng tiến độ lớp theo kỹ năng × 4 mức, đổi sang 3 mức CV 7991 chỉ khi hiển thị.
 - **FR-030**: Giáo viên MUST xem trang từng học sinh: bài đã nộp, lỗi từng bước, lượt gia sư.
 - **FR-031**: Giáo viên MUST giao được bài đã phát hành cho cả lớp hoặc từng học sinh.
+- **FR-034**: Giáo viên MUST ghi đè được mức của một học sinh ở một kỹ năng kèm lý do; mức ghi đè dùng cho bài kế cho tới khi giáo viên gỡ; hệ thống ghi người, thời điểm, lý do và vẫn tính mức của máy song song để giáo viên so.
+- **FR-035**: Giáo viên MUST ghi đè được bài kế của một học sinh (chọn một bài đã phát hành kèm lý do); bài đó hiện trước đề xuất của máy, lý do «thầy cô giao»; có ghi người, thời điểm, lý do.
 
 **Quyền và tương đương**
 
@@ -219,6 +223,7 @@ Giáo viên xem bảng lớp theo kỹ năng × mức, đổi sang 3 mức Biế
 - **Bài làm**: học sinh, bài, các bước đã nộp, kết quả từng bước, mã lỗi.
 - **Lượt gia sư**: câu hỏi, câu đã kiểm, trạng thái lọc, công thức đã kiểm, trích dẫn, nhà AI, thời gian.
 - **Mức hiểu**: học sinh × kỹ năng: xác suất thành thạo, mức 4, mức Bloom, đếm kẹt, lịch sử thay đổi.
+- **Ghi đè của giáo viên**: mức đặt lại hoặc bài kế chọn tay, kèm người, thời điểm, lý do, lúc gỡ.
 - **Đề xuất bài kế**: bài, lý do (chữa lỗi / củng cố / nâng 1 nấc / dễ hơn).
 - **Thời gian biểu tuần**: các buổi (thứ, giờ, việc), lời khuyên, lời nhắc.
 - **Giao bài**: bài, người nhận (lớp hoặc học sinh), hạn.

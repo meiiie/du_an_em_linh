@@ -27,7 +27,7 @@ Chạy hết vòng của sơ đồ trên v2 cho Toán 12 «đơn điệu và c�
 | --- | --- | --- | --- |
 | I | Không đưa đáp án | **CÓ** | Gia sư chỉ nhận đề, bước sai, loại lỗi, mã lỗi, gợi ý đã kiểm (FR-011); luật xin đáp án chạy trước mô hình (FR-013); mọi câu qua `/v1/filter` trên cả câu, đóng mặc định (FR-014); lời giải mẫu không rời `services/core` khi học sinh đang làm (FR-006) |
 | II | Đúng toán trước hết | **CÓ** | Bài qua `/v1/verify` 3 tầng; công thức trong lời giảng qua job mới `kiem_loi_giang` 3 tầng (FR-015, ADR 013); lỗi hoặc hết giờ của dịch vụ toán = không đạt (FR-009) |
-| III | Người học là trẻ vị thành niên | **CÓ** | Chỉ tài khoản `synthetic`; xóa định danh trước khi gửi nhà AI (FR-020); nhà thật chỉ cho tài khoản tổng hợp tới khi ADR 012 được duyệt; nhãn «Gia sư AI» (FR-021); giáo viên ghi đè được qua duyệt; khóa chỉ ở biến môi trường (FR-019) |
+| III | Người học là trẻ vị thành niên | **CÓ** | Chỉ tài khoản `synthetic`; xóa định danh trước khi gửi nhà AI (FR-020); nhà thật chỉ cho tài khoản tổng hợp tới khi ADR 012 được duyệt; nhãn «Gia sư AI» (FR-021); giáo viên ghi đè được mức hiểu và bài kế, có nhật ký (FR-034, FR-035), và duyệt nội dung (FR-005); khóa chỉ ở biến môi trường (FR-019) |
 | IV | Bằng chứng | **CÓ** | Mỗi SC có lệnh và bộ ca (`quickstart.md` §Kiểm); ADR 013 cho quy tắc công thức trong lời giảng |
 | V | Tiếng Việt đúng lứa tuổi | **CÓ** | Chữ giao diện chép từ v0 đã qua lab Thiết kế; câu mới qua skill `design-study` và rule `web-ui` |
 | VI | Ranh giới kiến trúc | **CÓ** | `apps/frontend` không logic nghiệp vụ (không chấm, không giữ đáp án); `services/core` giữ trạng thái và quyền, 6 module mới đủ 3 tầng, ArchUnit xanh; `services/math` thuần hàm, job mới không trạng thái; Flyway chỉ thêm |
