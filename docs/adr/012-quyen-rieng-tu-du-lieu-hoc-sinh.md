@@ -35,8 +35,8 @@ Phân tích, chấm 4 phương án, độ nhạy, câu hỏi cho luật sư: [`l
     - Khi đó nhà OCR là bên xử lý: có thỏa thuận, thời hạn lưu, không dùng tài liệu để huấn luyện.
 - **Nhà LLM cho dữ liệu thật** phải có điều khoản không dùng dữ liệu để huấn luyện, có thỏa thuận xử lý dữ liệu, và CTIA riêng. Z.AI và OpenRouter chỉ dùng với dữ liệu tổng hợp cho tới khi đánh giá xong.
 - **Quyền chủ thể trong ứng dụng:** xem, sửa, tải về, xóa, rút đồng ý, theo thời hạn NĐ 356 (xóa: 20 ngày). Xóa và hết hạn lưu chạy tự động, có nhật ký.
-  - Nhật ký xóa và rút đồng ý chỉ chứa mã giả danh, lưu ngoài dữ liệu được sao lưu.
-  - Khôi phục bản sao lưu thì phát lại nhật ký này trước khi mở lại dịch vụ, để dữ liệu đã xóa không sống lại.
+  - Nhật ký sự kiện đồng ý lưu ngoài dữ liệu được sao lưu. Mỗi dòng: mã giả danh, loại sự kiện (xóa toàn bộ, rút đồng ý, đồng ý lại), mục đích, thứ tự; không có dữ liệu cá nhân khác.
+  - Khôi phục bản sao lưu thì phát lại nhật ký này theo thứ tự trước khi mở lại dịch vụ: dữ liệu đã xóa không sống lại, và mỗi mục đích về đúng trạng thái mới nhất.
   - Mỗi lần chuyển dữ liệu cho bên xử lý ghi kèm mục đích, để yêu cầu đi đúng nơi:
     - rút đồng ý một mục đích chỉ gửi tới các bên xử lý của mục đích đó; rút `NHAC_LICH_NGOAI` không đụng nhà LLM của `GIA_SU_AI`;
     - yêu cầu xóa toàn bộ gửi tới mọi bên xử lý đã nhận dữ liệu của người đó (kênh nhắc lịch, nhà LLM nếu có lưu, OCR ngoài nếu có).

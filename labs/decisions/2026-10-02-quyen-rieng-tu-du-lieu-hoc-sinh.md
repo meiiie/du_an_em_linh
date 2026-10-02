@@ -128,7 +128,7 @@ Lý do các điểm then chốt:
    - Z.AI (Trung Quốc) và OpenRouter (chuyển tiếp nhiều nhà) cần đánh giá riêng; chưa đánh giá thì chỉ dùng cho dữ liệu tổng hợp.
 6. **Quyền chủ thể trong ứng dụng:** xem, sửa, tải về, xóa, rút đồng ý. Có hàng đợi yêu cầu kèm hạn theo P8.
    - Xóa thật cả bản sao lưu theo vòng quay đã công bố.
-   - Trong lúc bản sao lưu cũ còn trong vòng quay: nhật ký xóa và rút đồng ý (chỉ mã giả danh) lưu ngoài dữ liệu được sao lưu, và được phát lại sau mỗi lần khôi phục, trước khi mở lại dịch vụ.
+   - Trong lúc bản sao lưu cũ còn trong vòng quay: nhật ký sự kiện đồng ý lưu ngoài dữ liệu được sao lưu, mỗi dòng gồm mã giả danh, loại sự kiện (xóa toàn bộ, rút đồng ý, đồng ý lại), mục đích, thứ tự. Sau mỗi lần khôi phục, nhật ký được phát lại theo thứ tự trước khi mở lại dịch vụ, để mỗi mục đích về đúng trạng thái mới nhất.
    - Mỗi lần chuyển dữ liệu cho bên xử lý ghi kèm mục đích:
      - rút đồng ý một mục đích chỉ gửi tới bên xử lý của mục đích đó; rút `NHAC_LICH_NGOAI` không đụng nhà LLM của `GIA_SU_AI`;
      - yêu cầu xóa toàn bộ gửi tới mọi bên xử lý đã nhận dữ liệu (kênh nhắc lịch, nhà LLM nếu có lưu, OCR ngoài nếu có);
@@ -156,7 +156,7 @@ Lý do các điểm then chốt:
 | Rủi ro | Giảm thiểu |
 | --- | --- |
 | Khử định danh sót thông tin trong ô chữ tự do | Đóng mặc định: mẫu đã biết + phát hiện cục bộ, câu không chắc chắn dùng gia sư `offline`; bộ thử có dữ liệu giả; tỉ lệ lọt đo ở `labs/evals` |
-| Khôi phục bản sao lưu làm sống lại dữ liệu đã xóa | Nhật ký xóa ngoài bản sao lưu, phát lại trước khi mở dịch vụ |
+| Khôi phục bản sao lưu làm sống lại dữ liệu đã xóa hoặc đồng ý đã rút | Nhật ký sự kiện đồng ý (loại, mục đích, thứ tự) ngoài bản sao lưu, phát lại theo thứ tự trước khi mở dịch vụ |
 | Nhà trường ngại thủ tục đồng ý | Mẫu đồng ý ngắn, tách mục đích; học không cần `GIA_SU_AI` |
 | Tiền kiểm A05 kéo dài (15 ngày + 30 ngày bổ sung) | Nộp hồ sơ sớm, trước ngày pilot ít nhất 2 tháng |
 | Nhà LLM đổi điều khoản | Một nhà một CTIA; kiến trúc nhà tường minh cho đổi nhanh; giữ `offline` |
