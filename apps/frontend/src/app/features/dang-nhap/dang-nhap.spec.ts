@@ -204,7 +204,7 @@ describe('DangNhap', () => {
       expect(t.o('password')?.hasAttribute('aria-invalid')).toBe(false);
     });
 
-    it('đang gửi thì khóa nút Vào học', async () => {
+    it('đang gửi thì khóa Vào học và mọi nút đổi tài khoản', async () => {
       const t = await vaoBuocMatKhau();
       let xong!: (n: typeof AN) => void;
       t.gia.ketQuaDangNhap = () => new Promise((r) => (xong = r));
@@ -212,6 +212,10 @@ describe('DangNhap', () => {
       await t.on();
       expect(t.nut('Vào học')?.disabled).toBe(true);
       expect(t.nut('Vào học')?.getAttribute('aria-busy')).toBe('true');
+      for (const chu of ['Quay lại', 'Học sinh An', 'Giáo viên']) {
+        expect(t.nut(chu)?.disabled, chu).toBe(true);
+      }
+      expect(t.el.querySelector<HTMLButtonElement>('[aria-label="Sửa email"]')?.disabled).toBe(true);
       xong(AN);
       // Chuỗi await (đăng nhập → điều hướng → finally) chạy qua vài microtask mà Angular không theo dõi.
       await new Promise((r) => setTimeout(r, 0));

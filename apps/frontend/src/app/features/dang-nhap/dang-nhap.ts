@@ -75,6 +75,8 @@ export class DangNhap {
   }
 
   protected chonEmail(giaTri: string): void {
+    // Đang gửi đăng nhập thì không đổi tài khoản: kết quả sẽ thuộc về email cũ (nút đã khóa, đây là lớp chặn thứ hai).
+    if (this.dangGui()) return;
     // Mỗi lần vào bước mật khẩu, ô mật khẩu bắt đầu rỗng (như v0): mật khẩu không theo sang tài khoản khác,
     // dù email đổi bằng chip hay gõ tay (ô email gắn thẳng vào model nên không so được với email cũ).
     this.taiKhoan.set({ email: giaTri, matKhau: '' });
@@ -85,6 +87,7 @@ export class DangNhap {
   }
 
   protected quayLai(): void {
+    if (this.dangGui()) return;
     this.loi.set(null);
     this.doiBuoc('email');
   }

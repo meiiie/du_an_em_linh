@@ -86,6 +86,26 @@ describe('Phien', () => {
     expect(phien.nguoiDung()).toEqual(AN);
   });
 
+  it('đăng nhập, làm mới, đăng xuất đều xếp hàng qua cùng một Web Lock', async () => {
+    const khoa: string[] = [];
+    Object.defineProperty(navigator, 'locks', {
+      configurable: true,
+      value: { request: (ten: string, viec: () => Promise<unknown>) => (khoa.push(ten), viec()) },
+    });
+    try {
+      await dangNhapAn();
+      const lamMoi = phien.lamMoi();
+      http.expectOne('/api/auth/refresh').flush(phienAn('a2'));
+      await lamMoi;
+      const xong = phien.dangXuat();
+      http.expectOne('/api/auth/logout').flush(null, { status: 204, statusText: 'No Content' });
+      await xong;
+      expect(khoa).toEqual(['hta-phien', 'hta-phien', 'hta-phien']);
+    } finally {
+      delete (navigator as { locks?: unknown }).locks;
+    }
+  });
+
   it('trang chủ theo vai trò', () => {
     expect(trangChuCua('STUDENT')).toBe('/hs');
     expect(trangChuCua('TEACHER')).toBe('/gv');
