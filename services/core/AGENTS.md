@@ -19,7 +19,7 @@ Windows: `mvnw.cmd verify`. Cần JDK 25 (`JAVA_HOME`); wrapper tự tải Maven
 | `src/main/java/vn/hoctoanai/core/CoreApplication.java` | Điểm vào |
 | `src/main/java/vn/hoctoanai/core/<module>/` | Module nghiệp vụ: `domain` → `application` → `infrastructure` |
 | `.../identity/` | Đăng nhập (#55): `/api/auth/login`, `/refresh`, `/logout`, `/api/me`; access token JWT HS256 15 phút trong thân phản hồi; refresh token ngẫu nhiên lưu băm, xoay vòng trong phiên, thu hồi khi đăng xuất, chỉ đi trong cookie `hta_refresh` (HttpOnly, SameSite=Strict, Path=/api/auth); `/refresh` và `/logout` đòi header `X-Requested-With` (#57); sai mật khẩu 5 lần / 15 phút theo email + IP thì 429 (F-10, #69) |
-| `.../shared/infrastructure/` | Dùng chung: `Clock` (UTC) |
+| `.../shared/infrastructure/` | Dùng chung: `Clock` (UTC); `math/`: `MathServiceClient` tới `services/math` (`app.math.base-url`, hết giờ theo `MathJob`), đóng mặc định: lỗi, hết giờ, JSON hỏng, phong bì lỗi của sandbox thành `MathResult.Failed`, không bao giờ đạt (#82). Module gọi qua port riêng ở `application/port`, adapter ở `infrastructure/client` |
 | `src/main/resources/db/migration/` | Flyway, chỉ thêm: `V1__identity.sql` (`users`, `auth_sessions`, `refresh_tokens`), `V2__login_failures.sql` (lần đăng nhập sai, chỉ lưu băm email + IP) |
 | `src/main/resources/application-dev.yaml` | Profile `dev`: CSDL cục bộ; `TaiKhoanThuSeeder` tạo 4 tài khoản tổng hợp |
 | `src/main/resources/application.yaml` | Cấu hình; luồng ảo; JPA `validate` theo Flyway; problem+json; chỉ mở `health` (+ liveness / readiness); `app.identity.*` |

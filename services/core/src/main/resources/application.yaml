@@ -46,6 +46,8 @@ management:
 
 # CSDL: SPRING_DATASOURCE_URL / _USERNAME / _PASSWORD từ môi trường; profile dev có giá trị mặc định cục bộ.
 app:
+  math:
+    base-url: ${APP_MATH_BASE_URL:http://localhost:8000} # services/math; compose: http://math:8000
   identity:
     jwt-secret: ${APP_IDENTITY_JWT_SECRET:} # base64 >= 32 byte; trống → khóa tạm (chỉ hợp cho dev)
     access-token-ttl: PT15M

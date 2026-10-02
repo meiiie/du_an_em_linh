@@ -28,6 +28,7 @@ services:
       SPRING_DATASOURCE_PASSWORD: hoc_toan
       # Trống: core dùng khóa tạm, token mất hiệu lực mỗi lần khởi động lại (đủ cho chạy thử).
       APP_IDENTITY_JWT_SECRET: ${APP_IDENTITY_JWT_SECRET:-}
+      APP_MATH_BASE_URL: http://math:8000
       # Nhà AI cho gia sư (research R3), cùng tên biến với v0 (.env.example). Khóa trống = chỉ nhà `offline`.
       LLM_BASE_URL: ${LLM_BASE_URL:-https://api.openai.com/v1}
       LLM_API_KEY: ${LLM_API_KEY:-}
@@ -38,6 +39,8 @@ services:
       ZAI_MODEL: ${ZAI_MODEL:-glm-5.3-flashx}
     depends_on:
       db:
+        condition: service_healthy
+      math:
         condition: service_healthy
     # Readiness, nhịp 5 giây để `up --wait` không phải chờ nhịp 30 giây của image.
     healthcheck:
