@@ -53,7 +53,13 @@ class MathServiceClientTest {
             }
             tra(ex, 200, "{\"dong\":[]}");
         });
-        // MathJob.KIEM_LOI_GIANG không đăng ký: HttpServer trả 404
+        // Đường chưa có ở dịch vụ toán: 404 sau khi đọc hết thân, như FastAPI. Không để HttpServer tự từ chối đường chưa
+        // đăng ký: nó gửi 404 rồi đóng kết nối khi thân POST chưa đọc, TCP gửi RST và client đôi khi nhận lỗi kết nối
+        // (UNAVAILABLE) thay vì 404 (CI của #101, commit b06490a).
+        server.createContext(MathJob.KIEM_LOI_GIANG.path(), ex -> {
+            doc(ex);
+            tra(ex, 404, "{\"detail\":\"Not Found\"}");
+        });
         server.setExecutor(Executors.newVirtualThreadPerTaskExecutor());
         server.start();
         client = new MathServiceClient(RestClient.builder(), URI.create("http://127.0.0.1:" + server.getAddress().getPort()),
