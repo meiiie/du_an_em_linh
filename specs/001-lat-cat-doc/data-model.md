@@ -9,6 +9,7 @@ Bảng PostgreSQL 18 của `services/core`, Flyway chỉ thêm. Tên bảng và 
 | `classes` | `id`, `name`, `grade`, `school_year` | «12A1 thử» |
 | `enrollments` | `class_id`, `user_id`, `role_in_class` (`TEACHER`, `STUDENT`) | PK (`class_id`, `user_id`) |
 | `class_settings` | `class_id`, `reveal_solution_after_submit` (mặc định `false`), `ai_provider` (mặc định `offline`), `ai_allow_local` | Nhà AI chỉ chọn trong danh sách máy chủ bật |
+| `escalations` | `id`, `class_id`, `student_id`, `skill_code`, `problem_id`, `step_code`, `kind` (`KET`, `NHO_GV`), `reason`, `created_at`, `handled_at`, `handled_by` | Cảnh báo cho giáo viên của lớp: kẹt (mastery ghi) và «gửi thầy cô» (tutor ghi), qua port `CanhBaoGiaoVien` |
 
 ## content (`V4__content.sql`)
 
@@ -71,8 +72,6 @@ NHAP ──/v1/verify──▶ DA_PHAT_HANH            (mọi tầng DAT)
 | `mastery_config` | `key`, `value`, `version` | Tham số BKT của v0 (research R7) |
 | `mastery_states` | `student_id`, `skill_code`, `mastery`, `level4`, `bloom_level`, `attempts`, `stuck_counter`, `last_error_codes`, `completed_at` | `completed_at` khi đạt Vận dụng cao (FR-026) |
 | `mastery_events` | `id`, `student_id`, `skill_code`, `submission_id`, `delta`, `rule_applied`, `wrong_steps`, `error_code`, `confidence`, `guess_suspected` | |
-| `escalations` | `id`, `student_id`, `skill_code`, `problem_id`, `step_code`, `kind` (`KET`, `NHO_GV`), `reason`, `created_at`, `handled_at`, `handled_by` | Cảnh báo kẹt và «gửi thầy cô» |
-
 | `mastery_overrides` | `id`, `student_id`, `skill_code`, `level4`, `reason`, `teacher_id`, `created_at`, `removed_at`, `removed_by` | Ghi đè mức của giáo viên (FR-034); bản ghi đang hiệu lực là bản chưa gỡ mới nhất |
 | `next_problem_overrides` | `id`, `student_id`, `problem_id`, `reason`, `teacher_id`, `created_at`, `consumed_at` | Bài kế chọn tay (FR-035); hết hiệu lực khi học sinh mở bài |
 
