@@ -24,13 +24,19 @@ Phân tích, chấm 4 phương án, độ nhạy, câu hỏi cho luật sư: [`l
     - Mặc định nhắc trong ứng dụng.
     - Nhà cung cấp kênh (email, Zalo…) là bên xử lý theo mục đích: chỉ nhận địa chỉ nhận và nội dung nhắc tối thiểu, không có điểm hay mức hiểu.
     - Cần thỏa thuận xử lý, thời hạn lưu, đánh giá nơi đặt dữ liệu; có CTIA nếu dữ liệu ra nước ngoài.
-  - `services/core` khử định danh văn bản (email, số điện thoại, tên trong lớp, mã học sinh) trước khi gọi LLM.
+  - `services/core` khử định danh văn bản trước khi gọi LLM, **đóng mặc định**:
+    - lọc mẫu đã biết (email, số điện thoại, tên trong lớp, mã học sinh, số CCCD);
+    - chạy thêm phát hiện thông tin cá nhân cục bộ (tên người, địa chỉ, tài khoản mạng xã hội, vị trí);
+    - câu bộ phát hiện không chắc chắn thì không gửi LLM: trả lời bằng gia sư `offline`;
+    - tỉ lệ lọt đo ở `labs/evals` để theo dõi, không thay cho việc chặn.
   - Nhà LLM và `services/math` chỉ nhận nội dung toán, mã lỗi, mã giả danh theo phiên.
   - Ảnh bài làm của học sinh, kể cả vùng đã cắt, **chỉ OCR tự host**. Học sinh có thể viết tên, số điện thoại ở bất kỳ đâu trên trang, nên che vùng định sẵn không đủ.
     - Dịch vụ OCR bên ngoài (kể cả trong nước) chỉ dùng cho tài liệu của giáo viên không chứa dữ liệu học sinh (đề, sách).
     - Khi đó nhà OCR là bên xử lý: có thỏa thuận, thời hạn lưu, không dùng tài liệu để huấn luyện.
 - **Nhà LLM cho dữ liệu thật** phải có điều khoản không dùng dữ liệu để huấn luyện, có thỏa thuận xử lý dữ liệu, và CTIA riêng. Z.AI và OpenRouter chỉ dùng với dữ liệu tổng hợp cho tới khi đánh giá xong.
 - **Quyền chủ thể trong ứng dụng:** xem, sửa, tải về, xóa, rút đồng ý, theo thời hạn NĐ 356 (xóa: 20 ngày). Xóa và hết hạn lưu chạy tự động, có nhật ký.
+  - Nhật ký xóa và rút đồng ý chỉ chứa mã giả danh, lưu ngoài dữ liệu được sao lưu.
+  - Khôi phục bản sao lưu thì phát lại nhật ký này trước khi mở lại dịch vụ, để dữ liệu đã xóa không sống lại.
 - **Minh bạch và giám sát AI.**
   - Mọi câu gia sư gắn nhãn «Gia sư AI».
   - Giáo viên xem và ghi đè mức hiểu, gợi ý bài; mỗi gợi ý có lý do xem được.

@@ -113,7 +113,11 @@ Lý do các điểm then chốt:
      - nhà cung cấp kênh (email, Zalo…) là bên xử lý theo mục đích, chỉ nhận địa chỉ nhận và nội dung nhắc tối thiểu (không điểm, không mức hiểu);
      - có thỏa thuận xử lý, thời hạn lưu, đánh giá nơi đặt dữ liệu (CTIA nếu ra nước ngoài);
      - mặc định nhắc trong ứng dụng;
-   - bộ khử định danh chạy ở `services/core` **trước** khi gọi LLM, lọc email, số điện thoại, tên trong danh sách lớp, mã học sinh; câu bị lọc ghi vào nhật ký (không ghi nội dung);
+   - bộ khử định danh chạy ở `services/core` **trước** khi gọi LLM và **đóng mặc định**:
+     - lọc mẫu đã biết: email, số điện thoại, tên trong danh sách lớp, mã học sinh, số CCCD;
+     - thêm phát hiện thông tin cá nhân cục bộ (tên người, địa chỉ, tài khoản mạng xã hội, vị trí): ô chữ tự do có thể chứa bất cứ thứ gì;
+     - câu bộ phát hiện không chắc chắn thì không gửi LLM, trả lời bằng gia sư `offline`;
+     - câu bị chặn ghi vào nhật ký (không ghi nội dung); tỉ lệ lọt đo ở `labs/evals` để theo dõi, không thay cho việc chặn;
    - ảnh bài làm của học sinh, **kể cả vùng đã cắt**, chỉ OCR tự host:
      - học sinh có thể viết tên, email, số điện thoại ở bất kỳ đâu trên trang, nên che vùng định sẵn không đủ;
      - dịch vụ OCR bên ngoài (kể cả trong nước) chỉ dùng cho tài liệu của giáo viên không chứa dữ liệu học sinh (đề, sách), và là bên xử lý (thỏa thuận, thời hạn lưu, không huấn luyện);
@@ -122,7 +126,9 @@ Lý do các điểm then chốt:
    - chỉ nhà có điều khoản không dùng dữ liệu API để huấn luyện và có thỏa thuận xử lý dữ liệu;
    - mỗi nhà một CTIA trước khi bật;
    - Z.AI (Trung Quốc) và OpenRouter (chuyển tiếp nhiều nhà) cần đánh giá riêng; chưa đánh giá thì chỉ dùng cho dữ liệu tổng hợp.
-6. **Quyền chủ thể trong ứng dụng:** xem, sửa, tải về, xóa, rút đồng ý. Có hàng đợi yêu cầu kèm hạn theo P8. Xóa thật cả bản sao lưu theo vòng quay đã công bố.
+6. **Quyền chủ thể trong ứng dụng:** xem, sửa, tải về, xóa, rút đồng ý. Có hàng đợi yêu cầu kèm hạn theo P8.
+   - Xóa thật cả bản sao lưu theo vòng quay đã công bố.
+   - Trong lúc bản sao lưu cũ còn trong vòng quay: nhật ký xóa và rút đồng ý (chỉ mã giả danh) lưu ngoài dữ liệu được sao lưu, và được phát lại sau mỗi lần khôi phục, trước khi mở lại dịch vụ.
 7. **Thời hạn lưu:** mặc định hết năm học cộng một thời hạn do hợp đồng trường quy định (luật sư chốt). Việc xóa theo lịch chạy tự động và có nhật ký.
 8. **Minh bạch AI và giám sát (P10):**
    - mọi câu của gia sư gắn nhãn «Gia sư AI»;
@@ -144,7 +150,8 @@ Lý do các điểm then chốt:
 
 | Rủi ro | Giảm thiểu |
 | --- | --- |
-| Khử định danh sót thông tin trong ô chữ tự do | Danh sách chặn theo lớp + mẫu email / số điện thoại; bộ thử có dữ liệu giả; tỉ lệ lọt đo ở `labs/evals` |
+| Khử định danh sót thông tin trong ô chữ tự do | Đóng mặc định: mẫu đã biết + phát hiện cục bộ, câu không chắc chắn dùng gia sư `offline`; bộ thử có dữ liệu giả; tỉ lệ lọt đo ở `labs/evals` |
+| Khôi phục bản sao lưu làm sống lại dữ liệu đã xóa | Nhật ký xóa ngoài bản sao lưu, phát lại trước khi mở dịch vụ |
 | Nhà trường ngại thủ tục đồng ý | Mẫu đồng ý ngắn, tách mục đích; học không cần `GIA_SU_AI` |
 | Tiền kiểm A05 kéo dài (15 ngày + 30 ngày bổ sung) | Nộp hồ sơ sớm, trước ngày pilot ít nhất 2 tháng |
 | Nhà LLM đổi điều khoản | Một nhà một CTIA; kiến trúc nhà tường minh cho đổi nhanh; giữ `offline` |
