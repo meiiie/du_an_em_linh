@@ -34,7 +34,44 @@ function chon(o, giu, bo, ten) {
   return Object.fromEntries(giu.map((k) => [k, o[k]]));
 }
 
+// Mã ổn định gắn với tiêu đề của v0, không với vị trí: seed.ts đổi thứ tự thì mã vẫn theo đúng nội dung; tiêu đề lạ hay
+// thiếu thì dừng, không đoán. d-1 … d-6 trùng mã của test services/math/tests/test_dong_cong_thuc.py.
+const MA_TAI_LIEU = {
+  'Ghi chú tự soạn: đơn điệu và cực trị': 'v0-don-dieu',
+  'Đề mẫu tự soạn — cùng dạng đa thức bậc ba': 'v0-de-mau',
+  'Tham khảo phương pháp — ôn đơn điệu thế nào': 'v0-phuong-phap',
+};
+const MA_CONG_THUC = {
+  'Đạo hàm lũy thừa': 'd-1',
+  'Đạo hàm tổng': 'd-2',
+  'Đạo hàm thương': 'd-3',
+  'Đơn điệu': 'd-4',
+  'Cực trị': 'd-5',
+  'Điểm tới hạn': 'd-6',
+};
+
+function maTheoTieuDe(bang, tieuDe, ten) {
+  if (!Object.hasOwn(bang, tieuDe)) throw new Error(`${ten} có tiêu đề lạ ${JSON.stringify(tieuDe)}: thêm mã vào bảng mã trước`);
+  return bang[tieuDe];
+}
+
+function daDuMa(bang, banGhi, ten) {
+  const thay = banGhi.map((b) => b.ma);
+  const thieu = Object.values(bang).filter((m) => !thay.includes(m));
+  if (thieu.length || new Set(thay).size !== thay.length) throw new Error(`${ten}: thiếu ${thieu.join(', ') || '-'} hoặc trùng mã`);
+}
+
+/** Commit cuối đổi tệp và blob ở HEAD; dừng nếu tệp đang đọc khác bản đã commit (NGUON.md phải ứng với đúng nội dung). */
+function nguonDaCommit() {
+  const git = (lenh) => execSync('git ' + lenh, { cwd: GOC }).toString().trim();
+  if (git('status --porcelain -- ' + TEP)) throw new Error(TEP + ' có thay đổi chưa commit: commit hay hoàn tác trước khi trích');
+  const blob = git('rev-parse HEAD:' + TEP);
+  if (git('hash-object -- ' + TEP) !== blob) throw new Error(TEP + ' khác blob ở HEAD');
+  return { commit: git('log -1 --format=%H -- ' + TEP), blob };
+}
+
 async function main() {
+  const { commit, blob } = nguonDaCommit();
   // Đoạn nạp nội dung: từ khung bước tới hết vòng ghi công thức (trước `const corpus`, là kho gia sư lúc chạy của v0).
   const dau = viTri('const steps = [');
   const cuoi = viTri('const corpus = {', dau);
@@ -65,19 +102,20 @@ async function main() {
     chon(o, ['maBuoc', 'topicCode', 'thuTu', 'dangNhap', 'skillCode', 'moTa'], [], 'bước ' + (i + 1)),
   );
   const [bkt] = cua('masteryConfig', 1).map((o) => chon(o, ['key', 'version', 'value'], [], 'BKT'));
-  const MA_TAI_LIEU = ['v0-don-dieu', 'v0-de-mau', 'v0-phuong-phap'];
-  const taiLieu = cua('documents', 3).map((o, i) => ({
-    ma: MA_TAI_LIEU[i],
+  const taiLieu = cua('documents', 3).map((o) => ({
+    ma: maTheoTieuDe(MA_TAI_LIEU, o.title, 'tài liệu'),
     // Thứ tự khóa như bản vá sp-tai-lieu-0001 của lab Sư phạm.
-    ...chon(o, ['title', 'kind', 'source', 'licenseStatus', 'version', 'textContent'], ['id', 'uploadedBy', 'createdAt'], MA_TAI_LIEU[i]),
+    ...chon(o, ['title', 'kind', 'source', 'licenseStatus', 'version', 'textContent'], ['id', 'uploadedBy', 'createdAt'], o.title),
   }));
+  daDuMa(MA_TAI_LIEU, taiLieu, 'tài liệu');
   const [bang] = cua('formulaSheets', 1).map((o) =>
     chon(o, ['version', 'note'], ['id', 'classId', 'ownerTeacherId', 'status', 'lockedAt'], 'bảng công thức'),
   );
-  const congThuc = cua('formulas', 6).map((o, i) => ({
-    ma: 'd-' + (i + 1),
-    ...chon(o, ['skillCode', 'title', 'latex', 'noiDung'], ['id', 'formulaSheetId'], 'd-' + (i + 1)),
+  const congThuc = cua('formulas', 6).map((o) => ({
+    ma: maTheoTieuDe(MA_CONG_THUC, o.title, 'dòng công thức'),
+    ...chon(o, ['skillCode', 'title', 'latex', 'noiDung'], ['id', 'formulaSheetId'], o.title),
   }));
+  daDuMa(MA_CONG_THUC, congThuc, 'dòng công thức');
 
   const ghi = (ten, giaTri) => fs.writeFileSync(path.join(__dirname, ten), JSON.stringify(giaTri, null, 2) + '\n', 'utf8');
   ghi('khung-buoc.json', buoc);
@@ -95,15 +133,14 @@ async function main() {
   const doanTu = dong(dau);
   const doanDen = dong(cuoi) - 1;
 
-  const commit = execSync('git log -1 --format=%H -- ' + TEP, { cwd: GOC }).toString().trim();
-  const blob = execSync('git rev-parse HEAD:' + TEP, { cwd: GOC }).toString().trim();
   const nguon = `# Nguồn của data/v0
 
 Các tệp JSON ở đây chép **nguyên văn** hằng nội dung của v0 trong \`${TEP}\`, không sửa chữ (#85, T011b). Tệp do
 \`data/v0/trich-tu-seed.cjs\` sinh. Script chạy nguyên đoạn mã nạp nội dung của seed.ts (dòng ${doanTu}–${doanDen}) bằng \`vm\`,
 với một \`db\` giả chỉ ghi lại đối tượng truyền vào \`db.insert(<bảng>).values(...)\`. Vì vậy tên trường là tên v0 dùng khi
 ghi, và giá trị là giá trị lúc chạy (\`\\\\ge\` trong mã TS thành \`\\ge\`). Chạy lại: \`node data/v0/trich-tu-seed.cjs\` từ gốc
-repo. Script dừng nếu seed.ts thêm hay bớt trường, hay đổi số lần ghi.
+repo. Script dừng nếu seed.ts thêm hay bớt trường, đổi số lần ghi, có tiêu đề lạ, hay khác bản đã commit (blob dưới đây
+là blob của đúng nội dung đã trích).
 
 Nguồn: \`${TEP}\`, commit cuối đổi tệp \`${commit}\`, blob \`${blob}\`.
 
@@ -118,9 +155,10 @@ Khác với v0:
 - Bỏ trường lúc chạy: \`id\`, \`uploadedBy\`, \`createdAt\` của tài liệu; \`id\`, \`classId\`, \`ownerTeacherId\`, \`lockedAt\` của
   bảng; \`id\`, \`formulaSheetId\` của dòng công thức.
 - Bỏ \`status: "locked"\` của bảng: v2 chỉ khóa bảng khi mọi dòng \`DAT\` qua job \`kiem-dong-cong-thuc\` (ADR 013, T012).
-- Thêm mã ổn định để importer nhận lại khi nạp lần hai (v0 dùng UUID ngẫu nhiên):
-  - tài liệu: \`${MA_TAI_LIEU.join('`, `')}\`;
-  - dòng công thức: \`d-1\` … \`d-6\` theo thứ tự trong seed.ts, cùng mã với test \`services/math/tests/test_dong_cong_thuc.py\`.
+- Thêm mã ổn định để importer nhận lại khi nạp lần hai (v0 dùng UUID ngẫu nhiên). Mã gắn với tiêu đề của v0, không với
+  vị trí, nên seed.ts đổi thứ tự thì mã vẫn theo đúng nội dung:
+${[...Object.entries(MA_TAI_LIEU), ...Object.entries(MA_CONG_THUC)].map(([t, m]) => `  - \`${m}\`: «${t}»`).join('\n')}
+- Mã dòng công thức \`d-1\` … \`d-6\` trùng mã của test \`services/math/tests/test_dong_cong_thuc.py\`.
 - Khóa của tài liệu xếp như bản vá \`sp-tai-lieu-0001\` của lab Sư phạm, để importer đọc một định dạng cho cả tài liệu của
   v0 và của lab.
 `;
