@@ -3,6 +3,7 @@
 - Cùng gốc qua nginx (`/api/`), không CORS. Bearer access token (P1, #73); `/api/auth/*` giữ như #72.
 - Lỗi: `application/problem+json`, `detail` tiếng Việt. 401 → frontend làm mới phiên một lần (`xacThucInterceptor`). 403 → không phải thành viên lớp. 404 → không có hoặc không được thấy (không lộ tồn tại).
 - Mã trạng thái nội dung giữ như v0: `DAT`, `SAI`, `KHONG_KIEM_DUOC`, `GV_DUYET`; kết quả chấm thêm `KHONG_CHAM_DUOC` (dịch vụ toán lỗi, không bao giờ coi là đạt).
+- Kết quả kiểm và trạng thái phát hành tính theo lớp (data-model §content): học sinh chỉ thấy bài đã phát hành cho lớp của mình; giáo viên kiểm, duyệt, giao bài cho lớp mình dạy.
 - Không DTO nào của học sinh chứa `solutions.*`, `protected_facts`, `final_answer` khi bài đang làm.
 
 ## Học sinh (vai trò `STUDENT`, chỉ dữ liệu của mình)
@@ -44,8 +45,8 @@ data: {"noiDung":"…câu đã lọc và đã qua cổng…","trichDan":[{"n":1,
 | Phương thức | Đường dẫn | Vào | Ra | FR |
 | --- | --- | --- | --- | --- |
 | GET | `/api/gv/lop` | — | `{tenLop, siSo, canhBaoKet: [{hocSinh, kyNang, loai: KET\|NHO_GV}], sanSangAi: {nha, congThucDaKhoa: bool}}` | 25, 29 |
-| GET | `/api/gv/duyet` | — | hàng đợi: `[{runId, loai: BAI\|CONG_THUC_GIA_SU, ma, trangThai: SAI\|KHONG_KIEM_DUOC, canCu: [{tang, trangThai, lyDo, trichDan?}], cu: bool, thaoTac: DUYET\|SUA_BAI\|THEM_VAO_BANG}]` | 4, 5 |
-| POST | `/api/gv/duyet/{runId}` | `{ghiChu}` (bắt buộc) | chỉ cho `loai = BAI`, `trangThai = KHONG_KIEM_DUOC`: `{trangThai: GV_DUYET, nguoiDuyet, luc}`. 409 nếu mục là `SAI`. 422 nếu mục là `CONG_THUC_GIA_SU`: không duyệt riêng, phải thêm vào bảng công thức rồi khóa phiên bản mới (ADR 013) | 5 |
+| GET | `/api/gv/duyet` | — | hàng đợi: `[{runId, loai: BAI\|CONG_THUC_GIA_SU, ma, trangThai: SAI\|KHONG_KIEM_DUOC, canCu: [{tang, trangThai, lyDo, trichDan?}], cu: bool, thaoTac: DUYET\|KIEM_LAI\|SUA_BAI\|THEM_VAO_BANG}]` (mục cũ chỉ có `KIEM_LAI`) | 4, 5 |
+| POST | `/api/gv/duyet/{runId}` | `{ghiChu}` (bắt buộc) | chỉ cho `loai = BAI`, `trangThai = KHONG_KIEM_DUOC`: `{trangThai: GV_DUYET, nguoiDuyet, luc}`. 409 nếu mục là `SAI`, hoặc run đã cũ: không phải run mới nhất của bài trong lớp, `stale`, hay `content_hash` / bảng công thức đã đổi (phải kiểm lại bằng `POST /api/gv/ngan-hang/kiem`). 422 nếu mục là `CONG_THUC_GIA_SU`: không duyệt riêng, phải thêm vào bảng công thức rồi khóa phiên bản mới (ADR 013) | 5 |
 | GET | `/api/gv/ngan-hang` | — | `[{maBai, muc4, muc3, kyNang, trangThai, cu}]` | 3, 4 |
 | POST | `/api/gv/ngan-hang/kiem` | `{maBai?}` | chạy lại cổng; trả trạng thái mới | 4 |
 | POST | `/api/gv/giao-bai` | `{maBai, hocSinh?: [id], han?}` (thiếu `hocSinh` = cả lớp) | danh sách giao | 31 |

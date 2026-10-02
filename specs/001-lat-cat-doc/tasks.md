@@ -42,14 +42,19 @@ description: "Danh sách việc của epic P2 — lát cắt dọc một chủ �
 - [ ] T042b `services/math/app/dong_cong_thuc.py` + `routers.py` `POST /v1/kiem-dong-cong-thuc` theo `contracts/math-v1.md` (tầng 1 cho đẳng thức và định lí loại đã biết, tầng 2 tìm đoạn trong tài liệu được phép), dùng lại bộ nhận dạng của `verify.py`; bảng 6 dòng của v0 phải `DAT` cả 6
 - [ ] T042c [P] pytest: quy tắc thương đổi dấu tử → `SAI`; «đồng biến ⇒ $y' > 0$» → `SAI` nhờ phản ví dụ $y = x^3$; loại máy chưa biết → `KHONG_KIEM_DUOC`; tài liệu `chua_ro` không làm căn cứ tầng 2; hết giờ → không `DAT`
 
+### Issue — Lab Sư phạm: bản vá `sp-tai-lieu-0001` (tài liệu tự soạn cho quy tắc đạo hàm)
+
+- [ ] T011c Lab Sư phạm soạn bản vá có mã `sp-tai-lieu-0001`: «Ghi chú tự soạn: quy tắc tính đạo hàm» (`tu_soan`, không chép sách) có đoạn phát biểu quy tắc lũy thừa, tổng, thương đúng như 3 dòng bảng của v0 (công thức và lời), làm căn cứ tầng 2 (ADR 013); rà bằng subagent `pedagogy-reviewer` và `math-verifier` trước khi phát hành
+
 ### Issue — Module `content`: nhập nội dung chủ đề từ v0 và cổng 3 tầng cho bài
 
-- [ ] T010 `V4__content.sql`: `topics`, `skills`, `skill_prerequisites`, `error_types`, `step_templates`, `problems`, `solutions`, `hint_levels`, `documents`, `document_passages`, `formula_sheets`, `formulas`, `hint_gate_results`, `verification_runs`, `verification_tier_results`, `content_reviews`
-- [ ] T011 `core/content/domain/`: bài và chuyển trạng thái (data-model §content), bảng công thức có phiên bản, kết quả kiểm có cờ «cũ»
+- [ ] T010 `V4__content.sql`: `topics`, `skills`, `skill_prerequisites`, `error_types`, `step_templates`, `problems`, `solutions`, `hint_levels`, `problem_releases`, `documents`, `document_passages`, `formula_sheets`, `formulas`, `hint_gate_results`, `verification_runs`, `verification_tier_results`, `content_reviews`
+- [ ] T011 `core/content/domain/`: bài (chung) và trạng thái phát hành theo lớp (data-model §content), bảng công thức có phiên bản, kết quả kiểm gắn lớp và bảng đã dùng, có cờ «cũ»
+- [ ] T011d Áp **nguyên văn** bản vá `sp-tai-lieu-0001` vào `data/supham/` (ghi mã trong tiêu đề commit); importer nạp nó như tài liệu thứ tư của lớp
 - [ ] T011b Chép **nguyên văn** các hằng nội dung của `apps/web/scripts/seed.ts` (khung 5 bước, cấu hình BKT, 3 tài liệu, 6 dòng bảng công thức) ra `data/v0/*.json` kèm `data/v0/NGUON.md` (đường dẫn, dòng, SHA); không sửa chữ
 - [ ] T003b Đóng gói nội dung vào ảnh core (sau T011b, vì cần `data/v0/`): ngữ cảnh build là gốc repo, `services/core/Dockerfile.dockerignore` (chỉ `services/core/`, `data/supham/`, `data/v0/`), `COPY` vào `/app/noi-dung/{supham,v0}`; sửa `compose.v2.yaml` và job CI «Core — Maven + image» (`docker build -f services/core/Dockerfile .`)
-- [ ] T012 `core/content/infrastructure/import/`: importer đọc `${app.content.source}` (ảnh: `/app/noi-dung`; test: `${project.basedir}/../../data` đặt trong `systemPropertyVariables` của Surefire), gồm `supham/` và `v0/`, như `apps/web/scripts/seed.ts` (cả biến thể `/v1/generate` hạt giống cố định và 3 bài demo), idempotent theo mã + dấu vân tay; khóa bảng 6 dòng của v0 qua `/v1/kiem-dong-cong-thuc` (không đạt thì báo lỗi, không khóa thiếu; ADR 013) rồi chạy `/v1/verify` từng bài; phát sự kiện miền `BangCongThucDaKhoa` và `BaiDaNhap`
-- [ ] T013 [P] Script một lần `specs/001-lat-cat-doc/doi-chieu/xuat-v0.ts` (chạy trên v0): xuất (mã bài, dấu vân tay, trạng thái cổng) ra `doi-chieu/v0-bai.json`
+- [ ] T012 `core/content/infrastructure/import/`: importer đọc `${app.content.source}` (ảnh: `/app/noi-dung`; test: `${project.basedir}/../../data` đặt trong `systemPropertyVariables` của Surefire), gồm `supham/` và `v0/`, như `apps/web/scripts/seed.ts` (cả biến thể `/v1/generate` hạt giống cố định và 3 bài demo), idempotent theo mã + dấu vân tay; với mỗi lớp đã có (profile `dev`: «12A1 thử»): nạp 3 tài liệu của v0 và `sp-tai-lieu-0001`, khóa bảng 6 dòng qua `/v1/kiem-dong-cong-thuc` (không đạt thì báo lỗi, không khóa thiếu; ADR 013), chạy `/v1/verify` từng bài và ghi `problem_releases` của lớp; phát sự kiện miền `BangCongThucDaKhoa` và `BaiDaNhap`
+- [ ] T013 [P] Script một lần `specs/001-lat-cat-doc/doi-chieu/xuat-v0.ts` (chạy trên v0, với cùng 4 tài liệu của lớp v2: 3 của v0 và `sp-tai-lieu-0001`): xuất (mã bài, dấu vân tay, trạng thái cổng) ra `doi-chieu/v0-bai.json`
 - [ ] T014 `core-test/content/NhapNoiDungTest.java`: nhập trên Testcontainers + dịch vụ toán giả; so `v0-bai.json`
 - [ ] T015 `core/content/application/`: port đọc bài cho học sinh **không** có lời giải; ArchUnit thêm luật: DTO của học sinh không phụ thuộc `Solution`
 
@@ -134,9 +139,9 @@ description: "Danh sách việc của epic P2 — lát cắt dọc một chủ �
 
 ### Issue — Hàng đợi duyệt (core + frontend)
 
-- [ ] T046 [US4] `core/content/`: `GET /api/gv/duyet`, `POST /api/gv/duyet/{runId}` (ghi chú bắt buộc; chỉ bài `KHONG_KIEM_DUOC`; `SAI` → 409; công thức trong lời gia sư → 422 «thêm vào bảng»); ghi người, thời điểm, lý do
+- [ ] T046 [US4] `core/content/`: `GET /api/gv/duyet`, `POST /api/gv/duyet/{runId}` (ghi chú bắt buộc; chỉ bài `KHONG_KIEM_DUOC`; `SAI` → 409; run cũ, không phải run mới nhất của (lớp, bài), hay nội dung / bảng đã đổi → 409 «kiểm lại»; công thức trong lời gia sư → 422 «thêm vào bảng»); ghi người, thời điểm, lý do
 - [ ] T047 [US4] `fe/features/giao-vien/duyet/` (`hang-doi`, `duyet-<mã>`)
-- [ ] T048 [P] [US4] e2e `apps/frontend/e2e/duyet.spec.ts`: `KHONG_KIEM_DUOC` → `GV_DUYET` → tới An; `SAI` không có nút, An không thấy; mục công thức gia sư chỉ có «Thêm vào bảng» (SC-002)
+- [ ] T048 [P] [US4] e2e `apps/frontend/e2e/duyet.spec.ts`: `KHONG_KIEM_DUOC` → `GV_DUYET` → tới An; `SAI` không có nút, An không thấy; run cũ chỉ có «Kiểm lại»; mục công thức gia sư chỉ có «Thêm vào bảng» (SC-002)
 
 ---
 
@@ -189,7 +194,7 @@ description: "Danh sách việc của epic P2 — lát cắt dọc một chủ �
 ## Phụ thuộc và thứ tự merge
 
 ```text
-kiem_dong_cong_thuc (math) ─▶ content (nhập)
+kiem_dong_cong_thuc (math) ─▶ content (nhập) ◀── bản vá sp-tai-lieu-0001 (lab Sư phạm)
 Setup ─▶ classroom ─┬─▶ practice (US1) ─▶ Trang Học/Luyện ─┬─▶ tutor (US2) ─▶ Cột gia sư
 math client ────────┤                                      │        ▲
 content (nhập) ─────┘                                      │   kiem_loi_giang ◀── bản vá KD-0005 (lab Kiểm định)
@@ -204,4 +209,4 @@ Tất cả ─▶ e2e «một vòng» và nghiệm thu
 - Số `V<n>` của migration trong các việc là dự kiến. PR lấy số kế tiếp trên `main` khi rebase: Flyway mặc định `outOfOrder=false`, không áp migration có số nhỏ hơn số đã áp, nên mastery merge trước tutor thì mastery lấy `V6`.
 - Song song được: `kiem_dong_cong_thuc` (math) với classroom và client toán (core); `kiem_loi_giang` (math) với `practice` (core); các màn giáo viên US3, US4, US7 với các màn học sinh.
 - Kiểm trước câu gợi ý (T034b) nghe sự kiện miền, nên US2 và US3 merge theo thứ tự nào cũng được.
-- ADR 013 đã chấp nhận (2026-10-02). Chặn: job `kiem_loi_giang` chờ bản vá KD-0005; bộ ca của tutor (T036) chờ KD-0006 (bộ AI 70 ca). Cả hai thuộc issue lab Kiểm định.
+- ADR 013 đã chấp nhận (2026-10-02). Chặn: content chờ bản vá `sp-tai-lieu-0001` của lab Sư phạm; job `kiem_loi_giang` chờ bản vá KD-0005; bộ ca của tutor (T036) chờ KD-0006 (bộ AI 70 ca). Hai bản vá sau thuộc issue lab Kiểm định.

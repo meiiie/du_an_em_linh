@@ -49,7 +49,7 @@ Chọn **A**.
   - Tầng 1 với dòng **đẳng thức** (quy tắc lũy thừa, tổng, thương…): SymPy kiểm tương đương, dùng hàm ký hiệu `u(x)`, `v(x)`.
   - Tầng 1 với dòng **định lí hay định nghĩa** thuộc loại máy đã biết (đơn điệu, cực trị, điểm tới hạn; bộ nhận dạng tầng 3 của `verify.py`): so phát biểu với ngữ nghĩa có sẵn của máy (chiều suy luận, điều kiện) rồi tìm phản ví dụ trên bộ hàm mẫu của chủ đề; không có phản ví dụ thì `DAT`, có thì `SAI`. Máy không chứng minh định lí; đây là kiểm nhất quán có giới hạn và được ghi rõ trong căn cứ.
   - Dòng thuộc loại máy chưa biết: `KHONG_KIEM_DUOC`, chặn khóa. Thêm loại mới là việc của lab Kiểm định.
-  - Bảng 6 dòng của v0 (3 đẳng thức, 3 định lí hay định nghĩa) phải khóa được theo quy tắc này; nếu không, importer báo lỗi thay vì khóa thiếu.
+  - Bảng 6 dòng của v0 (3 đẳng thức, 3 định lí hay định nghĩa) phải khóa được theo quy tắc này; nếu không, importer báo lỗi thay vì khóa thiếu. Tài liệu của v0 không phát biểu 3 quy tắc đẳng thức (lũy thừa, tổng, thương), nên lab Sư phạm bổ sung một tài liệu tự soạn (bản vá `sp-tai-lieu-0001`) làm căn cứ tầng 2.
 - Bộ ca lời giảng mới (≥ 100 câu, 8 loại; spec SC-004) và bộ từ vựng nhận dạng quy tắc bằng lời do lab Kiểm định soạn thành **bản vá có mã** (KD-0005, kèm SHA-256), rà độc lập; PR hiện thực chỉ áp nguyên văn bản vá vào `services/math/kiemdinh/`, rồi chạy trong cổng merge của `services/math`.
 - ADR 003 (gia sư không đọc lời giải) và ADR 010 (SSE trạng thái) giữ nguyên.
 

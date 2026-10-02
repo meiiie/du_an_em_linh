@@ -20,28 +20,33 @@ Bảng PostgreSQL 18 của `services/core`, Flyway chỉ thêm. Tên bảng và 
 | `skill_prerequisites` | `skill_code`, `prerequisite_code`, `min_level` | |
 | `error_types` | `code`, `skill_code`, `step_code`, `name`, `fix_hint`, `result_types` | Từ `ma-loi-DH.csv` |
 | `step_templates` | `step_code`, `topic_code`, `ordinal`, `input_kind`, `skill_code`, `description` | 5 bước `B.DH.*` |
-| `problems` | `id`, `code`, `skill_code`, `extra_skill_codes`, `level4`, `level3`, `bloom_level`, `difficulty`, `statement_text`, `statement_latex`, `function_sympy`, `answer_form` (`TU_LUAN_5_BUOC`), `start_step`, `origin`, `status`, `content_hash` | `status` dùng đúng mã phát hành của v0: `NHAP`, `DA_PHAT_HANH`, `BI_CHAN`, `CHO_GIAO_VIEN_DUYET` |
+| `problems` | `id`, `code`, `skill_code`, `extra_skill_codes`, `level4`, `level3`, `bloom_level`, `difficulty`, `statement_text`, `statement_latex`, `function_sympy`, `answer_form` (`TU_LUAN_5_BUOC`), `start_step`, `origin`, `content_hash` | Nội dung chung của chủ đề; trạng thái phát hành nằm ở `problem_releases` theo lớp |
 | `solutions` | `problem_id`, `worked_solution`, `protected_facts`, `final_answer` | **Không bao giờ** vào DTO của học sinh khi đang làm, không vào prompt |
 | `hint_levels` | `problem_id`, `step_code`, `level` (1–3), `text` | Thang đã kiểm |
-| `hint_gate_results` | `problem_id`, `step_code`, `result_kind` (loại kết quả hoặc `chung`), `level`, `text` (câu đã điền tham số của đề), `formula_sheet_version`, `status`, `checked_at` | Câu thay thế lúc chạy chỉ lấy gợi ý `DAT` với phiên bản bảng hiện tại (ADR 013 mục 6) |
+| `hint_gate_results` | `problem_id`, `step_code`, `result_kind` (loại kết quả hoặc `chung`), `level`, `text` (câu đã điền tham số của đề), `formula_sheet_id`, `status`, `checked_at` | Câu thay thế lúc chạy chỉ lấy gợi ý `DAT` với phiên bản bảng hiện tại (ADR 013 mục 6) |
 | `documents` | `id`, `class_id`, `title`, `kind`, `source`, `license_status`, `file_ref`, `text_content`, `version`, `uploaded_by`, `created_at` | `license_status = chua_ro` → không làm căn cứ |
 | `document_passages` | `id`, `document_id`, `page`, `char_start`, `char_end`, `text`, `text_folded` | Cho tầng 2 và trích dẫn `[n]` |
 | `formula_sheets` | `id`, `class_id`, `version`, `status` (`NHAP`, `KHOA`), `fingerprint`, `locked_at`, `locked_by` | Mỗi lần khóa = phiên bản mới |
 | `formulas` | `id`, `formula_sheet_id`, `skill_code`, `title`, `latex`, `statement`, `tier1_status`, `tier2_status`, `citation_passage_id` | Khóa được bảng chỉ khi **mọi dòng** có `tier1_status = DAT` và `tier2_status = DAT` (có trích dẫn); `SAI` hay `KHONG_KIEM_DUOC` chặn khóa (ADR 013) |
-| `verification_runs` | `id`, `subject_kind` (`PROBLEM`, `TUTOR_FORMULA`), `subject_id`, `content_hash`, `formula_sheet_version`, `overall_status`, `publish_status`, `stale`, `created_at` | |
+| `verification_runs` | `id`, `class_id`, `subject_kind` (`PROBLEM`, `TUTOR_FORMULA`), `subject_id`, `content_hash`, `formula_sheet_id`, `overall_status`, `publish_status`, `stale`, `created_at` | Tầng 2, tầng 3 dùng tài liệu và bảng của lớp, nên run gắn lớp và đúng bảng đã dùng (bảng có `class_id`, `version`) |
+| `problem_releases` | `class_id`, `problem_id`, `status`, `run_id`, `updated_at` | PK (`class_id`, `problem_id`). `status` dùng đúng mã phát hành của v0: `NHAP`, `DA_PHAT_HANH`, `BI_CHAN`, `CHO_GIAO_VIEN_DUYET`; học sinh chỉ thấy bài `DA_PHAT_HANH` của lớp mình |
 | `verification_tier_results` | `run_id`, `tier` (1–3), `status`, `result_type`, `wrong_steps`, `error_code`, `confidence`, `reason`, `citation`, `raw` | Căn cứ từng tầng |
 | `content_reviews` | `id`, `run_id`, `content_hash`, `reviewer_id`, `decision` (`GV_DUYET`), `note`, `at` | Bắt buộc `note`; chỉ cho run `subject_kind = PROBLEM` (công thức trong lời gia sư không duyệt riêng, ADR 013) |
 
 **Hai lớp trạng thái, giữ mã của v0** (`services/math/app/verify.py`, `cong_phat_hanh`):
 
 - kết quả kiểm (`verification_runs.overall_status`, từng tầng): `DAT`, `SAI`, `KHONG_KIEM_DUOC`, sau duyệt là `GV_DUYET`;
-- trạng thái phát hành (`verification_runs.publish_status`, chép sang `problems.status`): `DA_PHAT_HANH`, `BI_CHAN`, `CHO_GIAO_VIEN_DUYET`.
+- trạng thái phát hành (`verification_runs.publish_status`, chép sang `problem_releases.status` của lớp): `DA_PHAT_HANH`, `BI_CHAN`, `CHO_GIAO_VIEN_DUYET`.
+
+Bài, kỹ năng, khung bước, thang gợi ý là nội dung chung của chủ đề. Tài liệu, bảng công thức, kết quả kiểm và trạng thái phát hành tính **theo lớp**: một run kiểm bằng tài liệu của lớp A không phát hành bài cho lớp B.
 
 ```text
 NHAP ──/v1/verify──▶ DA_PHAT_HANH            (mọi tầng DAT)
                ├──▶ BI_CHAN                  (một tầng SAI) ──sửa nội dung──▶ NHAP
                └──▶ CHO_GIAO_VIEN_DUYET      (còn KHONG_KIEM_DUOC) ──GV duyệt (note, GV_DUYET)──▶ DA_PHAT_HANH
 Đổi bảng công thức: kết quả kiểm cũ → stale = true; bài DA_PHAT_HANH giữ nguyên, hiện «cần kiểm lại».
+GV duyệt chỉ trên run mới nhất của (lớp, bài), không stale, content_hash và formula_sheet_id khớp hiện tại;
+ngược lại 409 và phải kiểm lại, để không phát hành bằng phán quyết của nội dung hay bảng đã cũ.
 ```
 
 ## practice (`V5__practice.sql`)
