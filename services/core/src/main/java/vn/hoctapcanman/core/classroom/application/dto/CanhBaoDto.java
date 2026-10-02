@@ -17,6 +17,12 @@ public record CanhBaoDto(
         Instant luc,
         boolean daXuLy) {
 
+    /** Không in học sinh hay lý do vào log. */
+    @Override
+    public String toString() {
+        return "CanhBaoDto[id=" + id + ", loai=" + loai + "]";
+    }
+
     public static CanhBaoDto from(Escalation e) {
         return new CanhBaoDto(e.id(), e.studentId(), e.kind().name(), e.skillCode(), e.problemCode(), e.stepCode(),
                 e.reason(), e.createdAt(), !e.isOpen());

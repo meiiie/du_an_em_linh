@@ -3,6 +3,7 @@ package vn.hoctapcanman.core.classroom;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import jakarta.persistence.EntityManager;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
@@ -12,6 +13,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.transaction.annotation.Transactional;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import vn.hoctapcanman.core.TestcontainersConfiguration;
@@ -20,6 +22,7 @@ import vn.hoctapcanman.core.classroom.application.dto.CapNhatCaiDatLopRequest;
 import vn.hoctapcanman.core.classroom.application.exception.CanhBaoKhongTimThayException;
 import vn.hoctapcanman.core.classroom.application.exception.KhongThuocLopException;
 import vn.hoctapcanman.core.classroom.application.port.CanhBaoGiaoVien;
+import vn.hoctapcanman.core.classroom.application.port.CanhBaoGiaoVien.KetQua;
 import vn.hoctapcanman.core.classroom.application.port.ClassMembership;
 import vn.hoctapcanman.core.classroom.application.usecase.CapNhatCaiDatLopUseCase;
 import vn.hoctapcanman.core.classroom.application.usecase.GetCaiDatLopUseCase;
@@ -85,6 +88,12 @@ class PhanQuyenLopTest {
 
     @Autowired
     private XuLyCanhBaoUseCase xuLyCanhBao;
+
+    @Autowired
+    private JdbcClient jdbc;
+
+    @Autowired
+    private EntityManager em;
 
     private UUID gvA;
     private UUID gvB;
@@ -162,11 +171,13 @@ class PhanQuyenLopTest {
     @Test
     @DisplayName("Cảnh báo tới đúng giáo viên của lớp học sinh; lớp khác không thấy, không xử lý được")
     void canhBaoChiToiGiaoVienCuaLop() {
-        assertThat(canhBao.ghiNhoGiaoVien(dung, "T12.DH.03", "B12-01", "B.DH.XETDAU", "Em nhờ thầy cô ở bước xét dấu.")).isTrue();
-        assertThat(canhBao.ghiNhoGiaoVien(dung, "T12.DH.03", "B12-01", "B.DH.XETDAU", "Em nhờ thầy cô lần nữa.")).isFalse();
-        assertThat(canhBao.ghiKet(an, "T12.DH.03", null, null, "Kẹt 3 lượt ở T12.DH.03.")).isTrue();
+        assertThat(canhBao.ghiNhoGiaoVien(dung, "T12.DH.03", "B12-01", "B.DH.XETDAU", "Em nhờ thầy cô ở bước xét dấu."))
+            .isEqualTo(KetQua.DA_GHI);
+        assertThat(canhBao.ghiNhoGiaoVien(dung, "T12.DH.03", "B12-01", "B.DH.XETDAU", "Em nhờ thầy cô lần nữa."))
+            .isEqualTo(KetQua.DA_CO_CANH_BAO_MO);
+        assertThat(canhBao.ghiKet(an, "T12.DH.03", null, null, "Kẹt 3 lượt ở T12.DH.03.")).isEqualTo(KetQua.DA_GHI);
         UUID chuaVaoLop = nguoi("hs.moi@demo.local", "Học sinh mới", Role.STUDENT);
-        assertThat(canhBao.ghiKet(chuaVaoLop, "T12.DH.03", null, null, "Kẹt.")).isFalse();
+        assertThat(canhBao.ghiKet(chuaVaoLop, "T12.DH.03", null, null, "Kẹt.")).isEqualTo(KetQua.CHUA_THUOC_LOP);
 
         List<CanhBaoDto> lopBMo = canhBaoCuaLop.execute(gvB, lopB, true);
         assertThat(lopBMo).singleElement().satisfies(c -> {
@@ -182,7 +193,56 @@ class PhanQuyenLopTest {
         assertThatThrownBy(() -> xuLyCanhBao.execute(gvB, UUID.randomUUID())).isInstanceOf(CanhBaoKhongTimThayException.class);
         assertThat(xuLyCanhBao.execute(gvB, id).daXuLy()).isTrue();
         assertThat(canhBaoCuaLop.execute(gvB, lopB, true)).isEmpty();
-        assertThat(canhBao.ghiNhoGiaoVien(dung, "T12.DH.03", "B12-01", null, "Em lại nhờ thầy cô.")).isTrue();
+        assertThat(canhBao.ghiNhoGiaoVien(dung, "T12.DH.03", "B12-01", null, "Em lại nhờ thầy cô.")).isEqualTo(KetQua.DA_GHI);
+    }
+
+    @Test
+    @DisplayName("Lớp chưa có giáo viên: không ghi cảnh báo, báo rõ cho bên gọi")
+    void lopChuaCoGiaoVien() {
+        UUID em = nguoi("hs.em@demo.local", "Em", Role.STUDENT);
+        ClassId id = classes.save(SchoolClass.create("12C thử", 12, "2026-2027", NOW)).id();
+        enrollments.save(new Enrollment(id, em, ClassRole.STUDENT, NOW));
+        assertThat(canhBao.ghiNhoGiaoVien(em, "T12.DH.03", "B12-01", null, "Em nhờ thầy cô.")).isEqualTo(KetQua.LOP_CHUA_CO_GIAO_VIEN);
+    }
+
+    @Test
+    @DisplayName("Học sinh không đọc được cảnh báo của lớp mình; lớp không có trả cùng lỗi như lớp khác")
+    void hocSinhKhongDocCanhBaoLopKhongCo() {
+        canhBao.ghiKet(an, "T12.DH.03", null, null, "Kẹt 3 lượt ở T12.DH.03.");
+        assertThatThrownBy(() -> canhBaoCuaLop.execute(binh, lopA, true)).isInstanceOf(KhongThuocLopException.class);
+        UUID khongCo = UUID.randomUUID();
+        assertThatThrownBy(() -> hocSinhCuaLop.execute(gvA, khongCo)).isInstanceOf(KhongThuocLopException.class);
+        assertThatThrownBy(() -> caiDat.execute(gvA, khongCo)).isInstanceOf(KhongThuocLopException.class);
+    }
+
+    @Test
+    @DisplayName("Quản trị không ghi danh trong lớp bị từ chối như giáo viên lớp khác")
+    void quanTriKhongGhiDanhBiTuChoi() {
+        UUID admin = nguoi("admin.f08@demo.local", "Quản trị", Role.ADMIN);
+        assertThatThrownBy(() -> hocSinhCuaLop.execute(admin, lopA)).isInstanceOf(KhongThuocLopException.class);
+        assertThatThrownBy(() -> caiDat.execute(admin, lopA)).isInstanceOf(KhongThuocLopException.class);
+    }
+
+    @Test
+    @DisplayName("Rút khỏi lớp có hiệu lực ngay: giáo viên mất quyền; học sinh rời lớp thì cảnh báo cũ không còn hiện")
+    void rutKhoiLopCoHieuLucNgay() {
+        canhBao.ghiKet(an, "T12.DH.03", null, null, "Kẹt 3 lượt ở T12.DH.03.");
+        UUID canhBaoCuaAn = canhBaoCuaLop.execute(gvA, lopA, true).getFirst().id();
+
+        roiLop(lopA, an);
+        assertThat(canhBaoCuaLop.execute(gvA, lopA, true)).isEmpty();
+        assertThatThrownBy(() -> xuLyCanhBao.execute(gvA, canhBaoCuaAn)).isInstanceOf(CanhBaoKhongTimThayException.class);
+
+        roiLop(lopA, gvA);
+        assertThatThrownBy(() -> hocSinhCuaLop.execute(gvA, lopA)).isInstanceOf(KhongThuocLopException.class);
+        assertThat(membership.lopDay(gvA)).isEmpty();
+    }
+
+    /** Xóa ghi danh thẳng trong CSDL (repository chưa có thao tác xóa), rồi bỏ bộ nhớ đệm JPA của giao dịch test. */
+    private void roiLop(UUID lop, UUID nguoi) {
+        em.flush();
+        jdbc.sql("delete from enrollments where class_id = ? and user_id = ?").params(lop, nguoi).update();
+        em.clear();
     }
 
     private UUID nguoi(String email, String ten, Role role) {

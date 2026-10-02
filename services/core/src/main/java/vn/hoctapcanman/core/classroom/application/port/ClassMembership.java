@@ -10,6 +10,10 @@ import vn.hoctapcanman.core.classroom.application.exception.KhongThuocLopExcepti
  * Quyền theo lớp cho mọi module (FR-032, F-08 của v0 {@code apps/web/lib/lop.ts}): giáo viên chỉ thấy lớp mình dạy và
  * học sinh của các lớp đó; học sinh chỉ dữ liệu của mình. Mọi đọc / ghi dữ liệu lớp đi qua cổng này, không lấy «lớp
  * đầu tiên của bảng». Id là UUID để module khác không phụ thuộc kiểu domain của lớp học.
+ *
+ * <p>Cổng chỉ xét vai trò <em>trong lớp</em> (ghi danh). Vai trò tài khoản ({@code users.role}) do tầng web chặn thêm
+ * theo đường dẫn ({@code /api/gv/**} cho giáo viên, {@code /api/hs/**} cho học sinh; T058, #97). Id người gọi luôn lấy
+ * từ access token, không từ thân yêu cầu.
  */
 public interface ClassMembership {
 
@@ -17,8 +21,10 @@ public interface ClassMembership {
     List<UUID> lopDay(UUID giaoVienId);
 
     /**
-     * Lớp giáo viên đang thao tác: lớp được chọn nếu giáo viên dạy lớp đó; không chọn thì lớp đầu tiên giáo viên dạy.
-     * Rỗng khi không dạy lớp nào, hoặc chọn một lớp không dạy (không lùi về lớp khác như v0).
+     * Lớp giáo viên đang xem: lớp được chọn nếu giáo viên dạy lớp đó; không chọn thì lớp đầu tiên giáo viên dạy. Rỗng
+     * khi không dạy lớp nào, hoặc chọn một lớp không dạy (không lùi về lớp khác như v0). Chỉ dùng mặc định
+     * ({@code lopChon == null}) cho màn đọc: thao tác ghi luôn nhận id lớp tường minh, để giáo viên dạy nhiều lớp không
+     * đổi nhầm lớp khác lớp đang xem.
      */
     Optional<UUID> lopDangDay(UUID giaoVienId, @Nullable UUID lopChon);
 
@@ -35,6 +41,9 @@ public interface ClassMembership {
     /** Giáo viên dạy học sinh này (cùng một lớp, giáo viên ở vai trò giáo viên, học sinh ở vai trò học sinh). */
     boolean giaoVienDayHocSinh(UUID giaoVienId, UUID hocSinhId);
 
-    /** Học sinh của lớp, ghi danh cũ trước. Không kiểm người gọi: dùng sau khi đã kiểm quyền. */
-    List<UUID> hocSinhCuaLop(UUID lopId);
+    /**
+     * Học sinh của lớp, ghi danh cũ trước, chỉ cho giáo viên của lớp: tự kiểm người gọi, ném {@link KhongThuocLopException}
+     * khi không phải giáo viên của lớp (module khác không gọi được với id lớp lấy từ yêu cầu mà quên kiểm).
+     */
+    List<UUID> hocSinhCuaLop(UUID giaoVienId, UUID lopId);
 }

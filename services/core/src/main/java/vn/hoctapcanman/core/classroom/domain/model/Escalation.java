@@ -45,6 +45,10 @@ public record Escalation(
         if (reason.isEmpty() || reason.length() > LY_DO_DAI_TOI_DA) {
             throw new IllegalArgumentException("Lý do cảnh báo trống hoặc quá dài");
         }
+        // Lý do do hệ thống soạn theo mẫu: không xuống dòng, không ký tự điều khiển hay định dạng (vd U+202E đảo chiều).
+        if (reason.codePoints().anyMatch(cp -> Character.getType(cp) == Character.CONTROL || Character.getType(cp) == Character.FORMAT)) {
+            throw new IllegalArgumentException("Lý do cảnh báo có ký tự điều khiển");
+        }
         if (handledBy != null && handledAt == null) {
             throw new IllegalArgumentException("Cảnh báo có người xử lý thì phải có thời điểm xử lý");
         }
@@ -58,6 +62,12 @@ public record Escalation(
 
     public boolean isOpen() {
         return handledAt == null;
+    }
+
+    /** Không in học sinh hay lý do vào log. */
+    @Override
+    public String toString() {
+        return "Escalation[id=" + id + ", kind=" + kind + ", classId=" + classId.value() + "]";
     }
 
     private static void kiemMa(String ma, String ten) {

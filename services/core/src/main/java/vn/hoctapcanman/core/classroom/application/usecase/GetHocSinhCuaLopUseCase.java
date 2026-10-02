@@ -18,7 +18,6 @@ public class GetHocSinhCuaLopUseCase {
 
     @Transactional(readOnly = true)
     public List<UUID> execute(UUID giaoVienId, UUID lopId) {
-        membership.kiemGiaoVien(giaoVienId, lopId);
-        return membership.hocSinhCuaLop(lopId);
+        return membership.hocSinhCuaLop(giaoVienId, lopId);
     }
 }

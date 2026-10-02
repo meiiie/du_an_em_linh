@@ -50,7 +50,7 @@ class LopThuSeederTest {
         assertThat(lop.grade()).isEqualTo(12);
         assertThat(membership.laGiaoVien(id(LopThuSeeder.GIAO_VIEN), lopId)).isTrue();
         List<UUID> hocSinh = LopThuSeeder.HOC_SINH.stream().map(this::id).toList();
-        assertThat(membership.hocSinhCuaLop(lopId)).containsExactlyInAnyOrderElementsOf(hocSinh);
+        assertThat(membership.hocSinhCuaLop(id(LopThuSeeder.GIAO_VIEN), lopId)).containsExactlyInAnyOrderElementsOf(hocSinh);
         hocSinh.forEach(hs -> assertThat(membership.lopHoc(hs)).contains(lopId));
         assertThat(settings.findByClassId(lop.id())).hasValueSatisfying(s -> {
             assertThat(s.revealSolutionAfterSubmit()).isFalse();

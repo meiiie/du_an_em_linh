@@ -66,7 +66,8 @@ public class ClassMembershipService implements ClassMembership {
     }
 
     @Override
-    public List<UUID> hocSinhCuaLop(UUID lopId) {
+    public List<UUID> hocSinhCuaLop(UUID giaoVienId, UUID lopId) {
+        kiemGiaoVien(giaoVienId, lopId);
         return enrollments.findByClass(new ClassId(lopId), ClassRole.STUDENT).stream().map(Enrollment::userId).toList();
     }
 

@@ -58,7 +58,9 @@ class ClassMembershipServiceTest {
         assertThat(membership.giaoVienDayHocSinh(gv, hs)).isTrue();
         assertThat(membership.giaoVienDayHocSinh(gv, hsKhac)).isFalse();
         assertThat(membership.giaoVienDayHocSinh(hs, hs)).isFalse();
-        assertThat(membership.hocSinhCuaLop(lopA)).containsExactly(hs);
+        assertThat(membership.hocSinhCuaLop(gv, lopA)).containsExactly(hs);
+        assertThatThrownBy(() -> membership.hocSinhCuaLop(hs, lopA)).isInstanceOf(KhongThuocLopException.class);
+        assertThatThrownBy(() -> membership.hocSinhCuaLop(gv, lopB)).isInstanceOf(KhongThuocLopException.class);
     }
 
     /** Kho ghi danh trong bộ nhớ, thứ tự như adapter thật (ghi danh cũ trước). */
