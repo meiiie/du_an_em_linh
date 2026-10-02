@@ -17,3 +17,7 @@ Harness theo hướng dẫn chính thức của Anthropic (2026): [large codebas
 - **Code intelligence**: cài `typescript-lsp` và `pyright-lsp` (`/plugin install <tên>@claude-plugins-official`); thêm `jdtls-lsp` khi có `services/core`.
 - **Commit**: kết thúc thân commit bằng trailer `Co-Authored-By` (hook kiểm); thân PR kết thúc bằng dòng «Generated with Claude Code».
 - **Tìm kiếm**: tôn trọng `.gitignore`; lockfile bị chặn đọc (`permissions.deny`) — dùng `pnpm list` để tra phiên bản.
+
+<!-- SPECKIT START -->
+- **Epic đang làm**: `specs/001-lat-cat-doc/` (P2 lát cắt dọc). Đọc `plan.md` (cấu trúc, kiểm hiến chương), `research.md` (12 quyết định), `data-model.md`, `contracts/`; ADR 013 (Đề xuất) cho công thức trong lời gia sư.
+<!-- SPECKIT END -->
