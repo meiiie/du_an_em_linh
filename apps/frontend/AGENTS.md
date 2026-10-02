@@ -27,8 +27,8 @@ Cả hệ v2 trong Docker: `docker compose -f compose.v2.yaml up --build --wait`
 | `src/app/core/auth/` | `Phien` (access token trong bộ nhớ, refresh token trong cookie HttpOnly, làm mới một luồng qua Web Locks), `xacThucInterceptor` (Bearer, 401 → làm mới một lần), guard `chiVaiTro`, `chuaDangNhap`; `phien.testing.ts` là `PhienGia` cho test |
 | `src/app/features/<tính-năng>/` | Màn theo tính năng: `dang-nhap` (hai bước email → mật khẩu), `hoc-sinh` (`/hs` «Chào <tên>»), `giao-vien` (`/gv`, chưa có API lớp nên «Chưa có lớp») |
 | `src/app/shared/ui/` | Nguyên thủy: `appButton` (giải phẫu nút), `app-brand-mark` (`dao` cho nền mực), `app-bieu-tuong` (nét Lucide của ray v0, chép nguyên văn) |
-| `src/app/shared/layout/` | `app-khung-trang`: desktop là ray mực 220 px, dưới `lg` là thanh trên + ngăn kéo (`mo-sidebar`, `dong-sidebar`, `inert` khi đóng, Esc); một nút `dang-xuat` trong DOM; phiên mất thì về `/dang-nhap`. `dieu-huong.ts`: mục ray và `nav-*` chép từ v0. `TrangCho`: trang con chưa có dữ liệu |
-| `src/app/shared/toan/` | `app-katex` (`throwOnError: false`, `trust: false`); `app-o-cong-thuc`: ô công thức cho Signal Forms, MathLive nạp lười, ô LaTeX dự phòng |
+| `src/app/shared/layout/` | `app-khung-trang`: desktop là ray mực 220 px, dưới `lg` là thanh trên + ngăn kéo (`mo-sidebar`, `dong-sidebar`). Ngăn kéo là hộp thoại: đóng thì `inert`; mở thì phần còn lại của trang `inert` và khóa cuộn; Esc, nền, nút đóng trả tiêu điểm về nút mở; chọn mục thì đóng ngay và đưa tiêu điểm vào `#noi-dung`. Vùng `aria-live` (`thong-bao-trang`) đọc tiêu đề trang mới. Một nút `dang-xuat` trong DOM; phiên mất thì về `/dang-nhap`. `dieu-huong.ts`: mục ray và `nav-*` chép từ v0. `TrangCho`: trang con chưa có dữ liệu |
+| `src/app/shared/toan/` | `app-katex` (`throwOnError: false` với chữ lỗi màu `--muted`, `trust: false`; công thức khối căn trái, đang cuộn ngang thì nhận Tab); `app-o-cong-thuc`: ô công thức cho Signal Forms như `MathInput` của v0 — `math-field` (MathLive nạp lười, tắt menu) và ô gõ bằng bàn phím luôn có, dòng «Máy hiểu là»; `data-testid` `<testId>` / `mf-<testId>` / `hieu-<testId>` |
 | `e2e/`, `playwright.config.ts` | e2e qua nginx → core: đăng nhập HS / GV, guard vai trò, tải lại giữ phiên, cookie HttpOnly; `khung.spec.ts`: ray dẫn tới mọi màn, ngăn kéo, không tràn ngang ở 390 / 1280 px |
 | `src/styles.css` | Token màu, khoảng, nút `.btn*`, skip link, `prefers-reduced-motion` |
 | `Dockerfile`, `Dockerfile.dockerignore` | Ảnh production: ngữ cảnh build là gốc repo (cần lockfile workspace), chạy nginx không root ở :8080 |
@@ -36,6 +36,8 @@ Cả hệ v2 trong Docker: `docker compose -f compose.v2.yaml up --build --wait`
 
 ## Gotcha
 
+- Không bọc `app-o-cong-thuc` trong `<label>` (ô tự vẽ nhãn): bọc `<label>` làm mất phím đầu trên máy chạm (v0 phải vá). Không gán `value` vào `<math-field>` trước khi MathLive nạp xong: thuộc tính riêng che getter của MathLive.
+- `KhungTrang` đặt lớp trên `<html>`: `co-thanh-tren` (màn hẹp, `styles.css` chừa `scroll-padding-top` cho thanh dính) và `khoa-cuon` (ngăn kéo mở).
 - Font IBM Plex tự host qua `@fontsource` (khai ở `angular.json` → `styles`), không CDN. Phông MathLive cũng tự host: `angular.json` chép `node_modules/mathlive/fonts` ra `/mathlive/fonts`, `napMathLive()` đặt `fontsDirectory` về đó và tắt âm thanh. Test thay cách nạp qua token `NAP_MATHLIVE`.
 - Nút luôn qua `appButton` trên phần tử gốc (`<button appButton>`), không tự đặt lớp `.btn`.
 - Route, `data-testid` và heading giữ như v0 (`apps/web/AGENTS.md`) cho màn tương đương.

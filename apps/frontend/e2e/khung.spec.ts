@@ -85,6 +85,36 @@ test('điện thoại: ngăn kéo mở bằng mo-sidebar, đóng bằng dong-sid
   await expect(ray).not.toHaveClass(/\bmo\b/);
 });
 
+test('điện thoại: ngăn kéo mở giữ tiêu điểm — Tab không tới điều khiển nằm dưới ray (WCAG 2.4.11)', async ({ page }) => {
+  test.skip((page.viewportSize()?.width ?? 1280) >= 1024, 'màn rộng không có ngăn kéo');
+  await vaoLop(page, 'hs.an@demo.local', 'hocsinh123');
+  await page.getByTestId('mo-sidebar').click();
+  await expect(page.getByTestId('dong-sidebar')).toBeFocused();
+  // Hợp lệ: trong ray, hoặc ra giao diện trình duyệt (activeElement là <body>), như hộp thoại modal gốc.
+  const hopLe = () =>
+    page.evaluate(() => document.activeElement === document.body || !!document.getElementById('ray')?.contains(document.activeElement));
+  for (const phim of ['Tab', 'Shift+Tab']) {
+    for (let i = 0; i < 12; i++) {
+      await page.keyboard.press(phim);
+      expect(await hopLe(), `${phim} lần ${i + 1}`).toBe(true);
+    }
+  }
+});
+
+test('điện thoại: chọn mục → tiêu điểm vào nội dung; bấm mục của trang đang mở cũng đóng ngăn kéo', async ({ page }) => {
+  test.skip((page.viewportSize()?.width ?? 1280) >= 1024, 'màn rộng không có ngăn kéo');
+  await vaoLop(page, 'hs.an@demo.local', 'hocsinh123');
+  const ray = page.getByTestId('sidebar');
+  await page.getByTestId('mo-sidebar').click();
+  await page.getByTestId('nav-hs-bai').click();
+  await expect(page).toHaveURL(/\/hs\/bai$/);
+  await expect(page.locator('#noi-dung')).toBeFocused();
+  await page.getByTestId('mo-sidebar').click();
+  await expect(ray).toHaveClass(/\bmo\b/);
+  await page.getByTestId('nav-hs-bai').click();
+  await expect(ray).not.toHaveClass(/\bmo\b/);
+});
+
 test.describe('giảm chuyển động', () => {
   test.use({ reducedMotion: 'reduce' });
 

@@ -36,6 +36,16 @@ html {
   -webkit-tap-highlight-color: rgb(23 24 28 / 0.12);
 }
 
+/* Khung sau đăng nhập ở màn hẹp (KhungTrang đặt lớp): thanh trên dính cao 48 px, nên cuộn một điều khiển vào tầm nhìn
+   thì chừa chỗ cho thanh (WCAG 2.4.11); ngăn kéo mở thì trang phía sau không cuộn. */
+html.co-thanh-tren {
+  scroll-padding-top: calc(48px + env(safe-area-inset-top) + var(--space-2));
+}
+
+html.khoa-cuon {
+  overflow: hidden;
+}
+
 body {
   margin: 0;
   background: var(--canvas);
@@ -198,4 +208,11 @@ body {
   margin: 0;
   color: var(--muted);
   line-height: 24px;
+}
+
+/* Công thức khối căn trái như docs/DESIGN.md, đè CSS gốc của KaTeX (căn giữa). DOM do KaTeX vẽ không mang _ngcontent,
+   nên quy tắc nằm ở đây, không ở app-katex. */
+app-katex.khoi .katex-display,
+app-katex.khoi .katex-display > .katex {
+  text-align: left;
 }

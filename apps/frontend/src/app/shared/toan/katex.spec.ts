@@ -13,7 +13,12 @@ describe('Katex', () => {
     const fixture = TestBed.createComponent(Vo);
     await fixture.whenStable();
     const el = fixture.nativeElement as HTMLElement;
-    return { fixture, el, dat: async (latex: string) => (fixture.componentInstance.latex.set(latex), fixture.whenStable()) };
+    return {
+      fixture,
+      el,
+      host: () => el.querySelector<HTMLElement>('app-katex')!,
+      dat: async (latex: string) => (fixture.componentInstance.latex.set(latex), fixture.whenStable()),
+    };
   }
 
   it('vẽ công thức, giữ nguyên LaTeX trong MathML cho trình đọc màn hình', async () => {
@@ -22,10 +27,12 @@ describe('Katex', () => {
     expect(t.el.querySelector('annotation')?.textContent).toBe('x^2');
   });
 
-  it('LaTeX hỏng không làm vỡ trang (throwOnError: false)', async () => {
+  it('LaTeX hỏng không làm vỡ trang (throwOnError: false), chữ màu --muted chứ không đỏ', async () => {
     const t = await mo();
     await t.dat('\\frac{1}{');
-    expect(t.el.querySelector('.katex-error')).not.toBeNull();
+    const loi = t.el.querySelector('.katex-error');
+    expect(loi).not.toBeNull();
+    expect(loi?.getAttribute('style')).toContain('var(--muted)');
   });
 
   it('không chèn liên kết từ \\href (trust: false)', async () => {
@@ -39,5 +46,24 @@ describe('Katex', () => {
     t.fixture.componentInstance.khoi.set(true);
     await t.fixture.whenStable();
     expect(t.el.querySelector('.katex-display')).not.toBeNull();
+  });
+
+  it('công thức khối rộng hơn khung → khung nhận Tab, có nhãn; vừa khung thì không', async () => {
+    const t = await mo();
+    t.fixture.componentInstance.khoi.set(true);
+    await t.fixture.whenStable();
+    expect(t.host().getAttribute('tabindex')).toBeNull();
+
+    // jsdom không đo bố cục: giả bề ngang của nội dung và của khung.
+    Object.defineProperty(t.host(), 'scrollWidth', { configurable: true, get: () => 600 });
+    Object.defineProperty(t.host(), 'clientWidth', { configurable: true, get: () => 358 });
+    await t.dat('y = x^3 - 3x^2 + 3x - 1');
+    expect(t.host().getAttribute('tabindex')).toBe('0');
+    expect(t.host().getAttribute('role')).toBe('group');
+    expect(t.host().getAttribute('aria-label')).toBe('Công thức, cuộn ngang');
+
+    Object.defineProperty(t.host(), 'scrollWidth', { configurable: true, get: () => 200 });
+    await t.dat('x^2');
+    expect(t.host().getAttribute('tabindex')).toBeNull();
   });
 });

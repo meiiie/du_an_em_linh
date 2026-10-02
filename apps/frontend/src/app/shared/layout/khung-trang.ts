@@ -3,6 +3,7 @@ import {
   Component,
   computed,
   DestroyRef,
+  DOCUMENT,
   effect,
   ElementRef,
   inject,
@@ -12,8 +13,15 @@ import {
   viewChild,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
-import { filter } from 'rxjs';
+import {
+  NavigationEnd,
+  NavigationError,
+  NavigationStart,
+  Router,
+  RouterLink,
+  RouterLinkActive,
+  RouterOutlet,
+} from '@angular/router';
 import { Phien } from '../../core/auth/phien';
 import { TEN_SAN_PHAM } from '../../core/san-pham';
 import { BieuTuong } from '../ui/bieu-tuong';
@@ -27,8 +35,13 @@ const MAN_HINH_RONG = '(min-width: 64rem)';
 /**
  * Khung sau đăng nhập của `/hs` và `/gv` (route cha, các trang con hiện trong `<router-outlet>`), như `AppShell` của
  * v0 (`apps/web/components/app-shell.tsx`) và bố cục ở docs/DESIGN.md. Desktop: ray mực 220 px, không có thanh trên.
- * Điện thoại và máy tính bảng: thanh trên với `mo-sidebar`, ray thành ngăn kéo có `dong-sidebar`. Ngăn kéo đóng thì
- * `inert` (không Tab vào được); Esc, chạm nền hay chọn một mục thì đóng và trả tiêu điểm về nút mở. Nút Đăng xuất chỉ
+ * Điện thoại và máy tính bảng: thanh trên với `mo-sidebar`, ray thành ngăn kéo có `dong-sidebar`.
+ *
+ * Ngăn kéo là hộp thoại (`role="dialog"`, `aria-modal`): đóng thì `inert`; mở thì phần còn lại của trang `inert`, nên
+ * Tab không ra được chỗ bị ray che (WCAG 2.4.11), và trang sau không cuộn. Esc, chạm nền hay nút đóng thì đóng và trả
+ * tiêu điểm về nút mở. Chọn một mục thì đóng ngay (cả khi bấm đúng trang đang mở) và đưa tiêu điểm vào nội dung.
+ *
+ * Mỗi lần chuyển trang, vùng `aria-live` đọc tiêu đề trang mới (v0 có route announcer của Next.js). Nút Đăng xuất chỉ
  * có một trong DOM: ở thanh trên khi màn hẹp, ở chân ray khi màn rộng. Phiên mất thì về `/dang-nhap`.
  */
 @Component({
@@ -36,9 +49,9 @@ const MAN_HINH_RONG = '(min-width: 64rem)';
   imports: [RouterLink, RouterLinkActive, RouterOutlet, BieuTuong, BrandMark, Button],
   host: { '(document:keydown.escape)': 'dong(true)' },
   template: `
-    <a class="skip-link" href="#noi-dung">Bỏ qua đến nội dung</a>
+    <a class="skip-link" href="#noi-dung" [attr.inert]="nganKeoMo() ? '' : null">Bỏ qua đến nội dung</a>
     @if (!manHinhRong()) {
-      <header class="thanh-tren">
+      <header class="thanh-tren" [attr.inert]="nganKeoMo() ? '' : null">
         <button
           #nutMo
           type="button"
@@ -59,9 +72,7 @@ const MAN_HINH_RONG = '(min-width: 64rem)';
           Đăng xuất
         </button>
       </header>
-      @if (moNganKeo()) {
-        <div class="man-che" aria-hidden="true" (click)="dong(true)"></div>
-      }
+      <div class="man-che" [class.mo]="moNganKeo()" aria-hidden="true" (click)="dong(true)"></div>
     }
 
     <aside
@@ -70,16 +81,18 @@ const MAN_HINH_RONG = '(min-width: 64rem)';
       data-testid="sidebar"
       [class.mo]="moNganKeo()"
       [attr.inert]="anRay() ? '' : null"
-      [attr.aria-label]="'Điều hướng ' + tenKhuVuc()"
+      [attr.role]="manHinhRong() ? null : 'dialog'"
+      [attr.aria-modal]="nganKeoMo() ? 'true' : null"
+      [attr.aria-label]="manHinhRong() ? null : 'Menu'"
     >
       @if (manHinhRong()) {
-        <a class="ray-thuong-hieu" [routerLink]="trangChu()">
+        <div class="ray-thuong-hieu">
           <app-brand-mark dao />
           <span class="ray-ten">
             <span class="ten-san-pham-ray">{{ tenSanPham }}</span>
             <span class="khu-vuc">{{ tenKhuVuc() }}</span>
           </span>
-        </a>
+        </div>
       } @else {
         <div class="ray-dau">
           <button #nutDong type="button" class="nut-vuong nut-toi" data-testid="dong-sidebar" aria-label="Đóng menu" (click)="dong(true)">
@@ -87,7 +100,7 @@ const MAN_HINH_RONG = '(min-width: 64rem)';
           </button>
         </div>
       }
-      <nav class="ray-nav" data-testid="sidebar-nav" aria-label="Mục chính">
+      <nav class="ray-nav" data-testid="sidebar-nav" [attr.aria-label]="nhanMenu()">
         @for (muc of cacMuc(); track muc.duongDan) {
           <a
             class="muc"
@@ -96,6 +109,7 @@ const MAN_HINH_RONG = '(min-width: 64rem)';
             [routerLinkActiveOptions]="{ exact: laTrangChu(muc.duongDan) }"
             ariaCurrentWhenActive="page"
             [attr.data-testid]="muc.testId"
+            (click)="chonMuc()"
           >
             <app-bieu-tuong [ten]="muc.bieuTuong" />
             <span class="nhan">{{ muc.nhan }}</span>
@@ -110,14 +124,15 @@ const MAN_HINH_RONG = '(min-width: 64rem)';
       </div>
     </aside>
 
-    <div class="vung">
-      @if (loi()) {
-        <p class="loi" role="alert">{{ loi() }}</p>
+    <div class="vung" [attr.inert]="nganKeoMo() ? '' : null">
+      @if (thongBaoLoi()) {
+        <p class="loi" role="alert">{{ thongBaoLoi() }}</p>
       }
-      <main id="noi-dung" class="noi-dung" tabindex="-1">
+      <main #noiDung id="noi-dung" class="noi-dung" tabindex="-1">
         <router-outlet />
       </main>
     </div>
+    <p class="sr-only" aria-live="polite" data-testid="thong-bao-trang">{{ thongBaoTrang() }}</p>
   `,
   styles: `
     :host {
@@ -125,6 +140,7 @@ const MAN_HINH_RONG = '(min-width: 64rem)';
       min-height: 100dvh;
     }
 
+    /* Vùng an toàn (index.html có viewport-fit=cover): tai thỏ khi xoay ngang, thanh trạng thái, thanh home. */
     .thanh-tren {
       position: sticky;
       top: 0;
@@ -132,8 +148,9 @@ const MAN_HINH_RONG = '(min-width: 64rem)';
       display: flex;
       align-items: center;
       gap: var(--space-2);
-      min-height: 48px;
-      padding: env(safe-area-inset-top) var(--space-2) 0;
+      min-height: calc(48px + env(safe-area-inset-top));
+      padding: env(safe-area-inset-top) max(var(--space-2), env(safe-area-inset-right)) 0
+        max(var(--space-2), env(safe-area-inset-left));
       border-bottom: 1px solid var(--line);
       background: var(--canvas);
     }
@@ -165,6 +182,12 @@ const MAN_HINH_RONG = '(min-width: 64rem)';
       block-size: 20px;
     }
 
+    /* Nút sát mép thanh 48 px: vòng tiêu điểm vẽ vào trong, không bị cắt ở mép. */
+    .nut-vuong:focus-visible,
+    .thuong-hieu:focus-visible {
+      outline-offset: -2px;
+    }
+
     .thuong-hieu {
       display: inline-flex;
       align-items: center;
@@ -177,31 +200,39 @@ const MAN_HINH_RONG = '(min-width: 64rem)';
       text-decoration: none;
     }
 
-    .ten-san-pham {
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-
+    /* Màn che mờ dần cùng nhịp ray trượt; đóng thì không nhận chạm. */
     .man-che {
       position: fixed;
       inset: 0;
       z-index: 30;
       background: rgb(23 24 28 / 0.4);
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+      transition:
+        opacity 200ms,
+        visibility 0s 200ms;
+    }
+
+    .man-che.mo {
+      opacity: 1;
+      visibility: visible;
+      pointer-events: auto;
+      transition: opacity 200ms;
     }
 
     .ray {
       position: fixed;
-      top: 48px;
+      top: 0;
       bottom: 0;
       left: 0;
       z-index: 40;
       display: flex;
       flex-direction: column;
-      inline-size: 220px;
+      inline-size: calc(220px + env(safe-area-inset-left));
+      padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom) env(safe-area-inset-left);
       background: var(--ink);
       color: var(--chalk);
-      overscroll-behavior: contain;
       transform: translateX(-100%);
       visibility: hidden;
       /* Đóng: trượt ra xong mới ẩn (visibility trễ 200 ms). */
@@ -211,7 +242,6 @@ const MAN_HINH_RONG = '(min-width: 64rem)';
     }
 
     .ray.mo {
-      top: 0;
       transform: none;
       visibility: visible;
       /* Mở: hiện ngay, không chuyển tiếp visibility. Nếu chuyển tiếp, khung đầu vẫn hidden và focus() vào nút đóng
@@ -225,6 +255,7 @@ const MAN_HINH_RONG = '(min-width: 64rem)';
 
     .ray-dau {
       display: flex;
+      align-items: center;
       justify-content: flex-end;
       min-height: 48px;
       padding: 0 var(--space-2);
@@ -234,30 +265,23 @@ const MAN_HINH_RONG = '(min-width: 64rem)';
       color: rgb(244 244 245 / 0.6);
     }
 
-    .nut-toi:hover {
+    .nut-toi:hover,
+    .muc:hover {
       background: rgb(255 255 255 / 0.05);
       color: var(--chalk);
     }
 
+    /* Như v0: khối thương hiệu trên ray là chữ, không phải link (mục «Học» / «Lớp» đã dẫn về trang chủ). */
     .ray-thuong-hieu {
       display: flex;
       align-items: center;
       gap: var(--space-2);
       padding: var(--space-5) var(--space-4) var(--space-4);
-      color: inherit;
-      text-decoration: none;
     }
 
     .ray-ten {
       display: grid;
       min-width: 0;
-    }
-
-    .ten-san-pham-ray,
-    .khu-vuc {
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
     }
 
     .ten-san-pham-ray {
@@ -276,6 +300,7 @@ const MAN_HINH_RONG = '(min-width: 64rem)';
       flex-direction: column;
       gap: var(--space-1);
       overflow-y: auto;
+      overscroll-behavior: contain;
       padding: var(--space-4) var(--space-2) var(--space-3);
     }
 
@@ -292,21 +317,10 @@ const MAN_HINH_RONG = '(min-width: 64rem)';
       transition: background-color 150ms;
     }
 
-    .muc:hover {
-      background: rgb(255 255 255 / 0.05);
-      color: var(--chalk);
-    }
-
     .muc.dang-mo {
       background: rgb(255 255 255 / 0.1);
       color: var(--chalk);
       font-weight: 500;
-    }
-
-    .nhan {
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
     }
 
     .ray-chan {
@@ -317,9 +331,17 @@ const MAN_HINH_RONG = '(min-width: 64rem)';
 
     .nguoi-dung {
       margin: 0;
-      overflow: hidden;
       font-size: 14px;
       font-weight: 500;
+    }
+
+    /* Chữ một dòng, dài thì cắt bằng dấu ba chấm. */
+    .ten-san-pham,
+    .ten-san-pham-ray,
+    .khu-vuc,
+    .nhan,
+    .nguoi-dung {
+      overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
     }
@@ -358,30 +380,40 @@ const MAN_HINH_RONG = '(min-width: 64rem)';
     .noi-dung {
       max-width: 64rem;
       margin: 0 auto;
-      padding: var(--space-5) var(--space-4) var(--space-8);
+      padding: var(--space-5) max(var(--space-4), env(safe-area-inset-right)) calc(var(--space-8) + env(safe-area-inset-bottom))
+        max(var(--space-4), env(safe-area-inset-left));
       outline: none;
     }
 
     @media (min-width: 40rem) {
       .noi-dung {
-        padding-inline: var(--space-5);
+        padding-inline: max(var(--space-5), env(safe-area-inset-left)) max(var(--space-5), env(safe-area-inset-right));
       }
     }
 
     @media (min-width: 64rem) {
       .ray {
-        top: 0;
         transform: none;
         visibility: visible;
         transition: none;
       }
 
+      .ray-nav {
+        padding-top: var(--space-1);
+      }
+
       .vung {
-        padding-left: 220px;
+        padding-left: calc(220px + env(safe-area-inset-left));
       }
 
       .noi-dung {
-        padding: var(--space-6) var(--space-6) var(--space-8);
+        padding: var(--space-6) max(var(--space-6), env(safe-area-inset-right)) calc(var(--space-8) + env(safe-area-inset-bottom))
+          var(--space-6);
+      }
+
+      /* Skip link hiện bên phải ray, không đè khối thương hiệu. */
+      .skip-link {
+        left: calc(220px + var(--space-3));
       }
     }
   `,
@@ -394,20 +426,30 @@ export class KhungTrang {
   protected readonly tenSanPham = TEN_SAN_PHAM;
   protected readonly cacMuc = computed(() => DIEU_HUONG[this.khuVuc()]);
   protected readonly tenKhuVuc = computed(() => TEN_KHU_VUC[this.khuVuc()]);
+  /** «Menu học sinh» / «Menu giáo viên». */
+  protected readonly nhanMenu = computed(() => 'Menu ' + this.tenKhuVuc().toLocaleLowerCase('vi'));
   protected readonly trangChu = computed(() => (this.khuVuc() === 'HS' ? '/hs' : '/gv'));
   protected readonly laTrangChu = laTrangChuKhuVuc;
 
   protected readonly manHinhRong = signal(true);
   protected readonly moNganKeo = signal(false);
+  /** Ngăn kéo đang mở (chỉ có ở màn hẹp): phần còn lại của trang `inert`, như sau một hộp thoại. */
+  protected readonly nganKeoMo = computed(() => !this.manHinhRong() && this.moNganKeo());
   /** Ray là ngăn kéo đang đóng: ẩn khỏi bàn phím và trình đọc màn hình. */
   protected readonly anRay = computed(() => !this.manHinhRong() && !this.moNganKeo());
   protected readonly dangThoat = signal(false);
   protected readonly loi = signal('');
+  private readonly loiDieuHuong = signal('');
+  protected readonly thongBaoLoi = computed(() => this.loi() || this.loiDieuHuong());
+  /** Tiêu đề trang mới, cho vùng `aria-live`. */
+  protected readonly thongBaoTrang = signal('');
 
   private readonly router = inject(Router);
   private readonly injector = inject(Injector);
+  private readonly document = inject(DOCUMENT);
   private readonly nutMo = viewChild<ElementRef<HTMLButtonElement>>('nutMo');
   private readonly nutDong = viewChild<ElementRef<HTMLButtonElement>>('nutDong');
+  private readonly noiDung = viewChild.required<ElementRef<HTMLElement>>('noiDung');
 
   constructor() {
     // Phiên mất giữa chừng (đăng xuất, hoặc làm mới thất bại ở interceptor) → về trang đăng nhập.
@@ -417,13 +459,27 @@ export class KhungTrang {
       }
     });
 
-    // Chuyển trang (chọn mục, hay lùi / tiến của trình duyệt) thì đóng ngăn kéo.
-    this.router.events
-      .pipe(
-        filter((e) => e instanceof NavigationEnd),
-        takeUntilDestroyed(),
-      )
-      .subscribe(() => this.moNganKeo.set(false));
+    this.router.events.pipe(takeUntilDestroyed()).subscribe((e) => {
+      if (e instanceof NavigationStart) {
+        this.loiDieuHuong.set('');
+      } else if (e instanceof NavigationEnd) {
+        // Chuyển trang (chọn mục, hay lùi / tiến của trình duyệt) thì đóng ngăn kéo.
+        this.moNganKeo.set(false);
+        // Lần nạp đầu trình đọc màn hình tự đọc tiêu đề. Router đặt tiêu đề ngay sau NavigationEnd (cùng lượt chạy),
+        // nên đọc ở vi tác vụ kế.
+        if (e.id > 1) queueMicrotask(() => this.thongBaoTrang.set(this.document.title));
+      } else if (e instanceof NavigationError) {
+        this.loiDieuHuong.set('Chưa mở được trang. Kiểm tra kết nối rồi thử lại.');
+      }
+    });
+
+    // Lớp trên <html>: màn hẹp có thanh trên dính (styles.css chừa scroll-padding), ngăn kéo mở thì khóa cuộn trang.
+    const html = this.document.documentElement;
+    effect(() => {
+      html.classList.toggle('co-thanh-tren', !this.manHinhRong());
+      html.classList.toggle('khoa-cuon', this.nganKeoMo());
+    });
+    inject(DestroyRef).onDestroy(() => html.classList.remove('co-thanh-tren', 'khoa-cuon'));
 
     // jsdom (test) không có matchMedia: coi như màn rộng.
     if (typeof matchMedia === 'function') {
@@ -447,6 +503,16 @@ export class KhungTrang {
     if (!this.moNganKeo()) return;
     this.moNganKeo.set(false);
     if (traTieuDiem) afterNextRender(() => this.nutMo()?.nativeElement.focus(), { injector: this.injector });
+  }
+
+  /**
+   * Chọn một mục trên ngăn kéo: đóng ngay, không chờ NavigationEnd (bấm đúng trang đang mở thì Router bỏ qua, không có
+   * NavigationEnd; chunk lười tải chậm thì ngăn kéo đứng yên). Mục vừa bấm thành `inert`, nên đưa tiêu điểm vào nội dung.
+   */
+  protected chonMuc(): void {
+    if (!this.nganKeoMo()) return;
+    this.moNganKeo.set(false);
+    afterNextRender(() => this.noiDung().nativeElement.focus({ preventScroll: true }), { injector: this.injector });
   }
 
   protected async thoat(): Promise<void> {
