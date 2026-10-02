@@ -31,6 +31,8 @@ Harness (Anthropic 2026): tệp này là mục lục để agent biết chỗ m�
 | `docs/chi-so-o-bang.md` | `k` 0-based vs YAML 1-based |
 | `data/supham/` | Ngân hàng sư phạm (JSON) |
 | `docker-compose.yml` | web :3000, math :8000, Postgres :5432 |
+| `compose.v2.yaml` | v2: PostgreSQL 18 (chỉ trong mạng compose), core :8080 (profile `dev`), math :8000, frontend :4200 (nginx, `/api/` → core); chờ health từng dịch vụ |
+| `apps/frontend/Dockerfile` + `nginx/default.conf.template` | Build Angular trên Node 24 → nginx không root; header bảo mật, cache dài cho tệp có hash, định tuyến phía client |
 | `Dockerfile` / `render.yaml` | Deploy free một container trên Render |
 | `CONTRIBUTING.md` | GitHub Flow: `main` + nhánh ngắn, không chồng PR |
 | `CHANGELOG.md` / `docs/PHIEN-BAN.md` | SemVer + Keep a Changelog + release-please |
@@ -38,7 +40,7 @@ Harness (Anthropic 2026): tệp này là mục lục để agent biết chỗ m�
 | `release-please-config.json` | Một sản phẩm, extra-files web + math + CITATION |
 | `docs/TRIEN-KHAI.md` | Render, Neon, giữ thức |
 | `docs/KIEM-THU.md` | Số liệu lần dựng nguyên mẫu |
-| `.github/workflows/ci.yml` | job «Phân loại thay đổi» (`scripts/ci-thay-doi.mjs`, quét khóa, số phiên bản) chọn job theo đường dẫn: harness, core (Maven + image), frontend (build + Vitest), v0 (pytest, typecheck/lint/unit, Playwright e2e) |
+| `.github/workflows/ci.yml` | job «Phân loại thay đổi» (`scripts/ci-thay-doi.mjs`, quét khóa, số phiên bản) chọn job theo đường dẫn: harness, core (Maven + image), frontend (build + Vitest), compose v2 (dựng cả hệ + `scripts/khoi-v2.sh` khi đổi core / frontend / v0), v0 (pytest, typecheck/lint/unit, Playwright e2e) |
 | `.github/workflows/phat-hanh.yml` | release-please trên `main` |
 | `.github/workflows/cd.yml` | Sau CI xanh → hook Render + ping trang chủ |
 | `.github/workflows/giu-thuc.yml` | Cron 10 phút ping `/api/suc-khoe` (chỉ chạy trên `main`) |

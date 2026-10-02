@@ -1,0 +1,9 @@
+# Ngữ cảnh build là gốc repo: chỉ đưa vào manifest của workspace và mã frontend.
+*
+!package.json
+!pnpm-workspace.yaml
+!pnpm-lock.yaml
+!apps/frontend/
+apps/frontend/node_modules/
+apps/frontend/dist/
+apps/frontend/.angular/
