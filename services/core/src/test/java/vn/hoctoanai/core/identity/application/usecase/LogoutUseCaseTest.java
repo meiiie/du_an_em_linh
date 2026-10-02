@@ -22,7 +22,7 @@ class LogoutUseCaseTest {
     void setUp() {
         gl = new GiaLapDinhDanh();
         gl.themNguoiDung("gv@demo.local", "giaovien123", Role.TEACHER, true);
-        phien = gl.login().execute(new LoginRequest("gv@demo.local", "giaovien123"));
+        phien = gl.login().execute(new LoginRequest("gv@demo.local", "giaovien123"), GiaLapDinhDanh.IP);
     }
 
     @Test
@@ -50,7 +50,7 @@ class LogoutUseCaseTest {
 
     @Test
     void dangXuatChiKetThucPhienCuaToken() {
-        AuthResponse mayKhac = gl.login().execute(new LoginRequest("gv@demo.local", "giaovien123"));
+        AuthResponse mayKhac = gl.login().execute(new LoginRequest("gv@demo.local", "giaovien123"), GiaLapDinhDanh.IP);
 
         gl.logout().execute(new RefreshTokenRequest(phien.refreshToken()));
 

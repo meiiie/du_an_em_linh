@@ -7,6 +7,8 @@ import com.jayway.jsonpath.JsonPath;
 import jakarta.servlet.http.Cookie;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.ExecutorService;
@@ -29,6 +31,7 @@ import vn.hoctoanai.core.TestcontainersConfiguration;
 import vn.hoctoanai.core.identity.application.dto.LoginRequest;
 import vn.hoctoanai.core.identity.application.dto.RefreshTokenRequest;
 import vn.hoctoanai.core.identity.application.exception.AuthenticationFailedException;
+import vn.hoctoanai.core.identity.application.exception.LoginLockedException;
 import vn.hoctoanai.core.identity.application.port.PasswordHasher;
 import vn.hoctoanai.core.identity.application.usecase.LoginUseCase;
 import vn.hoctoanai.core.identity.application.usecase.LogoutUseCase;
@@ -108,6 +111,60 @@ class IdentityIntegrationTest {
         return new Cookie(RefreshCookie.TEN, m.group(1));
     }
 
+    /** F-10 qua HTTP: 5 lần sai → 401; lần thứ 6, dù đúng mật khẩu → 429 kèm Retry-After. IP lấy từ remoteAddr. */
+    @Test
+    void saiNamLanThiTra429() {
+        users.save(User.create(new Email("gv.f10@demo.local"), hasher.hash("giaovien123"), "Giáo viên F10", Role.TEACHER, true, Instant.now()));
+        for (int i = 0; i < 5; i++) {
+            assertThat(dangNhapTu("198.51.100.30", "gv.f10@demo.local", "sai")).hasStatus(401);
+        }
+        MvcTestResult khoa = dangNhapTu("198.51.100.30", "gv.f10@demo.local", "giaovien123");
+        assertThat(khoa).hasStatus(429);
+        assertThat(khoa.getResponse().getHeader(HttpHeaders.RETRY_AFTER)).isEqualTo("900");
+        assertThat(dangNhapTu("198.51.100.31", "gv.f10@demo.local", "giaovien123")).as("máy khác không bị khóa").hasStatusOk();
+    }
+
+    private MvcTestResult dangNhapTu(String ip, String email, String matKhau) {
+        return mvc.post().uri("/api/auth/login").contentType(MediaType.APPLICATION_JSON)
+            .content("{\"email\":\"" + email + "\",\"password\":\"" + matKhau + "\"}")
+            .with(request -> {
+                request.setRemoteAddr(ip);
+                return request;
+            })
+            .exchange();
+    }
+
+    /** Khóa tư vấn theo email + IP: 10 lần sai gửi cùng lúc chỉ thử được đúng 5 mật khẩu, 5 lần còn lại bị khóa. */
+    @Test
+    void saiDongThoiKhongVuotNguong() throws Exception {
+        users.save(User.create(new Email("hs.f10@demo.local"), hasher.hash("hocsinh123"), "Học sinh F10", Role.STUDENT, true, Instant.now()));
+        int soLuong = 10;
+        ExecutorService pool = Executors.newFixedThreadPool(soLuong);
+        try {
+            CyclicBarrier xuatPhat = new CyclicBarrier(soLuong);
+            List<Future<Class<?>>> ketQua = new ArrayList<>();
+            for (int i = 0; i < soLuong; i++) {
+                ketQua.add(pool.submit(() -> {
+                    xuatPhat.await();
+                    try {
+                        login.execute(new LoginRequest("hs.f10@demo.local", "sai"), "198.51.100.40");
+                        return Object.class;
+                    } catch (AuthenticationFailedException | LoginLockedException e) {
+                        return e.getClass();
+                    }
+                }));
+            }
+            List<Class<?>> loai = new ArrayList<>();
+            for (Future<Class<?>> f : ketQua) {
+                loai.add(f.get(30, TimeUnit.SECONDS));
+            }
+            assertThat(loai).filteredOn(AuthenticationFailedException.class::equals).hasSize(5);
+            assertThat(loai).filteredOn(LoginLockedException.class::equals).hasSize(5);
+        } finally {
+            pool.shutdownNow();
+        }
+    }
+
     /** Hai giao dịch thật chạy cùng lúc nhiều lần: dù bên nào thắng, sau đăng xuất không còn token nào của phiên dùng được. */
     @Test
     void dangXuatDongThoiVoiLamMoiVanKetThucPhien() throws Exception {
@@ -115,7 +172,7 @@ class IdentityIntegrationTest {
         ExecutorService pool = Executors.newFixedThreadPool(2);
         try {
             for (int lan = 0; lan < 30; lan++) {
-                String token = login.execute(new LoginRequest("hs.dong-thoi@demo.local", "hocsinh123")).refreshToken();
+                String token = login.execute(new LoginRequest("hs.dong-thoi@demo.local", "hocsinh123"), "203.0.113.7").refreshToken();
                 CyclicBarrier xuatPhat = new CyclicBarrier(2);
                 Future<Optional<String>> lamMoi = pool.submit(() -> {
                     xuatPhat.await();

@@ -8,10 +8,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import vn.hoctoanai.core.identity.application.exception.AuthenticationFailedException;
+import vn.hoctoanai.core.identity.application.exception.LoginLockedException;
 
 /**
  * Lỗi xác thực → 401 problem+json, một thông điệp, không chi tiết nội bộ. Làm mới thất bại thì xóa luôn cookie refresh
- * token để trình duyệt không gửi lại token chết. Thiếu header chống CSRF → 403.
+ * token để trình duyệt không gửi lại token chết. Thiếu header chống CSRF → 403. Sai mật khẩu quá ngưỡng → 429 kèm
+ * {@code Retry-After}.
  */
 @RestControllerAdvice
 public class IdentityExceptionHandler {
@@ -31,6 +33,15 @@ public class IdentityExceptionHandler {
             response.header(HttpHeaders.SET_COOKIE, cookie.xoa().toString());
         }
         return response.body(problem);
+    }
+
+    @ExceptionHandler(LoginLockedException.class)
+    ResponseEntity<ProblemDetail> loginLocked(LoginLockedException e) {
+        ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.TOO_MANY_REQUESTS, e.getMessage());
+        problem.setTitle("Tạm khóa đăng nhập");
+        return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
+                .header(HttpHeaders.RETRY_AFTER, Long.toString(e.thuLaiSau().toSeconds()))
+                .body(problem);
     }
 
     @ExceptionHandler(ThieuHeaderChongCsrfException.class)

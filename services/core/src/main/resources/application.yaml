@@ -14,6 +14,9 @@ spring:
 
 server:
   shutdown: graceful
+  # IP thật của client sau proxy (nginx của frontend, máy chủ triển khai): Tomcat RemoteIpValve chỉ tin X-Forwarded-For
+  # từ proxy nội bộ (mặc định 10/8, 172.16/12, 192.168/16, 127/8…); khác thì đặt server.tomcat.remoteip.internal-proxies.
+  forward-headers-strategy: native
 
 management:
   endpoints:
@@ -33,3 +36,4 @@ app:
     access-token-ttl: PT15M
     refresh-token-ttl: P30D
     refresh-cookie-secure: true # cookie hta_refresh chỉ đi qua HTTPS (trình duyệt coi http://localhost là an toàn)
+    login-failure-cleanup-cron: "0 27 3 * * *" # dọn lần đăng nhập sai quá một ngày (F-10)

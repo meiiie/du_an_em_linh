@@ -18,9 +18,9 @@ Windows: `mvnw.cmd verify`. Cần JDK 25 (`JAVA_HOME`); wrapper tự tải Maven
 | --- | --- |
 | `src/main/java/vn/hoctoanai/core/CoreApplication.java` | Điểm vào |
 | `src/main/java/vn/hoctoanai/core/<module>/` | Module nghiệp vụ: `domain` → `application` → `infrastructure` |
-| `.../identity/` | Đăng nhập (#55): `/api/auth/login`, `/refresh`, `/logout`, `/api/me`; access token JWT HS256 15 phút trong thân phản hồi; refresh token ngẫu nhiên lưu băm, xoay vòng trong phiên, thu hồi khi đăng xuất, chỉ đi trong cookie `hta_refresh` (HttpOnly, SameSite=Strict, Path=/api/auth); `/refresh` và `/logout` đòi header `X-Requested-With` (#57) |
+| `.../identity/` | Đăng nhập (#55): `/api/auth/login`, `/refresh`, `/logout`, `/api/me`; access token JWT HS256 15 phút trong thân phản hồi; refresh token ngẫu nhiên lưu băm, xoay vòng trong phiên, thu hồi khi đăng xuất, chỉ đi trong cookie `hta_refresh` (HttpOnly, SameSite=Strict, Path=/api/auth); `/refresh` và `/logout` đòi header `X-Requested-With` (#57); sai mật khẩu 5 lần / 15 phút theo email + IP thì 429 (F-10, #69) |
 | `.../shared/infrastructure/` | Dùng chung: `Clock` (UTC) |
-| `src/main/resources/db/migration/` | Flyway, chỉ thêm: `V1__identity.sql` (`users`, `auth_sessions`, `refresh_tokens`) |
+| `src/main/resources/db/migration/` | Flyway, chỉ thêm: `V1__identity.sql` (`users`, `auth_sessions`, `refresh_tokens`), `V2__login_failures.sql` (lần đăng nhập sai, chỉ lưu băm email + IP) |
 | `src/main/resources/application-dev.yaml` | Profile `dev`: CSDL cục bộ; `TaiKhoanThuSeeder` tạo 4 tài khoản tổng hợp |
 | `src/main/resources/application.yaml` | Cấu hình; luồng ảo; JPA `validate` theo Flyway; problem+json; chỉ mở `health` (+ liveness / readiness); `app.identity.*` |
 | `src/test/java/.../architecture/` | ArchUnit: luật ở `KienTrucRules`; `CleanArchitectureTest`, `DddArchitectureTest` (gốc LMS) chạy luật trên mã thật; `KienTrucRulesTuKiemTest` chạy luật trên lớp mẫu `vn.hoctoanai.mau`; `NullMarkedPackagesTest` |
@@ -34,4 +34,5 @@ Windows: `mvnw.cmd verify`. Cần JDK 25 (`JAVA_HOME`); wrapper tự tải Maven
 - Test CSDL dùng `TestcontainersConfiguration` (PostgreSQL 18, `@ServiceConnection`); không mock `JpaRepository`.
 - Không ghi email, mật khẩu, token vào log: `toString()` của `User`, `Email`, DTO đăng nhập đã che.
 - Khóa JWT: `APP_IDENTITY_JWT_SECRET` (base64 ≥ 32 byte); trống thì dùng khóa tạm, token mất hiệu lực khi khởi động lại.
+- IP máy khách: `server.forward-headers-strategy: native`, Tomcat chỉ tin `X-Forwarded-For` từ proxy nội bộ. Triển khai sau proxy khác dải mặc định thì đặt `server.tomcat.remoteip.internal-proxies`, nếu không mọi người dùng chung IP của proxy và khóa F-10 lan sang nhau.
 - Spring Boot 4: test starter tách theo công nghệ (`spring-boot-starter-webmvc-test`, …); `@AutoConfigureMockMvc` ở `org.springframework.boot.webmvc.test.autoconfigure`; dùng `MockMvcTester`.

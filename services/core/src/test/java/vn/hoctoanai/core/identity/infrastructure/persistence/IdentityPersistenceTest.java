@@ -15,6 +15,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import vn.hoctoanai.core.TestcontainersConfiguration;
 import vn.hoctoanai.core.identity.domain.model.AuthSession;
 import vn.hoctoanai.core.identity.domain.model.Email;
+import vn.hoctoanai.core.identity.domain.model.LoginAttemptKey;
 import vn.hoctoanai.core.identity.domain.model.RefreshToken;
 import vn.hoctoanai.core.identity.domain.model.Role;
 import vn.hoctoanai.core.identity.domain.model.User;
@@ -26,7 +27,8 @@ import vn.hoctoanai.core.identity.domain.model.User;
     TestcontainersConfiguration.class,
     UserRepositoryAdapter.class,
     RefreshTokenRepositoryAdapter.class,
-    AuthSessionRepositoryAdapter.class
+    AuthSessionRepositoryAdapter.class,
+    LoginFailureRepositoryAdapter.class
 })
 @Testcontainers(disabledWithoutDocker = true)
 class IdentityPersistenceTest {
@@ -41,6 +43,9 @@ class IdentityPersistenceTest {
 
     @Autowired
     private AuthSessionRepositoryAdapter sessions;
+
+    @Autowired
+    private LoginFailureRepositoryAdapter failures;
 
     private User nguoiDung(String email) {
         return users.save(User.create(new Email(email), "{bcrypt}x", "Người thử", Role.STUDENT, true, NOW));
@@ -102,5 +107,28 @@ class IdentityPersistenceTest {
         assertThat(tokens.findByTokenHash(moi.tokenHash())).isPresent();
         assertThat(sessions.findByIdForUpdate(phienCu.id())).isEmpty();
         assertThat(sessions.findByIdForUpdate(phienMoi.id())).isPresent();
+    }
+
+    @Test
+    void demLanSaiTheoKhoaTrongCuaSoVaDon() {
+        LoginAttemptKey an = LoginAttemptKey.of("hs.an@demo.local", "203.0.113.7");
+        LoginAttemptKey khac = LoginAttemptKey.of("hs.an@demo.local", "203.0.113.8");
+        failures.lock(an);
+        failures.record(an, NOW.minus(Duration.ofMinutes(20)));
+        failures.record(an, NOW.minus(Duration.ofMinutes(5)));
+        failures.record(an, NOW);
+        failures.record(khac, NOW);
+
+        assertThat(failures.countSince(an, NOW.minus(Duration.ofMinutes(15)))).isEqualTo(2);
+        assertThat(failures.countSince(khac, NOW.minus(Duration.ofMinutes(15)))).isEqualTo(1);
+
+        int daXoa = new LoginFailureCleanup(failures, Clock.fixed(NOW.plus(Duration.ofDays(1)).minus(Duration.ofMinutes(10)), ZoneOffset.UTC))
+            .purgeOld();
+        assertThat(daXoa).isEqualTo(1);
+        assertThat(failures.countSince(an, NOW.minus(Duration.ofDays(2)))).isEqualTo(2);
+
+        failures.clear(an);
+        assertThat(failures.countSince(an, NOW.minus(Duration.ofDays(2)))).isZero();
+        assertThat(failures.countSince(khac, NOW.minus(Duration.ofDays(2)))).isEqualTo(1);
     }
 }
