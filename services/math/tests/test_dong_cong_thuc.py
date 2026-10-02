@@ -192,6 +192,35 @@ CA = [
     ("C-khong-suy-ra", KKD, "", "Đạo hàm đổi từ dương sang âm không suy ra cực đại."),
     ("T-khong-suy-ra", KKD, "", "y' > 0 không suy ra đồng biến."),
     ("TH-phu-dinh", KKD, "", "Điểm tới hạn không phải là điểm thuộc tập xác định mà tại đó đạo hàm bằng 0 hoặc đạo hàm không xác định."),
+    # Codex trên #101 (66d15ac): hai vế phải cùng một khoảng
+    ("K-khac", KKD, "", "Nếu y' > 0 trên khoảng (0; 1) thì hàm đồng biến trên khoảng (2; 3)."),
+    ("K-cung", DAT, "", "Nếu y' > 0 trên khoảng (0; 1) thì hàm đồng biến trên khoảng (0; 1)."),
+    ("K-K-doan", KKD, "", "Nếu y' > 0 trên khoảng K thì hàm đồng biến trên một đoạn."),
+    ("K-mien-tung", KKD, "", "Nếu y' > 0 trên tập xác định thì hàm đồng biến trên từng khoảng xác định."),
+    ("K-tung", DAT, "", "Nếu y' > 0 trên từng khoảng của tập xác định thì hàm đồng biến trên từng khoảng đó."),
+    # Codex trên #101 (66d15ac): «A chỉ khi B» là A ⇒ B (điều kiện cần)
+    ("CK-sai", SAI, "", "Hàm đồng biến trên khoảng chỉ khi y' > 0 trên khoảng."),
+    ("CK-dung", DAT, "", "Hàm đồng biến trên khoảng K chỉ khi y' ≥ 0 trên K."),
+    ("CK-dau-cau", KKD, "", "Chỉ khi y' > 0 trên K thì hàm đồng biến trên K."),
+    ("CK-cuc-tri", KKD, "", "Hàm số đạt cực đại tại x0 chỉ khi y' đổi dấu từ dương sang âm khi x qua x0."),
+    ("NEU-sau", DAT, "", "Hàm đồng biến trên K nếu y' > 0 trên K."),
+    # cùng họ: chiều suy ra của dấu hiệu cực trị (câu đảo không có trong danh mục)
+    ("CT-dao", KKD, "", "Nếu hàm số đạt cực đại tại x0 thì y' đổi dấu từ dương sang âm khi x qua x0."),
+    ("CT-dung-khi", DAT, "", "x0 là điểm cực tiểu khi y' đổi dấu từ âm sang dương khi x qua x0."),
+    ("CT-phay-thi", DAT, "", "Nếu y' đổi dấu từ dương sang âm khi x qua x0, thì x0 là điểm cực đại."),
+    ("CT-neu-sau", DAT, "", "x0 là điểm cực đại nếu y' đổi dấu từ dương sang âm khi x qua x0."),
+    ("KD-dao", KKD, "", "Nếu hàm không đạt cực trị tại x0 thì đạo hàm bằng 0 mà không đổi dấu."),
+    ("KD-thieu-y0", KKD, "", "Nếu y' không đổi dấu khi x qua x0 thì x0 không phải là cực trị."),
+    ("CT-ke-ca-khac", KKD, "", "Đạo hàm đổi từ dương sang âm thì cực đại, kể cả khi y' không xác định tại x0."),
+    # cùng họ: phần đứng trước «nếu» và từ máy không biết
+    ("TD-phu-dinh", KKD, "", "Không đúng rằng nếu y' > 0 trên K thì hàm đồng biến trên K."),
+    ("TD-khoang", DAT, "", "Với hàm số xác định trên một khoảng: nếu y' > 0 trên khoảng đó thì hàm đồng biến."),
+    ("TU-tru-khi", KKD, "", "Hàm đồng biến trên K trừ khi y' < 0 trên K."),
+    ("TU-gia-su", KKD, "", "Giả sử y' > 0 thì hàm đồng biến."),
+    ("TU-theo-sach", KKD, "", "Theo sách, đạo hàm đổi từ dương sang âm thì cực đại."),
+    # cùng họ: định nghĩa điểm tới hạn đọc trọn
+    ("TH-va", KKD, "", "Điểm tới hạn là điểm thuộc tập xác định mà tại đó đạo hàm bằng 0 và đạo hàm không xác định."),
+    ("TH-hai-phu-dinh", KKD, "", "Điểm tới hạn không phải là điểm không thuộc tập xác định."),
 ]
 
 
@@ -247,6 +276,35 @@ def test_doan_phu_dinh_khong_lam_can_cu_tang_2():
     phu_dinh = {"id": "tl-x", "license_status": "tu_soan", "text": "Đạo hàm đổi từ dương sang âm thì không phải là cực đại."}
     kq, _ = _chay([("c", "Cực trị", r"+ \to - : \text{cực đại}", "")], [phu_dinh])
     assert (kq["c"]["tang1"]["trang_thai"], kq["c"]["tang2"]["trang_thai"]) == (DAT, KKD)
+
+
+DONG_DB = ("r", "", r"y' > 0 \Rightarrow \text{đồng biến}", "")
+DONG_TONG = BANG_V0[1][:3] + ("",)
+
+
+@pytest.mark.parametrize("dong,doan,mong", [
+    # Codex trên #101 (66d15ac): đoạn sai khoảng hay ngược chiều không làm căn cứ cho định lí
+    (DONG_DB, "Nếu y' > 0 trên khoảng (0; 1) thì hàm đồng biến trên khoảng (2; 3).", (DAT, KKD)),
+    (DONG_DB, "Hàm đồng biến trên khoảng chỉ khi y' > 0 trên khoảng.", (DAT, KKD)),
+    # đoạn nói về một khoảng cụ thể không đỡ định lí tổng quát; chiều ngược lại thì đỡ
+    (("r", "", "", "Nếu y' > 0 trên khoảng K thì hàm đồng biến trên K."),
+     "Nếu y' > 0 trên khoảng (0; 1) thì hàm đồng biến trên khoảng (0; 1).", (DAT, KKD)),
+    (("r", "", "", "Nếu y' > 0 trên khoảng (0; 1) thì hàm đồng biến trên khoảng (0; 1)."),
+     "Nếu y' > 0 trên khoảng K thì hàm đồng biến trên K.", (DAT, DAT)),
+    # Codex trên #101 (66d15ac): công thức phải được phát biểu trọn — đóng khung, khớp trọn, nhãn không phủ định
+    (DONG_TONG, "Công thức $(u+v)' = u' + v'$ là sai.", (DAT, KKD)),
+    (DONG_TONG, "Đạo hàm tổng: $(u+v)' = u' + v' + 1$.", (DAT, KKD)),
+    (DONG_TONG, "Sai lầm thường gặp: $(u+v)' = u' + v'$.", (DAT, KKD)),
+    (DONG_TONG, "Đạo hàm tổng: (u+v)' = u' + v'.", (DAT, KKD)),
+    (DONG_TONG, "Đạo hàm tổng: $(u+v)' = u' + v'$.", (DAT, DAT)),
+    # câu của phát biểu phải trùng trọn một câu của đoạn, không là chuỗi con của câu phủ định
+    (BANG_V0[1], "Đạo hàm tổng: $(u+v)' = u' + v'$. Không phải đạo hàm của tổng bằng tổng các đạo hàm.", (DAT, KKD)),
+], ids=["khoang-khac", "chi-khi", "cu-the-khong-do-tong-quat", "tong-quat-do-cu-the", "cong-thuc-la-sai",
+        "cong-thuc-dai-hon", "nhan-sai-lam", "khong-dong-khung", "cong-thuc-dung", "cau-phu-dinh"])
+def test_tang_2_can_cu_dung_menh_de(dong, doan, mong):
+    kq, _ = _chay([dong], [{"id": "tl-x", "license_status": "tu_soan", "text": doan}])
+    d = kq[dong[0]]
+    assert (d["tang1"]["trang_thai"], d["tang2"]["trang_thai"]) == mong, d["tang2"]
 
 
 @pytest.mark.skipif(os.name == "nt", reason="sandbox dùng preexec_fn và resource: chỉ chạy trên Linux (CI)")
