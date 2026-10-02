@@ -11,6 +11,21 @@ spring:
   mvc:
     problemdetails:
       enabled: true # lỗi trả application/problem+json
+  ai:
+    # Starter OpenAI tự cấu hình 6 loại model, mặc định bật và đòi khóa lúc khởi động. Nhà AI của gia sư
+    # dựng bằng mã cho từng nhà (research R3), nên tắt hết: core khởi động được khi không có khóa (chỉ `offline`).
+    model:
+      chat: none
+      embedding: none
+      image: none
+      audio:
+        speech: none
+        transcription: none
+      moderation: none
+    retry:
+      # Không gửi lại khi nhà lỗi (ADR 007). Spring AI 2.0 đưa giá trị này vào RetryPolicy.maxRetries của
+      # Spring Framework 7: số lần gửi lại SAU lần đầu, nên 0 = gọi đúng một lần.
+      max-attempts: 0
 
 server:
   shutdown: graceful

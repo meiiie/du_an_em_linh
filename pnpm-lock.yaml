@@ -34,6 +34,12 @@ importers:
       '@fontsource/ibm-plex-sans':
         specifier: ^5.3.0
         version: 5.3.0
+      katex:
+        specifier: ^0.16.47
+        version: 0.16.47
+      mathlive:
+        specifier: ^0.107.1
+        version: 0.107.1
       rxjs:
         specifier: ~7.8.0
         version: 7.8.2
