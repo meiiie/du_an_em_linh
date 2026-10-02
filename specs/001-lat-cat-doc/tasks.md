@@ -88,15 +88,16 @@ description: "Danh sách việc của epic P2 — lát cắt dọc một chủ �
 
 **Goal**: gia sư theo thang, luật xin đáp án, lọc lộ đáp án, cổng công thức, SSE trạng thái. **Independent Test**: kịch bản spec US2 với nhà giả.
 
-### Issue — Lab Kiểm định: bản vá KD-0005 bộ ca lời giảng
+### Issue — Lab Kiểm định: bản vá KD-0005 (bộ ca lời giảng) và KD-0006 (bộ AI 70 ca)
 
-- [ ] T029 [US2] Lab Kiểm định soạn bản vá có mã KD-0005 (`.patch` + SHA-256): ≥ 100 câu lời gia sư, 7 loại (spec SC-004), mỗi câu có phán quyết mong đợi theo ADR 013; rà độc lập bằng subagent `math-verifier` trước khi phát hành bản vá
+- [ ] T029 [US2] Lab Kiểm định soạn bản vá có mã KD-0005 (`.patch` + SHA-256): ≥ 100 câu lời gia sư, 8 loại (spec SC-004), mỗi câu có phán quyết mong đợi theo ADR 013, kèm bộ từ vựng nhận dạng quy tắc bằng lời (thuật ngữ + từ quan hệ); rà độc lập bằng subagent `math-verifier` trước khi phát hành bản vá
+- [ ] T029c [US2] Lab Kiểm định định vị bộ AI 70 ca của v0 (`labs/evals/README.md` chưa ghi chỗ) và đưa ra dạng dữ liệu chạy được với `services/core` (đầu vào lượt gia sư + phán quyết mong đợi) thành bản vá có mã KD-0006 (`.patch` + SHA-256, ghi nguồn gốc). Không tìm được nguồn kiểm chứng được thì báo chủ repo; không soạn lại 70 ca rồi gọi là bộ của v0
 
 ### Issue — Job `kiem_loi_giang` (services/math), áp nguyên văn KD-0005
 
-- [ ] T028 [US2] `services/math/app/loi_giang.py` + `routers.py` `POST /v1/kiem-loi-giang` theo `contracts/math-v1.md`; toán ngoài dấu phân cách không phân loại được → `KHONG_PHAN_TICH_DUOC`, bị bỏ
+- [ ] T028 [US2] `services/math/app/loi_giang.py` + `routers.py` `POST /v1/kiem-loi-giang` theo `contracts/math-v1.md`; toán ngoài dấu phân cách không phân loại được → `KHONG_PHAN_TICH_DUOC`, bị bỏ; câu có thuật ngữ toán + từ quan hệ (từ vựng KD-0005) không khớp phát biểu dòng bảng → `QUY_TAC_BANG_LOI` không đạt, bỏ cả câu
 - [ ] T029b [US2] Áp **nguyên văn** bản vá KD-0005 vào `services/math/kiemdinh/loi-giang/` (ghi SHA-256 trong PR và `NHAT-KY.md`); pytest chạy bộ ca trong cổng merge
-- [ ] T030 [P] [US2] pytest: thế giới đóng (ADR 013): khớp bảng + trích dẫn → giữ; ngoài bảng → bỏ; sai → `SAI`; trích bài làm → giữ; kết quả cụ thể → bỏ; LaTeX hỏng → bỏ
+- [ ] T030 [P] [US2] pytest: thế giới đóng (ADR 013): khớp bảng + trích dẫn → giữ; ngoài bảng → bỏ; sai → `SAI`; trích bài làm → giữ; kết quả cụ thể → bỏ; LaTeX hỏng → bỏ; quy tắc bằng lời ngoài bảng hay sai → bỏ cả câu; phát biểu trùng dòng bảng → giữ
 
 ### Issue — Module `tutor` (core)
 
@@ -106,7 +107,7 @@ description: "Danh sách việc của epic P2 — lát cắt dọc một chủ �
 - [ ] T034 [US2] `core/tutor/application/LuotGiaSu`: kho lớp + trích dẫn `[n]` (chép `kien-thuc.ts`, `kho-lop.ts`) → nhà → `/v1/filter` → `/v1/kiem-loi-giang` → ghi mục duyệt cho biểu thức bị bỏ; câu thay thế chỉ từ gợi ý đã kiểm trước với phiên bản bảng hiện tại, không có thì câu cố định không chứa toán (ADR 013 mục 6)
 - [ ] T034b [US2] `core/content/`: nghe `BangCongThucDaKhoa` và `BaiDaNhap`, chạy mọi câu gợi ý (thang của bài, thang mẫu đã điền tham số của đề) qua `/v1/kiem-loi-giang`, lưu `hint_gate_results` theo (gợi ý, phiên bản bảng); job lỗi thì không ghi `DAT`
 - [ ] T035 [US2] `core/tutor/infrastructure/web/`: `POST /api/hs/gia-su` SSE (`trang_thai` kho/goi/loc, `xong`, `loi`), hủy khi kết nối đóng; `GET /api/hs/gia-su/{maBai}`; chip `GUI_THAY_CO` ghi cảnh báo `NHO_GV` qua `CanhBaoGiaoVien`; `GET /api/hs/kho`
-- [ ] T036 [P] [US2] Nhà giả `gia-lap` (profile `test`, `e2e`) + `core-test/tutor/BoCaTest.java` `@Tag("bo-ca")`: bộ dụ đáp án, 288 ca ác ý, bộ ca lời giảng chạy qua `LuotGiaSu` (SC-003, SC-004)
+- [ ] T036 [P] [US2] Nhà giả `gia-lap` (profile `test`, `e2e`) + `core-test/tutor/BoCaTest.java` `@Tag("bo-ca")`: bộ dụ đáp án, 288 ca ác ý, bộ ca lời giảng, bộ AI 70 ca (áp nguyên văn KD-0006) chạy qua `LuotGiaSu` (SC-003, SC-004, SC-005)
 - [ ] T037 [P] [US2] `core-test/tutor/ThoiGianGiaSuTest.java`: trạng thái đầu ≤ 1 s; offline ≤ 3 s p95 trên 50 lượt (SC-007)
 
 ### Issue — Cột gia sư (frontend)
@@ -203,4 +204,4 @@ Tất cả ─▶ e2e «một vòng» và nghiệm thu
 - Số `V<n>` của migration trong các việc là dự kiến. PR lấy số kế tiếp trên `main` khi rebase: Flyway mặc định `outOfOrder=false`, không áp migration có số nhỏ hơn số đã áp, nên mastery merge trước tutor thì mastery lấy `V6`.
 - Song song được: `kiem_dong_cong_thuc` (math) với classroom và client toán (core); `kiem_loi_giang` (math) với `practice` (core); các màn giáo viên US3, US4, US7 với các màn học sinh.
 - Kiểm trước câu gợi ý (T034b) nghe sự kiện miền, nên US2 và US3 merge theo thứ tự nào cũng được.
-- ADR 013 đã chấp nhận (2026-10-02). Chặn duy nhất: job `kiem_loi_giang` chờ bản vá KD-0005 của lab Kiểm định.
+- ADR 013 đã chấp nhận (2026-10-02). Chặn: job `kiem_loi_giang` chờ bản vá KD-0005; bộ ca của tutor (T036) chờ KD-0006 (bộ AI 70 ca). Cả hai thuộc issue lab Kiểm định.

@@ -9,7 +9,7 @@
 
 | Phương thức | Đường dẫn | Vào | Ra | FR |
 | --- | --- | --- | --- | --- |
-| GET | `/api/hs/trang-hoc` | — | `{ten, viecHomNay[], baiKe: {maBai, tieuDe, lyDo: CHUA_LOI\|CUNG_CO\|NANG_1_NAC\|DE_HON, kyNang, muc}, soBaiGiao[], soKyNang[{kyNang, muc4, kẹt}], hoanThanh: {kyNang[], chuDe}}` | 23–28 |
+| GET | `/api/hs/trang-hoc` | — | `{ten, viecHomNay[], baiKe: {maBai, tieuDe, lyDo: CHUA_LOI\|CUNG_CO\|NANG_1_NAC\|DE_HON\|THAY_CO_GIAO, kyNang, muc}, soBaiGiao[], soKyNang[{kyNang, muc4, kẹt}], hoanThanh: {kyNang[], chuDe}}` | 23–28 |
 | GET | `/api/hs/bai` | — | danh sách bài được giao / đã phát hành: `{maBai, tieuDe, muc4, han, trangThai}` | 31 |
 | GET | `/api/hs/bai/{maBai}` | — | `{de: {text, latex}, cacBuoc: [{maBuoc, moTa, dangNhap}], baiLam: {cacBuoc: [{maBuoc, dong, latex, ketQua, thongBao, oSai[]}], trangThai}, coTheMoLoiGiai}` | 6–10 |
 | POST | `/api/hs/bai/{maBai}/buoc` | `{maBuoc, dong[], bang?: [{hang, k, giaTri}]}` | `{ketQua: DAT\|SAI\|KHONG_CHAM_DUOC, thongBao, oSai[], maLoi?, buocKe?}` — không có giá trị đúng | 8–10 |

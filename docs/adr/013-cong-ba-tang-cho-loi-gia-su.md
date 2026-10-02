@@ -1,6 +1,6 @@
 # ADR 013 — Cổng 3 tầng cho công thức trong lời gia sư
 
-**Trạng thái:** Chấp nhận (2026-10-02) — chủ repo duyệt phương án A «thế giới đóng» trong phiên làm spec P2 (FR-015). Rà PR #78 làm rõ, không nới cổng: trích nguyên văn đề bài được phép như trích bài làm; toán viết trần không phân loại được bị bỏ; câu thay thế cũng qua cổng từ trước; job riêng cho lúc khóa bảng.
+**Trạng thái:** Chấp nhận (2026-10-02) — chủ repo duyệt phương án A «thế giới đóng» trong phiên làm spec P2 (FR-015). Rà PR #78 làm rõ, không nới cổng: trích nguyên văn đề bài được phép như trích bài làm; toán viết trần không phân loại được bị bỏ; câu thay thế cũng qua cổng từ trước; quy tắc phát biểu hoàn toàn bằng lời cũng phải khớp bảng; job riêng cho lúc khóa bảng.
 
 ## Bối cảnh
 
@@ -34,7 +34,8 @@ Chọn **A**.
    - mọi đoạn toán trong `$…$`, `\(…\)`, `\[…\]`;
    - các mẫu phát biểu quy tắc bằng lời của chủ đề, dùng lại bộ nhận dạng của tầng 2 trong `services/math/app/verify.py` (đạo hàm dương / âm → đồng biến / nghịch biến, đổi dấu → cực trị);
    - **mọi đoạn trông như toán nằm ngoài dấu phân cách** (dấu `=`, `≠`, `≤`, `≥`, `⇒`, `→`, dấu phẩy trên `'` / `′`, `^`, `/` giữa các ký hiệu, chữ biến kề toán tử hay chữ số, lệnh `\…`) mà không thuộc hai mẫu trên: coi là `KHONG_PHAN_TICH_DUOC`, bị bỏ như mọi biểu thức không kiểm được. Ví dụ `(uv)' = u'v'` viết trần bị bỏ, không lọt qua;
-   - prompt yêu cầu mô hình đặt mọi công thức trong `$…$` và chỉ dùng công thức của bảng kèm `[n]`. Prompt không phải ranh giới an toàn: cổng chạy trên mọi câu và đóng mặc định với mọi thứ không phân loại được.
+   - **quy tắc phát biểu bằng lời**: câu có thuật ngữ toán của chủ đề (đạo hàm, hàm số, tích, thương, tổng, hiệu, lũy thừa, nghiệm, dấu, đồng biến, cực trị…) đi cùng từ chỉ quan hệ hay phép toán (bằng, là, nhân, chia, cộng, trừ, bình phương, lớn hơn, dương, âm, đổi dấu, suy ra, nếu … thì, khi và chỉ khi…) là **ứng viên quy tắc**, dù không có ký hiệu nào. Ví dụ «đạo hàm của tích bằng đạo hàm u nhân v trừ u nhân đạo hàm v». Ứng viên chỉ được giữ khi khớp phát biểu của một dòng bảng đã khóa (so sau chuẩn hóa khoảng trắng, hoa thường, dấu câu) hoặc khớp bộ nhận dạng tầng 2 ứng với một dòng bảng; còn lại là `KHONG_PHAN_TICH_DUOC` và **bỏ cả câu**. Danh sách thuật ngữ và từ quan hệ là dữ liệu của lab Kiểm định (nằm trong bản vá KD-0005), nghiêng về bắt thừa;
+   - prompt yêu cầu mô hình đặt mọi công thức trong `$…$`, chỉ dùng công thức của bảng kèm `[n]`, và không tự diễn đạt lại quy tắc: dẫn `[n]` để học sinh mở đúng dòng bảng đã kiểm (FR-021). Prompt không phải ranh giới an toàn: cổng chạy trên mọi câu và đóng mặc định với mọi thứ không phân loại được.
 3. **Thứ tự trong lượt:** luật xin đáp án → mô hình → `/v1/filter` (lộ đáp án) → job mới `kiem_loi_giang` (cổng 3 tầng cho công thức) → hiện. Hai lớp lọc đều trong `services/math`, đúng ADR 011 (bộ lọc chỉ có một bản).
 4. **Khi bỏ:** đoạn bị bỏ được rút khỏi câu. Câu còn lại vô nghĩa (không còn mệnh đề nào ngoài từ nối) thì thay cả câu bằng gợi ý đã kiểm trước của bước (mục 6). Mỗi lần bỏ ghi một mục cho giáo viên: `SAI` nếu máy kiểm ra sai, `KHONG_KIEM_DUOC` nếu không khớp bảng. Giáo viên xử lý bằng cách sửa bảng rồi khóa phiên bản mới. Không có đường «duyệt riêng một công thức» trong P2.
 5. **Đóng mặc định:** job lỗi hoặc hết giờ thì câu không hiện; học sinh nhận gợi ý theo thang **đã kiểm trước**.
@@ -49,10 +50,13 @@ Chọn **A**.
   - Tầng 1 với dòng **định lí hay định nghĩa** thuộc loại máy đã biết (đơn điệu, cực trị, điểm tới hạn; bộ nhận dạng tầng 3 của `verify.py`): so phát biểu với ngữ nghĩa có sẵn của máy (chiều suy luận, điều kiện) rồi tìm phản ví dụ trên bộ hàm mẫu của chủ đề; không có phản ví dụ thì `DAT`, có thì `SAI`. Máy không chứng minh định lí; đây là kiểm nhất quán có giới hạn và được ghi rõ trong căn cứ.
   - Dòng thuộc loại máy chưa biết: `KHONG_KIEM_DUOC`, chặn khóa. Thêm loại mới là việc của lab Kiểm định.
   - Bảng 6 dòng của v0 (3 đẳng thức, 3 định lí hay định nghĩa) phải khóa được theo quy tắc này; nếu không, importer báo lỗi thay vì khóa thiếu.
-- Bộ ca lời giảng mới (≥ 100 câu, 7 loại; spec SC-004) do lab Kiểm định soạn thành **bản vá có mã** (KD-0005, kèm SHA-256), rà độc lập; PR hiện thực chỉ áp nguyên văn bản vá vào `services/math/kiemdinh/`, rồi chạy trong cổng merge của `services/math`.
+- Bộ ca lời giảng mới (≥ 100 câu, 8 loại; spec SC-004) và bộ từ vựng nhận dạng quy tắc bằng lời do lab Kiểm định soạn thành **bản vá có mã** (KD-0005, kèm SHA-256), rà độc lập; PR hiện thực chỉ áp nguyên văn bản vá vào `services/math/kiemdinh/`, rồi chạy trong cổng merge của `services/math`.
 - ADR 003 (gia sư không đọc lời giải) và ADR 010 (SSE trạng thái) giữ nguyên.
+
+- Rủi ro còn lại: nhận dạng quy tắc bằng lời dựa trên từ vựng, không chứng minh được là bắt hết mọi cách diễn đạt. Rủi ro này được đo bằng loại ca «quy tắc phát biểu bằng lời» của KD-0005 (đúng ngoài bảng, sai, diễn đạt lại).
 
 ## Điều làm quyết định này sai
 
 - Đo trên bộ ca thật thấy gia sư mất gần hết công thức có ích (trên 20 % câu bị thay bằng gợi ý thang vì bỏ công thức trong bảng) → xem lại bộ nhận dạng, không nới cổng.
+- Một câu phát biểu quy tắc bằng lời không khớp bảng mà vẫn tới học sinh (trong bộ ca hay thực tế) → lỗi P1, bổ sung từ vựng bằng bản vá mới. Lọt lặp lại theo cách từ vựng không theo kịp → chuyển sang danh sách trắng theo câu: chỉ hiện câu không có thuật ngữ toán, câu trích dẫn dòng bảng hoặc câu gợi ý đã kiểm trước.
 - Khách muốn gia sư giải thích ngoài bảng công thức (ví dụ chứng minh một quy tắc) → cần một luồng «giải thích đã duyệt trước» do giáo viên soạn, không nới cổng cho mô hình.

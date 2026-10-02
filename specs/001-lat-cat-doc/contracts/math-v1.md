@@ -43,12 +43,15 @@ Thuần hàm, không đọc CSDL. Chạy **sau** `/v1/filter`.
     {"doan": "\\frac{u'v-uv'}{v^2}", "loai": "CONG_THUC_TONG_QUAT", "trang_thai": "DAT", "dong_bang": "f-07", "tang": {"1": "DAT", "2": "DAT", "3": "DAT"}},
     {"doan": "3x^{2}-12x", "loai": "TRICH_BAI_LAM", "trang_thai": "DAT"},
     {"doan": "x^3 - 6x^2 + 9x + 2", "loai": "TRICH_DE_BAI", "trang_thai": "DAT"},
+    {"doan": "đạo hàm của tích bằng đạo hàm u nhân v trừ u nhân đạo hàm v", "loai": "QUY_TAC_BANG_LOI", "trang_thai": "KHONG_KIEM_DUOC", "ly_do": "không khớp phát biểu dòng bảng nào; bỏ cả câu"},
     {"doan": "y' = 3x^2 - 12x + 9", "loai": "KET_QUA_CU_THE", "trang_thai": "KHONG_KIEM_DUOC", "ly_do": "kết quả tính cụ thể của bài"}
   ]
 }
 ```
 
-- `loai` ∈ `CONG_THUC_TONG_QUAT`, `TRICH_BAI_LAM`, `TRICH_DE_BAI`, `KET_QUA_CU_THE`, `KHONG_PHAN_TICH_DUOC`. `TRICH_DE_BAI` so với `ham` sau chuẩn hóa cách viết, không rút gọn (ADR 013 mục 1).
+- `loai` ∈ `CONG_THUC_TONG_QUAT`, `QUY_TAC_BANG_LOI`, `TRICH_BAI_LAM`, `TRICH_DE_BAI`, `KET_QUA_CU_THE`, `KHONG_PHAN_TICH_DUOC`.
+- `QUY_TAC_BANG_LOI`: câu có thuật ngữ toán đi cùng từ quan hệ hay phép toán (từ vựng của lab, KD-0005). `DAT` chỉ khi khớp phát biểu một dòng bảng (`dong_bang`) hoặc bộ nhận dạng tầng 2 ứng với một dòng bảng; ngược lại `KHONG_KIEM_DUOC` và bỏ cả câu (ADR 013 mục 2).
+- `TRICH_DE_BAI`: so với `ham` sau chuẩn hóa cách viết, không rút gọn (ADR 013 mục 1).
 - `trang_thai` ∈ `DAT`, `SAI`, `KHONG_KIEM_DUOC`. Chỉ biểu thức `DAT` còn lại trong `cau_sach`.
 - `thay_bang_goi_y = true` khi câu còn lại mất nghĩa: core thay cả câu bằng gợi ý đã kiểm trước của bước (ADR 013 mục 6).
 - Core ghi mỗi biểu thức `SAI` hoặc `KHONG_KIEM_DUOC` thành một `verification_run` (`subject_kind = TUTOR_FORMULA`) vào hàng đợi duyệt.
