@@ -1,0 +1,6 @@
+# Máy dev: PostgreSQL 18 cục bộ (docker compose ở #58) và tài khoản tổng hợp (TaiKhoanThuSeeder).
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/hoc_toan_core
+    username: hoc_toan
+    password: hoc_toan
