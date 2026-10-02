@@ -119,16 +119,17 @@ class IdentityPersistenceTest {
         failures.record(an, NOW);
         failures.record(khac, NOW);
 
-        assertThat(failures.countSince(an, NOW.minus(Duration.ofMinutes(15)))).isEqualTo(2);
-        assertThat(failures.countSince(khac, NOW.minus(Duration.ofMinutes(15)))).isEqualTo(1);
+        assertThat(failures.recentSince(an, NOW.minus(Duration.ofMinutes(15)), 5)).containsExactly(NOW, NOW.minus(Duration.ofMinutes(5)));
+        assertThat(failures.recentSince(an, NOW.minus(Duration.ofDays(1)), 1)).containsExactly(NOW);
+        assertThat(failures.recentSince(khac, NOW.minus(Duration.ofMinutes(15)), 5)).hasSize(1);
 
         int daXoa = new LoginFailureCleanup(failures, Clock.fixed(NOW.plus(Duration.ofDays(1)).minus(Duration.ofMinutes(10)), ZoneOffset.UTC))
             .purgeOld();
         assertThat(daXoa).isEqualTo(1);
-        assertThat(failures.countSince(an, NOW.minus(Duration.ofDays(2)))).isEqualTo(2);
+        assertThat(failures.recentSince(an, NOW.minus(Duration.ofDays(2)), 5)).hasSize(2);
 
         failures.clear(an);
-        assertThat(failures.countSince(an, NOW.minus(Duration.ofDays(2)))).isZero();
-        assertThat(failures.countSince(khac, NOW.minus(Duration.ofDays(2)))).isEqualTo(1);
+        assertThat(failures.recentSince(an, NOW.minus(Duration.ofDays(2)), 5)).isEmpty();
+        assertThat(failures.recentSince(khac, NOW.minus(Duration.ofDays(2)), 5)).hasSize(1);
     }
 }

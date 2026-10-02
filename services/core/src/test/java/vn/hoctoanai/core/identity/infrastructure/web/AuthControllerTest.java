@@ -93,7 +93,7 @@ class AuthControllerTest {
 
     @Test
     void saiQuaNguongTra429CoRetryAfterVaTruyenIpMayKhach() {
-        given(login.execute(any(), any())).willThrow(new LoginLockedException(Duration.ofMinutes(15)));
+        given(login.execute(any(), any())).willThrow(new LoginLockedException(Duration.ofMillis(180_500)));
         MvcTestResult res = mvc.post().uri("/api/auth/login").contentType(MediaType.APPLICATION_JSON)
             .content("{\"email\":\"hs.an@demo.local\",\"password\":\"hocsinh123\"}")
             .with(request -> {
@@ -103,7 +103,7 @@ class AuthControllerTest {
             .exchange();
 
         assertThat(res).hasStatus(429).bodyJson().extractingPath("$.detail").isEqualTo(LoginLockedException.THONG_BAO);
-        assertThat(res.getResponse().getHeader(HttpHeaders.RETRY_AFTER)).isEqualTo("900");
+        assertThat(res.getResponse().getHeader(HttpHeaders.RETRY_AFTER)).as("làm tròn lên giây").isEqualTo("181");
         then(login).should().execute(any(), eq("198.51.100.20"));
     }
 

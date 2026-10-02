@@ -120,7 +120,8 @@ class IdentityIntegrationTest {
         }
         MvcTestResult khoa = dangNhapTu("198.51.100.30", "gv.f10@demo.local", "giaovien123");
         assertThat(khoa).hasStatus(429);
-        assertThat(khoa.getResponse().getHeader(HttpHeaders.RETRY_AFTER)).isEqualTo("900");
+        // Còn lại tới khi lần sai cũ nhất ra khỏi cửa sổ 15 phút: vừa sai xong nên gần 900 giây.
+        assertThat(Integer.parseInt(khoa.getResponse().getHeader(HttpHeaders.RETRY_AFTER))).isBetween(840, 900);
         assertThat(dangNhapTu("198.51.100.31", "gv.f10@demo.local", "giaovien123")).as("máy khác không bị khóa").hasStatusOk();
     }
 

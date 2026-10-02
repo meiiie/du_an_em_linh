@@ -1,6 +1,7 @@
 package vn.hoctoanai.core.identity.domain.repository;
 
 import java.time.Instant;
+import java.util.List;
 import vn.hoctoanai.core.identity.domain.model.LoginAttemptKey;
 
 /** Nhật ký lần đăng nhập sai theo khóa đếm (F-10). */
@@ -12,7 +13,8 @@ public interface LoginFailureRepository {
      */
     void lock(LoginAttemptKey key);
 
-    int countSince(LoginAttemptKey key, Instant since);
+    /** Tối đa {@code limit} lần sai gần nhất sau mốc {@code since}, mới nhất trước. */
+    List<Instant> recentSince(LoginAttemptKey key, Instant since, int limit);
 
     void record(LoginAttemptKey key, Instant at);
 

@@ -3,6 +3,7 @@ package vn.hoctoanai.core.identity.application.usecase;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,9 +24,10 @@ import vn.hoctoanai.core.identity.domain.repository.UserRepository;
  * (MIT), sửa ba điểm: luôn so mật khẩu (kể cả khi email không tồn tại, bằng băm giả) để thời gian không lộ tài khoản;
  * kiểm tài khoản khóa sau mật khẩu, cùng một thông điệp; không ghi email vào log.
  *
- * <p>Giới hạn đăng nhập sai như v0 (F-10, #69): {@value #NGUONG} lần sai trong {@code CUA_SO} theo email + IP thì tạm khóa,
- * kể cả khi lần sau đúng mật khẩu; đăng nhập đúng (dưới ngưỡng) xóa bộ đếm. Email không tồn tại cũng bị đếm và khóa như
- * thường, nên không lộ tài khoản. Không rollback khi ném lỗi để lần sai được ghi lại.
+ * <p>Giới hạn đăng nhập sai như v0 (F-10, #69): {@value #NGUONG} lần sai trong {@code CUA_SO} (cửa sổ trượt) theo email + IP
+ * thì tạm khóa, kể cả khi lần sau đúng mật khẩu; khóa mở khi lần sai cũ nhất trong số đó ra khỏi cửa sổ. Đăng nhập đúng
+ * (dưới ngưỡng) xóa bộ đếm. Email không tồn tại cũng bị đếm và khóa như thường, nên không lộ tài khoản. Không rollback
+ * khi ném lỗi để lần sai được ghi lại.
  */
 @Service
 public class LoginUseCase {
@@ -54,8 +56,10 @@ public class LoginUseCase {
         Instant now = clock.instant();
         LoginAttemptKey key = LoginAttemptKey.of(request.email(), clientIp);
         failures.lock(key);
-        if (failures.countSince(key, now.minus(CUA_SO)) >= NGUONG) {
-            throw new LoginLockedException(CUA_SO);
+        List<Instant> ganDay = failures.recentSince(key, now.minus(CUA_SO), NGUONG);
+        if (ganDay.size() >= NGUONG) {
+            Instant moKhoa = ganDay.get(NGUONG - 1).plus(CUA_SO);
+            throw new LoginLockedException(Duration.between(now, moKhoa));
         }
         Optional<User> found = email(request.email()).flatMap(users::findByEmail);
         boolean matches = hasher.matches(request.password(), found.map(User::passwordHash).orElseGet(hasher::dummyHash));

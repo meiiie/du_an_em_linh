@@ -4,6 +4,7 @@ import java.nio.ByteBuffer;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.util.HexFormat;
+import java.util.List;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
 import vn.hoctoanai.core.identity.domain.model.LoginAttemptKey;
@@ -30,11 +31,11 @@ public class LoginFailureRepositoryAdapter implements LoginFailureRepository {
     }
 
     @Override
-    public int countSince(LoginAttemptKey key, Instant since) {
-        return jdbc.sql("select count(*) from login_failures where key_hash = ? and created_at > ?")
-                .params(key.hash(), Timestamp.from(since))
-                .query(Integer.class)
-                .single();
+    public List<Instant> recentSince(LoginAttemptKey key, Instant since, int limit) {
+        return jdbc.sql("select created_at from login_failures where key_hash = ? and created_at > ? order by created_at desc limit ?")
+                .params(key.hash(), Timestamp.from(since), limit)
+                .query((rs, i) -> rs.getTimestamp(1).toInstant())
+                .list();
     }
 
     @Override

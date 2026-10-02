@@ -40,7 +40,7 @@ public class IdentityExceptionHandler {
         ProblemDetail problem = ProblemDetail.forStatusAndDetail(HttpStatus.TOO_MANY_REQUESTS, e.getMessage());
         problem.setTitle("Tạm khóa đăng nhập");
         return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
-                .header(HttpHeaders.RETRY_AFTER, Long.toString(e.thuLaiSau().toSeconds()))
+                .header(HttpHeaders.RETRY_AFTER, Long.toString(Math.max(1, (e.thuLaiSau().toMillis() + 999) / 1000)))
                 .body(problem);
     }
 

@@ -108,6 +108,26 @@ class LoginUseCaseTest {
     }
 
     @Test
+    void cuaSoTruotThoiGianKhoaConLaiTinhTuLanSaiCuNhat() {
+        // Sai ở phút 0, 3, 6, 9, 12: khóa mở ở phút 15, không phải 15 phút sau lần kiểm.
+        for (int phut = 0; phut <= 12; phut += 3) {
+            gl.clock = Clock.fixed(GiaLapDinhDanh.NOW.plus(Duration.ofMinutes(phut)), ZoneOffset.UTC);
+            LoginUseCase luc = gl.login();
+            assertThatThrownBy(() -> luc.execute(new LoginRequest("hs.an@demo.local", "sai"), GiaLapDinhDanh.IP))
+                .isInstanceOf(AuthenticationFailedException.class);
+        }
+        gl.clock = Clock.fixed(GiaLapDinhDanh.NOW.plus(Duration.ofMinutes(12)), ZoneOffset.UTC);
+        LoginUseCase phut12 = gl.login();
+        assertThatThrownBy(() -> phut12.execute(new LoginRequest("hs.an@demo.local", "hocsinh123"), GiaLapDinhDanh.IP))
+            .isInstanceOf(LoginLockedException.class)
+            .satisfies(e -> assertThat(((LoginLockedException) e).thuLaiSau()).isEqualTo(Duration.ofMinutes(3)));
+
+        gl.clock = Clock.fixed(GiaLapDinhDanh.NOW.plus(Duration.ofMinutes(15)).plusSeconds(1), ZoneOffset.UTC);
+        assertThat(gl.login().execute(new LoginRequest("hs.an@demo.local", "hocsinh123"), GiaLapDinhDanh.IP).accessToken())
+            .isNotBlank();
+    }
+
+    @Test
     void dangNhapDungDuoiNguongXoaBoDem() {
         for (int i = 0; i < LoginUseCase.NGUONG - 1; i++) {
             assertThatThrownBy(() -> login.execute(new LoginRequest("hs.an@demo.local", "sai"), GiaLapDinhDanh.IP))

@@ -5,6 +5,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -138,8 +139,13 @@ public final class GiaLapDinhDanh {
         public void lock(LoginAttemptKey key) {}
 
         @Override
-        public int countSince(LoginAttemptKey key, Instant since) {
-            return (int) lanSai.stream().filter(e -> e.getKey().equals(key.hash()) && e.getValue().isAfter(since)).count();
+        public List<Instant> recentSince(LoginAttemptKey key, Instant since, int limit) {
+            return lanSai.stream()
+                .filter(e -> e.getKey().equals(key.hash()) && e.getValue().isAfter(since))
+                .map(Map.Entry::getValue)
+                .sorted(Comparator.reverseOrder())
+                .limit(limit)
+                .toList();
         }
 
         @Override
