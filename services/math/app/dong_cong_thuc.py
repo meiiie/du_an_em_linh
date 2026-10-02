@@ -588,8 +588,9 @@ def _doc_dong(text, tieu_de=""):
         if th:
             menh.extend(th)
             continue
-        if _con_thuat_ngu(cl):
-            khong_doc.append(cl)
+        # Thế giới đóng: mệnh đề không nhận ra đều là «chưa đọc trọn», kể cả khi không có từ nào trong _THUAT_NGU
+        # («Hàm số này là hàm chẵn.»). Đoạn tài liệu bỏ qua danh sách này; dòng bảng thì không DAT được.
+        khong_doc.append(cl)
     return list(dict.fromkeys(menh)), khong_doc
 
 
@@ -882,9 +883,10 @@ def _mot_dong(dong, doan, mau):
     menh, khong_doc = _doc_dong(latex + ". " + loi, str(dong.get("tieu_de") or ""))
     if menh:
         return "DINH_LI", _tang_1_dinh_li(menh, khong_doc, mau()), _tang_2("DINH_LI", dong, menh, doan)
+    toan = [c for c in khong_doc if _con_thuat_ngu(c)]
     ly_do = ("Máy chưa đọc trọn mệnh đề «%s»: máy chỉ kiểm câu đúng mẫu danh mục (đúng chiều suy ra, hai vế cùng một "
-             "khoảng; không phủ định, lượng từ, điều kiện tại một điểm hay từ máy không biết)." % khong_doc[0][:160]
-             if khong_doc else "Loại dòng máy chưa biết; thêm loại mới qua lab Kiểm định.")
+             "khoảng; không phủ định, lượng từ, điều kiện tại một điểm hay từ máy không biết)." % toan[0][:160]
+             if toan else "Loại dòng máy chưa biết; thêm loại mới qua lab Kiểm định.")
     t1 = {"trang_thai": "KHONG_KIEM_DUOC", "ly_do": ly_do}
     return "KHONG_BIET", t1, _tang_2("KHONG_BIET", dong, None, doan)
 

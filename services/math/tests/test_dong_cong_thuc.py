@@ -221,6 +221,10 @@ CA = [
     # cùng họ: định nghĩa điểm tới hạn đọc trọn
     ("TH-va", KKD, "", "Điểm tới hạn là điểm thuộc tập xác định mà tại đó đạo hàm bằng 0 và đạo hàm không xác định."),
     ("TH-hai-phu-dinh", KKD, "", "Điểm tới hạn không phải là điểm không thuộc tập xác định."),
+    # Codex trên #101 (2d5ce6f): mệnh đề toán ngoài danh sách thuật ngữ không được biến mất khỏi cổng
+    ("THEM-ham-chan", KKD, "", "y' > 0 ⇒ đồng biến. Hàm số này là hàm chẵn."),
+    ("THEM-lom", KKD, "", "Nếu y' > 0 trên khoảng K thì hàm đồng biến trên K. Đồ thị lõm trên K."),
+    ("THEM-latex", KKD, r"y' > 0 \Rightarrow \text{đồng biến}", "Hàm số lẻ thì đồ thị đối xứng qua gốc tọa độ."),
 ]
 
 
