@@ -1,5 +1,0 @@
-/** Model của định danh: người dùng, vai trò, refresh token. Java thuần, không Spring / JPA. */
-@NullMarked
-package vn.hoctoanai.core.identity.domain.model;
-
-import org.jspecify.annotations.NullMarked;

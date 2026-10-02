@@ -7,7 +7,7 @@ description: "Danh sách việc của epic P2 — lát cắt dọc một chủ �
 **Input**: `specs/001-lat-cat-doc/` (spec, plan, research, data-model, contracts)
 **Tests**: bắt buộc — spec có 10 tiêu chí đo được; mỗi câu chuyện có test độc lập.
 
-**Định dạng**: `[ID] [P?] [Story] Mô tả` — `[P]` chạy song song được (khác file, không phụ thuộc). Đường dẫn gốc: `services/core/src/main/java/vn/hoctoanai/core/` viết tắt `core/`; test core `services/core/src/test/java/vn/hoctoanai/core/` viết tắt `core-test/`; `apps/frontend/src/app/` viết tắt `fe/`.
+**Định dạng**: `[ID] [P?] [Story] Mô tả` — `[P]` chạy song song được (khác file, không phụ thuộc). Đường dẫn gốc: `services/core/src/main/java/vn/hoctapcanman/core/` viết tắt `core/`; test core `services/core/src/test/java/vn/hoctapcanman/core/` viết tắt `core-test/`; `apps/frontend/src/app/` viết tắt `fe/`.
 
 **Issue**: mỗi nhóm `### Issue` dưới đây thành một issue GitHub, một PR (hiến chương VII). Thứ tự merge theo phụ thuộc ghi ở cuối file.
 
