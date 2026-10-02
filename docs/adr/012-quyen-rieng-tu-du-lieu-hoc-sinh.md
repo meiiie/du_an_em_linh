@@ -37,8 +37,10 @@ Phân tích, chấm 4 phương án, độ nhạy, câu hỏi cho luật sư: [`l
 - **Quyền chủ thể trong ứng dụng:** xem, sửa, tải về, xóa, rút đồng ý, theo thời hạn NĐ 356 (xóa: 20 ngày). Xóa và hết hạn lưu chạy tự động, có nhật ký.
   - Nhật ký xóa và rút đồng ý chỉ chứa mã giả danh, lưu ngoài dữ liệu được sao lưu.
   - Khôi phục bản sao lưu thì phát lại nhật ký này trước khi mở lại dịch vụ, để dữ liệu đã xóa không sống lại.
-  - Yêu cầu xóa và rút đồng ý được gửi tới mọi bên xử lý đã nhận dữ liệu của người đó (kênh nhắc lịch, nhà LLM nếu có lưu, OCR ngoài nếu có).
-  - Theo dõi xác nhận và thời hạn của từng bên. Yêu cầu chỉ hoàn tất khi mọi bên đã xác nhận xóa.
+  - Mỗi lần chuyển dữ liệu cho bên xử lý ghi kèm mục đích, để yêu cầu đi đúng nơi:
+    - rút đồng ý một mục đích chỉ gửi tới các bên xử lý của mục đích đó; rút `NHAC_LICH_NGOAI` không đụng nhà LLM của `GIA_SU_AI`;
+    - yêu cầu xóa toàn bộ gửi tới mọi bên xử lý đã nhận dữ liệu của người đó (kênh nhắc lịch, nhà LLM nếu có lưu, OCR ngoài nếu có).
+  - Theo dõi xác nhận và thời hạn của từng bên. Yêu cầu chỉ hoàn tất khi mọi bên liên quan đã xác nhận.
 - **Minh bạch và giám sát AI.**
   - Mọi câu gia sư gắn nhãn «Gia sư AI».
   - Giáo viên xem và ghi đè mức hiểu, gợi ý bài; mỗi gợi ý có lý do xem được.

@@ -129,7 +129,10 @@ Lý do các điểm then chốt:
 6. **Quyền chủ thể trong ứng dụng:** xem, sửa, tải về, xóa, rút đồng ý. Có hàng đợi yêu cầu kèm hạn theo P8.
    - Xóa thật cả bản sao lưu theo vòng quay đã công bố.
    - Trong lúc bản sao lưu cũ còn trong vòng quay: nhật ký xóa và rút đồng ý (chỉ mã giả danh) lưu ngoài dữ liệu được sao lưu, và được phát lại sau mỗi lần khôi phục, trước khi mở lại dịch vụ.
-   - Yêu cầu xóa và rút đồng ý gửi tới mọi bên xử lý đã nhận dữ liệu (kênh nhắc lịch, nhà LLM nếu có lưu, OCR ngoài nếu có); theo dõi xác nhận và thời hạn của từng bên; chỉ hoàn tất khi mọi bên đã xác nhận.
+   - Mỗi lần chuyển dữ liệu cho bên xử lý ghi kèm mục đích:
+     - rút đồng ý một mục đích chỉ gửi tới bên xử lý của mục đích đó; rút `NHAC_LICH_NGOAI` không đụng nhà LLM của `GIA_SU_AI`;
+     - yêu cầu xóa toàn bộ gửi tới mọi bên xử lý đã nhận dữ liệu (kênh nhắc lịch, nhà LLM nếu có lưu, OCR ngoài nếu có);
+     - theo dõi xác nhận và thời hạn của từng bên; chỉ hoàn tất khi mọi bên liên quan đã xác nhận.
 7. **Thời hạn lưu:** mặc định hết năm học cộng một thời hạn do hợp đồng trường quy định (luật sư chốt). Việc xóa theo lịch chạy tự động và có nhật ký.
 8. **Minh bạch AI và giám sát (P10):**
    - mọi câu của gia sư gắn nhãn «Gia sư AI»;
