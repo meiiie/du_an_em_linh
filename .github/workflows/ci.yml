@@ -99,6 +99,21 @@ jobs:
       - run: pnpm lint
       - run: pnpm test:unit
 
+  frontend:
+    name: Frontend — build + Vitest
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile --filter frontend
+      - run: pnpm --filter frontend build
+      - run: pnpm --filter frontend test
+
   e2e:
     name: Playwright e2e
     runs-on: ubuntu-latest

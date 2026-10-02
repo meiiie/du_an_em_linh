@@ -1,0 +1,199 @@
+.trang {
+  min-height: 100dvh;
+}
+
+/* Đệm vùng an toàn (thanh home của iPhone) nằm trong chính khối 100dvh (border-box), nên trang không dài hơn màn. */
+.khung {
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+  max-width: 64rem;
+  margin: 0 auto;
+  padding: var(--space-5);
+  padding-bottom: calc(var(--space-5) + env(safe-area-inset-bottom));
+}
+
+@media (min-width: 640px) {
+  .khung {
+    padding: var(--space-6);
+    padding-bottom: calc(var(--space-6) + env(safe-area-inset-bottom));
+  }
+}
+
+/* Tâm quang học: hai khoảng dư co giãn 2 : 3; màn thấp thì co về 0, không đè form. */
+.truc {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.du {
+  min-height: 0;
+}
+
+.du-tren {
+  flex: 2 1 0;
+}
+
+.du-duoi {
+  flex: 3 1 0;
+}
+
+.khoi {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  max-width: 448px;
+  margin: 0 auto;
+  padding: var(--space-6) 0;
+  text-align: center;
+  animation: phieu-vao 180ms ease-out;
+}
+
+.ve-trang-chu {
+  display: inline-flex;
+  border-radius: var(--radius);
+}
+
+h1 {
+  margin: var(--space-5) 0 0;
+  font-size: 1.75rem;
+  font-weight: 600;
+  line-height: 36px;
+  letter-spacing: -0.025em;
+  text-wrap: pretty;
+}
+
+.form {
+  display: grid;
+  gap: var(--space-5);
+  width: 100%;
+  margin-top: var(--space-6);
+  text-align: left;
+}
+
+.truong {
+  display: block;
+  min-width: 0;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 20px;
+}
+
+.nhan {
+  display: block;
+  margin-bottom: var(--space-2);
+}
+
+.o-nhap {
+  width: 100%;
+  min-height: 48px;
+  padding: 0 var(--space-4);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--canvas);
+  color: var(--ink);
+  font: inherit;
+  font-size: 15px;
+  font-weight: 400;
+  line-height: 24px;
+  transition:
+    border-color 150ms,
+    box-shadow 150ms;
+}
+
+.o-nhap:hover {
+  border-color: var(--muted);
+}
+
+.o-nhap:focus-visible {
+  outline: none;
+  border-color: var(--ink);
+  box-shadow: 0 0 0 2px rgb(23 24 28 / 0.15);
+}
+
+.o-nhap[readonly] {
+  background: var(--wash);
+}
+
+.o-nhap[aria-invalid='true'] {
+  border-color: var(--mark);
+}
+
+.loi-truong {
+  display: block;
+  margin-top: var(--space-2);
+  color: var(--mark);
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 20px;
+}
+
+.o-kem-nut {
+  position: relative;
+  display: block;
+}
+
+.o-kem-nut .o-nhap {
+  padding-right: 56px;
+}
+
+/* Nút trong ô: rộng 48, cao bằng ô (48) — đủ mục tiêu chạm 44. */
+.nut-trong-o {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  bottom: 2px;
+  display: grid;
+  place-items: center;
+  width: 48px;
+  border: 0;
+  border-radius: 5px;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.nut-trong-o:hover {
+  background: var(--wash);
+  color: var(--ink);
+}
+
+.nut-trong-o svg {
+  width: 18px;
+  height: 18px;
+}
+
+.nhom-nut {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.tai-khoan-thu {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--space-2);
+  width: 100%;
+  margin: var(--space-6) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.chip {
+  font-size: 12px;
+}
+
+.chan {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 18px;
+  text-align: center;
+}

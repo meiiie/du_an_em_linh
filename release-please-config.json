@@ -8,6 +8,7 @@
       "changelog-path": "CHANGELOG.md",
       "extra-files": [
         "apps/web/package.json",
+        "apps/frontend/package.json",
         "services/core/pom.xml",
         {
           "type": "toml",
