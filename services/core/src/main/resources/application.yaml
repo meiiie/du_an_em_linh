@@ -32,3 +32,4 @@ app:
     jwt-secret: ${APP_IDENTITY_JWT_SECRET:} # base64 >= 32 byte; trống → khóa tạm (chỉ hợp cho dev)
     access-token-ttl: PT15M
     refresh-token-ttl: P30D
+    refresh-cookie-secure: true # cookie hta_refresh chỉ đi qua HTTPS (trình duyệt coi http://localhost là an toàn)
