@@ -1,0 +1,2223 @@
+diff --git a/services/math/kiemdinh/loi-giang/bo-ca-loi-giang.yaml b/services/math/kiemdinh/loi-giang/bo-ca-loi-giang.yaml
+new file mode 100644
+index 0000000..4ce8d9e
+--- /dev/null
++++ b/services/math/kiemdinh/loi-giang/bo-ca-loi-giang.yaml
+@@ -0,0 +1,1579 @@
++# KD-0005 — bộ ca lời giảng cho job kiem-loi-giang (ADR 013, spec SC-004). Lab Kiểm định SOẠN MÔ PHỎNG, không lấy
++# từ log AI hay học sinh thật. Đóng băng bằng SHA-256 của bản vá (labs/evals/2026-10-03-bo-ca-loi-giang.md).
++#
++# Mỗi ca: câu gia sư (đã qua /v1/filter) + ngữ cảnh (bảng đã khóa 6 dòng của v0, đề, dòng bài làm, dữ kiện bảo vệ) +
++# phán quyết mong đợi của từng biểu thức. `loai`, `trang_thai` là một giá trị, hoặc danh sách «một trong».
++#   - muc = phai_bo: mọi biểu thức không DAT KHÔNG được còn trong cau_sach. Sai một ca là lỗi nghiệm thu
++#     («0 công thức sai hoặc không kiểm được tới học sinh», SC-004).
++#   - muc = nen_hien: biểu thức DAT nên còn trong cau_sach; tỉ lệ giữ của loại 1 và loại 7 phải ≥ 95 % (SC-004).
++#   - thay_bang_goi_y = true: câu còn lại mất nghĩa, core thay bằng gợi ý đã kiểm trước (ADR 013 mục 4, 6).
++# `doan` so sau khi gộp khoảng trắng; với câu viết trần là chuỗi con của câu.
++# `kiem`: căn cứ toán của phán quyết (hàm mẫu, phản ví dụ), đã chạy bằng SymPy (kiem_bo_ca.py trong bản vá lab).
++# Đối chứng (`doi_chung`) không thuộc 8 loại: câu không có toán phải giữ nguyên; một câu hỏi gợi mở cho thấy cái giá
++# của «bắt thừa».
++phien_ban: 1
++ma_ban_va: KD-0005
++nguon: soan_mo_phong
++loai_ca:
++  1:
++    ten: công thức trong bảng có trích dẫn
++    so_ca: 14
++  2:
++    ten: công thức đúng ngoài bảng
++    so_ca: 14
++  3:
++    ten: công thức sai
++    so_ca: 14
++  4:
++    ten: LaTeX hỏng
++    so_ca: 14
++  5:
++    ten: kết quả tính cụ thể của bài
++    so_ca: 15
++  6:
++    ten: toán viết trần ngoài dấu phân cách
++    so_ca: 14
++  7:
++    ten: trích nguyên văn đề bài
++    so_ca: 14
++  8:
++    ten: quy tắc phát biểu bằng lời (đúng ngoài bảng, sai, diễn đạt lại)
++    so_ca: 21
++tong_so_ca: 120
++ngu_canh:
++  bang_cong_thuc:
++  - id: d-1
++    tieu_de: Đạo hàm lũy thừa
++    latex: (x^n)' = n x^{n-1}
++    phat_bieu: Đạo hàm của x mũ n là n nhân x mũ n trừ 1. Hằng số có đạo hàm bằng 0.
++    trich_dan:
++      tai_lieu: sp-tai-lieu-0001
++  - id: d-2
++    tieu_de: Đạo hàm tổng
++    latex: (u+v)' = u' + v'
++    phat_bieu: Đạo hàm của tổng bằng tổng các đạo hàm.
++    trich_dan:
++      tai_lieu: sp-tai-lieu-0001
++  - id: d-3
++    tieu_de: Đạo hàm thương
++    latex: (u/v)' = (u'v - uv') / v^2
++    phat_bieu: Với thương, tử là u'v trừ uv', mẫu là v bình.
++    trich_dan:
++      tai_lieu: sp-tai-lieu-0001
++  - id: d-4
++    tieu_de: Đơn điệu
++    latex: y' \ge 0,\ y' = 0 \text{ chỉ tại hữu hạn điểm} \Rightarrow \text{đồng biến}
++    phat_bieu: Hàm đồng biến trên khoảng khi đạo hàm không âm và bằng 0 tại hữu hạn điểm; nghịch biến khi đạo hàm
++      không dương theo cùng quy tắc.
++    trich_dan:
++      tai_lieu: v0-don-dieu
++  - id: d-5
++    tieu_de: Cực trị
++    latex: '+ \to - : \text{cực đại}'
++    phat_bieu: Đạo hàm đổi từ dương sang âm thì cực đại; từ âm sang dương thì cực tiểu. Đạo hàm bằng 0 mà không
++      đổi dấu thì chưa phải cực trị.
++    trich_dan:
++      tai_lieu: sp-tai-lieu-0002
++  - id: d-6
++    tieu_de: Điểm tới hạn
++    latex: y'=0 \text{ hoặc } y' \text{ không xác định}
++    phat_bieu: Điểm tới hạn gồm nghiệm của đạo hàm bằng 0 và điểm thuộc tập xác định mà đạo hàm không xác định.
++    trich_dan:
++      tai_lieu: sp-tai-lieu-0002
++  bai:
++    BAC-BA:
++      de: Xét tính đơn điệu và tìm cực trị của hàm số $y = x^3 - 3x^2 + 2$.
++      ham: x**3 - 3*x**2 + 2
++      bai_lam_hoc_sinh:
++      - 3x^2-6x
++      - x=0
++      - x=2
++      du_kien_bao_ve:
++      - 3*x**2 - 6*x
++      - x = 0
++      - x = 2
++      - y(0) = 2
++      - y(2) = -2
++    HUU-TI:
++      de: Xét tính đơn điệu của hàm số $y = \frac{x^2 + 3}{x - 1}$.
++      ham: (x**2 + 3)/(x - 1)
++      bai_lam_hoc_sinh:
++      - x \ne 1
++      du_kien_bao_ve:
++      - (x**2 - 2*x - 3)/(x - 1)**2
++      - x = -1
++      - x = 3
++      - y(-1) = -2
++      - y(3) = 6
++    TRUNG-PHUONG:
++      de: Tìm cực trị của hàm số $y = x^4 - 2x^2$.
++      ham: x**4 - 2*x**2
++      bai_lam_hoc_sinh:
++      - 4x^3-4x
++      du_kien_bao_ve:
++      - 4*x**3 - 4*x
++      - x = 0
++      - x = -1
++      - x = 1
++      - y(0) = 0
++      - y(1) = -1
++ca:
++- id: LG-1-01
++  loai_ca: 1
++  bai: BAC-BA
++  cau: 'Theo dòng [1] của bảng: $(x^n)'' = n x^{n-1}$.'
++  bieu_thuc:
++  - doan: (x^n)' = n x^{n-1}
++    loai: CONG_THUC_TONG_QUAT
++    trang_thai: DAT
++    dong_bang: d-1
++  muc: nen_hien
++  ghi_chu: nguyên văn LaTeX của dòng
++- id: LG-1-02
++  loai_ca: 1
++  bai: BAC-BA
++  cau: Em áp dụng $(u+v)' = u' + v'$ [2] cho từng hạng tử nhé.
++  bieu_thuc:
++  - doan: (u+v)' = u' + v'
++    loai: CONG_THUC_TONG_QUAT
++    trang_thai: DAT
++    dong_bang: d-2
++  muc: nen_hien
++- id: LG-1-03
++  loai_ca: 1
++  bai: HUU-TI
++  cau: 'Quy tắc thương [3]: $(u/v)'' = (u''v - uv'') / v^2$.'
++  bieu_thuc:
++  - doan: (u/v)' = (u'v - uv') / v^2
++    loai: CONG_THUC_TONG_QUAT
++    trang_thai: DAT
++    dong_bang: d-3
++  muc: nen_hien
++- id: LG-1-04
++  loai_ca: 1
++  bai: HUU-TI
++  cau: Dòng [3] viết gọn là $\left(\frac{u}{v}\right)' = \frac{u'v - uv'}{v^2}$.
++  bieu_thuc:
++  - doan: \left(\frac{u}{v}\right)' = \frac{u'v - uv'}{v^2}
++    loai: CONG_THUC_TONG_QUAT
++    trang_thai: DAT
++    dong_bang: d-3
++    kiem: u/v ≡ u/v; vế phải trùng theo SymPy
++  muc: nen_hien
++  ghi_chu: LaTeX khác, cùng công thức theo SymPy với hàm ký hiệu u(x), v(x)
++- id: LG-1-05
++  loai_ca: 1
++  bai: BAC-BA
++  cau: Với tổng, em dùng $(u + v)'=u'+v'$.
++  bieu_thuc:
++  - doan: (u + v)'=u'+v'
++    loai: CONG_THUC_TONG_QUAT
++    trang_thai: DAT
++    dong_bang: d-2
++  muc: nen_hien
++  ghi_chu: khác khoảng trắng
++- id: LG-1-06
++  loai_ca: 1
++  bai: BAC-BA
++  cau: 'Nhắc lại [1]: $\left(x^{n}\right)'' = n\,x^{n-1}$.'
++  bieu_thuc:
++  - doan: \left(x^{n}\right)' = n\,x^{n-1}
++    loai: CONG_THUC_TONG_QUAT
++    trang_thai: DAT
++    dong_bang: d-1
++  muc: nen_hien
++- id: LG-1-07
++  loai_ca: 1
++  bai: BAC-BA
++  cau: 'Em xem dòng [4]: $y'' \ge 0,\ y'' = 0 \text{ chỉ tại hữu hạn điểm} \Rightarrow \text{đồng biến}$.'
++  bieu_thuc:
++  - doan: y' \ge 0,\ y' = 0 \text{ chỉ tại hữu hạn điểm} \Rightarrow \text{đồng biến}
++    loai: CONG_THUC_TONG_QUAT
++    trang_thai: DAT
++    dong_bang: d-4
++  muc: nen_hien
++  ghi_chu: nguyên văn LaTeX của dòng định lí
++- id: LG-1-08
++  loai_ca: 1
++  bai: BAC-BA
++  cau: 'Dòng [5] của bảng: $+ \to - : \text{cực đại}$.'
++  bieu_thuc:
++  - doan: '+ \to - : \text{cực đại}'
++    loai: CONG_THUC_TONG_QUAT
++    trang_thai: DAT
++    dong_bang: d-5
++  muc: nen_hien
++- id: LG-1-09
++  loai_ca: 1
++  bai: HUU-TI
++  cau: Theo [6], em tìm chỗ $y'=0 \text{ hoặc } y' \text{ không xác định}$.
++  bieu_thuc:
++  - doan: y'=0 \text{ hoặc } y' \text{ không xác định}
++    loai: CONG_THUC_TONG_QUAT
++    trang_thai: DAT
++    dong_bang: d-6
++  muc: nen_hien
++- id: LG-1-10
++  loai_ca: 1
++  bai: HUU-TI
++  cau: Em có $(u+v)' = u' + v'$ [2] và $(u/v)' = (u'v - uv') / v^2$ [3].
++  bieu_thuc:
++  - doan: (u+v)' = u' + v'
++    loai: CONG_THUC_TONG_QUAT
++    trang_thai: DAT
++    dong_bang: d-2
++  - doan: (u/v)' = (u'v - uv') / v^2
++    loai: CONG_THUC_TONG_QUAT
++    trang_thai: DAT
++    dong_bang: d-3
++  muc: nen_hien
++  ghi_chu: hai công thức
++- id: LG-1-11
++  loai_ca: 1
++  bai: BAC-BA
++  cau: $(v+u)' = v' + u'$ cũng chính là dòng [2].
++  bieu_thuc:
++  - doan: (v+u)' = v' + u'
++    loai: CONG_THUC_TONG_QUAT
++    trang_thai: DAT
++    dong_bang: d-2
++    kiem: v+u ≡ u+v
++  muc: nen_hien
++  ghi_chu: 'đổi chỗ hạng tử: biểu thức lấy đạo hàm trùng dòng [2] theo SymPy'
++- id: LG-1-12
++  loai_ca: 1
++  bai: BAC-BA
++  cau: 'Em nhớ dòng [1]: $(x^n)''=nx^{n-1}$.'
++  bieu_thuc:
++  - doan: (x^n)'=nx^{n-1}
++    loai: CONG_THUC_TONG_QUAT
++    trang_thai: DAT
++    dong_bang: d-1
++  muc: nen_hien
++  ghi_chu: không khoảng trắng
++- id: LG-1-13
++  loai_ca: 1
++  bai: HUU-TI
++  cau: Dòng [3] cho $\left(\dfrac{u}{v}\right)'=\dfrac{u'v-uv'}{v^{2}}$.
++  bieu_thuc:
++  - doan: \left(\dfrac{u}{v}\right)'=\dfrac{u'v-uv'}{v^{2}}
++    loai: CONG_THUC_TONG_QUAT
++    trang_thai: DAT
++    dong_bang: d-3
++  muc: nen_hien
++  ghi_chu: \dfrac
++- id: LG-1-14
++  loai_ca: 1
++  bai: HUU-TI
++  cau: Dòng [3] còn viết được là $\left(\frac{u}{v}\right)' = \frac{u'}{v} - \frac{uv'}{v^2}$.
++  bieu_thuc:
++  - doan: \left(\frac{u}{v}\right)' = \frac{u'}{v} - \frac{uv'}{v^2}
++    loai: CONG_THUC_TONG_QUAT
++    trang_thai: DAT
++    dong_bang: d-3
++    kiem: vế phải ≡ (u'v − uv')/v² theo SymPy
++  muc: nen_hien
++  ghi_chu: 'vế phải khai triển nhưng bằng vế phải của dòng [3] theo SymPy: vẫn khớp dòng'
++- id: LG-2-01
++  loai_ca: 2
++  bai: BAC-BA
++  cau: 'Đạo hàm của tích: $(uv)'' = u''v + uv''$.'
++  bieu_thuc:
++  - doan: (uv)' = u'v + uv'
++    loai: CONG_THUC_TONG_QUAT
++    trang_thai: KHONG_KIEM_DUOC
++    kiem: đúng; bảng v0 không có quy tắc tích
++  muc: phai_bo
++  ghi_chu: 'đúng toán học nhưng không có trong bảng đã khóa: thế giới đóng (ADR 013 mục 1), không phải SAI'
++- id: LG-2-02
++  loai_ca: 2
++  bai: BAC-BA
++  cau: 'Với hiệu: $(u - v)'' = u'' - v''$.'
++  bieu_thuc:
++  - doan: (u - v)' = u' - v'
++    loai: CONG_THUC_TONG_QUAT
++    trang_thai: KHONG_KIEM_DUOC
++    kiem: đúng; bảng không có dòng hiệu
++  muc: phai_bo
++  ghi_chu: 'đúng toán học nhưng không có trong bảng đã khóa: thế giới đóng (ADR 013 mục 1), không phải SAI'
++- id: LG-2-03
++  loai_ca: 2
++  bai: BAC-BA
++  cau: 'Hằng số đưa ra ngoài: $(k u)'' = k u''$.'
++  bieu_thuc:
++  - doan: (k u)' = k u'
++    loai: CONG_THUC_TONG_QUAT
++    trang_thai: KHONG_KIEM_DUOC
++    kiem: đúng; bảng không có dòng k·u
++  muc: phai_bo
++  ghi_chu: 'đúng toán học nhưng không có trong bảng đã khóa: thế giới đóng (ADR 013 mục 1), không phải SAI'
++- id: LG-2-04
++  loai_ca: 2
++  bai: BAC-BA
++  cau: Em nhớ $(\sin x)' = \cos x$.
++  bieu_thuc:
++  - doan: (\sin x)' = \cos x
++    loai: CONG_THUC_TONG_QUAT
++    trang_thai: KHONG_KIEM_DUOC
++    kiem: đúng
++  muc: phai_bo
++  ghi_chu: 'đúng toán học nhưng không có trong bảng đã khóa: thế giới đóng (ADR 013 mục 1), không phải SAI'
++- id: LG-2-05
++  loai_ca: 2
++  bai: BAC-BA
++  cau: Còn $(\cos x)' = -\sin x$.
++  bieu_thuc:
++  - doan: (\cos x)' = -\sin x
++    loai: CONG_THUC_TONG_QUAT
++    trang_thai: KHONG_KIEM_DUOC
++    kiem: đúng
++  muc: phai_bo
++  ghi_chu: 'đúng toán học nhưng không có trong bảng đã khóa: thế giới đóng (ADR 013 mục 1), không phải SAI'
++- id: LG-2-06
++  loai_ca: 2
++  bai: BAC-BA
++  cau: 'Hàm mũ: $(e^x)'' = e^x$.'
++  bieu_thuc:
++  - doan: (e^x)' = e^x
++    loai: CONG_THUC_TONG_QUAT
++    trang_thai: KHONG_KIEM_DUOC
++    kiem: đúng
++  muc: phai_bo
++  ghi_chu: 'đúng toán học nhưng không có trong bảng đã khóa: thế giới đóng (ADR 013 mục 1), không phải SAI'
++- id: LG-2-07
++  loai_ca: 2
++  bai: BAC-BA
++  cau: Với $x > 0$ thì $(\ln x)' = \frac{1}{x}$.
++  bieu_thuc:
++  - doan: x > 0
++    loai:
++    - KET_QUA_CU_THE
++    - CONG_THUC_TONG_QUAT
++    - KHONG_PHAN_TICH_DUOC
++    trang_thai:
++    - KHONG_KIEM_DUOC
++    - SAI
++  - doan: (\ln x)' = \frac{1}{x}
++    loai: CONG_THUC_TONG_QUAT
++    trang_thai: KHONG_KIEM_DUOC
++    kiem: đúng (x > 0)
++  muc: phai_bo
++  ghi_chu: 'đúng toán học nhưng không có trong bảng đã khóa: thế giới đóng (ADR 013 mục 1), không phải SAI'
++- id: LG-2-08
++  loai_ca: 2
++  bai: BAC-BA
++  cau: 'Căn bậc hai: $(\sqrt{x})'' = \frac{1}{2\sqrt{x}}$.'
++  bieu_thuc:
++  - doan: (\sqrt{x})' = \frac{1}{2\sqrt{x}}
++    loai: CONG_THUC_TONG_QUAT
++    trang_thai: KHONG_KIEM_DUOC
++    kiem: đúng (x > 0)
++  muc: phai_bo
++  ghi_chu: 'đúng toán học nhưng không có trong bảng đã khóa: thế giới đóng (ADR 013 mục 1), không phải SAI'
++- id: LG-2-09
++  loai_ca: 2
++  bai: BAC-BA
++  cau: 'Nghịch đảo: $\left(\frac{1}{v}\right)'' = -\frac{v''}{v^2}$.'
++  bieu_thuc:
++  - doan: \left(\frac{1}{v}\right)' = -\frac{v'}{v^2}
++    loai: CONG_THUC_TONG_QUAT
++    trang_thai: KHONG_KIEM_DUOC
++    kiem: đúng; biểu thức lấy đạo hàm 1/v không trùng dòng nào
++  muc: phai_bo
++  ghi_chu: 'đúng toán học nhưng không có trong bảng đã khóa: thế giới đóng (ADR 013 mục 1), không phải SAI'
++- id: LG-2-10
++  loai_ca: 2
++  bai: BAC-BA
++  cau: 'Lũy thừa của hàm: $(u^n)'' = n u^{n-1} u''$.'
++  bieu_thuc:
++  - doan: (u^n)' = n u^{n-1} u'
++    loai: CONG_THUC_TONG_QUAT
++    trang_thai: KHONG_KIEM_DUOC
++    kiem: đúng; khác dòng [1] (x^n)
++  muc: phai_bo
++  ghi_chu: 'đúng toán học nhưng không có trong bảng đã khóa: thế giới đóng (ADR 013 mục 1), không phải SAI'
++- id: LG-2-11
++  loai_ca: 2
++  bai: BAC-BA
++  cau: 'Hàm hợp: $(f(g(x)))'' = f''(g(x))\,g''(x)$.'
++  bieu_thuc:
++  - doan: (f(g(x)))' = f'(g(x))\,g'(x)
++    loai: CONG_THUC_TONG_QUAT
++    trang_thai: KHONG_KIEM_DUOC
++    kiem: đúng
++  muc: phai_bo
++  ghi_chu: 'đúng toán học nhưng không có trong bảng đã khóa: thế giới đóng (ADR 013 mục 1), không phải SAI'
++- id: LG-2-12
++  loai_ca: 2
++  bai: BAC-BA
++  cau: Hằng đẳng thức $(a + b)^2 = a^2 + 2ab + b^2$.
++  bieu_thuc:
++  - doan: (a + b)^2 = a^2 + 2ab + b^2
++    loai: CONG_THUC_TONG_QUAT
++    trang_thai: KHONG_KIEM_DUOC
++    kiem: đúng; không phải công thức của bảng
++  muc: phai_bo
++  ghi_chu: 'đúng toán học nhưng không có trong bảng đã khóa: thế giới đóng (ADR 013 mục 1), không phải SAI'
++- id: LG-2-13
++  loai_ca: 2
++  bai: BAC-BA
++  cau: 'Định lí: $y'' > 0 \text{ trên } K \Rightarrow \text{đồng biến trên } K$.'
++  bieu_thuc:
++  - doan: y' > 0 \text{ trên } K \Rightarrow \text{đồng biến trên } K
++    loai: CONG_THUC_TONG_QUAT
++    trang_thai: KHONG_KIEM_DUOC
++    kiem: DD1 đúng; bảng chỉ có DD2 (dòng [4])
++  muc: phai_bo
++  ghi_chu: 'đúng toán học nhưng không có trong bảng đã khóa: thế giới đóng (ADR 013 mục 1), không phải SAI'
++- id: LG-2-14
++  loai_ca: 2
++  bai: BAC-BA
++  cau: Còn $(\tan x)' = \frac{1}{\cos^2 x}$.
++  bieu_thuc:
++  - doan: (\tan x)' = \frac{1}{\cos^2 x}
++    loai: CONG_THUC_TONG_QUAT
++    trang_thai: KHONG_KIEM_DUOC
++    kiem: đúng
++  muc: phai_bo
++  ghi_chu: 'đúng toán học nhưng không có trong bảng đã khóa: thế giới đóng (ADR 013 mục 1), không phải SAI'
++- id: LG-3-01
++  loai_ca: 3
++  bai: BAC-BA
++  cau: Đạo hàm của tích là $(uv)' = u'v'$.
++  bieu_thuc:
++  - doan: (uv)' = u'v'
++    loai: CONG_THUC_TONG_QUAT
++    trang_thai: SAI
++    kiem: 'u = x, v = x: (x²)'' = 2x ≠ 1'
++  muc: phai_bo
++  ghi_chu: 'đẳng thức sai, máy bác được bằng hàm mẫu: SAI'
++- id: LG-3-02
++  loai_ca: 3
++  bai: BAC-BA
++  cau: 'Quy tắc thương: $(u/v)'' = \frac{u''v + uv''}{v^2}$.'
++  bieu_thuc:
++  - doan: (u/v)' = \frac{u'v + uv'}{v^2}
++    loai: CONG_THUC_TONG_QUAT
++    trang_thai: SAI
++    kiem: 'u = 1, v = x: −1/x² ≠ 1/x²'
++  muc: phai_bo
++  ghi_chu: 'đẳng thức sai, máy bác được bằng hàm mẫu: SAI'
++- id: LG-3-03
++  loai_ca: 3
++  bai: BAC-BA
++  cau: Em dùng $(u/v)' = \frac{u'}{v'}$.
++  bieu_thuc:
++  - doan: (u/v)' = \frac{u'}{v'}
++    loai: CONG_THUC_TONG_QUAT
++    trang_thai: SAI
++    kiem: 'u = x², v = x: 1 ≠ 2x'
++  muc: phai_bo
++  ghi_chu: 'đẳng thức sai, máy bác được bằng hàm mẫu: SAI'
++- id: LG-3-04
++  loai_ca: 3
++  bai: BAC-BA
++  cau: 'Thương: $(u/v)'' = \frac{uv'' - u''v}{v^2}$.'
++  bieu_thuc:
++  - doan: (u/v)' = \frac{uv' - u'v}{v^2}
++    loai: CONG_THUC_TONG_QUAT
++    trang_thai: SAI
++    kiem: 'đổi dấu tử: u = x, v = 1 cho 1 ≠ −1'
++  muc: phai_bo
++  ghi_chu: 'đẳng thức sai, máy bác được bằng hàm mẫu: SAI'
++- id: LG-3-05
++  loai_ca: 3
++  bai: BAC-BA
++  cau: 'Lũy thừa: $(x^n)'' = x^{n-1}$.'
++  bieu_thuc:
++  - doan: (x^n)' = x^{n-1}
++    loai: CONG_THUC_TONG_QUAT
++    trang_thai: SAI
++    kiem: 'n = 2: 2x ≠ x'
++  muc: phai_bo
++  ghi_chu: 'đẳng thức sai, máy bác được bằng hàm mẫu: SAI'
++- id: LG-3-06
++  loai_ca: 3
++  bai: BAC-BA
++  cau: 'Lũy thừa: $(x^n)'' = n x^{n+1}$.'
++  bieu_thuc:
++  - doan: (x^n)' = n x^{n+1}
++    loai: CONG_THUC_TONG_QUAT
++    trang_thai: SAI
++    kiem: 'n = 2: 2x ≠ 2x³'
++  muc: phai_bo
++  ghi_chu: 'đẳng thức sai, máy bác được bằng hàm mẫu: SAI'
++- id: LG-3-07
++  loai_ca: 3
++  bai: BAC-BA
++  cau: 'Tổng: $(u+v)'' = u''v''$.'
++  bieu_thuc:
++  - doan: (u+v)' = u'v'
++    loai: CONG_THUC_TONG_QUAT
++    trang_thai: SAI
++    kiem: 'u = x, v = x: 2 ≠ 1'
++  muc: phai_bo
++  ghi_chu: 'đẳng thức sai, máy bác được bằng hàm mẫu: SAI'
++- id: LG-3-08
++  loai_ca: 3
++  bai: BAC-BA
++  cau: 'Hiệu: $(u - v)'' = u'' + v''$.'
++  bieu_thuc:
++  - doan: (u - v)' = u' + v'
++    loai: CONG_THUC_TONG_QUAT
++    trang_thai: SAI
++    kiem: 'u = x, v = x: 0 ≠ 2'
++  muc: phai_bo
++  ghi_chu: 'đẳng thức sai, máy bác được bằng hàm mẫu: SAI'
++- id: LG-3-09
++  loai_ca: 3
++  bai: BAC-BA
++  cau: 'Căn: $(\sqrt{x})'' = \frac{1}{\sqrt{x}}$.'
++  bieu_thuc:
++  - doan: (\sqrt{x})' = \frac{1}{\sqrt{x}}
++    loai: CONG_THUC_TONG_QUAT
++    trang_thai: SAI
++    kiem: 'x = 1: 1/2 ≠ 1'
++  muc: phai_bo
++  ghi_chu: 'đẳng thức sai, máy bác được bằng hàm mẫu: SAI'
++- id: LG-3-10
++  loai_ca: 3
++  bai: BAC-BA
++  cau: 'Nghịch đảo: $\left(\frac{1}{x}\right)'' = \frac{1}{x^2}$.'
++  bieu_thuc:
++  - doan: \left(\frac{1}{x}\right)' = \frac{1}{x^2}
++    loai: CONG_THUC_TONG_QUAT
++    trang_thai: SAI
++    kiem: −1/x² ≠ 1/x²
++  muc: phai_bo
++  ghi_chu: 'đẳng thức sai, máy bác được bằng hàm mẫu: SAI'
++- id: LG-3-11
++  loai_ca: 3
++  bai: BAC-BA
++  cau: 'Mũ: $(e^{2x})'' = e^{2x}$.'
++  bieu_thuc:
++  - doan: (e^{2x})' = e^{2x}
++    loai: CONG_THUC_TONG_QUAT
++    trang_thai: SAI
++    kiem: 2e^{2x} ≠ e^{2x}
++  muc: phai_bo
++  ghi_chu: 'đẳng thức sai, máy bác được bằng hàm mẫu: SAI'
++- id: LG-3-12
++  loai_ca: 3
++  bai: BAC-BA
++  cau: 'Thương: $(u/v)'' = \frac{u''v - uv''}{v}$.'
++  bieu_thuc:
++  - doan: (u/v)' = \frac{u'v - uv'}{v}
++    loai: CONG_THUC_TONG_QUAT
++    trang_thai: SAI
++    kiem: 'thiếu bình phương: u = x, v = x cho 0 = 0 nhưng u = 1, v = x cho −1/x² ≠ −1/x'
++  muc: phai_bo
++  ghi_chu: 'đẳng thức sai, máy bác được bằng hàm mẫu: SAI'
++- id: LG-3-13
++  loai_ca: 3
++  bai: BAC-BA
++  cau: Nhớ là $y' < 0 \Rightarrow \text{đồng biến}$.
++  bieu_thuc:
++  - doan: y' < 0 \Rightarrow \text{đồng biến}
++    loai: CONG_THUC_TONG_QUAT
++    trang_thai: &id001
++    - SAI
++    - KHONG_KIEM_DUOC
++    kiem: 'y = −x: y'' = −1 < 0 nhưng nghịch biến'
++  muc: phai_bo
++  ghi_chu: 'định lí sai: máy có phản ví dụ thì SAI, không đọc trọn thì KHONG_KIEM_DUOC; cả hai đều bị bỏ'
++- id: LG-3-14
++  loai_ca: 3
++  bai: BAC-BA
++  cau: Khi $y' \text{ đổi dấu từ } - \text{ sang } + \Rightarrow \text{cực đại}$.
++  bieu_thuc:
++  - doan: y' \text{ đổi dấu từ } - \text{ sang } + \Rightarrow \text{cực đại}
++    loai: CONG_THUC_TONG_QUAT
++    trang_thai: *id001
++    kiem: 'y = x²: y'' đổi − → + tại 0, là cực tiểu'
++  muc: phai_bo
++  ghi_chu: 'định lí sai: máy có phản ví dụ thì SAI, không đọc trọn thì KHONG_KIEM_DUOC; cả hai đều bị bỏ'
++- id: LG-4-01
++  loai_ca: 4
++  bai: BAC-BA
++  cau: Thương có tử là $\frac{u'v - uv'}{v^2$.
++  bieu_thuc:
++  - doan: \frac{u'v - uv'}{v^2
++    loai: KHONG_PHAN_TICH_DUOC
++    trang_thai: KHONG_KIEM_DUOC
++    kiem: thiếu ngoặc nhọn đóng
++  muc: phai_bo
++  ghi_chu: 'LaTeX hỏng: không phân tích được, bị bỏ (đóng mặc định)'
++- id: LG-4-02
++  loai_ca: 4
++  bai: BAC-BA
++  cau: Em xem $(u/v)' = \frac{u'v-uv'}{$.
++  bieu_thuc:
++  - doan: (u/v)' = \frac{u'v-uv'}{
++    loai: KHONG_PHAN_TICH_DUOC
++    trang_thai: KHONG_KIEM_DUOC
++    kiem: \frac thiếu đối số
++  muc: phai_bo
++  ghi_chu: 'LaTeX hỏng: không phân tích được, bị bỏ (đóng mặc định)'
++- id: LG-4-03
++  loai_ca: 4
++  bai: BAC-BA
++  cau: 'Bình phương: $x^{2$.'
++  bieu_thuc:
++  - doan: x^{2
++    loai: KHONG_PHAN_TICH_DUOC
++    trang_thai: KHONG_KIEM_DUOC
++    kiem: thiếu ngoặc nhọn
++  muc: phai_bo
++  ghi_chu: 'LaTeX hỏng: không phân tích được, bị bỏ (đóng mặc định)'
++- id: LG-4-04
++  loai_ca: 4
++  bai: BAC-BA
++  cau: 'Căn: $\sqrt{x$.'
++  bieu_thuc:
++  - doan: \sqrt{x
++    loai: KHONG_PHAN_TICH_DUOC
++    trang_thai: KHONG_KIEM_DUOC
++    kiem: thiếu ngoặc nhọn
++  muc: phai_bo
++  ghi_chu: 'LaTeX hỏng: không phân tích được, bị bỏ (đóng mặc định)'
++- id: LG-4-05
++  loai_ca: 4
++  bai: BAC-BA
++  cau: 'Dòng [3]: $\left( \frac{u}{v} \right'' = \frac{u''v - uv''}{v^2}$.'
++  bieu_thuc:
++  - doan: \left( \frac{u}{v} \right' = \frac{u'v - uv'}{v^2}
++    loai: KHONG_PHAN_TICH_DUOC
++    trang_thai: KHONG_KIEM_DUOC
++    kiem: \right' không phải dấu ngoặc
++  muc: phai_bo
++  ghi_chu: 'LaTeX hỏng: không phân tích được, bị bỏ (đóng mặc định)'
++- id: LG-4-06
++  loai_ca: 4
++  bai: BAC-BA
++  cau: Ta có $y' = $ rồi xét dấu.
++  bieu_thuc:
++  - doan: 'y'' = '
++    loai: KHONG_PHAN_TICH_DUOC
++    trang_thai: KHONG_KIEM_DUOC
++    kiem: 'biểu thức cụt: KaTeX vẽ được nhưng thiếu vế phải, không phân loại được'
++  muc: phai_bo
++  ghi_chu: 'LaTeX hỏng: không phân tích được, bị bỏ (đóng mặc định)'
++- id: LG-4-07
++  loai_ca: 4
++  bai: BAC-BA
++  cau: Em tính $\foo{x} + 1$.
++  bieu_thuc:
++  - doan: \foo{x} + 1
++    loai: KHONG_PHAN_TICH_DUOC
++    trang_thai: KHONG_KIEM_DUOC
++    kiem: lệnh LaTeX không có
++  muc: phai_bo
++  ghi_chu: 'LaTeX hỏng: không phân tích được, bị bỏ (đóng mặc định)'
++- id: LG-4-08
++  loai_ca: 4
++  bai: BAC-BA
++  cau: 'Dòng [1]: $(x^n)'' = n x^{n-1}.'
++  bieu_thuc:
++  - doan: (x^n)' = n x^{n-1}.
++    loai: KHONG_PHAN_TICH_DUOC
++    trang_thai: KHONG_KIEM_DUOC
++    kiem: 'thiếu $ đóng (nội dung hợp lệ, dấu phân cách hỏng): bỏ dù là công thức của bảng'
++  muc: phai_bo
++  ghi_chu: 'LaTeX hỏng: không phân tích được, bị bỏ (đóng mặc định)'
++- id: LG-4-09
++  loai_ca: 4
++  bai: BAC-BA
++  cau: 'Tổng: \((u+v)'' = u'' + v''.'
++  bieu_thuc:
++  - doan: (u+v)' = u' + v'.
++    loai: KHONG_PHAN_TICH_DUOC
++    trang_thai: KHONG_KIEM_DUOC
++    kiem: thiếu \) đóng (nội dung hợp lệ, dấu phân cách hỏng)
++  muc: phai_bo
++  ghi_chu: 'LaTeX hỏng: không phân tích được, bị bỏ (đóng mặc định)'
++- id: LG-4-10
++  loai_ca: 4
++  bai: BAC-BA
++  cau: Nghịch đảo $\frac{1}{x}}$.
++  bieu_thuc:
++  - doan: \frac{1}{x}}
++    loai: KHONG_PHAN_TICH_DUOC
++    trang_thai: KHONG_KIEM_DUOC
++    kiem: thừa ngoặc nhọn đóng
++  muc: phai_bo
++  ghi_chu: 'LaTeX hỏng: không phân tích được, bị bỏ (đóng mặc định)'
++- id: LG-4-11
++  loai_ca: 4
++  bai: BAC-BA
++  cau: Điều kiện $x^2 \le\ $.
++  bieu_thuc:
++  - doan: 'x^2 \le\ '
++    loai: KHONG_PHAN_TICH_DUOC
++    trang_thai: KHONG_KIEM_DUOC
++    kiem: 'biểu thức cụt: KaTeX vẽ được nhưng thiếu vế phải, không phân loại được'
++  muc: phai_bo
++  ghi_chu: 'LaTeX hỏng: không phân tích được, bị bỏ (đóng mặc định)'
++- id: LG-4-12
++  loai_ca: 4
++  bai: BAC-BA
++  cau: Hệ $\begin{cases} x \end{cases$.
++  bieu_thuc:
++  - doan: \begin{cases} x \end{cases
++    loai: KHONG_PHAN_TICH_DUOC
++    trang_thai: KHONG_KIEM_DUOC
++    kiem: môi trường không đóng
++  muc: phai_bo
++  ghi_chu: 'LaTeX hỏng: không phân tích được, bị bỏ (đóng mặc định)'
++- id: LG-4-13
++  loai_ca: 4
++  bai: BAC-BA
++  cau: Quy tắc $$(u+v)' = u' + v'$.
++  bieu_thuc:
++  - doan: (u+v)' = u' + v'
++    loai: KHONG_PHAN_TICH_DUOC
++    trang_thai: KHONG_KIEM_DUOC
++    kiem: $$ mở, $ đóng (nội dung hợp lệ, dấu phân cách hỏng)
++  muc: phai_bo
++  ghi_chu: 'LaTeX hỏng: không phân tích được, bị bỏ (đóng mặc định)'
++- id: LG-4-14
++  loai_ca: 4
++  bai: BAC-BA
++  cau: 'Dòng [1]: $\left( x^n \right)'' = n x^{n-1} \right)$.'
++  bieu_thuc:
++  - doan: \left( x^n \right)' = n x^{n-1} \right)
++    loai: KHONG_PHAN_TICH_DUOC
++    trang_thai: KHONG_KIEM_DUOC
++    kiem: \right thừa
++  muc: phai_bo
++  ghi_chu: 'LaTeX hỏng: không phân tích được, bị bỏ (đóng mặc định)'
++- id: LG-5-01
++  loai_ca: 5
++  bai: BAC-BA
++  cau: Đạo hàm của hàm này là $y' = 3x^2 - 6x$.
++  bieu_thuc:
++  - doan: y' = 3x^2 - 6x
++    loai:
++    - KET_QUA_CU_THE
++    - CONG_THUC_TONG_QUAT
++    trang_thai: KHONG_KIEM_DUOC
++    kiem: đạo hàm của đề, cũng là dữ kiện bảo vệ
++  muc: phai_bo
++  ghi_chu: 'kết quả tính cụ thể của bài: bị bỏ (ADR 013 mục 1)'
++- id: LG-5-02
++  loai_ca: 5
++  bai: BAC-BA
++  cau: Nghiệm là $x = 0$ và $x = 2$.
++  bieu_thuc:
++  - doan: x = 0
++    loai:
++    - KET_QUA_CU_THE
++    - CONG_THUC_TONG_QUAT
++    trang_thai: KHONG_KIEM_DUOC
++    kiem: nghiệm của y'
++  - doan: x = 2
++    loai:
++    - KET_QUA_CU_THE
++    - CONG_THUC_TONG_QUAT
++    trang_thai: KHONG_KIEM_DUOC
++    kiem: nghiệm của y'
++  muc: phai_bo
++  ghi_chu: 'kết quả tính cụ thể của bài: bị bỏ (ADR 013 mục 1)'
++- id: LG-5-03
++  loai_ca: 5
++  bai: BAC-BA
++  cau: Em phân tích $3x^2 - 6x = 3x(x - 2)$.
++  bieu_thuc:
++  - doan: 3x^2 - 6x = 3x(x - 2)
++    loai:
++    - KET_QUA_CU_THE
++    - CONG_THUC_TONG_QUAT
++    trang_thai: KHONG_KIEM_DUOC
++    kiem: biến đổi của đạo hàm
++  muc: phai_bo
++  ghi_chu: 'kết quả tính cụ thể của bài: bị bỏ (ADR 013 mục 1)'
++- id: LG-5-04
++  loai_ca: 5
++  bai: BAC-BA
++  cau: 'Bước đầu: $(x^3)'' = 3x^2$.'
++  bieu_thuc:
++  - doan: (x^3)' = 3x^2
++    loai:
++    - KET_QUA_CU_THE
++    - CONG_THUC_TONG_QUAT
++    trang_thai: KHONG_KIEM_DUOC
++    kiem: một bước tính đạo hàm của đề, không phải công thức tổng quát dòng [1]
++  muc: phai_bo
++  ghi_chu: 'kết quả tính cụ thể của bài: bị bỏ (ADR 013 mục 1)'
++- id: LG-5-05
++  loai_ca: 5
++  bai: BAC-BA
++  cau: Giá trị cực đại là $y(0) = 2$.
++  bieu_thuc:
++  - doan: y(0) = 2
++    loai:
++    - KET_QUA_CU_THE
++    - CONG_THUC_TONG_QUAT
++    trang_thai: KHONG_KIEM_DUOC
++    kiem: giá trị cực trị
++  muc: phai_bo
++  ghi_chu: 'kết quả tính cụ thể của bài: bị bỏ (ADR 013 mục 1)'
++- id: LG-5-06
++  loai_ca: 5
++  bai: BAC-BA
++  cau: Hàm đồng biến trên $(-\infty; 0)$ và $(2; +\infty)$.
++  bieu_thuc:
++  - doan: (-\infty; 0)
++    loai:
++    - KET_QUA_CU_THE
++    - CONG_THUC_TONG_QUAT
++    trang_thai: KHONG_KIEM_DUOC
++    kiem: khoảng đơn điệu của đề
++  - doan: (2; +\infty)
++    loai:
++    - KET_QUA_CU_THE
++    - CONG_THUC_TONG_QUAT
++    trang_thai: KHONG_KIEM_DUOC
++    kiem: khoảng đơn điệu của đề
++  muc: phai_bo
++  ghi_chu: 'kết quả tính cụ thể của bài: bị bỏ (ADR 013 mục 1)'
++- id: LG-5-07
++  loai_ca: 5
++  bai: BAC-BA
++  cau: Đạo hàm cấp hai là $y'' = 6x - 6$.
++  bieu_thuc:
++  - doan: y'' = 6x - 6
++    loai:
++    - KET_QUA_CU_THE
++    - CONG_THUC_TONG_QUAT
++    trang_thai: KHONG_KIEM_DUOC
++    kiem: kết quả tính
++  muc: phai_bo
++  ghi_chu: 'kết quả tính cụ thể của bài: bị bỏ (ADR 013 mục 1)'
++- id: LG-5-08
++  loai_ca: 5
++  bai: BAC-BA
++  cau: Đạo hàm đúng là $3x^2-6x$.
++  bieu_thuc:
++  - doan: 3x^2-6x
++    loai:
++    - KET_QUA_CU_THE
++    - CONG_THUC_TONG_QUAT
++    trang_thai: KHONG_KIEM_DUOC
++    kiem: trùng dòng học sinh nhưng là lời khẳng định của gia sư, không phải «em viết …»
++  muc: phai_bo
++  ghi_chu: 'kết quả tính cụ thể của bài: bị bỏ (ADR 013 mục 1)'
++- id: LG-5-09
++  loai_ca: 5
++  bai: BAC-BA
++  cau: Cực tiểu bằng $-2$.
++  bieu_thuc:
++  - doan: '-2'
++    loai:
++    - KET_QUA_CU_THE
++    - CONG_THUC_TONG_QUAT
++    trang_thai: KHONG_KIEM_DUOC
++    kiem: một số riêng lẻ vẫn là kết quả của bài
++  muc: phai_bo
++  ghi_chu: 'kết quả tính cụ thể của bài: bị bỏ (ADR 013 mục 1)'
++- id: LG-5-10
++  loai_ca: 5
++  bai: HUU-TI
++  cau: Đạo hàm là $y' = \frac{x^2 - 2x - 3}{(x - 1)^2}$.
++  bieu_thuc:
++  - doan: y' = \frac{x^2 - 2x - 3}{(x - 1)^2}
++    loai:
++    - KET_QUA_CU_THE
++    - CONG_THUC_TONG_QUAT
++    trang_thai: KHONG_KIEM_DUOC
++    kiem: đạo hàm của đề
++  muc: phai_bo
++  ghi_chu: 'kết quả tính cụ thể của bài: bị bỏ (ADR 013 mục 1)'
++- id: LG-5-11
++  loai_ca: 5
++  bai: HUU-TI
++  cau: Hai nghiệm $x = -1$, $x = 3$.
++  bieu_thuc:
++  - doan: x = -1
++    loai:
++    - KET_QUA_CU_THE
++    - CONG_THUC_TONG_QUAT
++    trang_thai: KHONG_KIEM_DUOC
++    kiem: nghiệm của y'
++  - doan: x = 3
++    loai:
++    - KET_QUA_CU_THE
++    - CONG_THUC_TONG_QUAT
++    trang_thai: KHONG_KIEM_DUOC
++    kiem: nghiệm của y'
++  muc: phai_bo
++  ghi_chu: 'kết quả tính cụ thể của bài: bị bỏ (ADR 013 mục 1)'
++- id: LG-5-12
++  loai_ca: 5
++  bai: HUU-TI
++  cau: Tập xác định $D = \mathbb{R} \setminus \{1\}$.
++  bieu_thuc:
++  - doan: D = \mathbb{R} \setminus \{1\}
++    loai:
++    - KET_QUA_CU_THE
++    - CONG_THUC_TONG_QUAT
++    trang_thai: KHONG_KIEM_DUOC
++    kiem: tập xác định là kết quả của bước TXD
++  muc: phai_bo
++  ghi_chu: 'kết quả tính cụ thể của bài: bị bỏ (ADR 013 mục 1)'
++- id: LG-5-13
++  loai_ca: 5
++  bai: TRUNG-PHUONG
++  cau: Ta có $y' = 4x^3 - 4x = 4x(x^2 - 1)$.
++  bieu_thuc:
++  - doan: y' = 4x^3 - 4x = 4x(x^2 - 1)
++    loai:
++    - KET_QUA_CU_THE
++    - CONG_THUC_TONG_QUAT
++    trang_thai: KHONG_KIEM_DUOC
++    kiem: đạo hàm và biến đổi
++  muc: phai_bo
++  ghi_chu: 'kết quả tính cụ thể của bài: bị bỏ (ADR 013 mục 1)'
++- id: LG-5-14
++  loai_ca: 5
++  bai: BAC-BA
++  cau: Em viết $3x^2-6x$, giờ em tìm nghiệm của nó nhé.
++  bieu_thuc:
++  - doan: 3x^2-6x
++    loai: TRICH_BAI_LAM
++    trang_thai: DAT
++  muc: nen_hien
++  ghi_chu: 'trùng nguyên văn dòng học sinh đã nộp và câu trình bày là lời của học sinh («em viết …»): được giữ'
++- id: LG-5-15
++  loai_ca: 5
++  bai: HUU-TI
++  cau: Em viết $x \ne 1$ ở bước tập xác định, đúng rồi đó.
++  bieu_thuc:
++  - doan: x \ne 1
++    loai: TRICH_BAI_LAM
++    trang_thai: DAT
++  muc: nen_hien
++  ghi_chu: trích bài làm của học sinh
++- id: LG-6-01
++  loai_ca: 6
++  bai: BAC-BA
++  cau: Đạo hàm của tích là (uv)' = u'v' nhé.
++  bieu_thuc:
++  - doan: (uv)' = u'v'
++    loai: KHONG_PHAN_TICH_DUOC
++    trang_thai: KHONG_KIEM_DUOC
++    kiem: ví dụ của ADR 013 mục 2
++  muc: phai_bo
++  ghi_chu: 'toán viết trần: không phân tích được, bị bỏ (ADR 013 mục 2)'
++- id: LG-6-02
++  loai_ca: 6
++  bai: BAC-BA
++  cau: Em tính được y' = 3x^2 - 6x rồi.
++  bieu_thuc:
++  - doan: y' = 3x^2 - 6x
++    loai: KHONG_PHAN_TICH_DUOC
++    trang_thai: KHONG_KIEM_DUOC
++    kiem: kết quả viết trần
++  muc: phai_bo
++  ghi_chu: 'toán viết trần: không phân tích được, bị bỏ (ADR 013 mục 2)'
++- id: LG-6-03
++  loai_ca: 6
++  bai: HUU-TI
++  cau: 'Quy tắc thương: (u/v)'' = (u''v - uv'')/v^2.'
++  bieu_thuc:
++  - doan: (u/v)' = (u'v - uv')/v^2
++    loai: KHONG_PHAN_TICH_DUOC
++    trang_thai: KHONG_KIEM_DUOC
++    kiem: 'công thức của bảng nhưng viết trần: vẫn bị bỏ'
++  muc: phai_bo
++  ghi_chu: 'toán viết trần: không phân tích được, bị bỏ (ADR 013 mục 2)'
++- id: LG-6-04
++  loai_ca: 6
++  bai: BAC-BA
++  cau: Nghiệm là x = 0 hoặc x = 2.
++  bieu_thuc:
++  - doan: x = 0
++    loai: KHONG_PHAN_TICH_DUOC
++    trang_thai: KHONG_KIEM_DUOC
++    kiem: kết quả viết trần
++  - doan: x = 2
++    loai: KHONG_PHAN_TICH_DUOC
++    trang_thai: KHONG_KIEM_DUOC
++    kiem: kết quả viết trần
++  muc: phai_bo
++  ghi_chu: 'toán viết trần: không phân tích được, bị bỏ (ADR 013 mục 2)'
++- id: LG-6-05
++  loai_ca: 6
++  bai: BAC-BA
++  cau: Dùng 3x^2 cho đạo hàm của x^3.
++  bieu_thuc:
++  - doan: 3x^2
++    loai: KHONG_PHAN_TICH_DUOC
++    trang_thai: KHONG_KIEM_DUOC
++    kiem: chữ số kề biến, mũ
++  - doan: x^3
++    loai: KHONG_PHAN_TICH_DUOC
++    trang_thai: KHONG_KIEM_DUOC
++    kiem: chữ số kề biến, mũ
++  muc: phai_bo
++  ghi_chu: 'toán viết trần: không phân tích được, bị bỏ (ADR 013 mục 2)'
++- id: LG-6-06
++  loai_ca: 6
++  bai: BAC-BA
++  cau: Ta có \frac{1}{2} ở đây.
++  bieu_thuc:
++  - doan: \frac{1}{2}
++    loai: KHONG_PHAN_TICH_DUOC
++    trang_thai: KHONG_KIEM_DUOC
++    kiem: lệnh LaTeX ngoài dấu phân cách
++  muc: phai_bo
++  ghi_chu: 'toán viết trần: không phân tích được, bị bỏ (ADR 013 mục 2)'
++- id: LG-6-07
++  loai_ca: 6
++  bai: HUU-TI
++  cau: Điều kiện x ≠ 1 nhé.
++  bieu_thuc:
++  - doan: x ≠ 1
++    loai: KHONG_PHAN_TICH_DUOC
++    trang_thai: KHONG_KIEM_DUOC
++    kiem: dấu ≠
++  muc: phai_bo
++  ghi_chu: 'toán viết trần: không phân tích được, bị bỏ (ADR 013 mục 2)'
++- id: LG-6-08
++  loai_ca: 6
++  bai: BAC-BA
++  cau: Vì y'(0) = 0 nên ta xét điểm đó.
++  bieu_thuc:
++  - doan: y'(0) = 0
++    loai: KHONG_PHAN_TICH_DUOC
++    trang_thai: KHONG_KIEM_DUOC
++    kiem: dấu phẩy trên và =
++  muc: phai_bo
++  ghi_chu: 'toán viết trần: không phân tích được, bị bỏ (ADR 013 mục 2)'
++- id: LG-6-09
++  loai_ca: 6
++  bai: TRUNG-PHUONG
++  cau: Em thử với x^2 - 1 xem.
++  bieu_thuc:
++  - doan: x^2 - 1
++    loai: KHONG_PHAN_TICH_DUOC
++    trang_thai: KHONG_KIEM_DUOC
++    kiem: mũ
++  muc: phai_bo
++  ghi_chu: 'toán viết trần: không phân tích được, bị bỏ (ADR 013 mục 2)'
++- id: LG-6-10
++  loai_ca: 6
++  bai: BAC-BA
++  cau: Đạo hàm bằng 2x tại đây.
++  bieu_thuc:
++  - doan: 2x
++    loai: KHONG_PHAN_TICH_DUOC
++    trang_thai: KHONG_KIEM_DUOC
++    kiem: chữ số kề biến
++  muc: phai_bo
++  ghi_chu: 'toán viết trần: không phân tích được, bị bỏ (ADR 013 mục 2)'
++- id: LG-6-11
++  loai_ca: 6
++  bai: HUU-TI
++  cau: Biểu thức u' v đi với v bình.
++  bieu_thuc:
++  - doan: u' v
++    loai: KHONG_PHAN_TICH_DUOC
++    trang_thai: KHONG_KIEM_DUOC
++    kiem: dấu phẩy trên
++  muc: phai_bo
++  ghi_chu: 'toán viết trần: không phân tích được, bị bỏ (ADR 013 mục 2)'
++- id: LG-6-12
++  loai_ca: 6
++  bai: BAC-BA
++  cau: Em nhớ y' = f'(x) nha.
++  bieu_thuc:
++  - doan: y' = f'(x)
++    loai: KHONG_PHAN_TICH_DUOC
++    trang_thai: KHONG_KIEM_DUOC
++    kiem: dấu phẩy trên và =
++  muc: phai_bo
++  ghi_chu: 'toán viết trần: không phân tích được, bị bỏ (ADR 013 mục 2)'
++- id: LG-6-13
++  loai_ca: 6
++  bai: BAC-BA
++  cau: Ta xét dấu của 3x(x - 2).
++  bieu_thuc:
++  - doan: 3x(x - 2)
++    loai: KHONG_PHAN_TICH_DUOC
++    trang_thai: KHONG_KIEM_DUOC
++    kiem: chữ số kề biến
++  muc: phai_bo
++  ghi_chu: 'toán viết trần: không phân tích được, bị bỏ (ADR 013 mục 2)'
++- id: LG-6-14
++  loai_ca: 6
++  bai: BAC-BA
++  cau: Khi y' ≥ 0 thì hàm đồng biến.
++  bieu_thuc:
++  - doan: y' ≥ 0
++    loai:
++    - KHONG_PHAN_TICH_DUOC
++    - QUY_TAC_BANG_LOI
++    trang_thai: *id001
++    kiem: 'thiếu «chỉ bằng 0 tại hữu hạn điểm»: y = 1 có y'' = 0 ≥ 0 mà không đồng biến'
++  muc: phai_bo
++  ghi_chu: 'toán viết trần trong một câu quy tắc; câu cũng sai (thiếu điều kiện của DD2): bỏ dù phân loại theo cách
++    nào'
++- id: LG-7-01
++  loai_ca: 7
++  bai: BAC-BA
++  cau: Hàm số của đề là $y = x^3 - 3x^2 + 2$.
++  bieu_thuc:
++  - doan: y = x^3 - 3x^2 + 2
++    loai: TRICH_DE_BAI
++    trang_thai: DAT
++    kiem: nguyên văn đề
++  muc: nen_hien
++  ghi_chu: 'trích nguyên văn đề bài: được giữ'
++- id: LG-7-02
++  loai_ca: 7
++  bai: BAC-BA
++  cau: Em xét hàm $x^3 - 3x^2 + 2$ của đề.
++  bieu_thuc:
++  - doan: x^3 - 3x^2 + 2
++    loai: TRICH_DE_BAI
++    trang_thai: DAT
++    kiem: hàm của đề
++  muc: nen_hien
++  ghi_chu: 'trích nguyên văn đề bài: được giữ'
++- id: LG-7-03
++  loai_ca: 7
++  bai: BAC-BA
++  cau: Đề cho $x^{3} - 3x^{2} + 2$.
++  bieu_thuc:
++  - doan: x^{3} - 3x^{2} + 2
++    loai: TRICH_DE_BAI
++    trang_thai: DAT
++    kiem: chuẩn hóa ngoặc nhọn của số mũ
++  muc: nen_hien
++  ghi_chu: 'trích nguyên văn đề bài: được giữ'
++- id: LG-7-04
++  loai_ca: 7
++  bai: BAC-BA
++  cau: Hàm $x^3-3x^2+2$ là đa thức.
++  bieu_thuc:
++  - doan: x^3-3x^2+2
++    loai: TRICH_DE_BAI
++    trang_thai: DAT
++    kiem: chuẩn hóa khoảng trắng
++  muc: nen_hien
++  ghi_chu: 'trích nguyên văn đề bài: được giữ'
++- id: LG-7-05
++  loai_ca: 7
++  bai: BAC-BA
++  cau: Em nhập $x**3 - 3*x**2 + 2$ vào máy.
++  bieu_thuc:
++  - doan: x**3 - 3*x**2 + 2
++    loai: TRICH_DE_BAI
++    trang_thai: DAT
++    kiem: chuẩn hóa ** và dấu nhân
++  muc: nen_hien
++  ghi_chu: 'trích nguyên văn đề bài: được giữ'
++- id: LG-7-06
++  loai_ca: 7
++  bai: BAC-BA
++  cau: Hàm $y = x^3 - 3 x^2 + 2$ của đề.
++  bieu_thuc:
++  - doan: y = x^3 - 3 x^2 + 2
++    loai: TRICH_DE_BAI
++    trang_thai: DAT
++    kiem: dấu nhân ẩn có khoảng trắng
++  muc: nen_hien
++  ghi_chu: 'trích nguyên văn đề bài: được giữ'
++- id: LG-7-07
++  loai_ca: 7
++  bai: HUU-TI
++  cau: Hàm của đề là $y = \frac{x^2 + 3}{x - 1}$.
++  bieu_thuc:
++  - doan: y = \frac{x^2 + 3}{x - 1}
++    loai: TRICH_DE_BAI
++    trang_thai: DAT
++    kiem: nguyên văn đề
++  muc: nen_hien
++  ghi_chu: 'trích nguyên văn đề bài: được giữ'
++- id: LG-7-08
++  loai_ca: 7
++  bai: HUU-TI
++  cau: Tử là $x^2 + 3$.
++  bieu_thuc:
++  - doan: x^2 + 3
++    loai: TRICH_DE_BAI
++    trang_thai: DAT
++    kiem: tử của hàm (ADR 013 mục 1)
++  muc: nen_hien
++  ghi_chu: 'trích nguyên văn đề bài: được giữ'
++- id: LG-7-09
++  loai_ca: 7
++  bai: HUU-TI
++  cau: Mẫu là $x - 1$.
++  bieu_thuc:
++  - doan: x - 1
++    loai: TRICH_DE_BAI
++    trang_thai: DAT
++    kiem: mẫu của hàm
++  muc: nen_hien
++  ghi_chu: 'trích nguyên văn đề bài: được giữ'
++- id: LG-7-10
++  loai_ca: 7
++  bai: TRUNG-PHUONG
++  cau: Đề cho $y = x^4 - 2x^2$.
++  bieu_thuc:
++  - doan: y = x^4 - 2x^2
++    loai: TRICH_DE_BAI
++    trang_thai: DAT
++    kiem: nguyên văn đề
++  muc: nen_hien
++  ghi_chu: 'trích nguyên văn đề bài: được giữ'
++- id: LG-7-11
++  loai_ca: 7
++  bai: BAC-BA
++  cau: Viết lại $x^3 - 3x^2 + 2 = (x - 1)(x^2 - 2x - 2)$.
++  bieu_thuc:
++  - doan: x^3 - 3x^2 + 2 = (x - 1)(x^2 - 2x - 2)
++    loai:
++    - KET_QUA_CU_THE
++    - CONG_THUC_TONG_QUAT
++    - TRICH_DE_BAI
++    trang_thai: KHONG_KIEM_DUOC
++    kiem: phân tích nhân tử đúng nhưng là dạng đã biến đổi
++  muc: phai_bo
++  ghi_chu: 'không phải trích: ADR 013 mục 1 «không rút gọn»'
++- id: LG-7-12
++  loai_ca: 7
++  bai: TRUNG-PHUONG
++  cau: Hàm là $y = x^2(x^2 - 2)$.
++  bieu_thuc:
++  - doan: y = x^2(x^2 - 2)
++    loai:
++    - KET_QUA_CU_THE
++    - CONG_THUC_TONG_QUAT
++    - TRICH_DE_BAI
++    trang_thai: KHONG_KIEM_DUOC
++    kiem: dạng đã phân tích, không phải trích
++  muc: phai_bo
++  ghi_chu: 'không phải trích: ADR 013 mục 1 «không rút gọn»'
++- id: LG-7-13
++  loai_ca: 7
++  bai: BAC-BA
++  cau: Hàm $2 - 3x^2 + x^3$ của đề.
++  bieu_thuc:
++  - doan: 2 - 3x^2 + x^3
++    loai:
++    - KET_QUA_CU_THE
++    - CONG_THUC_TONG_QUAT
++    - TRICH_DE_BAI
++    trang_thai: KHONG_KIEM_DUOC
++    kiem: đổi thứ tự hạng tử không nằm trong chuẩn hóa cách viết của ADR 013
++  muc: phai_bo
++  ghi_chu: 'không phải trích: ADR 013 mục 1 «không rút gọn»'
++- id: LG-7-14
++  loai_ca: 7
++  bai: HUU-TI
++  cau: Chia ra được $y = x + 1 + \frac{4}{x - 1}$.
++  bieu_thuc:
++  - doan: y = x + 1 + \frac{4}{x - 1}
++    loai:
++    - KET_QUA_CU_THE
++    - CONG_THUC_TONG_QUAT
++    - TRICH_DE_BAI
++    trang_thai: KHONG_KIEM_DUOC
++    kiem: 'chia đa thức: dạng đã biến đổi'
++  muc: phai_bo
++  ghi_chu: 'không phải trích: ADR 013 mục 1 «không rút gọn»'
++- id: LG-8-01
++  loai_ca: 8
++  bai: BAC-BA
++  cau: Đạo hàm của tổng bằng tổng các đạo hàm.
++  bieu_thuc:
++  - doan: Đạo hàm của tổng bằng tổng các đạo hàm
++    loai: QUY_TAC_BANG_LOI
++    trang_thai: DAT
++    dong_bang: d-2
++    kiem: nguyên văn phát biểu của dòng
++  muc: nen_hien
++  ghi_chu: 'khớp phát biểu dòng bảng sau chuẩn hóa: giữ'
++- id: LG-8-02
++  loai_ca: 8
++  bai: BAC-BA
++  cau: đạo hàm của tổng bằng tổng các đạo hàm
++  bieu_thuc:
++  - doan: đạo hàm của tổng bằng tổng các đạo hàm
++    loai: QUY_TAC_BANG_LOI
++    trang_thai: DAT
++    dong_bang: d-2
++    kiem: khác hoa thường và dấu câu
++  muc: nen_hien
++  ghi_chu: 'khớp phát biểu dòng bảng sau chuẩn hóa: giữ'
++- id: LG-8-03
++  loai_ca: 8
++  bai: BAC-BA
++  cau: Đạo hàm của x mũ n là n nhân x mũ n trừ 1.
++  bieu_thuc:
++  - doan: Đạo hàm của x mũ n là n nhân x mũ n trừ 1
++    loai: QUY_TAC_BANG_LOI
++    trang_thai: DAT
++    dong_bang: d-1
++    kiem: một câu của phát biểu dòng [1]
++  muc: nen_hien
++  ghi_chu: 'khớp phát biểu dòng bảng sau chuẩn hóa: giữ'
++- id: LG-8-04
++  loai_ca: 8
++  bai: BAC-BA
++  cau: Hằng số có đạo hàm bằng 0.
++  bieu_thuc:
++  - doan: Hằng số có đạo hàm bằng 0
++    loai: QUY_TAC_BANG_LOI
++    trang_thai: DAT
++    dong_bang: d-1
++    kiem: câu thứ hai của phát biểu dòng [1]
++  muc: nen_hien
++  ghi_chu: 'khớp phát biểu dòng bảng sau chuẩn hóa: giữ'
++- id: LG-8-05
++  loai_ca: 8
++  bai: BAC-BA
++  cau: Với thương, tử là u'v trừ uv', mẫu là v bình.
++  bieu_thuc:
++  - doan: Với thương, tử là u'v trừ uv', mẫu là v bình
++    loai: QUY_TAC_BANG_LOI
++    trang_thai: DAT
++    dong_bang: d-3
++    kiem: 'có dấu phẩy trên nhưng là nguyên văn phát biểu: không coi là toán viết trần'
++  muc: nen_hien
++  ghi_chu: 'khớp phát biểu dòng bảng sau chuẩn hóa: giữ'
++- id: LG-8-06
++  loai_ca: 8
++  bai: BAC-BA
++  cau: Đạo hàm bằng 0 mà không đổi dấu thì chưa phải cực trị.
++  bieu_thuc:
++  - doan: Đạo hàm bằng 0 mà không đổi dấu thì chưa phải cực trị
++    loai: QUY_TAC_BANG_LOI
++    trang_thai: DAT
++    dong_bang: d-5
++    kiem: câu thứ hai của phát biểu dòng [5]
++  muc: nen_hien
++  ghi_chu: 'khớp phát biểu dòng bảng sau chuẩn hóa: giữ'
++- id: LG-8-07
++  loai_ca: 8
++  bai: BAC-BA
++  cau: Điểm tới hạn gồm nghiệm của đạo hàm bằng 0 và điểm thuộc tập xác định mà đạo hàm không xác định.
++  bieu_thuc:
++  - doan: Điểm tới hạn gồm nghiệm của đạo hàm bằng 0 và điểm thuộc tập xác định mà đạo hàm không xác định
++    loai: QUY_TAC_BANG_LOI
++    trang_thai: DAT
++    dong_bang: d-6
++    kiem: nguyên văn
++  muc: nen_hien
++  ghi_chu: 'khớp phát biểu dòng bảng sau chuẩn hóa: giữ'
++- id: LG-8-08
++  loai_ca: 8
++  bai: BAC-BA
++  cau: Trên một khoảng, nếu y' ≥ 0 và y' = 0 chỉ tại hữu hạn điểm thì hàm số đồng biến trên khoảng đó.
++  bieu_thuc:
++  - doan: Trên một khoảng, nếu y' ≥ 0 và y' = 0 chỉ tại hữu hạn điểm thì hàm số đồng biến trên khoảng đó
++    loai: QUY_TAC_BANG_LOI
++    trang_thai:
++    - DAT
++    - KHONG_KIEM_DUOC
++    dong_bang: d-4
++    kiem: diễn đạt lại DD2 = cách đọc của dòng [4]
++  muc: nen_hien
++  ghi_chu: 'diễn đạt lại đúng một dòng bảng: giữ nếu bộ nhận dạng tầng 2 đọc ra đúng mục danh mục của dòng; không
++    đọc được thì bỏ cả câu (chặt quá, không lọt)'
++- id: LG-8-09
++  loai_ca: 8
++  bai: BAC-BA
++  cau: Nếu đạo hàm đổi dấu từ dương sang âm khi x đi qua x0 thì x0 là điểm cực đại.
++  bieu_thuc:
++  - doan: Nếu đạo hàm đổi dấu từ dương sang âm khi x đi qua x0 thì x0 là điểm cực đại
++    loai: QUY_TAC_BANG_LOI
++    trang_thai:
++    - DAT
++    - KHONG_KIEM_DUOC
++    dong_bang: d-5
++    kiem: diễn đạt lại CT1 = một mệnh đề của dòng [5]
++  muc: nen_hien
++  ghi_chu: 'diễn đạt lại đúng một dòng bảng: giữ nếu bộ nhận dạng tầng 2 đọc ra đúng mục danh mục của dòng; không
++    đọc được thì bỏ cả câu (chặt quá, không lọt)'
++- id: LG-8-10
++  loai_ca: 8
++  bai: BAC-BA
++  cau: Đạo hàm của tích bằng đạo hàm u nhân v cộng u nhân đạo hàm v.
++  bieu_thuc:
++  - doan: Đạo hàm của tích bằng đạo hàm u nhân v cộng u nhân đạo hàm v
++    loai: QUY_TAC_BANG_LOI
++    trang_thai: KHONG_KIEM_DUOC
++    kiem: quy tắc tích đúng, bảng không có
++  muc: phai_bo
++  thay_bang_goi_y: true
++  ghi_chu: 'quy tắc đúng ngoài bảng: bỏ cả câu (ADR 013 mục 2)'
++- id: LG-8-11
++  loai_ca: 8
++  bai: BAC-BA
++  cau: Nếu đạo hàm dương trên một khoảng thì hàm số đồng biến trên khoảng đó.
++  bieu_thuc:
++  - doan: Nếu đạo hàm dương trên một khoảng thì hàm số đồng biến trên khoảng đó
++    loai: QUY_TAC_BANG_LOI
++    trang_thai: KHONG_KIEM_DUOC
++    kiem: DD1 đúng, bảng chỉ có DD2
++  muc: phai_bo
++  thay_bang_goi_y: true
++  ghi_chu: 'quy tắc đúng ngoài bảng: bỏ cả câu (ADR 013 mục 2)'
++- id: LG-8-12
++  loai_ca: 8
++  bai: BAC-BA
++  cau: Hàm số đồng biến trên một khoảng thì đạo hàm không âm trên khoảng đó.
++  bieu_thuc:
++  - doan: Hàm số đồng biến trên một khoảng thì đạo hàm không âm trên khoảng đó
++    loai: QUY_TAC_BANG_LOI
++    trang_thai: KHONG_KIEM_DUOC
++    kiem: DD3 đúng, chiều ngược của dòng [4]
++  muc: phai_bo
++  thay_bang_goi_y: true
++  ghi_chu: 'quy tắc đúng ngoài bảng: bỏ cả câu (ADR 013 mục 2)'
++- id: LG-8-13
++  loai_ca: 8
++  bai: BAC-BA
++  cau: Đạo hàm của hiệu bằng hiệu các đạo hàm.
++  bieu_thuc:
++  - doan: Đạo hàm của hiệu bằng hiệu các đạo hàm
++    loai: QUY_TAC_BANG_LOI
++    trang_thai: KHONG_KIEM_DUOC
++    kiem: đúng, bảng không có dòng hiệu
++  muc: phai_bo
++  thay_bang_goi_y: true
++  ghi_chu: 'quy tắc đúng ngoài bảng: bỏ cả câu (ADR 013 mục 2)'
++- id: LG-8-14
++  loai_ca: 8
++  bai: BAC-BA
++  cau: Đạo hàm của tích bằng đạo hàm u nhân v trừ u nhân đạo hàm v.
++  bieu_thuc:
++  - doan: Đạo hàm của tích bằng đạo hàm u nhân v trừ u nhân đạo hàm v
++    loai: QUY_TAC_BANG_LOI
++    trang_thai: *id001
++    kiem: 'ví dụ của ADR 013: sai dấu'
++  muc: phai_bo
++  thay_bang_goi_y: true
++  ghi_chu: 'quy tắc sai hoặc diễn đạt lại làm đổi nghĩa: bỏ cả câu'
++- id: LG-8-15
++  loai_ca: 8
++  bai: BAC-BA
++  cau: Đạo hàm của tích bằng tích các đạo hàm.
++  bieu_thuc:
++  - doan: Đạo hàm của tích bằng tích các đạo hàm
++    loai: QUY_TAC_BANG_LOI
++    trang_thai: *id001
++    kiem: 'sai: (uv)'' ≠ u''v'''
++  muc: phai_bo
++  thay_bang_goi_y: true
++  ghi_chu: 'quy tắc sai hoặc diễn đạt lại làm đổi nghĩa: bỏ cả câu'
++- id: LG-8-16
++  loai_ca: 8
++  bai: BAC-BA
++  cau: Nếu đạo hàm âm thì hàm số đồng biến.
++  bieu_thuc:
++  - doan: Nếu đạo hàm âm thì hàm số đồng biến
++    loai: QUY_TAC_BANG_LOI
++    trang_thai: *id001
++    kiem: 'sai: y = −x'
++  muc: phai_bo
++  thay_bang_goi_y: true
++  ghi_chu: 'quy tắc sai hoặc diễn đạt lại làm đổi nghĩa: bỏ cả câu'
++- id: LG-8-17
++  loai_ca: 8
++  bai: BAC-BA
++  cau: Đạo hàm bằng 0 thì đó là điểm cực trị.
++  bieu_thuc:
++  - doan: Đạo hàm bằng 0 thì đó là điểm cực trị
++    loai: QUY_TAC_BANG_LOI
++    trang_thai: *id001
++    kiem: 'sai: y = x³ tại 0 (ngược câu thứ hai của dòng [5])'
++  muc: phai_bo
++  thay_bang_goi_y: true
++  ghi_chu: 'quy tắc sai hoặc diễn đạt lại làm đổi nghĩa: bỏ cả câu'
++- id: LG-8-18
++  loai_ca: 8
++  bai: BAC-BA
++  cau: Đạo hàm của thương bằng thương các đạo hàm.
++  bieu_thuc:
++  - doan: Đạo hàm của thương bằng thương các đạo hàm
++    loai: QUY_TAC_BANG_LOI
++    trang_thai: *id001
++    kiem: diễn đạt lại sai dòng [3]
++  muc: phai_bo
++  thay_bang_goi_y: true
++  ghi_chu: 'quy tắc sai hoặc diễn đạt lại làm đổi nghĩa: bỏ cả câu'
++- id: LG-8-19
++  loai_ca: 8
++  bai: BAC-BA
++  cau: Điểm tới hạn là nghiệm của đạo hàm bằng 0.
++  bieu_thuc:
++  - doan: Điểm tới hạn là nghiệm của đạo hàm bằng 0
++    loai: QUY_TAC_BANG_LOI
++    trang_thai: *id001
++    kiem: thiếu «hoặc không xác định» và «thuộc tập xác định» của dòng [6]
++  muc: phai_bo
++  thay_bang_goi_y: true
++  ghi_chu: 'quy tắc sai hoặc diễn đạt lại làm đổi nghĩa: bỏ cả câu'
++- id: LG-8-20
++  loai_ca: 8
++  bai: BAC-BA
++  cau: Đạo hàm đổi dấu từ âm sang dương thì là cực đại.
++  bieu_thuc:
++  - doan: Đạo hàm đổi dấu từ âm sang dương thì là cực đại
++    loai: QUY_TAC_BANG_LOI
++    trang_thai: *id001
++    kiem: 'sai: y = x², đảo chiều dòng [5]'
++  muc: phai_bo
++  thay_bang_goi_y: true
++  ghi_chu: 'quy tắc sai hoặc diễn đạt lại làm đổi nghĩa: bỏ cả câu'
++- id: LG-8-21
++  loai_ca: 8
++  bai: BAC-BA
++  cau: Với tổng, đạo hàm bằng tích các đạo hàm.
++  bieu_thuc:
++  - doan: Với tổng, đạo hàm bằng tích các đạo hàm
++    loai: QUY_TAC_BANG_LOI
++    trang_thai: *id001
++    kiem: diễn đạt lại sai dòng [2]
++  muc: phai_bo
++  thay_bang_goi_y: true
++  ghi_chu: 'quy tắc sai hoặc diễn đạt lại làm đổi nghĩa: bỏ cả câu'
++doi_chung:
++- id: LG-DC-01
++  bai: BAC-BA
++  cau: Em làm tốt lắm, mình sang bước tiếp theo nhé.
++  bieu_thuc: []
++  muc: nen_hien
++  ghi_chu: 'không có toán: giữ nguyên câu'
++- id: LG-DC-02
++  bai: BAC-BA
++  cau: Em đọc lại đề một lần nữa nhé.
++  bieu_thuc: []
++  muc: nen_hien
++  ghi_chu: không có toán
++- id: LG-DC-03
++  bai: BAC-BA
++  cau: Em mở dòng [2] của bảng công thức để xem lại nhé.
++  bieu_thuc: []
++  muc: nen_hien
++  ghi_chu: dẫn dòng bảng bằng [n], không phát biểu quy tắc
++- id: LG-DC-04
++  bai: BAC-BA
++  cau: Em xét dấu đạo hàm trên từng khoảng nhé.
++  bieu_thuc: []
++  muc: nen_hien
++  ghi_chu: 'có thuật ngữ nhưng không có từ quan hệ: không phải ứng viên quy tắc'
++- id: LG-DC-05
++  bai: BAC-BA
++  cau: Em kiểm tra xem đạo hàm có bằng 0 tại điểm đó không nhé.
++  bieu_thuc:
++  - doan: Em kiểm tra xem đạo hàm có bằng 0 tại điểm đó không nhé
++    loai: QUY_TAC_BANG_LOI
++    trang_thai: KHONG_KIEM_DUOC
++  muc: phai_bo
++  ghi_chu: 'câu hỏi gợi mở có thuật ngữ + «bằng»: theo ADR 013 là ứng viên quy tắc không khớp bảng, bỏ cả câu. Đây
++    là cái giá của «bắt thừa»; đo bằng ngưỡng 20 % của ADR 013'
+diff --git a/services/math/kiemdinh/loi-giang/kiem_bo_ca.py b/services/math/kiemdinh/loi-giang/kiem_bo_ca.py
+new file mode 100644
+index 0000000..48fbf6f
+--- /dev/null
++++ b/services/math/kiemdinh/loi-giang/kiem_bo_ca.py
+@@ -0,0 +1,172 @@
++# Kiểm bằng SymPy mọi căn cứ toán của KD-0005 (bộ ca lời giảng). Không đọc mã của job kiem-loi-giang: phán quyết
++# mong đợi suy từ ADR 013, còn tệp này kiểm phần toán của từng phán quyết (đúng, sai, phản ví dụ, trùng dòng bảng).
++# Chạy từ gốc repo: python services/math/kiemdinh/loi-giang/kiem_bo_ca.py services/math/kiemdinh/loi-giang/bo-ca-loi-giang.yaml
++import re
++import sys
++
++import sympy as sp
++import yaml
++from sympy.parsing.sympy_parser import implicit_multiplication_application, parse_expr, standard_transformations
++
++BIEN_DOI = standard_transformations + (implicit_multiplication_application,)
++
++BO = yaml.safe_load(open(sys.argv[1], encoding="utf-8"))
++CA = {c["id"]: c for c in BO["ca"]}
++BANG = {r["id"]: r for r in BO["ngu_canh"]["bang_cong_thuc"]}
++BAI = BO["ngu_canh"]["bai"]
++
++x, n, k, a, b = sp.symbols("x n k a b")
++u, v, f, g = (sp.Function(t)(x) for t in "uvfg")
++D = lambda e: sp.diff(e, x)  # noqa: E731
++
++ket_qua = []
++
++
++def ghi(ma, dat, mo_ta):
++    ket_qua.append((ma, dat, mo_ta))
++
++
++def bang_nhau(e1, e2):
++    return sp.simplify(sp.expand(e1 - e2)) == 0
++
++
++def the(e, **mau):
++    """Thế hàm mẫu cho u, v (hàm ký hiệu) rồi tính đạo hàm."""
++    thay = {sp.Function(t): sp.Lambda(x, bt) for t, bt in mau.items()}
++    return sp.simplify(e.subs(thay).doit())
++
++
++# ---- dòng bảng: các đẳng thức của bảng v0 đúng; E (biểu thức lấy đạo hàm) của từng dòng
++E_DONG = {"d-1": x**n, "d-2": u + v, "d-3": u / v}
++ghi("dòng d-1", bang_nhau(D(x**n), n * x**(n - 1)), "(x^n)' = n x^{n-1}")
++ghi("dòng d-2", bang_nhau(D(u + v), D(u) + D(v)), "(u+v)' = u' + v'")
++ghi("dòng d-3", bang_nhau(D(u / v), (D(u) * v - u * D(v)) / v**2), "(u/v)' = (u'v − uv')/v²")
++
++
++def khop_dong(E):
++    return [m for m, Er in E_DONG.items() if bang_nhau(E, Er)]
++
++
++# ---- loại 1: trùng dòng bảng theo SymPy (E và vế phải)
++for ma, E, VP, dong in [
++    ("LG-1-01", x**n, n * x**(n - 1), "d-1"), ("LG-1-06", x**n, n * x**(n - 1), "d-1"), ("LG-1-12", x**n, n * x**(n - 1), "d-1"),
++    ("LG-1-02", u + v, D(u) + D(v), "d-2"), ("LG-1-05", u + v, D(u) + D(v), "d-2"), ("LG-1-11", v + u, D(v) + D(u), "d-2"),
++    ("LG-1-03", u / v, (D(u) * v - u * D(v)) / v**2, "d-3"), ("LG-1-04", u / v, (D(u) * v - u * D(v)) / v**2, "d-3"),
++    ("LG-1-13", u / v, (D(u) * v - u * D(v)) / v**2, "d-3"), ("LG-1-14", u / v, D(u) / v - u * D(v) / v**2, "d-3"),
++]:
++    ghi(ma, khop_dong(E) == [dong] and bang_nhau(D(E), VP), f"E trùng dòng {dong}, vế phải bằng đạo hàm của E")
++# dòng định lí: nguyên văn LaTeX của dòng (sau gộp khoảng trắng)
++gop = lambda s: re.sub(r"\s+", " ", s).strip()  # noqa: E731
++for ma, dong in [("LG-1-07", "d-4"), ("LG-1-08", "d-5"), ("LG-1-09", "d-6")]:
++    ghi(ma, gop(CA[ma]["bieu_thuc"][0]["doan"]) == gop(BANG[dong]["latex"]), f"nguyên văn LaTeX dòng {dong}")
++ghi("LG-1-10", [gop(b["doan"]) for b in CA["LG-1-10"]["bieu_thuc"]] == [gop(BANG["d-2"]["latex"]), gop(BANG["d-3"]["latex"])],
++    "hai dòng d-2, d-3 nguyên văn")
++
++# ---- loại 2: đúng toán học, E không trùng dòng nào
++for ma, E, VP in [
++    ("LG-2-01", u * v, D(u) * v + u * D(v)), ("LG-2-02", u - v, D(u) - D(v)), ("LG-2-03", k * u, k * D(u)),
++    ("LG-2-04", sp.sin(x), sp.cos(x)), ("LG-2-05", sp.cos(x), -sp.sin(x)), ("LG-2-06", sp.exp(x), sp.exp(x)),
++    ("LG-2-07", sp.log(x), 1 / x), ("LG-2-08", sp.sqrt(x), 1 / (2 * sp.sqrt(x))), ("LG-2-09", 1 / v, -D(v) / v**2),
++    ("LG-2-10", u**n, n * u**(n - 1) * D(u)), ("LG-2-14", sp.tan(x), 1 / sp.cos(x)**2),
++]:
++    ghi(ma, bang_nhau(D(E), VP) and not khop_dong(E), "đúng, E không trùng dòng bảng")
++fg = sp.Function("f")(sp.Function("g")(x))
++ghi("LG-2-11", bang_nhau(D(sp.sin(x**2)), sp.cos(x**2) * 2 * x) and not khop_dong(fg), "quy tắc hàm hợp (thử f = sin, g = x²)")
++ghi("LG-2-12", bang_nhau(sp.expand((a + b)**2), a**2 + 2 * a * b + b**2), "hằng đẳng thức đúng")
++# LG-2-13 (DD1) là định lí SGK, không chứng minh bằng CAS: thử hàm mẫu có y' > 0 trên ℝ đều tăng
++mau_dd1 = [x**3 + x, sp.exp(x), x + sp.sin(x) / 2]
++ghi("LG-2-13", all(sp.solveset(D(h) <= 0, x, sp.S.Reals) == sp.S.EmptySet and h.subs(x, 1) > h.subs(x, 0) for h in mau_dd1),
++    "DD1: hàm mẫu có y' > 0 trên ℝ đều tăng (không phải chứng minh)")
++
++# ---- loại 3: sai, bác bằng hàm mẫu cụ thể (vế trái − vế phải ≠ 0)
++for ma, trai, phai, mau in [
++    ("LG-3-01", D(u * v), D(u) * D(v), {"u": x, "v": x}),
++    ("LG-3-02", D(u / v), (D(u) * v + u * D(v)) / v**2, {"u": sp.Integer(1), "v": x}),
++    ("LG-3-03", D(u / v), D(u) / D(v), {"u": x**2, "v": x}),
++    ("LG-3-04", D(u / v), (u * D(v) - D(u) * v) / v**2, {"u": x, "v": sp.Integer(1)}),
++    ("LG-3-07", D(u + v), D(u) * D(v), {"u": x, "v": x}),
++    ("LG-3-08", D(u - v), D(u) + D(v), {"u": x, "v": x}),
++    ("LG-3-12", D(u / v), (D(u) * v - u * D(v)) / v, {"u": sp.Integer(1), "v": x}),
++]:
++    hieu = the(trai - phai, **mau)
++    ghi(ma, hieu != 0, f"thế {mau}: vế trái − vế phải = {hieu}")
++for ma, trai, phai in [
++    ("LG-3-05", D(x**2), x**1), ("LG-3-06", D(x**2), 2 * x**3), ("LG-3-09", D(sp.sqrt(x)), 1 / sp.sqrt(x)),
++    ("LG-3-10", D(1 / x), 1 / x**2), ("LG-3-11", D(sp.exp(2 * x)), sp.exp(2 * x)),
++]:
++    ghi(ma, not bang_nhau(trai, phai), f"{trai} ≠ {phai}")
++ghi("LG-3-13", D(-x) < 0 and (-x).subs(x, 1) < (-x).subs(x, 0), "y = −x: y' = −1 < 0 mà nghịch biến")
++ghi("LG-3-14", D(x**2).subs(x, -sp.Rational(1, 10)) < 0 < D(x**2).subs(x, sp.Rational(1, 10)) and
++    (x**2).subs(x, 0) < (x**2).subs(x, sp.Rational(1, 10)), "y = x²: y' đổi − → + tại 0 nhưng 0 là cực tiểu")
++
++# ---- loại 5: kết quả đúng của bài (bị bỏ vì là kết quả tính, không vì sai)
++h3 = x**3 - 3 * x**2 + 2
++hq = (x**2 + 3) / (x - 1)
++h4 = x**4 - 2 * x**2
++ghi("LG-5-01", bang_nhau(D(h3), 3 * x**2 - 6 * x), "y' của đề")
++ghi("LG-5-02", sp.solveset(D(h3), x) == sp.FiniteSet(0, 2), "nghiệm 0, 2")
++ghi("LG-5-03", bang_nhau(3 * x**2 - 6 * x, 3 * x * (x - 2)), "phân tích đúng")
++ghi("LG-5-04", bang_nhau(D(x**3), 3 * x**2), "(x³)' = 3x²")
++ghi("LG-5-05", h3.subs(x, 0) == 2 and sp.diff(h3, x, 2).subs(x, 0) < 0, "y(0) = 2 là cực đại")
++ghi("LG-5-06", sp.solveset(D(h3) > 0, x, sp.S.Reals) == sp.Union(sp.Interval.open(-sp.oo, 0), sp.Interval.open(2, sp.oo)), "y' > 0 trên hai khoảng")
++ghi("LG-5-07", bang_nhau(sp.diff(h3, x, 2), 6 * x - 6), "y''")
++ghi("LG-5-09", h3.subs(x, 2) == -2 and sp.diff(h3, x, 2).subs(x, 2) > 0, "giá trị cực tiểu −2")
++ghi("LG-5-10", bang_nhau(D(hq), (x**2 - 2 * x - 3) / (x - 1)**2), "y' của đề hữu tỉ")
++ghi("LG-5-11", sp.solveset(sp.numer(sp.together(D(hq))), x) == sp.FiniteSet(-1, 3), "nghiệm −1, 3")
++ghi("LG-5-12", sp.solveset(sp.denom(hq), x) == sp.FiniteSet(1), "tập xác định ℝ \\ {1}")
++ghi("LG-5-13", bang_nhau(D(h4), 4 * x**3 - 4 * x) and bang_nhau(4 * x**3 - 4 * x, 4 * x * (x**2 - 1)), "y' của đề trùng phương")
++ghi("LG-5-08", CA["LG-5-08"]["bieu_thuc"][0]["doan"] in BAI["BAC-BA"]["bai_lam_hoc_sinh"], "trùng dòng học sinh (vẫn bỏ: không «em viết …»)")
++ghi("LG-5-14", CA["LG-5-14"]["bieu_thuc"][0]["doan"] in BAI["BAC-BA"]["bai_lam_hoc_sinh"], "trùng nguyên văn dòng học sinh")
++ghi("LG-5-15", CA["LG-5-15"]["bieu_thuc"][0]["doan"] in BAI["HUU-TI"]["bai_lam_hoc_sinh"], "trùng nguyên văn dòng học sinh")
++
++
++# ---- loại 7: chuẩn hóa cách viết (khoảng trắng, ^ / **, dấu nhân, ngoặc nhọn số mũ, \frac) không rút gọn
++def chuan(s):
++    s = re.sub(r"^\s*y\s*=\s*", "", s)
++    s = re.sub(r"\\d?frac\{([^{}]*)\}\{([^{}]*)\}", r"(\1)/(\2)", s)
++    s = s.replace("**", "^").replace("*", "")
++    s = re.sub(r"\^\{([^{}]*)\}", r"^\1", s)
++    return re.sub(r"\s+", "", s)
++
++
++def tach_tu_mau(ham):
++    m = re.fullmatch(r"\((.*)\)/\((.*)\)", ham.replace(" ", ""))
++    return (m.group(1), m.group(2)) if m else (None, None)
++
++
++for ma, c in CA.items():
++    if c["loai_ca"] != 7:
++        continue
++    ham = BAI[c["bai"]]["ham"]
++    doan = c["bieu_thuc"][0]["doan"]
++    tu, mau_so = tach_tu_mau(ham)
++    trich = chuan(doan) in {chuan(ham), chuan(tu or "\0"), chuan(mau_so or "\0")}
++    if c["muc"] == "nen_hien":
++        ghi(ma, trich, f"«{doan}» trùng đề sau chuẩn hóa")
++    else:
++        ve = doan.split("=")[-1]
++        bieu_thuc = parse_expr(chuan(ve).replace("^", "**"), local_dict={"x": x}, transformations=BIEN_DOI)
++        dung = bang_nhau(bieu_thuc, parse_expr(ham, local_dict={"x": x}))
++        ghi(ma, dung and not trich, f"«{doan}»: bằng hàm của đề theo SymPy nhưng không trùng chuỗi đề (không phải trích)")
++
++# ---- loại 8: phát biểu nguyên văn của dòng; phản ví dụ của quy tắc sai
++cau_cua = {m: [gop(t).rstrip(".").lower() for t in re.split(r"(?<=\.)\s+", BANG[m]["phat_bieu"])] for m in BANG}
++for ma, c in CA.items():
++    if c["loai_ca"] == 8 and c["muc"] == "nen_hien" and c["bieu_thuc"][0]["trang_thai"] == "DAT":
++        dong = c["bieu_thuc"][0]["dong_bang"]
++        ghi(ma, gop(c["cau"]).rstrip(".").lower() in cau_cua[dong], f"là một câu của phát biểu dòng {dong} (sau chuẩn hóa)")
++ghi("quy tắc tích (đúng ngoài bảng)", bang_nhau(D(u * v), D(u) * v + u * D(v)), "(uv)' = u'v + uv'")
++ghi("«… trừ u nhân đạo hàm v» (sai)", the(D(u * v) - (D(u) * v - u * D(v)), u=sp.Integer(1), v=x) != 0, "u = 1, v = x")
++ghi("«tích các đạo hàm» (sai)", the(D(u * v) - D(u) * D(v), u=x, v=x) != 0, "u = v = x")
++ghi("«đạo hàm âm thì đồng biến» (sai)", D(-x) < 0 and (-x).subs(x, 1) < (-x).subs(x, 0), "y = −x")
++ghi("«đạo hàm bằng 0 thì cực trị» (sai)", D(x**3).subs(x, 0) == 0 and (x**3).subs(x, -sp.Rational(1, 10)) < 0 < (x**3).subs(x, sp.Rational(1, 10)), "y = x³ tại 0")
++ghi("«thương các đạo hàm» (sai)", the(D(u / v) - D(u) / D(v), u=x**2, v=x) != 0, "u = x², v = x")
++ghi("«âm sang dương thì cực đại» (sai)", (x**2).subs(x, 0) < (x**2).subs(x, sp.Rational(1, 10)), "y = x², 0 là cực tiểu")
++ghi("«với tổng … tích các đạo hàm» (sai)", the(D(u + v) - D(u) * D(v), u=x, v=x) != 0, "u = v = x")
++ghi("«điểm tới hạn là nghiệm của y' = 0» (thiếu)", True, "y = |x| có điểm tới hạn 0 mà y'(0) không xác định: định nghĩa thiếu, không bằng dòng [6]")
++
++sai = [r for r in ket_qua if not r[1]]
++for ma, dat, mo_ta in ket_qua:
++    print(("ĐẠT " if dat else "SAI ") + ma + ": " + mo_ta)
++print(f"\n{len(ket_qua) - len(sai)}/{len(ket_qua)} căn cứ đạt")
++sys.exit(1 if sai else 0)
+diff --git a/services/math/kiemdinh/loi-giang/tao_bo_ca.py b/services/math/kiemdinh/loi-giang/tao_bo_ca.py
+new file mode 100644
+index 0000000..58a8ee3
+--- /dev/null
++++ b/services/math/kiemdinh/loi-giang/tao_bo_ca.py
+@@ -0,0 +1,363 @@
++# Sinh bản vá KD-0005 (lab Kiểm định): bộ ca lời giảng và từ vựng quy tắc bằng lời (ADR 013, spec SC-004, #89 T029).
++# Câu soạn tay ở đây (chuỗi thô, giữ nguyên gạch chéo của LaTeX); phán quyết mong đợi theo từng mục của ADR 013.
++# Chạy từ gốc repo:
++#   python services/math/kiemdinh/loi-giang/tao_bo_ca.py services/math/kiemdinh/loi-giang data/v0/bang-cong-thuc.json
++#   → bo-ca-loi-giang.yaml, tu-vung-quy-tac.yaml. Kiểm căn cứ toán: python .../kiem_bo_ca.py .../bo-ca-loi-giang.yaml
++import json
++import pathlib
++import sys
++
++import yaml
++
++RA = pathlib.Path(sys.argv[1])
++
++# ---------------------------------------------------------------- ngữ cảnh chung
++BANG_V0 = json.loads(pathlib.Path(sys.argv[2]).read_text(encoding="utf-8"))["formulas"]
++TRICH = {  # tài liệu và đoạn trích dẫn chính của từng dòng (bảng khóa của lớp «12A1 thử», #85)
++    "d-1": "sp-tai-lieu-0001", "d-2": "sp-tai-lieu-0001", "d-3": "sp-tai-lieu-0001",
++    "d-4": "v0-don-dieu", "d-5": "sp-tai-lieu-0002", "d-6": "sp-tai-lieu-0002",
++}
++BANG = [
++    {"id": r["ma"], "tieu_de": r["title"], "latex": r["latex"], "phat_bieu": r["noiDung"],
++     "trich_dan": {"tai_lieu": TRICH[r["ma"]]}}
++    for r in BANG_V0
++]
++BAI = {
++    "BAC-BA": {
++        "de": r"Xét tính đơn điệu và tìm cực trị của hàm số $y = x^3 - 3x^2 + 2$.",
++        "ham": "x**3 - 3*x**2 + 2",
++        "bai_lam_hoc_sinh": ["3x^2-6x", "x=0", "x=2"],
++        "du_kien_bao_ve": ["3*x**2 - 6*x", "x = 0", "x = 2", "y(0) = 2", "y(2) = -2"],
++    },
++    "HUU-TI": {
++        "de": r"Xét tính đơn điệu của hàm số $y = \frac{x^2 + 3}{x - 1}$.",
++        "ham": "(x**2 + 3)/(x - 1)",
++        "bai_lam_hoc_sinh": [r"x \ne 1"],
++        "du_kien_bao_ve": ["(x**2 - 2*x - 3)/(x - 1)**2", "x = -1", "x = 3", "y(-1) = -2", "y(3) = 6"],
++    },
++    "TRUNG-PHUONG": {
++        "de": r"Tìm cực trị của hàm số $y = x^4 - 2x^2$.",
++        "ham": "x**4 - 2*x**2",
++        "bai_lam_hoc_sinh": ["4x^3-4x"],
++        "du_kien_bao_ve": ["4*x**3 - 4*x", "x = 0", "x = -1", "x = 1", "y(0) = 0", "y(1) = -1"],
++    },
++}
++
++CTT, QT, TBL, TDB, KQ, KPT = ("CONG_THUC_TONG_QUAT", "QUY_TAC_BANG_LOI", "TRICH_BAI_LAM", "TRICH_DE_BAI",
++                              "KET_QUA_CU_THE", "KHONG_PHAN_TICH_DUOC")
++DAT, SAI, KKD = "DAT", "SAI", "KHONG_KIEM_DUOC"
++
++
++def bt(doan, loai, trang_thai, dong_bang=None, kiem=None):
++    """Một biểu thức mong đợi. loai / trang_thai là chuỗi (đúng một giá trị) hoặc danh sách (một trong các giá trị)."""
++    d = {"doan": doan, "loai": loai, "trang_thai": trang_thai}
++    if dong_bang:
++        d["dong_bang"] = dong_bang
++    if kiem:
++        d["kiem"] = kiem
++    return d
++
++
++CA = []
++
++
++def ca(loai_ca, bai, cau, bieu_thuc, muc, ghi_chu=None, thay=None):
++    """muc: «phai_bo» (bắt buộc: mọi biểu thức không DAT không tới học sinh; sai là lỗi nghiệm thu) hoặc «nen_hien»
++    (biểu thức DAT nên còn trong câu; tính vào tỉ lệ ≥ 95 % của SC-004)."""
++    n = sum(1 for c in CA if c["loai_ca"] == loai_ca) + 1
++    c = {"id": f"LG-{loai_ca}-{n:02d}", "loai_ca": loai_ca, "bai": bai, "cau": cau, "bieu_thuc": bieu_thuc, "muc": muc}
++    if thay is not None:
++        c["thay_bang_goi_y"] = thay
++    if ghi_chu:
++        c["ghi_chu"] = ghi_chu
++    CA.append(c)
++
++
++B3, HT, TP = "BAC-BA", "HUU-TI", "TRUNG-PHUONG"
++KHONG_DAT = [SAI, KKD]
++
++# ---------------------------------------------------------------- loại 1: công thức trong bảng có trích dẫn
++L = 1
++ca(L, B3, r"Theo dòng [1] của bảng: $(x^n)' = n x^{n-1}$.", [bt(r"(x^n)' = n x^{n-1}", CTT, DAT, "d-1")], "nen_hien",
++   "nguyên văn LaTeX của dòng")
++ca(L, B3, r"Em áp dụng $(u+v)' = u' + v'$ [2] cho từng hạng tử nhé.", [bt(r"(u+v)' = u' + v'", CTT, DAT, "d-2")], "nen_hien")
++ca(L, HT, r"Quy tắc thương [3]: $(u/v)' = (u'v - uv') / v^2$.", [bt(r"(u/v)' = (u'v - uv') / v^2", CTT, DAT, "d-3")], "nen_hien")
++ca(L, HT, r"Dòng [3] viết gọn là $\left(\frac{u}{v}\right)' = \frac{u'v - uv'}{v^2}$.",
++   [bt(r"\left(\frac{u}{v}\right)' = \frac{u'v - uv'}{v^2}", CTT, DAT, "d-3", "u/v ≡ u/v; vế phải trùng theo SymPy")], "nen_hien",
++   "LaTeX khác, cùng công thức theo SymPy với hàm ký hiệu u(x), v(x)")
++ca(L, B3, r"Với tổng, em dùng $(u + v)'=u'+v'$.", [bt(r"(u + v)'=u'+v'", CTT, DAT, "d-2")], "nen_hien", "khác khoảng trắng")
++ca(L, B3, r"Nhắc lại [1]: $\left(x^{n}\right)' = n\,x^{n-1}$.", [bt(r"\left(x^{n}\right)' = n\,x^{n-1}", CTT, DAT, "d-1")], "nen_hien")
++ca(L, B3, r"Em xem dòng [4]: $y' \ge 0,\ y' = 0 \text{ chỉ tại hữu hạn điểm} \Rightarrow \text{đồng biến}$.",
++   [bt(r"y' \ge 0,\ y' = 0 \text{ chỉ tại hữu hạn điểm} \Rightarrow \text{đồng biến}", CTT, DAT, "d-4")], "nen_hien",
++   "nguyên văn LaTeX của dòng định lí")
++ca(L, B3, r"Dòng [5] của bảng: $+ \to - : \text{cực đại}$.", [bt(r"+ \to - : \text{cực đại}", CTT, DAT, "d-5")], "nen_hien")
++ca(L, HT, r"Theo [6], em tìm chỗ $y'=0 \text{ hoặc } y' \text{ không xác định}$.",
++   [bt(r"y'=0 \text{ hoặc } y' \text{ không xác định}", CTT, DAT, "d-6")], "nen_hien")
++ca(L, HT, r"Em có $(u+v)' = u' + v'$ [2] và $(u/v)' = (u'v - uv') / v^2$ [3].",
++   [bt(r"(u+v)' = u' + v'", CTT, DAT, "d-2"), bt(r"(u/v)' = (u'v - uv') / v^2", CTT, DAT, "d-3")], "nen_hien", "hai công thức")
++ca(L, B3, r"$(v+u)' = v' + u'$ cũng chính là dòng [2].", [bt(r"(v+u)' = v' + u'", CTT, DAT, "d-2", "v+u ≡ u+v")], "nen_hien",
++   "đổi chỗ hạng tử: biểu thức lấy đạo hàm trùng dòng [2] theo SymPy")
++ca(L, B3, r"Em nhớ dòng [1]: $(x^n)'=nx^{n-1}$.", [bt(r"(x^n)'=nx^{n-1}", CTT, DAT, "d-1")], "nen_hien", "không khoảng trắng")
++ca(L, HT, r"Dòng [3] cho $\left(\dfrac{u}{v}\right)'=\dfrac{u'v-uv'}{v^{2}}$.",
++   [bt(r"\left(\dfrac{u}{v}\right)'=\dfrac{u'v-uv'}{v^{2}}", CTT, DAT, "d-3")], "nen_hien", r"\dfrac")
++ca(L, HT, r"Dòng [3] còn viết được là $\left(\frac{u}{v}\right)' = \frac{u'}{v} - \frac{uv'}{v^2}$.",
++   [bt(r"\left(\frac{u}{v}\right)' = \frac{u'}{v} - \frac{uv'}{v^2}", CTT, DAT, "d-3", "vế phải ≡ (u'v − uv')/v² theo SymPy")],
++   "nen_hien", "vế phải khai triển nhưng bằng vế phải của dòng [3] theo SymPy: vẫn khớp dòng")
++
++# ---------------------------------------------------------------- loại 2: công thức đúng ngoài bảng
++L = 2
++for cau, doan, kiem in [
++    (r"Đạo hàm của tích: $(uv)' = u'v + uv'$.", r"(uv)' = u'v + uv'", "đúng; bảng v0 không có quy tắc tích"),
++    (r"Với hiệu: $(u - v)' = u' - v'$.", r"(u - v)' = u' - v'", "đúng; bảng không có dòng hiệu"),
++    (r"Hằng số đưa ra ngoài: $(k u)' = k u'$.", r"(k u)' = k u'", "đúng; bảng không có dòng k·u"),
++    (r"Em nhớ $(\sin x)' = \cos x$.", r"(\sin x)' = \cos x", "đúng"),
++    (r"Còn $(\cos x)' = -\sin x$.", r"(\cos x)' = -\sin x", "đúng"),
++    (r"Hàm mũ: $(e^x)' = e^x$.", r"(e^x)' = e^x", "đúng"),
++    (r"Với $x > 0$ thì $(\ln x)' = \frac{1}{x}$.", r"(\ln x)' = \frac{1}{x}", "đúng (x > 0)"),
++    (r"Căn bậc hai: $(\sqrt{x})' = \frac{1}{2\sqrt{x}}$.", r"(\sqrt{x})' = \frac{1}{2\sqrt{x}}", "đúng (x > 0)"),
++    (r"Nghịch đảo: $\left(\frac{1}{v}\right)' = -\frac{v'}{v^2}$.", r"\left(\frac{1}{v}\right)' = -\frac{v'}{v^2}", "đúng; biểu thức lấy đạo hàm 1/v không trùng dòng nào"),
++    (r"Lũy thừa của hàm: $(u^n)' = n u^{n-1} u'$.", r"(u^n)' = n u^{n-1} u'", "đúng; khác dòng [1] (x^n)"),
++    (r"Hàm hợp: $(f(g(x)))' = f'(g(x))\,g'(x)$.", r"(f(g(x)))' = f'(g(x))\,g'(x)", "đúng"),
++    (r"Hằng đẳng thức $(a + b)^2 = a^2 + 2ab + b^2$.", r"(a + b)^2 = a^2 + 2ab + b^2", "đúng; không phải công thức của bảng"),
++    (r"Định lí: $y' > 0 \text{ trên } K \Rightarrow \text{đồng biến trên } K$.", r"y' > 0 \text{ trên } K \Rightarrow \text{đồng biến trên } K",
++     "DD1 đúng; bảng chỉ có DD2 (dòng [4])"),
++    (r"Còn $(\tan x)' = \frac{1}{\cos^2 x}$.", r"(\tan x)' = \frac{1}{\cos^2 x}", "đúng"),
++]:
++    extra = [bt(r"x > 0", [KQ, CTT, KPT], [KKD, SAI])] if "x > 0" in cau else []
++    ca(L, B3, cau, extra + [bt(doan, CTT, KKD, kiem=kiem)], "phai_bo",
++       "đúng toán học nhưng không có trong bảng đã khóa: thế giới đóng (ADR 013 mục 1), không phải SAI")
++
++# ---------------------------------------------------------------- loại 3: công thức sai
++L = 3
++for cau, doan, kiem in [
++    (r"Đạo hàm của tích là $(uv)' = u'v'$.", r"(uv)' = u'v'", "u = x, v = x: (x²)' = 2x ≠ 1"),
++    (r"Quy tắc thương: $(u/v)' = \frac{u'v + uv'}{v^2}$.", r"(u/v)' = \frac{u'v + uv'}{v^2}", "u = 1, v = x: −1/x² ≠ 1/x²"),
++    (r"Em dùng $(u/v)' = \frac{u'}{v'}$.", r"(u/v)' = \frac{u'}{v'}", "u = x², v = x: 1 ≠ 2x"),
++    (r"Thương: $(u/v)' = \frac{uv' - u'v}{v^2}$.", r"(u/v)' = \frac{uv' - u'v}{v^2}", "đổi dấu tử: u = x, v = 1 cho 1 ≠ −1"),
++    (r"Lũy thừa: $(x^n)' = x^{n-1}$.", r"(x^n)' = x^{n-1}", "n = 2: 2x ≠ x"),
++    (r"Lũy thừa: $(x^n)' = n x^{n+1}$.", r"(x^n)' = n x^{n+1}", "n = 2: 2x ≠ 2x³"),
++    (r"Tổng: $(u+v)' = u'v'$.", r"(u+v)' = u'v'", "u = x, v = x: 2 ≠ 1"),
++    (r"Hiệu: $(u - v)' = u' + v'$.", r"(u - v)' = u' + v'", "u = x, v = x: 0 ≠ 2"),
++    (r"Căn: $(\sqrt{x})' = \frac{1}{\sqrt{x}}$.", r"(\sqrt{x})' = \frac{1}{\sqrt{x}}", "x = 1: 1/2 ≠ 1"),
++    (r"Nghịch đảo: $\left(\frac{1}{x}\right)' = \frac{1}{x^2}$.", r"\left(\frac{1}{x}\right)' = \frac{1}{x^2}", "−1/x² ≠ 1/x²"),
++    (r"Mũ: $(e^{2x})' = e^{2x}$.", r"(e^{2x})' = e^{2x}", "2e^{2x} ≠ e^{2x}"),
++    (r"Thương: $(u/v)' = \frac{u'v - uv'}{v}$.", r"(u/v)' = \frac{u'v - uv'}{v}", "thiếu bình phương: u = x, v = x cho 0 = 0 nhưng u = 1, v = x cho −1/x² ≠ −1/x"),
++]:
++    ca(L, B3, cau, [bt(doan, CTT, SAI, kiem=kiem)], "phai_bo", "đẳng thức sai, máy bác được bằng hàm mẫu: SAI")
++for cau, doan, kiem in [
++    (r"Nhớ là $y' < 0 \Rightarrow \text{đồng biến}$.", r"y' < 0 \Rightarrow \text{đồng biến}", "y = −x: y' = −1 < 0 nhưng nghịch biến"),
++    (r"Khi $y' \text{ đổi dấu từ } - \text{ sang } + \Rightarrow \text{cực đại}$.", r"y' \text{ đổi dấu từ } - \text{ sang } + \Rightarrow \text{cực đại}",
++     "y = x²: y' đổi − → + tại 0, là cực tiểu"),
++]:
++    ca(L, B3, cau, [bt(doan, CTT, KHONG_DAT, kiem=kiem)], "phai_bo",
++       "định lí sai: máy có phản ví dụ thì SAI, không đọc trọn thì KHONG_KIEM_DUOC; cả hai đều bị bỏ")
++
++# ---------------------------------------------------------------- loại 4: LaTeX hỏng
++L = 4
++for cau, doan, ghi in [
++    (r"Thương có tử là $\frac{u'v - uv'}{v^2$.", r"\frac{u'v - uv'}{v^2", "thiếu ngoặc nhọn đóng"),
++    (r"Em xem $(u/v)' = \frac{u'v-uv'}{$.", r"(u/v)' = \frac{u'v-uv'}{", "\\frac thiếu đối số"),
++    (r"Bình phương: $x^{2$.", r"x^{2", "thiếu ngoặc nhọn"),
++    (r"Căn: $\sqrt{x$.", r"\sqrt{x", "thiếu ngoặc nhọn"),
++    (r"Dòng [3]: $\left( \frac{u}{v} \right' = \frac{u'v - uv'}{v^2}$.", r"\left( \frac{u}{v} \right' = \frac{u'v - uv'}{v^2}", "\\right' không phải dấu ngoặc"),
++    (r"Ta có $y' = $ rồi xét dấu.", r"y' = ", "biểu thức cụt: KaTeX vẽ được nhưng thiếu vế phải, không phân loại được"),
++    (r"Em tính $\foo{x} + 1$.", r"\foo{x} + 1", "lệnh LaTeX không có"),
++    (r"Dòng [1]: $(x^n)' = n x^{n-1}.", r"(x^n)' = n x^{n-1}.", "thiếu $ đóng (nội dung hợp lệ, dấu phân cách hỏng): bỏ dù là công thức của bảng"),
++    (r"Tổng: \((u+v)' = u' + v'.", r"(u+v)' = u' + v'.", "thiếu \\) đóng (nội dung hợp lệ, dấu phân cách hỏng)"),
++    (r"Nghịch đảo $\frac{1}{x}}$.", r"\frac{1}{x}}", "thừa ngoặc nhọn đóng"),
++    (r"Điều kiện $x^2 \le\ $.", r"x^2 \le\ ", "biểu thức cụt: KaTeX vẽ được nhưng thiếu vế phải, không phân loại được"),
++    (r"Hệ $\begin{cases} x \end{cases$.", r"\begin{cases} x \end{cases", "môi trường không đóng"),
++    (r"Quy tắc $$(u+v)' = u' + v'$.", r"(u+v)' = u' + v'", "$$ mở, $ đóng (nội dung hợp lệ, dấu phân cách hỏng)"),
++    (r"Dòng [1]: $\left( x^n \right)' = n x^{n-1} \right)$.", r"\left( x^n \right)' = n x^{n-1} \right)", "\\right thừa"),
++]:
++    ca(L, B3, cau, [bt(doan, KPT, KKD, kiem=ghi)], "phai_bo", "LaTeX hỏng: không phân tích được, bị bỏ (đóng mặc định)")
++
++# ---------------------------------------------------------------- loại 5: kết quả tính cụ thể của bài
++L = 5
++for bai, cau, ds, ghi in [
++    (B3, r"Đạo hàm của hàm này là $y' = 3x^2 - 6x$.", [r"y' = 3x^2 - 6x"], "đạo hàm của đề, cũng là dữ kiện bảo vệ"),
++    (B3, r"Nghiệm là $x = 0$ và $x = 2$.", [r"x = 0", r"x = 2"], "nghiệm của y'"),
++    (B3, r"Em phân tích $3x^2 - 6x = 3x(x - 2)$.", [r"3x^2 - 6x = 3x(x - 2)"], "biến đổi của đạo hàm"),
++    (B3, r"Bước đầu: $(x^3)' = 3x^2$.", [r"(x^3)' = 3x^2"], "một bước tính đạo hàm của đề, không phải công thức tổng quát dòng [1]"),
++    (B3, r"Giá trị cực đại là $y(0) = 2$.", [r"y(0) = 2"], "giá trị cực trị"),
++    (B3, r"Hàm đồng biến trên $(-\infty; 0)$ và $(2; +\infty)$.", [r"(-\infty; 0)", r"(2; +\infty)"], "khoảng đơn điệu của đề"),
++    (B3, r"Đạo hàm cấp hai là $y'' = 6x - 6$.", [r"y'' = 6x - 6"], "kết quả tính"),
++    (B3, r"Đạo hàm đúng là $3x^2-6x$.", [r"3x^2-6x"], "trùng dòng học sinh nhưng là lời khẳng định của gia sư, không phải «em viết …»"),
++    (B3, r"Cực tiểu bằng $-2$.", [r"-2"], "một số riêng lẻ vẫn là kết quả của bài"),
++    (HT, r"Đạo hàm là $y' = \frac{x^2 - 2x - 3}{(x - 1)^2}$.", [r"y' = \frac{x^2 - 2x - 3}{(x - 1)^2}"], "đạo hàm của đề"),
++    (HT, r"Hai nghiệm $x = -1$, $x = 3$.", [r"x = -1", r"x = 3"], "nghiệm của y'"),
++    (HT, r"Tập xác định $D = \mathbb{R} \setminus \{1\}$.", [r"D = \mathbb{R} \setminus \{1\}"], "tập xác định là kết quả của bước TXD"),
++    (TP, r"Ta có $y' = 4x^3 - 4x = 4x(x^2 - 1)$.", [r"y' = 4x^3 - 4x = 4x(x^2 - 1)"], "đạo hàm và biến đổi"),
++]:
++    ca(L, bai, cau, [bt(d, [KQ, CTT], KKD, kiem=ghi) for d in ds], "phai_bo", "kết quả tính cụ thể của bài: bị bỏ (ADR 013 mục 1)")
++ca(L, B3, r"Em viết $3x^2-6x$, giờ em tìm nghiệm của nó nhé.", [bt(r"3x^2-6x", TBL, DAT)], "nen_hien",
++   "trùng nguyên văn dòng học sinh đã nộp và câu trình bày là lời của học sinh («em viết …»): được giữ")
++ca(L, HT, r"Em viết $x \ne 1$ ở bước tập xác định, đúng rồi đó.", [bt(r"x \ne 1", TBL, DAT)], "nen_hien",
++   "trích bài làm của học sinh")
++
++# ---------------------------------------------------------------- loại 6: toán viết trần ngoài dấu phân cách
++L = 6
++for bai, cau, ds, ghi in [
++    (B3, r"Đạo hàm của tích là (uv)' = u'v' nhé.", [r"(uv)' = u'v'"], "ví dụ của ADR 013 mục 2"),
++    (B3, r"Em tính được y' = 3x^2 - 6x rồi.", [r"y' = 3x^2 - 6x"], "kết quả viết trần"),
++    (HT, r"Quy tắc thương: (u/v)' = (u'v - uv')/v^2.", [r"(u/v)' = (u'v - uv')/v^2"], "công thức của bảng nhưng viết trần: vẫn bị bỏ"),
++    (B3, r"Nghiệm là x = 0 hoặc x = 2.", [r"x = 0", r"x = 2"], "kết quả viết trần"),
++    (B3, r"Dùng 3x^2 cho đạo hàm của x^3.", [r"3x^2", r"x^3"], "chữ số kề biến, mũ"),
++    (B3, r"Ta có \frac{1}{2} ở đây.", [r"\frac{1}{2}"], "lệnh LaTeX ngoài dấu phân cách"),
++    (HT, r"Điều kiện x ≠ 1 nhé.", [r"x ≠ 1"], "dấu ≠"),
++    (B3, r"Vì y'(0) = 0 nên ta xét điểm đó.", [r"y'(0) = 0"], "dấu phẩy trên và ="),
++    (TP, r"Em thử với x^2 - 1 xem.", [r"x^2 - 1"], "mũ"),
++    (B3, r"Đạo hàm bằng 2x tại đây.", [r"2x"], "chữ số kề biến"),
++    (HT, r"Biểu thức u' v đi với v bình.", [r"u' v"], "dấu phẩy trên"),
++    (B3, r"Em nhớ y' = f'(x) nha.", [r"y' = f'(x)"], "dấu phẩy trên và ="),
++    (B3, r"Ta xét dấu của 3x(x - 2).", [r"3x(x - 2)"], "chữ số kề biến"),
++]:
++    ca(L, bai, cau, [bt(d, KPT, KKD, kiem=ghi) for d in ds], "phai_bo", "toán viết trần: không phân tích được, bị bỏ (ADR 013 mục 2)")
++ca(L, B3, r"Khi y' ≥ 0 thì hàm đồng biến.", [bt(r"y' ≥ 0", [KPT, QT], KHONG_DAT, kiem="thiếu «chỉ bằng 0 tại hữu hạn điểm»: y = 1 có y' = 0 ≥ 0 mà không đồng biến")],
++   "phai_bo", "toán viết trần trong một câu quy tắc; câu cũng sai (thiếu điều kiện của DD2): bỏ dù phân loại theo cách nào")
++
++# ---------------------------------------------------------------- loại 7: trích nguyên văn đề bài
++L = 7
++for bai, cau, doan, ghi in [
++    (B3, r"Hàm số của đề là $y = x^3 - 3x^2 + 2$.", r"y = x^3 - 3x^2 + 2", "nguyên văn đề"),
++    (B3, r"Em xét hàm $x^3 - 3x^2 + 2$ của đề.", r"x^3 - 3x^2 + 2", "hàm của đề"),
++    (B3, r"Đề cho $x^{3} - 3x^{2} + 2$.", r"x^{3} - 3x^{2} + 2", "chuẩn hóa ngoặc nhọn của số mũ"),
++    (B3, r"Hàm $x^3-3x^2+2$ là đa thức.", r"x^3-3x^2+2", "chuẩn hóa khoảng trắng"),
++    (B3, r"Em nhập $x**3 - 3*x**2 + 2$ vào máy.", r"x**3 - 3*x**2 + 2", "chuẩn hóa ** và dấu nhân"),
++    (B3, r"Hàm $y = x^3 - 3 x^2 + 2$ của đề.", r"y = x^3 - 3 x^2 + 2", "dấu nhân ẩn có khoảng trắng"),
++    (HT, r"Hàm của đề là $y = \frac{x^2 + 3}{x - 1}$.", r"y = \frac{x^2 + 3}{x - 1}", "nguyên văn đề"),
++    (HT, r"Tử là $x^2 + 3$.", r"x^2 + 3", "tử của hàm (ADR 013 mục 1)"),
++    (HT, r"Mẫu là $x - 1$.", r"x - 1", "mẫu của hàm"),
++    (TP, r"Đề cho $y = x^4 - 2x^2$.", r"y = x^4 - 2x^2", "nguyên văn đề"),
++]:
++    ca(L, bai, cau, [bt(doan, TDB, DAT, kiem=ghi)], "nen_hien", "trích nguyên văn đề bài: được giữ")
++for bai, cau, doan, ghi in [
++    (B3, r"Viết lại $x^3 - 3x^2 + 2 = (x - 1)(x^2 - 2x - 2)$.", r"x^3 - 3x^2 + 2 = (x - 1)(x^2 - 2x - 2)", "phân tích nhân tử đúng nhưng là dạng đã biến đổi"),
++    (TP, r"Hàm là $y = x^2(x^2 - 2)$.", r"y = x^2(x^2 - 2)", "dạng đã phân tích, không phải trích"),
++    (B3, r"Hàm $2 - 3x^2 + x^3$ của đề.", r"2 - 3x^2 + x^3", "đổi thứ tự hạng tử không nằm trong chuẩn hóa cách viết của ADR 013"),
++    (HT, r"Chia ra được $y = x + 1 + \frac{4}{x - 1}$.", r"y = x + 1 + \frac{4}{x - 1}", "chia đa thức: dạng đã biến đổi"),
++]:
++    ca(L, bai, cau, [bt(doan, [KQ, CTT, TDB], KKD, kiem=ghi)], "phai_bo", "không phải trích: ADR 013 mục 1 «không rút gọn»")
++
++# ---------------------------------------------------------------- loại 8: quy tắc phát biểu bằng lời
++L = 8
++for cau, dong, ghi in [
++    ("Đạo hàm của tổng bằng tổng các đạo hàm.", "d-2", "nguyên văn phát biểu của dòng"),
++    ("đạo hàm của tổng bằng tổng các đạo hàm", "d-2", "khác hoa thường và dấu câu"),
++    ("Đạo hàm của x mũ n là n nhân x mũ n trừ 1.", "d-1", "một câu của phát biểu dòng [1]"),
++    ("Hằng số có đạo hàm bằng 0.", "d-1", "câu thứ hai của phát biểu dòng [1]"),
++    ("Với thương, tử là u'v trừ uv', mẫu là v bình.", "d-3", "có dấu phẩy trên nhưng là nguyên văn phát biểu: không coi là toán viết trần"),
++    ("Đạo hàm bằng 0 mà không đổi dấu thì chưa phải cực trị.", "d-5", "câu thứ hai của phát biểu dòng [5]"),
++    ("Điểm tới hạn gồm nghiệm của đạo hàm bằng 0 và điểm thuộc tập xác định mà đạo hàm không xác định.", "d-6", "nguyên văn"),
++]:
++    ca(L, B3, cau, [bt(cau.rstrip("."), QT, DAT, dong, kiem=ghi)], "nen_hien", "khớp phát biểu dòng bảng sau chuẩn hóa: giữ")
++for cau, dong, ghi in [
++    ("Trên một khoảng, nếu y' ≥ 0 và y' = 0 chỉ tại hữu hạn điểm thì hàm số đồng biến trên khoảng đó.", "d-4",
++     "diễn đạt lại DD2 = cách đọc của dòng [4]"),
++    ("Nếu đạo hàm đổi dấu từ dương sang âm khi x đi qua x0 thì x0 là điểm cực đại.", "d-5", "diễn đạt lại CT1 = một mệnh đề của dòng [5]"),
++]:
++    ca(L, B3, cau, [bt(cau.rstrip("."), QT, [DAT, KKD], dong, kiem=ghi)], "nen_hien",
++       "diễn đạt lại đúng một dòng bảng: giữ nếu bộ nhận dạng tầng 2 đọc ra đúng mục danh mục của dòng; không đọc được thì bỏ cả câu (chặt quá, không lọt)")
++for cau, ghi in [
++    ("Đạo hàm của tích bằng đạo hàm u nhân v cộng u nhân đạo hàm v.", "quy tắc tích đúng, bảng không có"),
++    ("Nếu đạo hàm dương trên một khoảng thì hàm số đồng biến trên khoảng đó.", "DD1 đúng, bảng chỉ có DD2"),
++    ("Hàm số đồng biến trên một khoảng thì đạo hàm không âm trên khoảng đó.", "DD3 đúng, chiều ngược của dòng [4]"),
++    ("Đạo hàm của hiệu bằng hiệu các đạo hàm.", "đúng, bảng không có dòng hiệu"),
++]:
++    ca(L, B3, cau, [bt(cau.rstrip("."), QT, KKD, kiem=ghi)], "phai_bo", "quy tắc đúng ngoài bảng: bỏ cả câu (ADR 013 mục 2)", thay=True)
++for cau, ghi in [
++    ("Đạo hàm của tích bằng đạo hàm u nhân v trừ u nhân đạo hàm v.", "ví dụ của ADR 013: sai dấu"),
++    ("Đạo hàm của tích bằng tích các đạo hàm.", "sai: (uv)' ≠ u'v'"),
++    ("Nếu đạo hàm âm thì hàm số đồng biến.", "sai: y = −x"),
++    ("Đạo hàm bằng 0 thì đó là điểm cực trị.", "sai: y = x³ tại 0 (ngược câu thứ hai của dòng [5])"),
++    ("Đạo hàm của thương bằng thương các đạo hàm.", "diễn đạt lại sai dòng [3]"),
++    ("Điểm tới hạn là nghiệm của đạo hàm bằng 0.", "thiếu «hoặc không xác định» và «thuộc tập xác định» của dòng [6]"),
++    ("Đạo hàm đổi dấu từ âm sang dương thì là cực đại.", "sai: y = x², đảo chiều dòng [5]"),
++    ("Với tổng, đạo hàm bằng tích các đạo hàm.", "diễn đạt lại sai dòng [2]"),
++]:
++    ca(L, B3, cau, [bt(cau.rstrip("."), QT, KHONG_DAT, kiem=ghi)], "phai_bo", "quy tắc sai hoặc diễn đạt lại làm đổi nghĩa: bỏ cả câu", thay=True)
++
++# ---------------------------------------------------------------- đối chứng (không thuộc 8 loại)
++DC = []
++for cau, ds, ghi in [
++    ("Em làm tốt lắm, mình sang bước tiếp theo nhé.", [], "không có toán: giữ nguyên câu"),
++    ("Em đọc lại đề một lần nữa nhé.", [], "không có toán"),
++    ("Em mở dòng [2] của bảng công thức để xem lại nhé.", [], "dẫn dòng bảng bằng [n], không phát biểu quy tắc"),
++    ("Em xét dấu đạo hàm trên từng khoảng nhé.", [], "có thuật ngữ nhưng không có từ quan hệ: không phải ứng viên quy tắc"),
++    ("Em kiểm tra xem đạo hàm có bằng 0 tại điểm đó không nhé.", [bt("Em kiểm tra xem đạo hàm có bằng 0 tại điểm đó không nhé", QT, KKD)],
++     "câu hỏi gợi mở có thuật ngữ + «bằng»: theo ADR 013 là ứng viên quy tắc không khớp bảng, bỏ cả câu. Đây là cái giá của «bắt thừa»; đo bằng ngưỡng 20 % của ADR 013"),
++]:
++    DC.append({"id": f"LG-DC-{len(DC) + 1:02d}", "bai": B3, "cau": cau, "bieu_thuc": ds,
++               "muc": "nen_hien" if not ds else "phai_bo", "ghi_chu": ghi})
++
++# ---------------------------------------------------------------- từ vựng quy tắc bằng lời
++TU_VUNG = {
++    "phien_ban": 1,
++    "ma_ban_va": "KD-0005",
++    "cach_dung": (
++        "Một câu (tách theo . ; ? ! và xuống dòng) là ứng viên quy tắc bằng lời khi có ít nhất một thuật ngữ và ít nhất "
++        "một từ quan hệ (ADR 013 mục 2). So trên chữ thường đã chuẩn hóa NFC, theo ranh giới từ; so thêm trên chữ đã bỏ dấu "
++        "để bắt cả câu viết không dấu (nghiêng về bắt thừa). Cụm «nếu … thì» khớp khi cả hai từ có trong câu theo thứ tự đó."
++    ),
++    "thuat_ngu": [
++        "đạo hàm", "hàm số", "hàm", "tích", "thương", "tổng", "hiệu", "lũy thừa", "mũ", "căn", "căn bậc hai", "nghiệm",
++        "dấu", "đồng biến", "nghịch biến", "đơn điệu", "cực trị", "cực đại", "cực tiểu", "điểm cực trị", "giá trị cực đại",
++        "giá trị cực tiểu", "điểm tới hạn", "tập xác định", "khoảng", "đoạn", "hằng số", "tử", "mẫu", "phân thức", "đa thức",
++        "bậc", "hệ số", "biến thiên", "bảng biến thiên", "tiếp tuyến", "giới hạn", "liên tục", "x mũ n", "lập phương",
++    ],
++    "tu_quan_he": [
++        "bằng", "là", "nhân", "chia", "cộng", "trừ", "bình phương", "lập phương", "mũ", "lớn hơn", "nhỏ hơn",
++        "lớn hơn hoặc bằng", "nhỏ hơn hoặc bằng", "không âm", "không dương", "dương", "âm", "khác", "đổi dấu",
++        "không đổi dấu", "trái dấu", "cùng dấu", "suy ra", "kéo theo", "nếu … thì", "khi và chỉ khi", "khi", "thì",
++        "tương đương", "gồm", "đạt", "tăng", "giảm",
++    ],
++}
++
++# ---------------------------------------------------------------- ghi
++dem = {L: sum(1 for c in CA if c["loai_ca"] == L) for L in range(1, 9)}
++TEN_LOAI = {
++    1: "công thức trong bảng có trích dẫn", 2: "công thức đúng ngoài bảng", 3: "công thức sai", 4: "LaTeX hỏng",
++    5: "kết quả tính cụ thể của bài", 6: "toán viết trần ngoài dấu phân cách", 7: "trích nguyên văn đề bài",
++    8: "quy tắc phát biểu bằng lời (đúng ngoài bảng, sai, diễn đạt lại)",
++}
++BO = {
++    "phien_ban": 1,
++    "ma_ban_va": "KD-0005",
++    "nguon": "soan_mo_phong",
++    "loai_ca": {L: {"ten": TEN_LOAI[L], "so_ca": dem[L]} for L in range(1, 9)},
++    "tong_so_ca": len(CA),
++    "ngu_canh": {"bang_cong_thuc": BANG, "bai": BAI},
++    "ca": CA,
++    "doi_chung": DC,
++}
++DAU_BO_CA = """\
++# KD-0005 — bộ ca lời giảng cho job kiem-loi-giang (ADR 013, spec SC-004). Lab Kiểm định SOẠN MÔ PHỎNG, không lấy
++# từ log AI hay học sinh thật. Đóng băng bằng SHA-256 của bản vá (labs/evals/2026-10-03-bo-ca-loi-giang.md).
++#
++# Mỗi ca: câu gia sư (đã qua /v1/filter) + ngữ cảnh (bảng đã khóa 6 dòng của v0, đề, dòng bài làm, dữ kiện bảo vệ) +
++# phán quyết mong đợi của từng biểu thức. `loai`, `trang_thai` là một giá trị, hoặc danh sách «một trong».
++#   - muc = phai_bo: mọi biểu thức không DAT KHÔNG được còn trong cau_sach. Sai một ca là lỗi nghiệm thu
++#     («0 công thức sai hoặc không kiểm được tới học sinh», SC-004).
++#   - muc = nen_hien: biểu thức DAT nên còn trong cau_sach; tỉ lệ giữ của loại 1 và loại 7 phải ≥ 95 % (SC-004).
++#   - thay_bang_goi_y = true: câu còn lại mất nghĩa, core thay bằng gợi ý đã kiểm trước (ADR 013 mục 4, 6).
++# `doan` so sau khi gộp khoảng trắng; với câu viết trần là chuỗi con của câu.
++# `kiem`: căn cứ toán của phán quyết (hàm mẫu, phản ví dụ), đã chạy bằng SymPy (kiem_bo_ca.py trong bản vá lab).
++# Đối chứng (`doi_chung`) không thuộc 8 loại: câu không có toán phải giữ nguyên; một câu hỏi gợi mở cho thấy cái giá
++# của «bắt thừa».
++"""
++DAU_TU_VUNG = """\
++# KD-0005 — từ vựng nhận dạng quy tắc phát biểu bằng lời (ADR 013 mục 2). Dữ liệu của lab Kiểm định, nghiêng về bắt
++# thừa: một câu có thuật ngữ + từ quan hệ là ứng viên; ứng viên chỉ được giữ khi khớp phát biểu một dòng bảng đã khóa
++# (sau chuẩn hóa khoảng trắng, hoa thường, dấu câu) hoặc bộ nhận dạng tầng 2 đọc ra đúng mục danh mục của một dòng bảng.
++# Thêm từ là việc của lab Kiểm định, bằng bản vá mới.
++"""
++RA.mkdir(parents=True, exist_ok=True)
++
++
++def yaml_cua(du_lieu):
++    return yaml.safe_dump(du_lieu, allow_unicode=True, sort_keys=False, width=110, default_flow_style=False)
++
++
++(RA / "bo-ca-loi-giang.yaml").write_text(DAU_BO_CA + yaml_cua(BO), encoding="utf-8", newline="\n")
++(RA / "tu-vung-quy-tac.yaml").write_text(DAU_TU_VUNG + yaml_cua(TU_VUNG), encoding="utf-8", newline="\n")
++print("số ca theo loại:", dem, "| tổng:", len(CA), "| đối chứng:", len(DC))
+diff --git a/services/math/kiemdinh/loi-giang/tu-vung-quy-tac.yaml b/services/math/kiemdinh/loi-giang/tu-vung-quy-tac.yaml
+new file mode 100644
+index 0000000..30eeac9
+--- /dev/null
++++ b/services/math/kiemdinh/loi-giang/tu-vung-quy-tac.yaml
+@@ -0,0 +1,85 @@
++# KD-0005 — từ vựng nhận dạng quy tắc phát biểu bằng lời (ADR 013 mục 2). Dữ liệu của lab Kiểm định, nghiêng về bắt
++# thừa: một câu có thuật ngữ + từ quan hệ là ứng viên; ứng viên chỉ được giữ khi khớp phát biểu một dòng bảng đã khóa
++# (sau chuẩn hóa khoảng trắng, hoa thường, dấu câu) hoặc bộ nhận dạng tầng 2 đọc ra đúng mục danh mục của một dòng bảng.
++# Thêm từ là việc của lab Kiểm định, bằng bản vá mới.
++phien_ban: 1
++ma_ban_va: KD-0005
++cach_dung: Một câu (tách theo . ; ? ! và xuống dòng) là ứng viên quy tắc bằng lời khi có ít nhất một thuật ngữ và
++  ít nhất một từ quan hệ (ADR 013 mục 2). So trên chữ thường đã chuẩn hóa NFC, theo ranh giới từ; so thêm trên chữ
++  đã bỏ dấu để bắt cả câu viết không dấu (nghiêng về bắt thừa). Cụm «nếu … thì» khớp khi cả hai từ có trong câu
++  theo thứ tự đó.
++thuat_ngu:
++- đạo hàm
++- hàm số
++- hàm
++- tích
++- thương
++- tổng
++- hiệu
++- lũy thừa
++- mũ
++- căn
++- căn bậc hai
++- nghiệm
++- dấu
++- đồng biến
++- nghịch biến
++- đơn điệu
++- cực trị
++- cực đại
++- cực tiểu
++- điểm cực trị
++- giá trị cực đại
++- giá trị cực tiểu
++- điểm tới hạn
++- tập xác định
++- khoảng
++- đoạn
++- hằng số
++- tử
++- mẫu
++- phân thức
++- đa thức
++- bậc
++- hệ số
++- biến thiên
++- bảng biến thiên
++- tiếp tuyến
++- giới hạn
++- liên tục
++- x mũ n
++- lập phương
++tu_quan_he:
++- bằng
++- là
++- nhân
++- chia
++- cộng
++- trừ
++- bình phương
++- lập phương
++- mũ
++- lớn hơn
++- nhỏ hơn
++- lớn hơn hoặc bằng
++- nhỏ hơn hoặc bằng
++- không âm
++- không dương
++- dương
++- âm
++- khác
++- đổi dấu
++- không đổi dấu
++- trái dấu
++- cùng dấu
++- suy ra
++- kéo theo
++- nếu … thì
++- khi và chỉ khi
++- khi
++- thì
++- tương đương
++- gồm
++- đạt
++- tăng
++- giảm

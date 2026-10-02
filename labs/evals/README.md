@@ -28,8 +28,12 @@ Kết quả chạy nằm ở `services/math/kiemdinh/ket-qua/` và chỉ đượ
 
 Mọi thay đổi prompt, nhà cung cấp, mô hình hay bộ lọc phải chạy khung này; kết quả (lệnh, SHA, số) dán vào PR (hiến chương IV).
 
+## Đang mở
+
+- [`2026-10-03-bo-ca-loi-giang.md`](2026-10-03-bo-ca-loi-giang.md) — bản vá `KD-0005`: 120 ca lời giảng 8 loại và từ vựng quy tắc bằng lời cho job `kiem-loi-giang` (#89, ADR 013, SC-004). Chờ rà độc lập.
+
 ## Việc mở
 
-- Chuyển bộ AI 70 ca và bộ e2e gia sư sang dạng chạy được với `services/core` (v2) trước khi port gia sư.
+- Chuyển bộ AI 70 ca và bộ e2e gia sư sang dạng chạy được với `services/core` (v2) trước khi port gia sư. Bộ 70 ca chưa có trong repo: `docs/KIEM-THU.md` ghi kết quả chạy trên máy dựng lúc bàn giao, không ghi chỗ. Cần chủ repo hoặc nhóm v0 đưa nguồn (#89, T029c); lab không soạn lại rồi gọi là bộ của v0.
 - Dựng bộ chèn lệnh qua tài liệu (chưa có ở v0).
 - Bộ benchmark OCR 30–50 trang SGK / đề tiếng Việt (xem `labs/research/2026-10-01-muc-hieu-va-ocr.md`).
