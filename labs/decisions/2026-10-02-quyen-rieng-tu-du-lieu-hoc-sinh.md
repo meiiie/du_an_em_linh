@@ -30,6 +30,7 @@ Trước khi có học sinh thật, sản phẩm xử lý dữ liệu cá nhân 
 - RLS ở v0: migration `apps/web/drizzle/0010_rls_du_lieu_hoc_sinh.sql` (PR #35, F-08) đã `ENABLE` + `FORCE ROW LEVEL SECURITY` cho `submissions`, `tutor_sessions`, `tutor_messages`, `mastery_states`, `grading_results`.
   - Câu «chưa `FORCE`» trong ADR 006 đã cũ.
   - Theo chính migration, superuser Postgres luôn bỏ qua RLS.
+  - Hàm `rls_duoc_xem_hs` cho qua mọi dòng khi chưa đặt `app.user_id` (dành cho seed, chấm, báo cáo); thiếu ngữ cảnh ở một giao dịch là lộ hết, nên đây không phải mốc an toàn cho dữ liệu thật.
 - Gia sư gửi tới nhà LLM ([ADR 007](../../docs/adr/007-ai-providers.md), [009](../../docs/adr/009-khoa-lap-trinh-openrouter-zai.md)):
   - nhà đang có: OpenAI (Hoa Kỳ), OpenRouter (Hoa Kỳ, chuyển tiếp tới nhiều nhà), Z.AI (Trung Quốc);
   - nội dung gửi: đề, bước học sinh viết, mã lỗi, gợi ý đã kiểm. Không gửi lời giải ([ADR 003](../../docs/adr/003-gia-su-khong-doc-loi-giai.md)).
@@ -113,9 +114,9 @@ Lý do các điểm then chốt:
      - có thỏa thuận xử lý, thời hạn lưu, đánh giá nơi đặt dữ liệu (CTIA nếu ra nước ngoài);
      - mặc định nhắc trong ứng dụng;
    - bộ khử định danh chạy ở `services/core` **trước** khi gọi LLM, lọc email, số điện thoại, tên trong danh sách lớp, mã học sinh; câu bị lọc ghi vào nhật ký (không ghi nội dung);
-   - ảnh bài làm, **kể cả vùng đã cắt**, không ra nước ngoài, vì ảnh cắt vẫn có thể chứa tên, mã học sinh:
-     - mặc định OCR tự host;
-     - dịch vụ OCR bên ngoài, kể cả trong nước, chỉ nhận ảnh đã che vùng tên, mã học sinh, và là bên xử lý (thỏa thuận, thời hạn lưu, không huấn luyện);
+   - ảnh bài làm của học sinh, **kể cả vùng đã cắt**, chỉ OCR tự host:
+     - học sinh có thể viết tên, email, số điện thoại ở bất kỳ đâu trên trang, nên che vùng định sẵn không đủ;
+     - dịch vụ OCR bên ngoài (kể cả trong nước) chỉ dùng cho tài liệu của giáo viên không chứa dữ liệu học sinh (đề, sách), và là bên xử lý (thỏa thuận, thời hạn lưu, không huấn luyện);
      - cắt chỉ vùng toán là bước tối thiểu hóa thêm, không thay các điều kiện trên.
 5. **Nhà LLM cho học sinh thật:**
    - chỉ nhà có điều khoản không dùng dữ liệu API để huấn luyện và có thỏa thuận xử lý dữ liệu;
@@ -129,7 +130,8 @@ Lý do các điểm then chốt:
    - giáo viên xem và ghi đè mức hiểu, gợi ý bài; mỗi gợi ý có lý do xem được;
    - nhật ký tương tác AI lưu theo thời hạn ở mục 7.
 9. **Bảo mật:**
-   - CSDL mới của `services/core` (Flyway) giữ mức của v0: `ENABLE` + `FORCE` RLS cho mọi bảng dữ liệu học sinh, gồm bảng tương ứng 5 bảng của migration 0010 và bảng mới (đồng ý, lịch, ảnh OCR); vai trò CSDL của ứng dụng không phải superuser, không có `BYPASSRLS`;
+   - CSDL mới của `services/core` (Flyway): `ENABLE` + `FORCE` RLS cho mọi bảng dữ liệu học sinh, gồm bảng tương ứng 5 bảng của migration 0010 và bảng mới (đồng ý, lịch, ảnh OCR);
+   - chính sách đóng mặc định: thiếu `app.user_id` thì không thấy dòng nào (khác v0); tác vụ bảo trì dùng vai trò CSDL riêng; vai trò ứng dụng không phải superuser, không có `BYPASSRLS`;
    - kiểm quyền theo lớp ở use case (chống IDOR);
    - mã hóa khi lưu và khi truyền; nhật ký kiểm toán mọi lần đọc dữ liệu học sinh;
    - kế hoạch ứng phó sự cố: báo A05, báo chủ thể khi luật yêu cầu.

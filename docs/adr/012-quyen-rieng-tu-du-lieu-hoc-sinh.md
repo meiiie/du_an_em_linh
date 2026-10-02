@@ -26,16 +26,20 @@ Phân tích, chấm 4 phương án, độ nhạy, câu hỏi cho luật sư: [`l
     - Cần thỏa thuận xử lý, thời hạn lưu, đánh giá nơi đặt dữ liệu; có CTIA nếu dữ liệu ra nước ngoài.
   - `services/core` khử định danh văn bản (email, số điện thoại, tên trong lớp, mã học sinh) trước khi gọi LLM.
   - Nhà LLM và `services/math` chỉ nhận nội dung toán, mã lỗi, mã giả danh theo phiên.
-  - Ảnh bài làm, kể cả vùng đã cắt, không gửi ra nước ngoài. Mặc định OCR tự host.
-    - Dùng dịch vụ OCR bên ngoài, kể cả trong nước: che vùng tên, mã học sinh trước khi gửi.
-    - Nhà OCR là bên xử lý: có thỏa thuận, thời hạn lưu, không dùng ảnh để huấn luyện.
+  - Ảnh bài làm của học sinh, kể cả vùng đã cắt, **chỉ OCR tự host**. Học sinh có thể viết tên, số điện thoại ở bất kỳ đâu trên trang, nên che vùng định sẵn không đủ.
+    - Dịch vụ OCR bên ngoài (kể cả trong nước) chỉ dùng cho tài liệu của giáo viên không chứa dữ liệu học sinh (đề, sách).
+    - Khi đó nhà OCR là bên xử lý: có thỏa thuận, thời hạn lưu, không dùng tài liệu để huấn luyện.
 - **Nhà LLM cho dữ liệu thật** phải có điều khoản không dùng dữ liệu để huấn luyện, có thỏa thuận xử lý dữ liệu, và CTIA riêng. Z.AI và OpenRouter chỉ dùng với dữ liệu tổng hợp cho tới khi đánh giá xong.
 - **Quyền chủ thể trong ứng dụng:** xem, sửa, tải về, xóa, rút đồng ý, theo thời hạn NĐ 356 (xóa: 20 ngày). Xóa và hết hạn lưu chạy tự động, có nhật ký.
 - **Minh bạch và giám sát AI.**
   - Mọi câu gia sư gắn nhãn «Gia sư AI».
   - Giáo viên xem và ghi đè mức hiểu, gợi ý bài; mỗi gợi ý có lý do xem được.
 - **Bảo mật.**
-  - CSDL của `services/core` giữ mức RLS của v0 (migration 0010: `ENABLE` + `FORCE`) cho mọi bảng dữ liệu học sinh, kể cả bảng mới; vai trò CSDL của ứng dụng không phải superuser và không có `BYPASSRLS` (cả hai đều bỏ qua RLS).
+  - CSDL của `services/core`: `ENABLE` + `FORCE` RLS cho mọi bảng dữ liệu học sinh, kể cả bảng mới.
+    - Chính sách **đóng mặc định**: thiếu ngữ cảnh người dùng (`app.user_id`) thì không thấy dòng nào.
+    - Khác v0: hàm `rls_duoc_xem_hs` của migration 0010 cho qua mọi dòng khi chưa đặt ngữ cảnh (để chạy tác vụ hệ thống), nên không làm mốc an toàn cho dữ liệu thật.
+    - Tác vụ bảo trì (migration, seed, báo cáo tổng hợp) dùng vai trò CSDL riêng, có kiểm soát.
+    - Vai trò CSDL của ứng dụng không phải superuser và không có `BYPASSRLS` (cả hai đều bỏ qua RLS).
   - Kiểm quyền theo lớp ở use case.
   - Mã hóa khi lưu và khi truyền; nhật ký kiểm toán mọi lần đọc.
   - Kế hoạch ứng phó sự cố.
