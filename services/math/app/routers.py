@@ -49,6 +49,13 @@ def goi_y_thang_mau(body: JobIn) -> dict:
     return run_sympy_job("goi_y", data, timeout=int(data.get("timeout_s") or 12))
 
 
+@v1.post("/kiem-dong-cong-thuc")
+def kiem_dong_cong_thuc(body: JobIn) -> dict:
+    # ADR 013: core gọi khi khóa bảng công thức; khóa được khi mọi dòng DAT ở tầng 1 và tầng 2
+    data = _payload(body)
+    return run_sympy_job("kiem_dong_cong_thuc", data, timeout=int(data.get("timeout_s") or 20))
+
+
 @v1.post("/extract")
 def trich_pdf(body: JobIn) -> dict:
     data = _payload(body)
