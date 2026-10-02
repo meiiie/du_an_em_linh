@@ -51,4 +51,38 @@ Thuần hàm, không đọc CSDL. Chạy **sau** `/v1/filter`.
 - `trang_thai` ∈ `DAT`, `SAI`, `KHONG_KIEM_DUOC`. Chỉ biểu thức `DAT` còn lại trong `cau_sach`.
 - `thay_bang_goi_y = true` khi câu còn lại mất nghĩa: core thay cả câu bằng gợi ý theo thang của bước.
 - Core ghi mỗi biểu thức `SAI` hoặc `KHONG_KIEM_DUOC` thành một `verification_run` (`subject_kind = TUTOR_FORMULA`) vào hàng đợi duyệt.
-- Lỗi, hết giờ, JSON hỏng → core không hiện câu, dùng gợi ý theo thang (đóng mặc định).
+- Lỗi, hết giờ, JSON hỏng → core không hiện câu; câu thay thế chỉ lấy từ gợi ý **đã qua job này từ trước** với phiên bản bảng hiện tại (ADR 013 mục 6), không có thì câu cố định không chứa toán.
+- Biểu thức trông như toán nằm ngoài `$…$`, `\(…\)`, `\[…\]` mà không phân loại được → `KHONG_PHAN_TICH_DUOC`, bị bỏ (đóng mặc định).
+- Cùng job chạy **trước** cho mọi câu gợi ý (thang của bài, thang mẫu) khi khóa bảng hoặc nhập bài; core lưu phán quyết theo (câu gợi ý, phiên bản bảng).
+
+## Job mới: `POST /v1/kiem-dong-cong-thuc` (ADR 013, khóa bảng)
+
+Thuần hàm. Core gọi khi giáo viên bấm khóa bảng nháp (T042) và khi importer khóa bảng của v0.
+
+**Vào:**
+
+```json
+{
+  "dong": [
+    {"id": "d-1", "tieu_de": "Đạo hàm thương", "latex": "(u/v)' = (u'v - uv') / v^2", "phat_bieu": "Với thương, tử là u'v trừ uv', mẫu là v bình."},
+    {"id": "d-4", "tieu_de": "Đơn điệu", "latex": "y' \\ge 0 … \\Rightarrow \\text{đồng biến}", "phat_bieu": "Hàm đồng biến trên khoảng khi …"}
+  ],
+  "tai_lieu": [{"id": "tl-1", "ten": "…", "doan": [{"id": "p-12", "trang": 3, "text": "…"}], "license_status": "tu_soan"}],
+  "timeout_s": 20
+}
+```
+
+**Ra:**
+
+```json
+{
+  "dong": [
+    {"id": "d-1", "loai": "DANG_THUC", "tang1": {"trang_thai": "DAT", "can_cu": "SymPy: hiệu rút gọn bằng 0 với u(x), v(x)"}, "tang2": {"trang_thai": "DAT", "trich_dan": {"tai_lieu": "tl-1", "doan": "p-12"}}},
+    {"id": "d-4", "loai": "DINH_LI", "tang1": {"trang_thai": "DAT", "can_cu": "ngữ nghĩa khớp quy tắc đơn điệu; 0 phản ví dụ trên 40 hàm mẫu"}, "tang2": {"trang_thai": "DAT", "trich_dan": {"tai_lieu": "tl-1", "doan": "p-7"}}}
+  ]
+}
+```
+
+- `loai` ∈ `DANG_THUC`, `DINH_LI` (loại máy đã biết: đơn điệu, cực trị, điểm tới hạn), `KHONG_BIET`.
+- `KHONG_BIET` → tầng 1 `KHONG_KIEM_DUOC`. Tài liệu `chua_ro` không được dùng ở tầng 2.
+- Core chỉ khóa bảng khi mọi dòng có `tang1` và `tang2` đều `DAT`; ngược lại trả 422 kèm danh sách dòng chưa qua.

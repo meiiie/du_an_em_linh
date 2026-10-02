@@ -5,7 +5,7 @@
 
 ## Summary
 
-Chạy hết vòng của sơ đồ trên v2 cho Toán 12 «đơn điệu và cực trị», dùng lại nội dung và dịch vụ toán đã kiểm định của v0. `services/core` có thêm 6 module nghiệp vụ: lớp, nội dung + cổng, làm bài, gia sư, mức hiểu, lịch. `apps/frontend` có 5 màn học sinh và 9 màn giáo viên tương đương v0. `services/math` giữ hợp đồng `/v1` và thêm đúng một job: kiểm lời giảng của gia sư (FR-015, [ADR 013](../../docs/adr/013-cong-ba-tang-cho-loi-gia-su.md), đã chấp nhận). Trích chữ PDF làm ngay trong `services/core` bằng Apache PDFBox, nên tệp không phải đi qua ranh giới dịch vụ. Logic sư phạm của v0 (thang gợi ý, luật xin đáp án, mức hiểu, chọn bài kế, lịch) được chép sang Java theo đúng tham số, kèm bộ đối chiếu với v0.
+Chạy hết vòng của sơ đồ trên v2 cho Toán 12 «đơn điệu và cực trị», dùng lại nội dung và dịch vụ toán đã kiểm định của v0. `services/core` có thêm 6 module nghiệp vụ: lớp, nội dung + cổng, làm bài, gia sư, mức hiểu, lịch. `apps/frontend` có 5 màn học sinh và 9 màn giáo viên tương đương v0. `services/math` giữ hợp đồng `/v1` và thêm hai job: kiểm dòng bảng công thức khi khóa, và kiểm lời giảng của gia sư (FR-015, [ADR 013](../../docs/adr/013-cong-ba-tang-cho-loi-gia-su.md), đã chấp nhận). Trích chữ PDF làm ngay trong `services/core` bằng Apache PDFBox, nên tệp không phải đi qua ranh giới dịch vụ. Logic sư phạm của v0 (thang gợi ý, luật xin đáp án, mức hiểu, chọn bài kế, lịch) được chép sang Java theo đúng tham số, kèm bộ đối chiếu với v0.
 
 ## Technical Context
 
@@ -73,7 +73,8 @@ services/core/src/main/resources/db/migration/
 services/core/src/test/java/…   # unit theo module, Testcontainers, đối chiếu v0, ArchUnit
 
 services/math/app/
-└── loi_giang.py         # job mới kiem_loi_giang (ADR 013); routers.py thêm POST /v1/kiem-loi-giang
+├── dong_cong_thuc.py    # job mới kiem_dong_cong_thuc (ADR 013): POST /v1/kiem-dong-cong-thuc
+└── loi_giang.py         # job mới kiem_loi_giang (ADR 013): POST /v1/kiem-loi-giang
 
 apps/frontend/src/app/
 ├── api/                 # kiểu khớp DTO theo module
@@ -96,5 +97,5 @@ Không có vi phạm hiến chương. Hai điểm cần theo dõi:
 
 | Điểm | Vì sao cần | Phương án đơn giản hơn bị loại vì |
 | --- | --- | --- |
-| Job mới `kiem_loi_giang` trong `services/math` | Tầng 1 cần SymPy; bộ lọc chỉ có một bản, trong `services/math` (ADR 011) | Viết bộ nhận công thức bằng Java thì có hai bản logic toán, lệch nhau theo thời gian |
+| Hai job mới `kiem_dong_cong_thuc`, `kiem_loi_giang` trong `services/math` | Tầng 1 cần SymPy; bộ lọc và bộ nhận dạng quy tắc chỉ có một bản, trong `services/math` (ADR 011) | Viết bộ nhận công thức bằng Java thì có hai bản logic toán, lệch nhau theo thời gian |
 | Chép logic sư phạm từ TypeScript sang Java | Gia sư, mức hiểu, bài kế phải nằm ở `services/core` (ADR 011) | Gọi ngược `apps/web` (v0) thì không gỡ được v0 |

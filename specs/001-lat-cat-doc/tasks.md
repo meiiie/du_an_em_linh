@@ -43,7 +43,7 @@ description: "Danh sách việc của epic P2 — lát cắt dọc một chủ �
 - [ ] T010 `V4__content.sql`: `topics`, `skills`, `skill_prerequisites`, `error_types`, `step_templates`, `problems`, `solutions`, `hint_levels`, `documents`, `document_passages`, `formula_sheets`, `formulas`, `verification_runs`, `verification_tier_results`, `content_reviews`
 - [ ] T011 `core/content/domain/`: bài và chuyển trạng thái (data-model §content), bảng công thức có phiên bản, kết quả kiểm có cờ «cũ»
 - [ ] T011b Chép **nguyên văn** các hằng nội dung của `apps/web/scripts/seed.ts` (khung 5 bước, cấu hình BKT, 3 tài liệu, 6 dòng bảng công thức) ra `data/v0/*.json` kèm `data/v0/NGUON.md` (đường dẫn, dòng, SHA); không sửa chữ
-- [ ] T012 `core/content/infrastructure/import/`: importer đọc `${app.content.source}` (ảnh: `/app/noi-dung`; test: `../../data`), gồm `supham/` và `v0/`, như `apps/web/scripts/seed.ts` (cả biến thể `/v1/generate` hạt giống cố định và 3 bài demo), idempotent theo mã + dấu vân tay; chạy `/v1/verify` từng bài
+- [ ] T012 `core/content/infrastructure/import/`: importer đọc `${app.content.source}` (ảnh: `/app/noi-dung`; test: `${project.basedir}/../../data` đặt trong `systemPropertyVariables` của Surefire), gồm `supham/` và `v0/`, như `apps/web/scripts/seed.ts` (cả biến thể `/v1/generate` hạt giống cố định và 3 bài demo), idempotent theo mã + dấu vân tay; chạy `/v1/verify` từng bài
 - [ ] T013 [P] Script một lần `specs/001-lat-cat-doc/doi-chieu/xuat-v0.ts` (chạy trên v0): xuất (mã bài, dấu vân tay, trạng thái cổng) ra `doi-chieu/v0-bai.json`
 - [ ] T014 `core-test/content/NhapNoiDungTest.java`: nhập trên Testcontainers + dịch vụ toán giả; so `v0-bai.json`
 - [ ] T015 `core/content/application/`: port đọc bài cho học sinh **không** có lời giải; ArchUnit thêm luật: DTO của học sinh không phụ thuộc `Solution`
@@ -89,7 +89,7 @@ description: "Danh sách việc của epic P2 — lát cắt dọc một chủ �
 
 ### Issue — Job `kiem_loi_giang` (services/math), áp nguyên văn KD-0005
 
-- [ ] T028 [US2] `services/math/app/loi_giang.py` + `routers.py` `POST /v1/kiem-loi-giang` theo `contracts/math-v1.md`
+- [ ] T028 [US2] `services/math/app/loi_giang.py` + `routers.py` `POST /v1/kiem-loi-giang` theo `contracts/math-v1.md`; toán ngoài dấu phân cách không phân loại được → `KHONG_PHAN_TICH_DUOC`, bị bỏ
 - [ ] T029b [US2] Áp **nguyên văn** bản vá KD-0005 vào `services/math/kiemdinh/loi-giang/` (ghi SHA-256 trong PR và `NHAT-KY.md`); pytest chạy bộ ca trong cổng merge
 - [ ] T030 [P] [US2] pytest: thế giới đóng (ADR 013): khớp bảng + trích dẫn → giữ; ngoài bảng → bỏ; sai → `SAI`; trích bài làm → giữ; kết quả cụ thể → bỏ; LaTeX hỏng → bỏ
 
@@ -98,7 +98,8 @@ description: "Danh sách việc của epic P2 — lát cắt dọc một chủ �
 - [ ] T031 [US2] `V6__tutor.sql`: `tutor_sessions`, `tutor_messages`, `llm_calls`
 - [ ] T032 [US2] `core/tutor/domain/`: luật xin đáp án, sai chỗ, gợi ý (chép `apps/web/lib/tutor.ts`), thang 3 cấp, trạng thái lượt
 - [ ] T033 [US2] `core/tutor/infrastructure/ai/`: nhà `offline` (`/v1/goi-y`), OpenAI-compatible, OpenRouter, Z.AI qua Spring AI (research R3); xóa định danh (chép `apps/web/lib/llm.ts`); chỉ tài khoản `synthetic` được gửi ra ngoài
-- [ ] T034 [US2] `core/tutor/application/LuotGiaSu`: kho lớp + trích dẫn `[n]` (chép `kien-thuc.ts`, `kho-lop.ts`) → nhà → `/v1/filter` → `/v1/kiem-loi-giang` → ghi mục duyệt cho biểu thức bị bỏ
+- [ ] T034 [US2] `core/tutor/application/LuotGiaSu`: kho lớp + trích dẫn `[n]` (chép `kien-thuc.ts`, `kho-lop.ts`) → nhà → `/v1/filter` → `/v1/kiem-loi-giang` → ghi mục duyệt cho biểu thức bị bỏ; câu thay thế chỉ từ gợi ý đã kiểm trước với phiên bản bảng hiện tại, không có thì câu cố định không chứa toán (ADR 013 mục 6)
+- [ ] T034b [US2] `core/content/`: khi khóa bảng hoặc nhập bài, chạy mọi câu gợi ý (thang của bài, thang mẫu) qua `/v1/kiem-loi-giang`, lưu phán quyết theo (gợi ý, phiên bản bảng)
 - [ ] T035 [US2] `core/tutor/infrastructure/web/`: `POST /api/hs/gia-su` SSE (`trang_thai` kho/goi/loc, `xong`, `loi`), hủy khi kết nối đóng; `GET /api/hs/gia-su/{maBai}`; `POST /api/hs/gui-thay-co`
 - [ ] T036 [P] [US2] Nhà giả `gia-lap` (profile `test`, `e2e`) + `core-test/tutor/BoCaTest.java` `@Tag("bo-ca")`: bộ dụ đáp án, 288 ca ác ý, bộ ca lời giảng chạy qua `LuotGiaSu` (SC-003, SC-004)
 - [ ] T037 [P] [US2] `core-test/tutor/ThoiGianGiaSuTest.java`: trạng thái đầu ≤ 1 s; offline ≤ 3 s p95 trên 50 lượt (SC-007)
@@ -117,7 +118,7 @@ description: "Danh sách việc của epic P2 — lát cắt dọc một chủ �
 
 - [ ] T041 [US3] `core/content/`: tải PDF (≤ 10 MB) → trích chữ bằng Apache PDFBox 3.0.8 trong core (research R9) → đoạn có vị trí; quyền dùng bắt buộc; `chua_ro` không làm căn cứ
 - [ ] T042 [US3] `core/content/`: bảng công thức nháp → khóa chỉ khi mọi dòng `DAT` ở tầng 1 và tầng 2 (ADR 013: đẳng thức kiểm tương đương; định lí loại đã biết kiểm ngữ nghĩa + tìm phản ví dụ), 422 kèm dòng chưa qua → phiên bản mới → đánh dấu «cũ» các kết quả kiểm trước
-- [ ] T042b [US3] `services/math`: job kiểm dòng bảng công thức (tầng 1 cho đẳng thức và định lí loại đã biết) dùng lại bộ nhận dạng của `verify.py`; bảng 6 dòng của v0 phải `DAT` cả 6
+- [ ] T042b [US3] `services/math/app/dong_cong_thuc.py` + `POST /v1/kiem-dong-cong-thuc` theo `contracts/math-v1.md` (tầng 1 cho đẳng thức và định lí loại đã biết, tầng 2 tìm đoạn trong tài liệu được phép), dùng lại bộ nhận dạng của `verify.py`; bảng 6 dòng của v0 phải `DAT` cả 6
 - [ ] T043 [US3] API `GET/POST /api/gv/tai-lieu`, `GET/PUT /api/gv/cong-thuc`, `POST /api/gv/cong-thuc/khoa`, `GET /api/gv/ngan-hang`, `POST /api/gv/ngan-hang/kiem`, `POST /api/gv/giao-bai`
 - [ ] T044 [US3] `fe/features/giao-vien/{tai-lieu,cong-thuc,ngan-hang}/` (giữ tiêu đề v0: «Tài liệu», «Công thức», «Đề bài»)
 - [ ] T045 [P] [US3] Test: khóa bảng tạo phiên bản và «cũ»; tài liệu `chua_ro` bị bỏ qua; tài liệu vừa nạp được gia sư trích dẫn (spec US3 kịch bản 5)

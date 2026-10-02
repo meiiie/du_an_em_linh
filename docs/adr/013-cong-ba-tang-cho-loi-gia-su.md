@@ -32,10 +32,12 @@ Chọn **A**.
 2. **Cách nhận ra biểu thức:**
    - mọi đoạn toán trong `$…$`, `\(…\)`, `\[…\]`;
    - các mẫu phát biểu quy tắc bằng lời của chủ đề, dùng lại bộ nhận dạng của tầng 2 trong `services/math/app/verify.py` (đạo hàm dương / âm → đồng biến / nghịch biến, đổi dấu → cực trị);
-   - prompt yêu cầu mô hình đặt mọi công thức trong `$…$` và chỉ dùng công thức của bảng kèm `[n]`. Prompt không thay cổng: cổng chạy trên mọi câu.
+   - **mọi đoạn trông như toán nằm ngoài dấu phân cách** (dấu `=`, `≠`, `≤`, `≥`, `⇒`, `→`, dấu phẩy trên `'` / `′`, `^`, `/` giữa các ký hiệu, chữ biến kề toán tử hay chữ số, lệnh `\…`) mà không thuộc hai mẫu trên: coi là `KHONG_PHAN_TICH_DUOC`, bị bỏ như mọi biểu thức không kiểm được. Ví dụ `(uv)' = u'v'` viết trần bị bỏ, không lọt qua;
+   - prompt yêu cầu mô hình đặt mọi công thức trong `$…$` và chỉ dùng công thức của bảng kèm `[n]`. Prompt không phải ranh giới an toàn: cổng chạy trên mọi câu và đóng mặc định với mọi thứ không phân loại được.
 3. **Thứ tự trong lượt:** luật xin đáp án → mô hình → `/v1/filter` (lộ đáp án) → job mới `kiem_loi_giang` (cổng 3 tầng cho công thức) → hiện. Hai lớp lọc đều trong `services/math`, đúng ADR 011 (bộ lọc chỉ có một bản).
 4. **Khi bỏ:** đoạn bị bỏ được rút khỏi câu. Câu còn lại vô nghĩa (không còn mệnh đề nào ngoài từ nối) thì thay cả câu bằng gợi ý theo thang của bước. Mỗi lần bỏ ghi một mục cho giáo viên: `SAI` nếu máy kiểm ra sai, `KHONG_KIEM_DUOC` nếu không khớp bảng. Giáo viên xử lý bằng cách sửa bảng rồi khóa phiên bản mới. Không có đường «duyệt riêng một công thức» trong P2.
-5. **Đóng mặc định:** job lỗi hoặc hết giờ thì câu không hiện; học sinh nhận gợi ý theo thang.
+5. **Đóng mặc định:** job lỗi hoặc hết giờ thì câu không hiện; học sinh nhận gợi ý theo thang **đã kiểm trước**.
+6. **Gợi ý thay thế cũng qua cổng, và kiểm trước:** thang gợi ý (của bài và thang mẫu `/v1/goi-y`) có chứa quy tắc toán. Khi khóa bảng công thức hoặc nhập bài, mỗi câu gợi ý chạy qua cùng job `kiem_loi_giang`; kết quả gắn với phiên bản bảng. Lúc chạy, câu thay thế chỉ lấy từ các gợi ý đã `DAT` với phiên bản bảng hiện tại, nên không cần gọi job lần nữa. Không còn gợi ý nào đạt thì dùng một câu cố định không chứa toán («Em xem lại bước này theo bảng công thức của lớp rồi thử lại, hoặc gửi thầy cô.»).
 
 ## Hệ quả
 
