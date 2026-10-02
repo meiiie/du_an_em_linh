@@ -1,5 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-import { Title } from '@angular/platform-browser';
+import { Meta, Title } from '@angular/platform-browser';
 import { Router } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
 import { appConfig } from './app.config';
@@ -18,6 +18,12 @@ describe('định tuyến và tiêu đề tab', () => {
     const harness = await RouterTestingHarness.create();
     await harness.navigateByUrl('/dang-nhap');
     expect(TestBed.inject(Title).getTitle()).toBe('Đăng nhập · Học toán với AI');
+  });
+
+  it('trang đăng nhập không cho lập chỉ mục (như v0)', async () => {
+    const harness = await RouterTestingHarness.create();
+    await harness.navigateByUrl('/dang-nhap');
+    expect(TestBed.inject(Meta).getTag("name='robots'")?.content).toBe('noindex, nofollow');
   });
 
   it('đường lạ chuyển về /dang-nhap', async () => {

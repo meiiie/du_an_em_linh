@@ -6,6 +6,7 @@ export const routes: Routes = [
   {
     path: 'dang-nhap',
     title: 'Đăng nhập',
+    data: { robots: 'noindex, nofollow' },
     loadComponent: () => import('./features/dang-nhap/dang-nhap').then((m) => m.DangNhap),
   },
   { path: '', pathMatch: 'full', redirectTo: 'dang-nhap' },

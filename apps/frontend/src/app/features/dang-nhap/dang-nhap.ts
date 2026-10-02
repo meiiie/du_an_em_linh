@@ -56,7 +56,8 @@ export class DangNhap {
   }
 
   protected chonEmail(giaTri: string): void {
-    this.taiKhoan.update((tk) => ({ ...tk, email: giaTri }));
+    // Đổi email thì bỏ mật khẩu đã gõ: mật khẩu của tài khoản này không được rơi sang tài khoản khác.
+    this.taiKhoan.update((tk) => ({ email: giaTri, matKhau: tk.email === giaTri ? tk.matKhau : '' }));
     this.hienMatKhau.set(false);
     this.doiBuoc('mat-khau');
   }

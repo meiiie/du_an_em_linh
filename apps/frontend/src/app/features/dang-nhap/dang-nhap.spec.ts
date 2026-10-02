@@ -72,6 +72,25 @@ describe('DangNhap', () => {
     expect(nutMat.getAttribute('aria-label')).toBe('Ẩn mật khẩu');
   });
 
+  it('đổi tài khoản thì xóa mật khẩu đã gõ; giữ nguyên tài khoản thì giữ', async () => {
+    const t = await moTrang();
+    t.nut('Học sinh An')!.click();
+    await t.on();
+    go(t.o('password')!, 'bi-mat');
+    await t.on();
+    t.nut('Quay lại')!.click();
+    await t.on();
+    t.nut('Học sinh An')!.click();
+    await t.on();
+    expect(t.o('password')?.value).toBe('bi-mat');
+    t.nut('Quay lại')!.click();
+    await t.on();
+    t.nut('Giáo viên')!.click();
+    await t.on();
+    expect(t.o('email')?.value).toBe('gv@demo.local');
+    expect(t.o('password')?.value).toBe('');
+  });
+
   it('Quay lại về bước email, giữ email đã nhập', async () => {
     const t = await moTrang();
     t.nut('Học sinh An')!.click();
