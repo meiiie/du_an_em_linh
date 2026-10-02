@@ -66,7 +66,10 @@ Trước khi có học sinh thật, sản phẩm xử lý dữ liệu cá nhân 
   - nhà LLM chỉ nhận nội dung toán đã khử định danh;
   - lập DPIA + CTIA.
 - **C — Trực tiếp phụ huynh (B2C), LLM nước ngoài sau khi khử định danh:** sản phẩm là bên kiểm soát; xác minh phụ huynh và tuổi trong ứng dụng; DPIA + CTIA + nhân sự bảo vệ dữ liệu ngay từ đầu.
-- **D — Pilot qua trường, chỉ LLM trong nước hoặc tự host:** như B nhưng không chuyển dữ liệu xuyên biên giới, nên không cần CTIA. Chất lượng gia sư phụ thuộc mô hình trong nước / mã nguồn mở chạy tại Việt Nam.
+- **D — Pilot qua trường, chỉ xử lý tại Việt Nam:** như B nhưng suy luận, lưu trữ và mọi bên xử lý phụ đều đặt tại Việt Nam, xác minh bằng hợp đồng (nơi đặt dữ liệu, danh sách bên xử lý phụ); tự host hoặc nhà trong nước.
+  - Khi đó không chuyển dữ liệu xuyên biên giới, nên không cần CTIA.
+  - Bất kỳ khâu nào ra nước ngoài (kể cả bên xử lý phụ của nhà trong nước) thì D quay về như B: cần CTIA, xác định theo luồng dữ liệu thật.
+  - Chất lượng gia sư phụ thuộc mô hình chạy tại Việt Nam.
 
 A trượt **L0**. B, C, D qua L0–L4 nếu làm đủ quyết định con ở §8.
 
@@ -92,7 +95,7 @@ Lý do các điểm then chốt:
 ## 7. Độ nhạy
 
 - Pháp lý lên 45, giá trị học tập xuống 10: B = 395, D = 390. D gần bằng B khi rủi ro pháp lý chi phối.
-- D thắng nếu mô hình trong nước đạt bộ AI 70 ca (giá trị lên 5 → D = 410, ngang B) **và** không cần CTIA. Kiến trúc nhà tường minh (ADR 007) giữ đường đổi sang D mà không viết lại.
+- D thắng nếu mô hình chạy tại Việt Nam đạt bộ AI 70 ca (giá trị lên 5 → D = 410, ngang B) **và** cả luồng (suy luận, lưu, bên xử lý phụ) đã xác minh nằm ở Việt Nam, nên không cần CTIA. Kiến trúc nhà tường minh (ADR 007) giữ đường đổi sang D mà không viết lại.
 - C chỉ vượt B khi khách chọn B2C (câu hỏi Q4 ở [#61](https://github.com/meiiie/du_an_em_linh/issues/61)); khi đó cần ADR riêng.
 
 ## 8. Khuyến nghị: B, kèm quyết định con
@@ -106,7 +109,7 @@ Lý do các điểm then chốt:
 4. **Tối thiểu hóa:**
    - định danh chỉ nằm ở `services/core`; `services/math` và nhà LLM chỉ nhận nội dung toán, mã lỗi, mã giả danh theo phiên;
    - bộ khử định danh chạy ở `services/core` **trước** khi gọi LLM, lọc email, số điện thoại, tên trong danh sách lớp, mã học sinh; câu bị lọc ghi vào nhật ký (không ghi nội dung);
-   - ảnh bài làm không gửi nhà nước ngoài: OCR trong nước / tự host, hoặc cắt chỉ vùng toán.
+   - ảnh bài làm, **kể cả vùng đã cắt**, chỉ xử lý trong nước / tự host: ảnh cắt vẫn có thể chứa tên, mã học sinh. Cắt chỉ vùng toán là bước tối thiểu hóa thêm, không thay điều kiện này.
 5. **Nhà LLM cho học sinh thật:**
    - chỉ nhà có điều khoản không dùng dữ liệu API để huấn luyện và có thỏa thuận xử lý dữ liệu;
    - mỗi nhà một CTIA trước khi bật;
@@ -142,7 +145,7 @@ Lý do các điểm then chốt:
 
 - Luật sư xác nhận dữ liệu học tập **không** thuộc «theo dõi hành vi» nhạy cảm (P6): hồ sơ nhẹ đi, miễn trừ P5 có thể áp dụng.
 - Khách chọn B2C ở Q4 ([#61](https://github.com/meiiie/du_an_em_linh/issues/61)): cần ADR cho phương án C.
-- Mô hình trong nước / tự host đạt bộ AI 70 ca: chuyển sang D, bỏ CTIA.
+- Mô hình chạy hoàn toàn tại Việt Nam (đã xác minh nơi đặt dữ liệu và bên xử lý phụ) đạt bộ AI 70 ca: chuyển sang D, bỏ CTIA.
 - Văn bản hướng dẫn Luật AI xếp gia sư AI cho học sinh vào rủi ro cao: thêm đánh giá sự phù hợp trước khi chạy.
 
 ## 11. Câu hỏi cho luật sư

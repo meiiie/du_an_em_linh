@@ -23,7 +23,7 @@ Phân tích, chấm 4 phương án, độ nhạy, câu hỏi cho luật sư: [`l
   - Định danh chỉ ở `services/core`.
   - `services/core` khử định danh văn bản (email, số điện thoại, tên trong lớp, mã học sinh) trước khi gọi LLM.
   - Nhà LLM và `services/math` chỉ nhận nội dung toán, mã lỗi, mã giả danh theo phiên.
-  - Ảnh bài làm không gửi ra nước ngoài.
+  - Ảnh bài làm, kể cả vùng đã cắt, không gửi ra nước ngoài: OCR trong nước hoặc tự host.
 - **Nhà LLM cho dữ liệu thật** phải có điều khoản không dùng dữ liệu để huấn luyện, có thỏa thuận xử lý dữ liệu, và CTIA riêng. Z.AI và OpenRouter chỉ dùng với dữ liệu tổng hợp cho tới khi đánh giá xong.
 - **Quyền chủ thể trong ứng dụng:** xem, sửa, tải về, xóa, rút đồng ý, theo thời hạn NĐ 356 (xóa: 20 ngày). Xóa và hết hạn lưu chạy tự động, có nhật ký.
 - **Minh bạch và giám sát AI.**
@@ -48,4 +48,4 @@ Phân tích, chấm 4 phương án, độ nhạy, câu hỏi cho luật sư: [`l
   - nhãn AI, màn ghi đè cho giáo viên;
   - hồ sơ DPIA / CTIA.
 - Port identity (#55) giữ chỗ cho tuổi, người đại diện, trạng thái đồng ý; không thu ngày sinh đầy đủ nếu năm sinh đủ dùng.
-- Mở lại ADR này khi gặp một trong các tín hiệu ở §10 của bản phân tích: luật sư trả lời khác giả định, khách chọn B2C, mô hình trong nước đạt bộ AI 70 ca, danh mục AI rủi ro cao được ban hành.
+- Mở lại ADR này khi gặp một trong các tín hiệu ở §10 của bản phân tích: luật sư trả lời khác giả định, khách chọn B2C, mô hình chạy hoàn toàn tại Việt Nam (đã xác minh nơi đặt dữ liệu và bên xử lý phụ) đạt bộ AI 70 ca, danh mục AI rủi ro cao được ban hành.
