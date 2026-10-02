@@ -289,6 +289,17 @@ CA = [
      "Nếu đạo hàm lớn hơn hoặc bằng 0 trên khoảng K và bằng 0 chỉ tại hữu hạn điểm thì hàm đồng biến trên K."),
     ("TH-khong-ton-tai", DAT, "", "Điểm tới hạn là điểm thuộc tập xác định mà tại đó đạo hàm bằng 0 hoặc đạo hàm không tồn tại."),
     ("LaTeX-rightarrow", DAT, r"+ \rightarrow - : \text{cực đại}", ""),
+    # Rà lại math-verifier trên #101 (f07093c): ca mới của ngữ pháp có vị trí
+    ("TH-N18-loai-tru", KKD, "", "Điểm tới hạn là điểm thuộc tập xác định mà tại đó y' = 0 hoặc y' không xác định, "
+     "loại trừ các điểm không thuộc tập xác định."),
+    ("N14-mot-diem-x0", KKD, "", "Nếu y' đổi dấu từ dương sang âm khi x đi qua một điểm thì x0 là điểm cực đại."),
+    ("N15-mot-diem-x0", KKD, "", "Nếu y'(x0) = 0 mà y' không đổi dấu khi x qua một điểm thì x0 không là điểm cực trị."),
+    ("N3-doan-do", KKD, "", "Nếu y' > 0 trên khoảng (0; 1) thì hàm đồng biến trên đoạn đó."),
+    ("N4-dau-mut", KKD, "", "Nếu y' > 0 trên khoảng (sai; sai) thì hàm đồng biến trên khoảng (sai; sai)."),
+    ("N40-mien-khoang-do", KKD, "", "Nếu y' > 0 trên tập xác định thì hàm số đồng biến trên khoảng đó."),
+    ("N47-no", DAT, "", "Nếu y' > 0 trên khoảng K thì nó đồng biến trên K."),
+    ("N48-la", DAT, "", "Nếu y' > 0 trên khoảng K thì hàm số là đồng biến trên K."),
+    ("v0-mot-diem-trong", DAT, "", "Nếu đạo hàm đổi từ dương sang âm khi đi qua một điểm trong thì đó là cực đại."),
 ]
 
 
@@ -393,8 +404,21 @@ CT1 = ("r", "", "", "Nếu y' đổi dấu từ dương sang âm khi x qua x0 th
     (DONG_TONG, "Hiểu lầm thường gặp: $(u+v)' = u' + v'$.", (DAT, KKD)),
     # câu CT2 kiểu SGK (x0 ở kết luận) giờ làm căn cứ được
     (C8, "Nếu y'(x0) = 0 mà y' không đổi dấu khi x qua x0 thì x0 không là điểm cực trị.", (DAT, DAT)),
+    # Rà lại trên f07093c: đoạn «trên K» không đỡ dòng «trên tập xác định»; «theo cùng quy tắc» không kế thừa câu sai;
+    # nhãn phải là tên đã kiểm của chính quy tắc
+    (("r", "", "", "Nếu hàm đồng biến trên tập xác định thì y' ≥ 0 trên tập xác định."),
+     "Nếu hàm đồng biến trên khoảng K thì y' ≥ 0 trên K.", (KKD, KKD)),
+    (("r", "", "", "Nếu y' ≤ 0 trên K và y' = 0 chỉ tại hữu hạn điểm thì hàm nghịch biến trên K."),
+     "Nếu hàm đồng biến trên K thì y' ≥ 0 trên K và y' = 0 chỉ tại hữu hạn điểm. "
+     "Nếu y' ≤ 0 trên K theo cùng quy tắc thì hàm nghịch biến trên K.", (DAT, KKD)),
+    (DONG_TONG, "Đạo hàm của tổng khác tổng các đạo hàm: $(u+v)' = u' + v'$.", (DAT, KKD)),
+    (("r", "", r"(u/v)' = (u'v - uv') / v^2", ""),
+     "Đạo hàm thương, tại các điểm có u khác 0: $(u/v)' = (u'v - uv') / v^2$.", (DAT, KKD)),
+    (("r", "", r"(u/v)' = (u'v - uv') / v^2", ""), "Đạo hàm tổng: $(u/v)' = (u'v - uv') / v^2$.", (DAT, KKD)),
+    (("r", "", r"(x^n)' = n x^{n-1}", ""), "Đạo hàm của hằng số: $(x^n)' = n x^{n-1}$.", (DAT, KKD)),
 ], ids=["dn8-dd1", "dn8-dd3", "dn9-chua-chac", "dn7-ham-doi-dau", "dn7-kd-ham-so", "dn11-ban-an", "dn11-chung-minh",
-        "dn11-hieu-lam", "ct2-sgk"])
+        "dn11-hieu-lam", "ct2-sgk", "x8-mien", "n43-ke-thua", "n20-nhan-nguoc", "n21-nhan-sai-dieu-kien",
+        "nhan-quy-tac-khac", "n38-nhan-hang-so"])
 def test_tang_2_doan_sai_khong_lam_can_cu(dong, doan, mong):
     kq, _ = _chay([dong], [{"id": "tl-x", "license_status": "tu_soan", "text": doan}])
     d = kq[dong[0]]

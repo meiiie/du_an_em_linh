@@ -59,6 +59,16 @@ DANH_MUC_CAU_DOC = {
     "u+v": ("Đạo hàm của tổng bằng tổng các đạo hàm.",),
     "u/v": ("Với thương, tử là u'v trừ uv', mẫu là v bình.",),
 }
+# Nhãn trước công thức trong tài liệu («nhãn: $công thức$»): khớp trọn một tên đã kiểm của chính quy tắc (khóa E như
+# DANH_MUC_CAU_DOC). Nguồn nguyên văn: bản vá sp-tai-lieu-0001 (#100). Nhãn khác («Đạo hàm của tổng khác tổng các đạo
+# hàm», «… có u khác 0», tên quy tắc khác) không làm căn cứ; thêm tên là việc của lab Kiểm định.
+DANH_MUC_NHAN = {
+    "x^n": ("Đạo hàm lũy thừa", "Đạo hàm lũy thừa, với n nguyên dương"),
+    "k*u": ("Hằng số nhân với hàm",),
+    "u+v": ("Đạo hàm tổng",),
+    "u-v": ("Với hiệu cũng vậy", "Đạo hàm hiệu"),
+    "u/v": ("Đạo hàm thương", "Đạo hàm thương, tại các điểm có v khác 0"),
+}
 _DD_TRONG_DANH_MUC = {}
 for _h in (1, -1):
     _DD_TRONG_DANH_MUC[(("D", _h, True, False), ("M", _h))] = "DD1"
@@ -253,12 +263,8 @@ def _kiem_dang_thuc(e_str, r_str, loi=""):
     if not bang_0:
         return {"trang_thai": "KHONG_KIEM_DUOC", "ly_do": "Không rút gọn được về 0 và không tìm thấy phản ví dụ.", "may_doc": doc_duoc}
     duoc_phep = set()
-    for khoa, cau in DANH_MUC_CAU_DOC.items():
-        try:
-            if sp.simplify(e - kt.phan_tich_an_toan(_bieu_thuc(khoa), them)) == 0:
-                duoc_phep.update(_khoa_loi(c) for c in cau)
-        except ValueError:
-            continue
+    for khoa in _khop_danh_muc(sp, kt, them, e):
+        duoc_phep.update(_khoa_loi(c) for c in DANH_MUC_CAU_DOC.get(khoa, ()))
     la = [c for c in _cau_cua_loi(loi) if _khoa_loi(c) not in duoc_phep]
     if la:
         return {"trang_thai": "KHONG_KIEM_DUOC",
@@ -267,6 +273,42 @@ def _kiem_dang_thuc(e_str, r_str, loi=""):
     return {"trang_thai": "DAT", "muc_bang_chung": "CAS",
             "can_cu": "SymPy: d/dx(%s) − (%s) rút gọn bằng 0 với u(x), v(x) ký hiệu, n nguyên dương%s." % (
                 e_str, r_str, "; lời của dòng khớp danh mục câu đọc đã kiểm" if loi.strip() else "")}
+
+
+def _khop_danh_muc(sp, kt, them, e):
+    """Khóa của DANH_MUC_CAU_DOC / DANH_MUC_NHAN có biểu thức bằng E (so bằng CAS, nên u(x)+v(x) và u+v cùng khóa)."""
+    out = []
+    for khoa in sorted(set(DANH_MUC_CAU_DOC) | set(DANH_MUC_NHAN)):
+        try:
+            if sp.simplify(e - kt.phan_tich_an_toan(_bieu_thuc(khoa), them)) == 0:
+                out.append(khoa)
+        except ValueError:
+            continue
+    return out
+
+
+def nhan_cua_cong_thuc(latex):
+    """Tên đã kiểm (DANH_MUC_NHAN) của quy tắc mà dòng LaTeX phát biểu; rỗng nếu dòng không phải quy tắc trong danh mục."""
+    dt = _tach_dang_thuc(latex) if latex else None
+    if not dt:
+        return frozenset()
+    import sympy as sp
+    from app.paths import load_kiem
+
+    kt = load_kiem()
+    x = sp.Symbol("x", real=True)
+    u, v = sp.Function("u")(x), sp.Function("v")(x)
+    them = {"x": x, "n": sp.Symbol("n", integer=True, positive=True), "k": sp.Symbol("k", real=True),
+            "c": sp.Symbol("c", real=True), "u": u, "v": v, "Du": sp.Derivative(u, x), "Dv": sp.Derivative(v, x)}
+    try:
+        e = kt.phan_tich_an_toan(dt[0], them)
+    except ValueError:
+        return frozenset()
+    return frozenset(_khoa_nhan(t) for khoa in _khop_danh_muc(sp, kt, them, e) for t in DANH_MUC_NHAN.get(khoa, ()))
+
+
+def _khoa_nhan(s):
+    return re.sub(r"\s+", " ", _nfc(s).lower()).strip().rstrip(":").strip()
 
 
 def _khong_xac_dinh(sp, bt):
@@ -308,7 +350,7 @@ _KE_THUA = r"theo cùng quy tắc|tương tự|cũng vậy|như trên"
 _PHU_DINH_DD = re.compile(r"(?:không|chưa|chẳng)\s+(?:chắc\s+)?(?:phải\s+)?(?:là\s+)?(?:hàm\s+(?:số\s+)?)?(?:đồng biến|nghịch biến|tăng|giảm)")
 _DIEM = re.compile(r"(?:y|f)\s*'\s*\(\s*(?!x\s*\))|\btại\s+(?:x\s*=|x0\b|x_0|x\s*_\s*0|điểm\b)")
 _MIEN = re.compile(r"tập xác định|miền xác định|\btxđ\b|\btrên\s+d\b|\\mathbb\s*\{\s*r\s*\}\s*\\setminus|ℝ\s*\\|\br\s*\\\s*\{")
-_DAU_MUT = r"[-+]?\s*(?:\d+(?:[.,]\d+)?|∞|[a-z][a-z0-9_]{0,2})"
+_DAU_MUT = r"[-+]?\s*(?:\d+(?:[.,]\d+)?|∞|[a-z](?:_?\d)?)"
 # Khoảng tường minh chỉ có dạng «(a; b)». Ngoặc chứa thứ khác («(ℝ\{0})», «(x ≠ 0)», «(không xác định)») không phải khoảng.
 _KHOANG_TM = r"\(\s*" + _DAU_MUT + r"\s*;\s*" + _DAU_MUT + r"\s*\)"
 _KHOANG = re.compile(
@@ -337,7 +379,7 @@ _PHU_DINH = re.compile(r"\b(?:không|chưa|chẳng)\b")
 # điểm»): sau khi bỏ các cụm đó chỉ được còn «trên» (của «trên tập xác định»). Vế đơn điệu chỉ gồm chủ ngữ hàm số và
 # «đồng biến / nghịch biến». Thừa số khác («f(x)f'(x) > 0», «hàm số x f(x)») làm vế không đọc được.
 _DU_DIEU_KIEN = frozenset({"trên"})
-_CHU_NGU_DD = re.compile(r"(?:hàm(?: số)?(?: (?:f|y))?(?: ?\( ?x ?\))?|f ?\( ?x ?\)|f|y)?(?: sẽ)?(?: trên)?")
+_CHU_NGU_DD = re.compile(r"(?:(?:hàm(?: số)?(?: (?:f|y))?(?: ?\( ?x ?\))?|f ?\( ?x ?\)|f|y|nó)(?: sẽ)?(?: là)?)?(?: trên)?")
 
 
 def _con_thuat_ngu(t):
@@ -356,7 +398,8 @@ def _khoa_mot(s):
     if re.search(r"(?:từng|mỗi)\s+khoảng", s):
         return "TUNG"
     if re.search(r"\b(?:đó|này)\s*$", s):
-        return "DO"
+        m = re.search(r"nửa khoảng|đoạn", s)
+        return "DO:" + m.group(0) if m else "DO"
     m = re.search(r"\(([^()]*)\)", s)
     if m:
         return "(%s)" % re.sub(r"\s+", "", m.group(1))
@@ -387,10 +430,18 @@ def _khoa_khoang(t):
         return " "
 
     t = _MIEN.sub(lay_mien, _KHOANG.sub(lay, t))
-    co = khoa - {"DO"}
+    do = {k for k in khoa if k.startswith("DO")}
+    co = khoa - do
     if len(co) > 1:
         return False, t
-    return (next(iter(co)) if co else ("DO" if khoa else None)), t
+    return (next(iter(co)) if co else (next(iter(do)) if do else None)), t
+
+
+def _loai_khoang(k):
+    """Danh từ của khóa khoảng mà «… đó» trỏ về được: «khoảng», «đoạn», «nửa khoảng»; tập xác định thì không có."""
+    if k.startswith("CHUNG:"):
+        return k[len("CHUNG:"):]
+    return None if k == "MIEN" else "khoảng"
 
 
 _TIEN_DE = re.compile(r"(?:(?:với|cho)\s+hàm(?:\s+số)?(?:\s+(?:y|f))?\s+(?:xác định|có đạo hàm)\s+)?(?P<k>.+)")
@@ -498,14 +549,17 @@ def _don_dieu_cua_menh_de(cl, truoc):
         va, vc = _ve(a, truoc), _ve(c, truoc)
         if kt is False or not va or not vc or {va[0][0], vc[0][0]} != {"D", "M"}:
             return None
-        khoa, da_neu = set(), False
+        khoa, truoc_k = set(), None
         for k in (kt, va[1], vc[1]) if dk_truoc else (kt, vc[1], va[1]):
-            if k == "DO":
-                if not da_neu:
+            if k is None:
+                continue
+            if k.startswith("DO"):
+                # «… đó» trỏ về khoảng đứng trước, cùng danh từ («đoạn đó» không trỏ về một khoảng)
+                if truoc_k is None or _loai_khoang(truoc_k) != (k[len("DO:"):] or "khoảng"):
                     return None
-            elif k is not None:
-                khoa.add(k)
-                da_neu = True
+                continue
+            khoa.add(k)
+            truoc_k = k
         if len(khoa) > 1:
             return None
         out.append((va[0], vc[0], next(iter(khoa)) if khoa else None))
@@ -560,8 +614,15 @@ def _mot_chieu(t):
     return _gon(cap[0][0]), _gon(cap[0][1])
 
 
+def _qua_diem_khac_x0(t):
+    """«khi x qua một điểm» mà câu lại nói về x0: hai điểm không gắn với nhau, không đọc."""
+    return bool(re.search(r"qua\s+(?:một\s+)?điểm", t) and re.search(r"\bx_?0\b", t))
+
+
 def _mot_manh_cuc_tri(manh):
     """CT1 đúng chiều và đúng mẫu: «(y' / đạo hàm) đổi dấu từ + sang − ⇒ x0 là (điểm) cực đại». ('CT', mẫu, kết luận)."""
+    if _qua_diem_khac_x0(manh):
+        return None
     chieu = _mot_chieu(_QUA.sub(" ", manh))
     if not chieu:
         return None
@@ -574,6 +635,8 @@ def _mot_manh_cuc_tri(manh):
 def _khong_doi_dau(cl):
     """CT2 đúng chiều và đúng mẫu: «y'(x0) = 0 mà y' không đổi dấu ⇒ x0 không là cực trị» ([('KD', True)]), hoặc câu
     nói ngược «… thì vẫn là cực trị» ([('KD', False)]). Điều kiện phải nêu y' = 0 (hàm có đạo hàm tại x0)."""
+    if _qua_diem_khac_x0(cl):
+        return None
     chieu = _mot_chieu(_QUA.sub(" ", cl))
     if not chieu or not _KD_DK.fullmatch(chieu[0]):
         return None
@@ -632,6 +695,8 @@ def _toi_han_cua_menh_de(cl, co_tieu_de):
     không xác định) là điểm tới hạn."""
     t = cl.strip(" .;:,")
     if _TH_DAU_DINH_NGHIA.match(t) and _TH_SAI.search(t):
+        if re.search(r"loại\s+(?:trừ|bỏ|ra)|\btrừ\b|bị\s+loại|không\s+(?:tính|kể)", t):
+            return None  # nói điều kiện bằng cách loại trừ: máy không đọc trọn, không xếp SAI
         con = re.sub(_KXD_TH, " ", _TH_SAI.sub(" ", t))
         return [("TH_SAI",)] if not _PHU_DINH.search(con) else None  # «không phải là điểm không thuộc…»: không đọc
     if "điểm tới hạn" in t:
@@ -893,9 +958,12 @@ def _menh_de_doan(text):
     ⇔ y' > 0» sai một chiều, nên chiều đúng của nó cũng không làm căn cứ; dạng tóm tắt và mệnh đề sai không tính."""
     out, truoc = set(), None
     for _, cl in _tach_menh_de(_chu(text)):
-        ms, truoc = _doc_menh_de(cl, truoc, False)
+        ms, truoc_moi = _doc_menh_de(cl, truoc, False)
         if ms and all(_dung_danh_muc(m) for m in ms):
             out.update(ms)
+            truoc = truoc_moi
+        else:
+            truoc = None
     # Lưu theo chữ của đoạn (mỗi job một tiến trình con): mỗi dòng định lí dùng lại, không phân tích lại cả kho đoạn.
     return frozenset(out)
 
@@ -905,26 +973,22 @@ def _ho_tro(p, m):
     tổng quát (K, «một khoảng») hoặc đúng khoảng của dòng — đoạn nói về một khoảng cụ thể không đỡ định lí tổng quát."""
     if p[0] != "DD" or m[0] != "DD":
         return p == m
-    return p[1:3] == m[1:3] and (p[3] == m[3] or _khoang_chung(p[3]))
+    return p[1:3] == m[1:3] and m[3] != "MIEN" and (p[3] == m[3] or _khoang_chung(p[3]))
 
 
 _TOAN = re.compile(r"\$\$(.+?)\$\$|\$(.+?)\$|\\\((.+?)\\\)|\\\[(.+?)\\\]")
-# Nhãn trước công thức chỉ gồm tên quy tắc và điều kiện («Đạo hàm thương, tại các điểm có v khác 0:»). Nhãn khác
-# («Sai lầm thường gặp:», «Bạn An viết:», «Chứng minh hoặc bác bỏ:») không khẳng định công thức.
-_TU_NHAN = frozenset(
-    "đạo hàm lũy thừa của với n nguyên dương hằng số nhân tổng hiệu tích thương cũng vậy tại các điểm có u v k x "
-    "khác 0 quy tắc công thức và".split())
 
 
-def _phat_bieu_cong_thuc(text, khoa):
+def _phat_bieu_cong_thuc(text, khoa, nhan_duoc=frozenset()):
     """Đoạn phát biểu công thức có khóa `khoa`: một mệnh đề của đoạn có dạng «nhãn: $công thức$» hay «$công thức$» —
-    công thức đóng khung, khớp trọn (không là phần của công thức dài hơn), đứng cuối mệnh đề; nhãn chỉ là tên quy tắc."""
+    công thức đóng khung, khớp trọn (không là phần của công thức dài hơn), đứng cuối mệnh đề; nhãn (nếu có) khớp trọn một
+    tên đã kiểm của chính quy tắc đó (`nhan_duoc`, từ DANH_MUC_NHAN)."""
     for _, cl in _tach_menh_de(text):
         for m in _TOAN.finditer(cl):
             if _khoa_cong_thuc(next(g for g in m.groups() if g is not None)) != khoa or cl[m.end():].strip(" .;:"):
                 continue
             nhan = cl[:m.start()].strip()
-            if nhan and (not nhan.endswith(":") or _TOAN.search(nhan) or _tu_la(nhan.lower(), _TU_NHAN)):
+            if nhan and (not nhan.endswith(":") or _khoa_nhan(nhan) not in nhan_duoc):
                 continue
             return True
     return False
@@ -938,16 +1002,19 @@ def _co_cau(text, khoa):
 def _tang_2(loai, dong, menh, doan):
     if loai == "DANG_THUC":
         can = [("cong_thuc", _khoa_cong_thuc(dong.get("latex")))] + [("loi", _khoa_loi(c)) for c in _cau_cua_loi(dong.get("phat_bieu"))]
+        nhan_duoc = nhan_cua_cong_thuc(str(dong.get("latex") or ""))
         trich = []
         for kieu, khoa in can:
             if not khoa:
                 continue
-            khop = _phat_bieu_cong_thuc if kieu == "cong_thuc" else _co_cau
-            hit = next((d for d in doan if khop(d[3], khoa)), None)
+            if kieu == "cong_thuc":
+                hit = next((d for d in doan if _phat_bieu_cong_thuc(d[3], khoa, nhan_duoc)), None)
+            else:
+                hit = next((d for d in doan if _co_cau(d[3], khoa)), None)
             if hit is None:
                 return {"trang_thai": "KHONG_KIEM_DUOC",
                         "ly_do": "Không có đoạn tài liệu được phép phát biểu trọn %s của dòng." % (
-                            "công thức (đóng khung, nhãn không phủ định)" if kieu == "cong_thuc" else "câu «%s»" % khoa[:80])}
+                            "công thức (đóng khung, nhãn là tên đã kiểm của quy tắc)" if kieu == "cong_thuc" else "câu «%s»" % khoa[:80])}
             trich.append(_trich(*hit))
         if not trich:
             return {"trang_thai": "KHONG_KIEM_DUOC", "ly_do": "Dòng không có công thức hay phát biểu để đối chiếu."}
