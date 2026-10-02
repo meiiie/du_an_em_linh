@@ -39,6 +39,7 @@ Phân tích, chấm 4 phương án, độ nhạy, câu hỏi cho luật sư: [`l
   - Nhật ký sự kiện đồng ý lưu ngoài dữ liệu được sao lưu. Mỗi dòng: mã giả danh, loại sự kiện (xóa toàn bộ, rút đồng ý, đồng ý lại), mục đích, thứ tự; không có dữ liệu cá nhân khác.
   - Cùng kho đó giữ sổ chuyển dữ liệu cho bên xử lý và trạng thái dọn: bên nhận, mục đích, mã yêu cầu, xác nhận.
   - Khôi phục bản sao lưu thì phát lại nhật ký theo thứ tự trước khi mở lại dịch vụ: dữ liệu đã xóa không sống lại, mỗi mục đích về đúng trạng thái mới nhất, việc dọn còn dở ở bên xử lý chạy tiếp.
+  - Phát lại «đồng ý lại» đóng mặc định: bản ghi đồng ý đầy đủ (người đồng ý, vai trò, phiên bản văn bản, thời điểm, kênh, bằng chứng) không có trong dữ liệu đã khôi phục thì mục đích giữ tắt và ứng dụng xin đồng ý lại.
   - Mỗi lần chuyển dữ liệu cho bên xử lý ghi kèm mục đích, để yêu cầu đi đúng nơi:
     - rút đồng ý một mục đích chỉ gửi tới các bên xử lý của mục đích đó; rút `NHAC_LICH_NGOAI` không đụng nhà LLM của `GIA_SU_AI`;
     - yêu cầu xóa toàn bộ gửi tới mọi bên xử lý đã nhận dữ liệu của người đó (kênh nhắc lịch, nhà LLM nếu có lưu, OCR ngoài nếu có).
