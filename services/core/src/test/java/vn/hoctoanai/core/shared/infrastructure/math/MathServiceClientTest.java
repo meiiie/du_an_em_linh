@@ -77,12 +77,20 @@ class MathServiceClientTest {
     }
 
     @Test
-    @DisplayName("timeout_s do nơi gọi đặt thì giữ nguyên")
-    void giuTimeoutCuaNoiGoi() {
-        MathResult r = client.call(MathJob.GRADE, Map.of("timeout_s", 5));
-        @SuppressWarnings("unchecked")
-        Map<String, Object> nhan = (Map<String, Object>) ((MathResult.Ok) r).body().get("nhan");
-        assertThat(nhan).containsEntry("timeout_s", 5);
+    @DisplayName("timeout_s của nơi gọi bị chặn trần dưới hết giờ phía core, không bao giờ vượt")
+    void chanTranTimeoutCuaNoiGoi() {
+        // Hết giờ phía core 10 s → trần 8 s (sandbox dừng trước core 2 s)
+        MathServiceClient dai = new MathServiceClient(RestClient.builder(),
+            URI.create("http://127.0.0.1:" + server.getAddress().getPort()), Duration.ofSeconds(1), job -> Duration.ofSeconds(10));
+        assertThat(nhan(dai.call(MathJob.GRADE, Map.of("timeout_s", 5)))).containsEntry("timeout_s", 5);
+        assertThat(nhan(dai.call(MathJob.GRADE, Map.of("timeout_s", 30)))).containsEntry("timeout_s", 8);
+        assertThat(nhan(dai.call(MathJob.GRADE, Map.of("timeout_s", 0)))).containsEntry("timeout_s", 1);
+        assertThat(nhan(dai.call(MathJob.GRADE, Map.of("timeout_s", "999")))).containsEntry("timeout_s", 8);
+    }
+
+    @SuppressWarnings("unchecked")
+    private static Map<String, Object> nhan(MathResult r) {
+        return (Map<String, Object>) ((MathResult.Ok) r).body().get("nhan");
     }
 
     @Test

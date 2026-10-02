@@ -23,8 +23,9 @@ import org.springframework.web.client.RestClientResponseException;
 
 /**
  * Client duy nhất của core tới {@code services/math} (research R2). Đóng mặc định: mọi lỗi (hết giờ, không kết nối,
- * HTTP lỗi, thân không phải đối tượng JSON, phong bì lỗi của sandbox) thành {@link MathResult.Failed}, không bao giờ
- * thành phán quyết «đạt». Không gửi lại khi lỗi. Không ghi payload vào log (có bài làm của học sinh).
+ * HTTP lỗi hay mã ngoài 2xx, thân không phải đối tượng JSON, phong bì lỗi của sandbox) thành {@link MathResult.Failed},
+ * không bao giờ thành phán quyết «đạt». {@code timeout_s} gửi đi bị chặn trần dưới hết giờ phía core. Không gửi lại
+ * khi lỗi. Không ghi payload vào log (có bài làm của học sinh).
  */
 public class MathServiceClient {
 
@@ -51,7 +52,10 @@ public class MathServiceClient {
 
     public MathResult call(MathJob job, Map<String, ?> payload) {
         Map<String, @Nullable Object> body = new LinkedHashMap<>(payload);
-        body.putIfAbsent("timeout_s", timeoutSeconds(job));
+        // timeout_s của sandbox luôn nhỏ hơn hết giờ phía core: job không chạy tiếp, giữ suất của dịch vụ toán,
+        // sau khi core đã thôi chờ. Nơi gọi chỉ được đặt nhỏ hơn trần; giá trị không phải số thì dùng trần.
+        long tran = timeoutSeconds(job);
+        body.put("timeout_s", body.get("timeout_s") instanceof Number so ? Math.max(1, Math.min(so.longValue(), tran)) : tran);
         try {
             Map<String, @Nullable Object> response = clients.get(job).post()
                 .uri(job.path())
