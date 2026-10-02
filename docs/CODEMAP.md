@@ -94,7 +94,7 @@ Xem `apps/frontend/AGENTS.md`. Angular 22 zoneless; tính năng ở `src/app/fea
 
 ## services/core
 
-Xem `services/core/AGENTS.md`. Gói gốc `vn.hoctoanai.core`; module nghiệp vụ là gói con ba tầng `domain` → `application` → `infrastructure`, ArchUnit kiểm. Module đầu tiên: `identity` (đăng nhập, làm mới, đăng xuất; JWT HS256 + refresh token lưu băm), Flyway `V1__identity.sql`.
+Xem `services/core/AGENTS.md`. Gói gốc `vn.hoctoanai.core`; module nghiệp vụ là gói con ba tầng `domain` → `application` → `infrastructure`, ArchUnit kiểm. Module đầu tiên: `identity` (đăng nhập, làm mới, đăng xuất; JWT HS256 + refresh token lưu băm, gửi trình duyệt qua cookie HttpOnly), Flyway `V1__identity.sql`.
 
 ## Luồng chính
 

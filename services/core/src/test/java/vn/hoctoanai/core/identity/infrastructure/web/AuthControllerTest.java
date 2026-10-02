@@ -3,18 +3,25 @@ package vn.hoctoanai.core.identity.infrastructure.web;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.then;
+import static org.mockito.Mockito.never;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 
+import jakarta.servlet.http.Cookie;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.assertj.MockMvcTester;
+import org.springframework.test.web.servlet.assertj.MvcTestResult;
 import vn.hoctoanai.core.identity.application.dto.AuthResponse;
+import vn.hoctoanai.core.identity.application.dto.RefreshTokenRequest;
 import vn.hoctoanai.core.identity.application.dto.UserDto;
 import vn.hoctoanai.core.identity.application.exception.AuthenticationFailedException;
 import vn.hoctoanai.core.identity.application.usecase.GetCurrentUserUseCase;
@@ -23,9 +30,10 @@ import vn.hoctoanai.core.identity.application.usecase.LogoutUseCase;
 import vn.hoctoanai.core.identity.application.usecase.RefreshSessionUseCase;
 import vn.hoctoanai.core.identity.infrastructure.security.JwtConfig;
 import vn.hoctoanai.core.identity.infrastructure.security.SecurityConfig;
+import vn.hoctoanai.core.shared.infrastructure.ClockConfig;
 
 @WebMvcTest(controllers = {AuthController.class, MeController.class})
-@Import({SecurityConfig.class, JwtConfig.class})
+@Import({SecurityConfig.class, JwtConfig.class, RefreshCookie.class, ClockConfig.class})
 class AuthControllerTest {
 
     private static final UUID AN = UUID.fromString("00000000-0000-4000-8000-000000000001");
@@ -46,15 +54,28 @@ class AuthControllerTest {
     @MockitoBean
     private GetCurrentUserUseCase currentUser;
 
+    private static AuthResponse phien(String access, String refreshToken) {
+        return new AuthResponse(access, Instant.now().plus(Duration.ofMinutes(15)), refreshToken,
+            Instant.now().plus(Duration.ofDays(30)), AN_DTO);
+    }
+
+    private static String setCookie(MvcTestResult result) {
+        return result.getResponse().getHeader(HttpHeaders.SET_COOKIE);
+    }
+
     @Test
-    void dangNhapTraPhien() {
-        given(login.execute(any())).willReturn(new AuthResponse("a", Instant.EPOCH, "r", Instant.EPOCH, AN_DTO));
-        assertThat(mvc.post().uri("/api/auth/login").contentType(MediaType.APPLICATION_JSON)
-                .content("{\"email\":\"hs.an@demo.local\",\"password\":\"hocsinh123\"}"))
-            .hasStatusOk()
-            .bodyJson()
-            .extractingPath("$.user.role")
-            .isEqualTo("STUDENT");
+    void dangNhapTraAccessTokenVaDatRefreshTokenVaoCookieHttpOnly() throws Exception {
+        given(login.execute(any())).willReturn(phien("a", "r"));
+        MvcTestResult res = mvc.post().uri("/api/auth/login").contentType(MediaType.APPLICATION_JSON)
+            .content("{\"email\":\"hs.an@demo.local\",\"password\":\"hocsinh123\"}").exchange();
+
+        assertThat(res).hasStatusOk().bodyJson().extractingPath("$.user.role").isEqualTo("STUDENT");
+        assertThat(res).bodyJson().extractingPath("$.accessToken").isEqualTo("a");
+        assertThat(res.getResponse().getContentAsString()).doesNotContain("refreshToken").doesNotContain("\"r\"");
+        assertThat(setCookie(res))
+            .startsWith("hta_refresh=r;")
+            .contains("Path=/api/auth", "HttpOnly", "Secure", "SameSite=Strict")
+            .containsPattern("Max-Age=259\\d{4}");
     }
 
     @Test
@@ -82,6 +103,69 @@ class AuthControllerTest {
     }
 
     @Test
+    void lamMoiDocTokenTuCookieVaXoayVongCookie() {
+        given(refresh.execute(new RefreshTokenRequest("r"))).willReturn(phien("a2", "r2"));
+        MvcTestResult res = mvc.post().uri("/api/auth/refresh")
+            .cookie(new Cookie(RefreshCookie.TEN, "r"))
+            .header(AuthController.CHONG_CSRF, "XMLHttpRequest")
+            .exchange();
+
+        assertThat(res).hasStatusOk().bodyJson().extractingPath("$.accessToken").isEqualTo("a2");
+        assertThat(setCookie(res)).startsWith("hta_refresh=r2;").contains("HttpOnly", "SameSite=Strict");
+    }
+
+    @Test
+    void lamMoiKhongCookieTra401VaXoaCookie() {
+        MvcTestResult res = mvc.post().uri("/api/auth/refresh").header(AuthController.CHONG_CSRF, "XMLHttpRequest").exchange();
+
+        assertThat(res).hasStatus(401).bodyJson().extractingPath("$.detail").isEqualTo(AuthenticationFailedException.PHIEN_HET_HAN);
+        assertThat(setCookie(res)).startsWith("hta_refresh=;").contains("Max-Age=0", "Path=/api/auth");
+    }
+
+    @Test
+    void lamMoiThatBaiCungXoaCookie() {
+        given(refresh.execute(any())).willThrow(new AuthenticationFailedException(AuthenticationFailedException.PHIEN_HET_HAN));
+        MvcTestResult res = mvc.post().uri("/api/auth/refresh")
+            .cookie(new Cookie(RefreshCookie.TEN, "chet"))
+            .header(AuthController.CHONG_CSRF, "XMLHttpRequest")
+            .exchange();
+
+        assertThat(res).hasStatus(401);
+        assertThat(setCookie(res)).startsWith("hta_refresh=;").contains("Max-Age=0");
+    }
+
+    @Test
+    void lamMoiVaDangXuatThieuHeaderChongCsrfTra403() {
+        for (String uri : new String[] {"/api/auth/refresh", "/api/auth/logout"}) {
+            assertThat(mvc.post().uri(uri).cookie(new Cookie(RefreshCookie.TEN, "r")))
+                .hasStatus(403)
+                .bodyJson()
+                .extractingPath("$.detail")
+                .isEqualTo("Thiếu header X-Requested-With.");
+        }
+        then(refresh).should(never()).execute(any());
+        then(logout).should(never()).execute(any());
+    }
+
+    @Test
+    void dangXuatThuHoiPhienCuaCookieVaXoaCookie() {
+        MvcTestResult res = mvc.post().uri("/api/auth/logout")
+            .cookie(new Cookie(RefreshCookie.TEN, "r"))
+            .header(AuthController.CHONG_CSRF, "XMLHttpRequest")
+            .exchange();
+
+        assertThat(res).hasStatus(204);
+        assertThat(setCookie(res)).startsWith("hta_refresh=;").contains("Max-Age=0", "HttpOnly");
+        then(logout).should().execute(new RefreshTokenRequest("r"));
+    }
+
+    @Test
+    void dangXuatKhongCookieVan204() {
+        assertThat(mvc.post().uri("/api/auth/logout").header(AuthController.CHONG_CSRF, "XMLHttpRequest")).hasStatus(204);
+        then(logout).should(never()).execute(any());
+    }
+
+    @Test
     void meCanToken() {
         assertThat(mvc.get().uri("/api/me")).hasStatus(401);
     }
@@ -94,12 +178,5 @@ class AuthControllerTest {
             .bodyJson()
             .extractingPath("$.id")
             .isEqualTo(AN.toString());
-    }
-
-    @Test
-    void dangXuatTra204() {
-        assertThat(mvc.post().uri("/api/auth/logout").contentType(MediaType.APPLICATION_JSON)
-                .content("{\"refreshToken\":\"r\"}"))
-            .hasStatus(204);
     }
 }

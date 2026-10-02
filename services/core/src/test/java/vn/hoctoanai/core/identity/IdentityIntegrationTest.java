@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.jayway.jsonpath.JsonPath;
+import jakarta.servlet.http.Cookie;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.util.Optional;
@@ -12,11 +13,14 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.assertj.MockMvcTester;
 import org.springframework.test.web.servlet.assertj.MvcTestResult;
@@ -33,9 +37,12 @@ import vn.hoctoanai.core.identity.domain.model.Email;
 import vn.hoctoanai.core.identity.domain.model.Role;
 import vn.hoctoanai.core.identity.domain.model.User;
 import vn.hoctoanai.core.identity.domain.repository.UserRepository;
+import vn.hoctoanai.core.identity.infrastructure.web.AuthController;
+import vn.hoctoanai.core.identity.infrastructure.web.RefreshCookie;
 
 /**
- * Trọn luồng trên PostgreSQL 18 thật: đăng nhập → /api/me → làm mới → đăng xuất → làm mới bị từ chối; và đăng xuất chạy
+ * Trọn luồng trên PostgreSQL 18 thật, refresh token qua cookie: đăng nhập → /api/me → làm mới → đăng xuất → làm mới bị
+ * từ chối; và đăng xuất chạy
  * đồng thời với làm mới trên cùng phiên.
  */
 @SpringBootTest
@@ -71,21 +78,34 @@ class IdentityIntegrationTest {
         assertThat(dangNhap).hasStatusOk();
         String body = dangNhap.getResponse().getContentAsString(StandardCharsets.UTF_8);
         String access = JsonPath.read(body, "$.accessToken");
-        String refresh = JsonPath.read(body, "$.refreshToken");
+        assertThat(body).doesNotContain("refreshToken");
+        Cookie refresh = cookieRefresh(dangNhap);
 
         assertThat(mvc.get().uri("/api/me").header("Authorization", "Bearer " + access))
             .hasStatusOk().bodyJson().extractingPath("$.role").isEqualTo("TEACHER");
 
-        MvcTestResult lamMoi = mvc.post().uri("/api/auth/refresh").contentType(MediaType.APPLICATION_JSON)
-            .content("{\"refreshToken\":\"" + refresh + "\"}").exchange();
+        MvcTestResult lamMoi = mvc.post().uri("/api/auth/refresh").cookie(refresh)
+            .header(AuthController.CHONG_CSRF, "XMLHttpRequest").exchange();
         assertThat(lamMoi).hasStatusOk();
-        String refreshMoi = JsonPath.read(lamMoi.getResponse().getContentAsString(StandardCharsets.UTF_8), "$.refreshToken");
+        Cookie refreshMoi = cookieRefresh(lamMoi);
+        assertThat(refreshMoi.getValue()).isNotEqualTo(refresh.getValue());
 
-        assertThat(mvc.post().uri("/api/auth/logout").contentType(MediaType.APPLICATION_JSON)
-            .content("{\"refreshToken\":\"" + refreshMoi + "\"}")).hasStatus(204);
-        assertThat(mvc.post().uri("/api/auth/refresh").contentType(MediaType.APPLICATION_JSON)
-            .content("{\"refreshToken\":\"" + refreshMoi + "\"}")).hasStatus(401);
+        MvcTestResult dangXuat = mvc.post().uri("/api/auth/logout").cookie(refreshMoi)
+            .header(AuthController.CHONG_CSRF, "XMLHttpRequest").exchange();
+        assertThat(dangXuat).hasStatus(204);
+        assertThat(dangXuat.getResponse().getHeader(HttpHeaders.SET_COOKIE)).startsWith(RefreshCookie.TEN + "=;").contains("Max-Age=0");
+        assertThat(mvc.post().uri("/api/auth/refresh").cookie(refreshMoi)
+            .header(AuthController.CHONG_CSRF, "XMLHttpRequest")).hasStatus(401);
         assertThat(mvc.get().uri("/api/me").header("Authorization", "Bearer khong-hop-le")).hasStatus(401);
+    }
+
+    /** Cookie refresh token trong {@code Set-Cookie}: HttpOnly, SameSite=Strict, chỉ cho {@code /api/auth}. */
+    private static Cookie cookieRefresh(MvcTestResult result) {
+        String setCookie = result.getResponse().getHeader(HttpHeaders.SET_COOKIE);
+        assertThat(setCookie).contains("HttpOnly", "SameSite=Strict", "Path=/api/auth");
+        Matcher m = Pattern.compile(RefreshCookie.TEN + "=([^;]+);").matcher(setCookie);
+        assertThat(m.find()).as("Set-Cookie có refresh token: %s", setCookie).isTrue();
+        return new Cookie(RefreshCookie.TEN, m.group(1));
     }
 
     /** Hai giao dịch thật chạy cùng lúc nhiều lần: dù bên nào thắng, sau đăng xuất không còn token nào của phiên dùng được. */
