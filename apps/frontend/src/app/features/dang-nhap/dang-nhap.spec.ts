@@ -42,13 +42,21 @@ describe('DangNhap', () => {
     expect(t.o('password')?.type).toBe('password');
   });
 
-  it('email sai dạng → ở lại bước email', async () => {
+  it('email sai dạng → ở lại bước email, báo lỗi ngay dưới ô; sửa đúng thì lỗi tắt', async () => {
     const t = await moTrang();
-    go(t.o('email')!, 'khong-phai-email');
+    go(t.o('email')!, 'a..b@example.com');
     await t.on();
+    expect(t.el.querySelector('#loi-email')).toBeNull();
     t.gui();
     await t.on();
     expect(t.o('password')).toBeNull();
+    expect(t.el.querySelector('#loi-email')?.textContent).toBe('Email chưa đúng dạng.');
+    expect(t.o('email')?.getAttribute('aria-invalid')).toBe('true');
+    expect(t.o('email')?.getAttribute('aria-describedby')).toBe('loi-email');
+    go(t.o('email')!, 'hs.an@demo.local');
+    await t.on();
+    expect(t.el.querySelector('#loi-email')).toBeNull();
+    expect(t.o('email')?.hasAttribute('aria-invalid')).toBe(false);
   });
 
   it('tài khoản thử điền email và sang bước mật khẩu', async () => {

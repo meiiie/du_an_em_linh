@@ -116,6 +116,19 @@ h1 {
   background: var(--wash);
 }
 
+.o-nhap[aria-invalid='true'] {
+  border-color: var(--mark);
+}
+
+.loi-truong {
+  display: block;
+  margin-top: var(--space-2);
+  color: var(--mark);
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 20px;
+}
+
 .o-kem-nut {
   position: relative;
   display: block;

@@ -26,8 +26,13 @@
                 autocorrect="off"
                 placeholder="hs.an@demo.local"
                 data-testid="email"
+                [attr.aria-invalid]="hienLoiEmail() || null"
+                [attr.aria-describedby]="hienLoiEmail() ? 'loi-email' : null"
                 [formField]="f.email"
               />
+              @if (hienLoiEmail()) {
+                <span id="loi-email" class="loi-truong" role="alert">Email chưa đúng dạng.</span>
+              }
             </label>
             <button appButton size="lg" block type="submit" [disabled]="!f.email().value().trim()">Tiếp tục</button>
           </form>
