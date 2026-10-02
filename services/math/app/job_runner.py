@@ -48,6 +48,10 @@ def _run(kind, payload):
     if kind == "goi_y":
         from app.thang_mau import goi_y
         return goi_y(payload)
+    if kind == "kiem_dong_cong_thuc":
+        # ADR 013: kiểm từng dòng bảng công thức lúc khóa (tầng 1 máy kiểm, tầng 2 tài liệu được phép)
+        from app.dong_cong_thuc import kiem_dong_cong_thuc
+        return kiem_dong_cong_thuc(payload)
     if kind == "spin":
         time.sleep(float(payload.get("giay") or 30))
         return {"ok": True}

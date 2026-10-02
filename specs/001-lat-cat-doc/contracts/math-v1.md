@@ -81,12 +81,22 @@ Thuần hàm. Core gọi khi giáo viên bấm khóa bảng nháp (T042) và khi
 ```json
 {
   "dong": [
-    {"id": "d-1", "loai": "DANG_THUC", "tang1": {"trang_thai": "DAT", "can_cu": "SymPy: hiệu rút gọn bằng 0 với u(x), v(x)"}, "tang2": {"trang_thai": "DAT", "trich_dan": {"tai_lieu": "tl-1", "doan": "p-12"}}},
-    {"id": "d-4", "loai": "DINH_LI", "tang1": {"trang_thai": "DAT", "can_cu": "ngữ nghĩa khớp quy tắc đơn điệu; 0 phản ví dụ trên 40 hàm mẫu"}, "tang2": {"trang_thai": "DAT", "trich_dan": {"tai_lieu": "tl-1", "doan": "p-7"}}}
-  ]
+    {"id": "d-1", "loai": "DANG_THUC",
+     "tang1": {"trang_thai": "DAT", "muc_bang_chung": "CAS", "can_cu": "SymPy: d/dx(u/v) − ((Du*v-u*Dv)/v^2) rút gọn bằng 0 với u(x), v(x) ký hiệu"},
+     "tang2": {"trang_thai": "DAT", "trich_dan": {"tai_lieu": "tl-1", "doan": "p-12", "trich": "…"}, "trich_dan_them": [{"tai_lieu": "tl-1", "doan": "p-13", "trich": "…"}]}},
+    {"id": "d-4", "loai": "DINH_LI",
+     "tang1": {"trang_thai": "DAT", "muc_bang_chung": "DANH_MUC", "can_cu": "«y' ≥ 0, y' = 0 chỉ tại hữu hạn điểm ⇒ đồng biến» khớp DD2. …"},
+     "tang2": {"trang_thai": "DAT", "trich_dan": {"tai_lieu": "tl-2", "doan": "p-7", "trich": "…"}}},
+    {"id": "d-9", "loai": "DINH_LI",
+     "tang1": {"trang_thai": "SAI", "can_cu": "Phản ví dụ cho «đồng biến ⇒ y' > 0».", "phan_vi_du": {"ham": "y = x**3", "khoang": "Reals"}},
+     "tang2": {"trang_thai": "KHONG_KIEM_DUOC", "ly_do": "…"}}
+  ],
+  "bo_qua": [{"tai_lieu": "tl-3", "ly_do": "quyen_khong_hop_le"}]
 }
 ```
 
-- `loai` ∈ `DANG_THUC`, `DINH_LI` (loại máy đã biết: đơn điệu, cực trị, điểm tới hạn), `KHONG_BIET`.
-- `KHONG_BIET` → tầng 1 `KHONG_KIEM_DUOC`. Tài liệu `chua_ro` không được dùng ở tầng 2.
+- `loai` ∈ `DANG_THUC`, `DINH_LI` (đơn điệu, dấu hiệu cực trị, định nghĩa điểm tới hạn), `KHONG_BIET` (tầng 1 `KHONG_KIEM_DUOC`, kèm mệnh đề máy chưa đọc trọn).
+- **Tầng 1, đẳng thức** (`muc_bang_chung = CAS`): `DAT` khi d/dx E − R rút gọn bằng 0 **và** mỗi câu của `phat_bieu` là một câu đọc đã kiểm của chính E (`DANH_MUC_CAU_DOC` trong `app/dong_cong_thuc.py`, so E bằng CAS; máy không đọc nghĩa lời, thêm câu qua lab Kiểm định); câu khác thì `KHONG_KIEM_DUOC`. `SAI` chỉ khi thế hàm mẫu ra hiệu khác 0; kết quả kèm `phan_vi_du` và `may_doc` (vế máy đã đọc).
+- **Tầng 1, định lí** (`muc_bang_chung = DANH_MUC`, thế giới đóng): `DAT` chỉ khi **mọi** mệnh đề của dòng (LaTeX và lời) đọc được trọn và khớp danh mục định lí của chủ đề (`DANH_MUC_DINH_LI` trong `app/dong_cong_thuc.py`: DD1–DD3 đơn điệu trên khoảng, CT1–CT2 dấu hiệu cực trị, TH định nghĩa điểm tới hạn đủ ba thành phần). «Đọc được trọn» nghĩa là: đúng chiều suy ra («A chỉ khi B» là A ⇒ B; câu đảo của dấu hiệu cực trị không có trong danh mục); hai vế, và phần đứng trước «nếu», nói về cùng một khoảng; mỗi vế khớp trọn một mẫu có vị trí (chủ ngữ của «đổi dấu / không đổi dấu» là y' hay đạo hàm, vế điều kiện chỉ gồm dấu của y', vế đơn điệu chỉ gồm chủ ngữ hàm số; «khoảng đó» trỏ về khoảng đứng trước nó), không theo túi từ; định nghĩa điểm tới hạn viết theo một trong hai dạng của `_TH_DINH_NGHIA`. Không khớp thì máy tìm phản ví dụ trên bộ hàm mẫu: có thì `SAI` kèm phản ví dụ đúng mệnh đề đã viết, không có thì `KHONG_KIEM_DUOC`. Phủ định, lượng từ, điều kiện tại một điểm, phát biểu trên cả tập xác định, hai vế khác khoảng, từ máy không biết đều không bao giờ `DAT`. Cách làm này chặt hơn câu «không có phản ví dụ thì DAT» của ADR 013 phần Hệ quả (rà `math-verifier` trên #101: bộ mẫu không phủ được định lí tổng quát, ví dụ y = x − sin x).
+- **Tầng 2:** chỉ dùng tài liệu có quyền dùng hợp lệ; `chua_ro` không làm căn cứ và được liệt kê trong `bo_qua`. Tài liệu có câu nói một điều là sai («Mệnh đề trên là sai.», «… hay nhầm …», «không đúng») cũng không làm căn cứ, kể cả các đoạn khác của nó (`bo_qua` với `ly_do = co_cau_phu_nhan`): máy không biết câu đó phủ nhận đoạn nào. Đẳng thức: có đoạn phát biểu trọn công thức của dòng — một mệnh đề dạng «nhãn: $công thức$» hay «$công thức$», công thức đóng khung (`$…$`, `$$…$$`, `\(…\)`, `\[…\]`) khớp trọn chứ không là phần của công thức dài hơn, đứng cuối mệnh đề, nhãn (nếu có) khớp trọn một tên đã kiểm của chính quy tắc đó (`DANH_MUC_NHAN`) — **và** mỗi câu của phát biểu trùng trọn một câu của đoạn. Định lí: **mọi** mệnh đề của dòng có đoạn phát biểu cùng mệnh đề (cùng điều kiện, cùng chiều); đoạn nói về một khoảng cụ thể không làm căn cứ cho định lí tổng quát, đoạn «trên K» không làm căn cứ cho dòng «trên tập xác định»; chỉ mệnh đề mà mọi phần đều đúng theo danh mục mới làm căn cứ (một chiều của «⇔» sai thì bỏ cả câu). Trích dẫn chính ở `trich_dan`, các đoạn còn lại ở `trich_dan_them`.
 - Core chỉ khóa bảng khi mọi dòng có `tang1` và `tang2` đều `DAT`; ngược lại trả 422 kèm danh sách dòng chưa qua.

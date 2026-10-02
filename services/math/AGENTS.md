@@ -22,6 +22,7 @@ Hoặc từ gốc: `pnpm test:math`, `pnpm dev:math`.
 | `app/job_runner.py` | Điều phối việc |
 | `app/grader.py` | Chấm 5 bước (`k` từ 0) |
 | `app/verify.py` | Cổng 3 tầng |
+| `app/dong_cong_thuc.py` | Kiểm dòng bảng công thức khi khóa (ADR 013): tầng 1 máy kiểm, tầng 2 tài liệu được phép |
 | `app/leakfilter.py` | Lọc lộ đáp án |
 | `app/generator.py` | Sinh biến thể |
 | `app/normalizer.py` | LaTeX / biểu thức |
