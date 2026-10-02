@@ -9,7 +9,7 @@ paths:
 
 Bản đồ module: `services/math/AGENTS.md`. Ràng buộc ngắn: `.claude/rules/math-service.md`.
 
-Hợp đồng HTTP (`/v1`, chỉ POST): `/grade` chấm bước · `/verify` cổng 3 tầng · `/filter` lọc lộ đáp án · `/generate` sinh biến thể · `/solve` máy tự giải · `/goi-y` thang gợi ý mẫu · `/extract` trích PDF. Thêm `GET /health`.
+Hợp đồng HTTP (`/v1`, chỉ POST): `/grade` chấm bước · `/verify` cổng 3 tầng · `/filter` lọc lộ đáp án · `/generate` sinh biến thể · `/solve` máy tự giải · `/goi-y` thang gợi ý mẫu · `/kiem-dong-cong-thuc` kiểm dòng bảng công thức khi khóa (ADR 013) · `/extract` trích PDF. Thêm `GET /health`.
 
 ## Chạy
 
