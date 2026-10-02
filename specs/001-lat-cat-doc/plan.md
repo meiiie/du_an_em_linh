@@ -58,7 +58,7 @@ specs/001-lat-cat-doc/
 ### Source Code (repository root)
 
 ```text
-services/core/src/main/java/vn/hoctoanai/core/
+services/core/src/main/java/vn/hoctapcanman/core/
 ├── identity/            # có từ P1
 ├── classroom/           # lớp, ghi danh, cài lớp (mở lời giải, nhà AI được bật)
 ├── content/             # chủ đề, kỹ năng, mã lỗi, khung bước, bài, lời giải ẩn, thang gợi ý,

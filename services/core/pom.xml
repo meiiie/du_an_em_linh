@@ -8,7 +8,7 @@
     <version>4.1.1</version>
     <relativePath/> <!-- lookup parent from repository -->
   </parent>
-  <groupId>vn.hoctoanai</groupId>
+  <groupId>vn.hoctapcanman</groupId>
   <artifactId>core</artifactId>
   <version>0.1.0</version> <!-- x-release-please-version -->
   <name>core</name>
