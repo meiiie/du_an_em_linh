@@ -108,7 +108,7 @@ final class KienTrucRules {
     // ---- DDD: đặt tên, biên web, entity, repository ------------------------------------------------------------
 
     static final ArchRule USE_CASE_DAT_TEN = classes().that()
-        .resideInAPackage("..application.usecase..").and().areTopLevelClasses()
+        .resideInAPackage("..application.usecase..").and().areTopLevelClasses().and().doNotHaveSimpleName("package-info")
         .should().haveSimpleNameEndingWith("UseCase")
         .as("Lớp use case kết thúc bằng UseCase");
 
