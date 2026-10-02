@@ -68,15 +68,16 @@ def run_sympy_job(kind, payload, timeout=8):
     if not _CHO.acquire(timeout=max(0.0, timeout - don - CHAY_TOI_THIEU)):
         return _qua_tai()
     try:
-        chay = han - time.monotonic() - don
-        if chay < CHAY_TOI_THIEU:
+        if han - time.monotonic() - don < CHAY_TOI_THIEU:
             return _qua_tai()
-        return _chay(kind, payload, chay, don)
+        return _chay(kind, payload, han, don)
     finally:
         _CHO.release()
 
 
-def _chay(kind, payload, timeout, don=2.0):
+def _chay(kind, payload, han, don=2.0):
+    """Chạy job trong tiến trình con; mọi khoảng chờ tính lại từ hạn chót tuyệt đối `han` (time.monotonic)."""
+    ngan_sach = max(CHAY_TOI_THIEU, han - time.monotonic() - don)
     proc = subprocess.Popen(
         [sys.executable, "-m", "app.job_runner"],
         stdin=subprocess.PIPE,
@@ -85,25 +86,26 @@ def _chay(kind, payload, timeout, don=2.0):
         cwd=ROOT,
         start_new_session=True,
         env=_env_toi_thieu(),
-        preexec_fn=_gioi_han(int(math.ceil(timeout))),
+        preexec_fn=_gioi_han(int(math.ceil(ngan_sach))),
     )
     data = json.dumps({"kind": kind, "payload": payload}, ensure_ascii=False).encode("utf-8")
     try:
-        out, err = proc.communicate(data, timeout=timeout)
+        # Tính lại sau Popen: thời gian khởi động tiến trình con cũng trừ vào ngân sách chạy.
+        out, err = proc.communicate(data, timeout=max(0.05, han - time.monotonic() - don))
     except subprocess.TimeoutExpired:
         try:
             os.killpg(proc.pid, signal.SIGKILL)
         except ProcessLookupError:
             pass
         try:
-            proc.wait(timeout=don)
+            proc.wait(timeout=max(0.05, min(don, han - time.monotonic())))
         except subprocess.TimeoutExpired:  # pragma: no cover - tiến trình kẹt trong nhân, để hệ điều hành thu sau
             logging.getLogger("math.sandbox").warning("job %s không thu kịp sau khi giết", kind)
         return {
             "ket_qua": "KHONG_KIEM_DUOC",
             "loai_ket_qua": "KHONG_KIEM_DUOC",
             "trang_thai": "KHONG_KIEM_DUOC",
-            "ly_do": "Job SymPy vượt quá %.1fs và đã bị dừng." % timeout,
+            "ly_do": "Job SymPy vượt quá %.1fs và đã bị dừng." % ngan_sach,
             "cho_phep": False,
         }
     if proc.returncode != 0:
