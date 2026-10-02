@@ -202,13 +202,13 @@ Giáo viên xem bảng lớp theo kỹ năng × mức, đổi sang 3 mức Biế
 - **FR-029**: Giáo viên MUST xem bảng tiến độ lớp theo kỹ năng × 4 mức, đổi sang 3 mức CV 7991 chỉ khi hiển thị.
 - **FR-030**: Giáo viên MUST xem trang từng học sinh: bài đã nộp, lỗi từng bước, lượt gia sư.
 - **FR-031**: Giáo viên MUST giao được bài đã phát hành cho cả lớp hoặc từng học sinh.
+- **FR-034**: Giáo viên MUST ghi đè được mức của một học sinh ở một kỹ năng kèm lý do; mức ghi đè dùng cho bài kế cho tới khi giáo viên gỡ; hệ thống ghi người, thời điểm, lý do và vẫn tính mức của máy song song để giáo viên so.
+- **FR-035**: Giáo viên MUST ghi đè được bài kế của một học sinh (chọn một bài đã phát hành kèm lý do); bài đó hiện trước đề xuất của máy, lý do «thầy cô giao»; có ghi người, thời điểm, lý do.
 
 **Quyền và tương đương**
 
 - **FR-032**: Giáo viên MUST chỉ thấy lớp mình; học sinh chỉ thấy dữ liệu của mình (như F-08 của v0).
 - **FR-033**: Màn tương đương với v0 MUST giữ route, heading và `data-testid` của v0 (bảng ở phụ lục).
-- **FR-034**: Giáo viên MUST ghi đè được mức của một học sinh ở một kỹ năng kèm lý do; mức ghi đè dùng cho bài kế cho tới khi giáo viên gỡ; hệ thống ghi người, thời điểm, lý do và vẫn tính mức của máy song song để giáo viên so.
-- **FR-035**: Giáo viên MUST ghi đè được bài kế của một học sinh (chọn một bài đã phát hành kèm lý do); bài đó hiện trước đề xuất của máy, lý do «thầy cô giao»; có ghi người, thời điểm, lý do.
 
 ### Key Entities *(include if feature involves data)*
 
