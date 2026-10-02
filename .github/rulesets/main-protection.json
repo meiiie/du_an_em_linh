@@ -31,6 +31,7 @@
           { "context": "Harness — hook Claude Code" },
           { "context": "Core — Maven + image" },
           { "context": "Frontend — build + Vitest" },
+          { "context": "Compose v2 — khói" },
           { "context": "Dịch vụ toán" },
           { "context": "Web — typecheck lint unit" },
           { "context": "Playwright e2e" }

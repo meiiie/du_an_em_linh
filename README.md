@@ -72,6 +72,22 @@ Hoặc `docker compose up -d --build` rồi `docker compose exec web pnpm db:mig
 
 Biến môi trường: `.env.example`.
 
+### v2 (đang dựng, ADR 011)
+
+Một lệnh, cần Docker:
+
+```bash
+docker compose -f compose.v2.yaml up --build --wait
+```
+
+| Dịch vụ | Địa chỉ |
+| --- | --- |
+| `apps/frontend` (nginx, `/api/` chuyển tới core) | http://localhost:4200 |
+| `services/core` (profile `dev`, có 4 tài khoản thử ở trên) | http://localhost:8080/actuator/health |
+| `services/math` | http://localhost:8000/health |
+
+PostgreSQL 18 chỉ mở trong mạng compose. Dừng: `docker compose -f compose.v2.yaml down`; thêm `-v` để xóa CSDL. Trang đăng nhập v2 chưa gọi API (#57); thử API bằng `curl -X POST localhost:4200/api/auth/login -H 'Content-Type: application/json' -d '{"email":"hs.an@demo.local","password":"hocsinh123"}'`. Cổng 8000 trùng với `math` của v0, nên không chạy hai compose cùng lúc.
+
 ## Demo khoảng năm phút
 
 1. Vào `gv@demo.local`. Tổng quan cảnh báo Chi kẹt ở đạo hàm.

@@ -12,6 +12,8 @@ pnpm --filter frontend test    # Vitest (jsdom) qua ng test, chạy một lần
 
 Cần Node `^22.22.3 || ^24.15.0 || >=26` (Angular CLI 22 chặn bản lẻ như 25). Workspace pnpm của repo: cài từ gốc bằng `pnpm install`.
 
+Cả hệ v2 trong Docker: `docker compose -f compose.v2.yaml up --build --wait` ở gốc repo → http://localhost:4200, `/api/` qua nginx tới `services/core` (cùng gốc, không cần CORS).
+
 ## Bản đồ
 
 | Đường dẫn | Việc |
@@ -21,6 +23,8 @@ Cần Node `^22.22.3 || ^24.15.0 || >=26` (Angular CLI 22 chặn bản lẻ như
 | `src/app/features/<tính-năng>/` | Màn theo tính năng: `dang-nhap` (hai bước email → mật khẩu, chưa nối API — #57) |
 | `src/app/shared/ui/` | Nguyên thủy: `appButton` (giải phẫu nút), `app-brand-mark` |
 | `src/styles.css` | Token màu, khoảng, nút `.btn*`, skip link, `prefers-reduced-motion` |
+| `Dockerfile`, `Dockerfile.dockerignore` | Ảnh production: ngữ cảnh build là gốc repo (cần lockfile workspace), chạy nginx không root ở :8080 |
+| `nginx/default.conf.template` | `/api/` → `CORE_URL`; tệp có hash cache một năm, còn lại `no-cache`; đường lạ trả `index.html` |
 
 ## Gotcha
 

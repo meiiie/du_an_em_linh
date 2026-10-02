@@ -174,6 +174,22 @@ jobs:
       - run: pnpm --filter frontend build
       - run: pnpm --filter frontend test
 
+  compose:
+    name: Compose v2 — khói
+    needs: thay-doi
+    if: needs.thay-doi.outputs.core == 'true' || needs.thay-doi.outputs.frontend == 'true' || needs.thay-doi.outputs.v0 == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v7
+      - name: Dựng cả hệ v2, chờ health từng dịch vụ
+        run: docker compose -f compose.v2.yaml up --build --wait --wait-timeout 600
+      - name: Khói qua nginx của frontend (→ core → PostgreSQL, math)
+        run: bash scripts/khoi-v2.sh
+      - name: Log khi lỗi
+        if: failure()
+        run: docker compose -f compose.v2.yaml logs --no-color
+
   e2e:
     name: Playwright e2e
     needs: thay-doi
