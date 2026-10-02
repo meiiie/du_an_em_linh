@@ -108,8 +108,15 @@ Lý do các điểm then chốt:
 3. **Không có `GIA_SU_AI` thì gia sư chạy nhà `offline`** (ADR 007): thang gợi ý đã kiểm, không gọi LLM. Học sinh vẫn học được (L1).
 4. **Tối thiểu hóa:**
    - định danh chỉ nằm ở `services/core`; `services/math` và nhà LLM chỉ nhận nội dung toán, mã lỗi, mã giả danh theo phiên;
+   - ngoại lệ duy nhất: kênh nhắc lịch ngoài đã đồng ý (`NHAC_LICH_NGOAI`):
+     - nhà cung cấp kênh (email, Zalo…) là bên xử lý theo mục đích, chỉ nhận địa chỉ nhận và nội dung nhắc tối thiểu (không điểm, không mức hiểu);
+     - có thỏa thuận xử lý, thời hạn lưu, đánh giá nơi đặt dữ liệu (CTIA nếu ra nước ngoài);
+     - mặc định nhắc trong ứng dụng;
    - bộ khử định danh chạy ở `services/core` **trước** khi gọi LLM, lọc email, số điện thoại, tên trong danh sách lớp, mã học sinh; câu bị lọc ghi vào nhật ký (không ghi nội dung);
-   - ảnh bài làm, **kể cả vùng đã cắt**, chỉ xử lý trong nước / tự host: ảnh cắt vẫn có thể chứa tên, mã học sinh. Cắt chỉ vùng toán là bước tối thiểu hóa thêm, không thay điều kiện này.
+   - ảnh bài làm, **kể cả vùng đã cắt**, không ra nước ngoài, vì ảnh cắt vẫn có thể chứa tên, mã học sinh:
+     - mặc định OCR tự host;
+     - dịch vụ OCR bên ngoài, kể cả trong nước, chỉ nhận ảnh đã che vùng tên, mã học sinh, và là bên xử lý (thỏa thuận, thời hạn lưu, không huấn luyện);
+     - cắt chỉ vùng toán là bước tối thiểu hóa thêm, không thay các điều kiện trên.
 5. **Nhà LLM cho học sinh thật:**
    - chỉ nhà có điều khoản không dùng dữ liệu API để huấn luyện và có thỏa thuận xử lý dữ liệu;
    - mỗi nhà một CTIA trước khi bật;

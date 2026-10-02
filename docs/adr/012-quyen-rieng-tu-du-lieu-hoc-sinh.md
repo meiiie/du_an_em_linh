@@ -20,17 +20,22 @@ Phân tích, chấm 4 phương án, độ nhạy, câu hỏi cho luật sư: [`l
   - Học sinh dưới 18 tuổi: ghi cả phụ huynh và học sinh. Đây là mức an toàn, luật sư có thể thu hẹp.
 - **Chưa đồng ý `GIA_SU_AI` thì dùng gia sư `offline`:** không gọi LLM, vẫn học được.
 - **Tối thiểu hóa.**
-  - Định danh chỉ ở `services/core`.
+  - Định danh chỉ ở `services/core`. Ngoại lệ duy nhất là kênh nhắc lịch ngoài người dùng đã đồng ý (`NHAC_LICH_NGOAI`).
+    - Mặc định nhắc trong ứng dụng.
+    - Nhà cung cấp kênh (email, Zalo…) là bên xử lý theo mục đích: chỉ nhận địa chỉ nhận và nội dung nhắc tối thiểu, không có điểm hay mức hiểu.
+    - Cần thỏa thuận xử lý, thời hạn lưu, đánh giá nơi đặt dữ liệu; có CTIA nếu dữ liệu ra nước ngoài.
   - `services/core` khử định danh văn bản (email, số điện thoại, tên trong lớp, mã học sinh) trước khi gọi LLM.
   - Nhà LLM và `services/math` chỉ nhận nội dung toán, mã lỗi, mã giả danh theo phiên.
-  - Ảnh bài làm, kể cả vùng đã cắt, không gửi ra nước ngoài: OCR trong nước hoặc tự host.
+  - Ảnh bài làm, kể cả vùng đã cắt, không gửi ra nước ngoài. Mặc định OCR tự host.
+    - Dùng dịch vụ OCR bên ngoài, kể cả trong nước: che vùng tên, mã học sinh trước khi gửi.
+    - Nhà OCR là bên xử lý: có thỏa thuận, thời hạn lưu, không dùng ảnh để huấn luyện.
 - **Nhà LLM cho dữ liệu thật** phải có điều khoản không dùng dữ liệu để huấn luyện, có thỏa thuận xử lý dữ liệu, và CTIA riêng. Z.AI và OpenRouter chỉ dùng với dữ liệu tổng hợp cho tới khi đánh giá xong.
 - **Quyền chủ thể trong ứng dụng:** xem, sửa, tải về, xóa, rút đồng ý, theo thời hạn NĐ 356 (xóa: 20 ngày). Xóa và hết hạn lưu chạy tự động, có nhật ký.
 - **Minh bạch và giám sát AI.**
   - Mọi câu gia sư gắn nhãn «Gia sư AI».
   - Giáo viên xem và ghi đè mức hiểu, gợi ý bài; mỗi gợi ý có lý do xem được.
 - **Bảo mật.**
-  - CSDL của `services/core` giữ mức RLS của v0 (migration 0010: `ENABLE` + `FORCE`) cho mọi bảng dữ liệu học sinh, kể cả bảng mới; vai trò CSDL của ứng dụng không phải superuser.
+  - CSDL của `services/core` giữ mức RLS của v0 (migration 0010: `ENABLE` + `FORCE`) cho mọi bảng dữ liệu học sinh, kể cả bảng mới; vai trò CSDL của ứng dụng không phải superuser và không có `BYPASSRLS` (cả hai đều bỏ qua RLS).
   - Kiểm quyền theo lớp ở use case.
   - Mã hóa khi lưu và khi truyền; nhật ký kiểm toán mọi lần đọc.
   - Kế hoạch ứng phó sự cố.
