@@ -21,21 +21,22 @@ Cả hệ v2 trong Docker: `docker compose -f compose.v2.yaml up --build --wait`
 
 | Đường dẫn | Việc |
 | --- | --- |
-| `src/app/app.config.ts`, `app.routes.ts` | Provider, route (lazy theo tính năng); `/` và đường lạ → `/dang-nhap` cho tới khi có trang công khai |
-| `src/app/api/` | Kiểu khớp DTO của `services/core` (`auth.ts`: người dùng, phiên, endpoint, header chống CSRF) |
+| `src/app/app.config.ts`, `app.routes.ts` | Provider, route (lazy theo tính năng). `/hs`, `/gv` là route cha với khung `KhungTrang`; trang con theo bảng phụ lục của `specs/001-lat-cat-doc/spec.md` (màn chưa làm dùng `TrangCho`: đúng heading, câu mô tả). `/` và đường lạ → `/dang-nhap` cho tới khi có trang công khai |
+| `src/app/api/` | Kiểu khớp DTO của `services/core`: `auth.ts` (người dùng, phiên, endpoint, header chống CSRF); `hoc-sinh.ts`, `giao-vien.ts` theo `contracts/api-core.md` (core chưa có các endpoint này; trường hợp đồng chưa định nghĩa để `unknown`) |
 | `src/app/core/` | Việc toàn ứng dụng: `TieuDeTrang` (tab `<trang> · Học toán với AI`) |
 | `src/app/core/auth/` | `Phien` (access token trong bộ nhớ, refresh token trong cookie HttpOnly, làm mới một luồng qua Web Locks), `xacThucInterceptor` (Bearer, 401 → làm mới một lần), guard `chiVaiTro`, `chuaDangNhap`; `phien.testing.ts` là `PhienGia` cho test |
-| `src/app/features/<tính-năng>/` | Màn theo tính năng: `dang-nhap` (hai bước email → mật khẩu), `hoc-sinh` (`/hs` «Chào <tên>»), `giao-vien` (`/gv`, chưa có module lớp nên «Chưa có lớp») |
-| `src/app/shared/ui/` | Nguyên thủy: `appButton` (giải phẫu nút), `app-brand-mark` |
-| `src/app/shared/layout/` | `app-khung-trang`: thanh trên (tên, Đăng xuất) + `<main>`; phiên mất thì về `/dang-nhap` |
-| `e2e/`, `playwright.config.ts` | e2e qua nginx → core: đăng nhập HS / GV, guard vai trò, tải lại giữ phiên, cookie HttpOnly |
+| `src/app/features/<tính-năng>/` | Màn theo tính năng: `dang-nhap` (hai bước email → mật khẩu), `hoc-sinh` (`/hs` «Chào <tên>»), `giao-vien` (`/gv`, chưa có API lớp nên «Chưa có lớp») |
+| `src/app/shared/ui/` | Nguyên thủy: `appButton` (giải phẫu nút), `app-brand-mark` (`dao` cho nền mực), `app-bieu-tuong` (nét Lucide của ray v0, chép nguyên văn) |
+| `src/app/shared/layout/` | `app-khung-trang`: desktop là ray mực 220 px, dưới `lg` là thanh trên + ngăn kéo (`mo-sidebar`, `dong-sidebar`, `inert` khi đóng, Esc); một nút `dang-xuat` trong DOM; phiên mất thì về `/dang-nhap`. `dieu-huong.ts`: mục ray và `nav-*` chép từ v0. `TrangCho`: trang con chưa có dữ liệu |
+| `src/app/shared/toan/` | `app-katex` (`throwOnError: false`, `trust: false`); `app-o-cong-thuc`: ô công thức cho Signal Forms, MathLive nạp lười, ô LaTeX dự phòng |
+| `e2e/`, `playwright.config.ts` | e2e qua nginx → core: đăng nhập HS / GV, guard vai trò, tải lại giữ phiên, cookie HttpOnly; `khung.spec.ts`: ray dẫn tới mọi màn, ngăn kéo, không tràn ngang ở 390 / 1280 px |
 | `src/styles.css` | Token màu, khoảng, nút `.btn*`, skip link, `prefers-reduced-motion` |
 | `Dockerfile`, `Dockerfile.dockerignore` | Ảnh production: ngữ cảnh build là gốc repo (cần lockfile workspace), chạy nginx không root ở :8080 |
 | `nginx/default.conf.template` | `/api/` → `CORE_URL`; tệp có hash cache một năm, còn lại `no-cache`; đường lạ trả `index.html` |
 
 ## Gotcha
 
-- Font IBM Plex tự host qua `@fontsource` (khai ở `angular.json` → `styles`), không CDN.
+- Font IBM Plex tự host qua `@fontsource` (khai ở `angular.json` → `styles`), không CDN. Phông MathLive cũng tự host: `angular.json` chép `node_modules/mathlive/fonts` ra `/mathlive/fonts`, `napMathLive()` đặt `fontsDirectory` về đó và tắt âm thanh. Test thay cách nạp qua token `NAP_MATHLIVE`.
 - Nút luôn qua `appButton` trên phần tử gốc (`<button appButton>`), không tự đặt lớp `.btn`.
 - Route, `data-testid` và heading giữ như v0 (`apps/web/AGENTS.md`) cho màn tương đương.
 - Test component zoneless: đổi giá trị ô bằng `input` event rồi `await fixture.whenStable()`. Chuỗi `await` tự viết (gọi service rồi điều hướng) không được Angular theo dõi: chờ thêm `setTimeout(0)`.

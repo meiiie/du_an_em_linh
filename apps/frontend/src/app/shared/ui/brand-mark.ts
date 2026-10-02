@@ -1,9 +1,9 @@
-import { Component, input } from '@angular/core';
+import { booleanAttribute, Component, input } from '@angular/core';
 
-/** Dấu sản phẩm: đồ thị hàm trên nền mực (port từ apps/web/components/brand-mark.tsx). */
+/** Dấu sản phẩm: đồ thị hàm trên nền mực (port từ apps/web/components/brand-mark.tsx); `dao` cho nền tối (ray mực). */
 @Component({
   selector: 'app-brand-mark',
-  host: { 'aria-hidden': 'true', '[attr.data-co]': 'size()' },
+  host: { 'aria-hidden': 'true', '[attr.data-co]': 'size()', '[attr.data-dao]': "dao() ? '' : null" },
   template: `
     <svg viewBox="0 0 32 32" fill="none" aria-hidden="true">
       <path
@@ -27,6 +27,10 @@ import { Component, input } from '@angular/core';
       inline-size: 32px;
       block-size: 32px;
     }
+    :host([data-dao]) {
+      background: var(--chalk);
+      color: var(--ink);
+    }
     :host([data-co='md']) {
       inline-size: 40px;
       block-size: 40px;
@@ -43,4 +47,5 @@ import { Component, input } from '@angular/core';
 })
 export class BrandMark {
   readonly size = input<'sm' | 'md' | 'lg'>('sm');
+  readonly dao = input(false, { transform: booleanAttribute });
 }

@@ -26,6 +26,11 @@
               {
                 "glob": "**/*",
                 "input": "public"
+              },
+              {
+                "glob": "**/*",
+                "input": "node_modules/mathlive/fonts",
+                "output": "mathlive/fonts"
               }
             ],
             "styles": [

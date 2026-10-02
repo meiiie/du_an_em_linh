@@ -63,6 +63,42 @@ describe('định tuyến và tiêu đề tab', () => {
     expect((await den('/hs')).url).toBe('/gv');
   });
 
+  // Bảng phụ lục của specs/001-lat-cat-doc/spec.md: route, heading (h1) và tab của từng màn P2.
+  it.each([
+    ['/hs/bai', 'Đề bài', 'Đề bài'],
+    ['/hs/luyen/B12-01', 'Luyện bài', 'Luyện'],
+    ['/hs/lich', 'Lịch học', 'Lịch'],
+    ['/hs/kho', 'Công thức và tài liệu', 'Công thức'],
+  ])('học sinh: %s có heading «%s», tab «%s»', async (url, h1, tab) => {
+    gia.dangNhapNhu(AN);
+    const { url: duongDan, el } = await den(url);
+    expect(duongDan).toBe(url);
+    expect(el?.querySelector('main h1')?.textContent?.trim()).toBe(h1);
+    expect(TestBed.inject(Title).getTitle()).toBe(`${tab} · Học toán với AI`);
+  });
+
+  it.each([
+    ['/gv/duyet', 'Duyệt', 'Duyệt'],
+    ['/gv/ngan-hang', 'Đề bài', 'Đề bài'],
+    ['/gv/tai-lieu', 'Tài liệu', 'Tài liệu'],
+    ['/gv/cong-thuc', 'Công thức', 'Công thức'],
+    ['/gv/tien-do', 'Mức lớp', 'Mức'],
+    ['/gv/hoc-sinh/00000000-0000-4000-8000-000000000001', 'Học sinh', 'Học sinh'],
+    ['/gv/cai-dat', 'Cài đặt lớp', 'Cài lớp'],
+    ['/gv/ket-noi-ai', 'Gia sư', 'Gia sư'],
+  ])('giáo viên: %s có heading «%s», tab «%s»', async (url, h1, tab) => {
+    gia.dangNhapNhu(GV);
+    const { url: duongDan, el } = await den(url);
+    expect(duongDan).toBe(url);
+    expect(el?.querySelector('main h1')?.textContent?.trim()).toBe(h1);
+    expect(TestBed.inject(Title).getTitle()).toBe(`${tab} · Học toán với AI`);
+  });
+
+  it('trang con cũng chặn sai vai trò: học sinh mở /gv/cai-dat → /hs', async () => {
+    gia.dangNhapNhu(AN);
+    expect((await den('/gv/cai-dat')).url).toBe('/hs');
+  });
+
   it('đã có phiên (khôi phục từ cookie) mà mở /dang-nhap → về trang chủ', async () => {
     gia.khoiPhucDuoc = AN;
     expect((await den('/dang-nhap')).url).toBe('/hs');
