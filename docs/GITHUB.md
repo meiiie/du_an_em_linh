@@ -19,8 +19,9 @@ Các mục này nằm trên dashboard, không nằm trong git. Vào **Settings**
 
 Từ 2026-10-01, `main` có ruleset `main-protection` (id `24321422`, active); secret scanning và push protection đã bật. Hook trong `.claude/` chỉ là hàng rào chống nhầm phía máy dev — ranh giới thật nằm trên GitHub.
 
-Ruleset sẵn trong repo: [`.github/rulesets/main-protection.json`](../.github/rulesets/main-protection.json) — chặn xóa nhánh, chặn force-push, lịch sử tuyến tính, bắt buộc PR, bắt buộc mọi luồng review đã resolve, bắt buộc 4 job CI xanh (Harness, Dịch vụ toán, Web, Playwright e2e) và nhánh cập nhật với `main`.
+Ruleset sẵn trong repo: [`.github/rulesets/main-protection.json`](../.github/rulesets/main-protection.json) — chặn xóa nhánh, chặn force-push, lịch sử tuyến tính, bắt buộc PR, bắt buộc mọi luồng review đã resolve, bắt buộc 7 check CI xanh (Phân loại thay đổi, Harness, Core, Frontend, Dịch vụ toán, Web, Playwright e2e) và nhánh cập nhật với `main`.
 
+- **Job theo đường dẫn (#59):** ở PR, job không liên quan tới file đổi bị bỏ qua, và GitHub tính job bị bỏ qua là đạt. Vì vậy «Phân loại thay đổi» cũng phải bắt buộc: nó đỏ thì các job sau chỉ bị bỏ qua, không đỏ theo.
 - **0 approval bắt buộc:** PR của agent mở dưới tài khoản chủ repo; GitHub không cho tự approve PR của mình.
 - **Không bypass, kể cả admin:** agent dùng token của chủ repo, nên bypass cho admin cũng là bypass cho agent. Cứu sự cố: tạm tắt ruleset rồi bật lại.
 

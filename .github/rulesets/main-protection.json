@@ -27,7 +27,10 @@
       "parameters": {
         "strict_required_status_checks_policy": true,
         "required_status_checks": [
+          { "context": "Phân loại thay đổi" },
           { "context": "Harness — hook Claude Code" },
+          { "context": "Core — Maven + image" },
+          { "context": "Frontend — build + Vitest" },
           { "context": "Dịch vụ toán" },
           { "context": "Web — typecheck lint unit" },
           { "context": "Playwright e2e" }
