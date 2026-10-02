@@ -51,6 +51,17 @@ class RefreshSessionUseCaseTest {
     }
 
     @Test
+    void thuaCuocDuaVoiYeuCauDongThoiThuHoiMoiPhien() {
+        AuthResponse moi = refresh().execute(new RefreshTokenRequest(phien.refreshToken()));
+        gl.thuaCuocDua = true;
+        assertThatThrownBy(() -> refresh().execute(new RefreshTokenRequest(moi.refreshToken())))
+            .isInstanceOf(AuthenticationFailedException.class)
+            .hasMessage(AuthenticationFailedException.PHIEN_HET_HAN);
+        gl.thuaCuocDua = false;
+        assertThat(gl.tokens.values()).allMatch(RefreshToken::isRevoked);
+    }
+
+    @Test
     void tokenHetHanHoacLaBiTuChoi() {
         gl.clock = Clock.fixed(GiaLapDinhDanh.NOW.plus(Duration.ofDays(31)), ZoneOffset.UTC);
         assertThatThrownBy(() -> refresh().execute(new RefreshTokenRequest(phien.refreshToken())))

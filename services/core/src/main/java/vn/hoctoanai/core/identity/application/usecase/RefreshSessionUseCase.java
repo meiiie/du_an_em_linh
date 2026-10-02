@@ -15,7 +15,9 @@ import vn.hoctoanai.core.identity.domain.repository.UserRepository;
 
 /**
  * Làm mới phiên: xoay vòng refresh token (thu hồi token cũ, cấp token mới). Token đã thu hồi mà bị dùng lại là dấu hiệu
- * lộ token: thu hồi mọi phiên của người dùng đó. Không rollback khi ném lỗi để việc thu hồi được giữ lại.
+ * lộ token: thu hồi mọi phiên của người dùng đó. Việc thu hồi token cũ là một câu UPDATE có điều kiện nên hai yêu cầu
+ * đồng thời với cùng token chỉ một bên thắng; bên thua được coi như dùng lại. Frontend gọi làm mới một luồng một lúc
+ * (#57). Không rollback khi ném lỗi để việc thu hồi được giữ lại.
  */
 @Service
 public class RefreshSessionUseCase {
@@ -44,7 +46,10 @@ public class RefreshSessionUseCase {
             throw hetHan();
         }
         User user = users.findById(token.userId()).filter(User::enabled).orElseThrow(RefreshSessionUseCase::hetHan);
-        refreshTokens.save(token.revoke(now));
+        if (!refreshTokens.revokeIfActive(token.tokenHash(), now)) {
+            refreshTokens.revokeAllActive(token.userId(), now);
+            throw hetHan();
+        }
         return sessions.issue(user, now);
     }
 

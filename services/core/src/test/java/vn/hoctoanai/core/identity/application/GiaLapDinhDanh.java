@@ -31,6 +31,8 @@ public final class GiaLapDinhDanh {
     public final AtomicInteger soLanSoMatKhau = new AtomicInteger();
     public final AtomicInteger soTokenDaSinh = new AtomicInteger();
     public Clock clock = Clock.fixed(NOW, ZoneOffset.UTC);
+    /** Giả lập một yêu cầu đồng thời đã xoay vòng token trước (UPDATE có điều kiện không khớp dòng nào). */
+    public boolean thuaCuocDua;
 
     public final UserRepository userRepository = new UserRepository() {
         @Override
@@ -65,6 +67,26 @@ public final class GiaLapDinhDanh {
         @Override
         public void revokeAllActive(UserId userId, Instant now) {
             tokens.replaceAll((hash, t) -> t.userId().equals(userId) ? t.revoke(now) : t);
+        }
+
+        @Override
+        public boolean revokeIfActive(String tokenHash, Instant now) {
+            if (thuaCuocDua) {
+                return false;
+            }
+            RefreshToken token = tokens.get(tokenHash);
+            if (token == null || !token.isActive(now)) {
+                return false;
+            }
+            tokens.put(tokenHash, token.revoke(now));
+            return true;
+        }
+
+        @Override
+        public int deleteExpiredBefore(Instant cutoff) {
+            int truoc = tokens.size();
+            tokens.values().removeIf(t -> t.expiresAt().isBefore(cutoff));
+            return truoc - tokens.size();
         }
     };
 

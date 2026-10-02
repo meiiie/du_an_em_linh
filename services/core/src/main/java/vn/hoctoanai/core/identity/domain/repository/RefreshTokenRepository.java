@@ -11,6 +11,15 @@ public interface RefreshTokenRepository {
 
     RefreshToken save(RefreshToken token);
 
+    /**
+     * Thu hồi token nếu nó còn hiệu lực, nguyên tử với các yêu cầu đồng thời: chỉ một lời gọi nhận {@code true} cho
+     * một token.
+     */
+    boolean revokeIfActive(String tokenHash, Instant now);
+
+    /** Xóa token đã hết hạn trước mốc; trả số dòng đã xóa. */
+    int deleteExpiredBefore(Instant cutoff);
+
     /** Thu hồi mọi token còn hiệu lực của người dùng (khi phát hiện token đã thu hồi bị dùng lại). */
     void revokeAllActive(UserId userId, Instant now);
 }

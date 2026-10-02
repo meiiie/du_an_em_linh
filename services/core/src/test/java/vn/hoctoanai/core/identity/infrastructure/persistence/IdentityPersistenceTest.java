@@ -39,6 +39,26 @@ class IdentityPersistenceTest {
     }
 
     @Test
+    void thuHoiCoDieuKienChiThangMotLan() {
+        User user = users.save(User.create(new Email("hs.dua@demo.local"), "{bcrypt}x", "Đua", Role.STUDENT, true, NOW));
+        RefreshToken token = tokens.save(RefreshToken.issue(user.id(), "dua", NOW, Duration.ofDays(30)));
+        assertThat(tokens.revokeIfActive(token.tokenHash(), NOW.plusSeconds(1))).isTrue();
+        assertThat(tokens.revokeIfActive(token.tokenHash(), NOW.plusSeconds(2))).isFalse();
+        RefreshToken hetHan = tokens.save(RefreshToken.issue(user.id(), "het-han", NOW, Duration.ofMinutes(1)));
+        assertThat(tokens.revokeIfActive(hetHan.tokenHash(), NOW.plus(Duration.ofMinutes(2)))).isFalse();
+    }
+
+    @Test
+    void donTokenHetHan() {
+        User user = users.save(User.create(new Email("hs.don@demo.local"), "{bcrypt}x", "Dọn", Role.STUDENT, true, NOW));
+        RefreshToken cu = tokens.save(RefreshToken.issue(user.id(), "cu", NOW.minus(Duration.ofDays(40)), Duration.ofDays(30)));
+        RefreshToken moi = tokens.save(RefreshToken.issue(user.id(), "moi", NOW, Duration.ofDays(30)));
+        assertThat(tokens.deleteExpiredBefore(NOW.minus(Duration.ofDays(1)))).isEqualTo(1);
+        assertThat(tokens.findByTokenHash(cu.tokenHash())).isEmpty();
+        assertThat(tokens.findByTokenHash(moi.tokenHash())).isPresent();
+    }
+
+    @Test
     void thuHoiMoiTokenConHieuLucCuaMotNguoi() {
         User user = users.save(User.create(new Email("hs.chi@demo.local"), "{bcrypt}x", "Chi", Role.STUDENT, true, NOW));
         RefreshToken a = tokens.save(RefreshToken.issue(user.id(), "a", NOW, Duration.ofDays(30)));

@@ -31,4 +31,14 @@ public class RefreshTokenRepositoryAdapter implements RefreshTokenRepository {
     public void revokeAllActive(UserId userId, Instant now) {
         jpa.revokeAllActive(userId.value(), now);
     }
+
+    @Override
+    public boolean revokeIfActive(String tokenHash, Instant now) {
+        return jpa.revokeIfActive(tokenHash, now) == 1;
+    }
+
+    @Override
+    public int deleteExpiredBefore(Instant cutoff) {
+        return jpa.deleteExpiredBefore(cutoff);
+    }
 }
