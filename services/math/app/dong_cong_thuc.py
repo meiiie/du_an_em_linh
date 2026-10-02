@@ -25,6 +25,7 @@ Quyết định chờ chủ repo (rà math-verifier #101): dòng cực trị vi�
 không nêu giả thiết f liên tục tại x0 thuộc khoảng của tập xác định) được nhận như định lí SGK; câu nói ngược giả thiết
 («kể cả khi x0 không thuộc tập xác định») là SAI.
 """
+import functools
 import re
 import unicodedata
 
@@ -36,6 +37,8 @@ SO_DOAN_TOI_DA = 3000
 DO_DAI_LATEX_TOI_DA = 400
 DO_DAI_LOI_TOI_DA = 1000
 DO_DAI_DOAN_TOI_DA = 4000
+# Mệnh đề dài hơn thế này không phải một phát biểu định lí (là văn xuôi): không đem qua các regex của parser.
+DO_DAI_MENH_DE_TOI_DA = 400
 
 # Danh mục định lí của chủ đề (SGK Toán 12, ứng dụng đạo hàm), trên một KHOẢNG K của tập xác định. Mệnh đề đơn điệu
 # viết (điều kiện, kết luận); D = (dấu, chặt, chỉ bằng 0 tại hữu hạn điểm), M = hướng đơn điệu ngặt.
@@ -640,6 +643,8 @@ def _toi_han_cua_menh_de(cl, co_tieu_de):
 
 def _doc_menh_de(cl, truoc, co_tieu_de):
     """Một mệnh đề → (danh sách mệnh đề đọc được hoặc None, mệnh đề điều kiện để «theo cùng quy tắc» trỏ về)."""
+    if len(cl) > DO_DAI_MENH_DE_TOI_DA:
+        return None, truoc
     dd = _don_dieu_cua_menh_de(cl, truoc)
     if dd:
         for dk, kl, _ in dd:
@@ -882,6 +887,7 @@ def _dung_danh_muc(m):
     return m[0] == "TH"
 
 
+@functools.lru_cache(maxsize=4096)
 def _menh_de_doan(text):
     """Mệnh đề làm căn cứ của một đoạn tài liệu: chỉ lấy từ mệnh đề mà MỌI phần đều đúng theo danh mục. «Hàm đồng biến
     ⇔ y' > 0» sai một chiều, nên chiều đúng của nó cũng không làm căn cứ; dạng tóm tắt và mệnh đề sai không tính."""
@@ -890,7 +896,8 @@ def _menh_de_doan(text):
         ms, truoc = _doc_menh_de(cl, truoc, False)
         if ms and all(_dung_danh_muc(m) for m in ms):
             out.update(ms)
-    return out
+    # Lưu theo chữ của đoạn (mỗi job một tiến trình con): mỗi dòng định lí dùng lại, không phân tích lại cả kho đoạn.
+    return frozenset(out)
 
 
 def _ho_tro(p, m):
