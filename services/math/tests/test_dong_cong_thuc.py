@@ -83,6 +83,21 @@ def test_bang_v0_dat_ca_6_o_hai_tang():
     assert {kq[m]["tang2"]["trich_dan"]["tai_lieu"] for m in ("d-4", "d-5", "d-6")} == {"v0-don-dieu"}
 
 
+def test_tai_lieu_chia_doan_theo_cau_van_dat_va_trich_dung_doan():
+    # Core gửi tài liệu đã chia đoạn (`doan`). Phát biểu dòng lũy thừa dài hai câu nên không nằm trọn trong một
+    # đoạn câu; LaTeX của dòng vẫn nằm trọn trong một đoạn nên tầng 2 vẫn đạt, và trích dẫn trỏ đúng đoạn đó.
+    import re
+
+    sp_doc = _tai_lieu_sp()
+    cau = [c.strip() for c in re.split(r"(?<=[.;])\s+", sp_doc["text"]) if c.strip()]
+    chia = {"id": sp_doc["id"], "license_status": "tu_soan", "doan": [{"id": "p-%d" % i, "text": c} for i, c in enumerate(cau)]}
+    kq, _ = _chay(BANG_V0[:3], [chia])
+    for ma, lt in (("d-1", "(x^n)'"), ("d-2", "(u+v)'"), ("d-3", "(u/v)'")):
+        t2 = kq[ma]["tang2"]
+        assert t2["trang_thai"] == "DAT", (ma, t2)
+        assert t2["trich_dan"]["doan"].startswith("p-") and lt in t2["trich_dan"]["trich"], (ma, t2)
+
+
 def test_chi_tai_lieu_v0_thi_ba_dang_thuc_thieu_can_cu():
     # Lý do có bản vá sp-tai-lieu-0001 (#84): tài liệu của v0 không phát biểu lũy thừa, tổng, thương.
     kq, _ = _chay(BANG_V0, TAI_LIEU_V0)
