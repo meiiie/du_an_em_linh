@@ -35,7 +35,9 @@ Phân tích, chấm 4 phương án, độ nhạy, câu hỏi cho luật sư: [`l
     - Khi đó nhà OCR là bên xử lý: có thỏa thuận, thời hạn lưu, không dùng tài liệu để huấn luyện.
 - **Nhà LLM cho dữ liệu thật** phải có điều khoản không dùng dữ liệu để huấn luyện, có thỏa thuận xử lý dữ liệu, và CTIA riêng. Z.AI và OpenRouter chỉ dùng với dữ liệu tổng hợp cho tới khi đánh giá xong.
 - **Quyền chủ thể trong ứng dụng:** xem, sửa, tải về, xóa, rút đồng ý, theo thời hạn NĐ 356 (xóa: 20 ngày). Xóa và hết hạn lưu chạy tự động, có nhật ký.
-  - Rút đồng ý có hiệu lực ngay: mục đích bị tắt trong cùng giao dịch ghi nhận yêu cầu, trước khi xếp việc dọn ở bên xử lý. Từ lúc đó gia sư dùng `offline`, nhắc lịch chỉ trong ứng dụng.
+  - Rút đồng ý và yêu cầu xóa toàn bộ có hiệu lực ngay, trong cùng giao dịch ghi nhận yêu cầu, trước khi xếp việc dọn ở bên xử lý:
+    - rút đồng ý: tắt mục đích đó; gia sư dùng `offline`, nhắc lịch chỉ trong ứng dụng;
+    - xóa toàn bộ: khóa tài khoản và tắt mọi mục đích, nên không còn lần chuyển dữ liệu nào sau khi đã chốt danh sách bên xử lý cần dọn.
   - Nhật ký sự kiện đồng ý lưu ngoài dữ liệu được sao lưu. Mỗi dòng: mã giả danh, loại sự kiện (xóa toàn bộ, rút đồng ý, đồng ý lại), mục đích, thứ tự; không có dữ liệu cá nhân khác.
   - Cùng kho đó giữ sổ chuyển dữ liệu cho bên xử lý và trạng thái dọn: bên nhận, mục đích, mã yêu cầu, xác nhận.
   - Khôi phục bản sao lưu thì phát lại nhật ký theo thứ tự trước khi mở lại dịch vụ: dữ liệu đã xóa không sống lại, mỗi mục đích về đúng trạng thái mới nhất, việc dọn còn dở ở bên xử lý chạy tiếp.
@@ -51,6 +53,7 @@ Phân tích, chấm 4 phương án, độ nhạy, câu hỏi cho luật sư: [`l
   - CSDL của `services/core`: `ENABLE` + `FORCE` RLS cho mọi bảng dữ liệu học sinh, kể cả bảng mới.
     - Chính sách **đóng mặc định**: thiếu ngữ cảnh người dùng (`app.user_id`) thì không thấy dòng nào.
     - Ngữ cảnh đặt **trong từng giao dịch** bằng `set_config('app.user_id', …, true)`, như `apps/web/lib/rls.ts`; không đặt ở mức phiên kết nối, vì pool tái dùng kết nối sẽ mang ngữ cảnh của học sinh trước. Truy cập dữ liệu học sinh ngoài giao dịch bị từ chối.
+    - Đăng nhập và làm mới phiên chạy trước khi có ngữ cảnh: đi qua hàm `SECURITY DEFINER` hẹp (tra theo email hoặc băm token, chỉ trả cột cần để xác thực), rồi đặt `app.user_id` trong cùng giao dịch. Vai trò ứng dụng không đọc thẳng bảng định danh khi chưa có ngữ cảnh.
     - Khác v0: hàm `rls_duoc_xem_hs` của migration 0010 cho qua mọi dòng khi chưa đặt ngữ cảnh (để chạy tác vụ hệ thống), nên không làm mốc an toàn cho dữ liệu thật.
     - Tác vụ bảo trì (migration, seed, báo cáo tổng hợp) dùng vai trò CSDL riêng, có kiểm soát.
     - Vai trò CSDL của ứng dụng không phải superuser và không có `BYPASSRLS` (cả hai đều bỏ qua RLS).
