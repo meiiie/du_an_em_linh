@@ -100,6 +100,10 @@
                   Chưa vào được. Kiểm tra lại email và mật khẩu.
                 }
               </p>
+            } @else if (loi() === 'khoa') {
+              <p id="loi-dang-nhap" class="loi-dang-nhap" data-testid="khoa-dang-nhap" role="alert">
+                Sai mật khẩu quá nhiều lần (5 lần). Tài khoản này tạm khóa 15 phút trên máy này, em thử lại sau.
+              </p>
             } @else if (loi() === 'may-chu') {
               <p id="loi-dang-nhap" class="loi-dang-nhap" data-testid="loi-dang-nhap" role="alert">
                 Chưa kết nối được máy chủ. Thử lại sau ít phút.

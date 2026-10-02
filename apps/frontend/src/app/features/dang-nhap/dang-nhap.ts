@@ -9,7 +9,7 @@ import { BrandMark } from '../../shared/ui/brand-mark';
 import { Button } from '../../shared/ui/button';
 
 type Buoc = 'email' | 'mat-khau';
-type LoiDangNhap = 'sai' | 'may-chu';
+type LoiDangNhap = 'sai' | 'khoa' | 'may-chu';
 
 // Tài khoản tổng hợp của bản demo (AGENTS.md), không phải học sinh thật.
 const TAI_KHOAN_THU = [
@@ -105,8 +105,7 @@ export class DangNhap {
       const nguoiDung = await this.phien.dangNhap(this.f.email().value(), this.f.matKhau().value());
       await this.router.navigateByUrl(duongVe(this.returnUrl(), nguoiDung.role));
     } catch (e) {
-      // 400 (mật khẩu quá 72 byte) và 401 cùng một câu, như máy chủ: không lộ tài khoản nào có thật.
-      this.loi.set(e instanceof HttpErrorResponse && (e.status === 400 || e.status === 401) ? 'sai' : 'may-chu');
+      this.loi.set(phanLoaiLoi(e));
       this.oMatKhau()?.nativeElement.focus();
     } finally {
       this.dangGui.set(false);
@@ -124,4 +123,14 @@ export class DangNhap {
 /** Chỉ nhận đường nội bộ (`/…`, không `//` hay `/\` sang miền khác, không quay lại `/dang-nhap`); còn lại về trang chủ. */
 function duongVe(returnUrl: string | undefined, vaiTro: VaiTro): string {
   return returnUrl && /^\/(?![/\\])/.test(returnUrl) && !returnUrl.startsWith('/dang-nhap') ? returnUrl : trangChuCua(vaiTro);
+}
+
+/**
+ * 400 (mật khẩu quá 72 byte) và 401 cùng một câu, như máy chủ: không lộ tài khoản nào có thật. 429: sai quá 5 lần trong
+ * 15 phút (F-10, #69), tạm khóa theo email + máy.
+ */
+function phanLoaiLoi(e: unknown): LoiDangNhap {
+  if (!(e instanceof HttpErrorResponse)) return 'may-chu';
+  if (e.status === 429) return 'khoa';
+  return e.status === 400 || e.status === 401 ? 'sai' : 'may-chu';
 }

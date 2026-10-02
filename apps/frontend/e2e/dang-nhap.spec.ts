@@ -61,6 +61,22 @@ test('sai mật khẩu → báo lỗi kèm mật khẩu thử như v0, ở lại
   await chup(page, 'loi');
 });
 
+test('sai 5 lần → lần thứ 6 báo tạm khóa như v0 (F-10)', async ({ page }) => {
+  // Email riêng cho mỗi lần chạy: khóa theo email + máy kéo dài 15 phút, không được khóa nhầm tài khoản thử của test khác.
+  const email = `khoa-${test.info().project.name}-${Date.now()}@demo.local`;
+  await page.goto('/dang-nhap');
+  await page.getByTestId('email').fill(email);
+  await page.getByRole('button', { name: 'Tiếp tục' }).click();
+  for (let lan = 1; lan <= 5; lan++) {
+    await page.getByTestId('password').fill(`sai-${lan}`);
+    await page.getByRole('button', { name: 'Vào học' }).click();
+    await expect(page.getByTestId('loi-dang-nhap')).toContainText('Chưa vào được');
+  }
+  await page.getByTestId('password').fill('sai-6');
+  await page.getByRole('button', { name: 'Vào học' }).click();
+  await expect(page.getByTestId('khoa-dang-nhap')).toContainText('tạm khóa 15 phút');
+});
+
 test('refresh token chỉ nằm trong cookie HttpOnly, JavaScript không đọc được', async ({ page, context }) => {
   await page.goto('/dang-nhap');
   await vaoLop(page, 'hs.an@demo.local', 'hocsinh123');
