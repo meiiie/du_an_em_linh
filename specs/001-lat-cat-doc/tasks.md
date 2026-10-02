@@ -17,7 +17,7 @@ description: "Danh sách việc của epic P2 — lát cắt dọc một chủ �
 
 ### Issue — Chuẩn bị phụ thuộc P2
 
-- [ ] T001 Thêm Spring AI BOM 2.0.1 và starter OpenAI vào `services/core/pom.xml`; tắt thử lại (`spring.ai.retry.max-attempts=1`) trong `application.yaml`
+- [ ] T001 Thêm Spring AI BOM 2.0.1 và starter OpenAI vào `services/core/pom.xml`; trong `application.yaml`: tắt thử lại `spring.ai.retry.max-attempts=0` (Spring AI 2.0 hiểu là số lần gửi lại, research R3) và tắt 6 tự cấu hình model (`spring.ai.model.*=none`) để core khởi động khi không có khóa
 - [ ] T002 [P] Thêm `katex` ^0.16.22 và `mathlive` ^0.107.1 (cùng bản v0) vào `apps/frontend/package.json`; khai CSS KaTeX trong `angular.json`
 - [ ] T003 [P] `compose.v2.yaml` và `.env.example`: biến `LLM_*`, `OPENROUTER_API_KEY`, `ZAI_API_KEY` cho core (trống = chỉ `offline`); không có khóa trong git
 
@@ -103,7 +103,7 @@ description: "Danh sách việc của epic P2 — lát cắt dọc một chủ �
 
 - [ ] T031 [US2] `V6__tutor.sql`: `tutor_sessions`, `tutor_messages`, `llm_calls`
 - [ ] T032 [US2] `core/tutor/domain/`: luật xin đáp án, sai chỗ, gợi ý (chép `apps/web/lib/tutor.ts`), thang 3 cấp, trạng thái lượt
-- [ ] T033 [US2] `core/tutor/infrastructure/ai/`: nhà `offline` (`/v1/goi-y`), OpenAI-compatible, OpenRouter, Z.AI qua Spring AI (research R3); xóa định danh (chép `apps/web/lib/llm.ts`); chỉ tài khoản `synthetic` được gửi ra ngoài
+- [ ] T033 [US2] `core/tutor/infrastructure/ai/`: nhà `offline` (`/v1/goi-y`), OpenAI-compatible, OpenRouter, Z.AI qua Spring AI (research R3); xóa định danh (chép `apps/web/lib/llm.ts`); chỉ tài khoản `synthetic` được gửi ra ngoài; test máy chủ giả: nhà trả 503 hay hết giờ → đúng 1 yêu cầu HTTP, không gửi lại
 - [ ] T034 [US2] `core/tutor/application/LuotGiaSu`: kho lớp + trích dẫn `[n]` (chép `kien-thuc.ts`, `kho-lop.ts`) → nhà → `/v1/filter` → `/v1/kiem-loi-giang` → ghi mục duyệt cho biểu thức bị bỏ; câu thay thế chỉ từ gợi ý đã kiểm trước với phiên bản bảng hiện tại, không có thì câu cố định không chứa toán (ADR 013 mục 6)
 - [ ] T034b [US2] `core/content/`: nghe `BangCongThucDaKhoa` và `BaiDaNhap`, chạy mọi câu gợi ý (thang của bài, thang mẫu đã điền tham số của đề) qua `/v1/kiem-loi-giang`, lưu `hint_gate_results` theo (gợi ý, phiên bản bảng); job lỗi thì không ghi `DAT`
 - [ ] T035 [US2] `core/tutor/infrastructure/web/`: `POST /api/hs/gia-su` SSE (`trang_thai` kho/goi/loc, `xong`, `loi`), hủy khi kết nối đóng; `GET /api/hs/gia-su/{maBai}`; chip `GUI_THAY_CO` ghi cảnh báo `NHO_GV` qua `CanhBaoGiaoVien`; `GET /api/hs/kho`
