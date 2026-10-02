@@ -28,7 +28,7 @@ Mỗi mục: **Quyết định**, **Lý do**, **Phương án đã cân nhắc**.
 
 ## R5. Công thức trong lời giảng (FR-015)
 
-- **Quyết định:** theo [ADR 013](../../docs/adr/013-cong-ba-tang-cho-loi-gia-su.md) (chủ repo chấp nhận 2026-10-02, phương án A). Tóm tắt: lời gia sư chỉ được dùng công thức tổng quát có trong bảng đã khóa của lớp, đã máy kiểm lúc khóa, và có đoạn trích dẫn trong tài liệu được phép. Biểu thức trích nguyên văn từ bài làm của học sinh được phép, trình bày là lời của học sinh. Mọi biểu thức khác bị bỏ khỏi câu; nếu câu mất nghĩa thì thay bằng gợi ý theo thang. Mỗi lần bỏ ghi một mục `KHONG_KIEM_DUOC` hoặc `SAI` cho giáo viên. Phần kiểm chạy trong job mới `kiem_loi_giang` của `services/math`, ngay sau `/v1/filter`.
+- **Quyết định:** theo [ADR 013](../../docs/adr/013-cong-ba-tang-cho-loi-gia-su.md) (chủ repo chấp nhận 2026-10-02, phương án A). Tóm tắt: lời gia sư chỉ được dùng công thức tổng quát có trong bảng đã khóa của lớp, đã máy kiểm lúc khóa, và có đoạn trích dẫn trong tài liệu được phép. Biểu thức trích nguyên văn đề bài, hoặc bài làm của học sinh (trình bày là lời của học sinh), được phép. Mọi biểu thức khác, kể cả toán viết trần không phân loại được, bị bỏ khỏi câu; nếu câu mất nghĩa thì thay bằng gợi ý đã qua cùng cổng từ trước. Mỗi lần bỏ ghi một mục `KHONG_KIEM_DUOC` hoặc `SAI` cho giáo viên. Phần kiểm chạy trong job mới `kiem_loi_giang` của `services/math`, ngay sau `/v1/filter`; lúc khóa bảng dùng job mới `kiem_dong_cong_thuc`.
 - **Lý do:** sơ đồ đặt cổng 3 tầng trên mũi tên vào «học cùng AI»; hiến chương II; gia sư không được tính hộ (hiến chương I) nên chặn mọi kết quả tính cụ thể không mất gì về sư phạm.
 - **Đã cân nhắc:** xem ADR 013 (đủ 3 tầng cho mọi công thức tùy ý; dán nhãn «chưa kiểm»; chỉ máy kiểm).
 

@@ -40,7 +40,7 @@ description: "Danh sách việc của epic P2 — lát cắt dọc một chủ �
 
 ### Issue — Module `content`: nhập nội dung chủ đề từ v0 và cổng 3 tầng cho bài
 
-- [ ] T010 `V4__content.sql`: `topics`, `skills`, `skill_prerequisites`, `error_types`, `step_templates`, `problems`, `solutions`, `hint_levels`, `documents`, `document_passages`, `formula_sheets`, `formulas`, `verification_runs`, `verification_tier_results`, `content_reviews`
+- [ ] T010 `V4__content.sql`: `topics`, `skills`, `skill_prerequisites`, `error_types`, `step_templates`, `problems`, `solutions`, `hint_levels`, `documents`, `document_passages`, `formula_sheets`, `formulas`, `hint_gate_results`, `verification_runs`, `verification_tier_results`, `content_reviews`
 - [ ] T011 `core/content/domain/`: bài và chuyển trạng thái (data-model §content), bảng công thức có phiên bản, kết quả kiểm có cờ «cũ»
 - [ ] T011b Chép **nguyên văn** các hằng nội dung của `apps/web/scripts/seed.ts` (khung 5 bước, cấu hình BKT, 3 tài liệu, 6 dòng bảng công thức) ra `data/v0/*.json` kèm `data/v0/NGUON.md` (đường dẫn, dòng, SHA); không sửa chữ
 - [ ] T012 `core/content/infrastructure/import/`: importer đọc `${app.content.source}` (ảnh: `/app/noi-dung`; test: `${project.basedir}/../../data` đặt trong `systemPropertyVariables` của Surefire), gồm `supham/` và `v0/`, như `apps/web/scripts/seed.ts` (cả biến thể `/v1/generate` hạt giống cố định và 3 bài demo), idempotent theo mã + dấu vân tay; chạy `/v1/verify` từng bài
@@ -85,7 +85,7 @@ description: "Danh sách việc của epic P2 — lát cắt dọc một chủ �
 
 ### Issue — Lab Kiểm định: bản vá KD-0005 bộ ca lời giảng
 
-- [ ] T029 [US2] Lab Kiểm định soạn bản vá có mã KD-0005 (`.patch` + SHA-256): ≥ 100 câu lời gia sư, 5 loại (spec SC-004), mỗi câu có phán quyết mong đợi theo ADR 013; rà độc lập bằng subagent `math-verifier` trước khi phát hành bản vá
+- [ ] T029 [US2] Lab Kiểm định soạn bản vá có mã KD-0005 (`.patch` + SHA-256): ≥ 100 câu lời gia sư, 7 loại (spec SC-004), mỗi câu có phán quyết mong đợi theo ADR 013; rà độc lập bằng subagent `math-verifier` trước khi phát hành bản vá
 
 ### Issue — Job `kiem_loi_giang` (services/math), áp nguyên văn KD-0005
 

@@ -43,7 +43,7 @@ Kẹt ở một bước, An mở gia sư ngay trên phiếu làm bài. Gia sư b
 2. **Given** bước đạo hàm sai, **When** An bấm «Gợi ý» ba lần, **Then** nhận lần lượt cấp 1, 2, 3 của thang đúng (bước, loại lỗi); không cấp nào nêu kết quả của bước.
 3. **Given** nhà AI trả về câu chứa kết quả của bài, **When** câu đi qua bộ lọc, **Then** An nhận gợi ý đã kiểm của bước hoặc một câu từ chối không chứa kết quả.
 4. **Given** nhà AI trả về một quy tắc đạo hàm sai, **When** câu đi qua cổng, **Then** quy tắc đó không tới An; hệ thống ghi một mục cho giáo viên xem.
-5. **Given** nhà AI trả về một công thức đúng nhưng không có trong bảng đã khóa, **When** câu đi qua cổng, **Then** công thức không tới An; câu được thay bằng gợi ý theo thang; giáo viên thấy một mục «không kiểm được».
+5. **Given** nhà AI trả về một công thức đúng nhưng không có trong bảng đã khóa, **When** câu đi qua cổng, **Then** công thức bị rút khỏi câu và không tới An (câu mất nghĩa thì được thay bằng gợi ý đã qua cổng từ trước); giáo viên thấy một mục «không kiểm được».
 6. **Given** nhà AI dùng một công thức có trong bảng đã khóa và trong tài liệu của lớp, **When** câu tới An, **Then** công thức hiện kèm số trích dẫn `[n]`, bấm vào mở đúng đoạn trong kho lớp mà không rời phiếu.
 7. **Given** nhà AI lỗi hoặc hết giờ, **When** An hỏi, **Then** An nhận lời báo lỗi; hệ thống không tự chuyển sang nhà khác và không tự gửi lại.
 8. **Given** một lượt đang chạy, **When** An bấm Dừng, **Then** lượt bị hủy và câu đến muộn không hiện.
@@ -176,7 +176,7 @@ Giáo viên xem bảng lớp theo kỹ năng × mức, đổi sang 3 mức Biế
 - **FR-012**: Gia sư MUST theo thang gợi ý 3 cấp theo (bước, loại lỗi); không cấp nào nêu kết quả của bước (không bottom-out).
 - **FR-013**: Xin đáp án MUST bị chặn theo luật, không phụ thuộc mô hình: lần 1 và 2 nhắc gợi ý, lần 3 từ chối và gợi ý nghỉ hoặc gửi thầy cô.
 - **FR-014**: Mọi câu gia sư MUST qua bộ lọc lộ đáp án trên cả câu, đóng mặc định; câu bị chặn được thay bằng gợi ý đã kiểm của bước hoặc câu từ chối không chứa kết quả, rồi lọc lại.
-- **FR-015**: Mọi công thức tổng quát (quy tắc, định lí) trong câu gia sư MUST qua đủ 3 tầng trước khi hiện: máy kiểm không sai, có trong tài liệu được phép dùng của lớp (trích dẫn được), khớp một dòng của bảng công thức đã khóa. Công thức sai hoặc không kiểm được MUST NOT hiện; hệ thống ghi một mục vào hàng đợi duyệt. Biểu thức trích lại nguyên văn từ bài làm của chính học sinh được phép, trình bày là lời của học sinh; mọi kết quả tính cụ thể khác MUST NOT hiện.
+- **FR-015**: Mọi công thức tổng quát (quy tắc, định lí) trong câu gia sư MUST qua đủ 3 tầng trước khi hiện: máy kiểm không sai, có trong tài liệu được phép dùng của lớp (trích dẫn được), khớp một dòng của bảng công thức đã khóa. Công thức sai hoặc không kiểm được MUST NOT hiện; hệ thống ghi một mục vào hàng đợi duyệt. Biểu thức trích lại nguyên văn từ đề bài, hoặc từ bài làm của chính học sinh (trình bày là lời của học sinh), được phép; mọi kết quả tính cụ thể khác, và mọi đoạn trông như toán mà hệ thống không phân loại được, MUST NOT hiện. Câu thay thế (khi câu mất nghĩa hoặc khi kiểm lỗi) MUST chỉ lấy từ gợi ý đã qua cùng cổng từ trước.
 - **FR-016**: Mỗi lượt gia sư MUST báo trạng thái (mở kho lớp → hỏi mô hình → kiểm câu) và chỉ hiện cả câu sau khi kiểm xong; không hiện từng chữ khi mô hình đang sinh.
 - **FR-017**: Học sinh MUST dừng được lượt đang chạy; câu đến muộn bị bỏ.
 - **FR-018**: Lỗi của nhà AI MUST NOT dẫn tới tự chuyển nhà hay tự gửi lại; học sinh nhận lời báo lỗi. Chế độ offline (thang gợi ý mẫu đã kiểm) MUST luôn dùng được, không cần khóa.
@@ -236,7 +236,7 @@ Giáo viên xem bảng lớp theo kỹ năng × mức, đổi sang 3 mức Biế
 - **SC-001**: Kịch bản «một vòng» chạy hết không lỗi ở cả màn 390 px và 1280 px, không tràn ngang: giáo viên khóa bảng và nạp một tài liệu → An làm bài, hỏi gia sư, gia sư trích dẫn đoạn của tài liệu vừa nạp → mức hiểu tăng → bài kế nâng 1 nấc → lịch tuần cập nhật.
 - **SC-002**: Kịch bản duyệt: một mục `KHONG_KIEM_DUOC` thành `GV_DUYET` có đủ người, thời điểm, lý do, rồi mới tới học sinh; trong mọi kịch bản kiểm thử, 0 mục `SAI` tới học sinh.
 - **SC-003**: 0 câu gia sư lộ đáp án trên bộ dụ đáp án và bộ ác ý 288 ca của v0 khi chạy qua luồng gia sư mới (đạt nhầm 0).
-- **SC-004**: 0 công thức sai hoặc không kiểm được tới học sinh trên bộ ca lời giảng mới, tối thiểu 100 câu chia đủ 5 loại: công thức trong bảng có trích dẫn, công thức đúng ngoài bảng, công thức sai, LaTeX hỏng, kết quả tính cụ thể của bài; công thức trong bảng có trích dẫn hiện đúng ít nhất 95 %.
+- **SC-004**: 0 công thức sai hoặc không kiểm được tới học sinh trên bộ ca lời giảng mới, tối thiểu 100 câu chia đủ 7 loại: công thức trong bảng có trích dẫn, công thức đúng ngoài bảng, công thức sai, LaTeX hỏng, kết quả tính cụ thể của bài, toán viết trần ngoài dấu phân cách, trích nguyên văn đề bài; công thức trong bảng có trích dẫn và trích đề bài hiện đúng ít nhất 95 %.
 - **SC-005**: Bộ AI 70 ca của v0 đạt 70/70 khi chạy qua luồng mới.
 - **SC-006**: Kết quả chấm từng bước trên toàn bộ ngân hàng của chủ đề trùng 100 % với v0.
 - **SC-007**: Trạng thái đầu tiên của lượt gia sư hiện trong 1 giây; ở chế độ offline, câu trả lời hiện trong 3 giây (phân vị 95, máy dev).

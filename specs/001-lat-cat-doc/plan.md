@@ -89,7 +89,7 @@ apps/frontend/e2e/       # một vòng, duyệt, tới VDC, bản tương đươ
 data/supham/             # nguồn nội dung (lab Sư phạm sở hữu), không sửa; được chép vào ảnh core (ngữ cảnh build là gốc repo)
 ```
 
-**Structure Decision**: giữ 3 dịch vụ của ADR 011. Mỗi nhóm khả năng của sơ đồ là một module DDD trong `services/core` (gói con `domain` → `application` → `infrastructure`, ArchUnit kiểm). Module giao tiếp qua port trong `application`, không gọi chéo repository của nhau. `services/math` chỉ thêm một job thuần hàm. `apps/frontend` chia theo vai trò rồi theo màn, giữ route và `data-testid` của v0.
+**Structure Decision**: giữ 3 dịch vụ của ADR 011. Mỗi nhóm khả năng của sơ đồ là một module DDD trong `services/core` (gói con `domain` → `application` → `infrastructure`, ArchUnit kiểm). Module giao tiếp qua port trong `application`, không gọi chéo repository của nhau. `services/math` chỉ thêm hai job thuần hàm (ADR 013). `apps/frontend` chia theo vai trò rồi theo màn, giữ route và `data-testid` của v0.
 
 ## Complexity Tracking
 

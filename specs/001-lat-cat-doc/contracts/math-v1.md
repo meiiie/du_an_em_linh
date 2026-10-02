@@ -9,7 +9,7 @@ Giữ nguyên `/v1` của v0 (`services/math/app/routers.py`). Mọi job chạy 
 | `POST /v1/grade` | chấm từng bước, chấm cả bài (`ham`, `cac_buoc`, `buoc_bat_dau`, `nop_toi`, bảng xét dấu) | 12 s | `KHONG_CHAM_DUOC` |
 | `POST /v1/verify` | cổng 3 tầng cho bài (tầng 2 nhận đoạn tài liệu được phép, tầng 3 nhận bảng đã khóa) | 20 s | `KHONG_KIEM_DUOC` |
 | `POST /v1/filter` | bộ lọc lộ đáp án trên cả câu gia sư (M3 + M1) | 12 s | chặn câu |
-| `POST /v1/goi-y` | thang gợi ý mẫu theo (bước, loại kết quả, cấp); dùng cho nhà `offline` và câu thay thế | 12 s | câu từ chối chung, không chứa kết quả |
+| `POST /v1/goi-y` | thang gợi ý mẫu theo (bước, loại kết quả, cấp). Lúc nhập bài: sinh sẵn câu đã điền tham số của đề để kiểm trước (ADR 013 mục 6). Lúc chạy: nhà `offline`, câu ra vẫn qua `/v1/filter` và `/v1/kiem-loi-giang` như mọi nhà | 12 s | lúc nhập: bài thiếu thang, ghi lỗi nhập; lúc chạy: câu cố định không chứa toán |
 | `POST /v1/generate` | biến thể có hạt giống khi nhập ngân hàng (research R6) | 20 s | bỏ biến thể, ghi lỗi nhập |
 
 `/v1/extract` không dùng ở P2: job đọc đường dẫn tệp cục bộ, còn core và math là hai container không chung ổ. Core trích chữ PDF bằng PDFBox (research R9).
@@ -42,14 +42,15 @@ Thuần hàm, không đọc CSDL. Chạy **sau** `/v1/filter`.
   "bieu_thuc": [
     {"doan": "\\frac{u'v-uv'}{v^2}", "loai": "CONG_THUC_TONG_QUAT", "trang_thai": "DAT", "dong_bang": "f-07", "tang": {"1": "DAT", "2": "DAT", "3": "DAT"}},
     {"doan": "3x^{2}-12x", "loai": "TRICH_BAI_LAM", "trang_thai": "DAT"},
+    {"doan": "x^3 - 6x^2 + 9x + 2", "loai": "TRICH_DE_BAI", "trang_thai": "DAT"},
     {"doan": "y' = 3x^2 - 12x + 9", "loai": "KET_QUA_CU_THE", "trang_thai": "KHONG_KIEM_DUOC", "ly_do": "kết quả tính cụ thể của bài"}
   ]
 }
 ```
 
-- `loai` ∈ `CONG_THUC_TONG_QUAT`, `TRICH_BAI_LAM`, `KET_QUA_CU_THE`, `KHONG_PHAN_TICH_DUOC`.
+- `loai` ∈ `CONG_THUC_TONG_QUAT`, `TRICH_BAI_LAM`, `TRICH_DE_BAI`, `KET_QUA_CU_THE`, `KHONG_PHAN_TICH_DUOC`. `TRICH_DE_BAI` so với `ham` sau chuẩn hóa cách viết, không rút gọn (ADR 013 mục 1).
 - `trang_thai` ∈ `DAT`, `SAI`, `KHONG_KIEM_DUOC`. Chỉ biểu thức `DAT` còn lại trong `cau_sach`.
-- `thay_bang_goi_y = true` khi câu còn lại mất nghĩa: core thay cả câu bằng gợi ý theo thang của bước.
+- `thay_bang_goi_y = true` khi câu còn lại mất nghĩa: core thay cả câu bằng gợi ý đã kiểm trước của bước (ADR 013 mục 6).
 - Core ghi mỗi biểu thức `SAI` hoặc `KHONG_KIEM_DUOC` thành một `verification_run` (`subject_kind = TUTOR_FORMULA`) vào hàng đợi duyệt.
 - Lỗi, hết giờ, JSON hỏng → core không hiện câu; câu thay thế chỉ lấy từ gợi ý **đã qua job này từ trước** với phiên bản bảng hiện tại (ADR 013 mục 6), không có thì câu cố định không chứa toán.
 - Biểu thức trông như toán nằm ngoài `$…$`, `\(…\)`, `\[…\]` mà không phân loại được → `KHONG_PHAN_TICH_DUOC`, bị bỏ (đóng mặc định).

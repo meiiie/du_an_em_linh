@@ -22,7 +22,7 @@ Bảng PostgreSQL 18 của `services/core`, Flyway chỉ thêm. Tên bảng và 
 | `problems` | `id`, `code`, `skill_code`, `extra_skill_codes`, `level4`, `level3`, `bloom_level`, `difficulty`, `statement_text`, `statement_latex`, `function_sympy`, `answer_form` (`TU_LUAN_5_BUOC`), `start_step`, `origin`, `status`, `content_hash` | `status` dùng đúng mã phát hành của v0: `NHAP`, `DA_PHAT_HANH`, `BI_CHAN`, `CHO_GIAO_VIEN_DUYET` |
 | `solutions` | `problem_id`, `worked_solution`, `protected_facts`, `final_answer` | **Không bao giờ** vào DTO của học sinh khi đang làm, không vào prompt |
 | `hint_levels` | `problem_id`, `step_code`, `level` (1–3), `text` | Thang đã kiểm |
-| `hint_gate_results` | `hint_ref` (gợi ý của bài hoặc thang mẫu), `formula_sheet_version`, `status`, `checked_at` | Câu thay thế lúc chạy chỉ lấy gợi ý `DAT` với phiên bản bảng hiện tại (ADR 013 mục 6) |
+| `hint_gate_results` | `problem_id`, `step_code`, `result_kind` (loại kết quả hoặc `chung`), `level`, `text` (câu đã điền tham số của đề), `formula_sheet_version`, `status`, `checked_at` | Câu thay thế lúc chạy chỉ lấy gợi ý `DAT` với phiên bản bảng hiện tại (ADR 013 mục 6) |
 | `documents` | `id`, `class_id`, `title`, `kind`, `source`, `license_status`, `file_ref`, `text_content`, `version`, `uploaded_by`, `created_at` | `license_status = chua_ro` → không làm căn cứ |
 | `document_passages` | `id`, `document_id`, `page`, `char_start`, `char_end`, `text`, `text_folded` | Cho tầng 2 và trích dẫn `[n]` |
 | `formula_sheets` | `id`, `class_id`, `version`, `status` (`NHAP`, `KHOA`), `fingerprint`, `locked_at`, `locked_by` | Mỗi lần khóa = phiên bản mới |
