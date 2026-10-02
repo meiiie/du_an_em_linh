@@ -53,9 +53,9 @@ public class MathServiceClient {
 
     public MathResult call(MathJob job, Map<String, ?> payload) {
         Map<String, @Nullable Object> body = new LinkedHashMap<>(payload);
-        // Sandbox (app/sandbox.py) chờ suất tối đa timeout_s rồi chạy job tối đa timeout_s nữa, nên trần là một nửa
-        // phần hết giờ phía core còn lại sau dự phòng: chờ + chạy vẫn xong trước khi core thôi chờ, không giữ suất
-        // sau khi core đã ngắt. Nơi gọi chỉ được đặt nhỏ hơn trần; giá trị không phải số thì dùng trần.
+        // Sandbox (app/sandbox.py, #104) gói chờ suất + chạy + dọn trong một hạn chót timeout_s, nên trần là hết giờ
+        // phía core trừ dự phòng cho khởi động tiến trình và HTTP: job không giữ suất sau khi core đã thôi chờ.
+        // Nơi gọi chỉ được đặt nhỏ hơn trần; giá trị không phải số thì dùng trần.
         long tran = timeoutSeconds(job);
         body.put("timeout_s", body.get("timeout_s") instanceof Number so ? Math.max(1, Math.min(so.longValue(), tran)) : tran);
         try {
@@ -90,7 +90,7 @@ public class MathServiceClient {
     }
 
     private long timeoutSeconds(MathJob job) {
-        return Math.max(1, timeouts.apply(job).minus(DU_PHONG_SANDBOX).toSeconds() / 2);
+        return Math.max(1, timeouts.apply(job).minus(DU_PHONG_SANDBOX).toSeconds());
     }
 
     /** {@code ly_do} của sandbox có thể chứa {@code str(ex)} lặp lại đầu vào: bỏ ký tự điều khiển, cắt ngắn. */

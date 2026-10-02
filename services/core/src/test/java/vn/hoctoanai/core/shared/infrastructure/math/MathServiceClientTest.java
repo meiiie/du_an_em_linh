@@ -79,13 +79,13 @@ class MathServiceClientTest {
     @Test
     @DisplayName("timeout_s của nơi gọi bị chặn trần dưới hết giờ phía core, không bao giờ vượt")
     void chanTranTimeoutCuaNoiGoi() {
-        // Hết giờ phía core 20 s → trần (20 − 2) / 2 = 9 s: chờ suất ≤ 9 s + chạy ≤ 9 s vẫn xong trước core
+        // Hết giờ phía core 20 s → trần 20 − 2 = 18 s; sandbox gói chờ + chạy + dọn trong 18 s (#104)
         MathServiceClient dai = new MathServiceClient(RestClient.builder(),
             URI.create("http://127.0.0.1:" + server.getAddress().getPort()), Duration.ofSeconds(1), job -> Duration.ofSeconds(20));
         assertThat(nhan(dai.call(MathJob.GRADE, Map.of("timeout_s", 5)))).containsEntry("timeout_s", 5);
-        assertThat(nhan(dai.call(MathJob.GRADE, Map.of("timeout_s", 30)))).containsEntry("timeout_s", 9);
+        assertThat(nhan(dai.call(MathJob.GRADE, Map.of("timeout_s", 30)))).containsEntry("timeout_s", 18);
         assertThat(nhan(dai.call(MathJob.GRADE, Map.of("timeout_s", 0)))).containsEntry("timeout_s", 1);
-        assertThat(nhan(dai.call(MathJob.GRADE, Map.of("timeout_s", "999")))).containsEntry("timeout_s", 9);
+        assertThat(nhan(dai.call(MathJob.GRADE, Map.of("timeout_s", "999")))).containsEntry("timeout_s", 18);
     }
 
     @SuppressWarnings("unchecked")
