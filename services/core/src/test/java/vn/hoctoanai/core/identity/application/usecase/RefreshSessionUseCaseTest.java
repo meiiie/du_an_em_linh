@@ -28,7 +28,7 @@ class RefreshSessionUseCaseTest {
     void setUp() {
         gl = new GiaLapDinhDanh();
         an = gl.themNguoiDung("hs.an@demo.local", "hocsinh123", Role.STUDENT, true);
-        phien = gl.login().execute(new LoginRequest("hs.an@demo.local", "hocsinh123"));
+        phien = gl.login().execute(new LoginRequest("hs.an@demo.local", "hocsinh123"), GiaLapDinhDanh.IP);
     }
 
     @Test
@@ -43,7 +43,7 @@ class RefreshSessionUseCaseTest {
 
     @Test
     void dungLaiTokenDaThuHoiThuHoiMoiPhienCuaNguoiDo() {
-        AuthResponse mayKhac = gl.login().execute(new LoginRequest("hs.an@demo.local", "hocsinh123"));
+        AuthResponse mayKhac = gl.login().execute(new LoginRequest("hs.an@demo.local", "hocsinh123"), GiaLapDinhDanh.IP);
         AuthResponse moi = gl.refresh().execute(new RefreshTokenRequest(phien.refreshToken()));
 
         assertThatThrownBy(() -> gl.refresh().execute(new RefreshTokenRequest(phien.refreshToken())))
@@ -69,7 +69,7 @@ class RefreshSessionUseCaseTest {
 
     @Test
     void phienDaThuHoiTuChoiMaKhongThuHoiPhienKhac() {
-        AuthResponse mayKhac = gl.login().execute(new LoginRequest("hs.an@demo.local", "hocsinh123"));
+        AuthResponse mayKhac = gl.login().execute(new LoginRequest("hs.an@demo.local", "hocsinh123"), GiaLapDinhDanh.IP);
         gl.logout().execute(new RefreshTokenRequest(phien.refreshToken()));
 
         assertThatThrownBy(() -> gl.refresh().execute(new RefreshTokenRequest(phien.refreshToken())))

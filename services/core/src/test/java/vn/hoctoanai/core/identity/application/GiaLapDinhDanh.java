@@ -4,7 +4,10 @@ import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneOffset;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -18,11 +21,13 @@ import vn.hoctoanai.core.identity.application.usecase.LogoutUseCase;
 import vn.hoctoanai.core.identity.application.usecase.RefreshSessionUseCase;
 import vn.hoctoanai.core.identity.domain.model.AuthSession;
 import vn.hoctoanai.core.identity.domain.model.Email;
+import vn.hoctoanai.core.identity.domain.model.LoginAttemptKey;
 import vn.hoctoanai.core.identity.domain.model.RefreshToken;
 import vn.hoctoanai.core.identity.domain.model.Role;
 import vn.hoctoanai.core.identity.domain.model.User;
 import vn.hoctoanai.core.identity.domain.model.UserId;
 import vn.hoctoanai.core.identity.domain.repository.AuthSessionRepository;
+import vn.hoctoanai.core.identity.domain.repository.LoginFailureRepository;
 import vn.hoctoanai.core.identity.domain.repository.RefreshTokenRepository;
 import vn.hoctoanai.core.identity.domain.repository.UserRepository;
 
@@ -30,10 +35,13 @@ import vn.hoctoanai.core.identity.domain.repository.UserRepository;
 public final class GiaLapDinhDanh {
 
     public static final Instant NOW = Instant.parse("2026-10-02T08:00:00Z");
+    /** IP tài liệu (TEST-NET-3, RFC 5737), không phải máy thật. */
+    public static final String IP = "203.0.113.7";
 
     public final Map<UUID, User> users = new HashMap<>();
     public final Map<String, RefreshToken> tokens = new HashMap<>();
     public final Map<UUID, AuthSession> sessions = new HashMap<>();
+    public final List<Map.Entry<String, Instant>> lanSai = new ArrayList<>();
     public final AtomicInteger soLanSoMatKhau = new AtomicInteger();
     public final AtomicInteger soTokenDaSinh = new AtomicInteger();
     public Clock clock = Clock.fixed(NOW, ZoneOffset.UTC);
@@ -126,6 +134,38 @@ public final class GiaLapDinhDanh {
         }
     };
 
+    public final LoginFailureRepository loginFailureRepository = new LoginFailureRepository() {
+        @Override
+        public void lock(LoginAttemptKey key) {}
+
+        @Override
+        public List<Instant> recentSince(LoginAttemptKey key, Instant since, int limit) {
+            return lanSai.stream()
+                .filter(e -> e.getKey().equals(key.hash()) && e.getValue().isAfter(since))
+                .map(Map.Entry::getValue)
+                .sorted(Comparator.reverseOrder())
+                .limit(limit)
+                .toList();
+        }
+
+        @Override
+        public void record(LoginAttemptKey key, Instant at) {
+            lanSai.add(Map.entry(key.hash(), at));
+        }
+
+        @Override
+        public void clear(LoginAttemptKey key) {
+            lanSai.removeIf(e -> e.getKey().equals(key.hash()));
+        }
+
+        @Override
+        public int deleteBefore(Instant cutoff) {
+            int truoc = lanSai.size();
+            lanSai.removeIf(e -> e.getValue().isBefore(cutoff));
+            return truoc - lanSai.size();
+        }
+    };
+
     public final PasswordHasher hasher = new PasswordHasher() {
         @Override
         public String hash(String rawPassword) {
@@ -154,7 +194,7 @@ public final class GiaLapDinhDanh {
     }
 
     public LoginUseCase login() {
-        return new LoginUseCase(userRepository, hasher, sessionIssuer(), clock);
+        return new LoginUseCase(userRepository, hasher, sessionIssuer(), loginFailureRepository, clock);
     }
 
     public RefreshSessionUseCase refresh() {

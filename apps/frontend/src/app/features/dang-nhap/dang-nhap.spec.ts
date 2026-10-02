@@ -195,6 +195,17 @@ describe('DangNhap', () => {
       expect(loi).not.toContain('hocsinh123');
     });
 
+    it('sai quá 5 lần (429) → báo tạm khóa như v0, không đổ cho mật khẩu', async () => {
+      const t = await vaoBuocMatKhau();
+      t.gia.ketQuaDangNhap = () => Promise.reject(new HttpErrorResponse({ status: 429 }));
+      t.gui();
+      await t.on();
+      expect(t.el.querySelector('[data-testid="khoa-dang-nhap"]')?.textContent).toContain('tạm khóa 15 phút');
+      expect(t.el.querySelector('[data-testid="loi-dang-nhap"]')).toBeNull();
+      expect(t.o('password')?.hasAttribute('aria-invalid')).toBe(false);
+      expect(t.o('password')?.getAttribute('aria-describedby')).toBe('loi-dang-nhap');
+    });
+
     it('máy chủ lỗi → câu riêng, không đổ cho mật khẩu', async () => {
       const t = await vaoBuocMatKhau();
       t.gia.ketQuaDangNhap = () => Promise.reject(new HttpErrorResponse({ status: 0 }));

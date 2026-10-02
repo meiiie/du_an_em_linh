@@ -2,6 +2,7 @@ package vn.hoctoanai.core.identity.infrastructure.web;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.then;
 import static org.mockito.Mockito.never;
@@ -24,6 +25,7 @@ import vn.hoctoanai.core.identity.application.dto.AuthResponse;
 import vn.hoctoanai.core.identity.application.dto.RefreshTokenRequest;
 import vn.hoctoanai.core.identity.application.dto.UserDto;
 import vn.hoctoanai.core.identity.application.exception.AuthenticationFailedException;
+import vn.hoctoanai.core.identity.application.exception.LoginLockedException;
 import vn.hoctoanai.core.identity.application.usecase.GetCurrentUserUseCase;
 import vn.hoctoanai.core.identity.application.usecase.LoginUseCase;
 import vn.hoctoanai.core.identity.application.usecase.LogoutUseCase;
@@ -65,7 +67,7 @@ class AuthControllerTest {
 
     @Test
     void dangNhapTraAccessTokenVaDatRefreshTokenVaoCookieHttpOnly() throws Exception {
-        given(login.execute(any())).willReturn(phien("a", "r"));
+        given(login.execute(any(), any())).willReturn(phien("a", "r"));
         MvcTestResult res = mvc.post().uri("/api/auth/login").contentType(MediaType.APPLICATION_JSON)
             .content("{\"email\":\"hs.an@demo.local\",\"password\":\"hocsinh123\"}").exchange();
 
@@ -80,13 +82,29 @@ class AuthControllerTest {
 
     @Test
     void dangNhapSaiTra401ProblemDetail() {
-        given(login.execute(any())).willThrow(new AuthenticationFailedException(AuthenticationFailedException.THONG_BAO));
+        given(login.execute(any(), any())).willThrow(new AuthenticationFailedException(AuthenticationFailedException.THONG_BAO));
         assertThat(mvc.post().uri("/api/auth/login").contentType(MediaType.APPLICATION_JSON)
                 .content("{\"email\":\"hs.an@demo.local\",\"password\":\"sai\"}"))
             .hasStatus(401)
             .bodyJson()
             .extractingPath("$.detail")
             .isEqualTo(AuthenticationFailedException.THONG_BAO);
+    }
+
+    @Test
+    void saiQuaNguongTra429CoRetryAfterVaTruyenIpMayKhach() {
+        given(login.execute(any(), any())).willThrow(new LoginLockedException(Duration.ofMillis(180_500)));
+        MvcTestResult res = mvc.post().uri("/api/auth/login").contentType(MediaType.APPLICATION_JSON)
+            .content("{\"email\":\"hs.an@demo.local\",\"password\":\"hocsinh123\"}")
+            .with(request -> {
+                request.setRemoteAddr("198.51.100.20");
+                return request;
+            })
+            .exchange();
+
+        assertThat(res).hasStatus(429).bodyJson().extractingPath("$.detail").isEqualTo(LoginLockedException.THONG_BAO);
+        assertThat(res.getResponse().getHeader(HttpHeaders.RETRY_AFTER)).as("làm tròn lên giây").isEqualTo("181");
+        then(login).should().execute(any(), eq("198.51.100.20"));
     }
 
     @Test

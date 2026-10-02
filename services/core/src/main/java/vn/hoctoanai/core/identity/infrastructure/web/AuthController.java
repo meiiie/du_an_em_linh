@@ -1,5 +1,6 @@
 package vn.hoctoanai.core.identity.infrastructure.web;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.jspecify.annotations.Nullable;
 import org.springframework.http.HttpHeaders;
@@ -43,9 +44,10 @@ public class AuthController {
         this.cookie = cookie;
     }
 
+    /** IP là {@code getRemoteAddr()}: đã qua {@code server.forward-headers-strategy}, không đọc thẳng X-Forwarded-For. */
     @PostMapping("/login")
-    public ResponseEntity<AccessTokenResponse> login(@Valid @RequestBody LoginRequest request) {
-        return phien(login.execute(request));
+    public ResponseEntity<AccessTokenResponse> login(@Valid @RequestBody LoginRequest request, HttpServletRequest http) {
+        return phien(login.execute(request, http.getRemoteAddr()));
     }
 
     @PostMapping("/refresh")
