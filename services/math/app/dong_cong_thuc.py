@@ -278,8 +278,13 @@ _HUU_HAN_PHU_DINH = re.compile(r"(?:không|chưa)\s+(?:chỉ\s+)?(?:tại\s+)?h�
 _DON_DIEU = re.compile(r"đồng biến|nghịch biến|\btăng\b|\bgiảm\b")
 
 
+_PHU_DINH = re.compile(r"\b(?:không|chưa|chẳng)\b")
+
+
 def _con_thuat_ngu(t):
-    return bool(_THUAT_NGU.search(re.sub(r"[\s,.:;()]+", " ", t)))
+    """Phần còn lại sau khi bỏ các cụm đã nhận diện còn thuật ngữ toán hay từ phủ định (vd «không suy ra»)."""
+    t = re.sub(r"[\s,.:;()]+", " ", t)
+    return bool(_THUAT_NGU.search(t) or _PHU_DINH.search(t))
 
 
 def _ve(t, truoc=None):
@@ -405,7 +410,7 @@ def _cuc_tri_cua_menh_de(cl):
     return out or None
 
 
-_TH_0 = re.compile(r"(?:y\s*'|đạo hàm)\s*(?:=|bằng)\s*0|nghiệm\s+của\s+(?:y\s*'|đạo hàm)")
+_TH_0 = re.compile(r"nghiệm\s+của\s+(?:y\s*'|đạo hàm)(?:\s*(?:=|bằng)\s*0)?|(?:y\s*'|đạo hàm)\s*(?:=|bằng)\s*0")
 _TH_KXD = re.compile(r"(?:y\s*'|đạo hàm)[^.;]{0,20}không xác định")
 _TH_MIEN = re.compile(r"thuộc\s+(?:tập xác định|txđ|d\b)|∈\s*d\b")
 _TH_SAI = re.compile(r"không thuộc|kể cả|hàm số không xác định|ngoài tập xác định")
@@ -418,6 +423,9 @@ def _toi_han_cua_menh_de(cl, co_tieu_de):
         return [("TH_SAI",)]
     if "điểm tới hạn" in cl:
         du = bool(_TH_0.search(cl) and _TH_KXD.search(cl) and _TH_MIEN.search(cl))
+        con = _TH_MIEN.sub(" ", _TH_KXD.sub(" ", _TH_0.sub(" ", cl))).replace("điểm tới hạn", " ")
+        if _con_thuat_ngu(con):  # phủ định («không phải là»), mệnh đề thêm: không đọc trọn
+            return None
         return [("TH", du)]
     if co_tieu_de and _TH_0.search(cl) and _TH_KXD.search(cl):
         t = re.sub(r"(?:y\s*'|đạo hàm)\s*(?:=|bằng)\s*0|(?:y\s*'|đạo hàm)|không xác định|hoặc|hay", " ", cl)
@@ -720,8 +728,16 @@ def kiem_dong_cong_thuc(payload):
             nho.append(_Mau())
         return nho[0]
 
+    cac_dong = payload.get("dong") or []
+    if len(cac_dong) > SO_DONG_TOI_DA:
+        # Không cắt im lặng: core khóa bảng khi mọi dòng trả về DAT, nên dòng không kiểm cũng phải có kết quả.
+        ly_do = "Bảng có %d dòng, quá giới hạn %d dòng mỗi lần kiểm; không dòng nào được kiểm." % (len(cac_dong), SO_DONG_TOI_DA)
+        t = {"trang_thai": "KHONG_KIEM_DUOC", "ly_do": ly_do}
+        return {"dong": [{"id": (d or {}).get("id") if isinstance(d, dict) else None, "loai": "KHONG_BIET",
+                          "tang1": dict(t), "tang2": dict(t)} for d in cac_dong],
+                "bo_qua": bo_qua, "loi": "QUA_NHIEU_DONG"}
     out = []
-    for dong in (payload.get("dong") or [])[:SO_DONG_TOI_DA]:
+    for dong in cac_dong:
         loai, t1, t2 = _mot_dong(dong or {}, doan, mau)
         out.append({"id": (dong or {}).get("id"), "loai": loai, "tang1": t1, "tang2": t2})
     return {"dong": out, "bo_qua": bo_qua}

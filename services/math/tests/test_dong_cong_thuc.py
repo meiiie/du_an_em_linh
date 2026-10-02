@@ -188,6 +188,10 @@ CA = [
     ("D-tich-sai", SAI, r"(uv)' = u'v'", ""),
     ("D-dfrac-prime", DAT, r"\left(\dfrac{u}{v}\right)^{\prime} = \dfrac{u'v-uv'}{v^2}", ""),
     ("D-thuong-doi-dau", SAI, r"(u/v)' = (uv' - u'v) / v^2", ""),
+    # Codex trên #101 (0ea34d5): phủ định còn sót sau các cụm đã nhận diện
+    ("C-khong-suy-ra", KKD, "", "Đạo hàm đổi từ dương sang âm không suy ra cực đại."),
+    ("T-khong-suy-ra", KKD, "", "y' > 0 không suy ra đồng biến."),
+    ("TH-phu-dinh", KKD, "", "Điểm tới hạn không phải là điểm thuộc tập xác định mà tại đó đạo hàm bằng 0 hoặc đạo hàm không xác định."),
 ]
 
 
@@ -232,9 +236,17 @@ def test_dau_vao_doc_khong_bao_gio_DAT(latex):
     assert kq["x"]["tang1"]["trang_thai"] != DAT
 
 
-def test_gioi_han_so_dong():
+def test_lo_qua_gioi_han_moi_dong_khong_kiem_duoc():
+    # Codex trên #101: không cắt im lặng; core khóa khi mọi dòng trả về DAT, nên dòng không kiểm cũng phải có kết quả.
     kq = kiem_dong_cong_thuc({"dong": [{"id": str(i), "latex": "(u+v)' = u' + v'"} for i in range(100)], "tai_lieu": []})
-    assert len(kq["dong"]) == 60
+    assert len(kq["dong"]) == 100 and kq["loi"] == "QUA_NHIEU_DONG"
+    assert {d["tang1"]["trang_thai"] for d in kq["dong"]} == {KKD}
+
+
+def test_doan_phu_dinh_khong_lam_can_cu_tang_2():
+    phu_dinh = {"id": "tl-x", "license_status": "tu_soan", "text": "Đạo hàm đổi từ dương sang âm thì không phải là cực đại."}
+    kq, _ = _chay([("c", "Cực trị", r"+ \to - : \text{cực đại}", "")], [phu_dinh])
+    assert (kq["c"]["tang1"]["trang_thai"], kq["c"]["tang2"]["trang_thai"]) == (DAT, KKD)
 
 
 @pytest.mark.skipif(os.name == "nt", reason="sandbox dùng preexec_fn và resource: chỉ chạy trên Linux (CI)")
