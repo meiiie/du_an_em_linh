@@ -186,6 +186,28 @@ jobs:
         run: docker compose -f compose.v2.yaml up --build --wait --wait-timeout 600
       - name: Khói qua nginx của frontend (→ core → PostgreSQL, math)
         run: bash scripts/khoi-v2.sh
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile --filter frontend
+      - name: Cache trình duyệt Playwright
+        uses: actions/cache@v6
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-v2-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+      - name: Cài Chromium
+        run: pnpm --filter frontend exec playwright install --with-deps chromium
+      - name: E2E v2 qua nginx → core (390 + 1280 px)
+        run: pnpm --filter frontend e2e
+      - name: Kết quả e2e khi lỗi
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: e2e-v2
+          path: apps/frontend/test-results
+          if-no-files-found: ignore
       - name: Log khi lỗi
         if: failure()
         run: docker compose -f compose.v2.yaml logs --no-color

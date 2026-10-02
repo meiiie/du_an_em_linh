@@ -1,11 +1,15 @@
-import { afterNextRender, Component, computed, ElementRef, inject, Injector, signal, viewChild } from '@angular/core';
+import { HttpErrorResponse } from '@angular/common/http';
+import { afterNextRender, Component, computed, ElementRef, inject, Injector, input, signal, viewChild } from '@angular/core';
 import { email, form, FormField, maxLength, required } from '@angular/forms/signals';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
+import { VaiTro } from '../../api/auth';
+import { Phien, trangChuCua } from '../../core/auth/phien';
 import { TEN_SAN_PHAM } from '../../core/san-pham';
 import { BrandMark } from '../../shared/ui/brand-mark';
 import { Button } from '../../shared/ui/button';
 
 type Buoc = 'email' | 'mat-khau';
+type LoiDangNhap = 'sai' | 'may-chu';
 
 // Tài khoản tổng hợp của bản demo (AGENTS.md), không phải học sinh thật.
 const TAI_KHOAN_THU = [
@@ -38,6 +42,16 @@ export class DangNhap {
 
   protected readonly hienLoiEmail = computed(() => this.daGuiEmail() && this.f.email().invalid());
 
+  /** `?returnUrl=` do guard gắn khi chặn một trang cần đăng nhập. */
+  readonly returnUrl = input<string>();
+  protected readonly dangGui = signal(false);
+  protected readonly loi = signal<LoiDangNhap | null>(null);
+  /** Gợi ý mật khẩu thử như v0, chỉ cho tài khoản tổng hợp `@demo.local`. */
+  protected readonly laTaiKhoanThu = computed(() => this.f.email().value().endsWith('@demo.local'));
+
+  private readonly phien = inject(Phien);
+  private readonly router = inject(Router);
+
   private readonly injector = inject(Injector);
   private readonly oEmail = viewChild<ElementRef<HTMLInputElement>>('oEmail');
   private readonly oMatKhau = viewChild<ElementRef<HTMLInputElement>>('oMatKhau');
@@ -65,17 +79,35 @@ export class DangNhap {
     // dù email đổi bằng chip hay gõ tay (ô email gắn thẳng vào model nên không so được với email cũ).
     this.taiKhoan.set({ email: giaTri, matKhau: '' });
     this.daGuiEmail.set(false);
+    this.loi.set(null);
     this.hienMatKhau.set(false);
     this.doiBuoc('mat-khau');
   }
 
   protected quayLai(): void {
+    this.loi.set(null);
     this.doiBuoc('email');
   }
 
-  protected vaoHoc(event: Event): void {
+  protected async vaoHoc(event: Event): Promise<void> {
     event.preventDefault();
-    // Gửi tới services/core: issue #57 (port identity từ LMS ở #55).
+    if (this.dangGui()) return;
+    if (this.f.matKhau().invalid()) {
+      this.oMatKhau()?.nativeElement.focus();
+      return;
+    }
+    this.dangGui.set(true);
+    this.loi.set(null);
+    try {
+      const nguoiDung = await this.phien.dangNhap(this.f.email().value(), this.f.matKhau().value());
+      await this.router.navigateByUrl(duongVe(this.returnUrl(), nguoiDung.role));
+    } catch (e) {
+      // 400 (mật khẩu quá 72 byte) và 401 cùng một câu, như máy chủ: không lộ tài khoản nào có thật.
+      this.loi.set(e instanceof HttpErrorResponse && (e.status === 400 || e.status === 401) ? 'sai' : 'may-chu');
+      this.oMatKhau()?.nativeElement.focus();
+    } finally {
+      this.dangGui.set(false);
+    }
   }
 
   private doiBuoc(buoc: Buoc): void {
@@ -84,4 +116,9 @@ export class DangNhap {
       injector: this.injector,
     });
   }
+}
+
+/** Chỉ nhận đường nội bộ (`/…`, không `//` hay `/\` sang miền khác, không quay lại `/dang-nhap`); còn lại về trang chủ. */
+function duongVe(returnUrl: string | undefined, vaiTro: VaiTro): string {
+  return returnUrl && /^\/(?![/\\])/.test(returnUrl) && !returnUrl.startsWith('/dang-nhap') ? returnUrl : trangChuCua(vaiTro);
 }

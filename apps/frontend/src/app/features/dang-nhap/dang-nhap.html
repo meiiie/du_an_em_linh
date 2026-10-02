@@ -63,6 +63,8 @@
                   placeholder="Nhập mật khẩu"
                   data-testid="password"
                   [type]="hienMatKhau() ? 'text' : 'password'"
+                  [attr.aria-invalid]="loi() === 'sai' || null"
+                  [attr.aria-describedby]="loi() ? 'loi-dang-nhap' : null"
                   [formField]="f.matKhau"
                 />
                 <button
@@ -90,8 +92,21 @@
                 </button>
               </span>
             </label>
+            @if (loi() === 'sai') {
+              <p id="loi-dang-nhap" class="loi-dang-nhap" data-testid="loi-dang-nhap" role="alert">
+                @if (laTaiKhoanThu()) {
+                  Chưa vào được. Học sinh <span class="mono">hocsinh123</span> · giáo viên <span class="mono">giaovien123</span>.
+                } @else {
+                  Chưa vào được. Kiểm tra lại email và mật khẩu.
+                }
+              </p>
+            } @else if (loi() === 'may-chu') {
+              <p id="loi-dang-nhap" class="loi-dang-nhap" data-testid="loi-dang-nhap" role="alert">
+                Chưa kết nối được máy chủ. Thử lại sau ít phút.
+              </p>
+            }
             <div class="nhom-nut">
-              <button appButton size="lg" block type="submit">Vào học</button>
+              <button appButton size="lg" block type="submit" [disabled]="dangGui()" [attr.aria-busy]="dangGui() || null">Vào học</button>
               <button appButton variant="secondary" size="lg" block type="button" (click)="quayLai()">Quay lại</button>
             </div>
           </form>

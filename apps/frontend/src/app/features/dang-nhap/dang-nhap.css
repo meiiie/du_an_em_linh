@@ -122,6 +122,20 @@ h1 {
   border-color: var(--mark);
 }
 
+.loi-dang-nhap {
+  margin: 0;
+  padding: var(--space-3);
+  border-radius: var(--radius);
+  background: var(--wash);
+  color: var(--mark);
+  font-size: 13px;
+  line-height: 20px;
+}
+
+.loi-dang-nhap .mono {
+  font-family: var(--font-mono);
+}
+
 .loi-truong {
   display: block;
   margin-top: var(--space-2);

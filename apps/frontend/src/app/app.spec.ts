@@ -3,32 +3,68 @@ import { Meta, Title } from '@angular/platform-browser';
 import { Router } from '@angular/router';
 import { RouterTestingHarness } from '@angular/router/testing';
 import { appConfig } from './app.config';
+import { Phien } from './core/auth/phien';
+import { AN, GV, PhienGia } from './core/auth/phien.testing';
 
 describe('định tuyến và tiêu đề tab', () => {
-  beforeEach(() => TestBed.configureTestingModule({ providers: appConfig.providers }));
+  let gia: PhienGia;
+  let harness: RouterTestingHarness | undefined;
+
+  beforeEach(() => {
+    gia = new PhienGia();
+    harness = undefined;
+    TestBed.configureTestingModule({ providers: [...appConfig.providers, { provide: Phien, useValue: gia }] });
+  });
+
+  /** Mỗi test chỉ được một harness: tạo lần đầu, các lần sau điều hướng tiếp trên harness đó. */
+  async function den(url: string) {
+    harness ??= await RouterTestingHarness.create();
+    await harness.navigateByUrl(url);
+    return { url: TestBed.inject(Router).url, el: harness.routeNativeElement };
+  }
 
   it('/ chuyển về /dang-nhap', async () => {
-    const harness = await RouterTestingHarness.create();
-    await harness.navigateByUrl('/');
-    expect(TestBed.inject(Router).url).toBe('/dang-nhap');
-    expect(harness.routeNativeElement?.querySelector('h1')?.textContent).toBe('Đăng nhập');
+    const { url, el } = await den('/');
+    expect(url).toBe('/dang-nhap');
+    expect(el?.querySelector('h1')?.textContent).toBe('Đăng nhập');
   });
 
   it('tab theo mẫu «<trang> · Học toán với AI»', async () => {
-    const harness = await RouterTestingHarness.create();
-    await harness.navigateByUrl('/dang-nhap');
+    await den('/dang-nhap');
     expect(TestBed.inject(Title).getTitle()).toBe('Đăng nhập · Học toán với AI');
   });
 
   it('trang đăng nhập không cho lập chỉ mục (như v0)', async () => {
-    const harness = await RouterTestingHarness.create();
-    await harness.navigateByUrl('/dang-nhap');
+    await den('/dang-nhap');
     expect(TestBed.inject(Meta).getTag("name='robots'")?.content).toBe('noindex, nofollow');
   });
 
   it('đường lạ chuyển về /dang-nhap', async () => {
-    const harness = await RouterTestingHarness.create();
-    await harness.navigateByUrl('/khong-co');
-    expect(TestBed.inject(Router).url).toBe('/dang-nhap');
+    expect((await den('/khong-co')).url).toBe('/dang-nhap');
+  });
+
+  it('/hs khi chưa đăng nhập → /dang-nhap kèm returnUrl', async () => {
+    expect((await den('/hs')).url).toBe('/dang-nhap?returnUrl=%2Fhs');
+  });
+
+  it('học sinh: /hs «Chào An», tab «Học»', async () => {
+    gia.dangNhapNhu(AN);
+    const { url, el } = await den('/hs');
+    expect(url).toBe('/hs');
+    expect(el?.querySelector('h1')?.textContent?.trim()).toBe('Chào An');
+    expect(TestBed.inject(Title).getTitle()).toBe('Học · Học toán với AI');
+  });
+
+  it('giáo viên: /gv «Chưa có lớp», tab «Lớp»; vào /hs bị đưa về /gv', async () => {
+    gia.dangNhapNhu(GV);
+    const gv = await den('/gv');
+    expect(gv.el?.querySelector('h1')?.textContent?.trim()).toBe('Chưa có lớp');
+    expect(TestBed.inject(Title).getTitle()).toBe('Lớp · Học toán với AI');
+    expect((await den('/hs')).url).toBe('/gv');
+  });
+
+  it('đã có phiên (khôi phục từ cookie) mà mở /dang-nhap → về trang chủ', async () => {
+    gia.khoiPhucDuoc = AN;
+    expect((await den('/dang-nhap')).url).toBe('/hs');
   });
 });

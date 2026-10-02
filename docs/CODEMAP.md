@@ -90,7 +90,7 @@ Xem `services/math/AGENTS.md`. HTTP mỏng; CAS trong sandbox.
 
 ## apps/frontend
 
-Xem `apps/frontend/AGENTS.md`. Angular 22 zoneless; tính năng ở `src/app/features/`, nguyên thủy UI ở `src/app/shared/ui/`. Có `/dang-nhap` (chưa nối API: #57).
+Xem `apps/frontend/AGENTS.md`. Angular 22 zoneless; tính năng ở `src/app/features/`, nguyên thủy UI ở `src/app/shared/ui/`. Có `/dang-nhap` gọi `services/core`, khung `/hs`, `/gv` có guard vai trò; phiên ở `src/app/core/auth/` (#57).
 
 ## services/core
 
