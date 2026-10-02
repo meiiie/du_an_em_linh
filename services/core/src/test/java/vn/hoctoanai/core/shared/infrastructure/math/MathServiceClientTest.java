@@ -79,13 +79,13 @@ class MathServiceClientTest {
     @Test
     @DisplayName("timeout_s của nơi gọi bị chặn trần dưới hết giờ phía core, không bao giờ vượt")
     void chanTranTimeoutCuaNoiGoi() {
-        // Hết giờ phía core 10 s → trần 8 s (sandbox dừng trước core 2 s)
+        // Hết giờ phía core 20 s → trần (20 − 2) / 2 = 9 s: chờ suất ≤ 9 s + chạy ≤ 9 s vẫn xong trước core
         MathServiceClient dai = new MathServiceClient(RestClient.builder(),
-            URI.create("http://127.0.0.1:" + server.getAddress().getPort()), Duration.ofSeconds(1), job -> Duration.ofSeconds(10));
+            URI.create("http://127.0.0.1:" + server.getAddress().getPort()), Duration.ofSeconds(1), job -> Duration.ofSeconds(20));
         assertThat(nhan(dai.call(MathJob.GRADE, Map.of("timeout_s", 5)))).containsEntry("timeout_s", 5);
-        assertThat(nhan(dai.call(MathJob.GRADE, Map.of("timeout_s", 30)))).containsEntry("timeout_s", 8);
+        assertThat(nhan(dai.call(MathJob.GRADE, Map.of("timeout_s", 30)))).containsEntry("timeout_s", 9);
         assertThat(nhan(dai.call(MathJob.GRADE, Map.of("timeout_s", 0)))).containsEntry("timeout_s", 1);
-        assertThat(nhan(dai.call(MathJob.GRADE, Map.of("timeout_s", "999")))).containsEntry("timeout_s", 8);
+        assertThat(nhan(dai.call(MathJob.GRADE, Map.of("timeout_s", "999")))).containsEntry("timeout_s", 9);
     }
 
     @SuppressWarnings("unchecked")
@@ -166,6 +166,15 @@ class MathServiceClientTest {
         MathServiceClient tat = new MathServiceClient(RestClient.builder(), URI.create("http://127.0.0.1:" + cong),
             Duration.ofSeconds(1), job -> HET_GIO);
         assertThatFailed(tat.call(MathJob.GRADE, Map.of()), MathResult.Reason.UNAVAILABLE);
+    }
+
+    @Test
+    @DisplayName("Chi tiết lỗi của sandbox được làm sạch: không ký tự điều khiển, tối đa 200 ký tự")
+    void lamSachChiTiet() {
+        String ban = "ValueError: invalid literal for int() with base 10: 'abc\n\u0000xyz'\r\n" + "x".repeat(500);
+        String sach = MathServiceClient.sanitize(ban);
+        assertThat(sach).doesNotContain("\n", "\r", "\u0000").hasSizeLessThanOrEqualTo(201).endsWith("…");
+        assertThat(MathServiceClient.sanitize("Job SymPy vượt quá 20s và đã bị dừng.")).isEqualTo("Job SymPy vượt quá 20s và đã bị dừng.");
     }
 
     @Test

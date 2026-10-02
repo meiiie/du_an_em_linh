@@ -36,6 +36,7 @@ public class MathServiceClient {
     private static final Set<String> KHOA_PHONG_BI_LOI = Set.of("ket_qua", "loai_ket_qua", "trang_thai", "ly_do", "cho_phep");
     /** Sandbox dừng job trước hết giờ phía core, để core nhận lý do thay vì chỉ thấy hết giờ. */
     private static final Duration DU_PHONG_SANDBOX = Duration.ofSeconds(2);
+    private static final int DO_DAI_CHI_TIET_TOI_DA = 200;
 
     private final Map<MathJob, RestClient> clients = new EnumMap<>(MathJob.class);
     private final Function<MathJob, Duration> timeouts;
@@ -52,8 +53,9 @@ public class MathServiceClient {
 
     public MathResult call(MathJob job, Map<String, ?> payload) {
         Map<String, @Nullable Object> body = new LinkedHashMap<>(payload);
-        // timeout_s của sandbox luôn nhỏ hơn hết giờ phía core: job không chạy tiếp, giữ suất của dịch vụ toán,
-        // sau khi core đã thôi chờ. Nơi gọi chỉ được đặt nhỏ hơn trần; giá trị không phải số thì dùng trần.
+        // Sandbox (app/sandbox.py) chờ suất tối đa timeout_s rồi chạy job tối đa timeout_s nữa, nên trần là một nửa
+        // phần hết giờ phía core còn lại sau dự phòng: chờ + chạy vẫn xong trước khi core thôi chờ, không giữ suất
+        // sau khi core đã ngắt. Nơi gọi chỉ được đặt nhỏ hơn trần; giá trị không phải số thì dùng trần.
         long tran = timeoutSeconds(job);
         body.put("timeout_s", body.get("timeout_s") instanceof Number so ? Math.max(1, Math.min(so.longValue(), tran)) : tran);
         try {
@@ -73,7 +75,7 @@ public class MathServiceClient {
                 return failed(job, MathResult.Reason.BAD_RESPONSE, "Thân phản hồi rỗng.");
             }
             if (isErrorEnvelope(response)) {
-                return failed(job, MathResult.Reason.JOB_FAILED, String.valueOf(response.get("ly_do")));
+                return failed(job, MathResult.Reason.JOB_FAILED, sanitize(String.valueOf(response.get("ly_do"))));
             }
             return new MathResult.Ok(response);
         } catch (RestClientResponseException ex) {
@@ -88,7 +90,13 @@ public class MathServiceClient {
     }
 
     private long timeoutSeconds(MathJob job) {
-        return Math.max(1, timeouts.apply(job).minus(DU_PHONG_SANDBOX).toSeconds());
+        return Math.max(1, timeouts.apply(job).minus(DU_PHONG_SANDBOX).toSeconds() / 2);
+    }
+
+    /** {@code ly_do} của sandbox có thể chứa {@code str(ex)} lặp lại đầu vào: bỏ ký tự điều khiển, cắt ngắn. */
+    static String sanitize(String text) {
+        String sach = text.replaceAll("\\p{Cntrl}+", " ").replaceAll("\\s+", " ").strip();
+        return sach.length() <= DO_DAI_CHI_TIET_TOI_DA ? sach : sach.substring(0, DO_DAI_CHI_TIET_TOI_DA) + "…";
     }
 
     static boolean isErrorEnvelope(Map<String, ?> response) {
@@ -107,7 +115,8 @@ public class MathServiceClient {
     }
 
     private static MathResult.Failed failed(MathJob job, MathResult.Reason reason, String detail) {
-        LOG.warn("Dịch vụ toán {} lỗi: {} ({})", job, reason, detail);
+        // Chỉ ghi job và lý do chuẩn hóa; chi tiết có thể lặp lại dữ liệu đầu vào nên không vào log.
+        LOG.warn("Dịch vụ toán {} lỗi: {}", job, reason);
         return new MathResult.Failed(reason, detail);
     }
 }

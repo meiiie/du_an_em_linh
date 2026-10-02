@@ -23,7 +23,7 @@ public sealed interface MathResult permits MathResult.Ok, MathResult.Failed {
         }
     }
 
-    /** Thất bại; {@code detail} để ghi log và hiện cho giáo viên, không chứa payload. */
+    /** Thất bại; {@code detail} là lý do ngắn đã làm sạch (không ký tự điều khiển, tối đa 200 ký tự), không ghi vào log. */
     record Failed(Reason reason, String detail) implements MathResult {}
 
     enum Reason {
