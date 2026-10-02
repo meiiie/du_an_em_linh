@@ -20,8 +20,9 @@ public record ContentReview(UUID id, UUID runId, String contentHash, UUID review
         Objects.requireNonNull(note, "note");
         Objects.requireNonNull(at, "at");
         Kiem.sha256(contentHash, "Dấu vân tay nội dung");
-        note = note.strip();
+        note = note.replace("\r\n", "\n").strip();
         Kiem.khongTrong(note, "Ghi chú duyệt");
+        Kiem.hopLeUtf16(note, "Ghi chú duyệt");
         Kiem.toiDa(note, GHI_CHU_DAI_TOI_DA, "Ghi chú duyệt");
         // Ghi chú nhiều dòng thì được; ký tự điều khiển khác và ký tự định dạng (vd U+202E đảo chiều) thì không.
         if (note.codePoints().anyMatch(cp -> cp != '\n' && cp != '\t'

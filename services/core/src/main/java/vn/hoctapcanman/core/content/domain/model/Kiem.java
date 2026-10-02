@@ -40,9 +40,23 @@ final class Kiem {
         return hex;
     }
 
+    /** Trống khi chỉ gồm khoảng trắng, kể cả khoảng trắng không ngắt (U+00A0, U+2007, U+202F) mà {@code isBlank} bỏ sót. */
     static String khongTrong(String chu, String ten) {
-        if (chu.isBlank()) {
+        if (chu.codePoints().allMatch(cp -> Character.isWhitespace(cp) || Character.isSpaceChar(cp))) {
             throw new IllegalArgumentException(ten + " trống");
+        }
+        return chu;
+    }
+
+    /** UTF-16 hợp lệ, không có surrogate lẻ: PostgreSQL UTF-8 không lưu được, và băm UTF-8 sẽ gộp chúng thành «?». */
+    static String hopLeUtf16(String chu, String ten) {
+        for (int i = 0; i < chu.length(); i++) {
+            char c = chu.charAt(i);
+            if (Character.isHighSurrogate(c) && i + 1 < chu.length() && Character.isLowSurrogate(chu.charAt(i + 1))) {
+                i++;
+            } else if (Character.isSurrogate(c)) {
+                throw new IllegalArgumentException(ten + " có ký tự UTF-16 lẻ");
+            }
         }
         return chu;
     }

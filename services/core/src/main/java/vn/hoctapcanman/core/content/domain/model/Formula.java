@@ -29,16 +29,19 @@ public record Formula(
         Objects.requireNonNull(title, "title");
         Objects.requireNonNull(latex, "latex");
         Objects.requireNonNull(statement, "statement");
-        if (ordinal < 1) {
-            throw new IllegalArgumentException("Thứ tự dòng phải từ 1");
+        if (ordinal < 1 || ordinal > Short.MAX_VALUE) {
+            throw new IllegalArgumentException("Thứ tự dòng ngoài 1–32767");
         }
         Kiem.ma(code, 32, "dòng công thức");
         Kiem.maNeuCo(skillCode, 32, "kỹ năng");
-        Kiem.toiDa(Kiem.khongTrong(title, "Tiêu đề dòng"), 200, "Tiêu đề dòng");
-        Kiem.khongTrong(latex, "LaTeX của dòng");
-        Kiem.khongTrong(statement, "Lời phát biểu của dòng");
+        Kiem.toiDa(Kiem.hopLeUtf16(Kiem.khongTrong(title, "Tiêu đề dòng"), "Tiêu đề dòng"), 200, "Tiêu đề dòng");
+        Kiem.hopLeUtf16(Kiem.khongTrong(latex, "LaTeX của dòng"), "LaTeX của dòng");
+        Kiem.hopLeUtf16(Kiem.khongTrong(statement, "Lời phát biểu của dòng"), "Lời phát biểu của dòng");
         if ((tier1Status != null && !tier1Status.isMachineVerdict()) || (tier2Status != null && !tier2Status.isMachineVerdict())) {
             throw new IllegalArgumentException("Dòng công thức không duyệt riêng (ADR 013)");
+        }
+        if ((tier1Status != null || tier2Status != null) && kind == null) {
+            throw new IllegalArgumentException("Dòng đã kiểm phải có loại dòng");
         }
         if (tier2Status == CheckStatus.DAT && citationPassageId == null) {
             throw new IllegalArgumentException("Tầng 2 DAT phải có đoạn trích dẫn");

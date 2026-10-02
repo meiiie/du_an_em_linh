@@ -15,14 +15,25 @@ class ContentReviewTest {
     @Test
     void ghiChuBatBuocCatKhoangTrangChoNhieuDong() {
         assertThat(duyet("  Đã xem.\nĐúng với bảng.  ").note()).isEqualTo("Đã xem.\nĐúng với bảng.");
+        // Xuống dòng kiểu Windows (CRLF) thành \n, không bị coi là ký tự điều khiển.
+        assertThat(duyet("Đã xem.\r\nĐúng.").note()).isEqualTo("Đã xem.\nĐúng.");
         assertThatThrownBy(() -> duyet("   ")).isInstanceOf(IllegalArgumentException.class);
         assertThatThrownBy(() -> duyet("x".repeat(1001))).isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
-    void ghiChuKhongCoKyTuDieuKhienHayDinhDang() {
-        // U+202E đảo chiều (định dạng), NUL và ESC (điều khiển)
-        for (char kyTu : new char[] {(char) 0x202E, (char) 0x00, (char) 0x1B}) {
+    void ghiChuChiCoKhoangTrangKhongNgatVanLaTrong() {
+        // U+00A0, U+2007, U+202F: isBlank() của Java bỏ sót.
+        for (char kyTu : new char[] {(char) 0x00A0, (char) 0x2007, (char) 0x202F}) {
+            String ghiChu = String.valueOf(kyTu).repeat(3);
+            assertThatThrownBy(() -> duyet(ghiChu)).as("U+%04X", (int) kyTu).isInstanceOf(IllegalArgumentException.class);
+        }
+    }
+
+    @Test
+    void ghiChuKhongCoKyTuDieuKhienDinhDangHaySurrogateLe() {
+        // U+202E đảo chiều (định dạng), NUL và ESC (điều khiển), CR đứng riêng, surrogate lẻ
+        for (char kyTu : new char[] {(char) 0x202E, (char) 0x00, (char) 0x1B, (char) 0x0D, (char) 0xD800}) {
             assertThatThrownBy(() -> duyet("Đúng" + kyTu + "rồi")).as("U+%04X", (int) kyTu).isInstanceOf(IllegalArgumentException.class);
         }
     }

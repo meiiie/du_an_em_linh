@@ -61,6 +61,10 @@ public record FormulaSheet(
             if (rows.isEmpty() || !rows.stream().allMatch(Formula::passes)) {
                 throw new IllegalArgumentException("Bảng khóa phải có dòng và mọi dòng DAT ở tầng 1 và tầng 2");
             }
+            // Bảng nạp lại từ CSDL: dòng bị sửa sau khi khóa thì dấu vân tay lệch, không nhận.
+            if (!fingerprint.equals(fingerprintOf(rows))) {
+                throw new IllegalArgumentException("Dấu vân tay của bảng khóa không khớp các dòng");
+            }
         } else if (fingerprint != null || lockedAt != null || lockedBy != null) {
             throw new IllegalArgumentException("Bảng nháp không có dấu vân tay hay người khóa");
         }
@@ -72,12 +76,17 @@ public record FormulaSheet(
     }
 
     /**
-     * Ghi kết quả {@code kiem-dong-cong-thuc} vào bảng nháp, theo mã dòng. Dòng không có kết quả thì kết quả cũ bị bỏ:
-     * dòng đó chưa kiểm, nên bảng chưa khóa được.
+     * Ghi kết quả {@code kiem-dong-cong-thuc} vào bảng nháp, theo mã dòng. Kết quả chỉ áp khi dấu vân tay của dòng đã kiểm
+     * trùng nội dung dòng hiện tại. Dòng không có kết quả, hay đã đổi sau khi kiểm, thì kết quả cũ bị bỏ: dòng đó chưa
+     * kiểm, nên bảng chưa khóa được.
      */
     public FormulaSheet withCheckResults(Map<String, FormulaCheck> results) {
         requireDraft();
-        List<Formula> dongMoi = rows.stream().map(dong -> dong.withCheck(results.get(dong.code()))).toList();
+        List<Formula> dongMoi = rows.stream().map(dong -> {
+            FormulaCheck kq = results.get(dong.code());
+            boolean dungDong = kq != null && kq.rowFingerprint().equals(fingerprintOf(List.of(dong)));
+            return dong.withCheck(dungDong ? kq : null);
+        }).toList();
         return new FormulaSheet(id, classId, version, status, note, null, null, null, createdAt, dongMoi);
     }
 
@@ -119,8 +128,8 @@ public record FormulaSheet(
 
     /**
      * SHA-256 (hex) của các dòng theo thứ tự: mã, kỹ năng, tiêu đề, LaTeX, lời phát biểu. Mỗi trường mang độ dài đứng
-     * trước, nên hai bảng khác nhau không bao giờ cho cùng một chuỗi, dù chữ chứa ký tự gì. Không gồm kết quả kiểm: cùng
-     * nội dung thì cùng dấu vân tay.
+     * trước, nên hai bảng khác nhau không bao giờ cho cùng một chuỗi (chữ đã kiểm UTF-16 hợp lệ ở {@link Formula}). Không
+     * gồm kết quả kiểm: cùng nội dung thì cùng dấu vân tay. Số thứ tự không vào dấu vân tay, chỉ thứ tự các dòng.
      */
     public static String fingerprintOf(List<Formula> rows) {
         StringBuilder chuoi = new StringBuilder();

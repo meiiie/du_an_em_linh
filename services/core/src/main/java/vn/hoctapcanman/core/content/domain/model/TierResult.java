@@ -36,4 +36,10 @@ public record TierResult(
     public static TierResult of(int tier, CheckStatus status) {
         return new TierResult(tier, status, null, null, null, null, null, null, null);
     }
+
+    /** Không in căn cứ (raw, lý do, trích dẫn, bước sai) vào log: tầng 1 là kết quả chấm lời giải chuẩn (FR-006). */
+    @Override
+    public String toString() {
+        return "TierResult[tier=" + tier + ", status=" + status + "]";
+    }
 }

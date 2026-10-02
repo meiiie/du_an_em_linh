@@ -143,7 +143,8 @@ CREATE TABLE document_passages (
 );
 
 -- Bảng công thức của lớp, có phiên bản. Mỗi lần khóa là một phiên bản; bảng đang dùng là bảng KHOA mới nhất của lớp.
--- Sửa bảng đã khóa = tạo bảng nháp phiên bản mới; mỗi lớp nhiều nhất một bảng nháp.
+-- Sửa bảng đã khóa = tạo bảng nháp phiên bản mới; mỗi lớp nhiều nhất một bảng nháp. Bảng KHOA không đổi được nữa
+-- (trigger cuối tệp), nên lưu một bảng khóa theo thứ tự: ghi bảng NHAP và các dòng, rồi đổi sang KHOA.
 CREATE TABLE formula_sheets (
     id          uuid         PRIMARY KEY,
     class_id    uuid         NOT NULL REFERENCES classes (id) ON DELETE CASCADE,
@@ -157,6 +158,7 @@ CREATE TABLE formula_sheets (
     locked_by   uuid         REFERENCES users (id) ON DELETE SET NULL,
     created_at  timestamptz  NOT NULL,
     UNIQUE (class_id, version),
+    UNIQUE (id, class_id),
     CHECK ((status = 'KHOA') = (locked_at IS NOT NULL AND fingerprint IS NOT NULL)),
     CHECK (locked_by IS NULL OR status = 'KHOA')
 );
@@ -184,8 +186,20 @@ CREATE TABLE formulas (
     citation_passage_id uuid         REFERENCES document_passages (id),
     UNIQUE (formula_sheet_id, ordinal),
     UNIQUE (formula_sheet_id, code),
-    CHECK (tier2_status IS DISTINCT FROM 'DAT' OR citation_passage_id IS NOT NULL)
+    CHECK (tier2_status IS DISTINCT FROM 'DAT' OR citation_passage_id IS NOT NULL),
+    CHECK ((tier1_status IS NULL AND tier2_status IS NULL) OR kind IS NOT NULL)
 );
+
+-- Đoạn trích thêm của tầng 2 (trich_dan_them): dòng định lí cần một đoạn cho mỗi mệnh đề (contracts/math-v1.md). Khóa
+-- ngoại giữ tài liệu không bị xóa khi còn là căn cứ của một dòng, như trích dẫn chính. Đoạn phải thuộc tài liệu cùng lớp
+-- với bảng (trigger cuối tệp).
+CREATE TABLE formula_citations (
+    formula_id uuid NOT NULL REFERENCES formulas (id) ON DELETE CASCADE,
+    passage_id uuid NOT NULL REFERENCES document_passages (id),
+    PRIMARY KEY (formula_id, passage_id)
+);
+
+CREATE INDEX formula_citations_passage_idx ON formula_citations (passage_id);
 
 -- Câu gợi ý đã điền tham số của đề, qua cổng với bảng công thức của lớp. Lúc chạy chỉ dùng câu DAT với phiên bản bảng
 -- hiện tại (ADR 013 mục 6). result_kind: loại kết quả, hoặc «chung».
@@ -204,19 +218,29 @@ CREATE TABLE hint_gate_results (
 
 -- Một lượt kiểm 3 tầng, gắn lớp và đúng bảng đã dùng (tầng 2 và 3 dùng tài liệu, bảng của lớp). subject_id là bài
 -- (PROBLEM) hoặc lượt gia sư (TUTOR_FORMULA), nên không có khóa ngoại. Đổi bảng công thức thì lượt cũ stale = true.
+-- Trạng thái phát hành luôn suy từ trạng thái tổng: lượt bài SAI → BI_CHAN, KHONG_KIEM_DUOC → CHO_GIAO_VIEN_DUYET,
+-- DAT / GV_DUYET → DA_PHAT_HANH; lượt công thức gia sư không phát hành và không duyệt riêng (ADR 013). Trạng thái tổng
+-- khớp các tầng do domain kiểm (VerificationRun), vì các tầng ở bảng khác.
 CREATE TABLE verification_runs (
     id               uuid        PRIMARY KEY,
     class_id         uuid        NOT NULL REFERENCES classes (id) ON DELETE CASCADE,
     subject_kind     varchar(16) NOT NULL CHECK (subject_kind IN ('PROBLEM', 'TUTOR_FORMULA')),
     subject_id       uuid        NOT NULL,
     content_hash     varchar(64) NOT NULL CHECK (content_hash ~ '^[0-9a-f]{64}$'),
-    -- Trống khi lớp chưa có bảng khóa: tầng 3 khi đó KHONG_KIEM_DUOC.
-    formula_sheet_id uuid        REFERENCES formula_sheets (id),
+    -- Trống khi lớp chưa có bảng khóa: tầng 3 khi đó KHONG_KIEM_DUOC. Bảng phải của đúng lớp (khóa ngoại hai cột).
+    formula_sheet_id uuid,
     overall_status   varchar(16) NOT NULL CHECK (overall_status IN ('DAT', 'SAI', 'KHONG_KIEM_DUOC', 'GV_DUYET')),
     publish_status   varchar(20) CHECK (publish_status IN ('DA_PHAT_HANH', 'BI_CHAN', 'CHO_GIAO_VIEN_DUYET')),
     stale            boolean     NOT NULL DEFAULT false,
     created_at       timestamptz NOT NULL,
-    CHECK (subject_kind <> 'PROBLEM' OR publish_status IS NOT NULL)
+    CHECK (CASE subject_kind
+        WHEN 'PROBLEM' THEN publish_status IS NOT DISTINCT FROM (CASE overall_status
+            WHEN 'SAI' THEN 'BI_CHAN' WHEN 'KHONG_KIEM_DUOC' THEN 'CHO_GIAO_VIEN_DUYET' ELSE 'DA_PHAT_HANH' END)
+        ELSE publish_status IS NULL AND overall_status <> 'GV_DUYET' END),
+    FOREIGN KEY (formula_sheet_id, class_id) REFERENCES formula_sheets (id, class_id),
+    -- Cho khóa ngoại của problem_releases và content_reviews.
+    UNIQUE (id, class_id, subject_id, publish_status),
+    UNIQUE (id, content_hash)
 );
 
 CREATE INDEX verification_runs_subject_idx ON verification_runs (class_id, subject_kind, subject_id, created_at DESC);
@@ -237,30 +261,94 @@ CREATE TABLE verification_tier_results (
     PRIMARY KEY (run_id, tier)
 );
 
--- Trạng thái phát hành của bài cho từng lớp; học sinh chỉ thấy bài DA_PHAT_HANH của lớp mình. Ngoài NHAP, trạng thái
--- luôn ứng với một lượt kiểm (run_id).
+-- Trạng thái phát hành của bài cho từng lớp; học sinh chỉ thấy bài DA_PHAT_HANH của lớp mình. NHAP không gắn lượt kiểm;
+-- trạng thái khác luôn bằng trạng thái phát hành của một lượt kiểm bài của đúng lớp và bài (khóa ngoại bốn cột; lượt
+-- công thức gia sư có publish_status trống nên không khớp). Giáo viên duyệt lượt đó thì trạng thái theo sang
+-- DA_PHAT_HANH (ON UPDATE CASCADE).
 CREATE TABLE problem_releases (
     class_id   uuid        NOT NULL REFERENCES classes (id) ON DELETE CASCADE,
     problem_id uuid        NOT NULL REFERENCES problems (id) ON DELETE CASCADE,
     status     varchar(20) NOT NULL CHECK (status IN ('NHAP', 'DA_PHAT_HANH', 'BI_CHAN', 'CHO_GIAO_VIEN_DUYET')),
-    run_id     uuid        REFERENCES verification_runs (id),
+    run_id     uuid,
     updated_at timestamptz NOT NULL,
     PRIMARY KEY (class_id, problem_id),
-    CHECK (status = 'NHAP' OR run_id IS NOT NULL)
+    CHECK ((status = 'NHAP') = (run_id IS NULL)),
+    FOREIGN KEY (run_id, class_id, problem_id, status)
+        REFERENCES verification_runs (id, class_id, subject_id, publish_status) ON UPDATE CASCADE
 );
 
 CREATE INDEX problem_releases_class_status_idx ON problem_releases (class_id, status);
+CREATE INDEX problem_releases_problem_idx ON problem_releases (problem_id);
 
 -- Giáo viên duyệt bài KHONG_KIEM_DUOC (FR-005): bắt buộc ghi chú; chỉ cho lượt kiểm bài (công thức trong lời gia sư
--- không duyệt riêng, ADR 013). Ai, lúc nào, vì sao, trên đúng nội dung nào (content_hash).
+-- không duyệt riêng, ADR 013). Ai, lúc nào, vì sao, trên đúng nội dung của lượt (content_hash phải bằng hash của lượt).
+-- Một lượt duyệt một lần. Bản ghi duyệt là nhật ký: lượt (và lớp) có bản ghi duyệt thì không xóa được; hạn giữ theo
+-- ADR 012 (#60).
 CREATE TABLE content_reviews (
     id           uuid          PRIMARY KEY,
-    run_id       uuid          NOT NULL REFERENCES verification_runs (id) ON DELETE CASCADE,
+    run_id       uuid          NOT NULL UNIQUE,
     content_hash varchar(64)   NOT NULL CHECK (content_hash ~ '^[0-9a-f]{64}$'),
     reviewer_id  uuid          NOT NULL REFERENCES users (id),
     decision     varchar(8)    NOT NULL CHECK (decision = 'GV_DUYET'),
     note         varchar(1000) NOT NULL CHECK (btrim(note) <> ''),
-    at           timestamptz   NOT NULL
+    at           timestamptz   NOT NULL,
+    FOREIGN KEY (run_id, content_hash) REFERENCES verification_runs (id, content_hash) ON DELETE RESTRICT
 );
 
-CREATE INDEX content_reviews_run_idx ON content_reviews (run_id);
+-- ---- Bất biến chéo bảng ---------------------------------------------------------------------------------------------
+
+-- Bảng KHOA không đổi được nữa: không thêm, sửa dòng hay trích dẫn của nó, không mở khóa, không đổi dấu vân tay. Chỉ
+-- locked_by được về trống (người khóa bị xóa, ON DELETE SET NULL). Xóa vẫn được, để xóa lớp xóa dây chuyền.
+CREATE FUNCTION formula_sheets_khoa_bat_bien() RETURNS trigger LANGUAGE plpgsql AS $$
+BEGIN
+    IF OLD.status = 'KHOA' AND (NEW.status, NEW.class_id, NEW.version, NEW.note, NEW.fingerprint, NEW.locked_at)
+            IS DISTINCT FROM (OLD.status, OLD.class_id, OLD.version, OLD.note, OLD.fingerprint, OLD.locked_at) THEN
+        RAISE EXCEPTION 'Bảng công thức % đã khóa, không sửa được', OLD.id USING ERRCODE = 'check_violation';
+    END IF;
+    RETURN NEW;
+END $$;
+
+CREATE TRIGGER formula_sheets_khoa_bat_bien BEFORE UPDATE ON formula_sheets
+    FOR EACH ROW EXECUTE FUNCTION formula_sheets_khoa_bat_bien();
+
+-- Dòng: bảng của nó chưa khóa; đoạn trích chính thuộc tài liệu cùng lớp với bảng.
+CREATE FUNCTION formulas_kiem_bang() RETURNS trigger LANGUAGE plpgsql AS $$
+DECLARE
+    lop uuid;
+BEGIN
+    IF TG_OP = 'UPDATE' AND (SELECT status FROM formula_sheets WHERE id = OLD.formula_sheet_id) = 'KHOA' THEN
+        RAISE EXCEPTION 'Dòng % thuộc bảng đã khóa', OLD.id USING ERRCODE = 'check_violation';
+    END IF;
+    SELECT class_id INTO lop FROM formula_sheets WHERE id = NEW.formula_sheet_id AND status = 'NHAP';
+    IF NOT FOUND THEN
+        RAISE EXCEPTION 'Chỉ thêm hay sửa dòng của bảng nháp' USING ERRCODE = 'check_violation';
+    END IF;
+    IF NEW.citation_passage_id IS NOT NULL AND lop IS DISTINCT FROM (SELECT d.class_id FROM document_passages p
+            JOIN documents d ON d.id = p.document_id WHERE p.id = NEW.citation_passage_id) THEN
+        RAISE EXCEPTION 'Đoạn trích dẫn không thuộc tài liệu của lớp' USING ERRCODE = 'check_violation';
+    END IF;
+    RETURN NEW;
+END $$;
+
+CREATE TRIGGER formulas_kiem_bang BEFORE INSERT OR UPDATE ON formulas
+    FOR EACH ROW EXECUTE FUNCTION formulas_kiem_bang();
+
+-- Trích dẫn thêm: dòng thuộc bảng nháp; đoạn thuộc tài liệu cùng lớp với bảng.
+CREATE FUNCTION formula_citations_kiem_bang() RETURNS trigger LANGUAGE plpgsql AS $$
+DECLARE
+    lop uuid;
+BEGIN
+    SELECT s.class_id INTO lop FROM formulas f JOIN formula_sheets s ON s.id = f.formula_sheet_id
+        WHERE f.id = NEW.formula_id AND s.status = 'NHAP';
+    IF NOT FOUND THEN
+        RAISE EXCEPTION 'Chỉ thêm trích dẫn cho dòng của bảng nháp' USING ERRCODE = 'check_violation';
+    END IF;
+    IF lop IS DISTINCT FROM (SELECT d.class_id FROM document_passages p JOIN documents d ON d.id = p.document_id
+            WHERE p.id = NEW.passage_id) THEN
+        RAISE EXCEPTION 'Đoạn trích dẫn không thuộc tài liệu của lớp' USING ERRCODE = 'check_violation';
+    END IF;
+    RETURN NEW;
+END $$;
+
+CREATE TRIGGER formula_citations_kiem_bang BEFORE INSERT OR UPDATE ON formula_citations
+    FOR EACH ROW EXECUTE FUNCTION formula_citations_kiem_bang();

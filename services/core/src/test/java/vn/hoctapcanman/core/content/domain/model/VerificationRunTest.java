@@ -7,7 +7,13 @@ import static vn.hoctapcanman.core.content.domain.model.CheckStatus.GV_DUYET;
 import static vn.hoctapcanman.core.content.domain.model.CheckStatus.KHONG_KIEM_DUOC;
 import static vn.hoctapcanman.core.content.domain.model.CheckStatus.SAI;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
@@ -21,29 +27,76 @@ class VerificationRunTest {
         });
         // SAI thắng KHONG_KIEM_DUOC: bài có tầng sai không bao giờ chờ duyệt.
         assertThat(Mau.luot(DAT, KHONG_KIEM_DUOC, SAI).publishStatus()).isEqualTo(ReleaseStatus.BI_CHAN);
-        assertThat(Mau.luot(SAI, DAT, DAT).overallStatus()).isEqualTo(SAI);
-        assertThat(Mau.luot(DAT, DAT, KHONG_KIEM_DUOC)).satisfies(r -> {
-            assertThat(r.overallStatus()).isEqualTo(KHONG_KIEM_DUOC);
-            assertThat(r.publishStatus()).isEqualTo(ReleaseStatus.CHO_GIAO_VIEN_DUYET);
-        });
+        assertThat(Mau.luot(DAT, DAT, KHONG_KIEM_DUOC).publishStatus()).isEqualTo(ReleaseStatus.CHO_GIAO_VIEN_DUYET);
+    }
+
+    /**
+     * Cả 64 tổ hợp (mỗi tầng DAT, SAI, KHONG_KIEM_DUOC hay thiếu) so với tệp vàng xuất từ {@code cong_phat_hanh} của v0
+     * ({@code specs/001-lat-cat-doc/doi-chieu/cong-phat-hanh-v0.py}). Đủ ba tầng: trùng v0. Thiếu tầng: v0 phát hành khi
+     * các tầng có mặt đều DAT, còn core giữ ở chờ duyệt (và không cho duyệt, {@link ApprovalRefusal#INCOMPLETE}).
+     */
+    @Test
+    void caSauMuoiTuToHopSoVoiTepVangCuaV0() throws IOException {
+        List<String[]> dong = new ArrayList<>();
+        try (BufferedReader doc = new BufferedReader(new InputStreamReader(
+                Objects.requireNonNull(getClass().getResourceAsStream("/content/cong-phat-hanh-v0.csv")), StandardCharsets.UTF_8))) {
+            doc.lines().filter(l -> !l.startsWith("#") && !l.startsWith("tang1")).map(l -> l.split(",")).forEach(dong::add);
+        }
+        assertThat(dong).hasSize(64);
+        int duTang = 0;
+        int thieuTang = 0;
+        for (String[] d : dong) {
+            List<TierResult> tang = new ArrayList<>();
+            for (int i = 0; i < 3; i++) {
+                if (!d[i].equals("THIEU")) {
+                    tang.add(TierResult.of(i + 1, CheckStatus.valueOf(d[i])));
+                }
+            }
+            VerificationRun luot = VerificationRun.forProblem(Mau.LOP, Mau.BAI, Mau.BAM, Mau.BANG, tang, Mau.LUC);
+            String toHop = String.join(",", d[0], d[1], d[2]);
+            if (tang.size() == 3) {
+                duTang++;
+                assertThat(luot.publishStatus().name()).as(toHop).isEqualTo(d[3]);
+                assertThat(luot.overallStatus().name()).as(toHop).isEqualTo(d[4]);
+            } else {
+                thieuTang++;
+                boolean coSai = tang.stream().anyMatch(t -> t.status() == SAI);
+                assertThat(luot.overallStatus()).as(toHop).isEqualTo(coSai ? SAI : KHONG_KIEM_DUOC);
+                assertThat(luot.publishStatus()).as(toHop).isNotEqualTo(ReleaseStatus.DA_PHAT_HANH);
+                if (!coSai) {
+                    assertThat(luot.approvalRefusal(true, Mau.BAM, Mau.BANG)).as(toHop).contains(ApprovalRefusal.INCOMPLETE);
+                }
+            }
+        }
+        assertThat(duTang).isEqualTo(27);
+        assertThat(thieuTang).isEqualTo(37);
     }
 
     @Test
-    void thieuTangHayKhongCoTangThiKhongTuPhatHanh() {
-        assertThat(VerificationRun.overallOf(List.of(TierResult.of(1, DAT), TierResult.of(2, DAT)))).isEqualTo(KHONG_KIEM_DUOC);
-        assertThat(VerificationRun.overallOf(List.of())).isEqualTo(KHONG_KIEM_DUOC);
-        assertThat(VerificationRun.overallOf(List.of(TierResult.of(2, SAI)))).isEqualTo(SAI);
+    void luotNapLaiLechCacTangThiTuChoi() {
+        // H1a: tổng DAT, phát hành, nhưng ba tầng SAI.
+        assertThatThrownBy(() -> Mau.napLai(DAT, ReleaseStatus.DA_PHAT_HANH, Mau.tang(SAI, SAI, SAI)))
+            .isInstanceOf(IllegalArgumentException.class);
+        // H1b: tổng KHONG_KIEM_DUOC, chờ duyệt, nhưng tầng 1 SAI.
+        assertThatThrownBy(() -> Mau.napLai(KHONG_KIEM_DUOC, ReleaseStatus.CHO_GIAO_VIEN_DUYET, Mau.tang(SAI, DAT, KHONG_KIEM_DUOC)))
+            .isInstanceOf(IllegalArgumentException.class);
+        // H1c: GV_DUYET với ba tầng SAI; và GV_DUYET khi thiếu tầng.
+        assertThatThrownBy(() -> Mau.napLai(GV_DUYET, ReleaseStatus.DA_PHAT_HANH, Mau.tang(SAI, SAI, SAI)))
+            .isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> Mau.napLai(GV_DUYET, ReleaseStatus.DA_PHAT_HANH, List.of(TierResult.of(1, DAT))))
+            .isInstanceOf(IllegalArgumentException.class);
+        // Hợp lệ: GV_DUYET khi đủ ba tầng và tổng từ các tầng là KHONG_KIEM_DUOC.
+        assertThat(Mau.napLai(GV_DUYET, ReleaseStatus.DA_PHAT_HANH, Mau.tang(DAT, DAT, KHONG_KIEM_DUOC)).overallStatus()).isEqualTo(GV_DUYET);
+        // Phát hành lệch trạng thái tổng.
+        assertThatThrownBy(() -> Mau.napLai(SAI, ReleaseStatus.DA_PHAT_HANH, Mau.tang(SAI, DAT, DAT)))
+            .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
-    void motTangGhiHaiLanHayTrangThaiPhatHanhLechThiTuChoi() {
+    void motTangGhiHaiLanHayTangKhongHopLeThiTuChoi() {
         assertThatThrownBy(() -> VerificationRun.forProblem(Mau.LOP, Mau.BAI, Mau.BAM, Mau.BANG,
             List.of(TierResult.of(1, DAT), TierResult.of(1, DAT), TierResult.of(2, DAT), TierResult.of(3, DAT)), Mau.LUC))
             .isInstanceOf(IllegalArgumentException.class);
-        assertThatThrownBy(() -> new VerificationRun(UUID.randomUUID(), Mau.LOP, SubjectKind.PROBLEM, Mau.BAI, Mau.BAM, Mau.BANG,
-            SAI, ReleaseStatus.DA_PHAT_HANH, false, Mau.LUC, Mau.tang(SAI, DAT, DAT))).isInstanceOf(IllegalArgumentException.class);
-        assertThatThrownBy(() -> new VerificationRun(UUID.randomUUID(), Mau.LOP, SubjectKind.PROBLEM, Mau.BAI, Mau.BAM, Mau.BANG,
-            DAT, null, false, Mau.LUC, Mau.tang(DAT, DAT, DAT))).isInstanceOf(IllegalArgumentException.class);
         assertThatThrownBy(() -> TierResult.of(1, GV_DUYET)).isInstanceOf(IllegalArgumentException.class);
         assertThatThrownBy(() -> TierResult.of(4, DAT)).isInstanceOf(IllegalArgumentException.class);
     }
@@ -61,11 +114,15 @@ class VerificationRunTest {
     }
 
     @Test
-    void chiDuyetLuotKhongKiemDuocMoiNhatChuaCuDungNoiDungVaDungBang() {
+    void chiDuyetLuotKhongKiemDuocDuTangMoiNhatChuaCuDungNoiDungVaDungBang() {
         VerificationRun cho = Mau.luot(DAT, DAT, KHONG_KIEM_DUOC);
         assertThat(cho.approvalRefusal(true, Mau.BAM, Mau.BANG)).isEmpty();
         assertThat(Mau.luot(SAI, DAT, KHONG_KIEM_DUOC).approvalRefusal(true, Mau.BAM, Mau.BANG)).contains(ApprovalRefusal.BLOCKED);
         assertThat(Mau.luot(DAT, DAT, DAT).approvalRefusal(true, Mau.BAM, Mau.BANG)).contains(ApprovalRefusal.NOTHING_TO_APPROVE);
+        VerificationRun thieu = VerificationRun.forProblem(Mau.LOP, Mau.BAI, Mau.BAM, Mau.BANG, List.of(TierResult.of(1, DAT)), Mau.LUC);
+        assertThat(thieu.approvalRefusal(true, Mau.BAM, Mau.BANG)).contains(ApprovalRefusal.INCOMPLETE);
+        VerificationRun khongTang = VerificationRun.forProblem(Mau.LOP, Mau.BAI, Mau.BAM, Mau.BANG, List.of(), Mau.LUC);
+        assertThat(khongTang.approvalRefusal(true, Mau.BAM, Mau.BANG)).contains(ApprovalRefusal.INCOMPLETE);
         assertThat(cho.markStale().approvalRefusal(true, Mau.BAM, Mau.BANG)).contains(ApprovalRefusal.STALE);
         assertThat(cho.approvalRefusal(false, Mau.BAM, Mau.BANG)).contains(ApprovalRefusal.NOT_LATEST);
         assertThat(cho.approvalRefusal(true, Mau.BAM_KHAC, Mau.BANG)).contains(ApprovalRefusal.CONTENT_CHANGED);
@@ -95,11 +152,17 @@ class VerificationRunTest {
     }
 
     @Test
-    void danhDauCuGiuNguyenKetQua() {
+    void danhDauCuGiuNguyenKetQuaVaToStringKhongInCanCu() {
         VerificationRun luot = Mau.luot(DAT, DAT, DAT);
         VerificationRun cu = luot.markStale();
         assertThat(cu.stale()).isTrue();
         assertThat(cu.overallStatus()).isEqualTo(DAT);
         assertThat(cu.markStale()).isSameAs(cu);
+
+        TierResult coRaw = new TierResult(1, DAT, null, null, null, null, "lý do", null, "{\"dao_ham\": \"3*x**2 - 12*x + 9\"}");
+        VerificationRun coCanCu = VerificationRun.forProblem(Mau.LOP, Mau.BAI, Mau.BAM, Mau.BANG,
+            List.of(coRaw, TierResult.of(2, DAT), TierResult.of(3, DAT)), Mau.LUC);
+        assertThat(coRaw.toString()).doesNotContain("3*x**2").doesNotContain("lý do");
+        assertThat(coCanCu.toString()).doesNotContain("3*x**2");
     }
 }
