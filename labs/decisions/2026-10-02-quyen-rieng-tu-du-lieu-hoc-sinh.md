@@ -128,7 +128,8 @@ Lý do các điểm then chốt:
    - Z.AI (Trung Quốc) và OpenRouter (chuyển tiếp nhiều nhà) cần đánh giá riêng; chưa đánh giá thì chỉ dùng cho dữ liệu tổng hợp.
 6. **Quyền chủ thể trong ứng dụng:** xem, sửa, tải về, xóa, rút đồng ý. Có hàng đợi yêu cầu kèm hạn theo P8.
    - Xóa thật cả bản sao lưu theo vòng quay đã công bố.
-   - Trong lúc bản sao lưu cũ còn trong vòng quay: nhật ký sự kiện đồng ý lưu ngoài dữ liệu được sao lưu, mỗi dòng gồm mã giả danh, loại sự kiện (xóa toàn bộ, rút đồng ý, đồng ý lại), mục đích, thứ tự. Sau mỗi lần khôi phục, nhật ký được phát lại theo thứ tự trước khi mở lại dịch vụ, để mỗi mục đích về đúng trạng thái mới nhất.
+   - Rút đồng ý có hiệu lực ngay: tắt mục đích trong cùng giao dịch ghi nhận yêu cầu, trước khi xếp việc dọn ở bên xử lý; từ đó gia sư dùng `offline`, nhắc lịch chỉ trong ứng dụng.
+   - Trong lúc bản sao lưu cũ còn trong vòng quay: nhật ký sự kiện đồng ý lưu ngoài dữ liệu được sao lưu, mỗi dòng gồm mã giả danh, loại sự kiện (xóa toàn bộ, rút đồng ý, đồng ý lại), mục đích, thứ tự. Cùng kho đó giữ sổ chuyển dữ liệu cho bên xử lý và trạng thái dọn (bên nhận, mục đích, mã yêu cầu, xác nhận). Sau mỗi lần khôi phục, nhật ký được phát lại theo thứ tự trước khi mở lại dịch vụ, để mỗi mục đích về đúng trạng thái mới nhất và việc dọn còn dở ở bên xử lý chạy tiếp.
    - Mỗi lần chuyển dữ liệu cho bên xử lý ghi kèm mục đích:
      - rút đồng ý một mục đích chỉ gửi tới bên xử lý của mục đích đó; rút `NHAC_LICH_NGOAI` không đụng nhà LLM của `GIA_SU_AI`;
      - yêu cầu xóa toàn bộ gửi tới mọi bên xử lý đã nhận dữ liệu (kênh nhắc lịch, nhà LLM nếu có lưu, OCR ngoài nếu có);
