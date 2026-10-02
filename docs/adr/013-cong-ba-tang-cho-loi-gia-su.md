@@ -1,6 +1,6 @@
 # ADR 013 — Cổng 3 tầng cho công thức trong lời gia sư
 
-**Trạng thái:** Đề xuất (2026-10-02) — chờ chủ repo duyệt trước khi hiện thực (spec P2, FR-015).
+**Trạng thái:** Chấp nhận (2026-10-02) — chủ repo duyệt phương án A «thế giới đóng» trong phiên làm spec P2 (FR-015).
 
 ## Bối cảnh
 
@@ -21,7 +21,7 @@ Mô hình ngôn ngữ có thể bịa quy tắc đạo hàm, đổi điều ki�
 | B | Máy kiểm + **một** nguồn (bảng hoặc tài liệu) cho mọi công thức tùy ý | Linh hoạt hơn | Không đủ 3 tầng; nhận dạng công thức tùy ý trong câu tiếng Việt khó, dễ lọt |
 | C | Hiện mọi công thức, gắn nhãn «chưa kiểm» khi không qua | Gia sư tự nhiên nhất | Trái hiến chương II: công thức chưa kiểm vẫn tới học sinh |
 
-## Quyết định (đề xuất)
+## Quyết định
 
 Chọn **A**.
 
@@ -40,8 +40,8 @@ Chọn **A**.
 ## Hệ quả
 
 - Job mới `POST /v1/kiem-loi-giang` (không trạng thái): đầu vào là câu đã qua lọc, các dòng bảng đã khóa (LaTeX, phát biểu, mã dòng, trích dẫn), các dòng bài làm của học sinh, dữ kiện bảo vệ của bài; đầu ra là câu đã làm sạch và phán quyết từng biểu thức.
-- Bảng công thức: lúc khóa, mỗi dòng chạy tầng 1 (SymPy) và tầng 2 (tìm đoạn trong tài liệu được phép). Dòng không qua thì không khóa được bảng. Đây cũng là cách giáo viên «duyệt» công thức cho gia sư.
-- Bộ ca lời giảng mới (≥ 100 câu, 5 loại; spec SC-004) vào `services/math/kiemdinh/` qua lab Kiểm định, chạy trong cổng merge của `services/math`.
+- Bảng công thức: lúc khóa, mỗi dòng chạy tầng 1 (SymPy) và tầng 2 (tìm đoạn trong tài liệu được phép). Chỉ khóa được bảng khi **mọi dòng đạt `DAT` ở cả hai tầng**; `SAI` hay `KHONG_KIEM_DUOC` ở dòng nào thì giáo viên phải sửa dòng đó hoặc bổ sung tài liệu. Đây cũng là cách giáo viên «duyệt» công thức cho gia sư.
+- Bộ ca lời giảng mới (≥ 100 câu, 5 loại; spec SC-004) do lab Kiểm định soạn thành **bản vá có mã** (KD-0005, kèm SHA-256), rà độc lập; PR hiện thực chỉ áp nguyên văn bản vá vào `services/math/kiemdinh/`, rồi chạy trong cổng merge của `services/math`.
 - ADR 003 (gia sư không đọc lời giải) và ADR 010 (SSE trạng thái) giữ nguyên.
 
 ## Điều làm quyết định này sai

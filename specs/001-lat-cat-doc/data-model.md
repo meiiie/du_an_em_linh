@@ -25,10 +25,10 @@ Bảng PostgreSQL 18 của `services/core`, Flyway chỉ thêm. Tên bảng và 
 | `documents` | `id`, `class_id`, `title`, `kind`, `source`, `license_status`, `file_ref`, `text_content`, `version`, `uploaded_by`, `created_at` | `license_status = chua_ro` → không làm căn cứ |
 | `document_passages` | `id`, `document_id`, `page`, `char_start`, `char_end`, `text`, `text_folded` | Cho tầng 2 và trích dẫn `[n]` |
 | `formula_sheets` | `id`, `class_id`, `version`, `status` (`NHAP`, `KHOA`), `fingerprint`, `locked_at`, `locked_by` | Mỗi lần khóa = phiên bản mới |
-| `formulas` | `id`, `formula_sheet_id`, `skill_code`, `title`, `latex`, `statement`, `tier1_status`, `citation_passage_id` | Khóa được bảng chỉ khi mọi dòng có tầng 1 không `SAI` và có trích dẫn (ADR 013) |
+| `formulas` | `id`, `formula_sheet_id`, `skill_code`, `title`, `latex`, `statement`, `tier1_status`, `tier2_status`, `citation_passage_id` | Khóa được bảng chỉ khi **mọi dòng** có `tier1_status = DAT` và `tier2_status = DAT` (có trích dẫn); `SAI` hay `KHONG_KIEM_DUOC` chặn khóa (ADR 013) |
 | `verification_runs` | `id`, `subject_kind` (`PROBLEM`, `TUTOR_FORMULA`), `subject_id`, `content_hash`, `formula_sheet_version`, `overall_status`, `publish_status`, `stale`, `created_at` | |
 | `verification_tier_results` | `run_id`, `tier` (1–3), `status`, `result_type`, `wrong_steps`, `error_code`, `confidence`, `reason`, `citation`, `raw` | Căn cứ từng tầng |
-| `content_reviews` | `id`, `run_id`, `content_hash`, `reviewer_id`, `decision` (`GV_DUYET`), `note`, `at` | Bắt buộc `note` |
+| `content_reviews` | `id`, `run_id`, `content_hash`, `reviewer_id`, `decision` (`GV_DUYET`), `note`, `at` | Bắt buộc `note`; chỉ cho run `subject_kind = PROBLEM` (công thức trong lời gia sư không duyệt riêng, ADR 013) |
 
 **Chuyển trạng thái của bài** (`problems.status`):
 

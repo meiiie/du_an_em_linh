@@ -20,6 +20,7 @@ description: "Danh sách việc của epic P2 — lát cắt dọc một chủ �
 - [ ] T001 Thêm Spring AI BOM 2.0.1 và starter OpenAI vào `services/core/pom.xml`; tắt thử lại (`spring.ai.retry.max-attempts=1`) trong `application.yaml`
 - [ ] T002 [P] Thêm `katex` ^0.16.22 và `mathlive` ^0.107.1 (cùng bản v0) vào `apps/frontend/package.json`; khai CSS KaTeX trong `angular.json`
 - [ ] T003 [P] `compose.v2.yaml` và `.env.example`: biến `LLM_*`, `OPENROUTER_API_KEY`, `ZAI_API_KEY` cho core (trống = chỉ `offline`); không có khóa trong git
+- [ ] T003b Đóng gói nội dung vào ảnh core: ngữ cảnh build là gốc repo, `services/core/Dockerfile.dockerignore` (chỉ `services/core/`, `data/supham/`), `COPY data/supham /app/noi-dung`; sửa `compose.v2.yaml` và job CI «Core — Maven + image» (`docker build -f services/core/Dockerfile .`)
 
 ---
 
@@ -41,7 +42,7 @@ description: "Danh sách việc của epic P2 — lát cắt dọc một chủ �
 
 - [ ] T010 `V4__content.sql`: `topics`, `skills`, `skill_prerequisites`, `error_types`, `step_templates`, `problems`, `solutions`, `hint_levels`, `documents`, `document_passages`, `formula_sheets`, `formulas`, `verification_runs`, `verification_tier_results`, `content_reviews`
 - [ ] T011 `core/content/domain/`: bài và chuyển trạng thái (data-model §content), bảng công thức có phiên bản, kết quả kiểm có cờ «cũ»
-- [ ] T012 `core/content/infrastructure/import/`: importer đọc `data/supham/*` như `apps/web/scripts/seed.ts` (cả biến thể `/v1/generate` hạt giống cố định và 3 bài demo), idempotent theo mã + dấu vân tay; chạy `/v1/verify` từng bài
+- [ ] T012 `core/content/infrastructure/import/`: importer đọc `${app.content.source}` (ảnh: `/app/noi-dung`; test: `../../data/supham`) như `apps/web/scripts/seed.ts` (cả biến thể `/v1/generate` hạt giống cố định và 3 bài demo), idempotent theo mã + dấu vân tay; chạy `/v1/verify` từng bài
 - [ ] T013 [P] Script một lần `specs/001-lat-cat-doc/doi-chieu/xuat-v0.ts` (chạy trên v0): xuất (mã bài, dấu vân tay, trạng thái cổng) ra `doi-chieu/v0-bai.json`
 - [ ] T014 `core-test/content/NhapNoiDungTest.java`: nhập trên Testcontainers + dịch vụ toán giả; so `v0-bai.json`
 - [ ] T015 `core/content/application/`: port đọc bài cho học sinh **không** có lời giải; ArchUnit thêm luật: DTO của học sinh không phụ thuộc `Solution`
@@ -81,10 +82,14 @@ description: "Danh sách việc của epic P2 — lát cắt dọc một chủ �
 
 **Goal**: gia sư theo thang, luật xin đáp án, lọc lộ đáp án, cổng công thức, SSE trạng thái. **Independent Test**: kịch bản spec US2 với nhà giả.
 
-### Issue — Job `kiem_loi_giang` và bộ ca lời giảng (services/math) — cần ADR 013 được duyệt
+### Issue — Lab Kiểm định: bản vá KD-0005 bộ ca lời giảng
+
+- [ ] T029 [US2] Lab Kiểm định soạn bản vá có mã KD-0005 (`.patch` + SHA-256): ≥ 100 câu lời gia sư, 5 loại (spec SC-004), mỗi câu có phán quyết mong đợi theo ADR 013; rà độc lập bằng subagent `math-verifier` trước khi phát hành bản vá
+
+### Issue — Job `kiem_loi_giang` (services/math), áp nguyên văn KD-0005
 
 - [ ] T028 [US2] `services/math/app/loi_giang.py` + `routers.py` `POST /v1/kiem-loi-giang` theo `contracts/math-v1.md`
-- [ ] T029 [US2] `services/math/kiemdinh/loi-giang/` (lab Kiểm định): ≥ 100 câu, 5 loại (spec SC-004); pytest chạy trong cổng merge
+- [ ] T029b [US2] Áp **nguyên văn** bản vá KD-0005 vào `services/math/kiemdinh/loi-giang/` (ghi SHA-256 trong PR và `NHAT-KY.md`); pytest chạy bộ ca trong cổng merge
 - [ ] T030 [P] [US2] pytest: thế giới đóng (ADR 013): khớp bảng + trích dẫn → giữ; ngoài bảng → bỏ; sai → `SAI`; trích bài làm → giữ; kết quả cụ thể → bỏ; LaTeX hỏng → bỏ
 
 ### Issue — Module `tutor` (core)
@@ -109,8 +114,8 @@ description: "Danh sách việc của epic P2 — lát cắt dọc một chủ �
 
 ### Issue — Tài liệu, bảng công thức, ngân hàng (core + frontend)
 
-- [ ] T041 [US3] `core/content/`: tải PDF (≤ 10 MB) → `/v1/extract` → đoạn có vị trí; quyền dùng bắt buộc; `chua_ro` không làm căn cứ
-- [ ] T042 [US3] `core/content/`: bảng công thức nháp → khóa (tầng 1 + tầng 2 từng dòng, ADR 013) → phiên bản mới → đánh dấu «cũ» các kết quả kiểm trước
+- [ ] T041 [US3] `core/content/`: tải PDF (≤ 10 MB) → trích chữ bằng Apache PDFBox 3.0.8 trong core (research R9) → đoạn có vị trí; quyền dùng bắt buộc; `chua_ro` không làm căn cứ
+- [ ] T042 [US3] `core/content/`: bảng công thức nháp → khóa chỉ khi mọi dòng `DAT` ở tầng 1 và tầng 2 (ADR 013), 422 kèm dòng chưa qua → phiên bản mới → đánh dấu «cũ» các kết quả kiểm trước
 - [ ] T043 [US3] API `GET/POST /api/gv/tai-lieu`, `GET/PUT /api/gv/cong-thuc`, `POST /api/gv/cong-thuc/khoa`, `GET /api/gv/ngan-hang`, `POST /api/gv/ngan-hang/kiem`, `POST /api/gv/giao-bai`
 - [ ] T044 [US3] `fe/features/giao-vien/{tai-lieu,cong-thuc,ngan-hang}/` (giữ tiêu đề v0: «Tài liệu», «Công thức», «Đề bài»)
 - [ ] T045 [P] [US3] Test: khóa bảng tạo phiên bản và «cũ»; tài liệu `chua_ro` bị bỏ qua; tài liệu vừa nạp được gia sư trích dẫn (spec US3 kịch bản 5)
@@ -121,9 +126,9 @@ description: "Danh sách việc của epic P2 — lát cắt dọc một chủ �
 
 ### Issue — Hàng đợi duyệt (core + frontend)
 
-- [ ] T046 [US4] `core/content/`: `GET /api/gv/duyet`, `POST /api/gv/duyet/{runId}` (ghi chú bắt buộc, `SAI` → 409); ghi người, thời điểm, lý do
+- [ ] T046 [US4] `core/content/`: `GET /api/gv/duyet`, `POST /api/gv/duyet/{runId}` (ghi chú bắt buộc; chỉ bài `KHONG_KIEM_DUOC`; `SAI` → 409; công thức trong lời gia sư → 422 «thêm vào bảng»); ghi người, thời điểm, lý do
 - [ ] T047 [US4] `fe/features/giao-vien/duyet/` (`hang-doi`, `duyet-<mã>`)
-- [ ] T048 [P] [US4] e2e `apps/frontend/e2e/duyet.spec.ts`: `KHONG_KIEM_DUOC` → `GV_DUYET` → tới An; `SAI` không có nút, An không thấy (SC-002)
+- [ ] T048 [P] [US4] e2e `apps/frontend/e2e/duyet.spec.ts`: `KHONG_KIEM_DUOC` → `GV_DUYET` → tới An; `SAI` không có nút, An không thấy; mục công thức gia sư chỉ có «Thêm vào bảng» (SC-002)
 
 ---
 
@@ -176,7 +181,7 @@ description: "Danh sách việc của epic P2 — lát cắt dọc một chủ �
 ```text
 Setup ─▶ classroom ─┬─▶ practice (US1) ─▶ Trang Học/Luyện ─┬─▶ tutor (US2) ─▶ Cột gia sư
 math client ────────┤                                      │        ▲
-content (nhập) ─────┘                                      │   kiem_loi_giang (ADR 013 duyệt)
+content (nhập) ─────┘                                      │   kiem_loi_giang ◀── bản vá KD-0005 (lab Kiểm định)
 Khung frontend ─────────────────────────────────────────── ┘
 content ─▶ Tài liệu/Công thức/Ngân hàng (US3) ─▶ Duyệt (US4)
 practice ─▶ mastery (US5) ─▶ planner (US6)
@@ -186,4 +191,4 @@ Tất cả ─▶ e2e «một vòng» và nghiệm thu
 
 - MVP sau Phase 3: An làm bài theo bước trên v2 với nội dung đã nhập.
 - Song song được: `kiem_loi_giang` (math) với `practice` (core); các màn giáo viên US3, US4, US7 với các màn học sinh.
-- Chặn: job `kiem_loi_giang` và phần cổng của `tutor` chờ ADR 013 được duyệt.
+- ADR 013 đã chấp nhận (2026-10-02). Chặn duy nhất: job `kiem_loi_giang` chờ bản vá KD-0005 của lab Kiểm định.

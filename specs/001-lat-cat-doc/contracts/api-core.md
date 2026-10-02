@@ -44,8 +44,8 @@ data: {"noiDung":"…câu đã lọc và đã qua cổng…","trichDan":[{"n":1,
 | Phương thức | Đường dẫn | Vào | Ra | FR |
 | --- | --- | --- | --- | --- |
 | GET | `/api/gv/lop` | — | `{tenLop, siSo, canhBaoKet: [{hocSinh, kyNang, loai: KET\|NHO_GV}], sanSangAi: {nha, congThucDaKhoa: bool}}` | 25, 29 |
-| GET | `/api/gv/duyet` | — | hàng đợi: `[{runId, loai: BAI\|CONG_THUC_GIA_SU, ma, trangThai: SAI\|KHONG_KIEM_DUOC, canCu: [{tang, trangThai, lyDo, trichDan?}], cu: bool}]` | 4, 5 |
-| POST | `/api/gv/duyet/{runId}` | `{ghiChu}` (bắt buộc) | `{trangThai: GV_DUYET, nguoiDuyet, luc}`; 409 nếu mục là `SAI` | 5 |
+| GET | `/api/gv/duyet` | — | hàng đợi: `[{runId, loai: BAI\|CONG_THUC_GIA_SU, ma, trangThai: SAI\|KHONG_KIEM_DUOC, canCu: [{tang, trangThai, lyDo, trichDan?}], cu: bool, thaoTac: DUYET\|SUA_BAI\|THEM_VAO_BANG}]` | 4, 5 |
+| POST | `/api/gv/duyet/{runId}` | `{ghiChu}` (bắt buộc) | chỉ cho `loai = BAI`, `trangThai = KHONG_KIEM_DUOC`: `{trangThai: GV_DUYET, nguoiDuyet, luc}`. 409 nếu mục là `SAI`. 422 nếu mục là `CONG_THUC_GIA_SU`: không duyệt riêng, phải thêm vào bảng công thức rồi khóa phiên bản mới (ADR 013) | 5 |
 | GET | `/api/gv/ngan-hang` | — | `[{maBai, muc4, muc3, kyNang, trangThai, cu}]` | 3, 4 |
 | POST | `/api/gv/ngan-hang/kiem` | `{maBai?}` | chạy lại cổng; trả trạng thái mới | 4 |
 | POST | `/api/gv/giao-bai` | `{maBai, hocSinh?: [id], han?}` (thiếu `hocSinh` = cả lớp) | danh sách giao | 31 |

@@ -5,12 +5,12 @@
 
 ## Summary
 
-Chạy hết vòng của sơ đồ trên v2 cho Toán 12 «đơn điệu và cực trị», dùng lại nội dung và dịch vụ toán đã kiểm định của v0. `services/core` có thêm 6 module nghiệp vụ: lớp, nội dung + cổng, làm bài, gia sư, mức hiểu, lịch. `apps/frontend` có 5 màn học sinh và 9 màn giáo viên tương đương v0. `services/math` giữ hợp đồng `/v1` và thêm đúng một job: kiểm lời giảng của gia sư (FR-015, [ADR 013](../../docs/adr/013-cong-ba-tang-cho-loi-gia-su.md)). Logic sư phạm của v0 (thang gợi ý, luật xin đáp án, mức hiểu, chọn bài kế, lịch) được chép sang Java theo đúng tham số, kèm bộ đối chiếu với v0.
+Chạy hết vòng của sơ đồ trên v2 cho Toán 12 «đơn điệu và cực trị», dùng lại nội dung và dịch vụ toán đã kiểm định của v0. `services/core` có thêm 6 module nghiệp vụ: lớp, nội dung + cổng, làm bài, gia sư, mức hiểu, lịch. `apps/frontend` có 5 màn học sinh và 9 màn giáo viên tương đương v0. `services/math` giữ hợp đồng `/v1` và thêm đúng một job: kiểm lời giảng của gia sư (FR-015, [ADR 013](../../docs/adr/013-cong-ba-tang-cho-loi-gia-su.md), đã chấp nhận). Trích chữ PDF làm ngay trong `services/core` bằng Apache PDFBox, nên tệp không phải đi qua ranh giới dịch vụ. Logic sư phạm của v0 (thang gợi ý, luật xin đáp án, mức hiểu, chọn bài kế, lịch) được chép sang Java theo đúng tham số, kèm bộ đối chiếu với v0.
 
 ## Technical Context
 
 **Language/Version**: Java 25 (`services/core`), TypeScript 6 (`apps/frontend`), Python 3.12 (`services/math`)
-**Primary Dependencies**: Spring Boot 4.1.1, Spring AI 2.0.1 (GA 2026-09-24, dựng trên Boot 4.1.1), Spring Security 7; Angular 22.2 (zoneless, Signal Forms), KaTeX 0.16, MathLive 0.107 (cùng bản v0); FastAPI + SymPy (giữ nguyên)
+**Primary Dependencies**: Spring Boot 4.1.1, Spring AI 2.0.1 (GA 2026-09-24, dựng trên Boot 4.1.1), Spring Security 7, Apache PDFBox 3.0.8; Angular 22.2 (zoneless, Signal Forms), KaTeX 0.16, MathLive 0.107 (cùng bản v0); FastAPI + SymPy (giữ nguyên)
 **Storage**: PostgreSQL 18, Flyway chỉ thêm (`V3__` trở đi)
 **Testing**: JUnit 5 + Testcontainers PostgreSQL 18 + ArchUnit (core); Vitest + jsdom (frontend); Playwright trên compose v2 (e2e, 390 + 1280 px); pytest (math); các bộ kiểm của v0 chạy lại qua luồng mới
 **Target Platform**: Docker Compose (`compose.v2.yaml`); trình duyệt điện thoại và máy tính
@@ -85,7 +85,7 @@ apps/frontend/src/app/
     └── layout/          # khung có thanh bên (mo-sidebar, nav-*) như v0
 apps/frontend/e2e/       # một vòng, duyệt, tới VDC, bản tương đương luong-hoc-sinh, gia-su-harness
 
-data/supham/             # nguồn nội dung (lab Sư phạm sở hữu), không sửa
+data/supham/             # nguồn nội dung (lab Sư phạm sở hữu), không sửa; được chép vào ảnh core (ngữ cảnh build là gốc repo)
 ```
 
 **Structure Decision**: giữ 3 dịch vụ của ADR 011. Mỗi nhóm khả năng của sơ đồ là một module DDD trong `services/core` (gói con `domain` → `application` → `infrastructure`, ArchUnit kiểm). Module giao tiếp qua port trong `application`, không gọi chéo repository của nhau. `services/math` chỉ thêm một job thuần hàm. `apps/frontend` chia theo vai trò rồi theo màn, giữ route và `data-testid` của v0.

@@ -28,13 +28,14 @@ Mỗi mục: **Quyết định**, **Lý do**, **Phương án đã cân nhắc**.
 
 ## R5. Công thức trong lời giảng (FR-015)
 
-- **Quyết định:** theo [ADR 013](../../docs/adr/013-cong-ba-tang-cho-loi-gia-su.md) (Đề xuất). Tóm tắt: lời gia sư chỉ được dùng công thức tổng quát có trong bảng đã khóa của lớp, đã máy kiểm lúc khóa, và có đoạn trích dẫn trong tài liệu được phép. Biểu thức trích nguyên văn từ bài làm của học sinh được phép, trình bày là lời của học sinh. Mọi biểu thức khác bị bỏ khỏi câu; nếu câu mất nghĩa thì thay bằng gợi ý theo thang. Mỗi lần bỏ ghi một mục `KHONG_KIEM_DUOC` hoặc `SAI` cho giáo viên. Phần kiểm chạy trong job mới `kiem_loi_giang` của `services/math`, ngay sau `/v1/filter`.
+- **Quyết định:** theo [ADR 013](../../docs/adr/013-cong-ba-tang-cho-loi-gia-su.md) (chủ repo chấp nhận 2026-10-02, phương án A). Tóm tắt: lời gia sư chỉ được dùng công thức tổng quát có trong bảng đã khóa của lớp, đã máy kiểm lúc khóa, và có đoạn trích dẫn trong tài liệu được phép. Biểu thức trích nguyên văn từ bài làm của học sinh được phép, trình bày là lời của học sinh. Mọi biểu thức khác bị bỏ khỏi câu; nếu câu mất nghĩa thì thay bằng gợi ý theo thang. Mỗi lần bỏ ghi một mục `KHONG_KIEM_DUOC` hoặc `SAI` cho giáo viên. Phần kiểm chạy trong job mới `kiem_loi_giang` của `services/math`, ngay sau `/v1/filter`.
 - **Lý do:** sơ đồ đặt cổng 3 tầng trên mũi tên vào «học cùng AI»; hiến chương II; gia sư không được tính hộ (hiến chương I) nên chặn mọi kết quả tính cụ thể không mất gì về sư phạm.
 - **Đã cân nhắc:** xem ADR 013 (đủ 3 tầng cho mọi công thức tùy ý; dán nhãn «chưa kiểm»; chỉ máy kiểm).
 
 ## R6. Nhập nội dung chủ đề từ v0
 
 - **Quyết định:** importer trong module `content` đọc đúng các file nguồn v0 dùng (`data/supham/danh-muc-ky-nang-DH.json`, `ma-loi-DH.csv`, `03-vi-du-bai-tap.json`, `bai-khung-ngan.seed-v01.json`), dựng lại tập bài như `apps/web/scripts/seed.ts` (kể cả biến thể sinh qua `/v1/generate` với hạt giống cố định và các bài demo `DH12-NB-01`, `DH12-TH-02`, `DH12-DEMO-CHAN-01`), rồi chạy `/v1/verify` cho từng bài. Chạy lặp lại không nhân bản (khóa theo mã bài + dấu vân tay nội dung). Chạy ở profile `dev` và trong e2e. Một test đối chiếu danh sách (mã bài, dấu vân tay, trạng thái cổng) với tệp vàng xuất một lần từ v0.
+- **Đóng gói:** ảnh Docker của core build với ngữ cảnh là gốc repo (như `apps/frontend`), `services/core/Dockerfile.dockerignore` chỉ cho `services/core/` và `data/supham/` vào, `COPY data/supham /app/noi-dung` (chỉ đọc); importer đọc `app.content.source` (mặc định `/app/noi-dung`; test Maven trỏ `../../data/supham`). Không phụ thuộc bố cục thư mục của máy chủ lúc chạy.
 - **Lý do:** dữ liệu sư phạm thuộc lab, chỉ có một nguồn; tiêu chí SC-006 (chấm trùng v0 100 %) cần cùng tập bài.
 - **Đã cân nhắc:** chụp bảng từ CSDL v0 thành SQL (bản thứ hai của dữ liệu lab, lệch dần); nhập bằng Flyway (nội dung giáo viên sửa được, không hợp với migration chỉ thêm).
 
@@ -52,9 +53,9 @@ Mỗi mục: **Quyết định**, **Lý do**, **Phương án đã cân nhắc**.
 
 ## R9. Tài liệu lớp
 
-- **Quyết định:** giáo viên tải PDF (tối đa 10 MB) → core lưu tệp và gọi `/v1/extract` (pypdf của v0) → lưu văn bản và các đoạn có vị trí (trang, ký tự đầu, ký tự cuối). Bắt buộc khai quyền dùng; tài liệu `chua_ro` không làm căn cứ tầng 2 và không được trích dẫn. Tìm đoạn bằng cụm từ đã bỏ dấu như v0 (`apps/web/lib/kien-thuc.ts`), không vector.
+- **Quyết định:** giáo viên tải PDF (tối đa 10 MB) → core trích chữ ngay trong tiến trình bằng Apache PDFBox 3.0.8 (tra Maven Central 2026-10-02) → lưu văn bản và các đoạn có vị trí (trang, ký tự đầu, ký tự cuối). Không dùng `/v1/extract`: job đó đọc đường dẫn tệp cục bộ, mà core và math chạy ở hai container không chung ổ. Trích chữ không cần SymPy nên không thuộc `services/math`. Bắt buộc khai quyền dùng; tài liệu `chua_ro` không làm căn cứ tầng 2 và không được trích dẫn. Tìm đoạn bằng cụm từ đã bỏ dấu như v0 (`apps/web/lib/kien-thuc.ts`), không vector.
 - **Lý do:** ADR 005 và ADR 008 của v0; OCR ảnh là P3.
-- **Đã cân nhắc:** pgvector (ADR 008 đã loại cho quy mô này).
+- **Đã cân nhắc:** pgvector (ADR 008 đã loại cho quy mô này); gửi PDF dạng base64 sang `/v1/extract` (JSON tới 13 MB qua sandbox, thêm một đường lỗi mà không được gì); ổ chung giữa hai container (ràng buộc triển khai).
 
 ## R10. Quyền
 
@@ -74,7 +75,7 @@ Mỗi mục: **Quyết định**, **Lý do**, **Phương án đã cân nhắc**.
   - unit thuần cho domain mỗi module; Testcontainers PostgreSQL 18 cho persistence; ArchUnit cho mọi gói mới;
   - client dịch vụ toán: test hợp đồng với máy chủ giả trả các mẫu lỗi (hết giờ, 500, JSON hỏng) để chứng minh «không bao giờ đạt»;
   - nhà AI giả `gia-lap` chỉ bật ở profile `test` và `e2e`, trả câu theo kịch bản: dùng để chạy bộ dụ đáp án, bộ ác ý 288 ca và bộ ca lời giảng mới qua đúng luồng của core;
-  - các bộ của cổng merge `services/math` (pytest, nghiệm thu Sư phạm 80 ca, bộ AI 70 ca, thang gợi ý qua bộ lọc) giữ nguyên (`docs/KIEM-THU.md`);
+  - các bộ của cổng merge `services/math` (pytest, nghiệm thu Sư phạm 80 ca, bộ AI 70 ca, thang gợi ý qua bộ lọc) giữ nguyên (`docs/KIEM-THU.md`); bộ ca lời giảng mới vào qua bản vá có mã KD-0005 của lab Kiểm định, áp nguyên văn;
   - e2e Playwright trên compose v2: «một vòng», «duyệt», «tới VDC», bản tương đương `luong-hoc-sinh` và `gia-su-harness`, phân quyền lớp; 390 + 1280 px.
 - **Lý do:** mỗi tiêu chí SC có lệnh đo (hiến chương IV); nhà giả làm e2e tất định, không cần khóa thật.
 - **Đã cân nhắc:** chạy e2e với nhà thật (tốn khóa, không tất định, dữ liệu rời hệ thống).

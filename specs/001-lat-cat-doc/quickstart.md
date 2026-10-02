@@ -23,7 +23,7 @@ Mở http://localhost:4200. Tài khoản tổng hợp: `gv@demo.local` / `giaovi
 | SC-001, 002, 008, 010 | `pnpm --filter frontend e2e` trên compose (kịch bản `mot-vong`, `duyet`, `toi-vdc`, `tuong-duong-v0`) |
 | SC-003, 004 | `cd services/core && ./mvnw -B -ntp verify -Dgroups=bo-ca` (nhà giả `gia-lap` phát lại bộ dụ đáp án, 288 ca ác ý, bộ ca lời giảng) |
 | SC-005, 009 | cổng merge `services/math` (`docs/KIEM-THU.md`): bộ AI 70 ca, thang gợi ý qua bộ lọc |
-| SC-006 | `./mvnw -B -ntp verify -Dtest=DoiChieuChamV0Test` (chấm toàn ngân hàng, so tệp vàng xuất từ v0) |
-| SC-007 | `./mvnw -B -ntp verify -Dtest=ThoiGianGiaSuTest` (p95 trên 50 lượt offline) |
+| SC-006 | `cd services/core && ./mvnw -B -ntp verify -Dtest=DoiChieuChamV0Test` (chấm toàn ngân hàng, so tệp vàng xuất từ v0) |
+| SC-007 | `cd services/core && ./mvnw -B -ntp verify -Dtest=ThoiGianGiaSuTest` (p95 trên 50 lượt offline) |
 
 Số đo thật ghi vào PR theo `docs/KIEM-THU.md`: lệnh, kết quả, SHA.

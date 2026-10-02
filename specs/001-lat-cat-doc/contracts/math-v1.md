@@ -11,7 +11,8 @@ Giữ nguyên `/v1` của v0 (`services/math/app/routers.py`). Mọi job chạy 
 | `POST /v1/filter` | bộ lọc lộ đáp án trên cả câu gia sư (M3 + M1) | 12 s | chặn câu |
 | `POST /v1/goi-y` | thang gợi ý mẫu theo (bước, loại kết quả, cấp); dùng cho nhà `offline` và câu thay thế | 12 s | câu từ chối chung, không chứa kết quả |
 | `POST /v1/generate` | biến thể có hạt giống khi nhập ngân hàng (research R6) | 20 s | bỏ biến thể, ghi lỗi nhập |
-| `POST /v1/extract` | trích chữ PDF tài liệu lớp | 20 s | tài liệu không nạp được |
+
+`/v1/extract` không dùng ở P2: job đọc đường dẫn tệp cục bộ, còn core và math là hai container không chung ổ. Core trích chữ PDF bằng PDFBox (research R9).
 
 ## Job mới: `POST /v1/kiem-loi-giang` (ADR 013)
 

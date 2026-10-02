@@ -158,7 +158,7 @@ Giáo viên xem bảng lớp theo kỹ năng × mức, đổi sang 3 mức Biế
 - **FR-002**: Giáo viên MUST nạp được tài liệu PDF có lớp chữ và khai quyền dùng; tài liệu có quyền «chưa rõ» không được dùng làm căn cứ tầng 2.
 - **FR-003**: Hệ thống MUST có ngân hàng bài của chủ đề với đủ thuộc tính của v0: 4 mức, 3 mức CV 7991, mức Bloom, yêu cầu cần đạt (YCCĐ) trích nguyên văn, kỹ năng, khung bước, lời giải ẩn. Nội dung sư phạm của v0 được nhập nguyên văn.
 - **FR-004**: Mọi bài MUST qua cổng 3 tầng trước khi tới học sinh: cả ba tầng đạt thì phát hành; một tầng sai thì chặn; còn tầng không kiểm được thì chờ duyệt. Mỗi tầng ghi căn cứ (kết quả máy, trích đoạn tài liệu có vị trí, dòng công thức).
-- **FR-005**: Giáo viên MUST duyệt được mục `KHONG_KIEM_DUOC` kèm lý do; hệ thống ghi người duyệt, thời điểm, lý do (`GV_DUYET`). Mục `SAI` không duyệt được.
+- **FR-005**: Giáo viên MUST duyệt được **bài** ở trạng thái `KHONG_KIEM_DUOC` kèm lý do; hệ thống ghi người duyệt, thời điểm, lý do (`GV_DUYET`). Mục `SAI` không duyệt được. Công thức trong lời gia sư không duyệt riêng được: giáo viên thêm công thức vào bảng rồi khóa phiên bản mới (ADR 013).
 - **FR-006**: Lời giải mẫu và dữ kiện bảo vệ của bài MUST NOT tới học sinh khi đang làm; chỉ mở sau khi nộp nếu lớp bật cờ (mặc định tắt).
 
 **Làm bài (C5, C7)**
