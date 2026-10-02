@@ -46,7 +46,8 @@ class KienTrucRulesTuKiemTest {
         Map.entry(KienTrucRules.ADAPTER_DAT_TEN, List.of("KhoHocSinh")),
         Map.entry(KienTrucRules.ENTITY_DAT_TEN_DUNG_CHO, List.of("HocSinhEntity", "LopJpaEntity", "CoEntity")),
         Map.entry(KienTrucRules.REPOSITORY_CHI_QUAN_LY_JPA_ENTITY,
-            List.of("xau.infrastructure.persistence.HocSinhJpaRepository", "xau.infrastructure.persistence.LopHocJpaRepository")));
+            List.of("xau.infrastructure.persistence.HocSinhJpaRepository", "xau.infrastructure.persistence.LopHocJpaRepository")),
+        Map.entry(KienTrucRules.MODULE_CHI_GOI_NHAU_QUA_CONG, List.of("GieoLop")));
 
     static Stream<Arguments> luatVaViPham() {
         return KienTrucRules.TAT_CA.stream().map(rule -> arguments(Named.of(rule.getDescription(), rule), VI_PHAM.get(rule)));

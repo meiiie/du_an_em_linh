@@ -14,7 +14,8 @@ import org.springframework.security.web.SecurityFilterChain;
 /**
  * API không trạng thái: bearer JWT (OAuth2 Resource Server), không session. Tắt CSRF của Spring Security: chỉ làm mới
  * và đăng xuất đọc cookie (refresh token, {@code SameSite=Strict}), và hai endpoint này tự đòi header chống CSRF
- * ({@code AuthController}). Mở: đăng nhập, làm mới, đăng xuất, health. Còn lại phải đăng nhập.
+ * ({@code AuthController}). Mở: đăng nhập, làm mới, đăng xuất, health. {@code /api/gv/**} cho giáo viên (cùng quản trị),
+ * {@code /api/hs/**} cho học sinh. Còn lại phải đăng nhập.
  */
 @Configuration(proxyBeanMethods = false)
 public class SecurityConfig {
@@ -27,6 +28,10 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.POST, "/api/auth/login", "/api/auth/refresh", "/api/auth/logout").permitAll()
                         .requestMatchers("/actuator/health", "/actuator/health/**", "/error").permitAll()
+                        // Vai trò tài khoản theo đường dẫn, như guard của apps/frontend (#111): cổng ClassMembership
+                        // chỉ xét vai trò trong lớp, nên tài khoản STUDENT có ghi danh TEACHER vẫn bị chặn ở đây.
+                        .requestMatchers("/api/gv/**").hasAnyRole("TEACHER", "SCHOOL_ADMIN", "ADMIN")
+                        .requestMatchers("/api/hs/**").hasRole("STUDENT")
                         .anyRequest().authenticated())
                 .oauth2ResourceServer(resource -> resource.jwt(jwt -> jwt.jwtAuthenticationConverter(roleConverter())))
                 .httpBasic(AbstractHttpConfigurer::disable)
