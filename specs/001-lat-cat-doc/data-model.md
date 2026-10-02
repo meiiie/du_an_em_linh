@@ -53,8 +53,8 @@ ngược lại 409 và phải kiểm lại, để không phát hành bằng phá
 
 | Bảng | Cột chính | Ghi chú |
 | --- | --- | --- |
-| `assignments` | `id`, `problem_id`, `student_id`, `status`, `set_name`, `due_at`, `assigned_by`, `assigned_at` | Giao cho lớp = một dòng mỗi học sinh |
-| `submissions` | `id`, `student_id`, `problem_id`, `status` (`DANG_LAM`, `DA_NOP`), `guess_suspected`, `guess_reason`, `result`, `started_at`, `submitted_at` | Một bài làm đang mở mỗi (học sinh, bài) |
+| `assignments` | `id`, `class_id`, `problem_id`, `student_id`, `status`, `set_name`, `due_at`, `assigned_by`, `assigned_at` | Giao cho lớp = một dòng mỗi học sinh; chỉ giao bài `DA_PHAT_HANH` của chính lớp đó (`problem_releases`) |
+| `submissions` | `id`, `class_id`, `student_id`, `problem_id`, `status` (`DANG_LAM`, `DA_NOP`), `guess_suspected`, `guess_reason`, `result`, `started_at`, `submitted_at` | Một bài làm đang mở mỗi (học sinh, lớp, bài); lớp quyết định tài liệu, bảng công thức, cài đặt gia sư dùng cho bài làm |
 | `submission_steps` | `id`, `submission_id`, `step_code`, `line_no`, `latex`, `raw_input`, `normalized_input`, `normalizer_version`, `normalize_status` | Nộp lại cùng bước: idempotent theo (`submission_id`, `step_code`, nội dung) |
 | `submission_tables`, `submission_table_cells` | bảng xét dấu: `row`, `k` (0-based, `docs/chi-so-o-bang.md`), `value` | |
 | `input_events` | `submission_id`, `step_code`, `cell`, `old_value`, `new_value`, `at` | Cho nghi đoán mò |
@@ -64,7 +64,7 @@ ngược lại 409 và phải kiểm lại, để không phát hành bằng phá
 
 | Bảng | Cột chính | Ghi chú |
 | --- | --- | --- |
-| `tutor_sessions` | `id`, `student_id`, `problem_id`, `state`, `hint_levels` (theo bước), `answer_requests`, `answer_requests_step`, `same_error_repeats`, `last_step`, `started_at` | Một phiên mỗi (học sinh, bài) |
+| `tutor_sessions` | `id`, `class_id`, `student_id`, `problem_id`, `state`, `hint_levels` (theo bước), `answer_requests`, `answer_requests_step`, `same_error_repeats`, `last_step`, `started_at` | Một phiên mỗi (học sinh, lớp, bài); kho lớp, bảng công thức và nhà AI lấy theo lớp |
 | `tutor_messages` | `id`, `session_id`, `role`, `content`, `blocked_by_filter`, `formula_verdicts`, `citations`, `provider`, `created_at` | Chỉ lưu câu đã kiểm; không lưu phần «suy nghĩ» của nhà |
 | `llm_calls` | `id`, `purpose`, `provider`, `model`, `pseudonym_id`, `offline`, `duration_ms`, `outcome` | Không lưu nội dung gửi đi |
 

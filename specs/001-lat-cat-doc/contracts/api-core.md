@@ -49,7 +49,7 @@ data: {"noiDung":"…câu đã lọc và đã qua cổng…","trichDan":[{"n":1,
 | POST | `/api/gv/duyet/{runId}` | `{ghiChu}` (bắt buộc) | chỉ cho `loai = BAI`, `trangThai = KHONG_KIEM_DUOC`: `{trangThai: GV_DUYET, nguoiDuyet, luc}`. 409 nếu mục là `SAI`, hoặc run đã cũ: không phải run mới nhất của bài trong lớp, `stale`, hay `content_hash` / bảng công thức đã đổi (phải kiểm lại bằng `POST /api/gv/ngan-hang/kiem`). 422 nếu mục là `CONG_THUC_GIA_SU`: không duyệt riêng, phải thêm vào bảng công thức rồi khóa phiên bản mới (ADR 013) | 5 |
 | GET | `/api/gv/ngan-hang` | — | `[{maBai, muc4, muc3, kyNang, trangThai, cu}]` | 3, 4 |
 | POST | `/api/gv/ngan-hang/kiem` | `{maBai?}` | chạy lại cổng; trả trạng thái mới | 4 |
-| POST | `/api/gv/giao-bai` | `{maBai, hocSinh?: [id], han?}` (thiếu `hocSinh` = cả lớp) | danh sách giao | 31 |
+| POST | `/api/gv/giao-bai` | `{maBai, hocSinh?: [id], han?}` (thiếu `hocSinh` = cả lớp) | danh sách giao; 409 nếu bài chưa `DA_PHAT_HANH` cho lớp này | 31 |
 | GET | `/api/gv/tai-lieu` | — | `[{id, tieuDe, quyenDung, soDoan, phienBan}]` | 2 |
 | POST | `/api/gv/tai-lieu` | `multipart`: tệp PDF ≤ 10 MB, `tieuDe`, `quyenDung` | tài liệu + số đoạn trích được | 2 |
 | GET | `/api/gv/cong-thuc` | — | `{phienBan, trangThai: NHAP\|KHOA, cacDong: [{id, tieuDe, latex, phatBieu, tang1, trichDan}]}` | 1 |
