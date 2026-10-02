@@ -1,8 +1,8 @@
 .trang {
   min-height: 100dvh;
-  padding-bottom: env(safe-area-inset-bottom);
 }
 
+/* Đệm vùng an toàn (thanh home của iPhone) nằm trong chính khối 100dvh (border-box), nên trang không dài hơn màn. */
 .khung {
   display: flex;
   flex-direction: column;
@@ -10,11 +10,13 @@
   max-width: 64rem;
   margin: 0 auto;
   padding: var(--space-5);
+  padding-bottom: calc(var(--space-5) + env(safe-area-inset-bottom));
 }
 
 @media (min-width: 640px) {
   .khung {
     padding: var(--space-6);
+    padding-bottom: calc(var(--space-6) + env(safe-area-inset-bottom));
   }
 }
 
