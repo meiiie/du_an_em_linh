@@ -100,6 +100,26 @@ class MathServiceClientTest {
     }
 
     @Test
+    @DisplayName("Chuyển hướng 3xx có thân «DAT» → HTTP_ERROR, không đạt")
+    void chuyenHuong() throws IOException {
+        HttpServer proxy = HttpServer.create(new InetSocketAddress(InetAddress.getLoopbackAddress(), 0), 0);
+        proxy.createContext(MathJob.GRADE.path(), ex -> {
+            ex.getResponseHeaders().add("Location", "http://127.0.0.1:1/v1/grade");
+            tra(ex, 302, "{\"ket_qua\":\"DAT\"}");
+        });
+        proxy.start();
+        try {
+            MathServiceClient quaProxy = new MathServiceClient(RestClient.builder(),
+                URI.create("http://127.0.0.1:" + proxy.getAddress().getPort()), Duration.ofSeconds(1), job -> HET_GIO);
+            MathResult r = quaProxy.call(MathJob.GRADE, Map.of());
+            assertThatFailed(r, MathResult.Reason.HTTP_ERROR);
+            assertThat(((MathResult.Failed) r).detail()).isEqualTo("HTTP 302");
+        } finally {
+            proxy.stop(0);
+        }
+    }
+
+    @Test
     @DisplayName("JSON hỏng → BAD_RESPONSE, không đạt")
     void jsonHong() {
         assertThatFailed(client.call(MathJob.FILTER, Map.of("ban_nhap", "…")), MathResult.Reason.BAD_RESPONSE);

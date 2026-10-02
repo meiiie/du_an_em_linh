@@ -59,6 +59,11 @@ public class MathServiceClient {
                 .accept(MediaType.APPLICATION_JSON)
                 .body(body)
                 .retrieve()
+                // Mọi mã ngoài 2xx (cả 3xx: JDK HttpClient không đi theo chuyển hướng) là lỗi, trước khi đọc thân
+                .onStatus(status -> !status.is2xxSuccessful(), (request, res) -> {
+                    throw new RestClientResponseException("HTTP " + res.getStatusCode().value(), res.getStatusCode(),
+                        res.getStatusText(), res.getHeaders(), null, null);
+                })
                 .body(JSON_OBJECT);
             if (response == null) {
                 return failed(job, MathResult.Reason.BAD_RESPONSE, "Thân phản hồi rỗng.");
