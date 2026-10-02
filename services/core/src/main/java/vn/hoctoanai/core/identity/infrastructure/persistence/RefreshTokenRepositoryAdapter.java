@@ -4,7 +4,6 @@ import java.time.Instant;
 import java.util.Optional;
 import org.springframework.stereotype.Repository;
 import vn.hoctoanai.core.identity.domain.model.RefreshToken;
-import vn.hoctoanai.core.identity.domain.model.UserId;
 import vn.hoctoanai.core.identity.domain.repository.RefreshTokenRepository;
 import vn.hoctoanai.core.identity.infrastructure.persistence.entity.RefreshTokenJpaEntity;
 
@@ -25,11 +24,6 @@ public class RefreshTokenRepositoryAdapter implements RefreshTokenRepository {
     @Override
     public RefreshToken save(RefreshToken token) {
         return jpa.save(RefreshTokenJpaEntity.from(token)).toDomain();
-    }
-
-    @Override
-    public void revokeAllActive(UserId userId, Instant now) {
-        jpa.revokeAllActive(userId.value(), now);
     }
 
     @Override

@@ -20,7 +20,7 @@ class LoginUseCaseTest {
     @BeforeEach
     void setUp() {
         gl = new GiaLapDinhDanh();
-        login = new LoginUseCase(gl.userRepository, gl.hasher, gl.sessionIssuer(), gl.clock);
+        login = gl.login();
         gl.themNguoiDung("hs.an@demo.local", "hocsinh123", Role.STUDENT, true);
         gl.themNguoiDung("khoa@demo.local", "hocsinh123", Role.STUDENT, false);
     }
@@ -33,6 +33,15 @@ class LoginUseCaseTest {
         assertThat(res.accessTokenExpiresAt()).isEqualTo(GiaLapDinhDanh.NOW.plusSeconds(15 * 60));
         assertThat(gl.tokens).containsKey(RefreshToken.hash(res.refreshToken()));
         assertThat(gl.tokens.values()).noneMatch(t -> t.tokenHash().equals(res.refreshToken()));
+        assertThat(gl.sessions).hasSize(1);
+        assertThat(gl.phienCua(res.refreshToken()).isRevoked()).isFalse();
+    }
+
+    @Test
+    void moiLanDangNhapMoPhienRieng() {
+        AuthResponse may1 = login.execute(new LoginRequest("hs.an@demo.local", "hocsinh123"));
+        AuthResponse may2 = login.execute(new LoginRequest("hs.an@demo.local", "hocsinh123"));
+        assertThat(gl.phienCua(may1.refreshToken()).id()).isNotEqualTo(gl.phienCua(may2.refreshToken()).id());
     }
 
     @Test
@@ -47,6 +56,7 @@ class LoginUseCaseTest {
                 .hasMessage(AuthenticationFailedException.THONG_BAO);
         }
         assertThat(gl.tokens).isEmpty();
+        assertThat(gl.sessions).isEmpty();
     }
 
     @Test

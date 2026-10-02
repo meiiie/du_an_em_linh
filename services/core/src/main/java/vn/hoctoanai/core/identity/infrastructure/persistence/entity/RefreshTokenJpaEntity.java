@@ -17,6 +17,9 @@ public class RefreshTokenJpaEntity {
     @Id
     private UUID id;
 
+    @Column(name = "session_id", nullable = false)
+    private UUID sessionId;
+
     @Column(name = "user_id", nullable = false)
     private UUID userId;
 
@@ -38,6 +41,7 @@ public class RefreshTokenJpaEntity {
     public static RefreshTokenJpaEntity from(RefreshToken token) {
         RefreshTokenJpaEntity entity = new RefreshTokenJpaEntity();
         entity.id = token.id();
+        entity.sessionId = token.sessionId();
         entity.userId = token.userId().value();
         entity.tokenHash = token.tokenHash();
         entity.expiresAt = token.expiresAt();
@@ -47,6 +51,6 @@ public class RefreshTokenJpaEntity {
     }
 
     public RefreshToken toDomain() {
-        return new RefreshToken(id, new UserId(userId), tokenHash, expiresAt, revokedAt, createdAt);
+        return new RefreshToken(id, sessionId, new UserId(userId), tokenHash, expiresAt, revokedAt, createdAt);
     }
 }

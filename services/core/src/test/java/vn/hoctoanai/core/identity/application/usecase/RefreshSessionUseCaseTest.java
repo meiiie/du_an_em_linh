@@ -13,60 +13,84 @@ import vn.hoctoanai.core.identity.application.dto.AuthResponse;
 import vn.hoctoanai.core.identity.application.dto.LoginRequest;
 import vn.hoctoanai.core.identity.application.dto.RefreshTokenRequest;
 import vn.hoctoanai.core.identity.application.exception.AuthenticationFailedException;
+import vn.hoctoanai.core.identity.domain.model.AuthSession;
 import vn.hoctoanai.core.identity.domain.model.RefreshToken;
 import vn.hoctoanai.core.identity.domain.model.Role;
+import vn.hoctoanai.core.identity.domain.model.User;
 
 class RefreshSessionUseCaseTest {
 
     private GiaLapDinhDanh gl;
+    private User an;
     private AuthResponse phien;
 
     @BeforeEach
     void setUp() {
         gl = new GiaLapDinhDanh();
-        gl.themNguoiDung("hs.an@demo.local", "hocsinh123", Role.STUDENT, true);
-        phien = new LoginUseCase(gl.userRepository, gl.hasher, gl.sessionIssuer(), gl.clock)
-            .execute(new LoginRequest("hs.an@demo.local", "hocsinh123"));
-    }
-
-    private RefreshSessionUseCase refresh() {
-        return new RefreshSessionUseCase(gl.refreshTokenRepository, gl.userRepository, gl.sessionIssuer(), gl.clock);
+        an = gl.themNguoiDung("hs.an@demo.local", "hocsinh123", Role.STUDENT, true);
+        phien = gl.login().execute(new LoginRequest("hs.an@demo.local", "hocsinh123"));
     }
 
     @Test
-    void xoayVongThuHoiTokenCuCapTokenMoi() {
-        AuthResponse moi = refresh().execute(new RefreshTokenRequest(phien.refreshToken()));
+    void xoayVongThuHoiTokenCuCapTokenMoiTrongCungPhien() {
+        AuthResponse moi = gl.refresh().execute(new RefreshTokenRequest(phien.refreshToken()));
         assertThat(moi.refreshToken()).isNotEqualTo(phien.refreshToken());
         assertThat(gl.tokens.get(RefreshToken.hash(phien.refreshToken())).isRevoked()).isTrue();
         assertThat(gl.tokens.get(RefreshToken.hash(moi.refreshToken())).isActive(GiaLapDinhDanh.NOW)).isTrue();
+        assertThat(gl.phienCua(moi.refreshToken())).isEqualTo(gl.phienCua(phien.refreshToken()));
+        assertThat(gl.sessions).hasSize(1);
     }
 
     @Test
-    void dungLaiTokenDaThuHoiThuHoiMoiPhien() {
-        AuthResponse moi = refresh().execute(new RefreshTokenRequest(phien.refreshToken()));
-        assertThatThrownBy(() -> refresh().execute(new RefreshTokenRequest(phien.refreshToken())))
+    void dungLaiTokenDaThuHoiThuHoiMoiPhienCuaNguoiDo() {
+        AuthResponse mayKhac = gl.login().execute(new LoginRequest("hs.an@demo.local", "hocsinh123"));
+        AuthResponse moi = gl.refresh().execute(new RefreshTokenRequest(phien.refreshToken()));
+
+        assertThatThrownBy(() -> gl.refresh().execute(new RefreshTokenRequest(phien.refreshToken())))
             .isInstanceOf(AuthenticationFailedException.class)
             .hasMessage(AuthenticationFailedException.PHIEN_HET_HAN);
-        assertThat(gl.tokens.get(RefreshToken.hash(moi.refreshToken())).isRevoked()).isTrue();
+
+        assertThat(gl.sessions.values()).hasSize(2).allMatch(AuthSession::isRevoked);
+        for (String token : new String[] {moi.refreshToken(), mayKhac.refreshToken()}) {
+            assertThatThrownBy(() -> gl.refresh().execute(new RefreshTokenRequest(token)))
+                .isInstanceOf(AuthenticationFailedException.class);
+        }
     }
 
     @Test
     void thuaCuocDuaVoiYeuCauDongThoiThuHoiMoiPhien() {
-        AuthResponse moi = refresh().execute(new RefreshTokenRequest(phien.refreshToken()));
+        AuthResponse moi = gl.refresh().execute(new RefreshTokenRequest(phien.refreshToken()));
         gl.thuaCuocDua = true;
-        assertThatThrownBy(() -> refresh().execute(new RefreshTokenRequest(moi.refreshToken())))
+        assertThatThrownBy(() -> gl.refresh().execute(new RefreshTokenRequest(moi.refreshToken())))
             .isInstanceOf(AuthenticationFailedException.class)
             .hasMessage(AuthenticationFailedException.PHIEN_HET_HAN);
-        gl.thuaCuocDua = false;
-        assertThat(gl.tokens.values()).allMatch(RefreshToken::isRevoked);
+        assertThat(gl.sessions.values()).allMatch(AuthSession::isRevoked);
+    }
+
+    @Test
+    void phienDaThuHoiTuChoiMaKhongThuHoiPhienKhac() {
+        AuthResponse mayKhac = gl.login().execute(new LoginRequest("hs.an@demo.local", "hocsinh123"));
+        gl.logout().execute(new RefreshTokenRequest(phien.refreshToken()));
+
+        assertThatThrownBy(() -> gl.refresh().execute(new RefreshTokenRequest(phien.refreshToken())))
+            .isInstanceOf(AuthenticationFailedException.class);
+        assertThat(gl.phienCua(mayKhac.refreshToken()).isRevoked()).isFalse();
+    }
+
+    @Test
+    void taiKhoanBiKhoaKhongLamMoiDuoc() {
+        gl.khoa(an);
+        assertThatThrownBy(() -> gl.refresh().execute(new RefreshTokenRequest(phien.refreshToken())))
+            .isInstanceOf(AuthenticationFailedException.class);
+        assertThat(gl.tokens.get(RefreshToken.hash(phien.refreshToken())).isRevoked()).isFalse();
     }
 
     @Test
     void tokenHetHanHoacLaBiTuChoi() {
         gl.clock = Clock.fixed(GiaLapDinhDanh.NOW.plus(Duration.ofDays(31)), ZoneOffset.UTC);
-        assertThatThrownBy(() -> refresh().execute(new RefreshTokenRequest(phien.refreshToken())))
+        assertThatThrownBy(() -> gl.refresh().execute(new RefreshTokenRequest(phien.refreshToken())))
             .isInstanceOf(AuthenticationFailedException.class);
-        assertThatThrownBy(() -> refresh().execute(new RefreshTokenRequest("khong-ton-tai")))
+        assertThatThrownBy(() -> gl.refresh().execute(new RefreshTokenRequest("khong-ton-tai")))
             .isInstanceOf(AuthenticationFailedException.class);
     }
 }

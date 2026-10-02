@@ -75,6 +75,13 @@ class AuthControllerTest {
     }
 
     @Test
+    void matKhauQua72ByteTra400() {
+        assertThat(mvc.post().uri("/api/auth/login").contentType(MediaType.APPLICATION_JSON)
+                .content("{\"email\":\"hs.an@demo.local\",\"password\":\"" + "ệ".repeat(25) + "\"}"))
+            .hasStatus(400);
+    }
+
+    @Test
     void meCanToken() {
         assertThat(mvc.get().uri("/api/me")).hasStatus(401);
     }

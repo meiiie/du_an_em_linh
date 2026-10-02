@@ -13,10 +13,6 @@ public interface RefreshTokenJpaRepository extends JpaRepository<RefreshTokenJpa
 
     Optional<RefreshTokenJpaEntity> findByTokenHash(String tokenHash);
 
-    @Modifying(clearAutomatically = true, flushAutomatically = true)
-    @Query("update RefreshTokenJpaEntity t set t.revokedAt = :now where t.userId = :userId and t.revokedAt is null")
-    int revokeAllActive(@Param("userId") UUID userId, @Param("now") Instant now);
-
     /** PostgreSQL khóa dòng khi UPDATE và kiểm lại điều kiện sau khi giao dịch kia xong: một token chỉ một bên thắng. */
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("update RefreshTokenJpaEntity t set t.revokedAt = :now where t.tokenHash = :hash and t.revokedAt is null and t.expiresAt > :now")

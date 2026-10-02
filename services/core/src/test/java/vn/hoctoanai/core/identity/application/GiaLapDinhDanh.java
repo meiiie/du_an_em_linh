@@ -13,11 +13,16 @@ import vn.hoctoanai.core.identity.application.port.AccessTokenIssuer;
 import vn.hoctoanai.core.identity.application.port.PasswordHasher;
 import vn.hoctoanai.core.identity.application.port.RefreshTokenGenerator;
 import vn.hoctoanai.core.identity.application.service.SessionIssuer;
+import vn.hoctoanai.core.identity.application.usecase.LoginUseCase;
+import vn.hoctoanai.core.identity.application.usecase.LogoutUseCase;
+import vn.hoctoanai.core.identity.application.usecase.RefreshSessionUseCase;
+import vn.hoctoanai.core.identity.domain.model.AuthSession;
 import vn.hoctoanai.core.identity.domain.model.Email;
 import vn.hoctoanai.core.identity.domain.model.RefreshToken;
 import vn.hoctoanai.core.identity.domain.model.Role;
 import vn.hoctoanai.core.identity.domain.model.User;
 import vn.hoctoanai.core.identity.domain.model.UserId;
+import vn.hoctoanai.core.identity.domain.repository.AuthSessionRepository;
 import vn.hoctoanai.core.identity.domain.repository.RefreshTokenRepository;
 import vn.hoctoanai.core.identity.domain.repository.UserRepository;
 
@@ -28,6 +33,7 @@ public final class GiaLapDinhDanh {
 
     public final Map<UUID, User> users = new HashMap<>();
     public final Map<String, RefreshToken> tokens = new HashMap<>();
+    public final Map<UUID, AuthSession> sessions = new HashMap<>();
     public final AtomicInteger soLanSoMatKhau = new AtomicInteger();
     public final AtomicInteger soTokenDaSinh = new AtomicInteger();
     public Clock clock = Clock.fixed(NOW, ZoneOffset.UTC);
@@ -65,11 +71,6 @@ public final class GiaLapDinhDanh {
         }
 
         @Override
-        public void revokeAllActive(UserId userId, Instant now) {
-            tokens.replaceAll((hash, t) -> t.userId().equals(userId) ? t.revoke(now) : t);
-        }
-
-        @Override
         public boolean revokeIfActive(String tokenHash, Instant now) {
             if (thuaCuocDua) {
                 return false;
@@ -87,6 +88,41 @@ public final class GiaLapDinhDanh {
             int truoc = tokens.size();
             tokens.values().removeIf(t -> t.expiresAt().isBefore(cutoff));
             return truoc - tokens.size();
+        }
+    };
+
+    public final AuthSessionRepository authSessionRepository = new AuthSessionRepository() {
+        @Override
+        public AuthSession save(AuthSession session) {
+            sessions.put(session.id(), session);
+            return session;
+        }
+
+        @Override
+        public Optional<AuthSession> findByIdForUpdate(UUID id) {
+            return Optional.ofNullable(sessions.get(id));
+        }
+
+        @Override
+        public boolean revoke(UUID id, Instant now) {
+            AuthSession session = sessions.get(id);
+            if (session == null || session.isRevoked()) {
+                return false;
+            }
+            sessions.put(id, session.revoke(now));
+            return true;
+        }
+
+        @Override
+        public void revokeAllForUser(UserId userId, Instant now) {
+            sessions.replaceAll((id, s) -> s.userId().equals(userId) ? s.revoke(now) : s);
+        }
+
+        @Override
+        public int deleteWithoutTokens() {
+            int truoc = sessions.size();
+            sessions.keySet().removeIf(id -> tokens.values().stream().noneMatch(t -> t.sessionId().equals(id)));
+            return truoc - sessions.size();
         }
     };
 
@@ -114,7 +150,28 @@ public final class GiaLapDinhDanh {
     public final RefreshTokenGenerator generator = () -> "refresh-" + soTokenDaSinh.incrementAndGet();
 
     public SessionIssuer sessionIssuer() {
-        return new SessionIssuer(accessTokenIssuer, generator, refreshTokenRepository, Duration.ofDays(30));
+        return new SessionIssuer(accessTokenIssuer, generator, refreshTokenRepository, authSessionRepository, Duration.ofDays(30));
+    }
+
+    public LoginUseCase login() {
+        return new LoginUseCase(userRepository, hasher, sessionIssuer(), clock);
+    }
+
+    public RefreshSessionUseCase refresh() {
+        return new RefreshSessionUseCase(refreshTokenRepository, authSessionRepository, userRepository, sessionIssuer(), clock);
+    }
+
+    public LogoutUseCase logout() {
+        return new LogoutUseCase(refreshTokenRepository, authSessionRepository, clock);
+    }
+
+    public AuthSession phienCua(String refreshToken) {
+        return sessions.get(tokens.get(RefreshToken.hash(refreshToken)).sessionId());
+    }
+
+    public void khoa(User user) {
+        users.put(user.id().value(), new User(
+            user.id(), user.email(), user.passwordHash(), user.displayName(), user.role(), false, user.synthetic(), NOW, NOW));
     }
 
     public User themNguoiDung(String email, String matKhau, Role role, boolean enabled) {

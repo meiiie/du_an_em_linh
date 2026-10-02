@@ -1,10 +1,17 @@
 package vn.hoctoanai.core.identity;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.jayway.jsonpath.JsonPath;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
+import java.util.Optional;
+import java.util.concurrent.CyclicBarrier;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -15,13 +22,22 @@ import org.springframework.test.web.servlet.assertj.MockMvcTester;
 import org.springframework.test.web.servlet.assertj.MvcTestResult;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import vn.hoctoanai.core.TestcontainersConfiguration;
+import vn.hoctoanai.core.identity.application.dto.LoginRequest;
+import vn.hoctoanai.core.identity.application.dto.RefreshTokenRequest;
+import vn.hoctoanai.core.identity.application.exception.AuthenticationFailedException;
 import vn.hoctoanai.core.identity.application.port.PasswordHasher;
+import vn.hoctoanai.core.identity.application.usecase.LoginUseCase;
+import vn.hoctoanai.core.identity.application.usecase.LogoutUseCase;
+import vn.hoctoanai.core.identity.application.usecase.RefreshSessionUseCase;
 import vn.hoctoanai.core.identity.domain.model.Email;
 import vn.hoctoanai.core.identity.domain.model.Role;
 import vn.hoctoanai.core.identity.domain.model.User;
 import vn.hoctoanai.core.identity.domain.repository.UserRepository;
 
-/** Trọn luồng trên PostgreSQL 18 thật: đăng nhập → /api/me → làm mới → đăng xuất → làm mới bị từ chối. */
+/**
+ * Trọn luồng trên PostgreSQL 18 thật: đăng nhập → /api/me → làm mới → đăng xuất → làm mới bị từ chối; và đăng xuất chạy
+ * đồng thời với làm mới trên cùng phiên.
+ */
 @SpringBootTest
 @AutoConfigureMockMvc
 @Import(TestcontainersConfiguration.class)
@@ -36,6 +52,15 @@ class IdentityIntegrationTest {
 
     @Autowired
     private PasswordHasher hasher;
+
+    @Autowired
+    private LoginUseCase login;
+
+    @Autowired
+    private RefreshSessionUseCase refresh;
+
+    @Autowired
+    private LogoutUseCase logout;
 
     @Test
     void dangNhapLamMoiDangXuat() throws Exception {
@@ -61,5 +86,38 @@ class IdentityIntegrationTest {
         assertThat(mvc.post().uri("/api/auth/refresh").contentType(MediaType.APPLICATION_JSON)
             .content("{\"refreshToken\":\"" + refreshMoi + "\"}")).hasStatus(401);
         assertThat(mvc.get().uri("/api/me").header("Authorization", "Bearer khong-hop-le")).hasStatus(401);
+    }
+
+    /** Hai giao dịch thật chạy cùng lúc nhiều lần: dù bên nào thắng, sau đăng xuất không còn token nào của phiên dùng được. */
+    @Test
+    void dangXuatDongThoiVoiLamMoiVanKetThucPhien() throws Exception {
+        users.save(User.create(new Email("hs.dong-thoi@demo.local"), hasher.hash("hocsinh123"), "Học sinh thử", Role.STUDENT, true, Instant.now()));
+        ExecutorService pool = Executors.newFixedThreadPool(2);
+        try {
+            for (int lan = 0; lan < 30; lan++) {
+                String token = login.execute(new LoginRequest("hs.dong-thoi@demo.local", "hocsinh123")).refreshToken();
+                CyclicBarrier xuatPhat = new CyclicBarrier(2);
+                Future<Optional<String>> lamMoi = pool.submit(() -> {
+                    xuatPhat.await();
+                    try {
+                        return Optional.of(refresh.execute(new RefreshTokenRequest(token)).refreshToken());
+                    } catch (AuthenticationFailedException e) {
+                        return Optional.empty();
+                    }
+                });
+                Future<?> dangXuat = pool.submit(() -> {
+                    xuatPhat.await();
+                    logout.execute(new RefreshTokenRequest(token));
+                    return null;
+                });
+                dangXuat.get(10, TimeUnit.SECONDS);
+                String conLai = lamMoi.get(10, TimeUnit.SECONDS).orElse(token);
+                assertThatThrownBy(() -> refresh.execute(new RefreshTokenRequest(conLai)))
+                    .as("lần %d", lan)
+                    .isInstanceOf(AuthenticationFailedException.class);
+            }
+        } finally {
+            pool.shutdownNow();
+        }
     }
 }

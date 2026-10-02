@@ -41,7 +41,7 @@ public class LoginUseCase {
         User user = found.filter(u -> matches && u.enabled())
                 .orElseThrow(() -> new AuthenticationFailedException(AuthenticationFailedException.THONG_BAO));
         Instant now = clock.instant();
-        return sessions.issue(user, now);
+        return sessions.start(user, now);
     }
 
     private static Optional<Email> email(String raw) {
