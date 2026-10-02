@@ -56,8 +56,9 @@ export class DangNhap {
   }
 
   protected chonEmail(giaTri: string): void {
-    // Đổi email thì bỏ mật khẩu đã gõ: mật khẩu của tài khoản này không được rơi sang tài khoản khác.
-    this.taiKhoan.update((tk) => ({ email: giaTri, matKhau: tk.email === giaTri ? tk.matKhau : '' }));
+    // Mỗi lần vào bước mật khẩu, ô mật khẩu bắt đầu rỗng (như v0): mật khẩu không theo sang tài khoản khác,
+    // dù email đổi bằng chip hay gõ tay (ô email gắn thẳng vào model nên không so được với email cũ).
+    this.taiKhoan.set({ email: giaTri, matKhau: '' });
     this.hienMatKhau.set(false);
     this.doiBuoc('mat-khau');
   }

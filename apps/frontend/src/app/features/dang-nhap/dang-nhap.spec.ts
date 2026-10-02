@@ -72,22 +72,36 @@ describe('DangNhap', () => {
     expect(nutMat.getAttribute('aria-label')).toBe('Ẩn mật khẩu');
   });
 
-  it('đổi tài khoản thì xóa mật khẩu đã gõ; giữ nguyên tài khoản thì giữ', async () => {
+  it('mật khẩu đã gõ không theo sang tài khoản khác (gõ email khác, chip khác, chọn lại)', async () => {
     const t = await moTrang();
-    t.nut('Học sinh An')!.click();
-    await t.on();
-    go(t.o('password')!, 'bi-mat');
-    await t.on();
+    const goMatKhauChoAn = async () => {
+      t.nut('Học sinh An')!.click();
+      await t.on();
+      go(t.o('password')!, 'bi-mat');
+      await t.on();
+    };
+
+    await goMatKhauChoAn();
     t.nut('Quay lại')!.click();
     await t.on();
-    t.nut('Học sinh An')!.click();
+    go(t.o('email')!, 'hs.binh@demo.local');
     await t.on();
-    expect(t.o('password')?.value).toBe('bi-mat');
-    t.nut('Quay lại')!.click();
+    t.gui();
     await t.on();
+    expect(t.o('email')?.value).toBe('hs.binh@demo.local');
+    expect(t.o('password')?.value).toBe('');
+
+    await goMatKhauChoAn();
     t.nut('Giáo viên')!.click();
     await t.on();
     expect(t.o('email')?.value).toBe('gv@demo.local');
+    expect(t.o('password')?.value).toBe('');
+
+    await goMatKhauChoAn();
+    t.nut('Quay lại')!.click();
+    await t.on();
+    t.nut('Học sinh An')!.click();
+    await t.on();
     expect(t.o('password')?.value).toBe('');
   });
 
