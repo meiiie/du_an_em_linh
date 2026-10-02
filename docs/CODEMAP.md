@@ -38,7 +38,7 @@ Harness (Anthropic 2026): tệp này là mục lục để agent biết chỗ m�
 | `release-please-config.json` | Một sản phẩm, extra-files web + math + CITATION |
 | `docs/TRIEN-KHAI.md` | Render, Neon, giữ thức |
 | `docs/KIEM-THU.md` | Số liệu lần dựng nguyên mẫu |
-| `.github/workflows/ci.yml` | test hook harness + phiên bản + pytest + typecheck/lint/unit + Playwright e2e |
+| `.github/workflows/ci.yml` | job «Phân loại thay đổi» (`scripts/ci-thay-doi.mjs`, quét khóa, số phiên bản) chọn job theo đường dẫn: harness, core (Maven + image), frontend (build + Vitest), v0 (pytest, typecheck/lint/unit, Playwright e2e) |
 | `.github/workflows/phat-hanh.yml` | release-please trên `main` |
 | `.github/workflows/cd.yml` | Sau CI xanh → hook Render + ping trang chủ |
 | `.github/workflows/giu-thuc.yml` | Cron 10 phút ping `/api/suc-khoe` (chỉ chạy trên `main`) |

@@ -1,6 +1,6 @@
 # Kết quả kiểm thử
 
-Chỉ ghi số chạy thật. Không suy diễn thêm. CI (`.github/workflows/ci.yml`) chạy `test:math`, `test:web` và Playwright e2e trên mọi push/PR.
+Chỉ ghi số chạy thật. Không suy diễn thêm. CI (`.github/workflows/ci.yml`) chạy mọi job khi push lên `main`; ở PR, job «Phân loại thay đổi» chỉ bật job của vùng có file đổi (`scripts/ci-thay-doi.mjs`), file lạ thì chạy hết.
 
 ## Lần bàn giao — 29/09/2026 (giờ Việt Nam)
 
