@@ -167,3 +167,33 @@ body {
     scroll-behavior: auto !important;
   }
 }
+
+/* Đầu trang sau đăng nhập (khung `/hs`, `/gv`): heading như v0 (28 px, đậm vừa). */
+.dau-trang {
+  margin-bottom: var(--space-5);
+  padding-bottom: var(--space-4);
+  border-bottom: 1px solid var(--line);
+}
+
+.dau-trang h1 {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 600;
+  line-height: 36px;
+  letter-spacing: -0.01em;
+  text-wrap: pretty;
+}
+
+/* Trạng thái rỗng: mỗi màn đều nói rõ đang chờ gì, không để trắng. */
+.trong h2 {
+  margin: 0 0 var(--space-2);
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 24px;
+}
+
+.trong p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 24px;
+}

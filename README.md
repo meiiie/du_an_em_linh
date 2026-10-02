@@ -86,7 +86,7 @@ docker compose -f compose.v2.yaml up --build --wait
 | `services/core` (profile `dev`, có 4 tài khoản thử ở trên) | http://localhost:8080/actuator/health |
 | `services/math` | http://localhost:8000/health |
 
-PostgreSQL 18 chỉ mở trong mạng compose. Dừng: `docker compose -f compose.v2.yaml down`; thêm `-v` để xóa CSDL. Trang đăng nhập v2 chưa gọi API (#57); thử API bằng `curl -X POST localhost:4200/api/auth/login -H 'Content-Type: application/json' -d '{"email":"hs.an@demo.local","password":"hocsinh123"}'`. Cổng 8000 trùng với `math` của v0, nên không chạy hai compose cùng lúc.
+PostgreSQL 18 chỉ mở trong mạng compose. Dừng: `docker compose -f compose.v2.yaml down`; thêm `-v` để xóa CSDL. Đăng nhập bằng tài khoản thử ở trên: học sinh vào `/hs`, giáo viên vào `/gv`. Kiểm cả hệ: `bash scripts/khoi-v2.sh` và `pnpm --filter frontend e2e`. Cổng 8000 trùng với `math` của v0, nên không chạy hai compose cùng lúc.
 
 ## Demo khoảng năm phút
 

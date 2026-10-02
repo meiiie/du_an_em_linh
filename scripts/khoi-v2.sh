@@ -19,7 +19,7 @@ headers=$(curl -fsSI "$GOC/")
 grep -qi '^x-frame-options: DENY' <<<"$headers"
 grep -qi '^x-content-type-options: nosniff' <<<"$headers"
 dat "header bảo mật"
-[[ $html =~ (main-[A-Za-z0-9]+\.js) ]]
+[[ $html =~ (main-[A-Za-z0-9_-]+\.js) ]]
 asset=${BASH_REMATCH[1]}
 asset_headers=$(curl -fsSI "$GOC/$asset")
 grep -qi '^cache-control: .*immutable' <<<"$asset_headers"

@@ -23,8 +23,9 @@ server {
         proxy_set_header X-Forwarded-Proto $scheme;
     }
 
-    # Tệp build có hash trong tên (main-5KQ2JHEV.js, media/…-AB12CD34.woff2): cache một năm.
-    location ~* "-[a-z0-9]{8}\.(?:js|css|woff2?)$" {
+    # Tệp build có hash 8 ký tự base64url trong tên (main-5KQ2JHEV.js, chunk-Bo9Sfcq-.js, media/…-AB12cd_4.woff2):
+    # cache một năm.
+    location ~* "-[a-z0-9_-]{8}\.(?:js|css|woff2?)$" {
         add_header Cache-Control "public, max-age=31536000, immutable" always;
         add_header X-Content-Type-Options nosniff always;
         add_header X-Frame-Options DENY always;

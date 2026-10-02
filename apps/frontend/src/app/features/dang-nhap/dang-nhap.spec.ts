@@ -1,14 +1,25 @@
+import { HttpErrorResponse } from '@angular/common/http';
 import { TestBed } from '@angular/core/testing';
-import { provideRouter } from '@angular/router';
+import { provideRouter, Router } from '@angular/router';
+import { Phien } from '../../core/auth/phien';
+import { AN, GV, PhienGia } from '../../core/auth/phien.testing';
 import { DangNhap } from './dang-nhap';
 
-async function moTrang() {
-  await TestBed.configureTestingModule({ imports: [DangNhap], providers: [provideRouter([])] }).compileComponents();
+async function moTrang(returnUrl?: string) {
+  const gia = new PhienGia();
+  await TestBed.configureTestingModule({
+    imports: [DangNhap],
+    providers: [provideRouter([]), { provide: Phien, useValue: gia }],
+  }).compileComponents();
+  const dieuHuong = vi.spyOn(TestBed.inject(Router), 'navigateByUrl').mockResolvedValue(true);
   const fixture = TestBed.createComponent(DangNhap);
+  if (returnUrl !== undefined) fixture.componentRef.setInput('returnUrl', returnUrl);
   await fixture.whenStable();
   const el = fixture.nativeElement as HTMLElement;
   return {
     el,
+    gia,
+    dieuHuong,
     on: () => fixture.whenStable(),
     o: (testid: string) => el.querySelector<HTMLInputElement>(`[data-testid="${testid}"]`),
     nut: (chu: string) => [...el.querySelectorAll('button')].find((b) => b.textContent?.trim() === chu) ?? null,
@@ -122,5 +133,94 @@ describe('DangNhap', () => {
     expect(t.o('password')).toBeNull();
     expect(t.o('email')?.readOnly).toBe(false);
     expect(t.o('email')?.value).toBe('hs.an@demo.local');
+  });
+
+  describe('gửi đăng nhập', () => {
+    async function vaoBuocMatKhau(returnUrl?: string, email = 'hs.an@demo.local') {
+      const t = await moTrang(returnUrl);
+      go(t.o('email')!, email);
+      await t.on();
+      t.gui();
+      await t.on();
+      go(t.o('password')!, 'hocsinh123');
+      await t.on();
+      return t;
+    }
+
+    it('đúng → vào trang chủ theo vai trò', async () => {
+      const t = await vaoBuocMatKhau();
+      t.gia.ketQuaDangNhap = () => Promise.resolve(AN);
+      t.gui();
+      await t.on();
+      expect(t.dieuHuong).toHaveBeenCalledWith('/hs');
+      expect(t.el.querySelector('[data-testid="loi-dang-nhap"]')).toBeNull();
+    });
+
+    it('returnUrl nội bộ được dùng; returnUrl sang miền khác bị bỏ', async () => {
+      const noiBo = await vaoBuocMatKhau('/gv', 'gv@demo.local');
+      noiBo.gia.ketQuaDangNhap = () => Promise.resolve(GV);
+      noiBo.gui();
+      await noiBo.on();
+      expect(noiBo.dieuHuong).toHaveBeenCalledWith('/gv');
+
+      TestBed.resetTestingModule();
+      const la = await vaoBuocMatKhau('//vi-du.test/lua');
+      la.gia.ketQuaDangNhap = () => Promise.resolve(AN);
+      la.gui();
+      await la.on();
+      expect(la.dieuHuong).toHaveBeenCalledWith('/hs');
+    });
+
+    it('sai mật khẩu → báo lỗi kèm mật khẩu thử như v0, ô mật khẩu aria-invalid', async () => {
+      const t = await vaoBuocMatKhau();
+      t.gia.ketQuaDangNhap = () => Promise.reject(new HttpErrorResponse({ status: 401 }));
+      t.gui();
+      await t.on();
+      const loi = t.el.querySelector('[data-testid="loi-dang-nhap"]');
+      expect(loi?.getAttribute('role')).toBe('alert');
+      expect(loi?.textContent).toContain('hocsinh123');
+      expect(loi?.textContent).toContain('giaovien123');
+      expect(t.o('password')?.getAttribute('aria-invalid')).toBe('true');
+      expect(t.o('password')?.getAttribute('aria-describedby')).toBe('loi-dang-nhap');
+      expect(t.dieuHuong).not.toHaveBeenCalled();
+    });
+
+    it('tài khoản không phải tài khoản thử → không lộ mật khẩu thử', async () => {
+      const t = await vaoBuocMatKhau(undefined, 'co.giao@truong.edu.vn');
+      t.gia.ketQuaDangNhap = () => Promise.reject(new HttpErrorResponse({ status: 401 }));
+      t.gui();
+      await t.on();
+      const loi = t.el.querySelector('[data-testid="loi-dang-nhap"]')?.textContent ?? '';
+      expect(loi).toContain('Chưa vào được');
+      expect(loi).not.toContain('hocsinh123');
+    });
+
+    it('máy chủ lỗi → câu riêng, không đổ cho mật khẩu', async () => {
+      const t = await vaoBuocMatKhau();
+      t.gia.ketQuaDangNhap = () => Promise.reject(new HttpErrorResponse({ status: 0 }));
+      t.gui();
+      await t.on();
+      expect(t.el.querySelector('[data-testid="loi-dang-nhap"]')?.textContent).toContain('Chưa kết nối được máy chủ');
+      expect(t.o('password')?.hasAttribute('aria-invalid')).toBe(false);
+    });
+
+    it('đang gửi thì khóa Vào học và mọi nút đổi tài khoản', async () => {
+      const t = await vaoBuocMatKhau();
+      let xong!: (n: typeof AN) => void;
+      t.gia.ketQuaDangNhap = () => new Promise((r) => (xong = r));
+      t.gui();
+      await t.on();
+      expect(t.nut('Vào học')?.disabled).toBe(true);
+      expect(t.nut('Vào học')?.getAttribute('aria-busy')).toBe('true');
+      for (const chu of ['Quay lại', 'Học sinh An', 'Giáo viên']) {
+        expect(t.nut(chu)?.disabled, chu).toBe(true);
+      }
+      expect(t.el.querySelector<HTMLButtonElement>('[aria-label="Sửa email"]')?.disabled).toBe(true);
+      xong(AN);
+      // Chuỗi await (đăng nhập → điều hướng → finally) chạy qua vài microtask mà Angular không theo dõi.
+      await new Promise((r) => setTimeout(r, 0));
+      await t.on();
+      expect(t.nut('Vào học')?.disabled).toBe(false);
+    });
   });
 });

@@ -42,7 +42,7 @@
               <span class="nhan">Email</span>
               <span class="o-kem-nut">
                 <input class="o-nhap" type="email" autocomplete="username" readonly data-testid="email" [value]="f.email().value()" />
-                <button type="button" class="nut-trong-o" aria-label="Sửa email" title="Sửa email" (click)="quayLai()">
+                <button type="button" class="nut-trong-o" aria-label="Sửa email" title="Sửa email" [disabled]="dangGui()" (click)="quayLai()">
                   <!-- Biểu tượng Lucide (ISC), cùng bộ với v0. -->
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                     <path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z" />
@@ -63,6 +63,8 @@
                   placeholder="Nhập mật khẩu"
                   data-testid="password"
                   [type]="hienMatKhau() ? 'text' : 'password'"
+                  [attr.aria-invalid]="loi() === 'sai' || null"
+                  [attr.aria-describedby]="loi() ? 'loi-dang-nhap' : null"
                   [formField]="f.matKhau"
                 />
                 <button
@@ -90,9 +92,22 @@
                 </button>
               </span>
             </label>
+            @if (loi() === 'sai') {
+              <p id="loi-dang-nhap" class="loi-dang-nhap" data-testid="loi-dang-nhap" role="alert">
+                @if (laTaiKhoanThu()) {
+                  Chưa vào được. Học sinh <span class="mono">hocsinh123</span> · giáo viên <span class="mono">giaovien123</span>.
+                } @else {
+                  Chưa vào được. Kiểm tra lại email và mật khẩu.
+                }
+              </p>
+            } @else if (loi() === 'may-chu') {
+              <p id="loi-dang-nhap" class="loi-dang-nhap" data-testid="loi-dang-nhap" role="alert">
+                Chưa kết nối được máy chủ. Thử lại sau ít phút.
+              </p>
+            }
             <div class="nhom-nut">
-              <button appButton size="lg" block type="submit">Vào học</button>
-              <button appButton variant="secondary" size="lg" block type="button" (click)="quayLai()">Quay lại</button>
+              <button appButton size="lg" block type="submit" [disabled]="dangGui()" [attr.aria-busy]="dangGui() || null">Vào học</button>
+              <button appButton variant="secondary" size="lg" block type="button" [disabled]="dangGui()" (click)="quayLai()">Quay lại</button>
             </div>
           </form>
         }
@@ -100,7 +115,9 @@
         <ul class="tai-khoan-thu" aria-label="Tài khoản thử">
           @for (tk of taiKhoanThu; track tk.email) {
             <li>
-              <button appButton variant="secondary" type="button" class="chip" (click)="chonEmail(tk.email)">{{ tk.nhan }}</button>
+              <button appButton variant="secondary" type="button" class="chip" [disabled]="dangGui()" (click)="chonEmail(tk.email)">
+                {{ tk.nhan }}
+              </button>
             </li>
           }
         </ul>
