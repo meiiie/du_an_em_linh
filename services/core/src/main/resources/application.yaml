@@ -3,7 +3,14 @@ spring:
     name: core
   threads:
     virtual:
-      enabled: true # chờ I/O (dịch vụ toán, LLM) trên luồng ảo
+      enabled: true # chờ I/O (dịch vụ toán, LLM, CSDL) trên luồng ảo
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate # schema do Flyway quản; lệch mapping thì không khởi động
+  mvc:
+    problemdetails:
+      enabled: true # lỗi trả application/problem+json
 
 server:
   shutdown: graceful
@@ -18,3 +25,10 @@ management:
       probes:
         enabled: true # /actuator/health/liveness và /readiness cho Compose, staging
       show-details: never
+
+# CSDL: SPRING_DATASOURCE_URL / _USERNAME / _PASSWORD từ môi trường; profile dev có giá trị mặc định cục bộ.
+app:
+  identity:
+    jwt-secret: ${APP_IDENTITY_JWT_SECRET:} # base64 >= 32 byte; trống → khóa tạm (chỉ hợp cho dev)
+    access-token-ttl: PT15M
+    refresh-token-ttl: P30D

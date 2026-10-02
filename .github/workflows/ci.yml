@@ -33,7 +33,21 @@ jobs:
   core:
     name: Core — Maven + image
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
+    services:
+      postgres:
+        image: postgres:18-alpine
+        env:
+          POSTGRES_USER: hoc_toan
+          POSTGRES_PASSWORD: hoc_toan
+          POSTGRES_DB: hoc_toan_core
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U hoc_toan -d hoc_toan_core"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
     defaults:
       run:
         working-directory: services/core
@@ -45,13 +59,17 @@ jobs:
           java-version: "25"
           cache: maven
           cache-dependency-path: services/core/pom.xml
-      - name: Build và test (gồm ArchUnit)
+      - name: Build và test (ArchUnit, Testcontainers PostgreSQL 18)
         run: ./mvnw -B -ntp verify
-      - name: Image chạy không root, health UP
+      - name: Image chạy không root, health UP với CSDL thật
         run: |
           docker build -t hoc-toan-core:ci .
           test "$(docker run --rm --entrypoint id hoc-toan-core:ci -u)" = 1001
-          docker run -d --name core -p 8080:8080 hoc-toan-core:ci
+          docker run -d --name core --network host \
+            -e SPRING_DATASOURCE_URL=jdbc:postgresql://127.0.0.1:5432/hoc_toan_core \
+            -e SPRING_DATASOURCE_USERNAME=hoc_toan \
+            -e SPRING_DATASOURCE_PASSWORD=hoc_toan \
+            hoc-toan-core:ci
           for i in $(seq 1 30); do
             if curl -fsS http://127.0.0.1:8080/actuator/health | grep -q '"status":"UP"'; then
               echo "health UP sau $i lần thử"
