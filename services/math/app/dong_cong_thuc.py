@@ -231,6 +231,9 @@ def _kiem_dang_thuc(e_str, r_str, loi=""):
         return {"trang_thai": "KHONG_KIEM_DUOC", "ly_do": "Công thức không đọc được an toàn (F-01): %s" % str(ex)[:120]}
     if e.has(sp.Derivative):
         return {"trang_thai": "KHONG_KIEM_DUOC", "ly_do": "Vế trái đã chứa đạo hàm; máy chỉ kiểm dạng (E)' = R."}
+    if _khong_xac_dinh(sp, e) or _khong_xac_dinh(sp, r):
+        # (1/0)' = 0: SymPy đọc 1/0 thành zoo và đạo hàm của hằng ra 0 — không được để phép lấy đạo hàm xóa chỗ vô nghĩa.
+        return {"trang_thai": "KHONG_KIEM_DUOC", "ly_do": "Biểu thức không xác định ở đâu cả (chia cho 0, vô cực).", "may_doc": doc_duoc}
     hieu = sp.diff(e, x) - r
     pv = _phan_vi_du_dang_thuc(hieu, x, n, k, c, u, v)
     if pv:
@@ -256,6 +259,16 @@ def _kiem_dang_thuc(e_str, r_str, loi=""):
     return {"trang_thai": "DAT", "muc_bang_chung": "CAS",
             "can_cu": "SymPy: d/dx(%s) − (%s) rút gọn bằng 0 với u(x), v(x) ký hiệu, n nguyên dương%s." % (
                 e_str, r_str, "; lời của dòng khớp danh mục câu đọc đã kiểm" if loi.strip() else "")}
+
+
+def _khong_xac_dinh(sp, bt):
+    """Biểu thức có zoo / nan / ∞, hoặc mẫu (sau khi quy đồng) đồng nhất bằng 0: không xác định tại điểm nào."""
+    if bt.has(sp.zoo, sp.nan, sp.oo, -sp.oo):
+        return True
+    try:
+        return sp.simplify(sp.fraction(sp.together(bt))[1]) == 0
+    except Exception:
+        return True
 
 
 def _phan_vi_du_dang_thuc(hieu, x, n, k, c, u, v):
@@ -467,8 +480,10 @@ def _don_dieu_cua_menh_de(cl, truoc):
         va, vc = _ve(a, truoc), _ve(c, truoc)
         if kt is False or not va or not vc or {va[0][0], vc[0][0]} != {"D", "M"}:
             return None
-        khoa = {k for k in (kt, va[1], vc[1]) if k not in (None, "DO")}
-        if len(khoa) > 1:
+        cac = (kt, va[1], vc[1])
+        khoa = {k for k in cac if k not in (None, "DO")}
+        # Khác khoảng thì không chứng minh được cùng miền; «khoảng đó» không có khoảng nào để trỏ về thì không đọc.
+        if len(khoa) > 1 or ("DO" in cac and not khoa):
             return None
         out.append((va[0], vc[0], next(iter(khoa)) if khoa else None))
         truoc = va[0] if va[0][0] == "D" else vc[0]

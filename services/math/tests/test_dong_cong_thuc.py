@@ -237,6 +237,12 @@ CA = [
     ("THEM-ham-chan", KKD, "", "y' > 0 ⇒ đồng biến. Hàm số này là hàm chẵn."),
     ("THEM-lom", KKD, "", "Nếu y' > 0 trên khoảng K thì hàm đồng biến trên K. Đồ thị lõm trên K."),
     ("THEM-latex", KKD, r"y' > 0 \Rightarrow \text{đồng biến}", "Hàm số lẻ thì đồ thị đối xứng qua gốc tọa độ."),
+    # Codex trên #101 (ccaea86): «khoảng đó» phải trỏ về một khoảng đã nêu; biểu thức vô nghĩa không được DAT
+    ("DO-treo", KKD, "", "Nếu y' > 0 thì hàm đồng biến trên khoảng đó."),
+    ("DO-treo-dk", KKD, "", "Nếu y' > 0 trên khoảng đó thì hàm đồng biến."),
+    ("D-chia-0", KKD, r"(1/0)' = 0", ""),
+    ("D-mau-0", KKD, r"(u/(v-v))' = 0", ""),
+    ("D-mau-dong-nhat-0", KKD, r"(1/((x+1)^2 - x^2 - 2x - 1))' = 0", ""),
 ]
 
 
