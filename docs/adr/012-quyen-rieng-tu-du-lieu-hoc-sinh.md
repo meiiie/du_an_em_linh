@@ -53,7 +53,7 @@ Phân tích, chấm 4 phương án, độ nhạy, câu hỏi cho luật sư: [`l
   - CSDL của `services/core`: `ENABLE` + `FORCE` RLS cho mọi bảng dữ liệu học sinh, kể cả bảng mới.
     - Chính sách **đóng mặc định**: thiếu ngữ cảnh người dùng (`app.user_id`) thì không thấy dòng nào.
     - Ngữ cảnh đặt **trong từng giao dịch** bằng `set_config('app.user_id', …, true)`, như `apps/web/lib/rls.ts`; không đặt ở mức phiên kết nối, vì pool tái dùng kết nối sẽ mang ngữ cảnh của học sinh trước. Truy cập dữ liệu học sinh ngoài giao dịch bị từ chối.
-    - Đăng nhập và làm mới phiên chạy trước khi có ngữ cảnh: đi qua hàm `SECURITY DEFINER` hẹp (tra theo email hoặc băm token, chỉ trả cột cần để xác thực), rồi đặt `app.user_id` trong cùng giao dịch. Vai trò ứng dụng không đọc thẳng bảng định danh khi chưa có ngữ cảnh.
+    - Đăng nhập, làm mới phiên và đăng xuất chạy trước khi có ngữ cảnh (đăng xuất chỉ có cookie refresh token): đi qua hàm `SECURITY DEFINER` hẹp (tra theo email hoặc băm token, chỉ trả cột cần để xác thực), rồi đặt `app.user_id` trong cùng giao dịch. Vai trò ứng dụng không đọc thẳng bảng định danh khi chưa có ngữ cảnh.
     - Khác v0: hàm `rls_duoc_xem_hs` của migration 0010 cho qua mọi dòng khi chưa đặt ngữ cảnh (để chạy tác vụ hệ thống), nên không làm mốc an toàn cho dữ liệu thật.
     - Tác vụ bảo trì (migration, seed, báo cáo tổng hợp) dùng vai trò CSDL riêng, có kiểm soát.
     - Vai trò CSDL của ứng dụng không phải superuser và không có `BYPASSRLS` (cả hai đều bỏ qua RLS).

@@ -144,7 +144,7 @@ Lý do các điểm then chốt:
    - CSDL mới của `services/core` (Flyway): `ENABLE` + `FORCE` RLS cho mọi bảng dữ liệu học sinh, gồm bảng tương ứng 5 bảng của migration 0010 và bảng mới (đồng ý, lịch, ảnh OCR);
    - chính sách đóng mặc định: thiếu `app.user_id` thì không thấy dòng nào (khác v0); tác vụ bảo trì dùng vai trò CSDL riêng; vai trò ứng dụng không phải superuser, không có `BYPASSRLS`;
    - ngữ cảnh đặt trong từng giao dịch bằng `set_config(..., true)` (như `apps/web/lib/rls.ts`), không ở mức phiên kết nối: pool tái dùng kết nối sẽ mang ngữ cảnh của người trước; truy cập ngoài giao dịch bị từ chối;
-   - đăng nhập và làm mới phiên chạy trước khi có ngữ cảnh: qua hàm `SECURITY DEFINER` hẹp (tra theo email hoặc băm token, chỉ trả cột cần để xác thực), rồi đặt `app.user_id` trong cùng giao dịch;
+   - đăng nhập, làm mới phiên và đăng xuất chạy trước khi có ngữ cảnh: qua hàm `SECURITY DEFINER` hẹp (tra theo email hoặc băm token, chỉ trả cột cần để xác thực), rồi đặt `app.user_id` trong cùng giao dịch;
    - kiểm quyền theo lớp ở use case (chống IDOR);
    - mã hóa khi lưu và khi truyền; nhật ký kiểm toán mọi lần đọc dữ liệu học sinh;
    - kế hoạch ứng phó sự cố: báo A05, báo chủ thể khi luật yêu cầu.
