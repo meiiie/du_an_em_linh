@@ -12,3 +12,10 @@ services/math/.venv
 *.md
 !README.md
 /opt
+
+# Không bao giờ đưa khóa hay biến môi trường cục bộ vào ngữ cảnh build.
+**/.env
+**/.env.*
+!**/.env.example
+**/zaiapikey.txt
+**/secrets

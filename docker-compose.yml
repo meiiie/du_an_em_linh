@@ -1,41 +1,117 @@
+# v0 (Next.js + FastAPI/SymPy) cục bộ, một lệnh, có sẵn dữ liệu thử (lớp «12A1 thử», bài đã qua cổng 3 tầng, mức hiểu, lịch):
+#   docker compose up --build --wait                  → http://localhost:3000
+# Gia sư Z.AI Coding Plan (GLM-5.3): trỏ ZAI_API_KEY_FILE tới tệp chứa khóa, rồi giáo viên chọn «Z.AI» ở Cài lớp:
+#   ZAI_API_KEY_FILE=/duong/dan/khoa.txt docker compose up --build --wait
+# Khóa đi bằng Docker secret: không vào image, git, hay `docker inspect` (apps/web/docker-entrypoint.sh).
+# Chỉ dữ liệu tổng hợp (ADR 006). v2: compose.v2.yaml; hai compose dùng chung cổng 8000, không chạy cùng lúc.
+name: hoc-toan-v0
+
+x-cung: &cung
+  restart: unless-stopped
+  security_opt: ["no-new-privileges:true"]
+  cap_drop: [ALL]
+  logging:
+    driver: local
+    options:
+      max-size: 10m
+      max-file: "3"
+
+# Mật khẩu không nằm trong URL (ký tự như / ? # làm hỏng URL): postgres.js đọc PGPASSWORD khi URL không có mật khẩu.
+x-csdl: &csdl
+  DATABASE_URL: postgres://hoc_toan@db:5432/hoc_toan
+  PGPASSWORD: ${POSTGRES_PASSWORD:-hoc_toan}
+
 services:
-  postgres:
-    image: postgres:16
+  db:
+    <<: *cung
+    image: postgres:18-alpine
+    # Entrypoint của image đổi chủ thư mục dữ liệu rồi hạ quyền xuống user postgres: chỉ các quyền đó.
+    cap_add: [CHOWN, DAC_OVERRIDE, FOWNER, SETGID, SETUID]
     environment:
       POSTGRES_USER: hoc_toan
-      POSTGRES_PASSWORD: hoc_toan
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-hoc_toan}
       POSTGRES_DB: hoc_toan
-    ports:
-      - "5432:5432"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U hoc_toan -d hoc_toan"]
       interval: 5s
       timeout: 5s
       retries: 12
     volumes:
-      - pgdata:/var/lib/postgresql/data
+      - pgdata-v0:/var/lib/postgresql
+    # Chỉ máy này: `pnpm db:migrate`, `pnpm dev:web` từ máy dev vẫn nối được.
+    ports:
+      - "127.0.0.1:5432:5432"
 
   math:
+    <<: *cung
     build:
       context: .
       dockerfile: services/math/Dockerfile
+    read_only: true
+    tmpfs: [/tmp]
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=2)"]
+      interval: 5s
+      timeout: 5s
+      start_period: 20s
+      retries: 6
+    mem_limit: 1g
     ports:
-      - "8000:8000"
+      - "127.0.0.1:8000:8000"
 
-  web:
+  # Job một lần: migration rồi seed khi CSDL trống (SEED_IF_EMPTY, không xóa dữ liệu đã có). Seed chạy cổng 3 tầng
+  # của dịch vụ toán cho từng bài nên cần `math`. web chờ job xong.
+  migrate:
+    <<: *cung
+    restart: "no"
+    image: hoc-toan-v0-web
     build:
       context: .
       dockerfile: apps/web/Dockerfile
-    ports:
-      - "3000:3000"
+    command: ["sh", "-c", "pnpm db:migrate && pnpm seed"]
     environment:
-      DATABASE_URL: postgres://hoc_toan:hoc_toan@postgres:5432/hoc_toan
+      <<: *csdl
       MATH_SERVICE_URL: http://math:8000
+      SEED_IF_EMPTY: "1"
     depends_on:
-      postgres:
+      db:
         condition: service_healthy
       math:
-        condition: service_started
+        condition: service_healthy
+
+  web:
+    <<: *cung
+    image: hoc-toan-v0-web
+    environment:
+      <<: *csdl
+      MATH_SERVICE_URL: http://math:8000
+      APP_URL: http://localhost:3000
+      ZAI_API_KEY_FILE: /run/secrets/zai_api_key
+      ZAI_MODEL: ${ZAI_MODEL:-glm-5.3}
+    secrets:
+      - zai_api_key
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      math:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/api/suc-khoe').then(r => process.exit(r.ok ? 0 : 1), () => process.exit(1))"]
+      interval: 5s
+      timeout: 5s
+      start_period: 30s
+      retries: 6
+    mem_limit: 1g
+    volumes:
+      - uploads-v0:/app/data/uploads
+    ports:
+      - "127.0.0.1:3000:3000"
+
+secrets:
+  zai_api_key:
+    # Mặc định là tệp trống trong repo: không có khóa thì gia sư chạy nhà `offline`.
+    file: ${ZAI_API_KEY_FILE:-./ops/khoa-trong}
 
 volumes:
-  pgdata:
+  pgdata-v0:
+  uploads-v0:

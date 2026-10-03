@@ -53,7 +53,7 @@ Dữ liệu tổng hợp, không có học sinh thật.
 
 ## Chạy local
 
-Cần PostgreSQL 16, Python 3.12, Node 22, pnpm.
+Cần PostgreSQL 18, Python 3.12, Node 22, pnpm.
 
 ```bash
 cd services/math
@@ -68,7 +68,26 @@ pnpm dev:math   # một tiến trình
 pnpm dev:web    # tiến trình khác → http://127.0.0.1:3000
 ```
 
-Hoặc `docker compose up -d --build` rồi `docker compose exec web pnpm db:migrate && docker compose exec web pnpm seed`.
+Hoặc một lệnh bằng Docker: `docker compose up --build --wait` → http://localhost:3000. PostgreSQL 18, job `migrate` chạy migration rồi seed khi CSDL trống, sau đó mới tới `web`; kiểm cả hệ: `bash scripts/khoi-v0.sh`.
+
+Gia sư bằng Z.AI Coding Plan (GLM-5.3): khóa đi bằng Docker secret, không vào image, git hay `docker inspect`:
+
+```bash
+ZAI_API_KEY_FILE=/duong/dan/toi/tep-khoa.txt docker compose up --build --wait
+docker compose exec -T web docker-entrypoint.sh node --input-type=module < ops/thu-zai.mjs   # gọi thử, không in khóa
+```
+
+Rồi giáo viên chọn **Z.AI** ở **Cài lớp**. Đổi model: `ZAI_MODEL` (mặc định `glm-5.3`). Dừng: `docker compose down`; thêm `-v` để xóa CSDL.
+
+Đã chạy compose của v0 trước #118 (tên project theo thư mục, PostgreSQL 16): stack cũ không được nhận ra nữa, và dữ liệu PostgreSQL 16 không dùng thẳng được cho 18. Dữ liệu v0 là seed tổng hợp nên thường không cần giữ. Cần giữ thì:
+
+```bash
+docker exec <tên-thư-mục-repo>-postgres-1 pg_dump -U hoc_toan -d hoc_toan > v0.sql   # gọi thẳng container cũ: file compose mới không còn service postgres
+docker compose -p <tên-thư-mục-repo> down --remove-orphans                            # service cũ là orphan; thêm -v để xóa volume cũ
+docker compose up -d --wait db                                                       # chỉ CSDL mới, còn trống
+docker compose exec -T db psql -v ON_ERROR_STOP=1 -U hoc_toan -d hoc_toan < v0.sql
+docker compose up --build --wait                                                     # migrate thấy migration đã chạy, seed thấy có dữ liệu nên bỏ qua
+```
 
 Biến môi trường: `.env.example`.
 

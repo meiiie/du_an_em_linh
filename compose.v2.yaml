@@ -1,14 +1,28 @@
 # v2 cục bộ, một lệnh: docker compose -f compose.v2.yaml up --build --wait   → http://localhost:4200
-# PostgreSQL 18 + services/core (profile dev: tài khoản thử) + services/math + apps/frontend (nginx, /api/ → core).
-# Tách khỏi docker-compose.yml của v0 để không đổi cách chạy v0. Chỉ dữ liệu tổng hợp (ADR 006).
+# PostgreSQL 18 + services/core (profile dev: tài khoản thử, lớp «12A1 thử») + services/math + apps/frontend (nginx,
+# /api/ → core). Tách khỏi docker-compose.yml của v0 để không đổi cách chạy v0. Chỉ dữ liệu tổng hợp (ADR 006).
+# Mọi cổng chỉ mở trên 127.0.0.1; container không root, bỏ mọi capability, không leo quyền; log xoay vòng.
 name: hoc-toan-v2
+
+x-cung: &cung
+  restart: unless-stopped
+  security_opt: ["no-new-privileges:true"]
+  cap_drop: [ALL]
+  logging:
+    driver: local
+    options:
+      max-size: 10m
+      max-file: "3"
 
 services:
   db:
+    <<: *cung
     image: postgres:18-alpine
+    # Entrypoint của image đổi chủ thư mục dữ liệu rồi hạ quyền xuống user postgres: chỉ các quyền đó.
+    cap_add: [CHOWN, DAC_OVERRIDE, FOWNER, SETGID, SETUID]
     environment:
       POSTGRES_USER: hoc_toan
-      POSTGRES_PASSWORD: hoc_toan
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-hoc_toan}
       POSTGRES_DB: hoc_toan_core
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U hoc_toan -d hoc_toan_core"]
@@ -19,24 +33,26 @@ services:
       - pgdata-v2:/var/lib/postgresql
 
   core:
+    <<: *cung
     build:
       context: services/core
     environment:
       SPRING_PROFILES_ACTIVE: dev
       SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/hoc_toan_core
       SPRING_DATASOURCE_USERNAME: hoc_toan
-      SPRING_DATASOURCE_PASSWORD: hoc_toan
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:-hoc_toan}
       # Trống: core dùng khóa tạm, token mất hiệu lực mỗi lần khởi động lại (đủ cho chạy thử).
       APP_IDENTITY_JWT_SECRET: ${APP_IDENTITY_JWT_SECRET:-}
       APP_MATH_BASE_URL: http://math:8000
       # Nhà AI cho gia sư (research R3), cùng tên biến với v0 (.env.example). Khóa trống = chỉ nhà `offline`.
+      # Gia sư của core (#91) chưa có: khi có sẽ nhận khóa qua Docker secret như web của v0.
       LLM_BASE_URL: ${LLM_BASE_URL:-https://api.openai.com/v1}
       LLM_API_KEY: ${LLM_API_KEY:-}
       LLM_MODEL: ${LLM_MODEL:-gpt-4o-mini}
       OPENROUTER_API_KEY: ${OPENROUTER_API_KEY:-}
       OPENROUTER_MODEL: ${OPENROUTER_MODEL:-qwen/qwen3-coder}
       ZAI_API_KEY: ${ZAI_API_KEY:-}
-      ZAI_MODEL: ${ZAI_MODEL:-glm-5.3-flashx}
+      ZAI_MODEL: ${ZAI_MODEL:-glm-5.3}
     depends_on:
       db:
         condition: service_healthy
@@ -49,23 +65,29 @@ services:
       timeout: 3s
       start_period: 90s
       retries: 6
+    mem_limit: 1g
     ports:
-      - "8080:8080"
+      - "127.0.0.1:8080:8080"
 
   math:
+    <<: *cung
     build:
       context: .
       dockerfile: services/math/Dockerfile
+    read_only: true
+    tmpfs: [/tmp]
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=2)"]
       interval: 5s
       timeout: 5s
       start_period: 20s
       retries: 6
+    mem_limit: 1g
     ports:
-      - "8000:8000"
+      - "127.0.0.1:8000:8000"
 
   frontend:
+    <<: *cung
     build:
       context: .
       dockerfile: apps/frontend/Dockerfile
@@ -74,8 +96,9 @@ services:
     depends_on:
       core:
         condition: service_healthy
+    mem_limit: 256m
     ports:
-      - "4200:8080"
+      - "127.0.0.1:4200:8080"
 
 volumes:
   pgdata-v2:
