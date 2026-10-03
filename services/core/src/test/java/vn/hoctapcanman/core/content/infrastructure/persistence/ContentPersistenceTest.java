@@ -163,6 +163,27 @@ class ContentPersistenceTest {
     @Test
     void doanDangLaCanCuThiKhongSuaChuDuoc() {
         // Codex #120 (P1): nạp lại tài liệu đổi chữ của đoạn đang được trích dẫn thì bảng vẫn mang kết quả DAT cũ.
+        Document d = taiLieuDuocTrichDan();
+        // Đoạn không được trích dẫn vẫn sửa được.
+        documents.save(d, List.of(DocumentPassage.of(d.id(), 1, 0, "Đạo hàm của tổng bằng tổng các đạo hàm."),
+            DocumentPassage.of(d.id(), 1, 41, "Đoạn khác (sửa).")));
+        // Cuối test: lỗi ràng buộc hủy giao dịch của test.
+        assertThatThrownBy(() -> documents.save(d, List.of(DocumentPassage.of(d.id(), 1, 0, "Đạo hàm của tổng bằng tích các đạo hàm."),
+            DocumentPassage.of(d.id(), 1, 41, "Đoạn khác (sửa).")))).isInstanceOf(DataIntegrityViolationException.class);
+    }
+
+    @Test
+    void taiLieuDangLaCanCuThiKhongHaQuyenDungDuoc() {
+        // Codex #120 (P1): hạ quyền dùng xuống chua_ro thì tài liệu không còn là căn cứ (R9) mà bảng vẫn DAT.
+        Document d = taiLieuDuocTrichDan();
+        Document chuaRo = new Document(d.id(), d.classId(), d.code(), d.title(), d.kind(), d.source(), Document.CHUA_RO,
+            d.fileRef(), d.textContent(), d.version(), d.uploadedBy(), d.createdAt());
+        assertThatThrownBy(() -> documents.save(chuaRo, documents.findPassages(d.id())))
+            .isInstanceOf(DataIntegrityViolationException.class);
+    }
+
+    /** Lớp mới, tài liệu hai đoạn, bảng nháp có một dòng DAT trích dẫn đoạn đầu. */
+    private Document taiLieuDuocTrichDan() {
         UUID lop = UUID.randomUUID();
         jdbc.sql("insert into classes (id, name, grade, school_year, created_at) values (?, '12A2 thử', 12, '2026-2027', now())")
             .params(lop).update();
@@ -179,12 +200,6 @@ class ContentPersistenceTest {
                     tier2_status, citation_passage_id, checked_fingerprint)
                 values (?, ?, 1, 'd-2', 'Đạo hàm tổng', 'x', 'y', 'DANG_THUC', 'DAT', 'DAT', ?, ?)""")
             .params(UUID.randomUUID(), bang, doan.getFirst().id(), "b".repeat(64)).update();
-
-        // Đoạn không được trích dẫn vẫn sửa được.
-        documents.save(d, List.of(DocumentPassage.of(d.id(), 1, 0, "Đạo hàm của tổng bằng tổng các đạo hàm."),
-            DocumentPassage.of(d.id(), 1, 41, "Đoạn khác (sửa).")));
-        // Cuối test: lỗi ràng buộc hủy giao dịch của test.
-        assertThatThrownBy(() -> documents.save(d, List.of(DocumentPassage.of(d.id(), 1, 0, "Đạo hàm của tổng bằng tích các đạo hàm."),
-            DocumentPassage.of(d.id(), 1, 41, "Đoạn khác (sửa).")))).isInstanceOf(DataIntegrityViolationException.class);
+        return d;
     }
 }
