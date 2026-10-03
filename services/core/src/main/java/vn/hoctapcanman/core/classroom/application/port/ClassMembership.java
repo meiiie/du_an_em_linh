@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.jspecify.annotations.Nullable;
+import vn.hoctapcanman.core.classroom.application.dto.CaiDatChoHocSinh;
 import vn.hoctapcanman.core.classroom.application.exception.KhongThuocLopException;
 
 /**
@@ -11,9 +12,9 @@ import vn.hoctapcanman.core.classroom.application.exception.KhongThuocLopExcepti
  * học sinh của các lớp đó; học sinh chỉ dữ liệu của mình. Mọi đọc / ghi dữ liệu lớp đi qua cổng này, không lấy «lớp
  * đầu tiên của bảng». Id là UUID để module khác không phụ thuộc kiểu domain của lớp học.
  *
- * <p>Cổng chỉ xét vai trò <em>trong lớp</em> (ghi danh). Vai trò tài khoản ({@code users.role}) do tầng web chặn thêm
- * theo đường dẫn ({@code /api/gv/**} cho giáo viên, {@code /api/hs/**} cho học sinh; T058, #97). Id người gọi luôn lấy
- * từ access token, không từ thân yêu cầu.
+ * <p>Cổng chỉ xét vai trò <em>trong lớp</em> (ghi danh). Vai trò tài khoản ({@code users.role}) do {@code SecurityConfig}
+ * chặn thêm theo đường dẫn ({@code /api/gv/**} cho giáo viên, {@code /api/hs/**} cho học sinh; #111). Id người gọi luôn
+ * lấy từ access token, không từ thân yêu cầu.
  */
 public interface ClassMembership {
 
@@ -30,6 +31,12 @@ public interface ClassMembership {
 
     /** Lớp của học sinh (mỗi học sinh một lớp); rỗng khi chưa ghi danh. */
     Optional<UUID> lopHoc(UUID hocSinhId);
+
+    /**
+     * Cài của lớp mà học sinh đang học, chỉ phần học sinh được biết (#111); rỗng khi chưa ghi danh. Lớp chưa có dòng
+     * cài thì trả mặc định: không mở lời giải (FR-006, đóng mặc định). Module khác không đọc kho cài lớp.
+     */
+    Optional<CaiDatChoHocSinh> caiDatChoHocSinh(UUID hocSinhId);
 
     boolean laGiaoVien(UUID userId, UUID lopId);
 

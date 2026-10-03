@@ -46,7 +46,8 @@ class KienTrucRulesTuKiemTest {
         Map.entry(KienTrucRules.ADAPTER_DAT_TEN, List.of("KhoHocSinh")),
         Map.entry(KienTrucRules.ENTITY_DAT_TEN_DUNG_CHO, List.of("HocSinhEntity", "LopJpaEntity", "CoEntity")),
         Map.entry(KienTrucRules.REPOSITORY_CHI_QUAN_LY_JPA_ENTITY,
-            List.of("xau.infrastructure.persistence.HocSinhJpaRepository", "xau.infrastructure.persistence.LopHocJpaRepository")));
+            List.of("xau.infrastructure.persistence.HocSinhJpaRepository", "xau.infrastructure.persistence.LopHocJpaRepository")),
+        Map.entry(KienTrucRules.MODULE_CHI_GOI_NHAU_QUA_CONG, List.of("GieoLop")));
 
     static Stream<Arguments> luatVaViPham() {
         return KienTrucRules.TAT_CA.stream().map(rule -> arguments(Named.of(rule.getDescription(), rule), VI_PHAM.get(rule)));
@@ -68,6 +69,14 @@ class KienTrucRulesTuKiemTest {
         assertThatThrownBy(() -> rule.check(MAU_XAU))
             .isInstanceOf(AssertionError.class)
             .satisfies(loi -> lopViPham.forEach(lop -> assertThat(loi.getMessage()).contains(lop)));
+    }
+
+    @Test
+    @DisplayName("Thư viện ngoài vn.hoctapcanman không phải module, dù gói có chữ domain / application")
+    void thuVienNgoaiKhongPhaiModule() {
+        assertThat(KienTrucRules.moduleCua("org.springframework.data.domain")).isEmpty();
+        assertThat(KienTrucRules.moduleCua("com.example.application.port")).isEmpty();
+        assertThat(KienTrucRules.moduleCua("vn.hoctapcanman.core.classroom.domain.model")).contains("vn.hoctapcanman.core.classroom");
     }
 
     @ParameterizedTest(name = "module đúng qua: {0}")

@@ -6,11 +6,14 @@ import java.util.UUID;
 import org.jspecify.annotations.Nullable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import vn.hoctapcanman.core.classroom.application.dto.CaiDatChoHocSinh;
 import vn.hoctapcanman.core.classroom.application.exception.KhongThuocLopException;
 import vn.hoctapcanman.core.classroom.application.port.ClassMembership;
 import vn.hoctapcanman.core.classroom.domain.model.ClassId;
 import vn.hoctapcanman.core.classroom.domain.model.ClassRole;
+import vn.hoctapcanman.core.classroom.domain.model.ClassSettings;
 import vn.hoctapcanman.core.classroom.domain.model.Enrollment;
+import vn.hoctapcanman.core.classroom.domain.repository.ClassSettingsRepository;
 import vn.hoctapcanman.core.classroom.domain.repository.EnrollmentRepository;
 
 /** Quyền theo lớp đọc thẳng từ ghi danh, mỗi lần gọi (không bộ nhớ đệm: rút khỏi lớp có hiệu lực ngay). */
@@ -19,9 +22,11 @@ import vn.hoctapcanman.core.classroom.domain.repository.EnrollmentRepository;
 public class ClassMembershipService implements ClassMembership {
 
     private final EnrollmentRepository enrollments;
+    private final ClassSettingsRepository settings;
 
-    public ClassMembershipService(EnrollmentRepository enrollments) {
+    public ClassMembershipService(EnrollmentRepository enrollments, ClassSettingsRepository settings) {
         this.enrollments = enrollments;
+        this.settings = settings;
     }
 
     @Override
@@ -41,6 +46,13 @@ public class ClassMembershipService implements ClassMembership {
     @Override
     public Optional<UUID> lopHoc(UUID hocSinhId) {
         return lopTheoVaiTro(hocSinhId, ClassRole.STUDENT).stream().findFirst();
+    }
+
+    @Override
+    public Optional<CaiDatChoHocSinh> caiDatChoHocSinh(UUID hocSinhId) {
+        return lopHoc(hocSinhId).map(lop -> new CaiDatChoHocSinh(lop, settings.findByClassId(new ClassId(lop))
+                .map(ClassSettings::revealSolutionAfterSubmit)
+                .orElse(false)));
     }
 
     @Override

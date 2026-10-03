@@ -7,6 +7,7 @@ import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.methods;
 import static com.tngtech.archunit.lang.syntax.ArchRuleDefinition.noClasses;
 
 import com.tngtech.archunit.base.DescribedPredicate;
+import com.tngtech.archunit.core.domain.Dependency;
 import com.tngtech.archunit.core.domain.JavaClass;
 import com.tngtech.archunit.core.domain.JavaMethod;
 import com.tngtech.archunit.core.domain.JavaParameter;
@@ -17,7 +18,9 @@ import com.tngtech.archunit.lang.ArchRule;
 import com.tngtech.archunit.lang.ConditionEvents;
 import com.tngtech.archunit.lang.SimpleConditionEvent;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -149,6 +152,21 @@ final class KienTrucRules {
         .as("Repository Spring Data chỉ quản lý @Entity *JpaEntity trong infrastructure.persistence.entity")
         .because("JpaRepository<DomainModel, …> làm hỏng khởi động: «Not a managed type» (bài học LMS)");
 
+    // ---- Ranh giới module (research R1, #111) -----------------------------------------------------------------
+
+    /** Chỉ gói của dự án (mã thật và lớp mẫu) mới chia module. */
+    private static final String GOC_DU_AN = "vn.hoctapcanman.";
+    /** Tầng của một module; gói gốc của module là phần đứng trước tầng đầu tiên. */
+    private static final Set<String> TANG = Set.of("domain", "application", "infrastructure");
+    /** Phần một module mở cho module khác. */
+    private static final List<String> CONG_MO = List.of("application.port", "application.dto", "application.exception");
+
+    static final ArchRule MODULE_CHI_GOI_NHAU_QUA_CONG = classes()
+        .should(chiGoiModuleKhacQuaCong())
+        .as("Module chỉ dùng module khác qua application.port, application.dto, application.exception")
+        .because("research R1: module không đọc domain, repository, use case hay persistence của module khác; "
+            + "shared là phần dùng chung");
+
     static final List<ArchRule> CLEAN = List.of(
         DOMAIN_KHONG_PHU_THUOC_INFRASTRUCTURE,
         DOMAIN_KHONG_PHU_THUOC_APPLICATION,
@@ -165,7 +183,8 @@ final class KienTrucRules {
         CONTROLLER_CHI_DUNG_RECORD_DTO,
         ADAPTER_DAT_TEN,
         ENTITY_DAT_TEN_DUNG_CHO,
-        REPOSITORY_CHI_QUAN_LY_JPA_ENTITY);
+        REPOSITORY_CHI_QUAN_LY_JPA_ENTITY,
+        MODULE_CHI_GOI_NHAU_QUA_CONG);
 
     static final List<ArchRule> TAT_CA = concat(CLEAN, DDD);
 
@@ -235,6 +254,48 @@ final class KienTrucRules {
                         String message = "%s quản lý %s — phải là @Entity tên *JpaEntity trong infrastructure.persistence.entity"
                             .formatted(repository.getName(), entity.getName());
                         events.add(SimpleConditionEvent.violated(repository, message));
+                    }
+                }
+            }
+        };
+    }
+
+    /**
+     * Gói gốc của module chứa gói này (phần trước tầng đầu tiên); rỗng nếu gói không thuộc tầng nào của một module, hay
+     * nằm ngoài dự án: thư viện như {@code org.springframework.data.domain} không phải module.
+     */
+    static Optional<String> moduleCua(String goi) {
+        if (!goi.startsWith(GOC_DU_AN)) {
+            return Optional.empty();
+        }
+        String[] phan = goi.split("\\.");
+        for (int i = 1; i < phan.length; i++) {
+            if (TANG.contains(phan[i])) {
+                return Optional.of(String.join(".", Arrays.copyOfRange(phan, 0, i)));
+            }
+        }
+        return Optional.empty();
+    }
+
+    private static ArchCondition<JavaClass> chiGoiModuleKhacQuaCong() {
+        return new ArchCondition<>("chỉ phụ thuộc module khác qua application.port, application.dto, application.exception") {
+            @Override
+            public void check(JavaClass lop, ConditionEvents events) {
+                Optional<String> cuaLop = moduleCua(lop.getPackageName());
+                if (cuaLop.isEmpty()) {
+                    return;
+                }
+                for (Dependency phuThuoc : lop.getDirectDependenciesFromSelf()) {
+                    JavaClass dich = phuThuoc.getTargetClass();
+                    String goiDich = (dich.isArray() ? dich.getBaseComponentType() : dich).getPackageName();
+                    Optional<String> cuaDich = moduleCua(goiDich);
+                    if (cuaDich.isEmpty() || cuaDich.equals(cuaLop) || cuaDich.get().endsWith(".shared")) {
+                        continue;
+                    }
+                    String phanTrong = goiDich.substring(cuaDich.get().length() + 1);
+                    boolean quaCong = CONG_MO.stream().anyMatch(c -> phanTrong.equals(c) || phanTrong.startsWith(c + "."));
+                    if (!quaCong) {
+                        events.add(SimpleConditionEvent.violated(phuThuoc, phuThuoc.getDescription()));
                     }
                 }
             }
