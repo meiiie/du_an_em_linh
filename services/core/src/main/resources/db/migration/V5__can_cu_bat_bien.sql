@@ -1,8 +1,8 @@
 -- Căn cứ tầng 2 không đổi dưới chân kết quả kiểm (#120). Một đoạn tài liệu «đang là căn cứ» khi được trích dẫn bởi một
 -- dòng bảng công thức (trích dẫn chính hay thêm, bảng nháp hay khóa) hoặc bởi một lượt kiểm 3 tầng (bảng mới
 -- verification_run_citations, quan hệ thay cho chỗ chỉ nằm trong verification_tier_results.citation). Đoạn đang là căn cứ
--- không đổi được vị trí, chữ, hay tài liệu chứa nó; tài liệu có đoạn đang là căn cứ không chuyển lớp, không đổi quyền dùng
--- được (hạ xuống chua_ro thì không còn là căn cứ hợp lệ, R9, mà kết quả vẫn DAT). Muốn sửa thì nạp tài liệu thành phiên
+-- không đổi được vị trí, chữ, hay tài liệu chứa nó; tài liệu có đoạn đang là căn cứ không đổi lớp, quyền dùng, loại, văn
+-- bản, phiên bản (hạ xuống chua_ro thì không còn là căn cứ hợp lệ, R9; đổi văn bản thì đoạn không còn nằm trong nguồn). Muốn sửa thì nạp tài liệu thành phiên
 -- bản mới (đoạn mới) rồi kiểm lại. Xóa đoạn đang là căn cứ bị khóa ngoại chặn.
 -- Đồng thời: ghi trích dẫn khóa đoạn và tài liệu FOR SHARE, xung đột với khóa của UPDATE trên các dòng đó, nên ghi trích
 -- dẫn và sửa căn cứ chạy lần lượt; kiểm «đang là căn cứ» của bên sửa chạy sau khi có khóa dòng nên thấy trích dẫn vừa
@@ -40,9 +40,10 @@ CREATE TRIGGER document_passages_can_cu_bat_bien BEFORE UPDATE ON document_passa
 
 CREATE FUNCTION documents_can_cu_giu_lop_va_quyen() RETURNS trigger LANGUAGE plpgsql AS $$
 BEGIN
-    IF (NEW.class_id, NEW.license_status) IS DISTINCT FROM (OLD.class_id, OLD.license_status)
+    IF (NEW.class_id, NEW.license_status, NEW.kind, NEW.text_content, NEW.version)
+            IS DISTINCT FROM (OLD.class_id, OLD.license_status, OLD.kind, OLD.text_content, OLD.version)
        AND EXISTS (SELECT 1 FROM document_passages p WHERE p.document_id = OLD.id AND doan_dang_la_can_cu(p.id)) THEN
-        RAISE EXCEPTION 'Tài liệu % đang là căn cứ của kết quả kiểm, không chuyển lớp hay đổi quyền dùng được', OLD.id
+        RAISE EXCEPTION 'Tài liệu % đang là căn cứ của kết quả kiểm, không đổi lớp, quyền dùng, loại, văn bản hay phiên bản được; nạp phiên bản mới', OLD.id
             USING ERRCODE = 'check_violation';
     END IF;
     RETURN NEW;
@@ -100,3 +101,20 @@ END $$;
 
 CREATE TRIGGER verification_run_citations_kiem BEFORE INSERT OR UPDATE OR DELETE ON verification_run_citations
     FOR EACH ROW EXECUTE FUNCTION verification_run_citations_kiem();
+
+-- Bài đổi nội dung (content_hash: đề, lời giải, thang gợi ý) thì kết quả kiểm cũ không còn nói về nội dung đang có: mọi
+-- lượt kiểm của bài thành cũ và bản phát hành của bài ở mọi lớp về NHAP (học sinh không thấy) cho tới khi kiểm lại. Đóng
+-- mặc định, cùng giao dịch với lệnh sửa bài. Lời giải và thang gợi ý ở bảng riêng: ai sửa chúng phải ghi lại bài với
+-- content_hash mới trong cùng giao dịch.
+CREATE FUNCTION problems_doi_noi_dung() RETURNS trigger LANGUAGE plpgsql AS $$
+BEGIN
+    IF NEW.content_hash IS DISTINCT FROM OLD.content_hash THEN
+        UPDATE verification_runs SET stale = true WHERE subject_kind = 'PROBLEM' AND subject_id = NEW.id AND NOT stale;
+        UPDATE problem_releases SET status = 'NHAP', run_id = NULL, updated_at = now()
+            WHERE problem_id = NEW.id AND status <> 'NHAP';
+    END IF;
+    RETURN NULL;
+END $$;
+
+CREATE TRIGGER problems_doi_noi_dung AFTER UPDATE OF content_hash ON problems
+    FOR EACH ROW EXECUTE FUNCTION problems_doi_noi_dung();

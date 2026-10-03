@@ -138,38 +138,111 @@ class ContentPersistenceTest {
 
     @Test
     void doanTaiLieuGiuIdKhiNapLaiVaXoaDoanBoDi() {
-        UUID lop = UUID.randomUUID();
-        jdbc.sql("insert into classes (id, name, grade, school_year, created_at) values (?, '12A1 thử', 12, '2026-2027', now())")
-            .params(lop).update();
-        Document d = new Document(UUID.randomUUID(), lop, "v0-don-dieu", "Ghi chú tự soạn", DocumentKind.TU_SOAN, "giáo viên thử",
-            "tu_soan", null, "Đoạn một. Đoạn hai.", 1, null, LUC);
-        List<DocumentPassage> lan1 = documents.save(d, List.of(DocumentPassage.of(d.id(), 1, 0, "Đoạn một."),
-            DocumentPassage.of(d.id(), 1, 10, "Đoạn hai.")));
+        UUID lop = lopMoi("12A1 thử");
+        Document d = taiLieu(lop, "v0-don-dieu", "Đoạn một. Đoạn hai.");
+        List<DocumentPassage> lan1 = documents.save(d, List.of(doan(d, "Đoạn một."), doan(d, "Đoạn hai.")));
         assertThat(lan1).extracting(DocumentPassage::textFolded).containsExactly("doan mot.", "doan hai.");
 
-        List<DocumentPassage> lan2 = documents.save(d, List.of(DocumentPassage.of(d.id(), 1, 0, "Đoạn một (sửa).")));
+        // Tài liệu chưa là căn cứ: nạp bản sửa được; đoạn cùng vị trí giữ id, đoạn bỏ đi bị xóa.
+        Document sua = taiLieu(d, "Đoạn một (sửa).", 2);
+        List<DocumentPassage> lan2 = documents.save(sua, List.of(doan(sua, "Đoạn một (sửa).")));
         assertThat(lan2).hasSize(1);
         assertThat(lan2.getFirst().id()).isEqualTo(lan1.getFirst().id());
         assertThat(lan2.getFirst().text()).isEqualTo("Đoạn một (sửa).");
 
-        assertThat(documents.findByClassAndCode(lop, "v0-don-dieu")).contains(
-            new Document(d.id(), lop, "v0-don-dieu", "Ghi chú tự soạn", DocumentKind.TU_SOAN, "giáo viên thử", "tu_soan", null,
-                "Đoạn một. Đoạn hai.", 1, null, Instant.parse("2026-10-03T08:00:00.123456Z")));
+        assertThat(documents.findByClassAndCode(lop, "v0-don-dieu")).contains(new Document(d.id(), lop, "v0-don-dieu",
+            "Ghi chú tự soạn", DocumentKind.TU_SOAN, "giáo viên thử", "tu_soan", null, "Đoạn một (sửa).", 2, null,
+            Instant.parse("2026-10-03T08:00:00.123456Z")));
         assertThat(documents.findByClass(lop)).hasSize(1);
-        assertThatThrownBy(() -> documents.save(d, List.of(DocumentPassage.of(UUID.randomUUID(), 1, 0, "lạc"))))
+    }
+
+    @Test
+    void doanPhaiNamDungTrongVanBanCuaTaiLieu() {
+        // Codex #120 (P2): đoạn của tài liệu khác, vị trí lệch, vị trí ngoài văn bản, chữ gập bịa đều không ghi được.
+        Document d = taiLieu(lopMoi("12A3 thử"), "v0-doan", "Đoạn một. Đoạn hai.");
+        assertThatThrownBy(() -> documents.save(d, List.of(DocumentPassage.of(UUID.randomUUID(), 1, 0, "Đoạn một."))))
             .isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> documents.save(d, List.of(DocumentPassage.of(d.id(), 1, 0, "Đoạn hai."))))
+            .isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> documents.save(d, List.of(DocumentPassage.of(d.id(), 1, 15, "Đoạn hai. Thêm"))))
+            .isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> documents.save(d, List.of(new DocumentPassage(UUID.randomUUID(), d.id(), 1, 0, 9, "Đoạn một.", "bia"))))
+            .isInstanceOf(IllegalArgumentException.class);
+        assertThat(documents.findById(d.id())).isEmpty();
     }
 
     @Test
     void doanDangLaCanCuThiKhongSuaChuDuoc() {
         // Codex #120 (P1): nạp lại tài liệu đổi chữ của đoạn đang được trích dẫn thì bảng vẫn mang kết quả DAT cũ.
         Document d = taiLieuDuocTrichDan();
-        // Đoạn không được trích dẫn vẫn sửa được.
-        documents.save(d, List.of(DocumentPassage.of(d.id(), 1, 0, "Đạo hàm của tổng bằng tổng các đạo hàm."),
-            DocumentPassage.of(d.id(), 1, 41, "Đoạn khác (sửa).")));
+        // Nạp lại đúng như cũ thì được (importer chạy lại).
+        documents.save(d, documents.findPassages(d.id()));
         // Cuối test: lỗi ràng buộc hủy giao dịch của test.
-        assertThatThrownBy(() -> documents.save(d, List.of(DocumentPassage.of(d.id(), 1, 0, "Đạo hàm của tổng bằng tích các đạo hàm."),
-            DocumentPassage.of(d.id(), 1, 41, "Đoạn khác (sửa).")))).isInstanceOf(DataIntegrityViolationException.class);
+        Document sua = taiLieu(d, "Đạo hàm của tổng bằng tích các đạo hàm. Đoạn khác.", 1);
+        assertThatThrownBy(() -> documents.save(sua, List.of(doan(sua, "Đạo hàm của tổng bằng tích các đạo hàm."),
+            doan(sua, "Đoạn khác.")))).isInstanceOf(DataIntegrityViolationException.class);
+    }
+
+    @Test
+    void taiLieuDangLaCanCuThiKhongDoiVanBanDuDoanCuGiuNguyen() {
+        // Codex #120 (P1): đổi văn bản và phiên bản tài liệu mà giữ đoạn cũ đang là căn cứ.
+        Document d = taiLieuDuocTrichDan();
+        Document sua = taiLieu(d, "Đạo hàm của tổng bằng tổng các đạo hàm. Đoạn khác. Thêm câu.", 2);
+        assertThatThrownBy(() -> documents.save(sua, List.of(doan(sua, "Đạo hàm của tổng bằng tổng các đạo hàm."),
+            doan(sua, "Đoạn khác.")))).isInstanceOf(DataIntegrityViolationException.class);
+    }
+
+    @Test
+    void suaNoiDungBaiThiLuotKiemCuVaPhatHanhVeNhap() {
+        // Codex #120 (P1): ghi lại bài với content_hash mới thì lượt kiểm cũ thành cũ, phát hành ở mọi lớp về NHAP.
+        UUID lop = lopMoi("12A4 thử");
+        Problem p = new Problem(UUID.randomUUID(), "DH12-TH-09", "T12.DH.03", List.of(), Level4.THONG_HIEU, null, null, null, "Đề",
+            "y", null, Problem.TU_LUAN_5_BUOC, null, "SUPHAM", BAM, null, LUC, LUC);
+        problems.save(p);
+        UUID luot = UUID.randomUUID();
+        jdbc.sql("""
+                insert into verification_runs (id, class_id, subject_kind, subject_id, content_hash, overall_status,
+                    publish_status, created_at)
+                values (?, ?, 'PROBLEM', ?, ?, 'DAT', 'DA_PHAT_HANH', now())""").params(luot, lop, p.id(), BAM).update();
+        jdbc.sql("insert into problem_releases (class_id, problem_id, status, run_id, updated_at) values (?, ?, 'DA_PHAT_HANH', ?, now())")
+            .params(lop, p.id(), luot).update();
+
+        problems.save(p);
+        assertThat(trangThaiPhatHanh(p.id())).isEqualTo("DA_PHAT_HANH");
+
+        problems.save(new Problem(p.id(), p.code(), p.skillCode(), p.extraSkillCodes(), p.level4(), null, null, null, "Đề đã sửa",
+            "y", null, p.answerForm(), null, p.origin(), "c".repeat(64), null, LUC, LUC));
+        assertThat(trangThaiPhatHanh(p.id())).isEqualTo("NHAP");
+        assertThat(jdbc.sql("select stale from verification_runs where id = ?").params(luot).query(Boolean.class).single()).isTrue();
+    }
+
+    private String trangThaiPhatHanh(UUID baiId) {
+        return jdbc.sql("select status from problem_releases where problem_id = ?").params(baiId).query(String.class).single();
+    }
+
+    private UUID lopMoi(String ten) {
+        UUID lop = UUID.randomUUID();
+        jdbc.sql("insert into classes (id, name, grade, school_year, created_at) values (?, ?, 12, '2026-2027', now())")
+            .params(lop, ten).update();
+        return lop;
+    }
+
+    private static Document taiLieu(UUID lop, String ma, String vanBan) {
+        return new Document(UUID.randomUUID(), lop, ma, "Ghi chú tự soạn", DocumentKind.TU_SOAN, "giáo viên thử", "tu_soan", null,
+            vanBan, 1, null, LUC);
+    }
+
+    /** Bản khác của cùng tài liệu: văn bản và phiên bản mới, mọi trường khác giữ. */
+    private static Document taiLieu(Document d, String vanBan, int phienBan) {
+        return new Document(d.id(), d.classId(), d.code(), d.title(), d.kind(), d.source(), d.licenseStatus(), d.fileRef(), vanBan,
+            phienBan, d.uploadedBy(), d.createdAt());
+    }
+
+    /** Đoạn {@code chu} ở đúng vị trí của nó trong văn bản tài liệu. */
+    private static DocumentPassage doan(Document d, String chu) {
+        int viTri = d.textContent().indexOf(chu);
+        assertThat(viTri).as("đoạn có trong văn bản").isNotNegative();
+        return DocumentPassage.of(d.id(), 1, viTri, chu);
     }
 
     @Test
@@ -184,17 +257,12 @@ class ContentPersistenceTest {
 
     /** Lớp mới, tài liệu hai đoạn, bảng nháp có một dòng DAT trích dẫn đoạn đầu. */
     private Document taiLieuDuocTrichDan() {
-        UUID lop = UUID.randomUUID();
-        jdbc.sql("insert into classes (id, name, grade, school_year, created_at) values (?, '12A2 thử', 12, '2026-2027', now())")
-            .params(lop).update();
-        Document d = new Document(UUID.randomUUID(), lop, "sp-tai-lieu-0001", "Quy tắc đạo hàm", DocumentKind.TU_SOAN, null,
-            "tu_soan", null, "Đạo hàm của tổng bằng tổng các đạo hàm. Đoạn khác.", 1, null, LUC);
-        List<DocumentPassage> doan = documents.save(d, List.of(
-            DocumentPassage.of(d.id(), 1, 0, "Đạo hàm của tổng bằng tổng các đạo hàm."),
-            DocumentPassage.of(d.id(), 1, 41, "Đoạn khác.")));
+        Document d = taiLieu(lopMoi("12A2 thử"), "sp-tai-lieu-0001", "Đạo hàm của tổng bằng tổng các đạo hàm. Đoạn khác.");
+        List<DocumentPassage> doan = documents.save(d, List.of(doan(d, "Đạo hàm của tổng bằng tổng các đạo hàm."),
+            doan(d, "Đoạn khác.")));
         UUID bang = UUID.randomUUID();
         jdbc.sql("insert into formula_sheets (id, class_id, version, status, created_at) values (?, ?, 1, 'NHAP', now())")
-            .params(bang, lop).update();
+            .params(bang, d.classId()).update();
         jdbc.sql("""
                 insert into formulas (id, formula_sheet_id, ordinal, code, title, latex, statement, kind, tier1_status,
                     tier2_status, citation_passage_id, checked_fingerprint)

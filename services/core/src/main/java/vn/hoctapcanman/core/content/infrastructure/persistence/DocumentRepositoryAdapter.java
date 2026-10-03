@@ -32,9 +32,7 @@ public class DocumentRepositoryAdapter implements DocumentRepository {
     @Override
     @Transactional
     public List<DocumentPassage> save(Document d, List<DocumentPassage> passages) {
-        if (passages.stream().anyMatch(p -> !p.documentId().equals(d.id()))) {
-            throw new IllegalArgumentException("Đoạn phải thuộc tài liệu " + d.id());
-        }
+        passages.forEach(p -> p.requireWithin(d));
         jdbc.sql("insert into documents (" + COT + """
                 ) values (:id, :lop, :code, :title, :kind, :source, :license, :file, :text, :version, :by, :created)
                 on conflict (id) do update set class_id = excluded.class_id, code = excluded.code, title = excluded.title,
