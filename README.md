@@ -79,7 +79,15 @@ docker compose exec -T web docker-entrypoint.sh node --input-type=module < ops/t
 
 Rồi giáo viên chọn **Z.AI** ở **Cài lớp**. Đổi model: `ZAI_MODEL` (mặc định `glm-5.3`). Dừng: `docker compose down`; thêm `-v` để xóa CSDL.
 
-Đã chạy compose của v0 trước #118 (tên project theo thư mục, PostgreSQL 16): stack cũ không được nhận ra nữa, và dữ liệu PostgreSQL 16 không dùng thẳng được cho 18. Dữ liệu v0 là seed tổng hợp nên thường không cần giữ; cần giữ thì xuất từ container cũ trước, gọi thẳng tên container vì file compose mới không còn service `postgres`: `docker exec <tên-thư-mục-repo>-postgres-1 pg_dumpall -U hoc_toan > v0.sql`. Rồi dừng stack cũ: `docker compose -p <tên-thư-mục-repo> down --remove-orphans` (service cũ không có trong file mới nên là «orphan»; thêm `-v` để xóa volume cũ), chạy stack mới, và nạp lại bằng `docker compose exec -T db psql -U hoc_toan -d hoc_toan < v0.sql`.
+Đã chạy compose của v0 trước #118 (tên project theo thư mục, PostgreSQL 16): stack cũ không được nhận ra nữa, và dữ liệu PostgreSQL 16 không dùng thẳng được cho 18. Dữ liệu v0 là seed tổng hợp nên thường không cần giữ. Cần giữ thì:
+
+```bash
+docker exec <tên-thư-mục-repo>-postgres-1 pg_dump -U hoc_toan -d hoc_toan > v0.sql   # gọi thẳng container cũ: file compose mới không còn service postgres
+docker compose -p <tên-thư-mục-repo> down --remove-orphans                            # service cũ là orphan; thêm -v để xóa volume cũ
+docker compose up -d --wait db                                                       # chỉ CSDL mới, còn trống
+docker compose exec -T db psql -v ON_ERROR_STOP=1 -U hoc_toan -d hoc_toan < v0.sql
+docker compose up --build --wait                                                     # migrate thấy migration đã chạy, seed thấy có dữ liệu nên bỏ qua
+```
 
 Biến môi trường: `.env.example`.
 
