@@ -9,7 +9,8 @@ import vn.hoctapcanman.core.content.domain.repository.SolutionRepository;
 
 /**
  * Lời giải trên bảng {@code solutions}. Cột {@code jsonb} không giữ cách viết: đọc lại là JSON tương đương, khóa có thể
- * đổi thứ tự, khoảng trắng chuẩn hóa. Dấu vân tay nội dung vì vậy không tính trên chuỗi đọc từ CSDL.
+ * đổi thứ tự, khoảng trắng chuẩn hóa. Dấu vân tay nội dung vì vậy không tính trên chuỗi đọc từ CSDL. Lời giải là nội dung
+ * của bài: ghi khác đi thì kết quả kiểm và phát hành của bài bị vô hiệu (trigger V5); ghi lại y như cũ thì không đổi gì.
  */
 @Repository
 public class SolutionRepositoryAdapter implements SolutionRepository {
@@ -26,7 +27,9 @@ public class SolutionRepositoryAdapter implements SolutionRepository {
                 insert into solutions (problem_id, worked_solution, protected_facts, final_answer)
                 values (:id, cast(:worked as jsonb), cast(:facts as jsonb), :answer)
                 on conflict (problem_id) do update set worked_solution = excluded.worked_solution,
-                    protected_facts = excluded.protected_facts, final_answer = excluded.final_answer""")
+                    protected_facts = excluded.protected_facts, final_answer = excluded.final_answer
+                where (solutions.worked_solution, solutions.protected_facts, solutions.final_answer)
+                    is distinct from (excluded.worked_solution, excluded.protected_facts, excluded.final_answer)""")
             .param("id", s.problemId()).param("worked", s.workedSolutionJson()).param("facts", s.protectedFactsJson())
             .param("answer", s.finalAnswer())
             .update();

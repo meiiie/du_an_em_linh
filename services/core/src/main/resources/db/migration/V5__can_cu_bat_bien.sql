@@ -56,7 +56,9 @@ CREATE TRIGGER documents_can_cu_giu_lop_va_quyen BEFORE UPDATE ON documents
 CREATE FUNCTION khoa_can_cu(doan uuid) RETURNS void LANGUAGE plpgsql AS $$
 BEGIN
     IF doan IS NOT NULL THEN
-        PERFORM 1 FROM document_passages p JOIN documents d ON d.id = p.document_id WHERE p.id = doan FOR SHARE OF p, d;
+        -- Tài liệu trước, đoạn sau: cùng thứ tự với lần ghi tài liệu (dòng documents rồi các đoạn), không deadlock.
+        PERFORM 1 FROM documents d WHERE d.id = (SELECT p.document_id FROM document_passages p WHERE p.id = doan) FOR SHARE;
+        PERFORM 1 FROM document_passages p WHERE p.id = doan FOR SHARE;
     END IF;
 END $$;
 
@@ -102,19 +104,37 @@ END $$;
 CREATE TRIGGER verification_run_citations_kiem BEFORE INSERT OR UPDATE OR DELETE ON verification_run_citations
     FOR EACH ROW EXECUTE FUNCTION verification_run_citations_kiem();
 
--- Bài đổi nội dung (content_hash: đề, lời giải, thang gợi ý) thì kết quả kiểm cũ không còn nói về nội dung đang có: mọi
--- lượt kiểm của bài thành cũ và bản phát hành của bài ở mọi lớp về NHAP (học sinh không thấy) cho tới khi kiểm lại. Đóng
--- mặc định, cùng giao dịch với lệnh sửa bài. Lời giải và thang gợi ý ở bảng riêng: ai sửa chúng phải ghi lại bài với
--- content_hash mới trong cùng giao dịch.
+-- Bài đổi nội dung thì kết quả kiểm cũ không còn nói về nội dung đang có: mọi lượt kiểm của bài thành cũ và bản phát hành
+-- của bài ở mọi lớp về NHAP (học sinh không thấy) cho tới khi kiểm lại. Đóng mặc định, cùng giao dịch với lệnh sửa. Nội dung
+-- gồm đề (content_hash của problems), lời giải và dữ kiện bảo vệ (solutions), thang gợi ý (hint_levels): đổi bảng nào cũng
+-- vô hiệu. Adapter chỉ ghi khi giá trị thật sự khác, nên importer chạy lại y như cũ không vô hiệu gì.
+CREATE FUNCTION vo_hieu_ket_qua_bai(bai uuid) RETURNS void LANGUAGE sql AS $$
+    UPDATE verification_runs SET stale = true WHERE subject_kind = 'PROBLEM' AND subject_id = bai AND NOT stale;
+    UPDATE problem_releases SET status = 'NHAP', run_id = NULL, updated_at = now() WHERE problem_id = bai AND status <> 'NHAP';
+$$;
+
 CREATE FUNCTION problems_doi_noi_dung() RETURNS trigger LANGUAGE plpgsql AS $$
 BEGIN
     IF NEW.content_hash IS DISTINCT FROM OLD.content_hash THEN
-        UPDATE verification_runs SET stale = true WHERE subject_kind = 'PROBLEM' AND subject_id = NEW.id AND NOT stale;
-        UPDATE problem_releases SET status = 'NHAP', run_id = NULL, updated_at = now()
-            WHERE problem_id = NEW.id AND status <> 'NHAP';
+        PERFORM vo_hieu_ket_qua_bai(NEW.id);
     END IF;
     RETURN NULL;
 END $$;
 
 CREATE TRIGGER problems_doi_noi_dung AFTER UPDATE OF content_hash ON problems
     FOR EACH ROW EXECUTE FUNCTION problems_doi_noi_dung();
+
+CREATE FUNCTION loi_giai_goi_y_doi() RETURNS trigger LANGUAGE plpgsql AS $$
+BEGIN
+    PERFORM vo_hieu_ket_qua_bai(CASE WHEN TG_OP = 'DELETE' THEN OLD.problem_id ELSE NEW.problem_id END);
+    IF TG_OP = 'UPDATE' AND NEW.problem_id IS DISTINCT FROM OLD.problem_id THEN
+        PERFORM vo_hieu_ket_qua_bai(OLD.problem_id);
+    END IF;
+    RETURN NULL;
+END $$;
+
+CREATE TRIGGER solutions_doi AFTER INSERT OR UPDATE OR DELETE ON solutions
+    FOR EACH ROW EXECUTE FUNCTION loi_giai_goi_y_doi();
+
+CREATE TRIGGER hint_levels_doi AFTER INSERT OR UPDATE OR DELETE ON hint_levels
+    FOR EACH ROW EXECUTE FUNCTION loi_giai_goi_y_doi();

@@ -24,9 +24,21 @@ public class HintLevelRepositoryAdapter implements HintLevelRepository {
         if (levels.stream().anyMatch(h -> !h.problemId().equals(problemId))) {
             throw new IllegalArgumentException("Cấp gợi ý phải của đúng bài " + problemId);
         }
-        jdbc.sql("delete from hint_levels where problem_id = :id").param("id", problemId).update();
+        // Chỉ đụng dòng thật sự đổi: thang gợi ý là nội dung của bài, mỗi thay đổi thật vô hiệu kết quả kiểm và phát hành
+        // của bài (trigger V5); nạp lại y như cũ thì không thay đổi gì.
+        List<HintLevel> cu = findByProblemId(problemId);
+        for (HintLevel h : cu) {
+            boolean conGiu = levels.stream().anyMatch(m -> m.stepCode().equals(h.stepCode()) && m.level() == h.level());
+            if (!conGiu) {
+                jdbc.sql("delete from hint_levels where problem_id = :id and step_code = :step and level = :level")
+                    .param("id", problemId).param("step", h.stepCode()).param("level", h.level()).update();
+            }
+        }
         for (HintLevel h : levels) {
-            jdbc.sql("insert into hint_levels (problem_id, step_code, level, text) values (:id, :step, :level, :text)")
+            jdbc.sql("""
+                    insert into hint_levels (problem_id, step_code, level, text) values (:id, :step, :level, :text)
+                    on conflict (problem_id, step_code, level) do update set text = excluded.text
+                    where hint_levels.text is distinct from excluded.text""")
                 .param("id", h.problemId()).param("step", h.stepCode()).param("level", h.level()).param("text", h.text())
                 .update();
         }

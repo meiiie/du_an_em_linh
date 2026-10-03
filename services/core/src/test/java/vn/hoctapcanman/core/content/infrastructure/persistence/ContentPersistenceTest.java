@@ -216,6 +216,45 @@ class ContentPersistenceTest {
         assertThat(jdbc.sql("select stale from verification_runs where id = ?").params(luot).query(Boolean.class).single()).isTrue();
     }
 
+    @Test
+    void suaLoiGiaiHayGoiYThiPhatHanhVeNhapGhiLaiYNhuCuThiKhong() {
+        // Codex #120 (P1): lời giải và thang gợi ý là nội dung của bài nhưng ở bảng riêng.
+        UUID lop = lopMoi("12A5 thử");
+        Problem p = new Problem(UUID.randomUUID(), "DH12-TH-10", "T12.DH.03", List.of(), Level4.THONG_HIEU, null, null, null, "Đề",
+            "y", null, Problem.TU_LUAN_5_BUOC, null, "SUPHAM", BAM, null, LUC, LUC);
+        problems.save(p);
+        Solution loiGiai = new Solution(p.id(), "{\"buoc\": [1]}", "[\"x = 1\"]", "x = 1");
+        List<HintLevel> thang = List.of(new HintLevel(p.id(), "B.DH.DAOHAM", 1, "cấp 1"), new HintLevel(p.id(), "B.DH.DAOHAM", 2, "cấp 2"));
+        solutions.save(loiGiai);
+        hints.replaceForProblem(p.id(), thang);
+        phatHanh(lop, p.id());
+
+        solutions.save(loiGiai);
+        hints.replaceForProblem(p.id(), thang);
+        assertThat(trangThaiPhatHanh(p.id())).isEqualTo("DA_PHAT_HANH");
+
+        hints.replaceForProblem(p.id(), List.of(new HintLevel(p.id(), "B.DH.DAOHAM", 1, "cấp 1 đã sửa")));
+        assertThat(trangThaiPhatHanh(p.id())).isEqualTo("NHAP");
+        assertThat(hints.findByProblemId(p.id())).extracting(HintLevel::text).containsExactly("cấp 1 đã sửa");
+
+        phatHanh(lop, p.id());
+        solutions.save(new Solution(p.id(), "{\"buoc\": [1]}", "[\"x = 1\", \"x = 3\"]", "x = 1"));
+        assertThat(trangThaiPhatHanh(p.id())).isEqualTo("NHAP");
+    }
+
+    /** Lượt kiểm DAT mới cho bài ở lớp, rồi phát hành theo lượt đó. */
+    private void phatHanh(UUID lop, UUID baiId) {
+        UUID luot = UUID.randomUUID();
+        jdbc.sql("""
+                insert into verification_runs (id, class_id, subject_kind, subject_id, content_hash, overall_status,
+                    publish_status, created_at)
+                values (?, ?, 'PROBLEM', ?, ?, 'DAT', 'DA_PHAT_HANH', now())""").params(luot, lop, baiId, BAM).update();
+        jdbc.sql("""
+                insert into problem_releases (class_id, problem_id, status, run_id, updated_at) values (?, ?, 'DA_PHAT_HANH', ?, now())
+                on conflict (class_id, problem_id) do update set status = excluded.status, run_id = excluded.run_id""")
+            .params(lop, baiId, luot).update();
+    }
+
     private String trangThaiPhatHanh(UUID baiId) {
         return jdbc.sql("select status from problem_releases where problem_id = ?").params(baiId).query(String.class).single();
     }
