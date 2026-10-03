@@ -109,14 +109,39 @@ END $$;
 CREATE TRIGGER verification_run_citations_kiem BEFORE INSERT OR UPDATE OR DELETE ON verification_run_citations
     FOR EACH ROW EXECUTE FUNCTION verification_run_citations_kiem();
 
--- Bài đổi nội dung thì kết quả kiểm cũ không còn nói về nội dung đang có: mọi lượt kiểm của bài thành cũ và bản phát hành
--- của bài ở mọi lớp về NHAP (học sinh không thấy) cho tới khi kiểm lại. Đóng mặc định, cùng giao dịch với lệnh sửa. Nội dung
--- gồm đề (content_hash của problems), lời giải và dữ kiện bảo vệ (solutions), thang gợi ý (hint_levels): đổi bảng nào cũng
--- vô hiệu. Adapter chỉ ghi khi giá trị thật sự khác, nên importer chạy lại y như cũ không vô hiệu gì.
+-- Bài đổi nội dung thì kết quả kiểm cũ không còn nói về nội dung đang có. Nội dung gồm đề (content_hash của problems), lời
+-- giải và dữ kiện bảo vệ (solutions), thang gợi ý (hint_levels). Mỗi thay đổi thật tăng problems.content_version (khóa dòng
+-- bài), đánh dấu mọi lượt kiểm của bài là cũ và đưa bản phát hành của bài ở mọi lớp về NHAP (học sinh không thấy) cho tới
+-- khi kiểm lại; đóng mặc định, cùng giao dịch với lệnh sửa. Adapter chỉ ghi khi giá trị thật sự khác, nên importer chạy lại
+-- y như cũ không vô hiệu gì.
+-- Đồng thời: lượt kiểm bài ghi content_version mà nó đã kiểm; ghi lượt kiểm bài hay gắn phát hành vào một lượt đều khóa
+-- dòng bài FOR SHARE (xung đột với lần sửa nội dung, vốn khóa dòng bài để tăng phiên bản) rồi đòi phiên bản khớp và lượt
+-- còn mới. Bên kiểm đọc nội dung cũ trong lúc có người sửa thì lượt của nó bị từ chối; lượt ghi trước lần sửa thì lần sửa
+-- (chạy sau khi có khóa) thấy và đánh dấu cũ.
+ALTER TABLE problems ADD COLUMN content_version integer NOT NULL DEFAULT 1 CHECK (content_version > 0);
+ALTER TABLE verification_runs ADD COLUMN content_version integer CHECK (content_version > 0);
+ALTER TABLE verification_runs ADD CONSTRAINT verification_runs_bai_co_phien_ban
+    CHECK (subject_kind <> 'PROBLEM' OR content_version IS NOT NULL);
+
 CREATE FUNCTION vo_hieu_ket_qua_bai(bai uuid) RETURNS void LANGUAGE sql AS $$
     UPDATE verification_runs SET stale = true WHERE subject_kind = 'PROBLEM' AND subject_id = bai AND NOT stale;
     UPDATE problem_releases SET status = 'NHAP', run_id = NULL, updated_at = now() WHERE problem_id = bai AND status <> 'NHAP';
 $$;
+
+-- Sửa đề: tăng phiên bản ngay trên dòng đang sửa (BEFORE), rồi vô hiệu (AFTER).
+CREATE FUNCTION problems_tang_phien_ban() RETURNS trigger LANGUAGE plpgsql AS $$
+BEGIN
+    IF NEW.content_hash IS DISTINCT FROM OLD.content_hash THEN
+        NEW.content_version := OLD.content_version + 1;
+    ELSIF NEW.content_version < OLD.content_version THEN
+        -- Phiên bản chỉ tăng (lời giải, gợi ý đổi thì doi_noi_dung_con tăng); không lùi về phiên bản đã có lượt kiểm.
+        NEW.content_version := OLD.content_version;
+    END IF;
+    RETURN NEW;
+END $$;
+
+CREATE TRIGGER problems_tang_phien_ban BEFORE UPDATE ON problems
+    FOR EACH ROW EXECUTE FUNCTION problems_tang_phien_ban();
 
 CREATE FUNCTION problems_doi_noi_dung() RETURNS trigger LANGUAGE plpgsql AS $$
 BEGIN
@@ -129,11 +154,18 @@ END $$;
 CREATE TRIGGER problems_doi_noi_dung AFTER UPDATE OF content_hash ON problems
     FOR EACH ROW EXECUTE FUNCTION problems_doi_noi_dung();
 
+-- Sửa lời giải hay gợi ý: tăng phiên bản của bài (khóa dòng bài; bài đã bị xóa thì không còn gì để vô hiệu) rồi vô hiệu.
+CREATE FUNCTION doi_noi_dung_con(bai uuid) RETURNS void LANGUAGE plpgsql AS $$
+BEGIN
+    UPDATE problems SET content_version = content_version + 1 WHERE id = bai;
+    PERFORM vo_hieu_ket_qua_bai(bai);
+END $$;
+
 CREATE FUNCTION loi_giai_goi_y_doi() RETURNS trigger LANGUAGE plpgsql AS $$
 BEGIN
-    PERFORM vo_hieu_ket_qua_bai(CASE WHEN TG_OP = 'DELETE' THEN OLD.problem_id ELSE NEW.problem_id END);
+    PERFORM doi_noi_dung_con(CASE WHEN TG_OP = 'DELETE' THEN OLD.problem_id ELSE NEW.problem_id END);
     IF TG_OP = 'UPDATE' AND NEW.problem_id IS DISTINCT FROM OLD.problem_id THEN
-        PERFORM vo_hieu_ket_qua_bai(OLD.problem_id);
+        PERFORM doi_noi_dung_con(OLD.problem_id);
     END IF;
     RETURN NULL;
 END $$;
@@ -143,3 +175,47 @@ CREATE TRIGGER solutions_doi AFTER INSERT OR UPDATE OR DELETE ON solutions
 
 CREATE TRIGGER hint_levels_doi AFTER INSERT OR UPDATE OR DELETE ON hint_levels
     FOR EACH ROW EXECUTE FUNCTION loi_giai_goi_y_doi();
+
+-- Lượt kiểm bài chỉ ghi được cho phiên bản nội dung hiện tại; phiên bản đã ghi không đổi được.
+CREATE FUNCTION verification_runs_dung_phien_ban() RETURNS trigger LANGUAGE plpgsql AS $$
+DECLARE
+    hien_tai integer;
+BEGIN
+    IF TG_OP = 'UPDATE' THEN
+        IF NEW.content_version IS DISTINCT FROM OLD.content_version THEN
+            RAISE EXCEPTION 'Phiên bản nội dung của lượt kiểm % không đổi được', OLD.id USING ERRCODE = 'check_violation';
+        END IF;
+        RETURN NEW;
+    END IF;
+    IF NEW.subject_kind = 'PROBLEM' THEN
+        SELECT content_version INTO hien_tai FROM problems WHERE id = NEW.subject_id FOR SHARE;
+        IF hien_tai IS DISTINCT FROM NEW.content_version THEN
+            RAISE EXCEPTION 'Lượt kiểm cho phiên bản nội dung % của bài, hiện tại là %', NEW.content_version, hien_tai
+                USING ERRCODE = 'check_violation';
+        END IF;
+    END IF;
+    RETURN NEW;
+END $$;
+
+CREATE TRIGGER verification_runs_dung_phien_ban BEFORE INSERT OR UPDATE ON verification_runs
+    FOR EACH ROW EXECUTE FUNCTION verification_runs_dung_phien_ban();
+
+-- Gắn phát hành vào một lượt: lượt còn mới và đúng phiên bản nội dung hiện tại của bài.
+CREATE FUNCTION problem_releases_luot_con_moi() RETURNS trigger LANGUAGE plpgsql AS $$
+DECLARE
+    hien_tai integer;
+    luot     record;
+BEGIN
+    IF NEW.run_id IS NULL THEN
+        RETURN NEW;
+    END IF;
+    SELECT content_version INTO hien_tai FROM problems WHERE id = NEW.problem_id FOR SHARE;
+    SELECT stale, content_version INTO luot FROM verification_runs WHERE id = NEW.run_id;
+    IF luot.stale OR luot.content_version IS DISTINCT FROM hien_tai THEN
+        RAISE EXCEPTION 'Phát hành theo lượt kiểm cũ hay của phiên bản nội dung cũ' USING ERRCODE = 'check_violation';
+    END IF;
+    RETURN NEW;
+END $$;
+
+CREATE TRIGGER problem_releases_luot_con_moi BEFORE INSERT OR UPDATE ON problem_releases
+    FOR EACH ROW EXECUTE FUNCTION problem_releases_luot_con_moi();

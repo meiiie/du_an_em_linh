@@ -50,6 +50,8 @@ public class TopicCatalogRepositoryAdapter implements TopicCatalogRepository {
         if (prerequisites.stream().anyMatch(p -> !p.skillCode().equals(skillCode))) {
             throw new IllegalArgumentException("Tiên quyết phải của đúng kỹ năng " + skillCode);
         }
+        // Khóa dòng kỹ năng: hai lần thay tiên quyết của cùng kỹ năng chạy lần lượt.
+        jdbc.sql("select code from skills where code = :skill for update").param("skill", skillCode).query(String.class).optional();
         jdbc.sql("delete from skill_prerequisites where skill_code = :skill").param("skill", skillCode).update();
         for (SkillPrerequisite p : prerequisites) {
             jdbc.sql("insert into skill_prerequisites (skill_code, prerequisite_code, min_level) values (:skill, :pre, :min)")

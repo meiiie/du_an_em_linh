@@ -202,8 +202,8 @@ class ContentPersistenceTest {
         UUID luot = UUID.randomUUID();
         jdbc.sql("""
                 insert into verification_runs (id, class_id, subject_kind, subject_id, content_hash, overall_status,
-                    publish_status, created_at)
-                values (?, ?, 'PROBLEM', ?, ?, 'DAT', 'DA_PHAT_HANH', now())""").params(luot, lop, p.id(), BAM).update();
+                    publish_status, content_version, created_at)
+                values (?, ?, 'PROBLEM', ?, ?, 'DAT', 'DA_PHAT_HANH', 1, now())""").params(luot, lop, p.id(), BAM).update();
         jdbc.sql("insert into problem_releases (class_id, problem_id, status, run_id, updated_at) values (?, ?, 'DA_PHAT_HANH', ?, now())")
             .params(lop, p.id(), luot).update();
 
@@ -214,6 +214,27 @@ class ContentPersistenceTest {
             "y", null, p.answerForm(), null, p.origin(), "c".repeat(64), null, LUC, LUC));
         assertThat(trangThaiPhatHanh(p.id())).isEqualTo("NHAP");
         assertThat(jdbc.sql("select stale from verification_runs where id = ?").params(luot).query(Boolean.class).single()).isTrue();
+        assertThat(jdbc.sql("select content_version from problems where id = ?").params(p.id()).query(Integer.class).single()).isEqualTo(2);
+        // Cuối test: phát hành lại theo lượt cũ bị từ chối (lỗi hủy giao dịch của test).
+        assertThatThrownBy(() -> jdbc.sql("update problem_releases set status = 'DA_PHAT_HANH', run_id = ? where problem_id = ?")
+            .params(luot, p.id()).update()).isInstanceOf(DataIntegrityViolationException.class);
+    }
+
+    @Test
+    void luotKiemChoPhienBanNoiDungCuBiTuChoi() {
+        // Codex #120 (P1): bên kiểm đọc nội dung cũ trong lúc có người sửa thì lượt của nó không được ghi.
+        UUID lop = lopMoi("12A6 thử");
+        Problem p = new Problem(UUID.randomUUID(), "DH12-TH-11", "T12.DH.03", List.of(), Level4.THONG_HIEU, null, null, null, "Đề",
+            "y", null, Problem.TU_LUAN_5_BUOC, null, "SUPHAM", BAM, null, LUC, LUC);
+        problems.save(p);
+        hints.replaceForProblem(p.id(), List.of(new HintLevel(p.id(), "B.DH.DAOHAM", 1, "cấp 1")));
+        int phienBan = jdbc.sql("select content_version from problems where id = ?").params(p.id()).query(Integer.class).single();
+        assertThat(phienBan).isEqualTo(2);
+        assertThatThrownBy(() -> jdbc.sql("""
+                insert into verification_runs (id, class_id, subject_kind, subject_id, content_hash, overall_status,
+                    publish_status, content_version, created_at)
+                values (?, ?, 'PROBLEM', ?, ?, 'DAT', 'DA_PHAT_HANH', 1, now())""")
+            .params(UUID.randomUUID(), lop, p.id(), BAM).update()).isInstanceOf(DataIntegrityViolationException.class);
     }
 
     @Test
@@ -247,8 +268,9 @@ class ContentPersistenceTest {
         UUID luot = UUID.randomUUID();
         jdbc.sql("""
                 insert into verification_runs (id, class_id, subject_kind, subject_id, content_hash, overall_status,
-                    publish_status, created_at)
-                values (?, ?, 'PROBLEM', ?, ?, 'DAT', 'DA_PHAT_HANH', now())""").params(luot, lop, baiId, BAM).update();
+                    publish_status, content_version, created_at)
+                values (?, ?, 'PROBLEM', ?, ?, 'DAT', 'DA_PHAT_HANH', (select content_version from problems where id = ?), now())""")
+            .params(luot, lop, baiId, BAM, baiId).update();
         jdbc.sql("""
                 insert into problem_releases (class_id, problem_id, status, run_id, updated_at) values (?, ?, 'DA_PHAT_HANH', ?, now())
                 on conflict (class_id, problem_id) do update set status = excluded.status, run_id = excluded.run_id""")

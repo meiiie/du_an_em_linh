@@ -26,6 +26,8 @@ public class HintLevelRepositoryAdapter implements HintLevelRepository {
         }
         // Chỉ đụng dòng thật sự đổi: thang gợi ý là nội dung của bài, mỗi thay đổi thật vô hiệu kết quả kiểm và phát hành
         // của bài (trigger V5); nạp lại y như cũ thì không thay đổi gì.
+        // Khóa dòng bài trước khi đọc tập cũ: hai lần thay cùng bài chạy lần lượt, không ra hợp của hai tập.
+        jdbc.sql("select id from problems where id = :id for update").param("id", problemId).query(UUID.class).optional();
         List<HintLevel> cu = findByProblemId(problemId);
         for (HintLevel h : cu) {
             boolean conGiu = levels.stream().anyMatch(m -> m.stepCode().equals(h.stepCode()) && m.level() == h.level());
