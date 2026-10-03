@@ -120,6 +120,8 @@ CREATE TRIGGER verification_run_citations_kiem BEFORE INSERT OR UPDATE OR DELETE
 -- (chạy sau khi có khóa) thấy và đánh dấu cũ.
 ALTER TABLE problems ADD COLUMN content_version integer NOT NULL DEFAULT 1 CHECK (content_version > 0);
 ALTER TABLE verification_runs ADD COLUMN content_version integer CHECK (content_version > 0);
+-- Nâng cấp từ V4: mọi bài đang ở phiên bản 1 (giá trị khởi tạo ở trên), nên lượt kiểm bài đã có thuộc phiên bản 1.
+UPDATE verification_runs SET content_version = 1 WHERE subject_kind = 'PROBLEM';
 ALTER TABLE verification_runs ADD CONSTRAINT verification_runs_bai_co_phien_ban
     CHECK (subject_kind <> 'PROBLEM' OR content_version IS NOT NULL);
 
