@@ -20,10 +20,7 @@ import vn.hoctapcanman.core.classroom.domain.model.SchoolClass;
 import vn.hoctapcanman.core.classroom.domain.repository.ClassSettingsRepository;
 import vn.hoctapcanman.core.classroom.domain.repository.EnrollmentRepository;
 import vn.hoctapcanman.core.classroom.domain.repository.SchoolClassRepository;
-import vn.hoctapcanman.core.identity.domain.model.Email;
-import vn.hoctapcanman.core.identity.domain.model.User;
-import vn.hoctapcanman.core.identity.domain.model.UserId;
-import vn.hoctapcanman.core.identity.domain.repository.UserRepository;
+import vn.hoctapcanman.core.identity.application.port.UserDirectory;
 
 /**
  * Lớp «12A1 thử» của v0 cho dev / demo (spec P2, ADR 006): giáo viên thử dạy An, Bình, Chi; cài lớp mặc định. Chạy sau
@@ -45,11 +42,12 @@ public class LopThuSeeder implements ApplicationRunner {
     private final SchoolClassRepository classes;
     private final EnrollmentRepository enrollments;
     private final ClassSettingsRepository settings;
-    private final UserRepository users;
+    /** Tra tài khoản qua cổng của identity, không đọc kho người dùng của module khác (#111). */
+    private final UserDirectory users;
     private final Clock clock;
 
     public LopThuSeeder(SchoolClassRepository classes, EnrollmentRepository enrollments, ClassSettingsRepository settings,
-            UserRepository users, Clock clock) {
+            UserDirectory users, Clock clock) {
         this.classes = classes;
         this.enrollments = enrollments;
         this.settings = settings;
@@ -76,12 +74,12 @@ public class LopThuSeeder implements ApplicationRunner {
     private boolean coThanhVienThat(ClassId lop) {
         return Stream.of(ClassRole.values())
                 .flatMap(role -> enrollments.findByClass(lop, role).stream())
-                .anyMatch(e -> users.findById(new UserId(e.userId())).map(u -> !u.synthetic()).orElse(false));
+                .anyMatch(e -> users.findById(e.userId()).map(u -> !u.synthetic()).orElse(false));
     }
 
     private void ghiDanh(ClassId lop, String email, ClassRole role, Instant now) {
-        users.findByEmail(new Email(email)).filter(User::synthetic).ifPresent(user -> {
-            UUID id = user.id().value();
+        users.findByEmail(email).filter(UserDirectory.UserSummary::synthetic).ifPresent(user -> {
+            UUID id = user.id();
             boolean daGhiDanh = enrollments.find(lop, id).isPresent();
             boolean daHocLopKhac = role == ClassRole.STUDENT
                     && enrollments.findByUser(id).stream().anyMatch(e -> e.role() == ClassRole.STUDENT);
