@@ -154,6 +154,8 @@ final class KienTrucRules {
 
     // ---- Ranh giới module (research R1, #111) -----------------------------------------------------------------
 
+    /** Chỉ gói của dự án (mã thật và lớp mẫu) mới chia module. */
+    private static final String GOC_DU_AN = "vn.hoctapcanman.";
     /** Tầng của một module; gói gốc của module là phần đứng trước tầng đầu tiên. */
     private static final Set<String> TANG = Set.of("domain", "application", "infrastructure");
     /** Phần một module mở cho module khác. */
@@ -258,8 +260,14 @@ final class KienTrucRules {
         };
     }
 
-    /** Gói gốc của module chứa gói này (phần trước tầng đầu tiên); rỗng nếu gói không thuộc tầng nào của một module. */
+    /**
+     * Gói gốc của module chứa gói này (phần trước tầng đầu tiên); rỗng nếu gói không thuộc tầng nào của một module, hay
+     * nằm ngoài dự án: thư viện như {@code org.springframework.data.domain} không phải module.
+     */
     static Optional<String> moduleCua(String goi) {
+        if (!goi.startsWith(GOC_DU_AN)) {
+            return Optional.empty();
+        }
         String[] phan = goi.split("\\.");
         for (int i = 1; i < phan.length; i++) {
             if (TANG.contains(phan[i])) {

@@ -71,6 +71,14 @@ class KienTrucRulesTuKiemTest {
             .satisfies(loi -> lopViPham.forEach(lop -> assertThat(loi.getMessage()).contains(lop)));
     }
 
+    @Test
+    @DisplayName("Thư viện ngoài vn.hoctapcanman không phải module, dù gói có chữ domain / application")
+    void thuVienNgoaiKhongPhaiModule() {
+        assertThat(KienTrucRules.moduleCua("org.springframework.data.domain")).isEmpty();
+        assertThat(KienTrucRules.moduleCua("com.example.application.port")).isEmpty();
+        assertThat(KienTrucRules.moduleCua("vn.hoctapcanman.core.classroom.domain.model")).contains("vn.hoctapcanman.core.classroom");
+    }
+
     @ParameterizedTest(name = "module đúng qua: {0}")
     @MethodSource("tatCaLuat")
     void moduleDungQuaMoiLuat(ArchRule rule) {
