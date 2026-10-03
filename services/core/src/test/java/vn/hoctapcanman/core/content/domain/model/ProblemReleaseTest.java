@@ -56,7 +56,7 @@ class ProblemReleaseTest {
         VerificationRun lopKhac = VerificationRun.forProblem(UUID.randomUUID(), Mau.BAI, Mau.BAM, Mau.BANG, Mau.tang(DAT, DAT, DAT), Mau.LUC);
         VerificationRun baiKhac = VerificationRun.forProblem(Mau.LOP, UUID.randomUUID(), Mau.BAM, Mau.BANG, Mau.tang(DAT, DAT, DAT), Mau.LUC);
         VerificationRun giaSu = new VerificationRun(UUID.randomUUID(), Mau.LOP, SubjectKind.TUTOR_FORMULA, Mau.BAI, Mau.BAM, Mau.BANG,
-            SAI, null, false, Mau.LUC, List.of());
+            SAI, null, false, Mau.LUC, Mau.tang(SAI, SAI, SAI));
         assertThatThrownBy(() -> ap(nhap, lopKhac)).isInstanceOf(IllegalArgumentException.class);
         assertThatThrownBy(() -> ap(nhap, baiKhac)).isInstanceOf(IllegalArgumentException.class);
         assertThatThrownBy(() -> ap(nhap, giaSu)).isInstanceOf(IllegalArgumentException.class);

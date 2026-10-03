@@ -111,6 +111,11 @@ class VerificationRunTest {
             .isInstanceOf(IllegalArgumentException.class);
         assertThatThrownBy(() -> new VerificationRun(UUID.randomUUID(), Mau.LOP, SubjectKind.TUTOR_FORMULA, UUID.randomUUID(),
             Mau.BAM, null, GV_DUYET, null, false, Mau.LUC, List.of())).isInstanceOf(IllegalArgumentException.class);
+        // Rà lần 2 (N1): lượt công thức gia sư cũng phải có trạng thái tổng khớp các tầng.
+        assertThatThrownBy(() -> new VerificationRun(UUID.randomUUID(), Mau.LOP, SubjectKind.TUTOR_FORMULA, UUID.randomUUID(),
+            Mau.BAM, null, DAT, null, false, Mau.LUC, Mau.tang(SAI, SAI, SAI))).isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> new VerificationRun(UUID.randomUUID(), Mau.LOP, SubjectKind.TUTOR_FORMULA, UUID.randomUUID(),
+            Mau.BAM, null, DAT, null, false, Mau.LUC, List.of(TierResult.of(1, DAT)))).isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test

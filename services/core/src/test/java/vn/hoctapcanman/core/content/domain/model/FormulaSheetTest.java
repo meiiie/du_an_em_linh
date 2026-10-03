@@ -61,7 +61,7 @@ class FormulaSheetTest {
         // H6: kiểm dòng d-1 với nội dung cũ, rồi dòng bị sửa thành công thức sai trước khi ghi kết quả.
         Formula cu = Mau.dong(1, "d-1");
         Formula daSua = new Formula(cu.id(), 1, "d-1", cu.skillCode(), cu.title(), "(u+v)' = u'v'", cu.statement(),
-            null, null, null, null, null, null);
+            null, null, null, null, null, null, List.of(), null);
         FormulaSheet bang = FormulaSheet.draft(Mau.LOP, 1, null, List.of(daSua), Mau.LUC);
         FormulaSheet sauKiem = bang.withCheckResults(Map.of("d-1", Mau.dat(cu)));
         assertThat(sauKiem.rowsNotPassing()).containsExactly("d-1");
@@ -118,7 +118,7 @@ class FormulaSheetTest {
         assertThatThrownBy(() -> FormulaCheck.of(d, FormulaKind.DANG_THUC, CheckStatus.GV_DUYET, CheckStatus.DAT, null, null, Mau.DOAN))
             .isInstanceOf(IllegalArgumentException.class);
         // Dòng có kết quả kiểm mà không có loại; số thứ tự quá smallint; surrogate lẻ.
-        assertThatThrownBy(() -> new Formula(UUID.randomUUID(), 1, "d-1", null, "Tổng", "x", "y", null, CheckStatus.DAT, null, null, null, null))
+        assertThatThrownBy(() -> new Formula(UUID.randomUUID(), 1, "d-1", null, "Tổng", "x", "y", null, CheckStatus.DAT, null, null, null, null, List.of(), null))
             .isInstanceOf(IllegalArgumentException.class);
         assertThatThrownBy(() -> Formula.unchecked(40000, "d-1", null, "Tổng", "x", "y")).isInstanceOf(IllegalArgumentException.class);
         String le = "a" + (char) 0xD800;
@@ -140,5 +140,35 @@ class FormulaSheetTest {
         Formula a = Formula.unchecked(1, "d-1", null, "ab", "c", "x");
         Formula b = Formula.unchecked(1, "d-1", null, "a", "bc", "x");
         assertThat(FormulaSheet.fingerprintOf(List.of(a))).isNotEqualTo(FormulaSheet.fingerprintOf(List.of(b)));
+    }
+
+    @Test
+    void dongDaDatBiSuaNoiDungMaGiuTrangThaiThiKhongDungDuoc() {
+        // H6 (rà lần 2): sửa LaTeX của dòng đã DAT, giữ nguyên kết quả kiểm → không dựng được, nên không khóa được.
+        FormulaSheet bang = nhap().withCheckResults(Mau.datCaBang(nhap()));
+        Formula dat = bang.rows().getFirst();
+        assertThatThrownBy(() -> new Formula(dat.id(), dat.ordinal(), dat.code(), dat.skillCode(), dat.title(),
+            "(u+v)' = u'v'", dat.statement(), dat.kind(), dat.tier1Status(), dat.tier2Status(), dat.tier1DetailJson(),
+            dat.tier2DetailJson(), dat.citationPassageId(), dat.extraCitationPassageIds(), dat.checkedFingerprint()))
+            .isInstanceOf(IllegalArgumentException.class)
+            .hasMessageContaining("đã đổi sau khi kiểm");
+        // Có kết quả kiểm mà không có dấu vân tay kiểm cũng không dựng được.
+        assertThatThrownBy(() -> new Formula(dat.id(), dat.ordinal(), dat.code(), dat.skillCode(), dat.title(), dat.latex(),
+            dat.statement(), dat.kind(), dat.tier1Status(), dat.tier2Status(), null, null, dat.citationPassageId(), List.of(), null))
+            .isInstanceOf(IllegalArgumentException.class);
+        assertThat(dat.checkedFingerprint()).isEqualTo(dat.contentFingerprint());
+    }
+
+    @Test
+    void trichDanThemDiTheoKetQuaKiemVaDongChuaKiemKhongCoTrichDan() {
+        Formula d = Mau.dong(1, "d-1");
+        UUID them = UUID.randomUUID();
+        FormulaCheck kq = FormulaCheck.of(d, FormulaKind.DINH_LI, CheckStatus.DAT, CheckStatus.DAT, null, null, Mau.DOAN, List.of(them));
+        FormulaSheet bang = FormulaSheet.draft(Mau.LOP, 1, null, List.of(d), Mau.LUC).withCheckResults(Map.of("d-1", kq));
+        assertThat(bang.rows().getFirst().extraCitationPassageIds()).containsExactly(them);
+        assertThatThrownBy(() -> FormulaCheck.of(d, FormulaKind.DINH_LI, CheckStatus.DAT, CheckStatus.DAT, null, null, Mau.DOAN,
+            List.of(them, them))).isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> new Formula(UUID.randomUUID(), 1, "d-1", null, "Tổng", "x", "y", null, null, null, null, null,
+            Mau.DOAN, List.of(), null)).isInstanceOf(IllegalArgumentException.class);
     }
 }

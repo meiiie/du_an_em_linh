@@ -84,7 +84,7 @@ public record FormulaSheet(
         requireDraft();
         List<Formula> dongMoi = rows.stream().map(dong -> {
             FormulaCheck kq = results.get(dong.code());
-            boolean dungDong = kq != null && kq.rowFingerprint().equals(fingerprintOf(List.of(dong)));
+            boolean dungDong = kq != null && kq.rowFingerprint().equals(dong.contentFingerprint());
             return dong.withCheck(dungDong ? kq : null);
         }).toList();
         return new FormulaSheet(id, classId, version, status, note, null, null, null, createdAt, dongMoi);
@@ -133,13 +133,27 @@ public record FormulaSheet(
      */
     public static String fingerprintOf(List<Formula> rows) {
         StringBuilder chuoi = new StringBuilder();
-        rows.stream().sorted(Comparator.comparingInt(Formula::ordinal)).forEach(dong -> {
-            for (String truong : new String[] {
-                    dong.code(), Objects.requireNonNullElse(dong.skillCode(), ""), dong.title(), dong.latex(), dong.statement()}) {
-                chuoi.append(truong.length()).append(':').append(truong);
-            }
-            chuoi.append(';');
-        });
+        rows.stream().sorted(Comparator.comparingInt(Formula::ordinal))
+            .forEach(dong -> noiDong(chuoi, dong.code(), dong.skillCode(), dong.title(), dong.latex(), dong.statement()));
+        return sha256Hex(chuoi);
+    }
+
+    /** Dấu vân tay của một dòng, bằng {@code fingerprintOf(List.of(dong))}: dùng được cả khi chưa dựng {@link Formula}. */
+    static String rowFingerprint(String code, @Nullable String skillCode, String title, String latex, String statement) {
+        StringBuilder chuoi = new StringBuilder();
+        noiDong(chuoi, code, skillCode, title, latex, statement);
+        return sha256Hex(chuoi);
+    }
+
+    private static void noiDong(StringBuilder chuoi, String code, @Nullable String skillCode, String title, String latex,
+            String statement) {
+        for (String truong : new String[] {code, Objects.requireNonNullElse(skillCode, ""), title, latex, statement}) {
+            chuoi.append(truong.length()).append(':').append(truong);
+        }
+        chuoi.append(';');
+    }
+
+    private static String sha256Hex(CharSequence chuoi) {
         try {
             byte[] bam = MessageDigest.getInstance("SHA-256").digest(chuoi.toString().getBytes(StandardCharsets.UTF_8));
             return HexFormat.of().formatHex(bam);

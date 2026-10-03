@@ -12,7 +12,7 @@ GOC = pathlib.Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(GOC / "services" / "math"))
 from app.verify import cong_phat_hanh  # noqa: E402
 
-blob = subprocess.check_output(["git", "rev-parse", "HEAD:services/math/app/verify.py"], cwd=GOC, text=True).strip()
+blob = subprocess.check_output(["git", "hash-object", "services/math/app/verify.py"], cwd=GOC, text=True).strip()
 TRANG_THAI = ["DAT", "SAI", "KHONG_KIEM_DUOC", "THIEU"]
 dong = [
     f"# Tệp vàng: cong_phat_hanh của services/math/app/verify.py (blob {blob}) trên 64 tổ hợp trạng thái tầng 1–3.",

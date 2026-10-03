@@ -61,8 +61,13 @@ public record VerificationRun(
             if (publishStatus != publishOf(overallStatus)) {
                 throw new IllegalArgumentException("Trạng thái phát hành không khớp trạng thái tổng của lượt kiểm bài");
             }
-        } else if (publishStatus != null || overallStatus == CheckStatus.GV_DUYET) {
-            throw new IllegalArgumentException("Công thức trong lời gia sư không phát hành và không duyệt riêng (ADR 013)");
+        } else {
+            if (publishStatus != null || overallStatus == CheckStatus.GV_DUYET) {
+                throw new IllegalArgumentException("Công thức trong lời gia sư không phát hành và không duyệt riêng (ADR 013)");
+            }
+            if (overallStatus != overallOf(tiers)) {
+                throw new IllegalArgumentException("Trạng thái tổng " + overallStatus + " không khớp các tầng (" + overallOf(tiers) + ")");
+            }
         }
     }
 
