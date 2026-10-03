@@ -1,16 +1,35 @@
--- Căn cứ tầng 2 không đổi dưới chân bảng công thức (#120). Đoạn tài liệu đang được trích dẫn (trích dẫn chính hay
--- trích dẫn thêm của một dòng, ở bảng nháp hay bảng khóa) không đổi được vị trí, chữ, hay tài liệu chứa nó. Tài liệu có
--- đoạn đang được trích dẫn không chuyển sang lớp khác, không đổi quyền dùng được (hạ xuống chua_ro thì không còn là căn
--- cứ hợp lệ, R9, mà bảng vẫn DAT). Kết quả kiểm của dòng gắn với đúng chữ và quyền dùng lúc kiểm: muốn sửa thì nạp tài
--- liệu thành phiên bản mới (đoạn mới) và kiểm lại bảng. Xóa đoạn đang được trích dẫn đã bị khóa ngoại của V4 chặn.
+-- Căn cứ tầng 2 không đổi dưới chân kết quả kiểm (#120). Một đoạn tài liệu «đang là căn cứ» khi được trích dẫn bởi một
+-- dòng bảng công thức (trích dẫn chính hay thêm, bảng nháp hay khóa) hoặc bởi một lượt kiểm 3 tầng (bảng mới
+-- verification_run_citations, quan hệ thay cho chỗ chỉ nằm trong verification_tier_results.citation). Đoạn đang là căn cứ
+-- không đổi được vị trí, chữ, hay tài liệu chứa nó; tài liệu có đoạn đang là căn cứ không chuyển lớp, không đổi quyền dùng
+-- được (hạ xuống chua_ro thì không còn là căn cứ hợp lệ, R9, mà kết quả vẫn DAT). Muốn sửa thì nạp tài liệu thành phiên
+-- bản mới (đoạn mới) rồi kiểm lại. Xóa đoạn đang là căn cứ bị khóa ngoại chặn.
+-- Đồng thời: ghi trích dẫn khóa đoạn và tài liệu FOR SHARE, xung đột với khóa của UPDATE trên các dòng đó, nên ghi trích
+-- dẫn và sửa căn cứ chạy lần lượt; kiểm «đang là căn cứ» của bên sửa chạy sau khi có khóa dòng nên thấy trích dẫn vừa
+-- commit.
+
+-- Trích dẫn của lượt kiểm (tầng 2 của bài, công thức trong lời gia sư). Khóa ngoại tới đoạn kiểm lúc commit, như
+-- formula_citations, để xóa lớp xóa dây chuyền được.
+CREATE TABLE verification_run_citations (
+    run_id     uuid NOT NULL REFERENCES verification_runs (id) ON DELETE CASCADE,
+    passage_id uuid NOT NULL REFERENCES document_passages (id) DEFERRABLE INITIALLY DEFERRED,
+    PRIMARY KEY (run_id, passage_id)
+);
+
+CREATE INDEX verification_run_citations_passage_idx ON verification_run_citations (passage_id);
+
+CREATE FUNCTION doan_dang_la_can_cu(doan uuid) RETURNS boolean LANGUAGE sql STABLE AS $$
+    SELECT EXISTS (SELECT 1 FROM formulas WHERE citation_passage_id = doan)
+        OR EXISTS (SELECT 1 FROM formula_citations WHERE passage_id = doan)
+        OR EXISTS (SELECT 1 FROM verification_run_citations WHERE passage_id = doan)
+$$;
 
 CREATE FUNCTION document_passages_can_cu_bat_bien() RETURNS trigger LANGUAGE plpgsql AS $$
 BEGIN
     IF (NEW.document_id, NEW.page, NEW.char_start, NEW.char_end, NEW.text)
             IS DISTINCT FROM (OLD.document_id, OLD.page, OLD.char_start, OLD.char_end, OLD.text)
-       AND (EXISTS (SELECT 1 FROM formulas WHERE citation_passage_id = OLD.id)
-            OR EXISTS (SELECT 1 FROM formula_citations WHERE passage_id = OLD.id)) THEN
-        RAISE EXCEPTION 'Đoạn % đang là căn cứ của bảng công thức, không sửa được; nạp tài liệu thành phiên bản mới', OLD.id
+       AND doan_dang_la_can_cu(OLD.id) THEN
+        RAISE EXCEPTION 'Đoạn % đang là căn cứ của kết quả kiểm, không sửa được; nạp tài liệu thành phiên bản mới', OLD.id
             USING ERRCODE = 'check_violation';
     END IF;
     RETURN NEW;
@@ -21,12 +40,9 @@ CREATE TRIGGER document_passages_can_cu_bat_bien BEFORE UPDATE ON document_passa
 
 CREATE FUNCTION documents_can_cu_giu_lop_va_quyen() RETURNS trigger LANGUAGE plpgsql AS $$
 BEGIN
-    IF (NEW.class_id, NEW.license_status) IS DISTINCT FROM (OLD.class_id, OLD.license_status) AND EXISTS (
-            SELECT 1 FROM document_passages p
-            WHERE p.document_id = OLD.id
-              AND (EXISTS (SELECT 1 FROM formulas f WHERE f.citation_passage_id = p.id)
-                   OR EXISTS (SELECT 1 FROM formula_citations c WHERE c.passage_id = p.id))) THEN
-        RAISE EXCEPTION 'Tài liệu % đang là căn cứ của bảng công thức, không chuyển lớp hay đổi quyền dùng được', OLD.id
+    IF (NEW.class_id, NEW.license_status) IS DISTINCT FROM (OLD.class_id, OLD.license_status)
+       AND EXISTS (SELECT 1 FROM document_passages p WHERE p.document_id = OLD.id AND doan_dang_la_can_cu(p.id)) THEN
+        RAISE EXCEPTION 'Tài liệu % đang là căn cứ của kết quả kiểm, không chuyển lớp hay đổi quyền dùng được', OLD.id
             USING ERRCODE = 'check_violation';
     END IF;
     RETURN NEW;
@@ -34,3 +50,32 @@ END $$;
 
 CREATE TRIGGER documents_can_cu_giu_lop_va_quyen BEFORE UPDATE ON documents
     FOR EACH ROW EXECUTE FUNCTION documents_can_cu_giu_lop_va_quyen();
+
+-- Ghi trích dẫn: khóa đoạn và tài liệu FOR SHARE cho tới hết giao dịch (xem đầu tệp).
+CREATE FUNCTION khoa_can_cu(doan uuid) RETURNS void LANGUAGE plpgsql AS $$
+BEGIN
+    IF doan IS NOT NULL THEN
+        PERFORM 1 FROM document_passages p JOIN documents d ON d.id = p.document_id WHERE p.id = doan FOR SHARE OF p, d;
+    END IF;
+END $$;
+
+CREATE FUNCTION formulas_khoa_can_cu() RETURNS trigger LANGUAGE plpgsql AS $$
+BEGIN
+    PERFORM khoa_can_cu(NEW.citation_passage_id);
+    RETURN NEW;
+END $$;
+
+CREATE TRIGGER formulas_khoa_can_cu BEFORE INSERT OR UPDATE OF citation_passage_id ON formulas
+    FOR EACH ROW EXECUTE FUNCTION formulas_khoa_can_cu();
+
+CREATE FUNCTION trich_dan_khoa_can_cu() RETURNS trigger LANGUAGE plpgsql AS $$
+BEGIN
+    PERFORM khoa_can_cu(NEW.passage_id);
+    RETURN NEW;
+END $$;
+
+CREATE TRIGGER formula_citations_khoa_can_cu BEFORE INSERT OR UPDATE ON formula_citations
+    FOR EACH ROW EXECUTE FUNCTION trich_dan_khoa_can_cu();
+
+CREATE TRIGGER verification_run_citations_khoa_can_cu BEFORE INSERT OR UPDATE ON verification_run_citations
+    FOR EACH ROW EXECUTE FUNCTION trich_dan_khoa_can_cu();
