@@ -13,7 +13,10 @@ import vn.hoctapcanman.core.content.domain.model.DocumentKind;
 import vn.hoctapcanman.core.content.domain.model.DocumentPassage;
 import vn.hoctapcanman.core.content.domain.repository.DocumentRepository;
 
-/** Tài liệu và đoạn trên bảng {@code documents}, {@code document_passages}. */
+/**
+ * Tài liệu và đoạn trên bảng {@code documents}, {@code document_passages}. Đoạn đang là căn cứ của bảng công thức thì
+ * không sửa hay xóa được (trigger V5, khóa ngoại V4): {@link #save} khi đó ném lỗi ràng buộc, giao dịch hủy cả lần ghi.
+ */
 @Repository
 public class DocumentRepositoryAdapter implements DocumentRepository {
 

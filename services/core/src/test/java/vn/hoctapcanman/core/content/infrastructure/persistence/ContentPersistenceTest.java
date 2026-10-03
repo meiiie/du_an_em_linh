@@ -159,4 +159,32 @@ class ContentPersistenceTest {
         assertThatThrownBy(() -> documents.save(d, List.of(DocumentPassage.of(UUID.randomUUID(), 1, 0, "lạc"))))
             .isInstanceOf(IllegalArgumentException.class);
     }
+
+    @Test
+    void doanDangLaCanCuThiKhongSuaChuDuoc() {
+        // Codex #120 (P1): nạp lại tài liệu đổi chữ của đoạn đang được trích dẫn thì bảng vẫn mang kết quả DAT cũ.
+        UUID lop = UUID.randomUUID();
+        jdbc.sql("insert into classes (id, name, grade, school_year, created_at) values (?, '12A2 thử', 12, '2026-2027', now())")
+            .params(lop).update();
+        Document d = new Document(UUID.randomUUID(), lop, "sp-tai-lieu-0001", "Quy tắc đạo hàm", DocumentKind.TU_SOAN, null,
+            "tu_soan", null, "Đạo hàm của tổng bằng tổng các đạo hàm. Đoạn khác.", 1, null, LUC);
+        List<DocumentPassage> doan = documents.save(d, List.of(
+            DocumentPassage.of(d.id(), 1, 0, "Đạo hàm của tổng bằng tổng các đạo hàm."),
+            DocumentPassage.of(d.id(), 1, 41, "Đoạn khác.")));
+        UUID bang = UUID.randomUUID();
+        jdbc.sql("insert into formula_sheets (id, class_id, version, status, created_at) values (?, ?, 1, 'NHAP', now())")
+            .params(bang, lop).update();
+        jdbc.sql("""
+                insert into formulas (id, formula_sheet_id, ordinal, code, title, latex, statement, kind, tier1_status,
+                    tier2_status, citation_passage_id, checked_fingerprint)
+                values (?, ?, 1, 'd-2', 'Đạo hàm tổng', 'x', 'y', 'DANG_THUC', 'DAT', 'DAT', ?, ?)""")
+            .params(UUID.randomUUID(), bang, doan.getFirst().id(), "b".repeat(64)).update();
+
+        // Đoạn không được trích dẫn vẫn sửa được.
+        documents.save(d, List.of(DocumentPassage.of(d.id(), 1, 0, "Đạo hàm của tổng bằng tổng các đạo hàm."),
+            DocumentPassage.of(d.id(), 1, 41, "Đoạn khác (sửa).")));
+        // Cuối test: lỗi ràng buộc hủy giao dịch của test.
+        assertThatThrownBy(() -> documents.save(d, List.of(DocumentPassage.of(d.id(), 1, 0, "Đạo hàm của tổng bằng tích các đạo hàm."),
+            DocumentPassage.of(d.id(), 1, 41, "Đoạn khác (sửa).")))).isInstanceOf(DataIntegrityViolationException.class);
+    }
 }

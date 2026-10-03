@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Optional;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 import vn.hoctapcanman.core.content.domain.model.ErrorType;
 import vn.hoctapcanman.core.content.domain.model.InputKind;
 import vn.hoctapcanman.core.content.domain.model.Skill;
@@ -44,6 +45,7 @@ public class TopicCatalogRepositoryAdapter implements TopicCatalogRepository {
     }
 
     @Override
+    @Transactional
     public void replacePrerequisites(String skillCode, List<SkillPrerequisite> prerequisites) {
         if (prerequisites.stream().anyMatch(p -> !p.skillCode().equals(skillCode))) {
             throw new IllegalArgumentException("Tiên quyết phải của đúng kỹ năng " + skillCode);
