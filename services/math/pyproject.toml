@@ -7,7 +7,7 @@ include = ["app*"]
 
 [project]
 name = "hoc-toan-math"
-version = "0.1.0"  # x-release-please-version
+version = "0.2.0"  # x-release-please-version
 description = "Dịch vụ toán: chấm khung 5 bước, kiểm định 3 tầng, bộ lọc lộ đáp án"
 requires-python = ">=3.12"
 dependencies = [
