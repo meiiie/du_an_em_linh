@@ -77,5 +77,26 @@ END $$;
 CREATE TRIGGER formula_citations_khoa_can_cu BEFORE INSERT OR UPDATE ON formula_citations
     FOR EACH ROW EXECUTE FUNCTION trich_dan_khoa_can_cu();
 
-CREATE TRIGGER verification_run_citations_khoa_can_cu BEFORE INSERT OR UPDATE ON verification_run_citations
-    FOR EACH ROW EXECUTE FUNCTION trich_dan_khoa_can_cu();
+-- Trích dẫn của lượt kiểm chỉ thêm, như lượt kiểm: không sửa; chỉ xóa theo dây chuyền khi lượt kiểm cha đã bị xóa (lúc
+-- ON DELETE CASCADE chạy, dòng cha đã mất). Đoạn phải thuộc tài liệu cùng lớp với lượt kiểm (tầng 2 dùng tài liệu của lớp).
+CREATE FUNCTION verification_run_citations_kiem() RETURNS trigger LANGUAGE plpgsql AS $$
+BEGIN
+    IF TG_OP = 'UPDATE' THEN
+        RAISE EXCEPTION 'Trích dẫn của lượt kiểm không sửa được' USING ERRCODE = 'check_violation';
+    END IF;
+    IF TG_OP = 'DELETE' THEN
+        IF EXISTS (SELECT 1 FROM verification_runs WHERE id = OLD.run_id) THEN
+            RAISE EXCEPTION 'Trích dẫn của lượt kiểm % không xóa riêng được', OLD.run_id USING ERRCODE = 'check_violation';
+        END IF;
+        RETURN OLD;
+    END IF;
+    PERFORM khoa_can_cu(NEW.passage_id);
+    IF (SELECT class_id FROM verification_runs WHERE id = NEW.run_id) IS DISTINCT FROM (SELECT d.class_id
+            FROM document_passages p JOIN documents d ON d.id = p.document_id WHERE p.id = NEW.passage_id) THEN
+        RAISE EXCEPTION 'Đoạn trích dẫn không thuộc tài liệu của lớp của lượt kiểm' USING ERRCODE = 'check_violation';
+    END IF;
+    RETURN NEW;
+END $$;
+
+CREATE TRIGGER verification_run_citations_kiem BEFORE INSERT OR UPDATE OR DELETE ON verification_run_citations
+    FOR EACH ROW EXECUTE FUNCTION verification_run_citations_kiem();
