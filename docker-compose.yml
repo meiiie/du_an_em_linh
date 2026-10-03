@@ -16,8 +16,10 @@ x-cung: &cung
       max-size: 10m
       max-file: "3"
 
+# Mật khẩu không nằm trong URL (ký tự như / ? # làm hỏng URL): postgres.js đọc PGPASSWORD khi URL không có mật khẩu.
 x-csdl: &csdl
-  DATABASE_URL: postgres://hoc_toan:${POSTGRES_PASSWORD:-hoc_toan}@db:5432/hoc_toan
+  DATABASE_URL: postgres://hoc_toan@db:5432/hoc_toan
+  PGPASSWORD: ${POSTGRES_PASSWORD:-hoc_toan}
 
 services:
   db:
