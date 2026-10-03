@@ -79,7 +79,7 @@ docker compose exec -T web docker-entrypoint.sh node --input-type=module < ops/t
 
 Rồi giáo viên chọn **Z.AI** ở **Cài lớp**. Đổi model: `ZAI_MODEL` (mặc định `glm-5.3`). Dừng: `docker compose down`; thêm `-v` để xóa CSDL.
 
-Đã chạy compose của v0 trước #118 (tên project theo thư mục, PostgreSQL 16): stack cũ không được nhận ra nữa, và dữ liệu PostgreSQL 16 không dùng thẳng được cho 18. Dừng stack cũ trước: `docker compose -p <tên-thư-mục-repo> down` (thêm `-v` để xóa volume cũ). Dữ liệu v0 là seed tổng hợp nên thường không cần giữ; cần giữ thì `docker compose -p <tên-thư-mục-repo> exec postgres pg_dumpall -U hoc_toan > v0.sql` trước khi dừng, rồi nạp vào stack mới bằng `docker compose exec -T db psql -U hoc_toan -d hoc_toan < v0.sql`.
+Đã chạy compose của v0 trước #118 (tên project theo thư mục, PostgreSQL 16): stack cũ không được nhận ra nữa, và dữ liệu PostgreSQL 16 không dùng thẳng được cho 18. Dữ liệu v0 là seed tổng hợp nên thường không cần giữ; cần giữ thì xuất từ container cũ trước, gọi thẳng tên container vì file compose mới không còn service `postgres`: `docker exec <tên-thư-mục-repo>-postgres-1 pg_dumpall -U hoc_toan > v0.sql`. Rồi dừng stack cũ: `docker compose -p <tên-thư-mục-repo> down --remove-orphans` (service cũ không có trong file mới nên là «orphan»; thêm `-v` để xóa volume cũ), chạy stack mới, và nạp lại bằng `docker compose exec -T db psql -U hoc_toan -d hoc_toan < v0.sql`.
 
 Biến môi trường: `.env.example`.
 
