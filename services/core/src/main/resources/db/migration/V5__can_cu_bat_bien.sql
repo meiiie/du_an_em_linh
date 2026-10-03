@@ -52,13 +52,18 @@ END $$;
 CREATE TRIGGER documents_can_cu_giu_lop_va_quyen BEFORE UPDATE ON documents
     FOR EACH ROW EXECUTE FUNCTION documents_can_cu_giu_lop_va_quyen();
 
--- Ghi trích dẫn: khóa đoạn và tài liệu FOR SHARE cho tới hết giao dịch (xem đầu tệp).
+-- Ghi trích dẫn (dòng bảng công thức, trích dẫn thêm, trích dẫn của lượt kiểm): khóa tài liệu rồi đoạn FOR SHARE cho tới
+-- hết giao dịch (xem đầu tệp), và từ chối đoạn của tài liệu quyền dùng chua_ro.
 CREATE FUNCTION khoa_can_cu(doan uuid) RETURNS void LANGUAGE plpgsql AS $$
 BEGIN
     IF doan IS NOT NULL THEN
         -- Tài liệu trước, đoạn sau: cùng thứ tự với lần ghi tài liệu (dòng documents rồi các đoạn), không deadlock.
         PERFORM 1 FROM documents d WHERE d.id = (SELECT p.document_id FROM document_passages p WHERE p.id = doan) FOR SHARE;
         PERFORM 1 FROM document_passages p WHERE p.id = doan FOR SHARE;
+        -- Quyền dùng chưa rõ thì không bao giờ là căn cứ, không được trích dẫn (R9); kiểm khi đang giữ khóa tài liệu.
+        IF (SELECT d.license_status FROM document_passages p JOIN documents d ON d.id = p.document_id WHERE p.id = doan) = 'chua_ro' THEN
+            RAISE EXCEPTION 'Đoạn % thuộc tài liệu quyền dùng chưa rõ, không làm căn cứ được', doan USING ERRCODE = 'check_violation';
+        END IF;
     END IF;
 END $$;
 
