@@ -187,6 +187,10 @@ CREATE FUNCTION practice_bai_lam_dang_mo() RETURNS trigger LANGUAGE plpgsql AS $
 DECLARE
     bai_lam uuid := CASE WHEN TG_OP = 'DELETE' THEN OLD.submission_id ELSE NEW.submission_id END;
 BEGIN
+    -- Phần con không chuyển sang bài làm khác (nếu không, dòng của bài làm đã nộp chuyển được sang bài làm đang làm).
+    IF TG_OP = 'UPDATE' AND NEW.submission_id IS DISTINCT FROM OLD.submission_id THEN
+        RAISE EXCEPTION 'Phần con của bài làm % không chuyển sang bài làm khác', OLD.submission_id USING ERRCODE = 'check_violation';
+    END IF;
     -- Xóa theo dây chuyền khi xóa cả bài làm (hay lớp, học sinh, bài) thì cho qua.
     IF TG_OP = 'DELETE' AND NOT EXISTS (SELECT 1 FROM submissions WHERE id = bai_lam) THEN
         RETURN OLD;

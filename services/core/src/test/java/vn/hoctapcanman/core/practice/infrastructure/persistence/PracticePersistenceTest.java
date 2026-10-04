@@ -188,6 +188,18 @@ class PracticePersistenceTest {
     }
 
     @Test
+    void csdlChanChuyenBuocCuaBaiLamDaNopSangBaiLamKhac() {
+        // Codex #136 (P2): UPDATE đổi submission_id không được rút dòng khỏi bài làm đã nộp.
+        Submission daNop = submissions.openOrGet(Submission.open(lop, an, bai, 1, LUC));
+        submissions.saveStep(daNop.id(), new StepWork("B.DH.DAOHAM", List.of(new StepLine(0, "3x^2-6x", null)), null));
+        submissions.update(daNop.submit(GradeStatus.SAI, LUC));
+        Submission moi = submissions.openOrGet(Submission.open(lop, an, bai, 1, LUC.plusSeconds(60)));
+        assertThatThrownBy(() -> jdbc.sql("update submission_steps set submission_id = ? where submission_id = ?")
+                .params(moi.id(), daNop.id()).update())
+            .isInstanceOf(DataIntegrityViolationException.class).hasMessageContaining("không chuyển");
+    }
+
+    @Test
     void csdlChanDoiPhienBanCuaBaiLam() {
         Submission dangLam = submissions.openOrGet(Submission.open(lop, an, bai, 1, LUC));
         assertThatThrownBy(() -> jdbc.sql("update submissions set content_version = 2 where id = ?").params(dangLam.id()).update())
