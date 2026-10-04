@@ -52,19 +52,19 @@ public class SubmissionRepositoryAdapter implements SubmissionRepository {
         jdbc.sql("""
                 insert into submissions (id, class_id, student_id, problem_id, content_version, status, guess_suspected, started_at)
                 values (:id, :lop, :hs, :bai, :pb, 'DANG_LAM', false, :luc)
-                on conflict (student_id, class_id, problem_id) where status = 'DANG_LAM' do nothing""")
+                on conflict (student_id, class_id, problem_id, content_version) where status = 'DANG_LAM' do nothing""")
             .param("id", moi.id()).param("lop", moi.classId()).param("hs", moi.studentId()).param("bai", moi.problemId())
             .param("pb", moi.contentVersion()).param("luc", Cot.luc(moi.startedAt()))
             .update();
-        return findOpen(moi.studentId(), moi.classId(), moi.problemId())
+        return findOpen(moi.studentId(), moi.classId(), moi.problemId(), moi.contentVersion())
             .orElseThrow(() -> new IllegalStateException("Không mở được bài làm"));
     }
 
     @Override
-    public Optional<Submission> findOpen(UUID studentId, UUID classId, UUID problemId) {
+    public Optional<Submission> findOpen(UUID studentId, UUID classId, UUID problemId, int contentVersion) {
         return jdbc.sql("select " + COT + " from submissions where student_id = :hs and class_id = :lop and problem_id = :bai"
-                + " and status = 'DANG_LAM'")
-            .param("hs", studentId).param("lop", classId).param("bai", problemId)
+                + " and content_version = :pb and status = 'DANG_LAM'")
+            .param("hs", studentId).param("lop", classId).param("bai", problemId).param("pb", contentVersion)
             .query(SubmissionRepositoryAdapter::baiLam).optional();
     }
 

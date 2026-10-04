@@ -87,8 +87,22 @@ class PracticePersistenceTest {
         assertThat(sau).isEqualTo(dau);
         assertThat(dau.status()).isEqualTo(SubmissionStatus.DANG_LAM);
         assertThat(dau.startedAt()).isEqualTo(LUC.truncatedTo(ChronoUnit.MICROS));
-        assertThat(submissions.findOpen(an, lop, bai)).contains(dau);
+        assertThat(submissions.findOpen(an, lop, bai, 1)).contains(dau);
         assertThat(submissions.findById(dau.id())).contains(dau);
+    }
+
+    @Test
+    void noiDungDoiThiMoBaiLamMoiConBaiLamDoCuGiuNguyen() {
+        Submission cu = submissions.openOrGet(Submission.open(lop, an, bai, 1, LUC));
+        // Đổi nội dung bài: V5 tăng content_version và rút phát hành; kiểm lại rồi phát hành phiên bản mới.
+        jdbc.sql("update problems set content_hash = ? where id = ?").params("b".repeat(64), bai).update();
+        assertThat(jdbc.sql("select content_version from problems where id = ?").params(bai).query(Integer.class).single()).isEqualTo(2);
+        DuLieuPractice.phatHanh(jdbc, lop, bai);
+        Submission moi = submissions.openOrGet(Submission.open(lop, an, bai, 2, LUC.plusSeconds(60)));
+        assertThat(moi.id()).isNotEqualTo(cu.id());
+        assertThat(submissions.findOpen(an, lop, bai, 2)).contains(moi);
+        assertThat(submissions.findOpen(an, lop, bai, 1)).contains(cu);
+        assertThat(submissions.findLatest(an, lop, bai)).contains(moi);
     }
 
     @Test
@@ -145,7 +159,7 @@ class PracticePersistenceTest {
         submissions.update(daNop);
 
         assertThat(submissions.findById(dangLam.id()).orElseThrow().status()).isEqualTo(SubmissionStatus.DA_NOP);
-        assertThat(submissions.findOpen(an, lop, bai)).isEmpty();
+        assertThat(submissions.findOpen(an, lop, bai, 1)).isEmpty();
         assertThat(submissions.findLatest(an, lop, bai)).contains(new Submission(dangLam.id(), lop, an, bai, 1, SubmissionStatus.DA_NOP,
             false, null, GradeStatus.SAI, LUC.truncatedTo(ChronoUnit.MICROS), LUC.plusSeconds(60).truncatedTo(ChronoUnit.MICROS)));
         StepWork buoc = new StepWork("B.DH.DAOHAM", List.of(new StepLine(0, "3x^2", null)), null);

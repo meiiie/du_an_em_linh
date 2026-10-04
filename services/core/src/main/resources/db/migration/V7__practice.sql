@@ -1,8 +1,9 @@
 -- Module practice (data-model §practice, #87): giao bài, bài làm theo bước, kết quả chấm. Các bất biến, giữ ở CSDL vì
 -- hai tab của cùng học sinh có thể nộp cùng lúc:
 --   1. Giao bài và mở bài làm chỉ cho học sinh của lớp (ghi danh vai STUDENT), chỉ với bài DA_PHAT_HANH của chính lớp đó.
---   2. Mỗi (học sinh, lớp, bài) có tối đa một bài làm DANG_LAM. Bài làm đã nộp thì bước, bảng, sự kiện nhập và kết quả
---      chấm của nó không đổi nữa.
+--   2. Mỗi (học sinh, lớp, bài, phiên bản nội dung) có tối đa một bài làm DANG_LAM: nội dung bài đổi thì bài làm dở cũ
+--      (viết cho đề cũ) thôi được chấm và học sinh mở bài làm mới. Bài làm đã nộp thì bước, bảng, sự kiện nhập và kết
+--      quả chấm của nó không đổi nữa.
 --   3. Kết quả chấm chỉ thêm. Chấm lại đúng một yêu cầu (băm của payload /v1/grade) không ghi lần hai: hai tab nộp cùng
 --      bước ghi một lần. Riêng KHONG_CHAM_DUOC (dịch vụ toán lỗi, không bao giờ là đạt: FR-009) không chặn lần chấm lại.
 -- Bài làm lưu nội dung mới nhất của từng bước, đủ để dựng lại đúng payload /v1/grade của v0 (thứ tự dòng, nhãn dòng, thứ
@@ -43,7 +44,8 @@ CREATE TABLE submissions (
     CHECK ((status = 'DA_NOP') = (result IS NOT NULL)),
     CHECK (guess_suspected OR guess_reason IS NULL)
 );
-CREATE UNIQUE INDEX submissions_mot_bai_dang_lam ON submissions (student_id, class_id, problem_id) WHERE status = 'DANG_LAM';
+CREATE UNIQUE INDEX submissions_mot_bai_dang_lam ON submissions (student_id, class_id, problem_id, content_version)
+    WHERE status = 'DANG_LAM';
 CREATE INDEX submissions_cua_hoc_sinh ON submissions (student_id, class_id, problem_id, started_at);
 
 -- Dòng của một bước kiểu DONG. line_kind là nhãn «loai» của v0 (NGHIEM, KHONG_XD, DONG_BIEN…), không có thì null.

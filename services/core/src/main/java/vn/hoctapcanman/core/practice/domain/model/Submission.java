@@ -7,14 +7,15 @@ import org.jspecify.annotations.Nullable;
 
 /**
  * Bài làm của một học sinh cho một bài ở một lớp (data-model §practice). Lớp quyết định tài liệu, bảng công thức, cài
- * gia sư dùng cho bài làm. Mỗi (học sinh, lớp, bài) có tối đa một bài làm {@code DANG_LAM}; nộp rồi thì không đổi:
+ * gia sư dùng cho bài làm. Mỗi (học sinh, lớp, bài, phiên bản nội dung) có tối đa một bài làm {@code DANG_LAM}; nộp
+ * rồi thì không đổi:
  *
  * <pre>
  * mở ──▶ DANG_LAM ──nộp bước (chấm từng lần)──▶ DANG_LAM ──nộp bài──▶ DA_NOP (kết quả cố định)
  * </pre>
  *
- * {@code contentVersion} là phiên bản nội dung của bài lúc mở: nội dung đổi thì bài làm này không chấm tiếp được (bước đã
- * viết là cho đề cũ). Nghi đoán mò (v0 {@code nghiDoanMo}) chỉ bật, không tắt.
+ * {@code contentVersion} là phiên bản nội dung của bài lúc mở: nội dung đổi thì bài làm này thôi được chấm (bước đã viết
+ * là cho đề cũ) và học sinh mở bài làm mới cho phiên bản mới. Nghi đoán mò (v0 {@code nghiDoanMo}) chỉ bật, không tắt.
  */
 public record Submission(
         UUID id,

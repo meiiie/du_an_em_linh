@@ -9,17 +9,19 @@ import vn.hoctapcanman.core.practice.domain.model.Submission;
 
 /**
  * Bài làm và nội dung từng bước. CSDL giữ các bất biến (V7): chỉ học sinh của lớp, bài đã phát hành, đúng phiên bản nội
- * dung hiện tại; một bài làm đang làm mỗi (học sinh, lớp, bài); bài làm đã nộp thì không ghi thêm được.
+ * dung hiện tại; một bài làm đang làm mỗi (học sinh, lớp, bài, phiên bản nội dung); bài làm đã nộp thì không ghi thêm
+ * được.
  */
 public interface SubmissionRepository {
 
     /**
-     * Bài làm đang làm của (học sinh, lớp, bài); chưa có thì ghi {@code moi} rồi trả nó. Hai tab mở cùng lúc nhận cùng một
-     * bài làm. Bài làm đang làm có phiên bản nội dung khác {@code moi} thì vẫn trả bài làm đó: nơi gọi quyết định.
+     * Bài làm đang làm của (học sinh, lớp, bài) ở phiên bản nội dung của {@code moi}; chưa có thì ghi {@code moi} rồi trả
+     * nó. Hai tab mở cùng lúc nhận cùng một bài làm. Bài làm dở của phiên bản cũ không bị đụng tới.
      */
     Submission openOrGet(Submission moi);
 
-    Optional<Submission> findOpen(UUID studentId, UUID classId, UUID problemId);
+    /** Bài làm đang làm của (học sinh, lớp, bài) ở đúng phiên bản nội dung này. */
+    Optional<Submission> findOpen(UUID studentId, UUID classId, UUID problemId, int contentVersion);
 
     /** Bài làm mới nhất (đang làm hay đã nộp) của (học sinh, lớp, bài). */
     Optional<Submission> findLatest(UUID studentId, UUID classId, UUID problemId);
