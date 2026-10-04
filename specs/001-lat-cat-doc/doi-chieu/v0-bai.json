@@ -1,0 +1,445 @@
+{
+  "nguon": {
+    "seed": {
+      "tep": "apps/web/scripts/seed.ts",
+      "commit": "4f7a886deb2e414983d8b8e0b19cd5155d1a00fa",
+      "blob": "028b8dd42ec05976523a48465936c1d49e05bf60"
+    },
+    "du_lieu": {
+      "data/supham": "a821fd14243ee607371420b50e20e1f848148d36",
+      "data/v0": "6a666e3bde67052c928973f9041ba7ddfd1ce04e",
+      "specs/001-lat-cat-doc/doi-chieu/xuat-v0.ts": "d092b6e1b612daa285feb126e7ede08bafbd0723"
+    },
+    "dich_vu_toan": {
+      "cay_git": "2d833dd78bfe594eefc309ffffde19bc6d4cc332",
+      "anh_goc": {
+        "ten": "python:3.12-slim",
+        "digest": "python@sha256:02108f5d322dd89f1c9e552442c25acb0543dfdbc455693a5599624f20d9155d"
+      },
+      "python": "Python 3.12.15",
+      "goi_python": [
+        "PyYAML==6.0.3",
+        "annotated-doc==0.0.5",
+        "annotated-types==0.8.0",
+        "anyio==4.15.1",
+        "certifi==2026.7.22",
+        "click==8.5.0",
+        "fastapi==0.142.2",
+        "h11==0.16.0",
+        "hoc-toan-math @ file:///srv",
+        "httpcore==1.0.9",
+        "httpx==0.28.1",
+        "idna==3.20",
+        "mpmath==1.3.0",
+        "opentelemetry-api==1.45.0",
+        "pydantic==2.13.5",
+        "pydantic_core==2.46.5",
+        "pypdf==6.19.0",
+        "starlette==1.7.0",
+        "sympy==1.14.0",
+        "typing-inspection==0.4.4",
+        "typing_extensions==4.16.0",
+        "uvicorn==0.54.0"
+      ],
+      "suc_khoe": {
+        "ok": true,
+        "service": "math",
+        "version": "0.1.0"
+      }
+    },
+    "kho_lop": {
+      "tai_lieu": [
+        "v0-don-dieu",
+        "v0-de-mau",
+        "v0-phuong-phap",
+        "sp-tai-lieu-0001",
+        "sp-tai-lieu-0002"
+      ],
+      "cong_thuc": [
+        "d-1",
+        "d-2",
+        "d-3",
+        "d-4",
+        "d-5",
+        "d-6"
+      ],
+      "bam": "991f88214c3fa7873a067b7768cd9ea7366e8f841d1d42b938932a1149d1d1bd"
+    }
+  },
+  "bai": [
+    {
+      "ma": "DH12-01-TH-01",
+      "dau_van_tay_v0": "f2eee9d7d6443fb493db9b117307f1eb33beed07963bb8096e5d0b864dc8fee5",
+      "nguon_bai": "SUPHAM",
+      "dang_tra_loi": "TN_DUNG_SAI",
+      "trang_thai_tong": "KHONG_KIEM_DUOC",
+      "trang_thai_phat_hanh": "CHO_GIAO_VIEN_DUYET",
+      "tang": [
+        {
+          "tang": 1,
+          "trang_thai": "KHONG_KIEM_DUOC"
+        },
+        {
+          "tang": 2,
+          "trang_thai": "KHONG_KIEM_DUOC"
+        },
+        {
+          "tang": 3,
+          "trang_thai": "KHONG_KIEM_DUOC"
+        }
+      ]
+    },
+    {
+      "ma": "DH12-03-NB-01",
+      "dau_van_tay_v0": "cc4c8a4cb294a44bce45e41b113595b82bc260a02d128983872f3bbc75c1a2c5",
+      "nguon_bai": "SUPHAM_KHUNG_NGAN",
+      "dang_tra_loi": "TU_LUAN_5_BUOC",
+      "trang_thai_tong": "DAT",
+      "trang_thai_phat_hanh": "DA_PHAT_HANH",
+      "tang": [
+        {
+          "tang": 1,
+          "trang_thai": "DAT"
+        },
+        {
+          "tang": 2,
+          "trang_thai": "DAT"
+        },
+        {
+          "tang": 3,
+          "trang_thai": "DAT"
+        }
+      ]
+    },
+    {
+      "ma": "DH12-03-NB-02",
+      "dau_van_tay_v0": "58a7e6d3d180c45f08c67add4a5d89098ed8b52703346cdd634cafa024231124",
+      "nguon_bai": "SUPHAM_KHUNG_NGAN",
+      "dang_tra_loi": "TN_NHIEU_LUA_CHON",
+      "trang_thai_tong": "DAT",
+      "trang_thai_phat_hanh": "DA_PHAT_HANH",
+      "tang": [
+        {
+          "tang": 1,
+          "trang_thai": "DAT"
+        },
+        {
+          "tang": 2,
+          "trang_thai": "DAT"
+        },
+        {
+          "tang": 3,
+          "trang_thai": "DAT"
+        }
+      ]
+    },
+    {
+      "ma": "DH12-03-TH-01",
+      "dau_van_tay_v0": "382c013b46a386c6b9f11b0ea466bb90447b8c283758b4400b5231f2eef2b2f7",
+      "nguon_bai": "SUPHAM_KHUNG_NGAN",
+      "dang_tra_loi": "TU_LUAN_5_BUOC",
+      "trang_thai_tong": "DAT",
+      "trang_thai_phat_hanh": "DA_PHAT_HANH",
+      "tang": [
+        {
+          "tang": 1,
+          "trang_thai": "DAT"
+        },
+        {
+          "tang": 2,
+          "trang_thai": "DAT"
+        },
+        {
+          "tang": 3,
+          "trang_thai": "DAT"
+        }
+      ]
+    },
+    {
+      "ma": "DH12-03-TH-02",
+      "dau_van_tay_v0": "77e4e416ad702f925a297433b4aae6505c95533b6280ed186ab6b2ddc4fba083",
+      "nguon_bai": "SUPHAM_KHUNG_NGAN",
+      "dang_tra_loi": "TU_LUAN_5_BUOC",
+      "trang_thai_tong": "DAT",
+      "trang_thai_phat_hanh": "DA_PHAT_HANH",
+      "tang": [
+        {
+          "tang": 1,
+          "trang_thai": "DAT"
+        },
+        {
+          "tang": 2,
+          "trang_thai": "DAT"
+        },
+        {
+          "tang": 3,
+          "trang_thai": "DAT"
+        }
+      ]
+    },
+    {
+      "ma": "DH12-03-VD-01",
+      "dau_van_tay_v0": "33f2caca882bf088a789bc9136c2cb0a9b618e00ec09eb9f7282f9ac32d4c577",
+      "nguon_bai": "SUPHAM",
+      "dang_tra_loi": "TU_LUAN_5_BUOC",
+      "trang_thai_tong": "DAT",
+      "trang_thai_phat_hanh": "DA_PHAT_HANH",
+      "tang": [
+        {
+          "tang": 1,
+          "trang_thai": "DAT"
+        },
+        {
+          "tang": 2,
+          "trang_thai": "DAT"
+        },
+        {
+          "tang": 3,
+          "trang_thai": "DAT"
+        }
+      ]
+    },
+    {
+      "ma": "DH12-05-NB-01",
+      "dau_van_tay_v0": "216d7f2df68fc093f223912b0791373c9c18d30c7f076f6516affbd60c594b34",
+      "nguon_bai": "SUPHAM_KHUNG_NGAN",
+      "dang_tra_loi": "TU_LUAN_5_BUOC",
+      "trang_thai_tong": "DAT",
+      "trang_thai_phat_hanh": "DA_PHAT_HANH",
+      "tang": [
+        {
+          "tang": 1,
+          "trang_thai": "DAT"
+        },
+        {
+          "tang": 2,
+          "trang_thai": "DAT"
+        },
+        {
+          "tang": 3,
+          "trang_thai": "DAT"
+        }
+      ]
+    },
+    {
+      "ma": "DH12-05-NB-02",
+      "dau_van_tay_v0": "0f5c0e04570b26cf97cd28cbdbd6d4b9ef597c9ca209a42ce8d042d5f2864904",
+      "nguon_bai": "SUPHAM_KHUNG_NGAN",
+      "dang_tra_loi": "TN_NHIEU_LUA_CHON",
+      "trang_thai_tong": "DAT",
+      "trang_thai_phat_hanh": "DA_PHAT_HANH",
+      "tang": [
+        {
+          "tang": 1,
+          "trang_thai": "DAT"
+        },
+        {
+          "tang": 2,
+          "trang_thai": "DAT"
+        },
+        {
+          "tang": 3,
+          "trang_thai": "DAT"
+        }
+      ]
+    },
+    {
+      "ma": "DH12-05-TH-01",
+      "dau_van_tay_v0": "5ae4bbdd824a37aac4b0826000f41593edaf99bb56e90089ef7fcc51b38135e2",
+      "nguon_bai": "SUPHAM_KHUNG_NGAN",
+      "dang_tra_loi": "TU_LUAN_5_BUOC",
+      "trang_thai_tong": "DAT",
+      "trang_thai_phat_hanh": "DA_PHAT_HANH",
+      "tang": [
+        {
+          "tang": 1,
+          "trang_thai": "DAT"
+        },
+        {
+          "tang": 2,
+          "trang_thai": "DAT"
+        },
+        {
+          "tang": 3,
+          "trang_thai": "DAT"
+        }
+      ]
+    },
+    {
+      "ma": "DH12-05-TH-02",
+      "dau_van_tay_v0": "aa3030c4a489aa3efdea65251b212ac39a177e43461df0b3b7c0851b1534c933",
+      "nguon_bai": "SUPHAM_KHUNG_NGAN",
+      "dang_tra_loi": "TU_LUAN_5_BUOC",
+      "trang_thai_tong": "DAT",
+      "trang_thai_phat_hanh": "DA_PHAT_HANH",
+      "tang": [
+        {
+          "tang": 1,
+          "trang_thai": "DAT"
+        },
+        {
+          "tang": 2,
+          "trang_thai": "DAT"
+        },
+        {
+          "tang": 3,
+          "trang_thai": "DAT"
+        }
+      ]
+    },
+    {
+      "ma": "DH12-06-VDC-01",
+      "dau_van_tay_v0": "70fd30c8ea56a994c5f0f4cf163a78169d13c8c1968c76567ca3a621b8c1961e",
+      "nguon_bai": "SUPHAM",
+      "dang_tra_loi": "TRA_LOI_NGAN",
+      "trang_thai_tong": "KHONG_KIEM_DUOC",
+      "trang_thai_phat_hanh": "CHO_GIAO_VIEN_DUYET",
+      "tang": [
+        {
+          "tang": 1,
+          "trang_thai": "KHONG_KIEM_DUOC"
+        },
+        {
+          "tang": 2,
+          "trang_thai": "KHONG_KIEM_DUOC"
+        },
+        {
+          "tang": 3,
+          "trang_thai": "KHONG_KIEM_DUOC"
+        }
+      ]
+    },
+    {
+      "ma": "DH12-DEMO-CHAN-01",
+      "dau_van_tay_v0": "3380498918c6bcdfa3bfbd3dbcc9a1d4cf63974d3eac3aaaccb1eca5ec2ad829",
+      "nguon_bai": "VI_DU_CONG",
+      "dang_tra_loi": "TU_LUAN_5_BUOC",
+      "trang_thai_tong": "SAI",
+      "trang_thai_phat_hanh": "BI_CHAN",
+      "tang": [
+        {
+          "tang": 1,
+          "trang_thai": "SAI"
+        },
+        {
+          "tang": 2,
+          "trang_thai": "DAT"
+        },
+        {
+          "tang": 3,
+          "trang_thai": "DAT"
+        }
+      ]
+    },
+    {
+      "ma": "DH12-NB-01",
+      "dau_van_tay_v0": "eb77f347bb54763093b73e4bdbc8ac4468eb92cd65c1443efc24cecdec17d507",
+      "nguon_bai": "MAY_GIAI",
+      "dang_tra_loi": "TU_LUAN_5_BUOC",
+      "trang_thai_tong": "DAT",
+      "trang_thai_phat_hanh": "DA_PHAT_HANH",
+      "tang": [
+        {
+          "tang": 1,
+          "trang_thai": "DAT"
+        },
+        {
+          "tang": 2,
+          "trang_thai": "DAT"
+        },
+        {
+          "tang": 3,
+          "trang_thai": "DAT"
+        }
+      ]
+    },
+    {
+      "ma": "DH12-TH-02",
+      "dau_van_tay_v0": "24cf0056abecc2c40dba29dff7c914e182bc3c93d6e048338833382fe7ddc6fb",
+      "nguon_bai": "MAY_GIAI",
+      "dang_tra_loi": "TU_LUAN_5_BUOC",
+      "trang_thai_tong": "DAT",
+      "trang_thai_phat_hanh": "DA_PHAT_HANH",
+      "tang": [
+        {
+          "tang": 1,
+          "trang_thai": "DAT"
+        },
+        {
+          "tang": 2,
+          "trang_thai": "DAT"
+        },
+        {
+          "tang": 3,
+          "trang_thai": "DAT"
+        }
+      ]
+    },
+    {
+      "ma": "GEN-bac_ba-11",
+      "dau_van_tay_v0": "8afb99546b4dc7b0a01b9806ee3609ac2e5fccc9e6689368948775948b34161b",
+      "nguon_bai": "THAM_SO_HOA",
+      "dang_tra_loi": "TU_LUAN_5_BUOC",
+      "trang_thai_tong": "DAT",
+      "trang_thai_phat_hanh": "DA_PHAT_HANH",
+      "tang": [
+        {
+          "tang": 1,
+          "trang_thai": "DAT"
+        },
+        {
+          "tang": 2,
+          "trang_thai": "DAT"
+        },
+        {
+          "tang": 3,
+          "trang_thai": "DAT"
+        }
+      ]
+    },
+    {
+      "ma": "GEN-huu_ti-5",
+      "dau_van_tay_v0": "375075321a339a062591a5ff0b5c86d7a110de0eb2887a6d1bfef741465b791c",
+      "nguon_bai": "THAM_SO_HOA",
+      "dang_tra_loi": "TU_LUAN_5_BUOC",
+      "trang_thai_tong": "DAT",
+      "trang_thai_phat_hanh": "DA_PHAT_HANH",
+      "tang": [
+        {
+          "tang": 1,
+          "trang_thai": "DAT"
+        },
+        {
+          "tang": 2,
+          "trang_thai": "DAT"
+        },
+        {
+          "tang": 3,
+          "trang_thai": "DAT"
+        }
+      ]
+    },
+    {
+      "ma": "GEN-trung_phuong-7",
+      "dau_van_tay_v0": "a71e45ee7a0dd86fd8437efc1149032a7f7f7e45dbc76c523ed61b4ed340e264",
+      "nguon_bai": "THAM_SO_HOA",
+      "dang_tra_loi": "TU_LUAN_5_BUOC",
+      "trang_thai_tong": "DAT",
+      "trang_thai_phat_hanh": "DA_PHAT_HANH",
+      "tang": [
+        {
+          "tang": 1,
+          "trang_thai": "DAT"
+        },
+        {
+          "tang": 2,
+          "trang_thai": "DAT"
+        },
+        {
+          "tang": 3,
+          "trang_thai": "DAT"
+        }
+      ]
+    }
+  ]
+}
