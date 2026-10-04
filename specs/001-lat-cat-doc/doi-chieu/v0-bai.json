@@ -8,7 +8,7 @@
     "du_lieu": {
       "data/supham": "a821fd14243ee607371420b50e20e1f848148d36",
       "data/v0": "6a666e3bde67052c928973f9041ba7ddfd1ce04e",
-      "specs/001-lat-cat-doc/doi-chieu/xuat-v0.ts": "d092b6e1b612daa285feb126e7ede08bafbd0723"
+      "specs/001-lat-cat-doc/doi-chieu/xuat-v0.ts": "8cc3a5d2a194bde7899d7ff0153321ff8156dd6f"
     },
     "dich_vu_toan": {
       "cay_git": "2d833dd78bfe594eefc309ffffde19bc6d4cc332",
@@ -74,6 +74,55 @@
       "dang_tra_loi": "TN_DUNG_SAI",
       "trang_thai_tong": "KHONG_KIEM_DUOC",
       "trang_thai_phat_hanh": "CHO_GIAO_VIEN_DUYET",
+      "su_kien_bao_ve": [],
+      "cot_v0": {
+        "skillCode": "T12.DH.01",
+        "skillCodesPhu": [
+          "T12.DH.03"
+        ],
+        "mucDo4": "THONG_HIEU",
+        "mucDoBo3": "HIEU",
+        "bloomLevel": "HIEU",
+        "difficulty": 0.5,
+        "statementText": "Cho hàm số y = f(x) có đạo hàm f'(x) = x²(x − 2) với mọi x ∈ ℝ. Mỗi mệnh đề sau đúng hay sai? a) f nghịch biến trên (−∞; 2). b) f đồng biến trên (2; +∞). c) f nghịch biến trên (0; 2). d) f đồng biến trên (−1; 1).",
+        "statementLatex": "f'(x) = x^2(x-2)",
+        "hamSympy": null,
+        "buocBatDau": null,
+        "baiLam": null,
+        "finalAnswer": null,
+        "goiY": [
+          {
+            "maBuoc": "B.DH.XETDAU",
+            "cap": 1,
+            "noiDung": "Nhân tử x² có thể âm không? Khi x đi qua 0, x² có đổi dấu không?"
+          },
+          {
+            "maBuoc": "B.DH.XETDAU",
+            "cap": 2,
+            "noiDung": "Xét dấu từng nhân tử x² và (x − 2) rồi nhân dấu; nghiệm bội chẵn không làm đổi dấu."
+          },
+          {
+            "maBuoc": "B.DH.XETDAU",
+            "cap": 3,
+            "noiDung": "Lập bảng dấu hai hàng (x² và x − 2), nhân dấu từng cột. Bước tiếp theo: điền dấu của x − 2 ở mỗi khoảng."
+          },
+          {
+            "maBuoc": "B.DH.KETLUAN",
+            "cap": 1,
+            "noiDung": "Nếu f' ≤ 0 trên cả khoảng và chỉ bằng 0 tại một điểm thì f có nghịch biến trên cả khoảng không?"
+          },
+          {
+            "maBuoc": "B.DH.KETLUAN",
+            "cap": 2,
+            "noiDung": "Định lí: f' ≥ 0 (≤ 0) trên K và f' = 0 chỉ tại hữu hạn điểm thì f đồng biến (nghịch biến) trên K."
+          },
+          {
+            "maBuoc": "B.DH.KETLUAN",
+            "cap": 3,
+            "noiDung": "Với từng ý, kiểm tra trên cả khoảng đã cho f' có giữ một dấu hay không (cho phép bằng 0 tại hữu hạn điểm). Bước tiếp theo: xét ý a với bảng dấu vừa lập."
+          }
+        ]
+      },
       "tang": [
         {
           "tang": 1,
@@ -96,6 +145,152 @@
       "dang_tra_loi": "TU_LUAN_5_BUOC",
       "trang_thai_tong": "DAT",
       "trang_thai_phat_hanh": "DA_PHAT_HANH",
+      "su_kien_bao_ve": [
+        {
+          "loai": "DB",
+          "gia_tri": "(-oo;-1)"
+        },
+        {
+          "loai": "DB",
+          "gia_tri": "(3;oo)"
+        },
+        {
+          "loai": "NB",
+          "gia_tri": "(-1;3)"
+        },
+        {
+          "loai": "DCD",
+          "gia_tri": "-1"
+        },
+        {
+          "loai": "DCT",
+          "gia_tri": "3"
+        },
+        {
+          "loai": "GTCD",
+          "gia_tri": "7"
+        },
+        {
+          "loai": "GTCT",
+          "gia_tri": "-25"
+        },
+        {
+          "loai": "NGHIEM",
+          "gia_tri": "-1"
+        },
+        {
+          "loai": "NGHIEM",
+          "gia_tri": "3"
+        },
+        {
+          "loai": "YPHAY",
+          "gia_tri": "3*x**2-6*x-9"
+        },
+        {
+          "loai": "YPHAY_DE",
+          "gia_tri": "3(x + 1)(x − 3)"
+        }
+      ],
+      "cot_v0": {
+        "skillCode": "T12.DH.03",
+        "skillCodesPhu": [
+          "T12.DH.01"
+        ],
+        "mucDo4": "NHAN_BIET",
+        "mucDoBo3": "BIET",
+        "bloomLevel": "NHO",
+        "difficulty": 0.5,
+        "statementText": "Cho hàm số y = x³ − 3x² − 9x + 2 có đạo hàm y' = 3(x + 1)(x − 3). Dựa vào dấu của y', hãy tìm các khoảng đồng biến, nghịch biến của hàm số.",
+        "statementLatex": "y = x^3 - 3x^2 - 9x + 2,\\quad y' = 3(x+1)(x-3)",
+        "hamSympy": "x**3 - 3*x**2 - 9*x + 2",
+        "buocBatDau": "B.DH.XETDAU",
+        "baiLam": {
+          "ham": "x**3 - 3*x**2 - 9*x + 2",
+          "TXD": "R",
+          "dao_ham": "3*x**2 - 6*x - 9",
+          "y_phay_bang_0": [
+            "-1",
+            "3"
+          ],
+          "y_phay_khong_xd": [],
+          "bang": {
+            "moc": [
+              "-oo",
+              "-1",
+              "3",
+              "+oo"
+            ],
+            "dau": [
+              "+",
+              "-",
+              "+"
+            ],
+            "dau_tai_diem": [
+              "0",
+              "0"
+            ],
+            "chieu": [
+              "tang",
+              "giam",
+              "tang"
+            ]
+          },
+          "ket_luan": {
+            "dong_bien": [
+              "(-oo; -1)",
+              "(3; +oo)"
+            ],
+            "nghich_bien": [
+              "(-1; 3)"
+            ],
+            "cuc_dai_x": [
+              "-1"
+            ],
+            "cuc_tieu_x": [
+              "3"
+            ],
+            "gia_tri_cuc_dai": [
+              "7"
+            ],
+            "gia_tri_cuc_tieu": [
+              "-25"
+            ]
+          }
+        },
+        "finalAnswer": null,
+        "goiY": [
+          {
+            "maBuoc": "B.DH.XETDAU",
+            "cap": 1,
+            "noiDung": "Dấu của y' trên một khoảng cho em biết điều gì về hàm số? Em sẽ lấy dấu của y' trên từng khoảng bằng cách nào?"
+          },
+          {
+            "maBuoc": "B.DH.XETDAU",
+            "cap": 2,
+            "noiDung": "Đề đã cho y' ở dạng tích. Em tìm giá trị của x làm từng nhân tử triệt tiêu, xếp các giá trị đó từ nhỏ đến lớn trên trục số, rồi xét dấu từng nhân tử trên mỗi khoảng; nhớ tính cả dấu của hệ số đứng trước tích."
+          },
+          {
+            "maBuoc": "B.DH.XETDAU",
+            "cap": 3,
+            "noiDung": "Trên mỗi khoảng, chọn một số nằm hẳn bên trong khoảng (không lấy đúng mốc), thay vào từng nhân tử để lấy dấu rồi nhân các dấu lại. Việc đầu tiên: xét khoảng ngoài cùng bên phải."
+          },
+          {
+            "maBuoc": "B.DH.KETLUAN",
+            "cap": 1,
+            "noiDung": "Trên khoảng mà y' mang dấu dương thì hàm số tăng hay giảm? Còn dấu âm thì sao?"
+          },
+          {
+            "maBuoc": "B.DH.KETLUAN",
+            "cap": 2,
+            "noiDung": "Nhớ lại: y' dương trên một khoảng thì hàm số đồng biến trên khoảng đó, y' âm thì nghịch biến. Mỗi khoảng viết riêng; các khoảng cùng loại nối bằng chữ “và”, không dùng ∪."
+          },
+          {
+            "maBuoc": "B.DH.KETLUAN",
+            "cap": 3,
+            "noiDung": "Đọc bảng xét dấu của em lần lượt từ trái sang phải: khoảng mang dấu dương ghi vào kết luận đồng biến, khoảng mang dấu âm ghi vào kết luận nghịch biến. Việc đầu tiên: viết kết luận cho khoảng ngoài cùng bên trái."
+          }
+        ]
+      },
       "tang": [
         {
           "tang": 1,
@@ -118,6 +313,120 @@
       "dang_tra_loi": "TN_NHIEU_LUA_CHON",
       "trang_thai_tong": "DAT",
       "trang_thai_phat_hanh": "DA_PHAT_HANH",
+      "su_kien_bao_ve": [
+        {
+          "loai": "NB",
+          "gia_tri": "(-oo;1)"
+        },
+        {
+          "loai": "NB",
+          "gia_tri": "(1;oo)"
+        },
+        {
+          "loai": "KHONG_CUC_TRI",
+          "gia_tri": ""
+        },
+        {
+          "loai": "KHONG_DONG_BIEN",
+          "gia_tri": ""
+        },
+        {
+          "loai": "KHONG_NGHIEM",
+          "gia_tri": ""
+        },
+        {
+          "loai": "YPHAY",
+          "gia_tri": "-3/(x-1)**2"
+        },
+        {
+          "loai": "YPHAY_DE",
+          "gia_tri": "−3/(x − 1)²"
+        }
+      ],
+      "cot_v0": {
+        "skillCode": "T12.DH.03",
+        "skillCodesPhu": [
+          "T12.DH.01",
+          "T12.DH.02"
+        ],
+        "mucDo4": "NHAN_BIET",
+        "mucDoBo3": "BIET",
+        "bloomLevel": "NHO",
+        "difficulty": 0.5,
+        "statementText": "Cho hàm số y = (x + 2)/(x − 1) có đạo hàm y' = −3/(x − 1)² với mọi x ≠ 1. Khẳng định nào sau đây đúng? A. Hàm số nghịch biến trên từng khoảng (−∞; 1) và (1; +∞). B. Hàm số nghịch biến trên ℝ. C. Hàm số đồng biến trên từng khoảng (−∞; 1) và (1; +∞). D. Hàm số nghịch biến trên (−∞; 1) ∪ (1; +∞).",
+        "statementLatex": "y = \\dfrac{x+2}{x-1},\\quad y' = \\dfrac{-3}{(x-1)^2}\\ (x \\ne 1)",
+        "hamSympy": "(x + 2)/(x - 1)",
+        "buocBatDau": "B.DH.XETDAU",
+        "baiLam": {
+          "ham": "(x + 2)/(x - 1)",
+          "TXD": "R \\ {1}",
+          "dao_ham": "-3/(x - 1)**2",
+          "y_phay_bang_0": [],
+          "y_phay_khong_xd": [],
+          "bang": {
+            "moc": [
+              "-oo",
+              "1",
+              "+oo"
+            ],
+            "dau": [
+              "-",
+              "-"
+            ],
+            "dau_tai_diem": [
+              "||"
+            ],
+            "chieu": [
+              "giam",
+              "giam"
+            ]
+          },
+          "ket_luan": {
+            "dong_bien": [],
+            "nghich_bien": [
+              "(-oo; 1)",
+              "(1; +oo)"
+            ],
+            "cuc_dai_x": [],
+            "cuc_tieu_x": [],
+            "gia_tri_cuc_dai": [],
+            "gia_tri_cuc_tieu": []
+          }
+        },
+        "finalAnswer": null,
+        "goiY": [
+          {
+            "maBuoc": "B.DH.XETDAU",
+            "cap": 1,
+            "noiDung": "Dấu của y' được quyết định bởi tử số hay mẫu số? Mẫu số dạng bình phương có thể âm không?"
+          },
+          {
+            "maBuoc": "B.DH.XETDAU",
+            "cap": 2,
+            "noiDung": "Xét riêng dấu của tử số và dấu của mẫu số của y' trong đề; nhớ rằng hàm số không xác định tại điểm làm mẫu số triệt tiêu."
+          },
+          {
+            "maBuoc": "B.DH.XETDAU",
+            "cap": 3,
+            "noiDung": "Viết tập xác định trước, chia trục số thành các khoảng xác định, rồi trên mỗi khoảng chọn một số để thay vào y' và lấy dấu."
+          },
+          {
+            "maBuoc": "B.DH.KETLUAN",
+            "cap": 1,
+            "noiDung": "Một hàm số có thể đồng biến hoặc nghịch biến trên một tập chứa điểm mà hàm số không xác định không?"
+          },
+          {
+            "maBuoc": "B.DH.KETLUAN",
+            "cap": 2,
+            "noiDung": "Với từng phương án, kiểm tra hai điều: tập nêu ra có nằm trọn trong tập xác định và có phải một khoảng liền hay chưa, và dấu của y' trên đó có khớp với chiều biến thiên được nêu không."
+          },
+          {
+            "maBuoc": "B.DH.KETLUAN",
+            "cap": 3,
+            "noiDung": "Loại dần: gạch các phương án có tập chứa điểm hàm số không xác định hoặc dùng ∪ để nối hai khoảng thành một tập, rồi so chiều biến thiên của các phương án còn lại với dấu y' em vừa xét."
+          }
+        ]
+      },
       "tang": [
         {
           "tang": 1,
@@ -140,6 +449,167 @@
       "dang_tra_loi": "TU_LUAN_5_BUOC",
       "trang_thai_tong": "DAT",
       "trang_thai_phat_hanh": "DA_PHAT_HANH",
+      "su_kien_bao_ve": [
+        {
+          "loai": "DB",
+          "gia_tri": "(-oo;-4)"
+        },
+        {
+          "loai": "DB",
+          "gia_tri": "(2;oo)"
+        },
+        {
+          "loai": "NB",
+          "gia_tri": "(-4;2)"
+        },
+        {
+          "loai": "DCD",
+          "gia_tri": "-4"
+        },
+        {
+          "loai": "DCT",
+          "gia_tri": "2"
+        },
+        {
+          "loai": "GTCD",
+          "gia_tri": "81"
+        },
+        {
+          "loai": "GTCT",
+          "gia_tri": "-27"
+        },
+        {
+          "loai": "NGHIEM",
+          "gia_tri": "-4"
+        },
+        {
+          "loai": "NGHIEM",
+          "gia_tri": "2"
+        },
+        {
+          "loai": "YPHAY",
+          "gia_tri": "3*x**2+6*x-24"
+        },
+        {
+          "loai": "YPHAY_DE",
+          "gia_tri": "3x² + 6x − 24"
+        }
+      ],
+      "cot_v0": {
+        "skillCode": "T12.DH.03",
+        "skillCodesPhu": [
+          "T12.DH.02"
+        ],
+        "mucDo4": "THONG_HIEU",
+        "mucDoBo3": "HIEU",
+        "bloomLevel": "HIEU",
+        "difficulty": 0.5,
+        "statementText": "Cho hàm số y = x³ + 3x² − 24x + 1 có đạo hàm y' = 3x² + 6x − 24. Không cần tính lại đạo hàm, hãy tìm các khoảng đồng biến, nghịch biến của hàm số.",
+        "statementLatex": "y = x^3 + 3x^2 - 24x + 1,\\quad y' = 3x^2 + 6x - 24",
+        "hamSympy": "x**3 + 3*x**2 - 24*x + 1",
+        "buocBatDau": "B.DH.NGHIEM",
+        "baiLam": {
+          "ham": "x**3 + 3*x**2 - 24*x + 1",
+          "TXD": "R",
+          "dao_ham": "3*x**2 + 6*x - 24",
+          "y_phay_bang_0": [
+            "-4",
+            "2"
+          ],
+          "y_phay_khong_xd": [],
+          "bang": {
+            "moc": [
+              "-oo",
+              "-4",
+              "2",
+              "+oo"
+            ],
+            "dau": [
+              "+",
+              "-",
+              "+"
+            ],
+            "dau_tai_diem": [
+              "0",
+              "0"
+            ],
+            "chieu": [
+              "tang",
+              "giam",
+              "tang"
+            ]
+          },
+          "ket_luan": {
+            "dong_bien": [
+              "(-oo; -4)",
+              "(2; +oo)"
+            ],
+            "nghich_bien": [
+              "(-4; 2)"
+            ],
+            "cuc_dai_x": [
+              "-4"
+            ],
+            "cuc_tieu_x": [
+              "2"
+            ],
+            "gia_tri_cuc_dai": [
+              "81"
+            ],
+            "gia_tri_cuc_tieu": [
+              "-27"
+            ]
+          }
+        },
+        "finalAnswer": null,
+        "goiY": [
+          {
+            "maBuoc": "B.DH.NGHIEM",
+            "cap": 1,
+            "noiDung": "Chiều biến thiên của hàm số chỉ có thể thay đổi tại những điểm nào? Nhớ rằng điểm tới hạn gồm các điểm thuộc tập xác định làm y' triệt tiêu hoặc làm y' không xác định."
+          },
+          {
+            "maBuoc": "B.DH.NGHIEM",
+            "cap": 2,
+            "noiDung": "y' trong đề là đa thức nên xác định tại mọi x; em chỉ cần tìm các giá trị của x làm y' triệt tiêu. Đây là một tam thức bậc hai: em có thể đặt hệ số chung ra ngoài, rồi nhẩm nghiệm, phân tích nhân tử hoặc dùng biệt thức."
+          },
+          {
+            "maBuoc": "B.DH.NGHIEM",
+            "cap": 3,
+            "noiDung": "Đặt hệ số chung ra ngoài cho tam thức gọn hơn, tính biệt thức rồi tìm nghiệm cụ thể; thay từng nghiệm vào y' để tự kiểm tra, rồi ghi các điểm tới hạn thành một dòng."
+          },
+          {
+            "maBuoc": "B.DH.XETDAU",
+            "cap": 1,
+            "noiDung": "Các điểm tới hạn chia trục số thành các khoảng. Trên mỗi khoảng đó, dấu của y' có thay đổi không? Em sẽ lấy dấu của y' bằng cách nào?"
+          },
+          {
+            "maBuoc": "B.DH.XETDAU",
+            "cap": 2,
+            "noiDung": "y' là một tam thức bậc hai. Nhớ định lí về dấu của tam thức bậc hai: dấu phụ thuộc vào vị trí của x so với các nghiệm và vào dấu của hệ số bậc cao nhất."
+          },
+          {
+            "maBuoc": "B.DH.XETDAU",
+            "cap": 3,
+            "noiDung": "Lập bảng với hàng x gồm các điểm tới hạn em đã tìm, xếp từ nhỏ đến lớn. Trên mỗi khoảng, chọn một giá trị thử nằm hẳn trong khoảng, thay vào y' (dạng tích nếu em đã phân tích) để lấy dấu. Việc đầu tiên: chọn giá trị thử cho khoảng ngoài cùng bên trái."
+          },
+          {
+            "maBuoc": "B.DH.KETLUAN",
+            "cap": 1,
+            "noiDung": "Trên khoảng mà y' mang dấu dương thì hàm số tăng hay giảm? Còn dấu âm thì sao?"
+          },
+          {
+            "maBuoc": "B.DH.KETLUAN",
+            "cap": 2,
+            "noiDung": "Nhớ lại: y' dương trên một khoảng thì hàm số đồng biến trên khoảng đó, y' âm thì nghịch biến. Mỗi khoảng viết riêng; các khoảng cùng loại nối bằng chữ “và”, không dùng ∪."
+          },
+          {
+            "maBuoc": "B.DH.KETLUAN",
+            "cap": 3,
+            "noiDung": "Đọc bảng xét dấu của em lần lượt từ trái sang phải: khoảng mang dấu dương ghi vào kết luận đồng biến, khoảng mang dấu âm ghi vào kết luận nghịch biến. Việc đầu tiên: viết kết luận cho khoảng ngoài cùng bên trái."
+          }
+        ]
+      },
       "tang": [
         {
           "tang": 1,
@@ -162,6 +632,176 @@
       "dang_tra_loi": "TU_LUAN_5_BUOC",
       "trang_thai_tong": "DAT",
       "trang_thai_phat_hanh": "DA_PHAT_HANH",
+      "su_kien_bao_ve": [
+        {
+          "loai": "DB",
+          "gia_tri": "(-oo;-1)"
+        },
+        {
+          "loai": "DB",
+          "gia_tri": "(3;oo)"
+        },
+        {
+          "loai": "NB",
+          "gia_tri": "(-1;1)"
+        },
+        {
+          "loai": "NB",
+          "gia_tri": "(1;3)"
+        },
+        {
+          "loai": "DCD",
+          "gia_tri": "-1"
+        },
+        {
+          "loai": "DCT",
+          "gia_tri": "3"
+        },
+        {
+          "loai": "GTCD",
+          "gia_tri": "-5"
+        },
+        {
+          "loai": "GTCT",
+          "gia_tri": "3"
+        },
+        {
+          "loai": "NGHIEM",
+          "gia_tri": "-1"
+        },
+        {
+          "loai": "NGHIEM",
+          "gia_tri": "3"
+        },
+        {
+          "loai": "YPHAY",
+          "gia_tri": "(x**2-2*x-3)/(x**2-2*x+1)"
+        },
+        {
+          "loai": "YPHAY_DE",
+          "gia_tri": "(x² − 2x − 3)/(x − 1)²"
+        }
+      ],
+      "cot_v0": {
+        "skillCode": "T12.DH.03",
+        "skillCodesPhu": [
+          "T12.DH.02"
+        ],
+        "mucDo4": "THONG_HIEU",
+        "mucDoBo3": "HIEU",
+        "bloomLevel": "HIEU",
+        "difficulty": 0.5,
+        "statementText": "Cho hàm số y = (x² − 3x + 6)/(x − 1) có đạo hàm y' = (x² − 2x − 3)/(x − 1)². Không cần tính lại đạo hàm, hãy tìm các khoảng đồng biến, nghịch biến của hàm số.",
+        "statementLatex": "y = \\dfrac{x^2-3x+6}{x-1},\\quad y' = \\dfrac{x^2-2x-3}{(x-1)^2}",
+        "hamSympy": "(x**2 - 3*x + 6)/(x - 1)",
+        "buocBatDau": "B.DH.NGHIEM",
+        "baiLam": {
+          "ham": "(x**2 - 3*x + 6)/(x - 1)",
+          "TXD": "R \\ {1}",
+          "dao_ham": "(x**2 - 2*x - 3)/(x**2 - 2*x + 1)",
+          "y_phay_bang_0": [
+            "-1",
+            "3"
+          ],
+          "y_phay_khong_xd": [],
+          "bang": {
+            "moc": [
+              "-oo",
+              "-1",
+              "1",
+              "3",
+              "+oo"
+            ],
+            "dau": [
+              "+",
+              "-",
+              "-",
+              "+"
+            ],
+            "dau_tai_diem": [
+              "0",
+              "||",
+              "0"
+            ],
+            "chieu": [
+              "tang",
+              "giam",
+              "giam",
+              "tang"
+            ]
+          },
+          "ket_luan": {
+            "dong_bien": [
+              "(-oo; -1)",
+              "(3; +oo)"
+            ],
+            "nghich_bien": [
+              "(-1; 1)",
+              "(1; 3)"
+            ],
+            "cuc_dai_x": [
+              "-1"
+            ],
+            "cuc_tieu_x": [
+              "3"
+            ],
+            "gia_tri_cuc_dai": [
+              "-5"
+            ],
+            "gia_tri_cuc_tieu": [
+              "3"
+            ]
+          }
+        },
+        "finalAnswer": null,
+        "goiY": [
+          {
+            "maBuoc": "B.DH.NGHIEM",
+            "cap": 1,
+            "noiDung": "Chiều biến thiên của hàm số chỉ có thể thay đổi tại những điểm nào? Nhớ rằng điểm tới hạn gồm các điểm thuộc tập xác định làm y' triệt tiêu hoặc làm y' không xác định."
+          },
+          {
+            "maBuoc": "B.DH.NGHIEM",
+            "cap": 2,
+            "noiDung": "y' trong đề có dạng phân thức. Em viết tập xác định của hàm số trước; y' triệt tiêu khi tử số triệt tiêu còn mẫu số khác không. Tử số có dạng tam thức bậc hai: em có thể nhẩm nghiệm, phân tích nhân tử hoặc dùng biệt thức."
+          },
+          {
+            "maBuoc": "B.DH.NGHIEM",
+            "cap": 3,
+            "noiDung": "Viết tập xác định. Giải phương trình tử số triệt tiêu, rồi đối chiếu từng nghiệm với tập xác định: chỉ nghiệm thuộc tập xác định mới là điểm tới hạn. Điểm làm mẫu số triệt tiêu không phải điểm tới hạn nhưng vẫn phải ghi trên hàng x của bảng. Ghi kết luận của bước này thành một dòng."
+          },
+          {
+            "maBuoc": "B.DH.XETDAU",
+            "cap": 1,
+            "noiDung": "Trên hàng x cần ghi những mốc nào? Điểm hàm số không xác định có cần xuất hiện trên bảng không, và tại đó hàng y' ghi gì?"
+          },
+          {
+            "maBuoc": "B.DH.XETDAU",
+            "cap": 2,
+            "noiDung": "Với y' trong đề, em xét riêng dấu của tử số và dấu của mẫu số trên mỗi khoảng. Mẫu số có dạng bình phương nên không âm; vậy dấu của y' do phần nào quyết định?"
+          },
+          {
+            "maBuoc": "B.DH.XETDAU",
+            "cap": 3,
+            "noiDung": "Lập bảng với hàng x gồm các điểm tới hạn em đã tìm (nếu có) và điểm bị loại khỏi tập xác định; tại điểm bị loại ghi || ở hàng y'. Trên từng khoảng mà các mốc chia ra, chọn một giá trị thử thuộc khoảng đó, thay vào y' để lấy dấu. Việc đầu tiên: chọn giá trị thử cho khoảng bên trái."
+          },
+          {
+            "maBuoc": "B.DH.KETLUAN",
+            "cap": 1,
+            "noiDung": "Từ bảng xét dấu, dấu của y' trên từng khoảng cho em biết gì về chiều biến thiên? Hàm số có xác định tại mọi điểm của khoảng em định viết không?"
+          },
+          {
+            "maBuoc": "B.DH.KETLUAN",
+            "cap": 2,
+            "noiDung": "Nhớ lại: y' dương trên một khoảng thì hàm số đồng biến trên khoảng đó, y' âm thì nghịch biến. Hàm số không xác định tại điểm bị loại, nên mỗi khoảng xác định phải kết luận riêng."
+          },
+          {
+            "maBuoc": "B.DH.KETLUAN",
+            "cap": 3,
+            "noiDung": "Đọc bảng của em theo từng khoảng xác định: dấu dương thì ghi đồng biến, dấu âm thì ghi nghịch biến; mỗi khoảng viết riêng, nếu cùng loại thì nối bằng chữ “và”, không dùng ∪ vì hàm số không xác định tại điểm bị loại."
+          }
+        ]
+      },
       "tang": [
         {
           "tang": 1,
@@ -184,6 +824,188 @@
       "dang_tra_loi": "TU_LUAN_5_BUOC",
       "trang_thai_tong": "DAT",
       "trang_thai_phat_hanh": "DA_PHAT_HANH",
+      "su_kien_bao_ve": [
+        {
+          "loai": "DB",
+          "gia_tri": "(-oo;1)"
+        },
+        {
+          "loai": "DB",
+          "gia_tri": "(3;oo)"
+        },
+        {
+          "loai": "NB",
+          "gia_tri": "(1;3)"
+        },
+        {
+          "loai": "DCD",
+          "gia_tri": "1"
+        },
+        {
+          "loai": "DCT",
+          "gia_tri": "3"
+        },
+        {
+          "loai": "GTCD",
+          "gia_tri": "6"
+        },
+        {
+          "loai": "GTCT",
+          "gia_tri": "2"
+        },
+        {
+          "loai": "NGHIEM",
+          "gia_tri": "1"
+        },
+        {
+          "loai": "NGHIEM",
+          "gia_tri": "3"
+        },
+        {
+          "loai": "YPHAY",
+          "gia_tri": "3*x**2-12*x+9"
+        }
+      ],
+      "cot_v0": {
+        "skillCode": "T12.DH.03",
+        "skillCodesPhu": [
+          "T12.DH.02"
+        ],
+        "mucDo4": "VAN_DUNG",
+        "mucDoBo3": "VAN_DUNG",
+        "bloomLevel": "VAN_DUNG",
+        "difficulty": 0.5,
+        "statementText": "Tìm các khoảng đồng biến, nghịch biến của hàm số y = x³ − 6x² + 9x + 2.",
+        "statementLatex": "y = x^3 - 6x^2 + 9x + 2",
+        "hamSympy": "x**3 - 6*x**2 + 9*x + 2",
+        "buocBatDau": null,
+        "baiLam": {
+          "ham": "x**3 - 6*x**2 + 9*x + 2",
+          "TXD": "R",
+          "dao_ham": "3*x**2 - 12*x + 9",
+          "y_phay_bang_0": [
+            "1",
+            "3"
+          ],
+          "y_phay_khong_xd": [],
+          "bang": {
+            "moc": [
+              "-oo",
+              "1",
+              "3",
+              "+oo"
+            ],
+            "dau": [
+              "+",
+              "-",
+              "+"
+            ],
+            "dau_tai_diem": [
+              "0",
+              "0"
+            ],
+            "chieu": [
+              "tang",
+              "giam",
+              "tang"
+            ]
+          },
+          "ket_luan": {
+            "dong_bien": [
+              "(-oo; 1)",
+              "(3; +oo)"
+            ],
+            "nghich_bien": [
+              "(1; 3)"
+            ],
+            "cuc_dai_x": [
+              "1"
+            ],
+            "cuc_tieu_x": [
+              "3"
+            ],
+            "gia_tri_cuc_dai": [
+              "6"
+            ],
+            "gia_tri_cuc_tieu": [
+              "2"
+            ]
+          }
+        },
+        "finalAnswer": null,
+        "goiY": [
+          {
+            "maBuoc": "B.DH.TXD",
+            "cap": 1,
+            "noiDung": "Hàm đa thức có điều kiện xác định gì không?"
+          },
+          {
+            "maBuoc": "B.DH.TXD",
+            "cap": 2,
+            "noiDung": "Nhớ lại: loại hàm nào cần điều kiện (mẫu khác 0, biểu thức dưới căn bậc hai không âm)? Hàm này có mẫu hay căn không? Ghi TXĐ thành dòng đầu tiên."
+          },
+          {
+            "maBuoc": "B.DH.DAOHAM",
+            "cap": 1,
+            "noiDung": "Đạo hàm của xⁿ là gì? Đạo hàm của tổng bằng gì?"
+          },
+          {
+            "maBuoc": "B.DH.DAOHAM",
+            "cap": 2,
+            "noiDung": "Dùng (xⁿ)' = n·xⁿ⁻¹ và đạo hàm của tổng bằng tổng các đạo hàm; hằng số có đạo hàm 0."
+          },
+          {
+            "maBuoc": "B.DH.DAOHAM",
+            "cap": 3,
+            "noiDung": "Lấy đạo hàm từng hạng tử rồi cộng lại; sau đó đặt nhân tử chung để y' có dạng tích. Bước tiếp theo: đạo hàm hạng tử −6x²."
+          },
+          {
+            "maBuoc": "B.DH.NGHIEM",
+            "cap": 1,
+            "noiDung": "Muốn biết y' đổi dấu ở đâu, em cần tìm những điểm nào?"
+          },
+          {
+            "maBuoc": "B.DH.NGHIEM",
+            "cap": 2,
+            "noiDung": "Giải phương trình y' = 0; hàm đa thức nên không có điểm y' không xác định."
+          },
+          {
+            "maBuoc": "B.DH.NGHIEM",
+            "cap": 3,
+            "noiDung": "Đặt nhân tử chung rồi giải phương trình bậc hai còn lại (nhẩm nghiệm hoặc dùng biệt thức). Bước tiếp theo: chia cả hai vế cho 3 rồi phân tích nhân tử."
+          },
+          {
+            "maBuoc": "B.DH.XETDAU",
+            "cap": 1,
+            "noiDung": "Trên mỗi khoảng giữa hai nghiệm liên tiếp, dấu của y' có thay đổi không?"
+          },
+          {
+            "maBuoc": "B.DH.XETDAU",
+            "cap": 2,
+            "noiDung": "Dấu của tam thức bậc hai: cùng dấu hệ số a ở ngoài hai nghiệm, trái dấu a ở giữa hai nghiệm."
+          },
+          {
+            "maBuoc": "B.DH.XETDAU",
+            "cap": 3,
+            "noiDung": "Chọn một giá trị thử trong từng khoảng, thay vào y' dạng tích để lấy dấu. Bước tiếp theo: thử một giá trị nhỏ hơn nghiệm bé nhất."
+          },
+          {
+            "maBuoc": "B.DH.KETLUAN",
+            "cap": 1,
+            "noiDung": "Dấu của y' trên một khoảng cho biết hàm tăng hay giảm?"
+          },
+          {
+            "maBuoc": "B.DH.KETLUAN",
+            "cap": 2,
+            "noiDung": "y' > 0 trên khoảng K thì đồng biến trên K; y' < 0 thì nghịch biến. Kết luận riêng từng khoảng."
+          },
+          {
+            "maBuoc": "B.DH.KETLUAN",
+            "cap": 3,
+            "noiDung": "Đọc từng cột của bảng xét dấu và viết kết luận cho từng khoảng một, không nối khoảng bằng ∪. Bước tiếp theo: viết kết luận cho khoảng đầu tiên."
+          }
+        ]
+      },
       "tang": [
         {
           "tang": 1,
@@ -206,6 +1028,177 @@
       "dang_tra_loi": "TU_LUAN_5_BUOC",
       "trang_thai_tong": "DAT",
       "trang_thai_phat_hanh": "DA_PHAT_HANH",
+      "su_kien_bao_ve": [
+        {
+          "loai": "DB",
+          "gia_tri": "(-3;0)"
+        },
+        {
+          "loai": "DB",
+          "gia_tri": "(3;oo)"
+        },
+        {
+          "loai": "NB",
+          "gia_tri": "(-oo;-3)"
+        },
+        {
+          "loai": "NB",
+          "gia_tri": "(0;3)"
+        },
+        {
+          "loai": "DCD",
+          "gia_tri": "0"
+        },
+        {
+          "loai": "DCT",
+          "gia_tri": "-3"
+        },
+        {
+          "loai": "DCT",
+          "gia_tri": "3"
+        },
+        {
+          "loai": "GTCD",
+          "gia_tri": "4"
+        },
+        {
+          "loai": "GTCT",
+          "gia_tri": "-77"
+        },
+        {
+          "loai": "GTCT",
+          "gia_tri": "-77"
+        },
+        {
+          "loai": "NGHIEM",
+          "gia_tri": "-3"
+        },
+        {
+          "loai": "NGHIEM",
+          "gia_tri": "0"
+        },
+        {
+          "loai": "NGHIEM",
+          "gia_tri": "3"
+        },
+        {
+          "loai": "YPHAY",
+          "gia_tri": "4*x*(x**2-9)"
+        },
+        {
+          "loai": "YPHAY_DE",
+          "gia_tri": "4x(x − 3)(x + 3)"
+        }
+      ],
+      "cot_v0": {
+        "skillCode": "T12.DH.05",
+        "skillCodesPhu": [
+          "T12.DH.03",
+          "T12.DH.04"
+        ],
+        "mucDo4": "NHAN_BIET",
+        "mucDoBo3": "BIET",
+        "bloomLevel": "NHO",
+        "difficulty": 0.5,
+        "statementText": "Cho hàm số y = x⁴ − 18x² + 4 có đạo hàm y' = 4x(x − 3)(x + 3). Dựa vào dấu của y', hãy tìm các điểm cực đại và các điểm cực tiểu của hàm số.",
+        "statementLatex": "y = x^4 - 18x^2 + 4,\\quad y' = 4x(x-3)(x+3)",
+        "hamSympy": "x**4 - 18*x**2 + 4",
+        "buocBatDau": "B.DH.XETDAU",
+        "baiLam": {
+          "ham": "x**4 - 18*x**2 + 4",
+          "TXD": "R",
+          "dao_ham": "4*x*(x**2 - 9)",
+          "y_phay_bang_0": [
+            "-3",
+            "0",
+            "3"
+          ],
+          "y_phay_khong_xd": [],
+          "bang": {
+            "moc": [
+              "-oo",
+              "-3",
+              "0",
+              "3",
+              "+oo"
+            ],
+            "dau": [
+              "-",
+              "+",
+              "-",
+              "+"
+            ],
+            "dau_tai_diem": [
+              "0",
+              "0",
+              "0"
+            ],
+            "chieu": [
+              "giam",
+              "tang",
+              "giam",
+              "tang"
+            ]
+          },
+          "ket_luan": {
+            "dong_bien": [
+              "(-3; 0)",
+              "(3; +oo)"
+            ],
+            "nghich_bien": [
+              "(-oo; -3)",
+              "(0; 3)"
+            ],
+            "cuc_dai_x": [
+              "0"
+            ],
+            "cuc_tieu_x": [
+              "-3",
+              "3"
+            ],
+            "gia_tri_cuc_dai": [
+              "4"
+            ],
+            "gia_tri_cuc_tieu": [
+              "-77",
+              "-77"
+            ]
+          }
+        },
+        "finalAnswer": null,
+        "goiY": [
+          {
+            "maBuoc": "B.DH.XETDAU",
+            "cap": 1,
+            "noiDung": "Dấu của y' trên một khoảng cho em biết điều gì về hàm số? Em sẽ lấy dấu của y' trên từng khoảng bằng cách nào?"
+          },
+          {
+            "maBuoc": "B.DH.XETDAU",
+            "cap": 2,
+            "noiDung": "Đề đã cho y' ở dạng tích. Em tìm giá trị của x làm từng nhân tử triệt tiêu, xếp các giá trị đó từ nhỏ đến lớn trên trục số, rồi xét dấu từng nhân tử trên mỗi khoảng; nhớ tính cả dấu của hệ số đứng trước tích."
+          },
+          {
+            "maBuoc": "B.DH.XETDAU",
+            "cap": 3,
+            "noiDung": "Trên mỗi khoảng, chọn một số nằm hẳn bên trong khoảng (không lấy đúng mốc), thay vào từng nhân tử để lấy dấu rồi nhân các dấu lại. Việc đầu tiên: xét khoảng ngoài cùng bên phải."
+          },
+          {
+            "maBuoc": "B.DH.KETLUAN",
+            "cap": 1,
+            "noiDung": "Khi x đi qua một điểm tới hạn, dấu của y' thay đổi thế nào thì hàm số đạt cực đại, thế nào thì đạt cực tiểu?"
+          },
+          {
+            "maBuoc": "B.DH.KETLUAN",
+            "cap": 2,
+            "noiDung": "Nhớ lại: y' đổi dấu từ dương sang âm khi x đi qua một điểm thì đó là điểm cực đại; từ âm sang dương thì là điểm cực tiểu; nếu y' không đổi dấu thì điểm đó không phải điểm cực trị."
+          },
+          {
+            "maBuoc": "B.DH.KETLUAN",
+            "cap": 3,
+            "noiDung": "Với từng mốc trên bảng dấu của em, nhìn dấu y' ở khoảng ngay bên trái và ngay bên phải mốc rồi xếp mốc vào đúng loại. Việc đầu tiên: xét mốc nhỏ nhất."
+          }
+        ]
+      },
       "tang": [
         {
           "tang": 1,
@@ -228,6 +1221,177 @@
       "dang_tra_loi": "TN_NHIEU_LUA_CHON",
       "trang_thai_tong": "DAT",
       "trang_thai_phat_hanh": "DA_PHAT_HANH",
+      "su_kien_bao_ve": [
+        {
+          "loai": "DB",
+          "gia_tri": "(-oo;-2)"
+        },
+        {
+          "loai": "DB",
+          "gia_tri": "(0;2)"
+        },
+        {
+          "loai": "NB",
+          "gia_tri": "(-2;0)"
+        },
+        {
+          "loai": "NB",
+          "gia_tri": "(2;oo)"
+        },
+        {
+          "loai": "DCD",
+          "gia_tri": "-2"
+        },
+        {
+          "loai": "DCD",
+          "gia_tri": "2"
+        },
+        {
+          "loai": "DCT",
+          "gia_tri": "0"
+        },
+        {
+          "loai": "GTCD",
+          "gia_tri": "11"
+        },
+        {
+          "loai": "GTCD",
+          "gia_tri": "11"
+        },
+        {
+          "loai": "GTCT",
+          "gia_tri": "-5"
+        },
+        {
+          "loai": "NGHIEM",
+          "gia_tri": "-2"
+        },
+        {
+          "loai": "NGHIEM",
+          "gia_tri": "0"
+        },
+        {
+          "loai": "NGHIEM",
+          "gia_tri": "2"
+        },
+        {
+          "loai": "YPHAY",
+          "gia_tri": "4*x*(4-x**2)"
+        },
+        {
+          "loai": "YPHAY_DE",
+          "gia_tri": "−4x(x − 2)(x + 2)"
+        }
+      ],
+      "cot_v0": {
+        "skillCode": "T12.DH.05",
+        "skillCodesPhu": [
+          "T12.DH.03",
+          "T12.DH.04"
+        ],
+        "mucDo4": "NHAN_BIET",
+        "mucDoBo3": "BIET",
+        "bloomLevel": "NHO",
+        "difficulty": 0.5,
+        "statementText": "Cho hàm số y = −x⁴ + 8x² − 5 có đạo hàm y' = −4x(x − 2)(x + 2). Hàm số đạt cực tiểu tại điểm nào? A. x = −2. B. x = 0. C. x = 2. D. x = −5.",
+        "statementLatex": "y = -x^4 + 8x^2 - 5,\\quad y' = -4x(x-2)(x+2)",
+        "hamSympy": "-x**4 + 8*x**2 - 5",
+        "buocBatDau": "B.DH.XETDAU",
+        "baiLam": {
+          "ham": "-x**4 + 8*x**2 - 5",
+          "TXD": "R",
+          "dao_ham": "4*x*(4 - x**2)",
+          "y_phay_bang_0": [
+            "-2",
+            "0",
+            "2"
+          ],
+          "y_phay_khong_xd": [],
+          "bang": {
+            "moc": [
+              "-oo",
+              "-2",
+              "0",
+              "2",
+              "+oo"
+            ],
+            "dau": [
+              "+",
+              "-",
+              "+",
+              "-"
+            ],
+            "dau_tai_diem": [
+              "0",
+              "0",
+              "0"
+            ],
+            "chieu": [
+              "tang",
+              "giam",
+              "tang",
+              "giam"
+            ]
+          },
+          "ket_luan": {
+            "dong_bien": [
+              "(-oo; -2)",
+              "(0; 2)"
+            ],
+            "nghich_bien": [
+              "(-2; 0)",
+              "(2; +oo)"
+            ],
+            "cuc_dai_x": [
+              "-2",
+              "2"
+            ],
+            "cuc_tieu_x": [
+              "0"
+            ],
+            "gia_tri_cuc_dai": [
+              "11",
+              "11"
+            ],
+            "gia_tri_cuc_tieu": [
+              "-5"
+            ]
+          }
+        },
+        "finalAnswer": null,
+        "goiY": [
+          {
+            "maBuoc": "B.DH.XETDAU",
+            "cap": 1,
+            "noiDung": "Hệ số đứng trước tích trong y' mang dấu gì, và nó ảnh hưởng thế nào đến dấu của y'?"
+          },
+          {
+            "maBuoc": "B.DH.XETDAU",
+            "cap": 2,
+            "noiDung": "Tìm giá trị của x làm từng nhân tử triệt tiêu, xếp chúng trên trục số rồi xét dấu từng nhân tử (kể cả hệ số đứng trước) trên mỗi khoảng."
+          },
+          {
+            "maBuoc": "B.DH.XETDAU",
+            "cap": 3,
+            "noiDung": "Chọn một số nằm hẳn trong mỗi khoảng, thay vào từng nhân tử để lấy dấu rồi nhân các dấu lại. Việc đầu tiên: xét khoảng ngoài cùng bên phải."
+          },
+          {
+            "maBuoc": "B.DH.KETLUAN",
+            "cap": 1,
+            "noiDung": "Hàm số đạt cực tiểu tại một điểm khi dấu của y' thay đổi thế nào khi x đi qua điểm đó?"
+          },
+          {
+            "maBuoc": "B.DH.KETLUAN",
+            "cap": 2,
+            "noiDung": "y' đổi dấu từ âm sang dương khi x đi qua một điểm thì đó là điểm cực tiểu; từ dương sang âm là điểm cực đại. Đề hỏi điểm cực tiểu, tức là hoành độ, chứ chưa hỏi giá trị cực tiểu."
+          },
+          {
+            "maBuoc": "B.DH.KETLUAN",
+            "cap": 3,
+            "noiDung": "Trên bảng dấu của em, tìm mốc mà bên trái y' mang dấu âm, bên phải mang dấu dương, rồi so mốc đó với các phương án. Lưu ý có phương án là giá trị của hàm số chứ không phải điểm."
+          }
+        ]
+      },
       "tang": [
         {
           "tang": 1,
@@ -250,6 +1414,192 @@
       "dang_tra_loi": "TU_LUAN_5_BUOC",
       "trang_thai_tong": "DAT",
       "trang_thai_phat_hanh": "DA_PHAT_HANH",
+      "su_kien_bao_ve": [
+        {
+          "loai": "DB",
+          "gia_tri": "(-oo;-1)"
+        },
+        {
+          "loai": "DB",
+          "gia_tri": "(0;1)"
+        },
+        {
+          "loai": "NB",
+          "gia_tri": "(-1;0)"
+        },
+        {
+          "loai": "NB",
+          "gia_tri": "(1;oo)"
+        },
+        {
+          "loai": "DCD",
+          "gia_tri": "-1"
+        },
+        {
+          "loai": "DCD",
+          "gia_tri": "1"
+        },
+        {
+          "loai": "DCT",
+          "gia_tri": "0"
+        },
+        {
+          "loai": "GTCD",
+          "gia_tri": "4"
+        },
+        {
+          "loai": "GTCD",
+          "gia_tri": "4"
+        },
+        {
+          "loai": "GTCT",
+          "gia_tri": "3"
+        },
+        {
+          "loai": "NGHIEM",
+          "gia_tri": "-1"
+        },
+        {
+          "loai": "NGHIEM",
+          "gia_tri": "0"
+        },
+        {
+          "loai": "NGHIEM",
+          "gia_tri": "1"
+        },
+        {
+          "loai": "YPHAY",
+          "gia_tri": "4*x*(1-x**2)"
+        },
+        {
+          "loai": "YPHAY_DE",
+          "gia_tri": "−4x³ + 4x"
+        }
+      ],
+      "cot_v0": {
+        "skillCode": "T12.DH.05",
+        "skillCodesPhu": [
+          "T12.DH.02",
+          "T12.DH.03"
+        ],
+        "mucDo4": "THONG_HIEU",
+        "mucDoBo3": "HIEU",
+        "bloomLevel": "HIEU",
+        "difficulty": 0.5,
+        "statementText": "Cho hàm số y = −x⁴ + 2x² + 3 có đạo hàm y' = −4x³ + 4x. Không cần tính lại đạo hàm, hãy tìm các điểm cực trị và giá trị cực trị của hàm số.",
+        "statementLatex": "y = -x^4 + 2x^2 + 3,\\quad y' = -4x^3 + 4x",
+        "hamSympy": "-x**4 + 2*x**2 + 3",
+        "buocBatDau": "B.DH.NGHIEM",
+        "baiLam": {
+          "ham": "-x**4 + 2*x**2 + 3",
+          "TXD": "R",
+          "dao_ham": "4*x*(1 - x**2)",
+          "y_phay_bang_0": [
+            "-1",
+            "0",
+            "1"
+          ],
+          "y_phay_khong_xd": [],
+          "bang": {
+            "moc": [
+              "-oo",
+              "-1",
+              "0",
+              "1",
+              "+oo"
+            ],
+            "dau": [
+              "+",
+              "-",
+              "+",
+              "-"
+            ],
+            "dau_tai_diem": [
+              "0",
+              "0",
+              "0"
+            ],
+            "chieu": [
+              "tang",
+              "giam",
+              "tang",
+              "giam"
+            ]
+          },
+          "ket_luan": {
+            "dong_bien": [
+              "(-oo; -1)",
+              "(0; 1)"
+            ],
+            "nghich_bien": [
+              "(-1; 0)",
+              "(1; +oo)"
+            ],
+            "cuc_dai_x": [
+              "-1",
+              "1"
+            ],
+            "cuc_tieu_x": [
+              "0"
+            ],
+            "gia_tri_cuc_dai": [
+              "4",
+              "4"
+            ],
+            "gia_tri_cuc_tieu": [
+              "3"
+            ]
+          }
+        },
+        "finalAnswer": null,
+        "goiY": [
+          {
+            "maBuoc": "B.DH.NGHIEM",
+            "cap": 1,
+            "noiDung": "Chiều biến thiên của hàm số chỉ có thể thay đổi tại những điểm nào? Nhớ rằng điểm tới hạn gồm các điểm thuộc tập xác định làm y' triệt tiêu hoặc làm y' không xác định."
+          },
+          {
+            "maBuoc": "B.DH.NGHIEM",
+            "cap": 2,
+            "noiDung": "y' trong đề là đa thức nên xác định tại mọi x; em chỉ cần tìm các giá trị của x làm y' triệt tiêu. Hãy đưa y' về dạng tích bằng cách đặt nhân tử chung, rồi cho từng nhân tử triệt tiêu."
+          },
+          {
+            "maBuoc": "B.DH.NGHIEM",
+            "cap": 3,
+            "noiDung": "Sau khi đặt nhân tử chung, phương trình tách thành các phương trình đơn giản hơn; em giải từng phương trình. Phương trình dạng x bình phương bằng k (k là hằng số) chỉ có nghiệm thực khi k không âm. Không chia hai vế cho biểu thức chứa x, vì biểu thức đó chưa chắc khác không."
+          },
+          {
+            "maBuoc": "B.DH.XETDAU",
+            "cap": 1,
+            "noiDung": "Các điểm tới hạn chia trục số thành các khoảng. Trên mỗi khoảng đó, dấu của y' có thay đổi không? Em sẽ lấy dấu của y' bằng cách nào?"
+          },
+          {
+            "maBuoc": "B.DH.XETDAU",
+            "cap": 2,
+            "noiDung": "y' là đa thức bậc ba viết được dưới dạng tích. Em xét dấu từng nhân tử trên mỗi khoảng rồi nhân dấu lại, kể cả dấu của hệ số đứng trước; nhân tử nào luôn dương (hoặc luôn âm) thì không làm đổi dấu."
+          },
+          {
+            "maBuoc": "B.DH.XETDAU",
+            "cap": 3,
+            "noiDung": "Lập bảng với hàng x gồm các điểm tới hạn em đã tìm, xếp từ nhỏ đến lớn. Trên mỗi khoảng, chọn một giá trị thử nằm trong khoảng đó, thay vào y' dạng tích để lấy dấu. Việc đầu tiên: chọn giá trị thử cho khoảng ngoài cùng bên phải."
+          },
+          {
+            "maBuoc": "B.DH.KETLUAN",
+            "cap": 1,
+            "noiDung": "Khi x đi qua một điểm tới hạn, dấu của y' thay đổi thế nào thì hàm số đạt cực đại, thế nào thì đạt cực tiểu?"
+          },
+          {
+            "maBuoc": "B.DH.KETLUAN",
+            "cap": 2,
+            "noiDung": "Nhớ lại: y' đổi dấu từ dương sang âm khi x đi qua một điểm thì đó là điểm cực đại; từ âm sang dương thì là điểm cực tiểu; nếu y' không đổi dấu thì điểm đó không phải điểm cực trị. Giá trị cực trị là giá trị của hàm số y tại điểm cực trị."
+          },
+          {
+            "maBuoc": "B.DH.KETLUAN",
+            "cap": 3,
+            "noiDung": "Với từng điểm tới hạn trên bảng của em, nhìn dấu y' ở khoảng ngay bên trái và ngay bên phải rồi xếp điểm vào đúng loại; sau đó thay điểm cực trị vào hàm số y (không thay vào y') để tính giá trị cực trị. Việc đầu tiên: xét điểm tới hạn nhỏ nhất."
+          }
+        ]
+      },
       "tang": [
         {
           "tang": 1,
@@ -272,6 +1622,146 @@
       "dang_tra_loi": "TU_LUAN_5_BUOC",
       "trang_thai_tong": "DAT",
       "trang_thai_phat_hanh": "DA_PHAT_HANH",
+      "su_kien_bao_ve": [
+        {
+          "loai": "DB",
+          "gia_tri": "(0;oo)"
+        },
+        {
+          "loai": "NB",
+          "gia_tri": "(-oo;0)"
+        },
+        {
+          "loai": "DCT",
+          "gia_tri": "0"
+        },
+        {
+          "loai": "GTCT",
+          "gia_tri": "-1"
+        },
+        {
+          "loai": "NGHIEM",
+          "gia_tri": "0"
+        },
+        {
+          "loai": "KHONG_CUC_DAI",
+          "gia_tri": ""
+        },
+        {
+          "loai": "YPHAY",
+          "gia_tri": "4*x*(x**2+1)"
+        },
+        {
+          "loai": "YPHAY_DE",
+          "gia_tri": "4x³ + 4x"
+        }
+      ],
+      "cot_v0": {
+        "skillCode": "T12.DH.05",
+        "skillCodesPhu": [
+          "T12.DH.02",
+          "T12.DH.03"
+        ],
+        "mucDo4": "THONG_HIEU",
+        "mucDoBo3": "HIEU",
+        "bloomLevel": "HIEU",
+        "difficulty": 0.5,
+        "statementText": "Cho hàm số y = x⁴ + 2x² − 1 có đạo hàm y' = 4x³ + 4x. Không cần tính lại đạo hàm, hãy tìm các điểm cực trị và giá trị cực trị của hàm số.",
+        "statementLatex": "y = x^4 + 2x^2 - 1,\\quad y' = 4x^3 + 4x",
+        "hamSympy": "x**4 + 2*x**2 - 1",
+        "buocBatDau": "B.DH.NGHIEM",
+        "baiLam": {
+          "ham": "x**4 + 2*x**2 - 1",
+          "TXD": "R",
+          "dao_ham": "4*x*(x**2 + 1)",
+          "y_phay_bang_0": [
+            "0"
+          ],
+          "y_phay_khong_xd": [],
+          "bang": {
+            "moc": [
+              "-oo",
+              "0",
+              "+oo"
+            ],
+            "dau": [
+              "-",
+              "+"
+            ],
+            "dau_tai_diem": [
+              "0"
+            ],
+            "chieu": [
+              "giam",
+              "tang"
+            ]
+          },
+          "ket_luan": {
+            "dong_bien": [
+              "(0; +oo)"
+            ],
+            "nghich_bien": [
+              "(-oo; 0)"
+            ],
+            "cuc_dai_x": [],
+            "cuc_tieu_x": [
+              "0"
+            ],
+            "gia_tri_cuc_dai": [],
+            "gia_tri_cuc_tieu": [
+              "-1"
+            ]
+          }
+        },
+        "finalAnswer": null,
+        "goiY": [
+          {
+            "maBuoc": "B.DH.NGHIEM",
+            "cap": 1,
+            "noiDung": "Chiều biến thiên của hàm số chỉ có thể thay đổi tại những điểm nào? Nhớ rằng điểm tới hạn gồm các điểm thuộc tập xác định làm y' triệt tiêu hoặc làm y' không xác định."
+          },
+          {
+            "maBuoc": "B.DH.NGHIEM",
+            "cap": 2,
+            "noiDung": "y' trong đề là đa thức nên xác định tại mọi x; em chỉ cần tìm các giá trị của x làm y' triệt tiêu. Hãy đưa y' về dạng tích bằng cách đặt nhân tử chung, rồi cho từng nhân tử triệt tiêu."
+          },
+          {
+            "maBuoc": "B.DH.NGHIEM",
+            "cap": 3,
+            "noiDung": "Sau khi đặt nhân tử chung, phương trình tách thành các phương trình đơn giản hơn; em giải từng phương trình. Phương trình dạng x bình phương bằng k (k là hằng số) chỉ có nghiệm thực khi k không âm. Không chia hai vế cho biểu thức chứa x, vì biểu thức đó chưa chắc khác không."
+          },
+          {
+            "maBuoc": "B.DH.XETDAU",
+            "cap": 1,
+            "noiDung": "Các điểm tới hạn chia trục số thành các khoảng. Trên mỗi khoảng đó, dấu của y' có thay đổi không? Em sẽ lấy dấu của y' bằng cách nào?"
+          },
+          {
+            "maBuoc": "B.DH.XETDAU",
+            "cap": 2,
+            "noiDung": "y' là đa thức bậc ba viết được dưới dạng tích. Em xét dấu từng nhân tử trên mỗi khoảng rồi nhân dấu lại, kể cả dấu của hệ số đứng trước; nhân tử nào luôn dương (hoặc luôn âm) thì không làm đổi dấu."
+          },
+          {
+            "maBuoc": "B.DH.XETDAU",
+            "cap": 3,
+            "noiDung": "Lập bảng với hàng x gồm các điểm tới hạn em đã tìm, xếp từ nhỏ đến lớn. Trên mỗi khoảng, chọn một giá trị thử nằm trong khoảng đó, thay vào y' dạng tích để lấy dấu. Việc đầu tiên: chọn giá trị thử cho khoảng ngoài cùng bên phải."
+          },
+          {
+            "maBuoc": "B.DH.KETLUAN",
+            "cap": 1,
+            "noiDung": "Khi x đi qua một điểm tới hạn, dấu của y' thay đổi thế nào thì hàm số đạt cực đại, thế nào thì đạt cực tiểu?"
+          },
+          {
+            "maBuoc": "B.DH.KETLUAN",
+            "cap": 2,
+            "noiDung": "Nhớ lại: y' đổi dấu từ dương sang âm khi x đi qua một điểm thì đó là điểm cực đại; từ âm sang dương thì là điểm cực tiểu; nếu y' không đổi dấu thì điểm đó không phải điểm cực trị. Giá trị cực trị là giá trị của hàm số y tại điểm cực trị."
+          },
+          {
+            "maBuoc": "B.DH.KETLUAN",
+            "cap": 3,
+            "noiDung": "Với từng điểm tới hạn trên bảng của em, nhìn dấu y' ở khoảng ngay bên trái và ngay bên phải rồi xếp điểm vào đúng loại; sau đó thay điểm cực trị vào hàm số y (không thay vào y') để tính giá trị cực trị. Việc đầu tiên: xét điểm tới hạn nhỏ nhất."
+          }
+        ]
+      },
       "tang": [
         {
           "tang": 1,
@@ -294,6 +1784,80 @@
       "dang_tra_loi": "TRA_LOI_NGAN",
       "trang_thai_tong": "KHONG_KIEM_DUOC",
       "trang_thai_phat_hanh": "CHO_GIAO_VIEN_DUYET",
+      "su_kien_bao_ve": [],
+      "cot_v0": {
+        "skillCode": "T12.DH.06",
+        "skillCodesPhu": [
+          "T12.DH.05"
+        ],
+        "mucDo4": "VAN_DUNG_CAO",
+        "mucDoBo3": "VAN_DUNG",
+        "bloomLevel": "PHAN_TICH",
+        "difficulty": 0.5,
+        "statementText": "Tìm giá trị của tham số m để hàm số y = x³ − 3mx² + 3(m² − 1)x đạt cực đại tại x = 2.",
+        "statementLatex": "y = x^3 - 3mx^2 + 3(m^2-1)x",
+        "hamSympy": null,
+        "buocBatDau": null,
+        "baiLam": null,
+        "finalAnswer": null,
+        "goiY": [
+          {
+            "maBuoc": "B.DH.DAOHAM",
+            "cap": 1,
+            "noiDung": "Đạo hàm theo biến nào? m đóng vai trò gì khi lấy đạo hàm theo x?"
+          },
+          {
+            "maBuoc": "B.DH.DAOHAM",
+            "cap": 2,
+            "noiDung": "Coi m là hằng số; dùng (xⁿ)' = n·xⁿ⁻¹."
+          },
+          {
+            "maBuoc": "B.DH.DAOHAM",
+            "cap": 3,
+            "noiDung": "Lấy đạo hàm từng hạng tử theo x, giữ m như một hệ số. Bước tiếp theo: đạo hàm hạng tử −3mx²."
+          },
+          {
+            "maBuoc": "B.DH.THAMSO",
+            "cap": 1,
+            "noiDung": "Nếu hàm đạt cực trị tại x = 2 (và có đạo hàm tại đó) thì y'(2) bằng bao nhiêu?"
+          },
+          {
+            "maBuoc": "B.DH.THAMSO",
+            "cap": 2,
+            "noiDung": "Điều kiện cần: y'(2) = 0; đây mới là điều kiện cần, cho ra các giá trị m ứng viên."
+          },
+          {
+            "maBuoc": "B.DH.THAMSO",
+            "cap": 3,
+            "noiDung": "Thay x = 2 vào y' được phương trình bậc hai theo m, giải để có các ứng viên. Bước tiếp theo: thay x = 2 vào biểu thức y'."
+          },
+          {
+            "maBuoc": "B.DH.THULAI",
+            "cap": 1,
+            "noiDung": "Với mỗi ứng viên m, làm sao biết x = 2 là cực đại hay cực tiểu?"
+          },
+          {
+            "maBuoc": "B.DH.THULAI",
+            "cap": 2,
+            "noiDung": "Dấu hiệu: y' đổi dấu từ + sang − khi đi qua x₀ thì x₀ là điểm cực đại."
+          },
+          {
+            "maBuoc": "B.DH.THULAI",
+            "cap": 3,
+            "noiDung": "Với từng ứng viên, viết lại y' (phân tích nhân tử) và xét dấu y' ở hai bên x = 2. Bước tiếp theo: thay ứng viên thứ nhất vào y'."
+          },
+          {
+            "maBuoc": "B.DH.KETLUAN",
+            "cap": 1,
+            "noiDung": "Đề hỏi giá trị nào? Các ứng viên đã qua bước thử lại chưa?"
+          },
+          {
+            "maBuoc": "B.DH.KETLUAN",
+            "cap": 2,
+            "noiDung": "Chỉ giữ ứng viên thỏa mãn khi thử lại."
+          }
+        ]
+      },
       "tang": [
         {
           "tang": 1,
@@ -316,6 +1880,164 @@
       "dang_tra_loi": "TU_LUAN_5_BUOC",
       "trang_thai_tong": "SAI",
       "trang_thai_phat_hanh": "BI_CHAN",
+      "su_kien_bao_ve": [
+        {
+          "loai": "DB",
+          "gia_tri": "(0;oo)"
+        },
+        {
+          "loai": "NB",
+          "gia_tri": "(-oo;0)"
+        },
+        {
+          "loai": "DCT",
+          "gia_tri": "0"
+        },
+        {
+          "loai": "GTCT",
+          "gia_tri": "0"
+        },
+        {
+          "loai": "NGHIEM",
+          "gia_tri": "0"
+        },
+        {
+          "loai": "KHONG_CUC_DAI",
+          "gia_tri": ""
+        },
+        {
+          "loai": "YPHAY",
+          "gia_tri": "2*x"
+        }
+      ],
+      "cot_v0": {
+        "skillCode": "T12.DH.03",
+        "skillCodesPhu": [],
+        "mucDo4": "NHAN_BIET",
+        "mucDoBo3": "BIET",
+        "bloomLevel": "NHAN_BIET",
+        "difficulty": 0.5,
+        "statementText": "Ví dụ cổng chặn (không giao cho học sinh): lời giải của y = x² bị sửa đạo hàm thành 3x.",
+        "statementLatex": "x^{2}",
+        "hamSympy": "x**2",
+        "buocBatDau": null,
+        "baiLam": {
+          "ham": "x**2",
+          "TXD": "R",
+          "dao_ham": "3*x",
+          "y_phay_bang_0": [
+            "0"
+          ],
+          "y_phay_khong_xd": [],
+          "bang": {
+            "moc": [
+              "-oo",
+              "0",
+              "+oo"
+            ],
+            "dau": [
+              "-",
+              "+"
+            ],
+            "dau_tai_diem": [
+              "0"
+            ],
+            "chieu": [
+              "giam",
+              "tang"
+            ]
+          },
+          "ket_luan": {
+            "dong_bien": [
+              "(0; +oo)"
+            ],
+            "nghich_bien": [
+              "(-oo; 0)"
+            ],
+            "cuc_dai_x": [],
+            "cuc_tieu_x": [
+              "0"
+            ],
+            "gia_tri_cuc_dai": [],
+            "gia_tri_cuc_tieu": [
+              "0"
+            ]
+          }
+        },
+        "finalAnswer": null,
+        "goiY": [
+          {
+            "maBuoc": "B.DH.TXD",
+            "cap": 1,
+            "noiDung": "Hàm này có mẫu số hoặc căn bậc hai không? Hãy viết điều kiện để biểu thức có nghĩa."
+          },
+          {
+            "maBuoc": "B.DH.TXD",
+            "cap": 2,
+            "noiDung": "Tập xác định là những x làm cho mẫu khác 0 và biểu thức dưới căn không âm. Ghi thành một dòng."
+          },
+          {
+            "maBuoc": "B.DH.DAOHAM",
+            "cap": 1,
+            "noiDung": "Em tính đạo hàm từng hạng tử bằng quy tắc nào?"
+          },
+          {
+            "maBuoc": "B.DH.DAOHAM",
+            "cap": 2,
+            "noiDung": "Nhớ (x^n)' = n·x^(n-1), đạo hàm của tổng bằng tổng các đạo hàm, hằng số có đạo hàm 0."
+          },
+          {
+            "maBuoc": "B.DH.DAOHAM",
+            "cap": 3,
+            "noiDung": "Tính riêng đạo hàm từng hạng tử rồi cộng lại. Viết y' ở dòng đầu của bước này."
+          },
+          {
+            "maBuoc": "B.DH.NGHIEM",
+            "cap": 1,
+            "noiDung": "Những điểm nào có thể làm đổi chiều biến thiên?"
+          },
+          {
+            "maBuoc": "B.DH.NGHIEM",
+            "cap": 2,
+            "noiDung": "Giải y' = 0 bằng cách đưa về tích các nhân tử. Đừng bỏ điểm làm cho y' không xác định nếu điểm đó thuộc tập xác định."
+          },
+          {
+            "maBuoc": "B.DH.NGHIEM",
+            "cap": 3,
+            "noiDung": "Đặt nhân tử chung để y' thành tích; mỗi nhân tử bằng 0 cho một điểm tới hạn. Ghi mỗi điểm một dòng."
+          },
+          {
+            "maBuoc": "B.DH.XETDAU",
+            "cap": 1,
+            "noiDung": "Trên mỗi khoảng, em lấy dấu của y' bằng cách nào?"
+          },
+          {
+            "maBuoc": "B.DH.XETDAU",
+            "cap": 2,
+            "noiDung": "y' là tích các nhân tử nào? Mỗi nhân tử đổi dấu ở đâu? Dấu của tích trên một khoảng là tích các dấu."
+          },
+          {
+            "maBuoc": "B.DH.XETDAU",
+            "cap": 3,
+            "noiDung": "Trong mỗi khoảng của bảng, em tự chọn một giá trị x nằm hẳn bên trong khoảng (không lấy đúng mốc), thay vào y' để lấy dấu của ô đó, rồi chọn mũi tên tương ứng. Chưa cần viết kết luận."
+          },
+          {
+            "maBuoc": "B.DH.KETLUAN",
+            "cap": 1,
+            "noiDung": "Từ dấu của y' em kết luận chiều biến thiên trên từng khoảng riêng, không gộp qua điểm bị loại."
+          },
+          {
+            "maBuoc": "B.DH.KETLUAN",
+            "cap": 2,
+            "noiDung": "y' đổi dấu từ dương sang âm thì là điểm cực đại; từ âm sang dương thì là điểm cực tiểu. y' = 0 mà không đổi dấu thì chưa phải cực trị."
+          },
+          {
+            "maBuoc": "B.DH.KETLUAN",
+            "cap": 3,
+            "noiDung": "Viết mỗi khoảng đơn điệu một dòng, rồi ghi điểm cực trị nếu có. Em tự đọc từ bảng của mình nhé."
+          }
+        ]
+      },
       "tang": [
         {
           "tang": 1,
@@ -338,6 +2060,164 @@
       "dang_tra_loi": "TU_LUAN_5_BUOC",
       "trang_thai_tong": "DAT",
       "trang_thai_phat_hanh": "DA_PHAT_HANH",
+      "su_kien_bao_ve": [
+        {
+          "loai": "DB",
+          "gia_tri": "(0;oo)"
+        },
+        {
+          "loai": "NB",
+          "gia_tri": "(-oo;0)"
+        },
+        {
+          "loai": "DCT",
+          "gia_tri": "0"
+        },
+        {
+          "loai": "GTCT",
+          "gia_tri": "0"
+        },
+        {
+          "loai": "NGHIEM",
+          "gia_tri": "0"
+        },
+        {
+          "loai": "KHONG_CUC_DAI",
+          "gia_tri": ""
+        },
+        {
+          "loai": "YPHAY",
+          "gia_tri": "2*x"
+        }
+      ],
+      "cot_v0": {
+        "skillCode": "T12.DH.03",
+        "skillCodesPhu": [],
+        "mucDo4": "VAN_DUNG",
+        "mucDoBo3": "VAN_DUNG",
+        "bloomLevel": "VAN_DUNG",
+        "difficulty": 0.5,
+        "statementText": "Tìm các khoảng đồng biến, nghịch biến và cực trị của hàm số y = x^{2}.",
+        "statementLatex": "x^{2}",
+        "hamSympy": "x**2",
+        "buocBatDau": null,
+        "baiLam": {
+          "ham": "x**2",
+          "TXD": "R",
+          "dao_ham": "2*x",
+          "y_phay_bang_0": [
+            "0"
+          ],
+          "y_phay_khong_xd": [],
+          "bang": {
+            "moc": [
+              "-oo",
+              "0",
+              "+oo"
+            ],
+            "dau": [
+              "-",
+              "+"
+            ],
+            "dau_tai_diem": [
+              "0"
+            ],
+            "chieu": [
+              "giam",
+              "tang"
+            ]
+          },
+          "ket_luan": {
+            "dong_bien": [
+              "(0; +oo)"
+            ],
+            "nghich_bien": [
+              "(-oo; 0)"
+            ],
+            "cuc_dai_x": [],
+            "cuc_tieu_x": [
+              "0"
+            ],
+            "gia_tri_cuc_dai": [],
+            "gia_tri_cuc_tieu": [
+              "0"
+            ]
+          }
+        },
+        "finalAnswer": null,
+        "goiY": [
+          {
+            "maBuoc": "B.DH.TXD",
+            "cap": 1,
+            "noiDung": "Hàm này có mẫu số hoặc căn bậc hai không? Hãy viết điều kiện để biểu thức có nghĩa."
+          },
+          {
+            "maBuoc": "B.DH.TXD",
+            "cap": 2,
+            "noiDung": "Tập xác định là những x làm cho mẫu khác 0 và biểu thức dưới căn không âm. Ghi thành một dòng."
+          },
+          {
+            "maBuoc": "B.DH.DAOHAM",
+            "cap": 1,
+            "noiDung": "Em tính đạo hàm từng hạng tử bằng quy tắc nào?"
+          },
+          {
+            "maBuoc": "B.DH.DAOHAM",
+            "cap": 2,
+            "noiDung": "Nhớ (x^n)' = n·x^(n-1), đạo hàm của tổng bằng tổng các đạo hàm, hằng số có đạo hàm 0."
+          },
+          {
+            "maBuoc": "B.DH.DAOHAM",
+            "cap": 3,
+            "noiDung": "Tính riêng đạo hàm từng hạng tử rồi cộng lại. Viết y' ở dòng đầu của bước này."
+          },
+          {
+            "maBuoc": "B.DH.NGHIEM",
+            "cap": 1,
+            "noiDung": "Những điểm nào có thể làm đổi chiều biến thiên?"
+          },
+          {
+            "maBuoc": "B.DH.NGHIEM",
+            "cap": 2,
+            "noiDung": "Giải y' = 0 bằng cách đưa về tích các nhân tử. Đừng bỏ điểm làm cho y' không xác định nếu điểm đó thuộc tập xác định."
+          },
+          {
+            "maBuoc": "B.DH.NGHIEM",
+            "cap": 3,
+            "noiDung": "Đặt nhân tử chung để y' thành tích; mỗi nhân tử bằng 0 cho một điểm tới hạn. Ghi mỗi điểm một dòng."
+          },
+          {
+            "maBuoc": "B.DH.XETDAU",
+            "cap": 1,
+            "noiDung": "Trên mỗi khoảng, em lấy dấu của y' bằng cách nào?"
+          },
+          {
+            "maBuoc": "B.DH.XETDAU",
+            "cap": 2,
+            "noiDung": "y' là tích các nhân tử nào? Mỗi nhân tử đổi dấu ở đâu? Dấu của tích trên một khoảng là tích các dấu."
+          },
+          {
+            "maBuoc": "B.DH.XETDAU",
+            "cap": 3,
+            "noiDung": "Trong mỗi khoảng của bảng, em tự chọn một giá trị x nằm hẳn bên trong khoảng (không lấy đúng mốc), thay vào y' để lấy dấu của ô đó, rồi chọn mũi tên tương ứng. Chưa cần viết kết luận."
+          },
+          {
+            "maBuoc": "B.DH.KETLUAN",
+            "cap": 1,
+            "noiDung": "Từ dấu của y' em kết luận chiều biến thiên trên từng khoảng riêng, không gộp qua điểm bị loại."
+          },
+          {
+            "maBuoc": "B.DH.KETLUAN",
+            "cap": 2,
+            "noiDung": "y' đổi dấu từ dương sang âm thì là điểm cực đại; từ âm sang dương thì là điểm cực tiểu. y' = 0 mà không đổi dấu thì chưa phải cực trị."
+          },
+          {
+            "maBuoc": "B.DH.KETLUAN",
+            "cap": 3,
+            "noiDung": "Viết mỗi khoảng đơn điệu một dòng, rồi ghi điểm cực trị nếu có. Em tự đọc từ bảng của mình nhé."
+          }
+        ]
+      },
       "tang": [
         {
           "tang": 1,
@@ -360,6 +2240,186 @@
       "dang_tra_loi": "TU_LUAN_5_BUOC",
       "trang_thai_tong": "DAT",
       "trang_thai_phat_hanh": "DA_PHAT_HANH",
+      "su_kien_bao_ve": [
+        {
+          "loai": "DB",
+          "gia_tri": "(-oo;-1)"
+        },
+        {
+          "loai": "DB",
+          "gia_tri": "(1;oo)"
+        },
+        {
+          "loai": "NB",
+          "gia_tri": "(-1;1)"
+        },
+        {
+          "loai": "DCD",
+          "gia_tri": "-1"
+        },
+        {
+          "loai": "DCT",
+          "gia_tri": "1"
+        },
+        {
+          "loai": "GTCD",
+          "gia_tri": "2"
+        },
+        {
+          "loai": "GTCT",
+          "gia_tri": "-2"
+        },
+        {
+          "loai": "NGHIEM",
+          "gia_tri": "-1"
+        },
+        {
+          "loai": "NGHIEM",
+          "gia_tri": "1"
+        },
+        {
+          "loai": "YPHAY",
+          "gia_tri": "3*x**2-3"
+        }
+      ],
+      "cot_v0": {
+        "skillCode": "T12.DH.03",
+        "skillCodesPhu": [],
+        "mucDo4": "VAN_DUNG",
+        "mucDoBo3": "VAN_DUNG",
+        "bloomLevel": "VAN_DUNG",
+        "difficulty": 0.5,
+        "statementText": "Tìm các khoảng đồng biến, nghịch biến và cực trị của hàm số y = x^{3} - 3 x.",
+        "statementLatex": "x^{3} - 3 x",
+        "hamSympy": "x**3 - 3*x",
+        "buocBatDau": null,
+        "baiLam": {
+          "ham": "x**3 - 3*x",
+          "TXD": "R",
+          "dao_ham": "3*x**2 - 3",
+          "y_phay_bang_0": [
+            "-1",
+            "1"
+          ],
+          "y_phay_khong_xd": [],
+          "bang": {
+            "moc": [
+              "-oo",
+              "-1",
+              "1",
+              "+oo"
+            ],
+            "dau": [
+              "+",
+              "-",
+              "+"
+            ],
+            "dau_tai_diem": [
+              "0",
+              "0"
+            ],
+            "chieu": [
+              "tang",
+              "giam",
+              "tang"
+            ]
+          },
+          "ket_luan": {
+            "dong_bien": [
+              "(-oo; -1)",
+              "(1; +oo)"
+            ],
+            "nghich_bien": [
+              "(-1; 1)"
+            ],
+            "cuc_dai_x": [
+              "-1"
+            ],
+            "cuc_tieu_x": [
+              "1"
+            ],
+            "gia_tri_cuc_dai": [
+              "2"
+            ],
+            "gia_tri_cuc_tieu": [
+              "-2"
+            ]
+          }
+        },
+        "finalAnswer": null,
+        "goiY": [
+          {
+            "maBuoc": "B.DH.TXD",
+            "cap": 1,
+            "noiDung": "Để viết tập xác định, em xem biểu thức $x^{3} - 3 x$ có chỗ nào cần điều kiện không: có mẫu số, có căn thức không?"
+          },
+          {
+            "maBuoc": "B.DH.TXD",
+            "cap": 2,
+            "noiDung": "Nhớ lại: biểu thức chỉ cần điều kiện khi có mẫu số (mẫu phải khác 0) hoặc có căn thức bậc chẵn (biểu thức dưới căn không âm). Hàm $x^{3} - 3 x$ là hàm đa thức; em đối chiếu xem nó có những thành phần đó không, rồi ghi TXĐ thành dòng đầu tiên của lời giải."
+          },
+          {
+            "maBuoc": "B.DH.DAOHAM",
+            "cap": 1,
+            "noiDung": "Đạo hàm của xⁿ bằng gì? Đạo hàm của một tổng các hạng tử bằng gì?"
+          },
+          {
+            "maBuoc": "B.DH.DAOHAM",
+            "cap": 2,
+            "noiDung": "Dùng công thức (xⁿ)' = n·xⁿ⁻¹, quy tắc (k·u)' = k·u' và quy tắc đạo hàm của tổng bằng tổng các đạo hàm; hằng số có đạo hàm bằng 0."
+          },
+          {
+            "maBuoc": "B.DH.DAOHAM",
+            "cap": 3,
+            "noiDung": "Lấy đạo hàm lần lượt từng hạng tử của $x^{3} - 3 x$ (kể cả hằng số tự do, nếu có), rồi cộng các kết quả lại. Việc đầu tiên: viết đạo hàm của hạng tử chứa x³."
+          },
+          {
+            "maBuoc": "B.DH.NGHIEM",
+            "cap": 1,
+            "noiDung": "Chiều biến thiên của hàm số chỉ có thể thay đổi tại những điểm nào? Nhớ rằng điểm tới hạn gồm các điểm thuộc TXĐ làm cho y' bằng 0 hoặc làm cho y' không xác định."
+          },
+          {
+            "maBuoc": "B.DH.NGHIEM",
+            "cap": 2,
+            "noiDung": "Với hàm $x^{3} - 3 x$, y' là một đa thức nên xác định tại mọi x; em chỉ cần giải phương trình y' = 0. Đây là phương trình bậc hai: em có thể nhẩm nghiệm, phân tích nhân tử hoặc dùng biệt thức."
+          },
+          {
+            "maBuoc": "B.DH.NGHIEM",
+            "cap": 3,
+            "noiDung": "Viết các hệ số của tam thức y', tính biệt thức Δ' (hoặc Δ) trước tiên. Dấu của biệt thức cho biết phương trình y' = 0 có mấy nghiệm; nếu có nghiệm thì em tìm cụ thể rồi ghi các điểm tới hạn thành một dòng."
+          },
+          {
+            "maBuoc": "B.DH.XETDAU",
+            "cap": 1,
+            "noiDung": "Các điểm tới hạn (nếu có) chia trục số thành các khoảng. Trên mỗi khoảng đó, dấu của y' có thay đổi không? Em sẽ lấy dấu của y' bằng cách nào?"
+          },
+          {
+            "maBuoc": "B.DH.XETDAU",
+            "cap": 2,
+            "noiDung": "Hàm $x^{3} - 3 x$ có y' là tam thức bậc hai. Nhớ định lí về dấu của tam thức bậc hai: dấu phụ thuộc vào biệt thức và vào dấu của hệ số của x² trong y'."
+          },
+          {
+            "maBuoc": "B.DH.XETDAU",
+            "cap": 3,
+            "noiDung": "Lập bảng với hàng x gồm các điểm tới hạn em đã tìm, xếp từ nhỏ đến lớn (nếu không có điểm tới hạn nào thì cả trục số là một khoảng). Trên mỗi khoảng, chọn một giá trị thử nằm trong khoảng đó, thay vào y' (dạng tích nếu có) để lấy dấu; tại điểm làm y' bằng 0 thì ghi 0. Việc đầu tiên: chọn giá trị thử cho khoảng ngoài cùng bên trái."
+          },
+          {
+            "maBuoc": "B.DH.KETLUAN",
+            "cap": 1,
+            "noiDung": "Từ bảng xét dấu, dấu của y' trên một khoảng cho em biết điều gì về chiều biến thiên? Hàm số đạt cực trị tại một điểm khi nào?"
+          },
+          {
+            "maBuoc": "B.DH.KETLUAN",
+            "cap": 2,
+            "noiDung": "Nhớ lại: nếu y' > 0 trên một khoảng thì hàm số đồng biến trên khoảng đó, nếu y' < 0 thì nghịch biến. Điểm x₀ là điểm cực đại nếu y' đổi dấu từ + sang − khi x đi qua x₀, là điểm cực tiểu nếu y' đổi dấu từ − sang +; nếu y' không đổi dấu thì x₀ không phải điểm cực trị."
+          },
+          {
+            "maBuoc": "B.DH.KETLUAN",
+            "cap": 3,
+            "noiDung": "Đọc bảng của em lần lượt từng khoảng: dấu + thì ghi đồng biến, dấu − thì ghi nghịch biến; mỗi khoảng viết riêng, các khoảng cùng loại nối bằng chữ “và” (không dùng ∪). Sau đó xét từng điểm tới hạn: nếu y' đổi dấu khi qua điểm đó thì tính giá trị cực trị bằng cách thay vào hàm số y (không thay vào y'). Việc đầu tiên: viết kết luận cho khoảng ngoài cùng bên trái."
+          }
+        ]
+      },
       "tang": [
         {
           "tang": 1,
@@ -382,6 +2442,186 @@
       "dang_tra_loi": "TU_LUAN_5_BUOC",
       "trang_thai_tong": "DAT",
       "trang_thai_phat_hanh": "DA_PHAT_HANH",
+      "su_kien_bao_ve": [
+        {
+          "loai": "DB",
+          "gia_tri": "(-oo;0)"
+        },
+        {
+          "loai": "DB",
+          "gia_tri": "(4;oo)"
+        },
+        {
+          "loai": "NB",
+          "gia_tri": "(0;4)"
+        },
+        {
+          "loai": "DCD",
+          "gia_tri": "0"
+        },
+        {
+          "loai": "DCT",
+          "gia_tri": "4"
+        },
+        {
+          "loai": "GTCD",
+          "gia_tri": "1"
+        },
+        {
+          "loai": "GTCT",
+          "gia_tri": "-31"
+        },
+        {
+          "loai": "NGHIEM",
+          "gia_tri": "0"
+        },
+        {
+          "loai": "NGHIEM",
+          "gia_tri": "4"
+        },
+        {
+          "loai": "YPHAY",
+          "gia_tri": "3*x*(x-4)"
+        }
+      ],
+      "cot_v0": {
+        "skillCode": "T12.DH.03",
+        "skillCodesPhu": [],
+        "mucDo4": "VAN_DUNG",
+        "mucDoBo3": "VAN_DUNG",
+        "bloomLevel": "APPLY",
+        "difficulty": 0.5,
+        "statementText": "Tìm các khoảng đồng biến, nghịch biến và cực trị của hàm số y = x^{3} - 6 x^{2} + 1.",
+        "statementLatex": "x^{3} - 6 x^{2} + 1",
+        "hamSympy": "x**3 + (-6)*x**2 + (0)*x + (1)",
+        "buocBatDau": null,
+        "baiLam": {
+          "ham": "x**3 + (-6)*x**2 + (0)*x + (1)",
+          "TXD": "R",
+          "dao_ham": "3*x*(x - 4)",
+          "y_phay_bang_0": [
+            "0",
+            "4"
+          ],
+          "y_phay_khong_xd": [],
+          "bang": {
+            "moc": [
+              "-oo",
+              "0",
+              "4",
+              "+oo"
+            ],
+            "dau": [
+              "+",
+              "-",
+              "+"
+            ],
+            "dau_tai_diem": [
+              "0",
+              "0"
+            ],
+            "chieu": [
+              "tang",
+              "giam",
+              "tang"
+            ]
+          },
+          "ket_luan": {
+            "dong_bien": [
+              "(-oo; 0)",
+              "(4; +oo)"
+            ],
+            "nghich_bien": [
+              "(0; 4)"
+            ],
+            "cuc_dai_x": [
+              "0"
+            ],
+            "cuc_tieu_x": [
+              "4"
+            ],
+            "gia_tri_cuc_dai": [
+              "1"
+            ],
+            "gia_tri_cuc_tieu": [
+              "-31"
+            ]
+          }
+        },
+        "finalAnswer": null,
+        "goiY": [
+          {
+            "maBuoc": "B.DH.TXD",
+            "cap": 1,
+            "noiDung": "Để viết tập xác định, em xem biểu thức $x^{3} - 6 x^{2} + 1$ có chỗ nào cần điều kiện không: có mẫu số, có căn thức không?"
+          },
+          {
+            "maBuoc": "B.DH.TXD",
+            "cap": 2,
+            "noiDung": "Nhớ lại: biểu thức chỉ cần điều kiện khi có mẫu số (mẫu phải khác 0) hoặc có căn thức bậc chẵn (biểu thức dưới căn không âm). Hàm $x^{3} - 6 x^{2} + 1$ là hàm đa thức; em đối chiếu xem nó có những thành phần đó không, rồi ghi TXĐ thành dòng đầu tiên của lời giải."
+          },
+          {
+            "maBuoc": "B.DH.DAOHAM",
+            "cap": 1,
+            "noiDung": "Đạo hàm của xⁿ bằng gì? Đạo hàm của một tổng các hạng tử bằng gì?"
+          },
+          {
+            "maBuoc": "B.DH.DAOHAM",
+            "cap": 2,
+            "noiDung": "Dùng công thức (xⁿ)' = n·xⁿ⁻¹, quy tắc (k·u)' = k·u' và quy tắc đạo hàm của tổng bằng tổng các đạo hàm; hằng số có đạo hàm bằng 0."
+          },
+          {
+            "maBuoc": "B.DH.DAOHAM",
+            "cap": 3,
+            "noiDung": "Lấy đạo hàm lần lượt từng hạng tử của $x^{3} - 6 x^{2} + 1$ (kể cả hằng số tự do, nếu có), rồi cộng các kết quả lại. Việc đầu tiên: viết đạo hàm của hạng tử chứa x³."
+          },
+          {
+            "maBuoc": "B.DH.NGHIEM",
+            "cap": 1,
+            "noiDung": "Chiều biến thiên của hàm số chỉ có thể thay đổi tại những điểm nào? Nhớ rằng điểm tới hạn gồm các điểm thuộc TXĐ làm cho y' bằng 0 hoặc làm cho y' không xác định."
+          },
+          {
+            "maBuoc": "B.DH.NGHIEM",
+            "cap": 2,
+            "noiDung": "Với hàm $x^{3} - 6 x^{2} + 1$, y' là một đa thức nên xác định tại mọi x; em chỉ cần giải phương trình y' = 0. Đây là phương trình bậc hai: em có thể nhẩm nghiệm, phân tích nhân tử hoặc dùng biệt thức."
+          },
+          {
+            "maBuoc": "B.DH.NGHIEM",
+            "cap": 3,
+            "noiDung": "Viết các hệ số của tam thức y', tính biệt thức Δ' (hoặc Δ) trước tiên. Dấu của biệt thức cho biết phương trình y' = 0 có mấy nghiệm; nếu có nghiệm thì em tìm cụ thể rồi ghi các điểm tới hạn thành một dòng."
+          },
+          {
+            "maBuoc": "B.DH.XETDAU",
+            "cap": 1,
+            "noiDung": "Các điểm tới hạn (nếu có) chia trục số thành các khoảng. Trên mỗi khoảng đó, dấu của y' có thay đổi không? Em sẽ lấy dấu của y' bằng cách nào?"
+          },
+          {
+            "maBuoc": "B.DH.XETDAU",
+            "cap": 2,
+            "noiDung": "Hàm $x^{3} - 6 x^{2} + 1$ có y' là tam thức bậc hai. Nhớ định lí về dấu của tam thức bậc hai: dấu phụ thuộc vào biệt thức và vào dấu của hệ số của x² trong y'."
+          },
+          {
+            "maBuoc": "B.DH.XETDAU",
+            "cap": 3,
+            "noiDung": "Lập bảng với hàng x gồm các điểm tới hạn em đã tìm, xếp từ nhỏ đến lớn (nếu không có điểm tới hạn nào thì cả trục số là một khoảng). Trên mỗi khoảng, chọn một giá trị thử nằm trong khoảng đó, thay vào y' (dạng tích nếu có) để lấy dấu; tại điểm làm y' bằng 0 thì ghi 0. Việc đầu tiên: chọn giá trị thử cho khoảng ngoài cùng bên trái."
+          },
+          {
+            "maBuoc": "B.DH.KETLUAN",
+            "cap": 1,
+            "noiDung": "Từ bảng xét dấu, dấu của y' trên một khoảng cho em biết điều gì về chiều biến thiên? Hàm số đạt cực trị tại một điểm khi nào?"
+          },
+          {
+            "maBuoc": "B.DH.KETLUAN",
+            "cap": 2,
+            "noiDung": "Nhớ lại: nếu y' > 0 trên một khoảng thì hàm số đồng biến trên khoảng đó, nếu y' < 0 thì nghịch biến. Điểm x₀ là điểm cực đại nếu y' đổi dấu từ + sang − khi x đi qua x₀, là điểm cực tiểu nếu y' đổi dấu từ − sang +; nếu y' không đổi dấu thì x₀ không phải điểm cực trị."
+          },
+          {
+            "maBuoc": "B.DH.KETLUAN",
+            "cap": 3,
+            "noiDung": "Đọc bảng của em lần lượt từng khoảng: dấu + thì ghi đồng biến, dấu − thì ghi nghịch biến; mỗi khoảng viết riêng, các khoảng cùng loại nối bằng chữ “và” (không dùng ∪). Sau đó xét từng điểm tới hạn: nếu y' đổi dấu khi qua điểm đó thì tính giá trị cực trị bằng cách thay vào hàm số y (không thay vào y'). Việc đầu tiên: viết kết luận cho khoảng ngoài cùng bên trái."
+          }
+        ]
+      },
       "tang": [
         {
           "tang": 1,
@@ -404,6 +2644,158 @@
       "dang_tra_loi": "TU_LUAN_5_BUOC",
       "trang_thai_tong": "DAT",
       "trang_thai_phat_hanh": "DA_PHAT_HANH",
+      "su_kien_bao_ve": [
+        {
+          "loai": "DB",
+          "gia_tri": "(-oo;-3)"
+        },
+        {
+          "loai": "DB",
+          "gia_tri": "(-3;oo)"
+        },
+        {
+          "loai": "KHONG_CUC_TRI",
+          "gia_tri": ""
+        },
+        {
+          "loai": "KHONG_NGHICH_BIEN",
+          "gia_tri": ""
+        },
+        {
+          "loai": "KHONG_NGHIEM",
+          "gia_tri": ""
+        },
+        {
+          "loai": "YPHAY",
+          "gia_tri": "3/(x+3)**2"
+        }
+      ],
+      "cot_v0": {
+        "skillCode": "T12.DH.03",
+        "skillCodesPhu": [],
+        "mucDo4": "VAN_DUNG",
+        "mucDoBo3": "VAN_DUNG",
+        "bloomLevel": "APPLY",
+        "difficulty": 0.5,
+        "statementText": "Tìm các khoảng đồng biến, nghịch biến và cực trị của hàm số y = \\frac{x}{x + 3}.",
+        "statementLatex": "\\frac{x}{x + 3}",
+        "hamSympy": "(x+(0))/(x+(3))",
+        "buocBatDau": null,
+        "baiLam": {
+          "ham": "(x+(0))/(x+(3))",
+          "TXD": "R \\ {-3}",
+          "dao_ham": "3/(x + 3)**2",
+          "y_phay_bang_0": [],
+          "y_phay_khong_xd": [],
+          "bang": {
+            "moc": [
+              "-oo",
+              "-3",
+              "+oo"
+            ],
+            "dau": [
+              "+",
+              "+"
+            ],
+            "dau_tai_diem": [
+              "||"
+            ],
+            "chieu": [
+              "tang",
+              "tang"
+            ]
+          },
+          "ket_luan": {
+            "dong_bien": [
+              "(-oo; -3)",
+              "(-3; +oo)"
+            ],
+            "nghich_bien": [],
+            "cuc_dai_x": [],
+            "cuc_tieu_x": [],
+            "gia_tri_cuc_dai": [],
+            "gia_tri_cuc_tieu": []
+          }
+        },
+        "finalAnswer": null,
+        "goiY": [
+          {
+            "maBuoc": "B.DH.TXD",
+            "cap": 1,
+            "noiDung": "Biểu thức của hàm số $\\frac{x}{x + 3}$ có mẫu số. Mẫu số cần thỏa điều kiện gì để phân thức có nghĩa?"
+          },
+          {
+            "maBuoc": "B.DH.TXD",
+            "cap": 2,
+            "noiDung": "Điều kiện xác định: mẫu số $x + 3$ phải khác 0. Em tìm giá trị x làm cho mẫu số bằng 0 để loại ra khỏi tập xác định."
+          },
+          {
+            "maBuoc": "B.DH.TXD",
+            "cap": 3,
+            "noiDung": "Giải phương trình $x + 3$ = 0 để tìm giá trị x bị loại, rồi viết TXĐ theo dạng D = ℝ \\ {…}, trong đó chỗ “…” là giá trị vừa tìm (không viết thành hợp các khoảng)."
+          },
+          {
+            "maBuoc": "B.DH.DAOHAM",
+            "cap": 1,
+            "noiDung": "Hàm $\\frac{x}{x + 3}$ là thương của tử số và mẫu số. Em nhớ quy tắc tính đạo hàm của một thương chưa?"
+          },
+          {
+            "maBuoc": "B.DH.DAOHAM",
+            "cap": 2,
+            "noiDung": "Dùng quy tắc đạo hàm của thương: (u/v)' = (u'v − uv')/v², với u là tử số và v là mẫu số. Không lấy đạo hàm riêng tử số và mẫu số rồi chia cho nhau."
+          },
+          {
+            "maBuoc": "B.DH.DAOHAM",
+            "cap": 3,
+            "noiDung": "Đặt u = $x$ và v = $x + 3$. Tính u' và v', thay u, v, u', v' vào công thức (u'v − uv')/v², rồi khai triển và rút gọn tử số; mẫu số giữ nguyên dạng bình phương."
+          },
+          {
+            "maBuoc": "B.DH.NGHIEM",
+            "cap": 1,
+            "noiDung": "Chiều biến thiên của hàm số chỉ có thể thay đổi tại những điểm nào? Nhớ rằng điểm tới hạn gồm các điểm thuộc TXĐ làm cho y' bằng 0 hoặc làm cho y' không xác định."
+          },
+          {
+            "maBuoc": "B.DH.NGHIEM",
+            "cap": 2,
+            "noiDung": "Em nhìn vào tử số của y' sau khi rút gọn: tử số đó có chứa x không, và điều đó cho biết gì về phương trình y' = 0? Còn điểm làm y' không xác định, em kiểm tra xem điểm đó có thuộc TXĐ không."
+          },
+          {
+            "maBuoc": "B.DH.NGHIEM",
+            "cap": 3,
+            "noiDung": "Viết y' thành một phân thức đã rút gọn tử số. Xét phương trình y' = 0 bằng cách cho tử số bằng 0; sau đó so điểm làm mẫu số của y' bằng 0 với TXĐ ở bước đầu. Ghi kết luận của bước này thành một dòng."
+          },
+          {
+            "maBuoc": "B.DH.XETDAU",
+            "cap": 1,
+            "noiDung": "Trên hàng x cần ghi những mốc nào? Điểm hàm số không xác định có cần xuất hiện trên bảng không, và tại đó hàng y' ghi gì?"
+          },
+          {
+            "maBuoc": "B.DH.XETDAU",
+            "cap": 2,
+            "noiDung": "Với y' của hàm $\\frac{x}{x + 3}$, em xét riêng dấu của tử số và dấu của mẫu số trên mỗi khoảng. Mẫu số là một bình phương nên không âm; vậy dấu của y' do phần nào quyết định?"
+          },
+          {
+            "maBuoc": "B.DH.XETDAU",
+            "cap": 3,
+            "noiDung": "Lập bảng với hàng x gồm các điểm tới hạn em đã tìm (nếu có) và điểm bị loại khỏi TXĐ; tại điểm bị loại ghi || ở hàng y'. Trên từng khoảng mà các mốc chia ra, chọn một giá trị thử thuộc khoảng đó, thay vào y' để lấy dấu. Việc đầu tiên: chọn giá trị thử cho khoảng ngoài cùng bên trái."
+          },
+          {
+            "maBuoc": "B.DH.KETLUAN",
+            "cap": 1,
+            "noiDung": "Từ bảng xét dấu, dấu của y' trên từng khoảng cho em biết gì về chiều biến thiên? Hàm số chỉ có thể đạt cực trị tại những điểm như thế nào?"
+          },
+          {
+            "maBuoc": "B.DH.KETLUAN",
+            "cap": 2,
+            "noiDung": "Nhớ lại: nếu y' > 0 trên một khoảng thì hàm số đồng biến trên khoảng đó, nếu y' < 0 thì nghịch biến. Điểm cực trị phải thuộc TXĐ và y' phải đổi dấu khi x đi qua điểm đó; điểm bị loại khỏi TXĐ không thể là điểm cực trị."
+          },
+          {
+            "maBuoc": "B.DH.KETLUAN",
+            "cap": 3,
+            "noiDung": "Đọc bảng của em theo từng khoảng xác định: dấu + thì ghi đồng biến, dấu − thì ghi nghịch biến; mỗi khoảng viết riêng, nếu cùng loại thì nối bằng chữ “và”, không dùng ∪ vì hàm số không xác định tại điểm bị loại. Sau đó trả lời phần cực trị dựa vào các điểm tới hạn em đã tìm ở bước trước."
+          }
+        ]
+      },
       "tang": [
         {
           "tang": 1,
@@ -426,6 +2818,210 @@
       "dang_tra_loi": "TU_LUAN_5_BUOC",
       "trang_thai_tong": "DAT",
       "trang_thai_phat_hanh": "DA_PHAT_HANH",
+      "su_kien_bao_ve": [
+        {
+          "loai": "DB",
+          "gia_tri": "(-2;0)"
+        },
+        {
+          "loai": "DB",
+          "gia_tri": "(2;oo)"
+        },
+        {
+          "loai": "NB",
+          "gia_tri": "(-oo;-2)"
+        },
+        {
+          "loai": "NB",
+          "gia_tri": "(0;2)"
+        },
+        {
+          "loai": "DCD",
+          "gia_tri": "0"
+        },
+        {
+          "loai": "DCT",
+          "gia_tri": "-2"
+        },
+        {
+          "loai": "DCT",
+          "gia_tri": "2"
+        },
+        {
+          "loai": "GTCD",
+          "gia_tri": "-1"
+        },
+        {
+          "loai": "GTCT",
+          "gia_tri": "-17"
+        },
+        {
+          "loai": "GTCT",
+          "gia_tri": "-17"
+        },
+        {
+          "loai": "NGHIEM",
+          "gia_tri": "-2"
+        },
+        {
+          "loai": "NGHIEM",
+          "gia_tri": "0"
+        },
+        {
+          "loai": "NGHIEM",
+          "gia_tri": "2"
+        },
+        {
+          "loai": "YPHAY",
+          "gia_tri": "4*x*(x**2-4)"
+        }
+      ],
+      "cot_v0": {
+        "skillCode": "T12.DH.05",
+        "skillCodesPhu": [],
+        "mucDo4": "VAN_DUNG",
+        "mucDoBo3": "VAN_DUNG",
+        "bloomLevel": "APPLY",
+        "difficulty": 0.5,
+        "statementText": "Tìm các khoảng đồng biến, nghịch biến và cực trị của hàm số y = x^{4} - 8 x^{2} - 1.",
+        "statementLatex": "x^{4} - 8 x^{2} - 1",
+        "hamSympy": "x**4 + (-8)*x**2 + (-1)",
+        "buocBatDau": null,
+        "baiLam": {
+          "ham": "x**4 + (-8)*x**2 + (-1)",
+          "TXD": "R",
+          "dao_ham": "4*x*(x**2 - 4)",
+          "y_phay_bang_0": [
+            "-2",
+            "0",
+            "2"
+          ],
+          "y_phay_khong_xd": [],
+          "bang": {
+            "moc": [
+              "-oo",
+              "-2",
+              "0",
+              "2",
+              "+oo"
+            ],
+            "dau": [
+              "-",
+              "+",
+              "-",
+              "+"
+            ],
+            "dau_tai_diem": [
+              "0",
+              "0",
+              "0"
+            ],
+            "chieu": [
+              "giam",
+              "tang",
+              "giam",
+              "tang"
+            ]
+          },
+          "ket_luan": {
+            "dong_bien": [
+              "(-2; 0)",
+              "(2; +oo)"
+            ],
+            "nghich_bien": [
+              "(-oo; -2)",
+              "(0; 2)"
+            ],
+            "cuc_dai_x": [
+              "0"
+            ],
+            "cuc_tieu_x": [
+              "-2",
+              "2"
+            ],
+            "gia_tri_cuc_dai": [
+              "-1"
+            ],
+            "gia_tri_cuc_tieu": [
+              "-17",
+              "-17"
+            ]
+          }
+        },
+        "finalAnswer": null,
+        "goiY": [
+          {
+            "maBuoc": "B.DH.TXD",
+            "cap": 1,
+            "noiDung": "Để viết tập xác định, em xem biểu thức $x^{4} - 8 x^{2} - 1$ có chỗ nào cần điều kiện không: có mẫu số, có căn thức không?"
+          },
+          {
+            "maBuoc": "B.DH.TXD",
+            "cap": 2,
+            "noiDung": "Nhớ lại: biểu thức chỉ cần điều kiện khi có mẫu số (mẫu phải khác 0) hoặc có căn thức bậc chẵn (biểu thức dưới căn không âm). Hàm $x^{4} - 8 x^{2} - 1$ là hàm đa thức; em đối chiếu xem nó có những thành phần đó không, rồi ghi TXĐ thành dòng đầu tiên của lời giải."
+          },
+          {
+            "maBuoc": "B.DH.DAOHAM",
+            "cap": 1,
+            "noiDung": "Đạo hàm của xⁿ bằng gì? Đạo hàm của một tổng các hạng tử bằng gì?"
+          },
+          {
+            "maBuoc": "B.DH.DAOHAM",
+            "cap": 2,
+            "noiDung": "Dùng công thức (xⁿ)' = n·xⁿ⁻¹, quy tắc (k·u)' = k·u' và quy tắc đạo hàm của tổng bằng tổng các đạo hàm; hằng số có đạo hàm bằng 0."
+          },
+          {
+            "maBuoc": "B.DH.DAOHAM",
+            "cap": 3,
+            "noiDung": "Lấy đạo hàm lần lượt từng hạng tử của $x^{4} - 8 x^{2} - 1$ (kể cả hằng số tự do, nếu có), rồi cộng các kết quả lại. Việc đầu tiên: viết đạo hàm của hạng tử chứa x⁴."
+          },
+          {
+            "maBuoc": "B.DH.NGHIEM",
+            "cap": 1,
+            "noiDung": "Chiều biến thiên của hàm số chỉ có thể thay đổi tại những điểm nào? Nhớ rằng điểm tới hạn gồm các điểm thuộc TXĐ làm cho y' bằng 0 hoặc làm cho y' không xác định."
+          },
+          {
+            "maBuoc": "B.DH.NGHIEM",
+            "cap": 2,
+            "noiDung": "Với hàm $x^{4} - 8 x^{2} - 1$, y' là một đa thức nên xác định tại mọi x; em chỉ cần giải phương trình y' = 0. Hãy đưa y' về dạng tích bằng cách đặt nhân tử chung, rồi cho từng nhân tử bằng 0."
+          },
+          {
+            "maBuoc": "B.DH.NGHIEM",
+            "cap": 3,
+            "noiDung": "Sau khi đặt nhân tử chung, phương trình y' = 0 tách thành các phương trình đơn giản hơn; em giải từng phương trình. Với phương trình dạng x² = k, em xét dấu của k trước khi khai căn. Không chia hai vế cho biểu thức chứa x, vì biểu thức đó chưa chắc khác 0."
+          },
+          {
+            "maBuoc": "B.DH.XETDAU",
+            "cap": 1,
+            "noiDung": "Các điểm tới hạn (nếu có) chia trục số thành các khoảng. Trên mỗi khoảng đó, dấu của y' có thay đổi không? Em sẽ lấy dấu của y' bằng cách nào?"
+          },
+          {
+            "maBuoc": "B.DH.XETDAU",
+            "cap": 2,
+            "noiDung": "Hàm $x^{4} - 8 x^{2} - 1$ có y' là đa thức bậc ba viết được dưới dạng tích. Em xét dấu từng nhân tử trên mỗi khoảng rồi nhân dấu lại; nhân tử nào luôn dương (hoặc luôn âm) thì không làm đổi dấu."
+          },
+          {
+            "maBuoc": "B.DH.XETDAU",
+            "cap": 3,
+            "noiDung": "Lập bảng với hàng x gồm các điểm tới hạn em đã tìm, xếp từ nhỏ đến lớn. Trên mỗi khoảng, chọn một giá trị thử nằm trong khoảng đó, thay vào y' dạng tích để lấy dấu; tại điểm làm y' bằng 0 thì ghi 0. Việc đầu tiên: chọn giá trị thử cho khoảng ngoài cùng bên phải."
+          },
+          {
+            "maBuoc": "B.DH.KETLUAN",
+            "cap": 1,
+            "noiDung": "Từ bảng xét dấu, dấu của y' trên một khoảng cho em biết điều gì về chiều biến thiên? Hàm số đạt cực trị tại một điểm khi nào?"
+          },
+          {
+            "maBuoc": "B.DH.KETLUAN",
+            "cap": 2,
+            "noiDung": "Nhớ lại: nếu y' > 0 trên một khoảng thì hàm số đồng biến trên khoảng đó, nếu y' < 0 thì nghịch biến. Điểm x₀ là điểm cực đại nếu y' đổi dấu từ + sang − khi x đi qua x₀, là điểm cực tiểu nếu y' đổi dấu từ − sang +; nếu y' không đổi dấu thì x₀ không phải điểm cực trị."
+          },
+          {
+            "maBuoc": "B.DH.KETLUAN",
+            "cap": 3,
+            "noiDung": "Đọc bảng của em lần lượt từng khoảng: dấu + thì ghi đồng biến, dấu − thì ghi nghịch biến; mỗi khoảng viết riêng, các khoảng cùng loại nối bằng chữ “và” (không dùng ∪). Sau đó xét từng điểm tới hạn: nếu y' đổi dấu khi qua điểm đó thì tính giá trị cực trị bằng cách thay vào hàm số y (không thay vào y'). Việc đầu tiên: viết kết luận cho khoảng ngoài cùng bên trái."
+          }
+        ]
+      },
       "tang": [
         {
           "tang": 1,

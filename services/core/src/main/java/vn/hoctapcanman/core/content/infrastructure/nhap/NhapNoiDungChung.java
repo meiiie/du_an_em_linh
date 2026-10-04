@@ -301,8 +301,15 @@ public class NhapNoiDungChung {
     private void ghiBai(BaiNhap b, Instant luc) {
         Optional<Problem> daCo = problems.findByCode(b.ma());
         UUID id = daCo.map(Problem::id).orElseGet(UUID::randomUUID);
-        problems.save(new Problem(id, b.ma(), b.kyNang(), b.kyNangPhu(), b.muc4(), b.muc3(), b.bloom(), 0.5, b.deBai(), b.latex(),
-            b.ham(), b.dangTraLoi(), b.buocBatDau(), b.nguonBai(), dauVanTay(b), null, daCo.map(Problem::createdAt).orElse(luc), luc));
+        Instant taoLuc = daCo.map(Problem::createdAt).orElse(luc);
+        Problem moi = new Problem(id, b.ma(), b.kyNang(), b.kyNangPhu(), b.muc4(), b.muc3(), b.bloom(), 0.5, b.deBai(), b.latex(), b.ham(),
+            b.dangTraLoi(), b.buocBatDau(), b.nguonBai(), dauVanTay(b), null, taoLuc, daCo.map(Problem::updatedAt).orElse(luc));
+        // Nhập lại bài không đổi thì không ghi, để lúc sửa giữ nguyên (T014: nhập hai lần cùng kết quả).
+        if (!daCo.map(moi::equals).orElse(false)) {
+            problems.save(new Problem(id, moi.code(), moi.skillCode(), moi.extraSkillCodes(), moi.level4(), moi.level3(), moi.bloomLevel(),
+                moi.difficulty(), moi.statementText(), moi.statementLatex(), moi.functionSympy(), moi.answerForm(), moi.startStep(),
+                moi.origin(), moi.contentHash(), moi.createdBy(), taoLuc, luc));
+        }
         solutions.save(new Solution(id, b.baiLam() == null ? null : JsonKieuJs.stringify(b.baiLam()), JsonKieuJs.stringify(b.suKien()),
             null));
         List<HintLevel> cap = new ArrayList<>();

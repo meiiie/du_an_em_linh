@@ -209,6 +209,8 @@ async function xuat(seed: ReturnType<typeof nguonDaCommit>, kho: ReturnType<type
 
   const cua = (bang: string) => daGhi.filter((g) => g.bang === bang).map((g) => g.o);
   const luot = new Map(cua('verificationRuns').map((r) => [r.problemId, r]));
+  const loiGiai = new Map(cua('solutions').map((s) => [s.problemId, s]));
+  const goiY = cua('hintLevels');
   const tang = cua('verificationTierResults');
   const bai = cua('problems')
     .map((p) => {
@@ -220,6 +222,27 @@ async function xuat(seed: ReturnType<typeof nguonDaCommit>, kho: ReturnType<type
         dang_tra_loi: p.dangTraLoi,
         trang_thai_tong: r.overallStatus,
         trang_thai_phat_hanh: r.publishStatus,
+        // Dữ kiện bảo vệ v0 ghi cho bài (solutions.protectedFacts): bộ lọc lộ đáp án của gia sư dùng chúng, mà dấu vân
+        // tay {de, bl, hints} không gồm chúng.
+        su_kien_bao_ve: (loiGiai.get(p.id) as Record<string, unknown>).protectedFacts,
+        // Mọi cột nội dung v0 ghi cho bài, nguyên văn: test so từng cột của core với đây, không với chính bài core dựng.
+        cot_v0: {
+          skillCode: p.skillCode,
+          skillCodesPhu: p.skillCodesPhu,
+          mucDo4: p.mucDo4,
+          mucDoBo3: p.mucDoBo3,
+          bloomLevel: p.bloomLevel,
+          difficulty: p.difficulty,
+          statementText: p.statementText,
+          statementLatex: p.statementLatex,
+          hamSympy: p.hamSympy,
+          buocBatDau: p.buocBatDau,
+          baiLam: (loiGiai.get(p.id) as Record<string, unknown>).baiLam,
+          finalAnswer: (loiGiai.get(p.id) as Record<string, unknown>).finalAnswer,
+          goiY: goiY
+            .filter((h) => h.problemId === p.id)
+            .map((h) => ({ maBuoc: h.maBuoc, cap: h.cap, noiDung: h.noiDung })),
+        },
         tang: tang
           .filter((t) => t.runId === r.id)
           .map((t) => ({ tang: t.tier, trang_thai: t.status }))
