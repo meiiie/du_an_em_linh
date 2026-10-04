@@ -33,6 +33,13 @@ const docker = (lenh: string) => execSync('docker ' + lenh, { cwd: GOC, env: { .
 async function chayDichVuToan() {
   if (git('status --porcelain -- ' + TOAN)) throw new Error(TOAN + ' có thay đổi chưa commit: tệp vàng phải ứng với mã đã commit');
   const cay = git('rev-parse HEAD:' + TOAN);
+  // Ảnh gốc trong FROM là tag có thể đổi (python:3.12-slim): kéo về trước khi build để bản build dùng đúng bản cục bộ này,
+  // rồi ghi digest bất biến của nó; cùng cây git thì cùng runtime.
+  const tu = git('show HEAD:' + TOAN + '/Dockerfile').split('\n').find((d) => /^FROM\s/i.test(d));
+  const goc = (tu ?? '').trim().split(/\s+/)[1];
+  if (!goc) throw new Error('Không đọc được ảnh gốc trong FROM của ' + TOAN + '/Dockerfile');
+  execFileSync('docker', ['pull', '-q', goc]);
+  const digest = execFileSync('docker', ['image', 'inspect', '--format', '{{index .RepoDigests 0}}', goc]).toString().trim();
   // Ngữ cảnh build chỉ gồm tệp đã commit của services/math (git archive HEAD), không phải thư mục làm việc: tệp bị
   // .gitignore (khóa *.pem, *apikey*, .env…) không bao giờ vào ảnh, và ảnh đúng cây git ghi ở dưới.
   const nguCanh = execSync('git archive --format=tar HEAD ' + TOAN, { cwd: GOC, maxBuffer: 512 * 1024 * 1024 });
@@ -41,6 +48,10 @@ async function chayDichVuToan() {
     input: nguCanh,
     env: { ...process.env, MSYS_NO_PATHCONV: '1' },
   }).toString().trim();
+  // Gói Python đã cài (phiên bản SymPy…) và phiên bản Python của ảnh: cùng với cây git và digest, cố định thư viện, runtime.
+  const goi = execFileSync('docker', ['run', '--rm', '-e', 'PIP_NO_CACHE_DIR=1', '--entrypoint', 'pip', anh, 'freeze']).toString()
+    .split('\n').map((d) => d.trim()).filter(Boolean).sort();
+  const python = execFileSync('docker', ['run', '--rm', '--entrypoint', 'python', anh, '--version']).toString().trim();
   const hop = docker('run -d --rm --read-only --tmpfs /tmp -p 127.0.0.1::8000 ' + anh);
   const dung = () => {
     try {
@@ -52,24 +63,17 @@ async function chayDichVuToan() {
   try {
     const url = 'http://' + docker('port ' + hop + ' 8000/tcp').split('\n')[0];
     for (let i = 0; ; i++) {
+      let r: Response | null = null;
       try {
-        const r = await fetch(url + '/health');
-        if (r.ok) {
-          // Gói Python đã cài trong ảnh (phiên bản SymPy…): cây git cố định mã, danh sách này cố định thư viện.
-          const goi = docker('run --rm -e PIP_NO_CACHE_DIR=1 --entrypoint pip ' + anh + ' freeze').split('\n').map((d) => d.trim()).filter(Boolean).sort();
-          // Ảnh gốc của Dockerfile dùng tag có thể đổi (python:3.12-slim): ghi digest bất biến của đúng ảnh gốc đã dùng và
-          // phiên bản Python trong ảnh, để biết tệp vàng sinh trên runtime nào.
-          const tu = git('show HEAD:' + TOAN + '/Dockerfile').split('\n').find((d) => /^FROM\s/i.test(d));
-          const goc = (tu ?? '').trim().split(/\s+/)[1] ?? '';
-          const digest = execFileSync('docker', ['image', 'inspect', '--format', '{{index .RepoDigests 0}}', goc]).toString().trim();
-          const python = execFileSync('docker', ['run', '--rm', '--entrypoint', 'python', anh, '--version']).toString().trim();
-          return {
-            url, anh, dung,
-            nguon: { cay_git: cay, anh_goc: { ten: goc, digest }, python, goi_python: goi, suc_khoe: await r.json() },
-          };
-        }
+        r = await fetch(url + '/health');
       } catch {
         // chưa sẵn sàng
+      }
+      if (r?.ok) {
+        return {
+          url, anh, dung,
+          nguon: { cay_git: cay, anh_goc: { ten: goc, digest }, python, goi_python: goi, suc_khoe: await r.json() },
+        };
       }
       if (i >= 60) throw new Error('dịch vụ toán không lên sau 60 s');
       await new Promise((xong) => setTimeout(xong, 1000));
