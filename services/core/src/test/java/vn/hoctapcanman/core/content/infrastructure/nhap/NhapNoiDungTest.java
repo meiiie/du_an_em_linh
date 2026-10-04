@@ -161,6 +161,16 @@ class NhapNoiDungTest {
                 rs.getString(6), rs.getString(7))).single();
         assertThat(de).as("bài đã ghi %s", b.ma()).containsExactly(b.deBai(), b.latex(), b.ham(), b.dangTraLoi(), b.buocBatDau(),
             b.nguonBai(), NhapNoiDungChung.dauVanTay(b));
+        // Codex #135 (P2): phân loại dùng để chọn bài; độ khó 0.5 cho mọi bài như seed.ts của v0.
+        List<@Nullable String> phanLoai = jdbc.sql("""
+                select skill_code, array_to_string(extra_skill_codes, ','), level4, level3, bloom_level, difficulty::text
+                from problems where code = ?""").params(b.ma())
+            .query((rs, i) -> Arrays.asList(rs.getString(1), rs.getString(2), rs.getString(3), rs.getString(4), rs.getString(5),
+                rs.getString(6))).single();
+        var muc3 = b.muc3();
+        var bloom = b.bloom();
+        assertThat(phanLoai).as("phân loại đã ghi của %s", b.ma()).containsExactly(b.kyNang(), String.join(",", b.kyNangPhu()),
+            b.muc4().name(), muc3 == null ? null : muc3.name(), bloom == null ? null : bloom.name(), "0.5");
         List<@Nullable String> loiGiai = jdbc.sql("""
                 select s.worked_solution::text, s.protected_facts::text from solutions s join problems p on p.id = s.problem_id
                 where p.code = ?""").params(b.ma()).query((rs, i) -> Arrays.asList(rs.getString(1), rs.getString(2))).single();
