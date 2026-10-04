@@ -157,7 +157,9 @@ public class NhapTheoLop {
             for (Map<String, @Nullable Object> d : nguonTaiLieu) {
                 String ma = chu(d.get("ma"));
                 Optional<Document> daCo = documents.findByClassAndCode(lop, ma);
-                String vanBan = chu(d.get("textContent"));
+                // NFC như verify.py chuẩn hóa trước khi tính vị trí trích dẫn: văn bản lưu, văn bản gửi đi và văn bản mà vi_tri
+                // trỏ vào là một, nên tài liệu viết dạng tổ hợp (chữ + dấu rời) vẫn ánh xạ được trích dẫn.
+                String vanBan = java.text.Normalizer.normalize(chu(d.get("textContent")), java.text.Normalizer.Form.NFC);
                 Document moi = new Document(daCo.map(Document::id).orElseGet(UUID::randomUUID), lop, ma, chu(d.get("title")),
                     DocumentKind.parse(chu(d.get("kind"))), chuNeuCo(d.get("source")), chu(d.get("licenseStatus")), null, vanBan,
                     ((Number) Objects.requireNonNull(d.get("version"))).intValue(), null,

@@ -50,7 +50,8 @@ final class ChiaDoan {
 
     /**
      * Các đoạn chứa chữ trích {@code trich} ở vị trí {@code viTriCodePoint} của {@code vanBan}, theo thứ tự. Vị trí do dịch
-     * vụ toán (Python) trả, tính theo code point; đổi sang chỉ số UTF-16 của Java trước khi so, để ký tự ngoài BMP (𝑥, emoji)
+     * vụ toán (Python) trả, tính theo code point trên văn bản đã chuẩn hóa NFC; nơi gọi lưu và gửi văn bản ở dạng NFC
+     * ({@code NhapTheoLop}), ở đây đổi code point sang chỉ số UTF-16 của Java trước khi so, để ký tự ngoài BMP (𝑥, emoji)
      * đứng trước không làm lệch. Rỗng (không ánh xạ) khi chữ ở vị trí đó không đúng nguyên văn chữ trích hay vị trí ra ngoài
      * văn bản: không đoán căn cứ.
      */

@@ -130,6 +130,7 @@ class NhapTheoLopTest {
         KiemGia.TRICH_SAI = false;
         KiemGia.TRICH_THEM_HONG = false;
         KiemGia.TANG2_SAI = false;
+        KiemGia.TRICH_GIUA = false;
     }
 
     @Test
@@ -303,6 +304,33 @@ class NhapTheoLopTest {
     }
 
     @Test
+    void taiLieuDangToHopVanAnhXaTrichDanSauChuanHoa() throws IOException {
+        // Codex #134 (P2): verify.py chuẩn hóa NFC rồi mới tính vi_tri. Nguồn viết dạng tổ hợp (NFD) thì importer lưu và gửi
+        // NFC, nên câu trích ở giữa văn bản vẫn ánh xạ về đúng đoạn.
+        Path tep = DATA.resolve("v0/tai-lieu.json");
+        byte[] goc = Files.readAllBytes(tep);
+        try {
+            JsonMapper json = JsonMapper.builder().build();
+            @SuppressWarnings("unchecked")
+            List<Map<String, Object>> taiLieu = json.readValue(goc, List.class);
+            Map<String, Object> donDieu = taiLieu.stream().filter(d -> "v0-don-dieu".equals(d.get("ma"))).findFirst().orElseThrow();
+            donDieu.put("textContent", java.text.Normalizer.normalize((String) donDieu.get("textContent"), java.text.Normalizer.Form.NFD));
+            Files.writeString(tep, json.writeValueAsString(taiLieu), StandardCharsets.UTF_8);
+
+            NhapNoiDungChung.DaNhap da = chung.nhapGiuBai();
+            KiemGia.TRICH_GIUA = true;
+            NhapTheoLop.KetQua kq = theoLop.nhap(lop, da.bai());
+            assertThat(kq.phatHanh()).containsEntry("DH12-03-VD-01", ReleaseStatus.DA_PHAT_HANH);
+        } finally {
+            Files.write(tep, goc);
+        }
+        String luu = jdbc.sql("select text_content from documents where class_id = ? and code = 'v0-don-dieu'").params(lop)
+            .query(String.class).single();
+        assertThat(java.text.Normalizer.isNormalized(luu, java.text.Normalizer.Form.NFC)).isTrue();
+        jdbc.sql("set constraints all immediate").update();
+    }
+
+    @Test
     void tang2SaiCoTrichDanThiGhiTrichDan() {
         // Codex #134 (P2): căn cứ của tầng 2 SAI (bài bị chặn) cũng ghi vào verification_run_citations, bất biến như căn cứ đạt.
         NhapNoiDungChung.DaNhap da = chung.nhapGiuBai();
@@ -334,6 +362,7 @@ class NhapTheoLopTest {
         static volatile boolean TRICH_SAI;
         static volatile boolean TRICH_THEM_HONG;
         static volatile boolean TANG2_SAI;
+        static volatile boolean TRICH_GIUA;
 
         @Bean
         KiemToan kiemToan() {
@@ -365,8 +394,11 @@ class NhapTheoLopTest {
                 public Map<String, @Nullable Object> kiemBai(Map<String, ?> yeuCau) {
                     Map<String, Object> donDieu = ((List<Map<String, Object>>) yeuCau.get("tai_lieu")).stream()
                         .filter(t -> "v0-don-dieu".equals(t.get("id"))).findFirst().orElseThrow();
-                    String vanBan = (String) donDieu.get("text");
-                    String trich = TRICH_SAI ? "chữ không có trong tài liệu" : vanBan.substring(0, 40);
+                    // Như verify.py: chuẩn hóa NFC rồi tính vị trí theo code point.
+                    String vanBan = java.text.Normalizer.normalize((String) donDieu.get("text"), java.text.Normalizer.Form.NFC);
+                    int batDau = TRICH_GIUA ? vanBan.indexOf(". ") + 2 : 0;
+                    String trich = TRICH_SAI ? "chữ không có trong tài liệu" : vanBan.substring(batDau, batDau + 30);
+                    int viTri = vanBan.codePointCount(0, batDau);
                     Map<String, Object> baiLam = (Map<String, Object>) yeuCau.get("bai_lam");
                     List<String> tang;
                     if (yeuCau.get("ham") == null) {
@@ -384,7 +416,7 @@ class NhapTheoLopTest {
                         t.put("tang", i + 1);
                         t.put("trang_thai", tang.get(i));
                         if (i == 1 && !tang.get(i).equals("KHONG_KIEM_DUOC")) {
-                            t.put("trich_dan", List.of(Map.of("document_id", "v0-don-dieu", "vi_tri", 0, "trich", trich)));
+                            t.put("trich_dan", List.of(Map.of("document_id", "v0-don-dieu", "vi_tri", viTri, "trich", trich)));
                         }
                         if (i == 2 && tang.get(i).equals("DAT")) {
                             t.put("cong_thuc", List.of(Map.of("formula_id", "d-1")));
