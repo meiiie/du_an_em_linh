@@ -25,12 +25,12 @@ final class Mau {
     }
 
     static VerificationRun luot(CheckStatus t1, CheckStatus t2, CheckStatus t3) {
-        return VerificationRun.forProblem(LOP, BAI, BAM, 1, BANG, tang(t1, t2, t3), LUC);
+        return VerificationRun.forProblem(LOP, BAI, BAM, 1, BANG, tang(t1, t2, t3), List.of(DOAN), LUC);
     }
 
     /** Dựng lượt kiểm như nạp lại từ CSDL (constructor công khai), để thử tổ hợp lệch. */
     static VerificationRun napLai(CheckStatus tong, ReleaseStatus phatHanh, List<TierResult> tang) {
-        return new VerificationRun(UUID.randomUUID(), LOP, SubjectKind.PROBLEM, BAI, BAM, 1, BANG, tong, phatHanh, false, LUC, tang, List.of());
+        return new VerificationRun(UUID.randomUUID(), LOP, SubjectKind.PROBLEM, BAI, BAM, 1, BANG, tong, phatHanh, false, LUC, tang, List.of(DOAN));
     }
 
     static Problem bai() {

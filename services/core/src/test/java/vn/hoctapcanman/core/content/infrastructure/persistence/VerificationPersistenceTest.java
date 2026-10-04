@@ -136,8 +136,7 @@ class VerificationPersistenceTest {
         int phienBan = problems.findContentVersion(bai.id()).orElseThrow();
         VerificationRun cho = VerificationRun.forProblem(lop, bai.id(), BAM, phienBan, bang.id(),
                 List.of(new TierResult(1, CheckStatus.DAT, "DAO_HAM", null, null, 0.9, null, null, "{\"buoc\": 2}"),
-                    TierResult.of(2, CheckStatus.DAT), TierResult.of(3, CheckStatus.KHONG_KIEM_DUOC)), LUC)
-            .withCitations(List.of(doanCucDai));
+                    TierResult.of(2, CheckStatus.DAT), TierResult.of(3, CheckStatus.KHONG_KIEM_DUOC)), List.of(doanCucDai), LUC);
         runs.save(cho);
         assertThat(runs.findLatest(lop, SubjectKind.PROBLEM, bai.id())).contains(cho);
 
@@ -159,7 +158,7 @@ class VerificationPersistenceTest {
     void doiBangCongThucThiLuotKiemVoiBangCuThanhCu() {
         FormulaSheet bang1 = daKiem(bangNhap(1)).lock(giaoVien, LUC);
         sheets.save(bang1);
-        VerificationRun luot = VerificationRun.forProblem(lop, bai.id(), BAM, 1, bang1.id(), ba(CheckStatus.DAT), LUC);
+        VerificationRun luot = VerificationRun.forProblem(lop, bai.id(), BAM, 1, bang1.id(), ba(CheckStatus.DAT), List.of(doanTong), LUC);
         runs.save(luot);
         FormulaSheet bang2 = daKiem(bang1.newDraft(2, LUC)).lock(giaoVien, LUC);
         sheets.save(bang2);
@@ -175,8 +174,55 @@ class VerificationPersistenceTest {
         hints.replaceForProblem(bai.id(), List.of(new HintLevel(bai.id(), "B.DH.DAOHAM", 1, "Đạo hàm từng hạng tử.")));
         assertThat(problems.findContentVersion(bai.id())).contains(2);
         // Cuối test: lỗi ràng buộc hủy giao dịch của test.
-        VerificationRun cu = VerificationRun.forProblem(lop, bai.id(), BAM, 1, null, ba(CheckStatus.DAT), LUC);
+        VerificationRun cu = VerificationRun.forProblem(lop, bai.id(), BAM, 1, null, ba(CheckStatus.DAT), List.of(doanTong), LUC);
         assertThatThrownBy(() -> runs.save(cu)).isInstanceOf(DataIntegrityViolationException.class);
+    }
+
+    @Test
+    void phatHanhChiTheoLuotMoiNhat() {
+        // Codex #121 (P1): lượt A còn chờ, lượt B (SAI) mới hơn; phát hành chậm theo A không được đè kết quả của B.
+        FormulaSheet bang = daKiem(bangNhap(1)).lock(giaoVien, LUC);
+        sheets.save(bang);
+        VerificationRun a = choDuyet(bang, LUC);
+        VerificationRun b = VerificationRun.forProblem(lop, bai.id(), BAM, 1, bang.id(), ba(CheckStatus.SAI), List.of(), LUC.plusSeconds(1));
+        runs.save(a);
+        runs.save(b);
+        releases.save(ProblemRelease.draft(lop, bai.id(), LUC).apply(b, true, BAM, bang.id(), LUC));
+        assertThat(releases.find(lop, bai.id()).orElseThrow().status()).isEqualTo(ReleaseStatus.BI_CHAN);
+        // Cuối test: lỗi ràng buộc hủy giao dịch của test.
+        assertThatThrownBy(() -> releases.save(new ProblemRelease(lop, bai.id(), ReleaseStatus.CHO_GIAO_VIEN_DUYET, a.id(), LUC)))
+            .isInstanceOf(DataIntegrityViolationException.class);
+    }
+
+    @Test
+    void duyetChiLuotMoiNhat() {
+        // Codex #121 (P2): lượt mới hơn đã có thì không duyệt được lượt cũ dù nó chưa bị đánh dấu cũ.
+        FormulaSheet bang = daKiem(bangNhap(1)).lock(giaoVien, LUC);
+        sheets.save(bang);
+        VerificationRun a = choDuyet(bang, LUC);
+        runs.save(a);
+        runs.save(choDuyet(bang, LUC.plusSeconds(1)));
+        VerificationRun.Approval duyetA = a.approve(giaoVien, "Duyệt theo lượt cũ", true, BAM, bang.id(), LUC);
+        assertThatThrownBy(() -> runs.saveApproval(duyetA)).isInstanceOf(DataIntegrityViolationException.class);
+    }
+
+    @Test
+    void duyetChiLuotKiemVoiBangDangDung() {
+        // Codex #121 (P2): lớp đã khóa bảng mới thì không duyệt được lượt kiểm với bảng cũ.
+        FormulaSheet bang1 = daKiem(bangNhap(1)).lock(giaoVien, LUC);
+        sheets.save(bang1);
+        VerificationRun a = choDuyet(bang1, LUC);
+        runs.save(a);
+        sheets.save(daKiem(bang1.newDraft(2, LUC)).lock(giaoVien, LUC));
+        VerificationRun.Approval duyetA = a.approve(giaoVien, "Duyệt với bảng cũ", true, BAM, bang1.id(), LUC);
+        assertThatThrownBy(() -> runs.saveApproval(duyetA)).isInstanceOf(DataIntegrityViolationException.class);
+    }
+
+    /** Lượt kiểm bài chờ giáo viên duyệt (tầng 3 không kiểm được), tầng 2 trích dẫn đoạn cực đại. */
+    private VerificationRun choDuyet(FormulaSheet bang, Instant luc) {
+        return VerificationRun.forProblem(lop, bai.id(), BAM, 1, bang.id(),
+            List.of(TierResult.of(1, CheckStatus.DAT), TierResult.of(2, CheckStatus.DAT), TierResult.of(3, CheckStatus.KHONG_KIEM_DUOC)),
+            List.of(doanCucDai), luc);
     }
 
     /** Bảng nháp hai dòng: tổng (đẳng thức) và cực đại (định lí). */

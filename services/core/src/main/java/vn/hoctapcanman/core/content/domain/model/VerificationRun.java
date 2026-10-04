@@ -62,6 +62,10 @@ public record VerificationRun(
         if (subjectKind == SubjectKind.PROBLEM && contentVersion == null) {
             throw new IllegalArgumentException("Lượt kiểm bài phải ghi phiên bản nội dung đã kiểm");
         }
+        boolean tang2Dat = tiers.stream().anyMatch(t -> t.tier() == 2 && t.status() == CheckStatus.DAT);
+        if (subjectKind == SubjectKind.PROBLEM && tang2Dat && citationPassageIds.isEmpty()) {
+            throw new IllegalArgumentException("Tầng 2 DAT phải có đoạn tài liệu được trích dẫn");
+        }
         tiers = tiers.stream().sorted(Comparator.comparingInt(TierResult::tier)).toList();
         Set<Integer> daCo = new HashSet<>();
         for (TierResult t : tiers) {
@@ -90,20 +94,14 @@ public record VerificationRun(
     }
 
     /**
-     * Lượt kiểm bài mới cho một lớp, trên phiên bản nội dung {@code contentVersion}; trạng thái tổng và phát hành tính từ
-     * các tầng. Chưa có đoạn trích dẫn: gắn bằng {@link #withCitations}.
+     * Lượt kiểm bài mới cho một lớp, trên phiên bản nội dung {@code contentVersion}, với các đoạn tài liệu tầng 2 đã trích
+     * dẫn (tầng 2 {@code DAT} thì phải có ít nhất một đoạn); trạng thái tổng và phát hành tính từ các tầng.
      */
     public static VerificationRun forProblem(UUID classId, UUID problemId, String contentHash, int contentVersion,
-            @Nullable UUID formulaSheetId, List<TierResult> tiers, Instant now) {
+            @Nullable UUID formulaSheetId, List<TierResult> tiers, List<UUID> citationPassageIds, Instant now) {
         CheckStatus tong = overallOf(tiers);
         return new VerificationRun(UUID.randomUUID(), classId, SubjectKind.PROBLEM, problemId, contentHash, contentVersion,
-            formulaSheetId, tong, publishOf(tong), false, now, tiers, List.of());
-    }
-
-    /** Lượt này với các đoạn tài liệu tầng 2 đã trích dẫn. */
-    public VerificationRun withCitations(List<UUID> passageIds) {
-        return new VerificationRun(id, classId, subjectKind, subjectId, contentHash, contentVersion, formulaSheetId,
-            overallStatus, publishStatus, stale, createdAt, tiers, passageIds);
+            formulaSheetId, tong, publishOf(tong), false, now, tiers, citationPassageIds);
     }
 
     /**

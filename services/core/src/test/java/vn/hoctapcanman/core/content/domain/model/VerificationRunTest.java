@@ -52,7 +52,7 @@ class VerificationRunTest {
                     tang.add(TierResult.of(i + 1, CheckStatus.valueOf(d[i])));
                 }
             }
-            VerificationRun luot = VerificationRun.forProblem(Mau.LOP, Mau.BAI, Mau.BAM, 1, Mau.BANG, tang, Mau.LUC);
+            VerificationRun luot = VerificationRun.forProblem(Mau.LOP, Mau.BAI, Mau.BAM, 1, Mau.BANG, tang, List.of(Mau.DOAN), Mau.LUC);
             String toHop = String.join(",", d[0], d[1], d[2]);
             if (tang.size() == 3) {
                 duTang++;
@@ -95,7 +95,7 @@ class VerificationRunTest {
     @Test
     void motTangGhiHaiLanHayTangKhongHopLeThiTuChoi() {
         assertThatThrownBy(() -> VerificationRun.forProblem(Mau.LOP, Mau.BAI, Mau.BAM, 1, Mau.BANG,
-            List.of(TierResult.of(1, DAT), TierResult.of(1, DAT), TierResult.of(2, DAT), TierResult.of(3, DAT)), Mau.LUC))
+            List.of(TierResult.of(1, DAT), TierResult.of(1, DAT), TierResult.of(2, DAT), TierResult.of(3, DAT)), List.of(Mau.DOAN), Mau.LUC))
             .isInstanceOf(IllegalArgumentException.class);
         assertThatThrownBy(() -> TierResult.of(1, GV_DUYET)).isInstanceOf(IllegalArgumentException.class);
         assertThatThrownBy(() -> TierResult.of(4, DAT)).isInstanceOf(IllegalArgumentException.class);
@@ -124,9 +124,9 @@ class VerificationRunTest {
         assertThat(cho.approvalRefusal(true, Mau.BAM, Mau.BANG)).isEmpty();
         assertThat(Mau.luot(SAI, DAT, KHONG_KIEM_DUOC).approvalRefusal(true, Mau.BAM, Mau.BANG)).contains(ApprovalRefusal.BLOCKED);
         assertThat(Mau.luot(DAT, DAT, DAT).approvalRefusal(true, Mau.BAM, Mau.BANG)).contains(ApprovalRefusal.NOTHING_TO_APPROVE);
-        VerificationRun thieu = VerificationRun.forProblem(Mau.LOP, Mau.BAI, Mau.BAM, 1, Mau.BANG, List.of(TierResult.of(1, DAT)), Mau.LUC);
+        VerificationRun thieu = VerificationRun.forProblem(Mau.LOP, Mau.BAI, Mau.BAM, 1, Mau.BANG, List.of(TierResult.of(1, DAT)), List.of(), Mau.LUC);
         assertThat(thieu.approvalRefusal(true, Mau.BAM, Mau.BANG)).contains(ApprovalRefusal.INCOMPLETE);
-        VerificationRun khongTang = VerificationRun.forProblem(Mau.LOP, Mau.BAI, Mau.BAM, 1, Mau.BANG, List.of(), Mau.LUC);
+        VerificationRun khongTang = VerificationRun.forProblem(Mau.LOP, Mau.BAI, Mau.BAM, 1, Mau.BANG, List.of(), List.of(), Mau.LUC);
         assertThat(khongTang.approvalRefusal(true, Mau.BAM, Mau.BANG)).contains(ApprovalRefusal.INCOMPLETE);
         assertThat(cho.markStale().approvalRefusal(true, Mau.BAM, Mau.BANG)).contains(ApprovalRefusal.STALE);
         assertThat(cho.approvalRefusal(false, Mau.BAM, Mau.BANG)).contains(ApprovalRefusal.NOT_LATEST);
@@ -134,7 +134,7 @@ class VerificationRunTest {
         assertThat(cho.approvalRefusal(true, Mau.BAM, UUID.randomUUID())).contains(ApprovalRefusal.SHEET_CHANGED);
         assertThat(cho.approvalRefusal(true, Mau.BAM, null)).contains(ApprovalRefusal.SHEET_CHANGED);
         // Lớp chưa có bảng khóa: lượt kiểm không có bảng, bảng hiện tại cũng trống → duyệt được.
-        VerificationRun khongBang = VerificationRun.forProblem(Mau.LOP, Mau.BAI, Mau.BAM, 1, null, Mau.tang(DAT, DAT, KHONG_KIEM_DUOC), Mau.LUC);
+        VerificationRun khongBang = VerificationRun.forProblem(Mau.LOP, Mau.BAI, Mau.BAM, 1, null, Mau.tang(DAT, DAT, KHONG_KIEM_DUOC), List.of(Mau.DOAN), Mau.LUC);
         assertThat(khongBang.approvalRefusal(true, Mau.BAM, null)).isEmpty();
     }
 
@@ -166,7 +166,7 @@ class VerificationRunTest {
 
         TierResult coRaw = new TierResult(1, DAT, null, null, null, null, "lý do", null, "{\"dao_ham\": \"3*x**2 - 12*x + 9\"}");
         VerificationRun coCanCu = VerificationRun.forProblem(Mau.LOP, Mau.BAI, Mau.BAM, 1, Mau.BANG,
-            List.of(coRaw, TierResult.of(2, DAT), TierResult.of(3, DAT)), Mau.LUC);
+            List.of(coRaw, TierResult.of(2, DAT), TierResult.of(3, DAT)), List.of(Mau.DOAN), Mau.LUC);
         assertThat(coRaw.toString()).doesNotContain("3*x**2").doesNotContain("lý do");
         assertThat(coCanCu.toString()).doesNotContain("3*x**2");
     }
@@ -177,17 +177,22 @@ class VerificationRunTest {
         assertThatThrownBy(() -> new VerificationRun(UUID.randomUUID(), Mau.LOP, SubjectKind.PROBLEM, Mau.BAI, Mau.BAM, null,
             Mau.BANG, DAT, ReleaseStatus.DA_PHAT_HANH, false, Mau.LUC, Mau.tang(DAT, DAT, DAT), List.of()))
             .isInstanceOf(IllegalArgumentException.class);
-        assertThatThrownBy(() -> VerificationRun.forProblem(Mau.LOP, Mau.BAI, Mau.BAM, 0, Mau.BANG, Mau.tang(DAT, DAT, DAT), Mau.LUC))
+        assertThatThrownBy(() -> VerificationRun.forProblem(Mau.LOP, Mau.BAI, Mau.BAM, 0, Mau.BANG, Mau.tang(DAT, DAT, DAT), List.of(Mau.DOAN), Mau.LUC))
             .isInstanceOf(IllegalArgumentException.class);
         UUID doan = UUID.randomUUID();
         VerificationRun cho = VerificationRun.forProblem(Mau.LOP, Mau.BAI, Mau.BAM, 3, Mau.BANG, Mau.tang(DAT, DAT, KHONG_KIEM_DUOC),
-            Mau.LUC).withCitations(List.of(doan));
+            List.of(doan), Mau.LUC);
         assertThat(cho.contentVersion()).isEqualTo(3);
         assertThat(cho.citationPassageIds()).containsExactly(doan);
         assertThat(cho.markStale().citationPassageIds()).containsExactly(doan);
         VerificationRun.Approval duyet = cho.approve(Mau.GV, "Đã đối chiếu", true, Mau.BAM, Mau.BANG, Mau.LUC);
         assertThat(duyet.run().contentVersion()).isEqualTo(3);
         assertThat(duyet.run().citationPassageIds()).containsExactly(doan);
-        assertThatThrownBy(() -> cho.withCitations(List.of(doan, doan))).isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> VerificationRun.forProblem(Mau.LOP, Mau.BAI, Mau.BAM, 3, Mau.BANG, Mau.tang(DAT, DAT, DAT),
+            List.of(doan, doan), Mau.LUC)).isInstanceOf(IllegalArgumentException.class);
+        // Codex #121: tầng 2 DAT mà không có đoạn trích dẫn thì không dựng được lượt kiểm bài.
+        assertThatThrownBy(() -> VerificationRun.forProblem(Mau.LOP, Mau.BAI, Mau.BAM, 3, Mau.BANG, Mau.tang(DAT, DAT, DAT),
+            List.of(), Mau.LUC)).isInstanceOf(IllegalArgumentException.class)
+            .hasMessageContaining("Tầng 2 DAT");
     }
 }
