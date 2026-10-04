@@ -69,7 +69,7 @@ services/core/src/main/java/vn/hoctapcanman/core/
 ├── planner/             # thời gian biểu tuần, lời khuyên, nhắc trong app
 └── shared/              # Clock, client dịch vụ toán (hết giờ = lỗi, không bao giờ «đạt»)
 services/core/src/main/resources/db/migration/
-└── V3__classroom.sql … V8__planner.sql
+└── V3__classroom.sql … V<n>__planner.sql (số kế tiếp lúc merge)
 services/core/src/test/java/…   # unit theo module, Testcontainers, đối chiếu v0, ArchUnit
 
 services/math/app/
