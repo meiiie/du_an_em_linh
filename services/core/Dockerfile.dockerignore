@@ -1,0 +1,15 @@
+# Ngữ cảnh build là gốc repo: chỉ đưa vào mã core và nội dung chủ đề mà importer đọc (T003b).
+*
+!services/core/
+!data/supham/
+!data/v0/
+services/core/target/
+services/core/.mvn/wrapper/maven-wrapper.jar
+services/core/.idea/
+services/core/.vscode/
+services/core/*.iml
+services/core/AGENTS.md
+services/core/CLAUDE.md
+**/.env
+**/.env.*
+**/secrets
