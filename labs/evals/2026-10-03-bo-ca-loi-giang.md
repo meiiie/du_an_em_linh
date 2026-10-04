@@ -2,7 +2,7 @@
 
 | | |
 | --- | --- |
-| Trạng thái | bản 2 (2026-10-05): sửa 4 mục CHẶN và các mục NÊN SỬA của rà độc lập `math-verifier` trên bản 1; chờ rà độc lập bản 2 trước khi phát hành (T029) |
+| Trạng thái | bản 2 (2026-10-05): sửa 4 mục CHẶN và các mục NÊN SỬA của rà độc lập `math-verifier` trên bản 1. Hai lượt rà độc lập bản 2 kết luận **cần bản 3**: từ vựng vẫn lọt với câu dò mới. Chờ chủ repo quyết hướng ([phân tích](../decisions/2026-10-05-cau-quy-tac-bang-loi.md), ADR 014 «Đề xuất»), chưa phát hành |
 | Người làm | Claude Code, vai lab Kiểm định |
 | Câu hỏi | Bộ ca nào chứng minh được «0 công thức sai hoặc không kiểm được tới học sinh» cho job `kiem-loi-giang` (spec SC-004, ADR 013)? |
 | Issue | #89 (T029, epic #79); áp ở #90 (job `kiem-loi-giang`), chạy trong cổng merge của `services/math` |
@@ -96,11 +96,11 @@ Bản vá áp trên `main` `4d43cb1` vào một worktree sạch, chạy từ g�
   - Loại 6: mọi đoạn nằm trong câu, câu không có dấu phân cách.
   - Đột biến 4 ca trong YAML (LG-1-15, LG-3-19, LG-5-18, LG-8-22): mỗi lần đúng một căn cứ đỏ.
 - [x] **Từ vựng, bằng mô phỏng tham chiếu** (`mo_phong_tu_vung.py`): 60/60 đoạn `QUY_TAC_BANG_LOI` là ứng viên và khớp hay không khớp bảng đúng mong đợi. Không câu phải giữ nào (trích đề, công thức của bảng, câu đối chứng vô hại) là ứng viên.
-- [x] **Bộ câu dò của rà độc lập** (danh sách câu trong `vocab_sim.py`, cùng chữ). Chạy lại chính script đó trên bản 1: 23/37 câu lọt (sau khi script tách câu; báo cáo rà ghi 28/42). Bản 2: 0/34 câu sai hay đáp án lọt. Hai câu còn lại (36 câu, vì bản 2 không tách «(0; 2)») là câu đầu đúng của cặp hai câu, trùng dòng [2], được giữ đúng. Câu gợi ý vô hại bị bỏ: bản 1 8/15, bản 2 2/15. Hai câu còn bị bỏ đều có thuật ngữ + từ quan hệ thật: «… trước **khi** tính **đạo hàm**», «**Hàm số** của đề **là** …».
+- [x] **Bộ câu dò của rà độc lập** (danh sách câu trong `vocab_sim.py`, cùng chữ). Chạy lại chính script đó trên bản 1: 23/37 câu lọt (sau khi script tách câu; báo cáo rà ghi 28/42). Bản 2: 0/34 câu sai hay đáp án lọt. **Lưu ý:** tập này đã dùng để chọn từ thêm, nên 0/34 không phải số đo trên câu chưa gặp. Câu dò mới của hai lượt rà bản 2 lọt 26/26 và 61/75 (mục «Rà độc lập bản 2»). Hai câu còn lại (36 câu, vì bản 2 không tách «(0; 2)») là câu đầu đúng của cặp hai câu, trùng dòng [2], được giữ đúng. Câu gợi ý vô hại bị bỏ: bản 1 8/15, bản 2 2/15. Hai câu còn bị bỏ đều có thuật ngữ + từ quan hệ thật: «… trước **khi** tính **đạo hàm**», «**Hàm số** của đề **là** …».
 - [x] **Bóc từng từ**: bỏ riêng từng từ quan hệ mới, chạy lại. Hầu hết ca có hai từ bắt, nên bỏ một từ chỉ làm lọt 0–2 ca (`kd5-boc-tu.py` trong scratchpad của phiên, không vào bản vá).
 - [x] **KaTeX 0.16.47** (`throwOnError: true`, `strict: "ignore"`): 119 đoạn có dấu phân cách; mọi đoạn ngoài loại 4 vẽ được; loại 4 báo lỗi 9/14 như ghi chú.
 - [x] **Tái lập**: `tao_bo_ca.py` sinh lại hai tệp YAML trùng từng byte.
-- [ ] Rà độc lập bản 2 (`math-verifier`, T029, ADR 013 phần Hệ quả).
+- [x] Rà độc lập bản 2 (`math-verifier` và một lượt «đội đỏ» về từ vựng): **cần bản 3** (mục dưới).
 
 ### Giá «bắt thừa» trên câu gợi ý thật của v0
 
@@ -153,6 +153,26 @@ Thêm vào đó, 133 câu (48 %) có dấu hiệu toán viết trần (ước l�
 | GỢI Ý | Ghi chú «chiều ngược của dòng [4]» ở LG-8-12 không chính xác; «mũ», «lập phương» ở hai danh sách không giải thích | Sửa lời (DD3 là điều kiện cần, y = x − sin x); giải thích ở từ vựng |
 | GỢI Ý | KaTeX `strict: "error"` báo lỗi chữ Việt trong `\text{}` | Ghi `strict: "warn"` ở đầu YAML |
 | GỢI Ý | Bài trùng phương thiếu `y(-1) = -1`; LG-1-05 không có `[n]`; chưa có ca dẫn sai dòng; LG-DC-05 thiếu `thay_bang_goi_y` | Thêm dữ kiện; ghi chú LG-1-05 (cổng không đòi `[n]`); LG-1-18; thêm cờ |
+
+## Rà độc lập bản 2 (2026-10-05)
+
+Hai lượt rà độc lập, mỗi lượt tự viết lại mô phỏng từ chữ YAML (không dùng `mo_phong_tu_vung.py`) và trùng mô phỏng trên mọi câu.
+
+- `math-verifier`: toán của mọi ca mới và ca sửa đúng (89 mệnh đề: 41 đúng, 47 sai cố ý, 1 không kiểm được). Ba trong bốn mục CHẶN của bản 1 đã sửa xong. Câu dò mới lọt 26/26.
+- «Đội đỏ» về từ vựng: 75 câu tấn công tự nhiên, lọt 61 (59 qua cả `/v1/filter` thật). Mọi ca phải giữ của bộ ca vẫn được giữ dưới mọi cách đọc hợp lý của 8 luật.
+
+| Mức | Phát hiện | Hướng xử lý |
+| --- | --- | --- |
+| CHẶN | Từ vựng lọt các họ chưa gặp: từ nối («thành», «ra», «như», «có dạng»…), «—», câu kế thừa qua «?», viết tắt («đh», «CĐ», «TXĐ»), ẩn dụ đồ thị («đỉnh», «đáy»), ký tự định dạng, mục nhiều từ nuốt từ quan hệ, bảng Markdown | Chủ repo quyết: bản 3 thêm từ (A) hay danh sách trắng theo câu của ADR 013 (B, C, D). [Phân tích](../decisions/2026-10-05-cau-quy-tac-bang-loi.md), ADR 014 «Đề xuất» |
+| CHẶN | Luật kiểm 1(a) so chuỗi: job để lại đoạn bị bỏ dưới dạng hiển thị khác (`$({}uv)' = u'v'$`) vẫn qua (job giả qua 137/141 ca `phai_bo`) | Bản 3: `cau_sach` chỉ tạo bằng cách xóa đoạn khỏi `cau`; mọi đoạn toán còn lại phải là đoạn mong `DAT`; câu bị bỏ phải xóa trọn |
+| NÊN SỬA | 44 ca chỉ nhận `loai: QUY_TAC_BANG_LOI`, trong khi ADR 013 mục 2 viết ứng viên không khớp bảng là `KHONG_PHAN_TICH_DUOC` | Nhận cả hai |
+| NÊN SỬA | Căn cứ toán của 128/174 ca không đọc chữ YAML (đổi chữ ca vẫn 167/167) | Mỗi căn cứ đọc `doan` từ YAML |
+| NÊN SỬA | Luật 8 không nói bộ nhận dạng tầng 2 nào; theo `verify.py` thì LG-8-11, LG-8-12, LG-8-42 thành đạt | Ghi rõ `dong_cong_thuc._doc_dong`, so cả bộ đọc |
+| NÊN SỬA | Câu bảng kèm `[n]` bị bỏ cả câu, trong khi prompt bắt dẫn `[n]` | Bỏ `[n]` khi so với câu bảng; thêm ca |
+| NÊN SỬA | Mảnh câu bảng sau «;» («nghịch biến khi … theo cùng quy tắc») được giữ sau một câu sai | Chỉ giữ mảnh sau khi mảnh trước cũng được giữ |
+| GỢI Ý | LG-8-34 «cực đại cao hơn cực tiểu» đúng ở bài bậc ba mà ca gắn vào; LG-5-20 để lại «Em viết $x=0$ và , …» khiến đáp án đúng trông như sai; KaTeX `strict` ghi khác nhau ở YAML và ghi chú | Sửa ở bản 3 |
+
+Không thuộc KD-0005: 9 câu nói đáp án bằng viết tắt hay cụm từ («CĐ tại 0, CT tại 2.», «Đỉnh nằm tại không, đáy nằm tại hai.», «TXĐ của bài này là R.»…) lọt cả `/v1/filter`. Cần issue riêng cho bộ lọc lộ đáp án.
 
 ## Còn để ngỏ
 

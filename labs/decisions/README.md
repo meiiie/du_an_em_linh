@@ -27,3 +27,4 @@ Sau đó viết ADR (bối cảnh · quyết định · hệ quả · trạng th
 | --- | --- | --- | --- |
 | 2026-10-01 | [Kiến trúc và stack cho v2](2026-10-01-kien-truc-v2.md) | [011](../../docs/adr/011-kien-truc-v2.md) | Chấp nhận |
 | 2026-10-02 | [Quyền riêng tư cho dữ liệu học sinh](2026-10-02-quyen-rieng-tu-du-lieu-hoc-sinh.md) | [012](../../docs/adr/012-quyen-rieng-tu-du-lieu-hoc-sinh.md) | Đề xuất |
+| 2026-10-05 | [Câu quy tắc bằng lời: thêm từ vựng hay danh sách trắng theo câu](2026-10-05-cau-quy-tac-bang-loi.md) | [014](../../docs/adr/014-danh-sach-trang-theo-cau.md) | Đề xuất |

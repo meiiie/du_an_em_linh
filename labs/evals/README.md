@@ -30,7 +30,7 @@ Mọi thay đổi prompt, nhà cung cấp, mô hình hay bộ lọc phải chạ
 
 ## Đang mở
 
-- [`2026-10-03-bo-ca-loi-giang.md`](2026-10-03-bo-ca-loi-giang.md) — bản vá `KD-0005` bản 2: 174 ca lời giảng 8 loại, từ vựng quy tắc bằng lời và mô phỏng tham chiếu cho job `kiem-loi-giang` (#89, ADR 013, SC-004). Bản 1 bị rà độc lập chặn; bản 2 chờ rà độc lập.
+- [`2026-10-03-bo-ca-loi-giang.md`](2026-10-03-bo-ca-loi-giang.md) — bản vá `KD-0005` bản 2: 174 ca lời giảng 8 loại, từ vựng quy tắc bằng lời và mô phỏng tham chiếu cho job `kiem-loi-giang` (#89, ADR 013, SC-004). Bản 1 bị rà độc lập chặn; bản 2 bị hai lượt rà độc lập chặn (từ vựng lọt với câu dò mới), chờ chủ repo quyết hướng ([phân tích](../decisions/2026-10-05-cau-quy-tac-bang-loi.md), ADR 014 «Đề xuất»).
 
 ## Việc mở
 
