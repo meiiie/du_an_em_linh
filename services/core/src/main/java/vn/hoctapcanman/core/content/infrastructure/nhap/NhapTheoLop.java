@@ -31,7 +31,6 @@ import vn.hoctapcanman.core.content.domain.model.FormulaSheet;
 import vn.hoctapcanman.core.content.domain.model.Problem;
 import vn.hoctapcanman.core.content.domain.model.ProblemRelease;
 import vn.hoctapcanman.core.content.domain.model.ReleaseStatus;
-import vn.hoctapcanman.core.content.domain.model.SheetStatus;
 import vn.hoctapcanman.core.content.domain.model.SubjectKind;
 import vn.hoctapcanman.core.content.domain.model.TierResult;
 import vn.hoctapcanman.core.content.domain.model.VerificationRun;
@@ -200,8 +199,10 @@ public class NhapTheoLop {
     /**
      * Bảng đang dùng của lớp sau khi nhập. Giữ bảng đang dùng nếu cùng các dòng của v0 và được khóa với đúng kho hiện tại
      * ({@link #ghiChuBang}); ngược lại khóa bảng phiên bản mới với kho hiện tại: lượt kiểm với bảng cũ
-     * thành cũ, phát hành giữ «cần kiểm lại» tới khi kiểm lại (ADR 005). Lớp đang có bảng nháp không do importer tạo (giáo viên
-     * đang soạn) thì dừng, không ghi đè.
+     * thành cũ, phát hành giữ «cần kiểm lại» tới khi kiểm lại (ADR 005). Importer không bao giờ để lại bảng nháp (bảng nháp
+     * của nó được ghi và khóa trong một giao dịch, khóa lỗi thì không ghi gì), nên bảng nháp nào đang có cũng là của giáo
+     * viên, kể cả bảng nháp chép từ bảng đã nhập ({@code newDraft} giữ ghi chú): cần khóa bảng mới mà lớp có bảng nháp thì
+     * dừng, không ghi đè.
      */
     private FormulaSheet khoaBang(UUID lop, Map<String, TaiLieuLop> kho) {
         List<Formula> dong = dongBangV0();
@@ -211,15 +212,13 @@ public class NhapTheoLop {
             return dangDung.get();
         }
         Optional<FormulaSheet> banNhap = sheets.findDraft(lop);
-        if (banNhap.isPresent() && !Objects.requireNonNullElse(banNhap.get().note(), "").startsWith(GHI_CHU_BANG)) {
+        if (banNhap.isPresent()) {
             throw new IllegalStateException("Lớp " + lop + " có bảng nháp đang soạn (" + banNhap.get().id()
-                + "), không do importer tạo: không ghi đè, không khóa bảng của v0");
+                + "): không ghi đè, không khóa bảng của v0");
         }
         int phienBan = dangDung.map(b -> b.version() + 1).orElse(1);
         Instant luc = clock.instant();
-        FormulaSheet nhap = banNhap
-            .map(d -> new FormulaSheet(d.id(), lop, phienBan, SheetStatus.NHAP, ghiChu, null, null, null, d.createdAt(), dong))
-            .orElseGet(() -> FormulaSheet.draft(lop, phienBan, ghiChu, dong, luc));
+        FormulaSheet nhap = FormulaSheet.draft(lop, phienBan, ghiChu, dong, luc);
 
         Map<String, Object> yeuCau = new LinkedHashMap<>();
         yeuCau.put("dong", dong.stream().map(f -> Map.of("id", f.code(), "tieu_de", f.title(), "latex", f.latex(),

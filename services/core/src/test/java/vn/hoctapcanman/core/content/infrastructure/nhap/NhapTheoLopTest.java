@@ -220,6 +220,30 @@ class NhapTheoLopTest {
     }
 
     @Test
+    void banNhapChepTuBangDaNhapCungKhongBiGhiDe() throws IOException {
+        // Codex #134 (P2): giáo viên bắt đầu sửa bảng đã nhập (newDraft giữ ghi chú của importer); nguồn đổi làm importer cần
+        // khóa bảng mới thì phải dừng, không thay dòng bảng nháp của giáo viên.
+        NhapNoiDungChung.DaNhap da = chung.nhapGiuBai();
+        theoLop.nhap(lop, da.bai());
+        FormulaSheet nhapGv = sheets.findCurrent(lop).orElseThrow().newDraft(2, java.time.Instant.parse("2026-10-05T00:00:00Z"));
+        sheets.save(nhapGv);
+        Path tep = DATA.resolve("v0/tai-lieu.json");
+        byte[] goc = Files.readAllBytes(tep);
+        try {
+            JsonMapper json = JsonMapper.builder().build();
+            @SuppressWarnings("unchecked")
+            List<Map<String, Object>> taiLieu = json.readValue(goc, List.class);
+            taiLieu.removeIf(d -> "v0-phuong-phap".equals(d.get("ma")));
+            Files.writeString(tep, json.writeValueAsString(taiLieu), StandardCharsets.UTF_8);
+            assertThatThrownBy(() -> theoLop.nhap(lop, da.bai())).isInstanceOf(IllegalStateException.class).hasMessageContaining("bảng nháp");
+        } finally {
+            Files.write(tep, goc);
+        }
+        assertThat(sheets.findDraft(lop)).contains(nhapGv);
+        assertThat(sheets.findCurrent(lop).orElseThrow().version()).isEqualTo(1);
+    }
+
+    @Test
     void taiLieuNguonDoiThiGiuBanCuLamCanCuKhoaLaiVaKiemLai() throws IOException {
         // Codex #134 (P2): sửa tài liệu nguồn sau lần nhập đầu không sửa tại chỗ tài liệu đang là căn cứ (V5 từ chối);
         // giữ bản cũ (đổi mã), nạp bản mới, khóa bảng phiên bản mới, kiểm lại mọi bài (data-model: nạp phiên bản mới và kiểm lại).
