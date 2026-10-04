@@ -6,9 +6,12 @@ kho 5 tài liệu của lớp, gửi đúng như importer v2 gửi (NhapTheoLop.
 - dòng: id là mã (d-1…), tiêu đề, LaTeX, phát biểu của data/v0/bang-cong-thuc.json.
 
 Id trong tệp vàng ổn định: tài liệu là mã, đoạn là «mã#vị trí» (vị trí của đoạn trong tài liệu, từ 0). Dịch vụ toán giả của
-test đổi chúng sang id thật của lần nhập. Script dừng nếu services/math, data/v0 hay data/supham có thay đổi chưa commit.
+test đổi chúng sang id thật của lần nhập. Script dừng nếu services/math, data/v0, data/supham hay chính script có thay đổi
+chưa commit, và ghi cây git của ba thư mục cùng blob của script vào «nguon»: test của core so chúng với checkout, lệch thì đỏ
+(phải sinh lại tệp vàng khi dịch vụ toán hay dữ liệu đổi).
 
-Chạy từ gốc repo:  uv run --project services/math python specs/001-lat-cat-doc/doi-chieu/khoa-bang-v0.py
+Chạy từ gốc repo, bằng Python của môi trường services/math (`uv run` sẽ tạo uv.lock chưa theo dõi, script dừng):
+    services/math/.venv/Scripts/python specs/001-lat-cat-doc/doi-chieu/khoa-bang-v0.py   # Linux, macOS: .venv/bin/python
 """
 
 import io
@@ -20,6 +23,7 @@ import sys
 import unicodedata
 
 GOC = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
+SCRIPT = "specs/001-lat-cat-doc/doi-chieu/khoa-bang-v0.py"
 RA = os.path.join(os.path.dirname(os.path.abspath(__file__)), "khoa-bang-v0.json")
 
 
@@ -32,7 +36,7 @@ def _doc(duong_dan):
 
 
 def main():
-    for thu_muc in ("services/math", "data/v0", "data/supham"):
+    for thu_muc in ("services/math", "data/v0", "data/supham", SCRIPT):
         if _git("status", "--porcelain", "--", thu_muc):
             sys.exit("Dừng: %s có thay đổi chưa commit" % thu_muc)
     sys.path.insert(0, os.path.join(GOC, "services", "math"))
@@ -54,6 +58,7 @@ def main():
             "services_math": _git("rev-parse", "HEAD:services/math"),
             "data_v0": _git("rev-parse", "HEAD:data/v0"),
             "data_supham": _git("rev-parse", "HEAD:data/supham"),
+            "script": _git("rev-parse", "HEAD:" + SCRIPT),
         },
         # Đoạn đã gửi, để test kiểm importer chia đoạn trùng script (lệch thì id «mã#vị trí» không còn đúng đoạn).
         "doan": {d["id"]: d["text"] for t in tai_lieu for d in t["doan"]},
