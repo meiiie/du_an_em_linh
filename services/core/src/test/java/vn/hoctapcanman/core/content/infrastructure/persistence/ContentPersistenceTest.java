@@ -269,7 +269,7 @@ class ContentPersistenceTest {
         jdbc.sql("""
                 insert into verification_runs (id, class_id, subject_kind, subject_id, content_hash, overall_status,
                     publish_status, content_version, created_at)
-                values (?, ?, 'PROBLEM', ?, ?, 'DAT', 'DA_PHAT_HANH', (select content_version from problems where id = ?), now())""")
+                values (?, ?, 'PROBLEM', ?, ?, 'DAT', 'DA_PHAT_HANH', (select content_version from problems where id = ?), clock_timestamp())""")
             .params(luot, lop, baiId, BAM, baiId).update();
         jdbc.sql("""
                 insert into problem_releases (class_id, problem_id, status, run_id, updated_at) values (?, ?, 'DA_PHAT_HANH', ?, now())

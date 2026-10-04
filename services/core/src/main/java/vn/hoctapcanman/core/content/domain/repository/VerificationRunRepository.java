@@ -23,14 +23,11 @@ public interface VerificationRunRepository {
     /** Lượt mới nhất của (lớp, đối tượng), xếp theo thời điểm rồi id. */
     Optional<VerificationRun> findLatest(UUID classId, SubjectKind kind, UUID subjectId);
 
-    /** Đánh dấu lượt là cũ (không còn là căn cứ phát hành). */
-    void markStale(UUID runId);
-
     /**
-     * Bảng công thức của lớp vừa đổi: mọi lượt của lớp kiểm với bảng khác {@code currentSheetId} (hay không có bảng) thành
-     * cũ. Trả số lượt vừa đánh dấu.
+     * Đánh dấu lượt là cũ (không còn là căn cứ phát hành). Lớp khóa bảng công thức mới thì CSDL tự đánh dấu cũ mọi lượt
+     * kiểm với bảng khác và đưa phát hành dựa trên chúng về {@code NHAP} (V6), không cần gọi hàm này.
      */
-    int markStaleExceptSheet(UUID classId, UUID currentSheetId);
+    void markStale(UUID runId);
 
     /**
      * Ghi kết quả giáo viên duyệt ({@link VerificationRun#approve}): bản ghi duyệt và lượt chuyển sang {@code GV_DUYET},

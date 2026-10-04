@@ -84,14 +84,6 @@ public class VerificationRunRepositoryAdapter implements VerificationRunReposito
     }
 
     @Override
-    public int markStaleExceptSheet(UUID classId, UUID currentSheetId) {
-        return jdbc.sql("""
-                update verification_runs set stale = true
-                where class_id = :lop and not stale and formula_sheet_id is distinct from :sheet""")
-            .param("lop", classId).param("sheet", currentSheetId).update();
-    }
-
-    @Override
     @Transactional
     public void saveApproval(VerificationRun.Approval a) {
         ContentReview d = a.review();

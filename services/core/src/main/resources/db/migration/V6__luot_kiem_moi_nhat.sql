@@ -3,9 +3,14 @@
 --   1. Lượt kiểm bài có tầng 2 DAT phải trích dẫn ít nhất một đoạn tài liệu (verification_run_citations), kiểm lúc commit.
 --   2. Phát hành chỉ gắn được vào lượt kiểm mới nhất của (lớp, bài), xếp theo (created_at, id).
 --   3. Giáo viên chỉ duyệt được lượt mới nhất, kiểm với bảng công thức đang dùng của lớp.
+--   4. Lớp khóa bảng công thức mới: mọi lượt kiểm của lớp với bảng khác thành cũ, cùng giao dịch với lệnh khóa; lượt kiểm
+--      mới chỉ ghi được với bảng đang dùng của lớp.
+--   5. Lượt kiểm thành cũ (vì bất kỳ lý do gì) thì phát hành gắn với nó về NHAP.
 -- Tuần tự hóa theo bài: ghi lượt kiểm bài, gắn phát hành và duyệt đều khóa dòng bài FOR NO KEY UPDATE (xung đột với nhau
 -- và với lần sửa nội dung bài, vốn khóa dòng bài để tăng content_version), nên phép kiểm «mới nhất» chạy sau khi có khóa và
 -- thấy mọi lượt đã commit. Thay khóa FOR SHARE của V5 ở hai hàm dưới (FOR SHARE không xung đột với nhau).
+-- Tuần tự hóa theo lớp: ba việc trên khóa dòng lớp FOR SHARE (không chặn nhau), lần khóa bảng mới khóa dòng lớp FOR NO KEY
+-- UPDATE (chặn cả ba), nên không lượt nào chen được giữa lúc đổi bảng và lúc quét lượt cũ. Thứ tự khóa luôn lớp rồi bài.
 
 CREATE FUNCTION luot_moi_nhat(lop uuid, bai uuid) RETURNS uuid LANGUAGE sql STABLE AS $$
     SELECT id FROM verification_runs WHERE class_id = lop AND subject_kind = 'PROBLEM' AND subject_id = bai
@@ -41,6 +46,10 @@ BEGIN
         END IF;
         RETURN NEW;
     END IF;
+    PERFORM 1 FROM classes WHERE id = NEW.class_id FOR SHARE;
+    IF NEW.formula_sheet_id IS DISTINCT FROM bang_dang_dung(NEW.class_id) THEN
+        RAISE EXCEPTION 'Lượt kiểm phải kiểm với bảng công thức đang dùng của lớp' USING ERRCODE = 'check_violation';
+    END IF;
     IF NEW.subject_kind = 'PROBLEM' THEN
         SELECT content_version INTO hien_tai FROM problems WHERE id = NEW.subject_id FOR NO KEY UPDATE;
         IF hien_tai IS DISTINCT FROM NEW.content_version THEN
@@ -60,6 +69,7 @@ BEGIN
     IF NEW.run_id IS NULL THEN
         RETURN NEW;
     END IF;
+    PERFORM 1 FROM classes WHERE id = NEW.class_id FOR SHARE;
     SELECT content_version INTO hien_tai FROM problems WHERE id = NEW.problem_id FOR NO KEY UPDATE;
     SELECT stale, content_version INTO luot FROM verification_runs WHERE id = NEW.run_id;
     IF luot.stale OR luot.content_version IS DISTINCT FROM hien_tai THEN
@@ -75,6 +85,7 @@ END $$;
 CREATE FUNCTION verification_runs_duyet_luot_moi_nhat() RETURNS trigger LANGUAGE plpgsql AS $$
 BEGIN
     IF NEW.overall_status = 'GV_DUYET' AND OLD.overall_status IS DISTINCT FROM 'GV_DUYET' THEN
+        PERFORM 1 FROM classes WHERE id = NEW.class_id FOR SHARE;
         PERFORM 1 FROM problems WHERE id = NEW.subject_id FOR NO KEY UPDATE;
         IF NEW.id IS DISTINCT FROM luot_moi_nhat(NEW.class_id, NEW.subject_id) THEN
             RAISE EXCEPTION 'Chỉ duyệt được lượt kiểm mới nhất của bài ở lớp' USING ERRCODE = 'check_violation';
@@ -88,3 +99,31 @@ END $$;
 
 CREATE TRIGGER verification_runs_duyet_luot_moi_nhat BEFORE UPDATE OF overall_status ON verification_runs
     FOR EACH ROW EXECUTE FUNCTION verification_runs_duyet_luot_moi_nhat();
+
+-- 4. Khóa bảng mới (NHAP → KHOA): lượt kiểm của lớp với bảng khác thành cũ, phát hành dựa trên lượt cũ về NHAP.
+CREATE FUNCTION formula_sheets_kich_hoat() RETURNS trigger LANGUAGE plpgsql AS $$
+BEGIN
+    IF OLD.status = 'NHAP' AND NEW.status = 'KHOA' THEN
+        PERFORM 1 FROM classes WHERE id = NEW.class_id FOR NO KEY UPDATE;
+        -- Phát hành dựa trên các lượt này về NHAP qua trigger verification_runs_cu_rut_phat_hanh bên dưới.
+        UPDATE verification_runs SET stale = true
+            WHERE class_id = NEW.class_id AND NOT stale AND formula_sheet_id IS DISTINCT FROM NEW.id;
+    END IF;
+    RETURN NULL;
+END $$;
+
+CREATE TRIGGER formula_sheets_kich_hoat AFTER UPDATE OF status ON formula_sheets
+    FOR EACH ROW EXECUTE FUNCTION formula_sheets_kich_hoat();
+
+-- Lượt kiểm thành cũ (đổi bảng, sửa nội dung bài, hay đánh dấu tay) thì không còn là căn cứ phát hành: phát hành gắn với nó
+-- về NHAP ngay, đóng mặc định, chờ kiểm lại.
+CREATE FUNCTION verification_runs_cu_rut_phat_hanh() RETURNS trigger LANGUAGE plpgsql AS $$
+BEGIN
+    IF NEW.stale AND NOT OLD.stale THEN
+        UPDATE problem_releases SET status = 'NHAP', run_id = NULL, updated_at = now() WHERE run_id = NEW.id;
+    END IF;
+    RETURN NULL;
+END $$;
+
+CREATE TRIGGER verification_runs_cu_rut_phat_hanh AFTER UPDATE OF stale ON verification_runs
+    FOR EACH ROW EXECUTE FUNCTION verification_runs_cu_rut_phat_hanh();

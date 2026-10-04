@@ -160,13 +160,19 @@ class VerificationPersistenceTest {
         sheets.save(bang1);
         VerificationRun luot = VerificationRun.forProblem(lop, bai.id(), BAM, 1, bang1.id(), ba(CheckStatus.DAT), List.of(doanTong), LUC);
         runs.save(luot);
+        releases.save(ProblemRelease.draft(lop, bai.id(), LUC).apply(luot, true, BAM, bang1.id(), LUC));
+        assertThat(releases.find(lop, bai.id()).orElseThrow().status()).isEqualTo(ReleaseStatus.DA_PHAT_HANH);
+
+        // Codex #121: khóa bảng mới thì lượt cũ thành cũ và bài rút về NHAP ngay trong giao dịch khóa bảng (V6).
         FormulaSheet bang2 = daKiem(bang1.newDraft(2, LUC)).lock(giaoVien, LUC);
         sheets.save(bang2);
         assertThat(sheets.findCurrent(lop).orElseThrow().id()).isEqualTo(bang2.id());
-
-        assertThat(runs.markStaleExceptSheet(lop, bang2.id())).isEqualTo(1);
         assertThat(runs.findById(luot.id()).orElseThrow().stale()).isTrue();
-        assertThat(runs.markStaleExceptSheet(lop, bang2.id())).isZero();
+        assertThat(releases.find(lop, bai.id()).orElseThrow().status()).isEqualTo(ReleaseStatus.NHAP);
+        // Cuối test: lượt mới kiểm với bảng cũ bị từ chối (lỗi ràng buộc hủy giao dịch của test).
+        VerificationRun voiBangCu = VerificationRun.forProblem(lop, bai.id(), BAM, 1, bang1.id(), ba(CheckStatus.DAT), List.of(doanTong),
+            LUC.plusSeconds(1));
+        assertThatThrownBy(() -> runs.save(voiBangCu)).isInstanceOf(DataIntegrityViolationException.class);
     }
 
     @Test
@@ -214,8 +220,11 @@ class VerificationPersistenceTest {
         VerificationRun a = choDuyet(bang1, LUC);
         runs.save(a);
         sheets.save(daKiem(bang1.newDraft(2, LUC)).lock(giaoVien, LUC));
+        // Khóa bảng mới đã làm A thành cũ (V6), nên lần ghi duyệt không còn lượt chờ duyệt nào để chuyển.
+        assertThat(runs.findById(a.id()).orElseThrow().stale()).isTrue();
         VerificationRun.Approval duyetA = a.approve(giaoVien, "Duyệt với bảng cũ", true, BAM, bang1.id(), LUC);
-        assertThatThrownBy(() -> runs.saveApproval(duyetA)).isInstanceOf(DataIntegrityViolationException.class);
+        assertThatThrownBy(() -> runs.saveApproval(duyetA))
+            .isInstanceOfAny(IllegalStateException.class, DataIntegrityViolationException.class);
     }
 
     /** Lượt kiểm bài chờ giáo viên duyệt (tầng 3 không kiểm được), tầng 2 trích dẫn đoạn cực đại. */
