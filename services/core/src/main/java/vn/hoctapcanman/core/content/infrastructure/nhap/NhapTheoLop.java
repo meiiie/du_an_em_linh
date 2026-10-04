@@ -110,10 +110,35 @@ public class NhapTheoLop {
             Problem p = problems.findByCode(b.ma()).orElseThrow();
             phatHanh.put(b.ma(), releases.find(lop, p.id()).map(ProblemRelease::status).orElse(ReleaseStatus.NHAP));
         }
+        rutBaiRoiNguon(lop, phatHanh.keySet());
         KetQua kq = new KetQua(lop, kho.size(), bang.id(), bang.version(), phatHanh, daKiem);
         LOG.info("Nhập nội dung cho lớp {}: {} tài liệu, bảng phiên bản {}, kiểm {} bài, phát hành {}", lop, kq.taiLieu(),
             kq.phienBanBang(), daKiem, demTheoTrangThai(phatHanh));
         return kq;
+    }
+
+    /**
+     * Bài do importer tạo ({@link NhapNoiDungChung#NGUON_NHAP}) mà không còn trong lần nhập này (bỏ khỏi nguồn, hay biến thể
+     * {@code /v1/generate} nay trả {@code loi}): phát hành của nó ở lớp về {@code NHAP}, học sinh không còn thấy. Bài do giáo
+     * viên tạo (nguồn khác) không bị đụng.
+     */
+    private void rutBaiRoiNguon(UUID lop, Set<String> maDaNhap) {
+        List<ProblemRelease> dangMo = releases.findByClass(lop).stream().filter(r -> r.status() != ReleaseStatus.NHAP).toList();
+        if (dangMo.isEmpty()) {
+            return;
+        }
+        Set<UUID> rut = new LinkedHashSet<>();
+        for (Problem p : problems.findAllById(dangMo.stream().map(ProblemRelease::problemId).toList())) {
+            if (NhapNoiDungChung.NGUON_NHAP.contains(p.origin()) && !maDaNhap.contains(p.code())) {
+                rut.add(p.id());
+            }
+        }
+        if (rut.isEmpty()) {
+            return;
+        }
+        giaoDich.executeWithoutResult(t -> dangMo.stream().filter(r -> rut.contains(r.problemId()))
+            .forEach(r -> releases.save(r.backToDraft(clock.instant()))));
+        LOG.info("Lớp {}: rút phát hành {} bài không còn trong nguồn nhập", lop, rut.size());
     }
 
     // ---- Tài liệu -------------------------------------------------------------------------------------------------

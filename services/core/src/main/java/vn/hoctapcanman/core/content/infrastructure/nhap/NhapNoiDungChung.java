@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
@@ -55,6 +56,9 @@ import vn.hoctapcanman.core.content.domain.repository.TopicCatalogRepository;
 public class NhapNoiDungChung {
 
     static final String CHU_DE = "DH12";
+
+    /** Nguồn bài ({@code problems.origin}) do importer này tạo: chỉ các bài này mới bị importer rút phát hành khi rời nguồn. */
+    static final Set<String> NGUON_NHAP = Set.of("SUPHAM", "MAY_GIAI", "THAM_SO_HOA", "SUPHAM_KHUNG_NGAN", "VI_DU_CONG");
 
     private static final Logger LOG = LoggerFactory.getLogger(NhapNoiDungChung.class);
 

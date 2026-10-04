@@ -287,6 +287,22 @@ class NhapTheoLopTest {
     }
 
     @Test
+    void baiRoiNguonThiRutPhatHanh() {
+        // Codex #134 (P2): bài do importer tạo mà lần nhập sau không còn (bỏ khỏi nguồn, generate trả loi) thì không còn
+        // DA_PHAT_HANH ở lớp; bài khác giữ nguyên.
+        NhapNoiDungChung.DaNhap da = chung.nhapGiuBai();
+        NhapTheoLop.KetQua dau = theoLop.nhap(lop, da.bai());
+        assertThat(dau.phatHanh()).containsEntry("DH12-03-VD-01", ReleaseStatus.DA_PHAT_HANH);
+        List<NhapNoiDungChung.BaiNhap> conLai = da.bai().stream().filter(b -> !b.ma().equals("DH12-03-VD-01")).toList();
+        NhapTheoLop.KetQua lai = theoLop.nhap(lop, conLai);
+        assertThat(lai.phatHanh()).doesNotContainKey("DH12-03-VD-01").containsEntry("DH12-NB-01", ReleaseStatus.DA_PHAT_HANH);
+        assertThat(jdbc.sql("""
+                select r.status from problem_releases r join problems p on p.id = r.problem_id
+                where r.class_id = ? and p.code = 'DH12-03-VD-01'""").params(lop).query(String.class).single()).isEqualTo("NHAP");
+        jdbc.sql("set constraints all immediate").update();
+    }
+
+    @Test
     void tang2SaiCoTrichDanThiGhiTrichDan() {
         // Codex #134 (P2): căn cứ của tầng 2 SAI (bài bị chặn) cũng ghi vào verification_run_citations, bất biến như căn cứ đạt.
         NhapNoiDungChung.DaNhap da = chung.nhapGiuBai();
