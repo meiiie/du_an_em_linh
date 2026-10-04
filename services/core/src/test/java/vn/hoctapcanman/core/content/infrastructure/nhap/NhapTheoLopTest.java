@@ -222,7 +222,7 @@ class NhapTheoLopTest {
 
     @Test
     void bangDoGiaoVienSuaThiImporterBoQuaLop() throws IOException {
-        // Codex #134 (P1, P2): giáo viên sửa một dòng của bảng đã nhập (ghi chú chép nguyên của importer) và khóa; tài khoản
+        // Codex #134 (P1, P2): giáo viên chép bảng đã nhập (ghi chú chép nguyên của importer) và khóa; tài khoản
         // người khóa bị xóa (locked_by về trống); nguồn còn đổi. Importer vẫn nhận ra bảng của giáo viên và bỏ qua cả lớp:
         // không khóa đè, không đổi tài liệu, không kiểm lại.
         NhapNoiDungChung.DaNhap da = chung.nhapGiuBai();
@@ -234,13 +234,8 @@ class NhapTheoLopTest {
         UUID doan = jdbc.sql("""
                 select p.id from document_passages p join documents d on d.id = p.document_id
                 where d.class_id = ? order by d.code, p.char_start limit 1""").params(lop).query(UUID.class).single();
-        FormulaSheet dangDung = sheets.findCurrent(lop).orElseThrow();
-        List<Formula> dong = new ArrayList<>();
-        for (Formula f : dangDung.rows()) {
-            dong.add(Formula.unchecked(f.ordinal(), f.code(), f.skillCode(), f.code().equals("d-1") ? f.title() + " (giáo viên sửa)" : f.title(),
-                f.latex(), f.statement()));
-        }
-        FormulaSheet nhapGv = FormulaSheet.draft(lop, 2, dangDung.note(), dong, java.time.Instant.parse("2026-10-05T00:00:00Z"));
+        // Codex #134 (P2, lần 9): chép nguyên bảng đã nhập (giữ ghi chú, giữ dòng), chỉ chọn lại căn cứ rồi khóa: vẫn là của giáo viên.
+        FormulaSheet nhapGv = sheets.findCurrent(lop).orElseThrow().newDraft(2, java.time.Instant.parse("2026-10-05T00:00:00Z"));
         Map<String, vn.hoctapcanman.core.content.domain.model.FormulaCheck> kiem = new LinkedHashMap<>();
         for (Formula f : nhapGv.rows()) {
             kiem.put(f.code(), vn.hoctapcanman.core.content.domain.model.FormulaCheck.of(f,

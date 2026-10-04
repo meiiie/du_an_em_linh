@@ -31,6 +31,7 @@ import vn.hoctapcanman.core.content.domain.model.FormulaSheet;
 import vn.hoctapcanman.core.content.domain.model.Problem;
 import vn.hoctapcanman.core.content.domain.model.ProblemRelease;
 import vn.hoctapcanman.core.content.domain.model.ReleaseStatus;
+import vn.hoctapcanman.core.content.domain.model.SheetStatus;
 import vn.hoctapcanman.core.content.domain.model.SubjectKind;
 import vn.hoctapcanman.core.content.domain.model.TierResult;
 import vn.hoctapcanman.core.content.domain.model.VerificationRun;
@@ -199,29 +200,25 @@ public class NhapTheoLop {
     }
 
     /**
-     * Ghi chú của bảng importer khóa: nêu nguồn và dấu vân tay của kho đã dùng khi khóa (mã, id, phiên bản của từng tài liệu
-     * kho, xếp theo mã). Kho đổi theo bất kỳ cách nào (thay bản, thêm, bỏ một tài liệu) thì dấu vân tay khác, nên bảng được
-     * khóa lại và mọi lượt kiểm với bảng cũ thành cũ, phải kiểm lại. Suy từ dữ liệu đã lưu: lần nhập trước lỗi giữa chừng
-     * (đã nạp tài liệu mới, chưa khóa được bảng) thì lần sau vẫn khóa lại và kiểm lại.
+     * Ghi chú của bảng importer khóa: nêu nguồn, dấu vân tay của kho đã dùng khi khóa (mã, id, phiên bản của từng tài liệu
+     * kho, xếp theo mã) và chính id của bảng. Kho đổi theo bất kỳ cách nào (thay bản, thêm, bỏ một tài liệu) thì dấu vân tay
+     * khác, nên bảng được khóa lại và mọi lượt kiểm với bảng cũ thành cũ, phải kiểm lại; suy từ dữ liệu đã lưu, nên lần nhập
+     * trước lỗi giữa chừng thì lần sau vẫn khóa lại.
      */
-    private static String ghiChuBang(Map<String, TaiLieuLop> kho, List<Formula> dong) {
+    private static String ghiChuBang(Map<String, TaiLieuLop> kho, UUID bangId) {
         String dau = kho.values().stream().map(TaiLieuLop::taiLieu).sorted(java.util.Comparator.comparing(d -> Objects.requireNonNull(d.code())))
             .map(d -> d.code() + ":" + d.id() + ":" + d.version()).collect(java.util.stream.Collectors.joining("\n"));
-        return GHI_CHU_BANG + " · kho " + NhapNoiDungChung.sha256(dau).substring(0, 16) + " · dòng " + dauDong(dong);
-    }
-
-    private static String dauDong(List<Formula> dong) {
-        return NhapNoiDungChung.sha256(String.join("\n", dauVanTay(dong))).substring(0, 16);
+        return GHI_CHU_BANG + " · kho " + NhapNoiDungChung.sha256(dau).substring(0, 16) + " · bảng " + bangId;
     }
 
     /**
-     * Bảng do importer khóa và chưa ai sửa: ghi chú mang chữ ký của importer, kể cả dấu vân tay các dòng lúc khóa, và dấu đó
-     * vẫn khớp các dòng của bảng. Bảng giáo viên sửa (dù chép từ bảng đã nhập, {@code newDraft} giữ ghi chú) có dòng khác nên
-     * dấu không khớp: là của giáo viên. Không dựa vào {@code locked_by}, vì cột đó về trống khi tài khoản người khóa bị xóa.
+     * Bảng do importer khóa: ghi chú (bất biến khi đã khóa) nêu đúng id của chính bảng đó. Bảng của giáo viên, kể cả chép
+     * bằng {@code newDraft} (giữ nguyên ghi chú, giữ nguyên dòng, chỉ đổi căn cứ), có id mới nên ghi chú trỏ id khác: là của
+     * giáo viên. Không dựa vào {@code locked_by} (về trống khi tài khoản người khóa bị xóa) hay nội dung dòng.
      */
     private static boolean laCuaImporter(FormulaSheet bang) {
         String ghiChu = bang.note();
-        return ghiChu != null && ghiChu.startsWith(GHI_CHU_BANG) && ghiChu.endsWith(" · dòng " + dauDong(bang.rows()));
+        return ghiChu != null && ghiChu.startsWith(GHI_CHU_BANG) && ghiChu.endsWith(" · bảng " + bang.id());
     }
 
     // ---- Bảng công thức -------------------------------------------------------------------------------------------
@@ -237,8 +234,8 @@ public class NhapTheoLop {
     private FormulaSheet khoaBang(UUID lop, Map<String, TaiLieuLop> kho) {
         List<Formula> dong = dongBangV0();
         Optional<FormulaSheet> dangDung = sheets.findCurrent(lop);
-        String ghiChu = ghiChuBang(kho, dong);
-        if (dangDung.isPresent() && ghiChu.equals(dangDung.get().note()) && dauVanTay(dangDung.get().rows()).equals(dauVanTay(dong))) {
+        if (dangDung.isPresent() && ghiChuBang(kho, dangDung.get().id()).equals(dangDung.get().note())
+                && dauVanTay(dangDung.get().rows()).equals(dauVanTay(dong))) {
             return dangDung.get();
         }
         Optional<FormulaSheet> banNhap = sheets.findDraft(lop);
@@ -248,7 +245,9 @@ public class NhapTheoLop {
         }
         int phienBan = dangDung.map(b -> b.version() + 1).orElse(1);
         Instant luc = clock.instant();
-        FormulaSheet nhap = FormulaSheet.draft(lop, phienBan, ghiChu, dong, luc);
+        UUID bangId = UUID.randomUUID();
+        FormulaSheet nhap = new FormulaSheet(bangId, lop, phienBan, SheetStatus.NHAP, ghiChuBang(kho, bangId), null, null, null, luc,
+            dong);
 
         Map<String, Object> yeuCau = new LinkedHashMap<>();
         yeuCau.put("dong", dong.stream().map(f -> Map.of("id", f.code(), "tieu_de", f.title(), "latex", f.latex(),
