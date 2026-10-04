@@ -131,6 +131,7 @@ class NhapTheoLopTest {
         KiemGia.TRICH_THEM_HONG = false;
         KiemGia.TANG2_SAI = false;
         KiemGia.TRICH_GIUA = false;
+        KiemGia.KIEM_BAI_LOI = false;
     }
 
     @Test
@@ -220,8 +221,10 @@ class NhapTheoLopTest {
     }
 
     @Test
-    void bangDoGiaoVienKhoaThiImporterGiuNguyen() {
-        // Codex #134 (P2): giáo viên sửa bảng đã nhập và khóa phiên bản mới; lần nhập sau không khóa đè bảng v0 mới hơn.
+    void bangDoGiaoVienSuaThiImporterBoQuaLop() throws IOException {
+        // Codex #134 (P1, P2): giáo viên sửa một dòng của bảng đã nhập (ghi chú chép nguyên của importer) và khóa; tài khoản
+        // người khóa bị xóa (locked_by về trống); nguồn còn đổi. Importer vẫn nhận ra bảng của giáo viên và bỏ qua cả lớp:
+        // không khóa đè, không đổi tài liệu, không kiểm lại.
         NhapNoiDungChung.DaNhap da = chung.nhapGiuBai();
         theoLop.nhap(lop, da.bai());
         UUID giaoVien = UUID.randomUUID();
@@ -231,7 +234,13 @@ class NhapTheoLopTest {
         UUID doan = jdbc.sql("""
                 select p.id from document_passages p join documents d on d.id = p.document_id
                 where d.class_id = ? order by d.code, p.char_start limit 1""").params(lop).query(UUID.class).single();
-        FormulaSheet nhapGv = sheets.findCurrent(lop).orElseThrow().newDraft(2, java.time.Instant.parse("2026-10-05T00:00:00Z"));
+        FormulaSheet dangDung = sheets.findCurrent(lop).orElseThrow();
+        List<Formula> dong = new ArrayList<>();
+        for (Formula f : dangDung.rows()) {
+            dong.add(Formula.unchecked(f.ordinal(), f.code(), f.skillCode(), f.code().equals("d-1") ? f.title() + " (giáo viên sửa)" : f.title(),
+                f.latex(), f.statement()));
+        }
+        FormulaSheet nhapGv = FormulaSheet.draft(lop, 2, dangDung.note(), dong, java.time.Instant.parse("2026-10-05T00:00:00Z"));
         Map<String, vn.hoctapcanman.core.content.domain.model.FormulaCheck> kiem = new LinkedHashMap<>();
         for (Formula f : nhapGv.rows()) {
             kiem.put(f.code(), vn.hoctapcanman.core.content.domain.model.FormulaCheck.of(f,
@@ -240,13 +249,42 @@ class NhapTheoLopTest {
         }
         FormulaSheet khoaGv = nhapGv.withCheckResults(kiem).lock(giaoVien, java.time.Instant.parse("2026-10-05T00:00:01Z"));
         sheets.save(khoaGv);
+        jdbc.sql("update formula_sheets set locked_by = null where id = ?").params(khoaGv.id()).update();
+        long luotTruoc = dem("select count(*) from verification_runs where class_id = ?");
 
-        NhapTheoLop.KetQua lai = theoLop.nhap(lop, da.bai());
-        assertThat(lai.bang()).isEqualTo(khoaGv.id());
-        assertThat(lai.phienBanBang()).isEqualTo(2);
+        Path tep = DATA.resolve("v0/tai-lieu.json");
+        byte[] goc = Files.readAllBytes(tep);
+        try {
+            JsonMapper json = JsonMapper.builder().build();
+            @SuppressWarnings("unchecked")
+            List<Map<String, Object>> taiLieu = json.readValue(goc, List.class);
+            taiLieu.removeIf(d -> "v0-phuong-phap".equals(d.get("ma")));
+            Files.writeString(tep, json.writeValueAsString(taiLieu), StandardCharsets.UTF_8);
+            NhapTheoLop.KetQua lai = theoLop.nhap(lop, da.bai());
+            assertThat(lai.bang()).isEqualTo(khoaGv.id());
+            assertThat(lai.daKiem()).isZero();
+        } finally {
+            Files.write(tep, goc);
+        }
         assertThat(sheets.findCurrent(lop).orElseThrow().id()).isEqualTo(khoaGv.id());
+        assertThat(dem("select count(*) from documents where class_id = ?")).isEqualTo(5);
+        assertThat(dem("select count(*) from verification_runs where class_id = ?")).isEqualTo(luotTruoc);
         assertThat(suKien.stream(BangCongThucDaKhoa.class)).hasSize(1);
         jdbc.sql("set constraints all immediate").update();
+    }
+
+    @Test
+    void baiRoiNguonVanRutPhatHanhKhiPhanSauLoi() {
+        // Codex #134 (P2): rút phát hành bài rời nguồn chạy trước mọi lệnh gọi dịch vụ toán; phần sau lỗi vẫn đã rút.
+        NhapNoiDungChung.DaNhap da = chung.nhapGiuBai();
+        theoLop.nhap(lop, da.bai());
+        List<NhapNoiDungChung.BaiNhap> conLai = da.bai().stream().filter(b -> !b.ma().equals("DH12-03-VD-01")).toList();
+        KiemGia.KIEM_BAI_LOI = true;
+        jdbc.sql("update problems set content_hash = ? where code = 'DH12-NB-01'").params("e".repeat(64)).update();
+        assertThatThrownBy(() -> theoLop.nhap(lop, conLai)).isInstanceOf(RuntimeException.class);
+        assertThat(jdbc.sql("""
+                select r.status from problem_releases r join problems p on p.id = r.problem_id
+                where r.class_id = ? and p.code = 'DH12-03-VD-01'""").params(lop).query(String.class).single()).isEqualTo("NHAP");
     }
 
     @Test
@@ -417,6 +455,7 @@ class NhapTheoLopTest {
         static volatile boolean TRICH_THEM_HONG;
         static volatile boolean TANG2_SAI;
         static volatile boolean TRICH_GIUA;
+        static volatile boolean KIEM_BAI_LOI;
 
         @Bean
         KiemToan kiemToan() {
@@ -446,6 +485,10 @@ class NhapTheoLopTest {
                 @Override
                 @SuppressWarnings("unchecked")
                 public Map<String, @Nullable Object> kiemBai(Map<String, ?> yeuCau) {
+                    if (KIEM_BAI_LOI) {
+                        throw new DichVuToanKhongTraLoi(vn.hoctapcanman.core.shared.infrastructure.math.MathJob.VERIFY,
+                            vn.hoctapcanman.core.shared.infrastructure.math.MathResult.Reason.TIMEOUT);
+                    }
                     Map<String, Object> donDieu = ((List<Map<String, Object>>) yeuCau.get("tai_lieu")).stream()
                         .filter(t -> "v0-don-dieu".equals(t.get("id"))).findFirst().orElseThrow();
                     // Như verify.py: chuẩn hóa NFC rồi tính vị trí theo code point.

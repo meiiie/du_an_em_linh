@@ -98,22 +98,38 @@ public class NhapTheoLop {
     record TaiLieuLop(Document taiLieu, List<DocumentPassage> doan) {}
 
     KetQua nhap(UUID lop, List<NhapNoiDungChung.BaiNhap> bai) {
+        // Trước mọi lệnh gọi dịch vụ toán (có thể lỗi): bài rời nguồn thôi phát hành dù phần sau của lần nhập hỏng.
+        rutBaiRoiNguon(lop, bai.stream().map(NhapNoiDungChung.BaiNhap::ma).collect(java.util.stream.Collectors.toSet()));
+        Optional<FormulaSheet> dangDung = sheets.findCurrent(lop);
+        if (dangDung.isPresent() && !laCuaImporter(dangDung.get())) {
+            // Bảng có thẩm quyền của lớp là của giáo viên: importer không đổi tài liệu, bảng hay lượt kiểm của lớp này nữa
+            // (kiểm lại khi kho đổi thuộc quy trình của giáo viên, T042).
+            LOG.info("Lớp {}: bảng đang dùng phiên bản {} do giáo viên sửa, bỏ qua nhập theo lớp", lop, dangDung.get().version());
+            return new KetQua(lop, 0, dangDung.get().id(), dangDung.get().version(), phatHanhCua(lop, bai), 0);
+        }
         Map<String, TaiLieuLop> kho = napTaiLieu(lop);
         FormulaSheet bang = khoaBang(lop, kho);
-        Map<String, ReleaseStatus> phatHanh = new LinkedHashMap<>();
         int daKiem = 0;
         for (NhapNoiDungChung.BaiNhap b : bai) {
             if (kiemBai(lop, b, kho, bang)) {
                 daKiem++;
             }
-            Problem p = problems.findByCode(b.ma()).orElseThrow();
-            phatHanh.put(b.ma(), releases.find(lop, p.id()).map(ProblemRelease::status).orElse(ReleaseStatus.NHAP));
         }
-        rutBaiRoiNguon(lop, phatHanh.keySet());
+        Map<String, ReleaseStatus> phatHanh = phatHanhCua(lop, bai);
         KetQua kq = new KetQua(lop, kho.size(), bang.id(), bang.version(), phatHanh, daKiem);
         LOG.info("Nhập nội dung cho lớp {}: {} tài liệu, bảng phiên bản {}, kiểm {} bài, phát hành {}", lop, kq.taiLieu(),
             kq.phienBanBang(), daKiem, demTheoTrangThai(phatHanh));
         return kq;
+    }
+
+    private Map<String, ReleaseStatus> phatHanhCua(UUID lop, List<NhapNoiDungChung.BaiNhap> bai) {
+        Map<String, ReleaseStatus> phatHanh = new LinkedHashMap<>();
+        for (NhapNoiDungChung.BaiNhap b : bai) {
+            ReleaseStatus s = problems.findByCode(b.ma()).flatMap(p -> releases.find(lop, p.id())).map(ProblemRelease::status)
+                .orElse(ReleaseStatus.NHAP);
+            phatHanh.put(b.ma(), s);
+        }
+        return phatHanh;
     }
 
     /**
@@ -188,10 +204,24 @@ public class NhapTheoLop {
      * khóa lại và mọi lượt kiểm với bảng cũ thành cũ, phải kiểm lại. Suy từ dữ liệu đã lưu: lần nhập trước lỗi giữa chừng
      * (đã nạp tài liệu mới, chưa khóa được bảng) thì lần sau vẫn khóa lại và kiểm lại.
      */
-    private static String ghiChuBang(Map<String, TaiLieuLop> kho) {
+    private static String ghiChuBang(Map<String, TaiLieuLop> kho, List<Formula> dong) {
         String dau = kho.values().stream().map(TaiLieuLop::taiLieu).sorted(java.util.Comparator.comparing(d -> Objects.requireNonNull(d.code())))
             .map(d -> d.code() + ":" + d.id() + ":" + d.version()).collect(java.util.stream.Collectors.joining("\n"));
-        return GHI_CHU_BANG + " · kho " + NhapNoiDungChung.sha256(dau).substring(0, 16);
+        return GHI_CHU_BANG + " · kho " + NhapNoiDungChung.sha256(dau).substring(0, 16) + " · dòng " + dauDong(dong);
+    }
+
+    private static String dauDong(List<Formula> dong) {
+        return NhapNoiDungChung.sha256(String.join("\n", dauVanTay(dong))).substring(0, 16);
+    }
+
+    /**
+     * Bảng do importer khóa và chưa ai sửa: ghi chú mang chữ ký của importer, kể cả dấu vân tay các dòng lúc khóa, và dấu đó
+     * vẫn khớp các dòng của bảng. Bảng giáo viên sửa (dù chép từ bảng đã nhập, {@code newDraft} giữ ghi chú) có dòng khác nên
+     * dấu không khớp: là của giáo viên. Không dựa vào {@code locked_by}, vì cột đó về trống khi tài khoản người khóa bị xóa.
+     */
+    private static boolean laCuaImporter(FormulaSheet bang) {
+        String ghiChu = bang.note();
+        return ghiChu != null && ghiChu.startsWith(GHI_CHU_BANG) && ghiChu.endsWith(" · dòng " + dauDong(bang.rows()));
     }
 
     // ---- Bảng công thức -------------------------------------------------------------------------------------------
@@ -202,17 +232,12 @@ public class NhapTheoLop {
      * thành cũ, phát hành giữ «cần kiểm lại» tới khi kiểm lại (ADR 005). Importer không bao giờ để lại bảng nháp (bảng nháp
      * của nó được ghi và khóa trong một giao dịch, khóa lỗi thì không ghi gì), nên bảng nháp nào đang có cũng là của giáo
      * viên, kể cả bảng nháp chép từ bảng đã nhập ({@code newDraft} giữ ghi chú): cần khóa bảng mới mà lớp có bảng nháp thì
-     * dừng, không ghi đè. Bảng đang dùng do giáo viên khóa ({@code lockedBy} có người; importer khóa với {@code lockedBy}
-     * trống) là bảng có thẩm quyền của lớp: importer giữ nguyên và kiểm bài với chính bảng đó, không khóa đè bảng v0.
+     * dừng, không ghi đè. Bảng đang dùng của giáo viên ({@link #laCuaImporter} sai) không tới đây: {@link #nhap} bỏ qua lớp.
      */
     private FormulaSheet khoaBang(UUID lop, Map<String, TaiLieuLop> kho) {
         List<Formula> dong = dongBangV0();
         Optional<FormulaSheet> dangDung = sheets.findCurrent(lop);
-        if (dangDung.isPresent() && dangDung.get().lockedBy() != null) {
-            LOG.info("Lớp {}: bảng đang dùng phiên bản {} do giáo viên khóa, importer giữ nguyên", lop, dangDung.get().version());
-            return dangDung.get();
-        }
-        String ghiChu = ghiChuBang(kho);
+        String ghiChu = ghiChuBang(kho, dong);
         if (dangDung.isPresent() && ghiChu.equals(dangDung.get().note()) && dauVanTay(dangDung.get().rows()).equals(dauVanTay(dong))) {
             return dangDung.get();
         }
