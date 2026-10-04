@@ -47,6 +47,7 @@ class KienTrucRulesTuKiemTest {
         Map.entry(KienTrucRules.ENTITY_DAT_TEN_DUNG_CHO, List.of("HocSinhEntity", "LopJpaEntity", "CoEntity")),
         Map.entry(KienTrucRules.REPOSITORY_CHI_QUAN_LY_JPA_ENTITY,
             List.of("xau.infrastructure.persistence.HocSinhJpaRepository", "xau.infrastructure.persistence.LopHocJpaRepository")),
+        Map.entry(KienTrucRules.DTO_HOC_SINH_KHONG_MANG_LOI_GIAI, List.of("DeBaiLoLoiGiai")),
         Map.entry(KienTrucRules.MODULE_CHI_GOI_NHAU_QUA_CONG, List.of("GieoLop")));
 
     static Stream<Arguments> luatVaViPham() {

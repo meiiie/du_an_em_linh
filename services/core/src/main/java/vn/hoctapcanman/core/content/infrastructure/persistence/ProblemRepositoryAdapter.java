@@ -71,6 +71,24 @@ public class ProblemRepositoryAdapter implements ProblemRepository {
     }
 
     @Override
+    public List<Problem> findReleasedInClass(UUID classId) {
+        // Một câu lệnh: bài và phát hành cùng một ảnh chụp, không lẫn nội dung vừa sửa với phát hành chưa rút.
+        return jdbc.sql("select " + COT + " " + """
+                 from problems where id in (
+                    select problem_id from problem_releases where class_id = :lop and status = 'DA_PHAT_HANH')
+                order by code""")
+            .param("lop", classId).query(ProblemRepositoryAdapter::bai).list();
+    }
+
+    @Override
+    public Optional<Problem> findReleasedInClass(UUID classId, String code) {
+        return jdbc.sql("select " + COT + " " + """
+                 from problems p where code = :code and exists (
+                    select 1 from problem_releases r where r.problem_id = p.id and r.class_id = :lop and r.status = 'DA_PHAT_HANH')""")
+            .param("lop", classId).param("code", code).query(ProblemRepositoryAdapter::bai).optional();
+    }
+
+    @Override
     public Optional<Integer> findContentVersion(UUID problemId) {
         return jdbc.sql("select content_version from problems where id = :id").param("id", problemId).query(Integer.class).optional();
     }
