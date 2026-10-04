@@ -97,10 +97,11 @@ jobs:
           cache-dependency-path: services/core/pom.xml
       - name: Build và test (ArchUnit, Testcontainers PostgreSQL 18)
         run: ./mvnw -B -ntp verify
-      - name: Image chạy không root, health UP với CSDL thật
+      - name: Image chạy không root, có nội dung chủ đề, health UP với CSDL thật
         run: |
-          docker build -t hoc-toan-core:ci .
+          docker build -t hoc-toan-core:ci -f Dockerfile ../..
           test "$(docker run --rm --entrypoint id hoc-toan-core:ci -u)" = 1001
+          docker run --rm --entrypoint ls hoc-toan-core:ci /app/noi-dung/supham/danh-muc-ky-nang-DH.json /app/noi-dung/v0/khung-buoc.json
           docker run -d --name core --network host \
             -e SPRING_DATASOURCE_URL=jdbc:postgresql://127.0.0.1:5432/hoc_toan_core \
             -e SPRING_DATASOURCE_USERNAME=hoc_toan \

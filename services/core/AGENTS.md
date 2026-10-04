@@ -7,7 +7,7 @@ Dịch vụ nghiệp vụ v2 (ADR 011): Spring Boot 4.1, Java 25, Maven Wrapper.
 ```bash
 ./mvnw verify                 # build + test (ArchUnit; test CSDL cần Docker cho Testcontainers)
 ./mvnw spring-boot:run -Dspring-boot.run.profiles=dev   # :8080, PostgreSQL cục bộ hoc_toan_core, tài khoản thử
-docker build -t hoc-toan-core .
+docker build -t hoc-toan-core -f Dockerfile ../..   # ngữ cảnh là gốc repo (T003b)
 ```
 
 Windows: `mvnw.cmd verify`. Cần JDK 25 (`JAVA_HOME`); wrapper tự tải Maven 3.9.16. Thiếu Docker thì các test CSDL tự bỏ qua (`disabledWithoutDocker`); CI luôn chạy.
@@ -26,7 +26,7 @@ Windows: `mvnw.cmd verify`. Cần JDK 25 (`JAVA_HOME`); wrapper tự tải Maven
 | `src/main/resources/application-dev.yaml` | Profile `dev`: CSDL cục bộ; `TaiKhoanThuSeeder` tạo 4 tài khoản tổng hợp, rồi `LopThuSeeder` tạo lớp «12A1 thử» (giáo viên thử, An, Bình, Chi) |
 | `src/main/resources/application.yaml` | Cấu hình; luồng ảo; JPA `validate` theo Flyway; problem+json; chỉ mở `health` (+ liveness / readiness); `app.identity.*` |
 | `src/test/java/.../architecture/` | ArchUnit: luật ở `KienTrucRules`; `CleanArchitectureTest`, `DddArchitectureTest` (gốc LMS) chạy luật trên mã thật; `KienTrucRulesTuKiemTest` chạy luật trên lớp mẫu `vn.hoctapcanman.mau`; `NullMarkedPackagesTest`. Luật `MODULE_CHI_GOI_NHAU_QUA_CONG` (#111): module chỉ dùng module khác qua `application.port`, `application.dto`, `application.exception`; `shared` dùng chung |
-| `Dockerfile` | Nhiều tầng, jar tách lớp, chạy UID 1001 |
+| `Dockerfile`, `Dockerfile.dockerignore` | Nhiều tầng, jar tách lớp, chạy UID 1001. Ngữ cảnh build là gốc repo, danh sách trắng chỉ cho `services/core/`, `data/supham/`, `data/v0/` vào; nội dung chủ đề chỉ đọc ở `/app/noi-dung` (`APP_CONTENT_SOURCE`) cho importer (T003b) |
 
 ## Gotcha
 
