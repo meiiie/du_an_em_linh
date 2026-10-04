@@ -202,11 +202,16 @@ public class NhapTheoLop {
      * thành cũ, phát hành giữ «cần kiểm lại» tới khi kiểm lại (ADR 005). Importer không bao giờ để lại bảng nháp (bảng nháp
      * của nó được ghi và khóa trong một giao dịch, khóa lỗi thì không ghi gì), nên bảng nháp nào đang có cũng là của giáo
      * viên, kể cả bảng nháp chép từ bảng đã nhập ({@code newDraft} giữ ghi chú): cần khóa bảng mới mà lớp có bảng nháp thì
-     * dừng, không ghi đè.
+     * dừng, không ghi đè. Bảng đang dùng do giáo viên khóa ({@code lockedBy} có người; importer khóa với {@code lockedBy}
+     * trống) là bảng có thẩm quyền của lớp: importer giữ nguyên và kiểm bài với chính bảng đó, không khóa đè bảng v0.
      */
     private FormulaSheet khoaBang(UUID lop, Map<String, TaiLieuLop> kho) {
         List<Formula> dong = dongBangV0();
         Optional<FormulaSheet> dangDung = sheets.findCurrent(lop);
+        if (dangDung.isPresent() && dangDung.get().lockedBy() != null) {
+            LOG.info("Lớp {}: bảng đang dùng phiên bản {} do giáo viên khóa, importer giữ nguyên", lop, dangDung.get().version());
+            return dangDung.get();
+        }
         String ghiChu = ghiChuBang(kho);
         if (dangDung.isPresent() && ghiChu.equals(dangDung.get().note()) && dauVanTay(dangDung.get().rows()).equals(dauVanTay(dong))) {
             return dangDung.get();

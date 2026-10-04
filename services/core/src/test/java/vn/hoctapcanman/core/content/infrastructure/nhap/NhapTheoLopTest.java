@@ -220,6 +220,36 @@ class NhapTheoLopTest {
     }
 
     @Test
+    void bangDoGiaoVienKhoaThiImporterGiuNguyen() {
+        // Codex #134 (P2): giáo viên sửa bảng đã nhập và khóa phiên bản mới; lần nhập sau không khóa đè bảng v0 mới hơn.
+        NhapNoiDungChung.DaNhap da = chung.nhapGiuBai();
+        theoLop.nhap(lop, da.bai());
+        UUID giaoVien = UUID.randomUUID();
+        jdbc.sql("""
+                insert into users (id, email, password_hash, display_name, role, created_at, updated_at)
+                values (?, ?, 'x', 'Giáo viên thử', 'TEACHER', now(), now())""").params(giaoVien, "gv." + giaoVien + "@test.local").update();
+        UUID doan = jdbc.sql("""
+                select p.id from document_passages p join documents d on d.id = p.document_id
+                where d.class_id = ? order by d.code, p.char_start limit 1""").params(lop).query(UUID.class).single();
+        FormulaSheet nhapGv = sheets.findCurrent(lop).orElseThrow().newDraft(2, java.time.Instant.parse("2026-10-05T00:00:00Z"));
+        Map<String, vn.hoctapcanman.core.content.domain.model.FormulaCheck> kiem = new LinkedHashMap<>();
+        for (Formula f : nhapGv.rows()) {
+            kiem.put(f.code(), vn.hoctapcanman.core.content.domain.model.FormulaCheck.of(f,
+                vn.hoctapcanman.core.content.domain.model.FormulaKind.DANG_THUC, vn.hoctapcanman.core.content.domain.model.CheckStatus.DAT,
+                vn.hoctapcanman.core.content.domain.model.CheckStatus.DAT, null, null, doan));
+        }
+        FormulaSheet khoaGv = nhapGv.withCheckResults(kiem).lock(giaoVien, java.time.Instant.parse("2026-10-05T00:00:01Z"));
+        sheets.save(khoaGv);
+
+        NhapTheoLop.KetQua lai = theoLop.nhap(lop, da.bai());
+        assertThat(lai.bang()).isEqualTo(khoaGv.id());
+        assertThat(lai.phienBanBang()).isEqualTo(2);
+        assertThat(sheets.findCurrent(lop).orElseThrow().id()).isEqualTo(khoaGv.id());
+        assertThat(suKien.stream(BangCongThucDaKhoa.class)).hasSize(1);
+        jdbc.sql("set constraints all immediate").update();
+    }
+
+    @Test
     void banNhapChepTuBangDaNhapCungKhongBiGhiDe() throws IOException {
         // Codex #134 (P2): giáo viên bắt đầu sửa bảng đã nhập (newDraft giữ ghi chú của importer); nguồn đổi làm importer cần
         // khóa bảng mới thì phải dừng, không thay dòng bảng nháp của giáo viên.
