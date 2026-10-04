@@ -12,7 +12,8 @@ import org.jspecify.annotations.Nullable;
 
 /**
  * Một lượt kiểm 3 tầng, gắn lớp và đúng bảng công thức đã dùng (tầng 2, 3 dùng tài liệu và bảng của lớp, nên một lượt
- * của lớp A không phát hành bài cho lớp B). Đổi bảng công thức thì lượt cũ thành {@code stale}.
+ * của lớp A không phát hành bài cho lớp B). Đổi bảng công thức thì lượt cũ thành {@code stale}: cần kiểm lại, không duyệt
+ * hay áp được nữa, nhưng bài đã phát hành theo nó vẫn giữ nguyên (ADR 005).
  *
  * <p>Với lượt kiểm bài, mọi trạng thái suy từ các tầng: trạng thái tổng bằng {@link #overallOf} của các tầng (hoặc
  * {@code GV_DUYET} khi các tầng đủ 1–3 và tổng là {@code KHONG_KIEM_DUOC}), trạng thái phát hành bằng
@@ -22,7 +23,9 @@ import org.jspecify.annotations.Nullable;
  * <p>{@code contentVersion} là phiên bản nội dung của bài lúc kiểm ({@code problems.content_version}, V5): bắt buộc với
  * lượt kiểm bài, trống với lượt công thức gia sư. CSDL chỉ nhận lượt kiểm bài đúng phiên bản hiện tại, nên lượt kiểm trên
  * nội dung cũ không ghi được. {@code citationPassageIds} là các đoạn tài liệu lượt này trích dẫn ở tầng 2; adapter ghi
- * vào {@code verification_run_citations} để đoạn và tài liệu căn cứ không đổi dưới chân kết quả kiểm.
+ * vào {@code verification_run_citations} để đoạn và tài liệu căn cứ không đổi dưới chân kết quả kiểm. Tầng 2 {@code DAT}
+ * phải có ít nhất một đoạn, ở mọi loại lượt (ADR 005: tầng 2 bắt buộc trích dẫn; ADR 013: công thức gia sư đạt tầng 2
+ * nhờ đoạn trích của dòng bảng đã khóa mà nó khớp).
  */
 public record VerificationRun(
         UUID id,
@@ -63,7 +66,7 @@ public record VerificationRun(
             throw new IllegalArgumentException("Lượt kiểm bài phải ghi phiên bản nội dung đã kiểm");
         }
         boolean tang2Dat = tiers.stream().anyMatch(t -> t.tier() == 2 && t.status() == CheckStatus.DAT);
-        if (subjectKind == SubjectKind.PROBLEM && tang2Dat && citationPassageIds.isEmpty()) {
+        if (tang2Dat && citationPassageIds.isEmpty()) {
             throw new IllegalArgumentException("Tầng 2 DAT phải có đoạn tài liệu được trích dẫn");
         }
         tiers = tiers.stream().sorted(Comparator.comparingInt(TierResult::tier)).toList();
@@ -129,7 +132,10 @@ public record VerificationRun(
         };
     }
 
-    /** Bảng công thức của lớp vừa đổi: lượt này không còn là căn cứ phát hành. */
+    /**
+     * Bảng công thức của lớp vừa đổi: lượt này cần kiểm lại, không duyệt hay áp được nữa; phát hành đang theo nó giữ nguyên
+     * và hiện «cần kiểm lại» (ADR 005), tới khi lượt mới được áp.
+     */
     public VerificationRun markStale() {
         return stale ? this : new VerificationRun(id, classId, subjectKind, subjectId, contentHash, contentVersion,
             formulaSheetId, overallStatus, publishStatus, true, createdAt, tiers, citationPassageIds);

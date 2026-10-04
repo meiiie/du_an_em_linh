@@ -1,12 +1,15 @@
--- Lượt kiểm mới nhất và căn cứ của tầng 2 (#121). Ba bất biến, giữ ở CSDL vì lượt kiểm, phát hành và duyệt có thể được
+-- Lượt kiểm mới nhất và căn cứ của tầng 2 (#121). Các bất biến, giữ ở CSDL vì lượt kiểm, phát hành và duyệt có thể được
 -- ghi từ nhiều giao dịch cùng lúc (importer, giáo viên, kiểm lại sau khi đổi bảng):
---   1. Lượt kiểm bài có tầng 2 DAT phải trích dẫn ít nhất một đoạn tài liệu (verification_run_citations), kiểm lúc commit.
+--   1. Lượt kiểm có tầng 2 DAT (bài hay công thức gia sư) phải trích dẫn ít nhất một đoạn tài liệu
+--      (verification_run_citations), kiểm lúc commit. ADR 005: tầng 2 bắt buộc có trích dẫn.
 --   2. Phát hành chỉ gắn được vào lượt kiểm mới nhất của (lớp, bài), xếp theo (created_at, id).
 --   3. Giáo viên chỉ duyệt được lượt mới nhất, kiểm với bảng công thức đang dùng của lớp.
 --   4. Lớp khóa bảng công thức mới: mọi lượt kiểm của lớp với bảng khác thành cũ, cùng giao dịch với lệnh khóa; lượt kiểm
---      mới chỉ ghi được với bảng đang dùng của lớp.
---   5. Lượt kiểm thành cũ (vì bất kỳ lý do gì) thì phát hành gắn với nó về NHAP; ghi lượt kiểm bài mới thì phát hành đang
---      theo lượt cũ của (lớp, bài) về NHAP, chờ áp lượt mới.
+--      mới chỉ ghi được với bảng đang dùng của lớp. Phát hành theo lượt cũ giữ nguyên: ADR 005 («bài đã phát hành không bị
+--      gỡ tự động») và data-model §content («bài DA_PHAT_HANH giữ nguyên, hiện cần kiểm lại»). Chỉ đổi nội dung bài mới
+--      rút phát hành (vo_hieu_ket_qua_bai, V5).
+--   5. Ghi lượt kiểm bài mới nhất của (lớp, bài) thì phát hành đang theo lượt cũ về NHAP, chờ áp lượt mới. Lượt ghi sau mà
+--      cũ hơn lượt đã có (created_at nhỏ hơn) không rút gì.
 --   6. Chỉ khóa được bảng mới hơn mọi bảng đã khóa của lớp.
 -- Tuần tự hóa theo bài: ghi lượt kiểm bài, gắn phát hành và duyệt đều khóa dòng bài FOR NO KEY UPDATE (xung đột với nhau
 -- và với lần sửa nội dung bài, vốn khóa dòng bài để tăng content_version), nên phép kiểm «mới nhất» chạy sau khi có khóa và
@@ -23,19 +26,19 @@ CREATE FUNCTION bang_dang_dung(lop uuid) RETURNS uuid LANGUAGE sql STABLE AS $$
     SELECT id FROM formula_sheets WHERE class_id = lop AND status = 'KHOA' ORDER BY version DESC LIMIT 1
 $$;
 
--- 1. Tầng 2 DAT có trích dẫn. Tầng và trích dẫn ghi sau lượt trong cùng giao dịch, nên kiểm lúc commit.
-CREATE FUNCTION luot_bai_tang2_co_trich_dan() RETURNS trigger LANGUAGE plpgsql AS $$
+-- 1. Tầng 2 DAT có trích dẫn, mọi loại lượt (công thức gia sư trích đoạn của dòng bảng đã khóa mà nó khớp, ADR 013).
+-- Tầng và trích dẫn ghi sau lượt trong cùng giao dịch, nên kiểm lúc commit.
+CREATE FUNCTION luot_tang2_co_trich_dan() RETURNS trigger LANGUAGE plpgsql AS $$
 BEGIN
-    IF NEW.subject_kind = 'PROBLEM'
-       AND EXISTS (SELECT 1 FROM verification_tier_results WHERE run_id = NEW.id AND tier = 2 AND status = 'DAT')
+    IF EXISTS (SELECT 1 FROM verification_tier_results WHERE run_id = NEW.id AND tier = 2 AND status = 'DAT')
        AND NOT EXISTS (SELECT 1 FROM verification_run_citations WHERE run_id = NEW.id) THEN
         RAISE EXCEPTION 'Lượt kiểm % có tầng 2 DAT mà không trích dẫn đoạn tài liệu nào', NEW.id USING ERRCODE = 'check_violation';
     END IF;
     RETURN NULL;
 END $$;
 
-CREATE CONSTRAINT TRIGGER luot_bai_tang2_co_trich_dan AFTER INSERT ON verification_runs
-    DEFERRABLE INITIALLY DEFERRED FOR EACH ROW EXECUTE FUNCTION luot_bai_tang2_co_trich_dan();
+CREATE CONSTRAINT TRIGGER luot_tang2_co_trich_dan AFTER INSERT ON verification_runs
+    DEFERRABLE INITIALLY DEFERRED FOR EACH ROW EXECUTE FUNCTION luot_tang2_co_trich_dan();
 
 -- Ghi lượt kiểm bài: như V5 (đúng phiên bản nội dung hiện tại), nhưng khóa dòng bài FOR NO KEY UPDATE.
 CREATE OR REPLACE FUNCTION verification_runs_dung_phien_ban() RETURNS trigger LANGUAGE plpgsql AS $$
@@ -102,7 +105,7 @@ END $$;
 CREATE TRIGGER verification_runs_duyet_luot_moi_nhat BEFORE UPDATE OF overall_status ON verification_runs
     FOR EACH ROW EXECUTE FUNCTION verification_runs_duyet_luot_moi_nhat();
 
--- 4. Khóa bảng mới (NHAP → KHOA): lượt kiểm của lớp với bảng khác thành cũ, phát hành dựa trên lượt cũ về NHAP.
+-- 4. Khóa bảng mới (NHAP → KHOA): lượt kiểm của lớp với bảng khác thành cũ (cần kiểm lại); phát hành giữ nguyên.
 CREATE FUNCTION formula_sheets_kich_hoat() RETURNS trigger LANGUAGE plpgsql AS $$
 BEGIN
     IF OLD.status = 'NHAP' AND NEW.status = 'KHOA' THEN
@@ -113,7 +116,8 @@ BEGIN
                    AND version >= NEW.version) THEN
             RAISE EXCEPTION 'Bảng phiên bản % không mới hơn bảng đang dùng của lớp', NEW.version USING ERRCODE = 'check_violation';
         END IF;
-        -- Phát hành dựa trên các lượt này về NHAP qua trigger verification_runs_cu_rut_phat_hanh bên dưới.
+        -- Phát hành dựa trên các lượt này giữ nguyên trạng thái (ADR 005) và «cần kiểm lại» (run_id trỏ lượt stale); lượt
+        -- cũ không duyệt, không áp được nữa. Kiểm lại với bảng mới rồi áp lượt mới (mục 5) mới đổi trạng thái phát hành.
         UPDATE verification_runs SET stale = true
             WHERE class_id = NEW.class_id AND NOT stale AND formula_sheet_id IS DISTINCT FROM NEW.id;
     END IF;
@@ -123,24 +127,14 @@ END $$;
 CREATE TRIGGER formula_sheets_kich_hoat AFTER UPDATE OF status ON formula_sheets
     FOR EACH ROW EXECUTE FUNCTION formula_sheets_kich_hoat();
 
--- Lượt kiểm thành cũ (đổi bảng, sửa nội dung bài, hay đánh dấu tay) thì không còn là căn cứ phát hành: phát hành gắn với nó
--- về NHAP ngay, đóng mặc định, chờ kiểm lại.
-CREATE FUNCTION verification_runs_cu_rut_phat_hanh() RETURNS trigger LANGUAGE plpgsql AS $$
-BEGIN
-    IF NEW.stale AND NOT OLD.stale THEN
-        UPDATE problem_releases SET status = 'NHAP', run_id = NULL, updated_at = now() WHERE run_id = NEW.id;
-    END IF;
-    RETURN NULL;
-END $$;
-
-CREATE TRIGGER verification_runs_cu_rut_phat_hanh AFTER UPDATE OF stale ON verification_runs
-    FOR EACH ROW EXECUTE FUNCTION verification_runs_cu_rut_phat_hanh();
-
--- Ghi lượt kiểm bài mới: phát hành đang theo lượt cũ của (lớp, bài) về NHAP trong cùng giao dịch; nơi gọi áp lượt mới ngay
--- sau (ProblemRelease.apply). Nơi gọi hỏng trước khi áp thì bài ở NHAP: đóng mặc định, không để lượt cũ còn phát hành.
+-- 5. Ghi lượt kiểm bài mới nhất: phát hành đang theo lượt cũ của (lớp, bài) về NHAP trong cùng giao dịch; nơi gọi áp lượt
+-- mới ngay sau (ProblemRelease.apply). Nơi gọi hỏng trước khi áp thì bài ở NHAP: đóng mặc định, không để lượt cũ còn phát
+-- hành. Chỉ khi lượt vừa ghi là mới nhất theo (created_at, id): lượt A tạo trước nhưng commit sau lượt B đã áp thì không
+-- rút phát hành của B (A cũng không áp được vì không mới nhất). Dòng bài đã khóa FOR NO KEY UPDATE ở BEFORE INSERT, nên
+-- phép so «mới nhất» thấy mọi lượt đã commit của bài.
 CREATE FUNCTION verification_runs_rut_phat_hanh_cu() RETURNS trigger LANGUAGE plpgsql AS $$
 BEGIN
-    IF NEW.subject_kind = 'PROBLEM' THEN
+    IF NEW.subject_kind = 'PROBLEM' AND NEW.id = luot_moi_nhat(NEW.class_id, NEW.subject_id) THEN
         UPDATE problem_releases SET status = 'NHAP', run_id = NULL, updated_at = now()
             WHERE class_id = NEW.class_id AND problem_id = NEW.subject_id AND run_id IS NOT NULL AND run_id <> NEW.id;
     END IF;

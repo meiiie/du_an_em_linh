@@ -116,6 +116,12 @@ class VerificationRunTest {
             Mau.BAM, null, null, DAT, null, false, Mau.LUC, Mau.tang(SAI, SAI, SAI), List.of())).isInstanceOf(IllegalArgumentException.class);
         assertThatThrownBy(() -> new VerificationRun(UUID.randomUUID(), Mau.LOP, SubjectKind.TUTOR_FORMULA, UUID.randomUUID(),
             Mau.BAM, null, null, DAT, null, false, Mau.LUC, List.of(TierResult.of(1, DAT)), List.of())).isInstanceOf(IllegalArgumentException.class);
+        // Codex #121 (lần 3): tầng 2 DAT của công thức gia sư cũng phải có đoạn trích (của dòng bảng nó khớp, ADR 013).
+        assertThatThrownBy(() -> new VerificationRun(UUID.randomUUID(), Mau.LOP, SubjectKind.TUTOR_FORMULA, UUID.randomUUID(),
+            Mau.BAM, null, Mau.BANG, DAT, null, false, Mau.LUC, Mau.tang(DAT, DAT, DAT), List.of()))
+            .isInstanceOf(IllegalArgumentException.class).hasMessageContaining("Tầng 2");
+        assertThat(new VerificationRun(UUID.randomUUID(), Mau.LOP, SubjectKind.TUTOR_FORMULA, UUID.randomUUID(), Mau.BAM, null, Mau.BANG,
+            DAT, null, false, Mau.LUC, Mau.tang(DAT, DAT, DAT), List.of(Mau.DOAN)).overallStatus()).isEqualTo(DAT);
     }
 
     @Test

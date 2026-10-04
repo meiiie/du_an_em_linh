@@ -163,15 +163,30 @@ class VerificationPersistenceTest {
         releases.save(ProblemRelease.draft(lop, bai.id(), LUC).apply(luot, true, BAM, bang1.id(), LUC));
         assertThat(releases.find(lop, bai.id()).orElseThrow().status()).isEqualTo(ReleaseStatus.DA_PHAT_HANH);
 
-        // Codex #121: khóa bảng mới thì lượt cũ thành cũ và bài rút về NHAP ngay trong giao dịch khóa bảng (V6).
+        // Khóa bảng mới thì lượt cũ thành cũ ngay trong giao dịch khóa bảng (V6), nhưng bài đã phát hành giữ nguyên và
+        // «cần kiểm lại»: ADR 005, data-model §content (Codex #121, lần 3).
         FormulaSheet bang2 = daKiem(bang1.newDraft(2, LUC)).lock(giaoVien, LUC);
         sheets.save(bang2);
         assertThat(sheets.findCurrent(lop).orElseThrow().id()).isEqualTo(bang2.id());
-        assertThat(runs.findById(luot.id()).orElseThrow().stale()).isTrue();
+        VerificationRun cu = runs.findById(luot.id()).orElseThrow();
+        assertThat(cu.stale()).isTrue();
+        ProblemRelease giu = releases.find(lop, bai.id()).orElseThrow();
+        assertThat(giu.status()).isEqualTo(ReleaseStatus.DA_PHAT_HANH);
+        assertThat(giu.runId()).isEqualTo(luot.id());
+        assertThat(giu.needsRecheck(cu)).isTrue();
+
+        // Kiểm lại với bảng mới: ghi lượt mới rút phát hành theo lượt cũ, áp lượt mới thì hết «cần kiểm lại».
+        VerificationRun moi = VerificationRun.forProblem(lop, bai.id(), BAM, 1, bang2.id(), ba(CheckStatus.DAT), List.of(doanTong),
+            LUC.plusSeconds(1));
+        runs.save(moi);
         assertThat(releases.find(lop, bai.id()).orElseThrow().status()).isEqualTo(ReleaseStatus.NHAP);
+        releases.save(releases.find(lop, bai.id()).orElseThrow().apply(moi, true, BAM, bang2.id(), LUC));
+        ProblemRelease kiemLai = releases.find(lop, bai.id()).orElseThrow();
+        assertThat(kiemLai.status()).isEqualTo(ReleaseStatus.DA_PHAT_HANH);
+        assertThat(kiemLai.needsRecheck(runs.findById(moi.id()).orElseThrow())).isFalse();
         // Cuối test: lượt mới kiểm với bảng cũ bị từ chối (lỗi ràng buộc hủy giao dịch của test).
         VerificationRun voiBangCu = VerificationRun.forProblem(lop, bai.id(), BAM, 1, bang1.id(), ba(CheckStatus.DAT), List.of(doanTong),
-            LUC.plusSeconds(1));
+            LUC.plusSeconds(2));
         assertThatThrownBy(() -> runs.save(voiBangCu)).isInstanceOf(DataIntegrityViolationException.class);
     }
 
@@ -242,6 +257,52 @@ class VerificationPersistenceTest {
         assertThat(releases.find(lop, bai.id()).orElseThrow().status()).isEqualTo(ReleaseStatus.NHAP);
         releases.save(releases.find(lop, bai.id()).orElseThrow().apply(b, true, BAM, bang.id(), LUC));
         assertThat(releases.find(lop, bai.id()).orElseThrow().status()).isEqualTo(ReleaseStatus.BI_CHAN);
+    }
+
+    @Test
+    void luotGhiSauMaCuHonKhongRutPhatHanhCuaLuotMoiNhat() {
+        // Codex #121 (P1, lần 3): A tạo trước nhưng ghi sau khi B đã ghi và áp; A không phải lượt mới nhất nên không rút B.
+        FormulaSheet bang = daKiem(bangNhap(1)).lock(giaoVien, LUC);
+        sheets.save(bang);
+        VerificationRun b = VerificationRun.forProblem(lop, bai.id(), BAM, 1, bang.id(), ba(CheckStatus.DAT), List.of(doanTong),
+            LUC.plusSeconds(1));
+        runs.save(b);
+        releases.save(ProblemRelease.draft(lop, bai.id(), LUC).apply(b, true, BAM, bang.id(), LUC));
+
+        VerificationRun a = VerificationRun.forProblem(lop, bai.id(), BAM, 1, bang.id(), ba(CheckStatus.SAI), List.of(), LUC);
+        runs.save(a);
+        assertThat(runs.findLatest(lop, SubjectKind.PROBLEM, bai.id())).contains(b);
+        ProblemRelease r = releases.find(lop, bai.id()).orElseThrow();
+        assertThat(r.status()).isEqualTo(ReleaseStatus.DA_PHAT_HANH);
+        assertThat(r.runId()).isEqualTo(b.id());
+        // Cuối test: áp A (không mới nhất) bị CSDL từ chối (lỗi ràng buộc hủy giao dịch của test).
+        assertThatThrownBy(() -> releases.save(new ProblemRelease(lop, bai.id(), ReleaseStatus.BI_CHAN, a.id(), LUC)))
+            .isInstanceOf(DataIntegrityViolationException.class);
+    }
+
+    @Test
+    void luotCongThucGiaSuTang2DatPhaiCoTrichDan() {
+        // Codex #121 (P1, lần 3): tầng 2 DAT bắt buộc trích dẫn ở mọi loại lượt (ADR 005, 013), không chỉ lượt kiểm bài.
+        FormulaSheet bang = daKiem(bangNhap(1)).lock(giaoVien, LUC);
+        sheets.save(bang);
+        VerificationRun coTrichDan = new VerificationRun(UUID.randomUUID(), lop, SubjectKind.TUTOR_FORMULA, UUID.randomUUID(), BAM,
+            null, bang.id(), CheckStatus.DAT, null, false, LUC, ba(CheckStatus.DAT), List.of(doanTong));
+        runs.save(coTrichDan);
+        jdbc.sql("set constraints all immediate").update();
+        assertThat(runs.findById(coTrichDan.id())).contains(coTrichDan);
+        jdbc.sql("set constraints all deferred").update();
+
+        // Domain không dựng được lượt thiếu trích dẫn, nên ghi thẳng bằng SQL như một nơi ghi khác.
+        UUID thieu = UUID.randomUUID();
+        jdbc.sql("""
+                insert into verification_runs (id, class_id, subject_kind, subject_id, content_hash, formula_sheet_id, overall_status,
+                    created_at)
+                values (?, ?, 'TUTOR_FORMULA', ?, ?, ?, 'DAT', now())""").params(thieu, lop, UUID.randomUUID(), BAM, bang.id()).update();
+        for (int tang = 1; tang <= 3; tang++) {
+            jdbc.sql("insert into verification_tier_results (run_id, tier, status) values (?, ?, 'DAT')").params(thieu, tang).update();
+        }
+        // Cuối test: kiểm lúc commit (ép ngay bằng SET CONSTRAINTS), lỗi ràng buộc hủy giao dịch của test.
+        assertThatThrownBy(() -> jdbc.sql("set constraints all immediate").update()).isInstanceOf(DataIntegrityViolationException.class);
     }
 
     @Test

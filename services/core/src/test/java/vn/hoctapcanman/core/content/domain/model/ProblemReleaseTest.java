@@ -63,6 +63,17 @@ class ProblemReleaseTest {
     }
 
     @Test
+    void doiBangThiPhatHanhGiuNguyenVaCanKiemLai() {
+        // ADR 005: đổi bảng công thức không gỡ bài đã phát hành; lượt của nó thành stale, phát hành «cần kiểm lại».
+        VerificationRun dat = Mau.luot(DAT, DAT, DAT);
+        ProblemRelease phatHanh = ap(ProblemRelease.draft(Mau.LOP, Mau.BAI, Mau.LUC), dat);
+        assertThat(phatHanh.needsRecheck(dat)).isFalse();
+        assertThat(phatHanh.needsRecheck(dat.markStale())).isTrue();
+        assertThat(phatHanh.visibleToStudents()).isTrue();
+        assertThatThrownBy(() -> phatHanh.needsRecheck(Mau.luot(DAT, DAT, DAT))).isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
     void khongApLuotDaCuCuaNoiDungCuBangCuHayKhongPhaiMoiNhat() {
         ProblemRelease nhap = ProblemRelease.draft(Mau.LOP, Mau.BAI, Mau.LUC);
         VerificationRun dat = Mau.luot(DAT, DAT, DAT);
