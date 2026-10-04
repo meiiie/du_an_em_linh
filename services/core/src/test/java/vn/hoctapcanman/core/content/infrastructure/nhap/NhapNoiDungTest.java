@@ -10,15 +10,15 @@ import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Deque;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicLong;
 import org.jspecify.annotations.Nullable;
@@ -106,6 +106,7 @@ class NhapNoiDungTest {
             v0.put((String) b.get("ma"), b);
         }
 
+        PhatLai.napLai();
         NhapNoiDungChung.DaNhap da = chung.nhapGiuBai();
         assertThat(da.bai()).extracting(NhapNoiDungChung.BaiNhap::ma).containsExactlyInAnyOrderElementsOf(v0.keySet());
         // Dấu vân tay của v0: sha256(JSON.stringify({de, bl, hints})) của napBai trong seed.ts.
@@ -116,7 +117,7 @@ class NhapNoiDungTest {
             noiDung.put("hints", b.thangGoiY());
             assertThat(NhapNoiDungChung.sha256(JsonKieuJs.stringify(noiDung))).as("dấu vân tay v0 của %s", b.ma())
                 .isEqualTo(v0.get(b.ma()).get("dau_van_tay_v0"));
-            soVoiDaGhi(b);
+            soVoiDaGhi(b, v0.get(b.ma()));
         }
 
         UUID lop = UUID.randomUUID();
@@ -141,21 +142,27 @@ class NhapNoiDungTest {
             List<String> tangV0 = ((List<Map<String, Object>>) b.get("tang")).stream().map(t -> (String) t.get("trang_thai")).toList();
             assertThat(tangV2).as("các tầng của %s", ma).isEqualTo(tangV0);
         }
-        assertThat(PhatLai.CHUA_DUNG).as("mọi phản hồi của tệp vàng đều được dùng").isEmpty();
+        assertThat(PhatLai.chuaDung()).as("mọi bản ghi của tệp vàng được dùng đúng một lần").isEmpty();
 
+        // Lần nhập thứ hai dựng lại bài (solve, generate như lần đầu) nhưng không kiểm lại bài nào: còn nguyên 17 bản ghi verify.
+        PhatLai.napLai();
         NhapTheoLop.KetQua lai = theoLop.nhap(lop, chung.nhapGiuBai().bai());
         assertThat(lai.daKiem()).isZero();
+        Map<String, Integer> conLai = PhatLai.chuaDung();
+        assertThat(conLai.keySet()).as("lần nhập thứ hai chỉ gọi lại solve, generate").allMatch(k -> k.startsWith("verify "));
+        assertThat(conLai.values().stream().mapToInt(Integer::intValue).sum()).isEqualTo(v0.size());
         assertThat(lai.phatHanh()).isEqualTo(kq.phatHanh());
         jdbc.sql("set constraints all immediate").update();
     }
 
     /**
      * Codex #135 (P2): dấu vân tay v0 tính trên bài đã dựng trong bộ nhớ, nên phải chắc CSDL giữ đúng bài đó. Đọc lại bằng SQL
-     * (không qua adapter, để lỗi ánh xạ đối xứng ghi / đọc không che nhau): hàng {@code problems}, lời giải và dữ kiện bảo vệ
-     * (so cây JSON, vì {@code jsonb} đổi thứ tự khóa), các cấp gợi ý (cấp có nội dung, đã cắt khoảng trắng hai đầu: SP-08).
+     * (không qua adapter, để lỗi ánh xạ đối xứng ghi / đọc không che nhau): hàng {@code problems}, lời giải (so cây JSON, vì
+     * {@code jsonb} đổi thứ tự khóa), dữ kiện bảo vệ (so với {@code su_kien_bao_ve} mà v0 ghi, trong tệp vàng: dấu vân tay
+     * v0 không gồm chúng), các cấp gợi ý (cấp có nội dung, đã cắt khoảng trắng hai đầu: SP-08).
      */
     @SuppressWarnings("unchecked")
-    private void soVoiDaGhi(NhapNoiDungChung.BaiNhap b) {
+    private void soVoiDaGhi(NhapNoiDungChung.BaiNhap b, Map<String, Object> vangCuaBai) {
         List<@Nullable String> de = jdbc.sql("""
                 select statement_text, statement_latex, function_sympy, answer_form, start_step, origin, content_hash
                 from problems where code = ?""").params(b.ma())
@@ -178,7 +185,9 @@ class NhapNoiDungTest {
                 where p.code = ?""").params(b.ma()).query((rs, i) -> Arrays.asList(rs.getString(1), rs.getString(2))).single();
         assertThat(cay(loiGiai.get(0))).as("lời giải đã ghi của %s", b.ma())
             .isEqualTo(cay(b.baiLam() == null ? null : JsonKieuJs.stringify(b.baiLam())));
-        assertThat(cay(loiGiai.get(1))).as("dữ kiện bảo vệ đã ghi của %s", b.ma()).isEqualTo(cay(JsonKieuJs.stringify(b.suKien())));
+        // Codex #135 (P2): so với dữ kiện v0 ghi, không với chính BaiNhap (bộ lọc lộ đáp án của gia sư dùng chúng).
+        assertThat(cay(loiGiai.get(1))).as("dữ kiện bảo vệ đã ghi của %s so với v0", b.ma())
+            .isEqualTo(JSON.valueToTree(vangCuaBai.get("su_kien_bao_ve")));
         List<String> capMongDoi = new ArrayList<>();
         for (Map<String, @Nullable Object> khoi : b.thangGoiY()) {
             for (Map<String, @Nullable Object> c : (List<Map<String, @Nullable Object>>) Objects.requireNonNull(khoi.get("cac_cap"))) {
@@ -209,14 +218,17 @@ class NhapNoiDungTest {
 
     /**
      * Dịch vụ toán phát lại {@code phan-hoi-toan.json}. Yêu cầu không có trong tệp vàng thì ném lỗi (test đỏ), không đoán
-     * phản hồi. Đồng hồ tất định tăng 1 ms mỗi lần đọc.
+     * phản hồi. Mỗi bản ghi dùng được đúng một lần: yêu cầu trùng khóa (v0 gọi {@code solve} cho {@code x**2} hai lần) có đủ
+     * số bản ghi, phát lại theo thứ tự ghi, gọi nhiều hơn thì ném lỗi. Đồng hồ tất định tăng 1 ms mỗi lần đọc.
      */
     @TestConfiguration
     static class PhatLai {
 
         private static final JsonMapper CHUAN = JsonMapper.builder().enable(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS).build();
-        static final Map<String, Map<String, @Nullable Object>> BANG = new HashMap<>();
-        static final Set<String> CHUA_DUNG = new HashSet<>();
+        /** Bản ghi của tệp vàng theo khóa yêu cầu, theo thứ tự ghi. */
+        static final Map<String, List<Map<String, @Nullable Object>>> BANG = new LinkedHashMap<>();
+        /** Bản ghi chưa dùng của lượt nhập hiện tại. */
+        static final Map<String, Deque<Map<String, @Nullable Object>>> CON = new HashMap<>();
         /** Mã băm kho lớp của tệp vàng: sha256(JSON.stringify(khoLop())) trong xuat-v0.ts. */
         static final String BAM_KHO;
 
@@ -233,10 +245,25 @@ class NhapNoiDungTest {
                 Map<String, Object> yeuCau = (Map<String, Object>) g.get("yeu_cau");
                 @SuppressWarnings("unchecked")
                 Map<String, @Nullable Object> phanHoi = (Map<String, @Nullable Object>) g.get("phan_hoi");
-                String khoa = khoa((String) g.get("job"), yeuCau);
-                BANG.putIfAbsent(khoa, phanHoi);
-                CHUA_DUNG.add(khoa);
+                BANG.computeIfAbsent(khoa((String) g.get("job"), yeuCau), k -> new ArrayList<>()).add(phanHoi);
             }
+        }
+
+        /** Bắt đầu một lượt nhập: mọi bản ghi của tệp vàng lại dùng được, mỗi bản một lần. */
+        static synchronized void napLai() {
+            CON.clear();
+            BANG.forEach((k, v) -> CON.put(k, new ArrayDeque<>(v)));
+        }
+
+        /** Khóa còn bản ghi chưa dùng ở lượt hiện tại, kèm số bản còn lại. */
+        static synchronized Map<String, Integer> chuaDung() {
+            Map<String, Integer> con = new LinkedHashMap<>();
+            CON.forEach((k, v) -> {
+                if (!v.isEmpty()) {
+                    con.put(k, v.size());
+                }
+            });
+            return con;
         }
 
         /**
@@ -251,7 +278,7 @@ class NhapNoiDungTest {
             return job + " " + CHUAN.writeValueAsString(gon);
         }
 
-        static Map<String, @Nullable Object> tra(String job, Map<String, ?> yeuCau) {
+        static synchronized Map<String, @Nullable Object> tra(String job, Map<String, ?> yeuCau) {
             // Codex #135 (P2): kho gửi đi phải đúng kho của tệp vàng (đủ tài liệu, đúng thứ tự, đúng chữ, đúng các dòng bảng),
             // nếu không phản hồi phát lại là phán quyết cho một đầu vào khác.
             if (job.equals("verify")) {
@@ -259,11 +286,14 @@ class NhapNoiDungTest {
                     .isEqualTo(BAM_KHO);
             }
             String k = khoa(job, yeuCau);
-            Map<String, @Nullable Object> phanHoi = BANG.get(k);
-            if (phanHoi == null) {
+            Deque<Map<String, @Nullable Object>> con = CON.get(k);
+            if (con == null) {
                 throw new AssertionError("Yêu cầu không có trong tệp vàng v0 (core gửi khác seed.ts?): " + k);
             }
-            CHUA_DUNG.remove(k);
+            Map<String, @Nullable Object> phanHoi = con.poll();
+            if (phanHoi == null) {
+                throw new AssertionError("Yêu cầu được gọi nhiều lần hơn tệp vàng v0 ghi: " + k);
+            }
             return phanHoi;
         }
 
