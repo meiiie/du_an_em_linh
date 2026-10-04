@@ -81,6 +81,19 @@ function nguonDaCommit() {
   return { tep: TEP, commit: git('log -1 --format=%H -- ' + TEP), blob: git('rev-parse HEAD:' + TEP) };
 }
 
+/**
+ * Dữ liệu script đọc trực tiếp (bài ví dụ, bài khung ngắn, tài liệu của lab và của v0, bảng công thức) nằm dưới hai thư
+ * mục này. Dừng nếu có thay đổi chưa commit (dữ liệu lab chỉ đổi qua bản vá nguyên văn có mã), và ghi cây git của chúng để
+ * tệp vàng tái lập được từ đúng các phiên bản đã ghi.
+ */
+const DU_LIEU = ['data/supham', 'data/v0'];
+
+function duLieuDaCommit() {
+  const ban = git('status --porcelain -- ' + DU_LIEU.join(' '));
+  if (ban) throw new Error('Dữ liệu đầu vào có thay đổi chưa commit:\n' + ban);
+  return Object.fromEntries(DU_LIEU.map((d) => [d, git('rev-parse HEAD:' + d)]));
+}
+
 const docJson = (tep: string) => JSON.parse(readFileSync(path.join(GOC, tep), 'utf8'));
 
 /** Kho của lớp v2, đúng dạng `corpus` của seed.ts; id là mã ổn định (v0 dùng UUID ngẫu nhiên). */
@@ -104,6 +117,7 @@ function khoLop() {
 
 async function main() {
   const seed = nguonDaCommit();
+  duLieuDaCommit();
   const kho = khoLop();
   const toan = await chayDichVuToan();
   try {
@@ -202,6 +216,7 @@ async function xuat(seed: ReturnType<typeof nguonDaCommit>, kho: ReturnType<type
   ghi('v0-bai.json', {
     nguon: {
       seed,
+      du_lieu: duLieuDaCommit(),
       dich_vu_toan: toan.nguon,
       kho_lop: {
         tai_lieu: kho.tai_lieu.map((d) => d.id),
