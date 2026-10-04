@@ -156,6 +156,24 @@ class NhapNoiDungChungTest {
     }
 
     @Test
+    void nhapLaiGhiLaiBaiLechNguonVaGiuLucSuaBaiKhongDoi() {
+        // Phán quyết độc lập #135 (N1): ghiBai bỏ qua bài trùng mọi cột; nhánh ngược lại (bài trong CSDL lệch nguồn) phải ghi
+        // lại từ nguồn và đặt lúc sửa mới, còn bài khác giữ nguyên lúc sửa.
+        nhap.nhap();
+        jdbc.sql("update problems set statement_latex = 'đã sửa tay' where code = 'DH12-03-VD-01'").update();
+        Instant lucSuaLech = lucSua("DH12-03-VD-01");
+        Instant lucSuaKhac = lucSua("DH12-NB-01");
+        nhap.nhap();
+        assertThat(problems.findByCode("DH12-03-VD-01").orElseThrow().statementLatex()).isEqualTo("y = x^3 - 6x^2 + 9x + 2");
+        assertThat(lucSua("DH12-03-VD-01")).as("bài lệch nguồn được ghi lại").isAfter(lucSuaLech);
+        assertThat(lucSua("DH12-NB-01")).as("bài không đổi giữ lúc sửa").isEqualTo(lucSuaKhac);
+    }
+
+    private Instant lucSua(String ma) {
+        return jdbc.sql("select updated_at from problems where code = ?").params(ma).query(java.sql.Timestamp.class).single().toInstant();
+    }
+
+    @Test
     void dichVuToanKhongTraLoiBaiViDuThiDungVaKhongGhiGi() {
         // Như seed v0: lỗi gọi dịch vụ toán không được thành «bài ví dụ không có lời giải».
         ToanGia.KHONG_TRA_LOI = "x**3 - 6*x**2 + 9*x + 2";

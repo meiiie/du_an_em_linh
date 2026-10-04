@@ -158,6 +158,14 @@ class NhapNoiDungTest {
         assertThat(PhatLai.soLanKhoaBang()).as("lần nhập đầu khóa bảng một lần").isOne();
         soBangDaKhoaVoiPhanHoiThat(lop);
         soDanhMucVaKhoLop(lop, v0);
+        // Phán quyết độc lập #135 (N4): tập bảng của CACH_KIEM không suy ra từ chính nó. Mọi bảng có dòng sau lần nhập, trừ
+        // bảng lớp do test tự ghi và lịch sử Flyway, phải đúng là các bảng đã khai: importer ghi thêm bảng thì đỏ.
+        List<String> coDong = jdbc.sql("""
+                select table_name from information_schema.tables where table_schema = 'public' and table_type = 'BASE TABLE'
+                and table_name not in ('classes', 'flyway_schema_history') order by 1""").query(String.class).list().stream()
+            .filter(b -> jdbc.sql("select exists (select 1 from " + b + ")").query(Boolean.class).single()).toList();
+        assertThat(coDong).as("bảng có dòng sau lần nhập so với bảng đã khai cách kiểm").containsExactlyInAnyOrderElementsOf(
+            CACH_KIEM.keySet().stream().map(k -> k.substring(0, k.indexOf('.'))).distinct().toList());
         Map<String, List<String>> sauLanDau = chupBang(lop);
 
         // Lần nhập thứ hai dựng lại bài (solve, generate như lần đầu) nhưng không kiểm lại bài nào: còn nguyên 17 bản ghi verify.
