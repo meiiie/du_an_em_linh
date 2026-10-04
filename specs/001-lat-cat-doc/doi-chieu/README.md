@@ -21,7 +21,7 @@ Script chạy **nguyên** mã nạp bài của `apps/web/scripts/seed.ts`: dựn
   - id là mã ổn định (`v0-don-dieu`, `d-1`…), không phải UUID ngẫu nhiên.
 - **Ghi lại để phát lại.** Yêu cầu `verify` trong `phan-hoi-toan.json` bỏ trường `tai_lieu`, `cong_thuc`, vì kho chỉ ghi một lần, dưới dạng danh sách mã và băm, ở `v0-bai.json` → `nguon.kho_lop`.
 - **Dừng khi seed.ts đổi.** Script dừng nếu `seed.ts` có thay đổi chưa commit, hoặc thiếu một mốc. `nguon.seed` ghi commit và blob của seed.ts đã chạy.
-- **Dừng khi dữ liệu đổi.** Script dừng nếu `data/supham` hay `data/v0` (bài ví dụ, bài khung ngắn, tài liệu, bảng công thức) có thay đổi chưa commit. `nguon.du_lieu` ghi cây git của hai thư mục đó.
+- **Dừng khi dữ liệu hay chính script đổi.** Script dừng nếu `data/supham`, `data/v0` (bài ví dụ, bài khung ngắn, tài liệu, bảng công thức) hay chính `xuat-v0.ts` có thay đổi chưa commit. `nguon.du_lieu` ghi cây git của hai thư mục và blob của script.
 - **Dịch vụ toán do script tự dựng.** Script không lấy dịch vụ toán từ một URL có sẵn, vì không biết nó build từ mã nào (`/health` luôn báo `0.1.0`). Nó tự build ảnh `services/math` từ chính checkout và dừng nếu `services/math` có thay đổi chưa commit. Ảnh chạy chỉ đọc ở một cổng ngẫu nhiên của 127.0.0.1 và bị xóa khi xong. `nguon.dich_vu_toan` ghi cây git của `services/math` (cố định mã) và `pip freeze` của ảnh (cố định thư viện, như SymPy).
 
 ```bash

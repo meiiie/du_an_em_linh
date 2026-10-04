@@ -82,11 +82,12 @@ function nguonDaCommit() {
 }
 
 /**
- * Dữ liệu script đọc trực tiếp (bài ví dụ, bài khung ngắn, tài liệu của lab và của v0, bảng công thức) nằm dưới hai thư
- * mục này. Dừng nếu có thay đổi chưa commit (dữ liệu lab chỉ đổi qua bản vá nguyên văn có mã), và ghi cây git của chúng để
- * tệp vàng tái lập được từ đúng các phiên bản đã ghi.
+ * Đầu vào khác của tệp vàng: dữ liệu script đọc trực tiếp (bài ví dụ, bài khung ngắn, tài liệu của lab và của v0, bảng công
+ * thức) dưới hai thư mục data, và chính script này (thay kho, lọc yêu cầu, ánh xạ kết quả). Dừng nếu có thay đổi chưa commit
+ * (dữ liệu lab chỉ đổi qua bản vá nguyên văn có mã), và ghi cây hay blob git của từng thứ để tệp vàng tái lập được từ đúng
+ * các phiên bản đã ghi.
  */
-const DU_LIEU = ['data/supham', 'data/v0'];
+const DU_LIEU = ['data/supham', 'data/v0', 'specs/001-lat-cat-doc/doi-chieu/xuat-v0.ts'];
 
 function duLieuDaCommit() {
   const ban = git('status --porcelain -- ' + DU_LIEU.join(' '));
