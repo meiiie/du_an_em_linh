@@ -132,6 +132,7 @@ class NhapTheoLopTest {
         KiemGia.TANG2_SAI = false;
         KiemGia.TRICH_GIUA = false;
         KiemGia.KIEM_BAI_LOI = false;
+        KiemGia.TRICH_BANG_BIA = null;
     }
 
     @Test
@@ -418,6 +419,17 @@ class NhapTheoLopTest {
     }
 
     @Test
+    void trichDanCuaBangPhaiKhopDoanVaTaiLieu() {
+        // Codex #134 (P2): job khóa bảng trả id đoạn có thật của lớp nhưng chữ trích bịa, hay nêu sai tài liệu: không nhận.
+        NhapNoiDungChung.DaNhap da = chung.nhapGiuBai();
+        for (String kieu : List.of("chu", "tai-lieu")) {
+            KiemGia.TRICH_BANG_BIA = kieu;
+            assertThatThrownBy(() -> theoLop.nhap(lop, da.bai())).as(kieu).isInstanceOf(IllegalStateException.class).hasMessageContaining("d-2");
+            assertThat(sheets.findCurrent(lop)).as(kieu).isEmpty();
+        }
+    }
+
+    @Test
     void tang2SaiCoTrichDanThiGhiTrichDan() {
         // Codex #134 (P2): căn cứ của tầng 2 SAI (bài bị chặn) cũng ghi vào verification_run_citations, bất biến như căn cứ đạt.
         NhapNoiDungChung.DaNhap da = chung.nhapGiuBai();
@@ -451,6 +463,7 @@ class NhapTheoLopTest {
         static volatile boolean TANG2_SAI;
         static volatile boolean TRICH_GIUA;
         static volatile boolean KIEM_BAI_LOI;
+        static volatile @Nullable String TRICH_BANG_BIA;
 
         @Bean
         KiemToan kiemToan() {
@@ -466,7 +479,10 @@ class NhapTheoLopTest {
                         Map<String, Object> tang2 = new LinkedHashMap<>();
                         tang2.put("trang_thai", dat ? "DAT" : "KHONG_KIEM_DUOC");
                         if (dat) {
-                            tang2.put("trich_dan", Map.of("tai_lieu", taiLieu.get("id"), "doan", doan.get("id"), "trich", doan.get("text")));
+                            // TRICH_BANG_BIA = "chu": chữ trích bịa; = "tai-lieu": nêu sai tài liệu của đoạn.
+                            Object trich = "chu".equals(TRICH_BANG_BIA) && "d-2".equals(d.get("id")) ? "Câu không có trong đoạn." : doan.get("text");
+                            Object cuaTaiLieu = "tai-lieu".equals(TRICH_BANG_BIA) && "d-2".equals(d.get("id")) ? UUID.randomUUID().toString() : taiLieu.get("id");
+                            tang2.put("trich_dan", Map.of("tai_lieu", cuaTaiLieu, "doan", doan.get("id"), "trich", trich));
                         }
                         if (TRICH_THEM_HONG && "d-5".equals(d.get("id"))) {
                             tang2.put("trich_dan_them", List.of(Map.of("tai_lieu", taiLieu.get("id"), "doan", UUID.randomUUID().toString(), "trich", "?")));

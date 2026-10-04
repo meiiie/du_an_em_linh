@@ -269,8 +269,8 @@ public class NhapTheoLop {
         yeuCau.put("timeout_s", 20);
         Map<String, @Nullable Object> kq = toan.kiemDongCongThuc(yeuCau);
 
-        Set<UUID> doanCuaLop = new LinkedHashSet<>();
-        kho.values().forEach(t -> t.doan().forEach(p -> doanCuaLop.add(p.id())));
+        Map<UUID, DocumentPassage> doanCuaLop = new LinkedHashMap<>();
+        kho.values().forEach(t -> t.doan().forEach(p -> doanCuaLop.put(p.id(), p)));
         Map<String, Formula> theoMa = new LinkedHashMap<>();
         dong.forEach(f -> theoMa.put(f.code(), f));
         Map<String, FormulaCheck> ketQua = new LinkedHashMap<>();
@@ -285,10 +285,10 @@ public class NhapTheoLop {
             List<UUID> them = new ArrayList<>();
             boolean themHong = false;
             if (t2.get("trich_dan") != null) {
-                trich = doanThuocLop(chuNeuCo(doiTuong(t2.get("trich_dan")).get("doan")), doanCuaLop);
+                trich = doanHopLe(doiTuong(t2.get("trich_dan")), doanCuaLop);
             }
             for (Map<String, @Nullable Object> x : danhSach(t2.get("trich_dan_them"))) {
-                UUID d = doanThuocLop(chuNeuCo(x.get("doan")), doanCuaLop);
+                UUID d = doanHopLe(x, doanCuaLop);
                 if (d == null) {
                     themHong = true;
                 } else if (!d.equals(trich) && !them.contains(d)) {
@@ -328,16 +328,25 @@ public class NhapTheoLop {
         return dong.stream().map(f -> f.ordinal() + ":" + f.code() + ":" + f.contentFingerprint()).toList();
     }
 
-    private static @Nullable UUID doanThuocLop(@Nullable String id, Set<UUID> doanCuaLop) {
-        if (id == null) {
+    /**
+     * Đoạn của một trích dẫn mà job khóa bảng trả về, nếu trích dẫn khớp đúng đoạn đã lưu của lớp: id đoạn thuộc kho, đoạn
+     * thuộc đúng tài liệu {@code tai_lieu} được nêu, và chữ {@code trich} là phần đầu của văn bản đoạn (job trả tối đa 240 ký
+     * tự đầu của chính văn bản đoạn đã gửi). Lệch bất kỳ chỗ nào thì trống: không nhận căn cứ không khớp (đóng mặc định).
+     */
+    private static @Nullable UUID doanHopLe(Map<String, @Nullable Object> trichDan, Map<UUID, DocumentPassage> doanCuaLop) {
+        String id = chuNeuCo(trichDan.get("doan"));
+        String taiLieu = chuNeuCo(trichDan.get("tai_lieu"));
+        String trich = chuNeuCo(trichDan.get("trich"));
+        if (id == null || taiLieu == null || trich == null || trich.isEmpty()) {
             return null;
         }
+        DocumentPassage d;
         try {
-            UUID d = UUID.fromString(id);
-            return doanCuaLop.contains(d) ? d : null;
+            d = doanCuaLop.get(UUID.fromString(id));
         } catch (IllegalArgumentException e) {
             return null;
         }
+        return d != null && d.documentId().toString().equals(taiLieu) && d.text().startsWith(trich) ? d.id() : null;
     }
 
     // ---- Kiểm và phát hành từng bài -------------------------------------------------------------------------------
