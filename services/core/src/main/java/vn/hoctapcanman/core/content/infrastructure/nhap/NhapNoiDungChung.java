@@ -16,9 +16,11 @@ import java.util.UUID;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
+import vn.hoctapcanman.core.content.domain.event.BaiDaNhap;
 import vn.hoctapcanman.core.content.domain.model.BloomLevel;
 import vn.hoctapcanman.core.content.domain.model.ErrorType;
 import vn.hoctapcanman.core.content.domain.model.HintLevel;
@@ -45,8 +47,9 @@ import vn.hoctapcanman.core.content.domain.repository.TopicCatalogRepository;
  *   <li>tám bài khung ngắn ({@code bai-khung-ngan.seed-v01.json}) và bài ví dụ cổng chặn {@code DH12-DEMO-CHAN-01}.</li>
  * </ul>
  * Gọi dịch vụ toán trước, ghi sau, cả lần ghi trong một giao dịch: dịch vụ toán lỗi giữa chừng thì không ghi gì (khác
- * seed của v0, #119). Chạy lại không nhân bản: bài nhận theo mã, giữ id và thời điểm tạo. Nội dung theo lớp (tài liệu,
- * bảng công thức, kiểm 3 tầng, phát hành) ở phần T012b.
+ * seed của v0, #119). Chạy lại không nhân bản: bài nhận theo mã, giữ id và thời điểm tạo. Sau khi ghi, mỗi bài phát
+ * {@link BaiDaNhap}. Nội dung theo lớp (tài liệu, bảng công thức, kiểm 3 tầng, phát hành) ở {@link NhapTheoLop} (T012b),
+ * kiểm đúng các bài vừa dựng ({@link DaNhap#bai()}).
  */
 @Component
 public class NhapNoiDungChung {
@@ -70,10 +73,12 @@ public class NhapNoiDungChung {
     private final SolutionRepository solutions;
     private final HintLevelRepository hints;
     private final TransactionTemplate giaoDich;
+    private final ApplicationEventPublisher su;
     private final Clock clock;
 
     public NhapNoiDungChung(NguonNoiDung nguon, GiaiToan toan, TopicCatalogRepository catalog, ProblemRepository problems,
-            SolutionRepository solutions, HintLevelRepository hints, PlatformTransactionManager tx, Clock clock) {
+            SolutionRepository solutions, HintLevelRepository hints, PlatformTransactionManager tx, ApplicationEventPublisher su,
+            Clock clock) {
         this.nguon = nguon;
         this.toan = toan;
         this.catalog = catalog;
@@ -81,6 +86,7 @@ public class NhapNoiDungChung {
         this.solutions = solutions;
         this.hints = hints;
         this.giaoDich = new TransactionTemplate(tx);
+        this.su = su;
         this.clock = clock;
     }
 
@@ -92,7 +98,14 @@ public class NhapNoiDungChung {
             String deBai, String latex, @Nullable String ham, String dangTraLoi, @Nullable String buocBatDau, String nguonBai,
             @Nullable Object baiLam, Object suKien, List<Map<String, @Nullable Object>> thangGoiY) {}
 
+    /** Kết quả nhập kèm các bài đã dựng, để nhập theo lớp kiểm đúng nội dung vừa ghi, như {@code napBai} của seed.ts. */
+    record DaNhap(KetQua ketQua, List<BaiNhap> bai) {}
+
     public KetQua nhap() {
+        return nhapGiuBai().ketQua();
+    }
+
+    DaNhap nhapGiuBai() {
         Map<String, @Nullable Object> danhMuc = nguon.doiTuong("supham/danh-muc-ky-nang-DH.json");
         List<List<String>> maLoi = nguon.csv("supham/ma-loi-DH.csv");
         List<Map<String, @Nullable Object>> khung = nguon.danhSach("v0/khung-buoc.json");
@@ -107,7 +120,12 @@ public class NhapNoiDungChung {
         });
         KetQua kq = new KetQua(dem[0], dem[1], dem[2], bai.stream().map(BaiNhap::ma).toList());
         LOG.info("Nhập nội dung chung: {} kỹ năng, {} mã lỗi, {} bước, {} bài", kq.kyNang(), kq.maLoi(), kq.buoc(), kq.bai().size());
-        return kq;
+        // Sau commit: nơi nghe (T034b) đọc được bài đã ghi.
+        for (BaiNhap b : bai) {
+            Problem p = problems.findByCode(b.ma()).orElseThrow();
+            su.publishEvent(new BaiDaNhap(p.id(), b.ma(), problems.findContentVersion(p.id()).orElseThrow()));
+        }
+        return new DaNhap(kq, bai);
     }
 
     // ---- Dựng bài (gọi dịch vụ toán) ---------------------------------------------------------------------------
