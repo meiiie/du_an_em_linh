@@ -227,6 +227,35 @@ class VerificationPersistenceTest {
             .isInstanceOfAny(IllegalStateException.class, DataIntegrityViolationException.class);
     }
 
+    @Test
+    void luotMoiRutPhatHanhTheoLuotCu() {
+        // Codex #121 (P1): A đang phát hành; ghi B (SAI) thì A thôi phát hành ngay, kể cả khi nơi gọi chưa kịp áp B.
+        FormulaSheet bang = daKiem(bangNhap(1)).lock(giaoVien, LUC);
+        sheets.save(bang);
+        VerificationRun a = VerificationRun.forProblem(lop, bai.id(), BAM, 1, bang.id(), ba(CheckStatus.DAT), List.of(doanTong), LUC);
+        runs.save(a);
+        releases.save(ProblemRelease.draft(lop, bai.id(), LUC).apply(a, true, BAM, bang.id(), LUC));
+        assertThat(releases.find(lop, bai.id()).orElseThrow().status()).isEqualTo(ReleaseStatus.DA_PHAT_HANH);
+
+        VerificationRun b = VerificationRun.forProblem(lop, bai.id(), BAM, 1, bang.id(), ba(CheckStatus.SAI), List.of(), LUC.plusSeconds(1));
+        runs.save(b);
+        assertThat(releases.find(lop, bai.id()).orElseThrow().status()).isEqualTo(ReleaseStatus.NHAP);
+        releases.save(releases.find(lop, bai.id()).orElseThrow().apply(b, true, BAM, bang.id(), LUC));
+        assertThat(releases.find(lop, bai.id()).orElseThrow().status()).isEqualTo(ReleaseStatus.BI_CHAN);
+    }
+
+    @Test
+    void khongKhoaDuocBangCuHonBangDangDung() {
+        // Codex #121 (P2): khóa muộn một bảng phiên bản thấp hơn không được làm lượt của bảng mới nhất thành cũ.
+        FormulaSheet bang2 = daKiem(bangNhap(2)).lock(giaoVien, LUC);
+        sheets.save(bang2);
+        VerificationRun luot = VerificationRun.forProblem(lop, bai.id(), BAM, 1, bang2.id(), ba(CheckStatus.DAT), List.of(doanTong), LUC);
+        runs.save(luot);
+        FormulaSheet bang1 = daKiem(bangNhap(1)).lock(giaoVien, LUC);
+        // Cuối test: lỗi ràng buộc hủy giao dịch của test.
+        assertThatThrownBy(() -> sheets.save(bang1)).isInstanceOf(DataIntegrityViolationException.class);
+    }
+
     /** Lượt kiểm bài chờ giáo viên duyệt (tầng 3 không kiểm được), tầng 2 trích dẫn đoạn cực đại. */
     private VerificationRun choDuyet(FormulaSheet bang, Instant luc) {
         return VerificationRun.forProblem(lop, bai.id(), BAM, 1, bang.id(),
