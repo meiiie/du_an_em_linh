@@ -12,6 +12,7 @@ public enum MathJob {
     FILTER("/v1/filter", Duration.ofSeconds(12)),
     GOI_Y("/v1/goi-y", Duration.ofSeconds(12)),
     GENERATE("/v1/generate", Duration.ofSeconds(20)),
+    SOLVE("/v1/solve", Duration.ofSeconds(20)),
     KIEM_LOI_GIANG("/v1/kiem-loi-giang", Duration.ofSeconds(12)),
     KIEM_DONG_CONG_THUC("/v1/kiem-dong-cong-thuc", Duration.ofSeconds(20));
 
