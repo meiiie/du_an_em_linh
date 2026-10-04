@@ -23,7 +23,7 @@ Cả hệ v2 trong Docker: `docker compose -f compose.v2.yaml up --build --wait`
 | --- | --- |
 | `src/app/app.config.ts`, `app.routes.ts` | Provider, route (lazy theo tính năng). `/hs`, `/gv` là route cha với khung `KhungTrang`; trang con theo bảng phụ lục của `specs/001-lat-cat-doc/spec.md` (màn chưa làm dùng `TrangCho`: đúng heading, câu mô tả). `/` và đường lạ → `/dang-nhap` cho tới khi có trang công khai |
 | `src/app/api/` | Kiểu khớp DTO của `services/core`: `auth.ts` (người dùng, phiên, endpoint, header chống CSRF); `hoc-sinh.ts`, `giao-vien.ts` theo `contracts/api-core.md` (core chưa có các endpoint này; trường hợp đồng chưa định nghĩa để `unknown`) |
-| `src/app/core/` | Việc toàn ứng dụng: `TieuDeTrang` (tab `<trang> · Học toán với AI`) |
+| `src/app/core/` | Việc toàn ứng dụng: `TieuDeTrang` (tab `<trang> · MathL+`) |
 | `src/app/core/auth/` | `Phien` (access token trong bộ nhớ, refresh token trong cookie HttpOnly, làm mới một luồng qua Web Locks), `xacThucInterceptor` (Bearer, 401 → làm mới một lần), guard `chiVaiTro`, `chuaDangNhap`; `phien.testing.ts` là `PhienGia` cho test |
 | `src/app/features/<tính-năng>/` | Màn theo tính năng: `dang-nhap` (hai bước email → mật khẩu), `hoc-sinh` (`/hs` «Chào <tên>»), `giao-vien` (`/gv`, chưa có API lớp nên «Chưa có lớp») |
 | `src/app/shared/ui/` | Nguyên thủy: `appButton` (giải phẫu nút), `app-brand-mark` (`dao` cho nền mực), `app-bieu-tuong` (nét Lucide của ray v0, chép nguyên văn) |

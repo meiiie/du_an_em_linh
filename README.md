@@ -1,4 +1,4 @@
-# Học toán với AI
+# MathL+
 
 [![Kiểm thử](https://github.com/meiiie/du_an_em_linh/actions/workflows/ci.yml/badge.svg)](https://github.com/meiiie/du_an_em_linh/actions/workflows/ci.yml)
 [![Phiên bản](https://img.shields.io/github/v/release/meiiie/du_an_em_linh?include_prereleases&sort=semver&label=phiên%20bản)](https://github.com/meiiie/du_an_em_linh/releases)
