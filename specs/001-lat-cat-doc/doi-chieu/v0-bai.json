@@ -7,7 +7,8 @@
     },
     "du_lieu": {
       "data/supham": "a821fd14243ee607371420b50e20e1f848148d36",
-      "data/v0": "6a666e3bde67052c928973f9041ba7ddfd1ce04e"
+      "data/v0": "6a666e3bde67052c928973f9041ba7ddfd1ce04e",
+      "specs/001-lat-cat-doc/doi-chieu/xuat-v0.ts": "a793a0303d416119be4c6bffec8cf9be5ceef2dd"
     },
     "dich_vu_toan": {
       "cay_git": "2d833dd78bfe594eefc309ffffde19bc6d4cc332",
