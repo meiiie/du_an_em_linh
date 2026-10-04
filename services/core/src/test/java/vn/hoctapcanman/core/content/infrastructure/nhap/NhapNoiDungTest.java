@@ -46,8 +46,8 @@ import vn.hoctapcanman.core.content.infrastructure.persistence.VerificationRunRe
 /**
  * Đối chiếu với v0 (T014, #85): nhập nội dung chung và nhập theo lớp trên PostgreSQL 18, với dịch vụ toán giả phát lại đúng
  * các phản hồi mà dịch vụ toán thật đã trả cho mã của v0 ({@code specs/001-lat-cat-doc/doi-chieu/phan-hoi-toan.json}, T013),
- * rồi so từng bài với tệp vàng {@code v0-bai.json}: cùng tập mã bài, cùng dấu vân tay kiểu v0, cùng trạng thái phát hành và
- * trạng thái từng tầng. Phản hồi được tra theo yêu cầu đã chuẩn hóa (khóa xếp theo thứ tự, bỏ kho lớp); kho lớp của mỗi
+ * rồi so từng bài với tệp vàng {@code v0-bai.json}: cùng tập mã bài, cùng dấu vân tay kiểu v0, cùng nguồn bài, dạng trả lời,
+ * trạng thái tổng, trạng thái phát hành và trạng thái từng tầng. Phản hồi được tra theo yêu cầu đã chuẩn hóa (khóa xếp theo thứ tự, bỏ kho lớp); kho lớp của mỗi
  * yêu cầu kiểm bài được so riêng với mã băm kho của tệp vàng. Core gửi yêu cầu khác v0 dù một chút thì không có phản hồi và
  * test đỏ, nên test này cũng giữ importer dựng bài và kho đúng như {@code seed.ts}.
  *
@@ -120,6 +120,13 @@ class NhapNoiDungTest {
         for (Map<String, Object> b : v0.values()) {
             String ma = (String) b.get("ma");
             assertThat(kq.phatHanh().get(ma).name()).as("phát hành của %s", ma).isEqualTo(b.get("trang_thai_phat_hanh"));
+            // Codex #135 (P2): nguồn bài (importer rút theo nguồn), dạng trả lời (cách học sinh nộp) và trạng thái tổng của lượt.
+            List<String> truongV2 = jdbc.sql("""
+                    select p.origin, p.answer_form, v.overall_status from problem_releases r join problems p on p.id = r.problem_id
+                    join verification_runs v on v.id = r.run_id where r.class_id = ? and p.code = ?""")
+                .params(lop, ma).query((rs, i) -> List.of(rs.getString(1), rs.getString(2), rs.getString(3))).single();
+            assertThat(truongV2).as("nguồn, dạng trả lời, trạng thái tổng của %s", ma)
+                .containsExactly((String) b.get("nguon_bai"), (String) b.get("dang_tra_loi"), (String) b.get("trang_thai_tong"));
             List<String> tangV2 = jdbc.sql("""
                     select t.status from problem_releases r join problems p on p.id = r.problem_id
                     join verification_tier_results t on t.run_id = r.run_id
