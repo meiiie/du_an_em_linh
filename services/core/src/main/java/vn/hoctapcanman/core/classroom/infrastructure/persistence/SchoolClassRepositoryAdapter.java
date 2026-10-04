@@ -1,5 +1,6 @@
 package vn.hoctapcanman.core.classroom.infrastructure.persistence;
 
+import java.util.List;
 import java.util.Optional;
 import org.springframework.stereotype.Repository;
 import vn.hoctapcanman.core.classroom.domain.model.ClassId;
@@ -29,5 +30,10 @@ public class SchoolClassRepositoryAdapter implements SchoolClassRepository {
     @Override
     public Optional<SchoolClass> findByNameAndSchoolYear(String name, String schoolYear) {
         return jpa.findByNameAndSchoolYear(name.strip(), schoolYear).map(SchoolClassJpaEntity::toDomain);
+    }
+
+    @Override
+    public List<ClassId> findAllIds() {
+        return jpa.findAllIdsOrdered().stream().map(ClassId::new).toList();
     }
 }

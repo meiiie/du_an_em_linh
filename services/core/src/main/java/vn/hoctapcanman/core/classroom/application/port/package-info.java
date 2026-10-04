@@ -1,4 +1,4 @@
-/** Cổng của lớp học cho module khác: kiểm quyền theo lớp, ghi cảnh báo cho giáo viên. */
+/** Cổng của lớp học cho module khác: kiểm quyền theo lớp, ghi cảnh báo cho giáo viên, danh sách lớp. */
 @NullMarked
 package vn.hoctapcanman.core.classroom.application.port;
 

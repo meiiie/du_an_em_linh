@@ -241,9 +241,27 @@ class NhapNoiDungChungTest {
             };
         }
 
+        /** Đồng hồ tất định nhưng tăng dần 1 ms mỗi lần đọc: lượt kiểm ghi sau luôn mới hơn, như thời gian thật. */
         @Bean
         Clock clock() {
-            return Clock.fixed(Instant.parse("2026-10-04T08:00:00Z"), ZoneOffset.UTC);
+            Instant goc = Instant.parse("2026-10-04T08:00:00Z");
+            java.util.concurrent.atomic.AtomicLong dem = new java.util.concurrent.atomic.AtomicLong();
+            return new Clock() {
+                @Override
+                public ZoneOffset getZone() {
+                    return ZoneOffset.UTC;
+                }
+
+                @Override
+                public Clock withZone(java.time.ZoneId zone) {
+                    return this;
+                }
+
+                @Override
+                public Instant instant() {
+                    return goc.plusMillis(dem.incrementAndGet());
+                }
+            };
         }
     }
 }
