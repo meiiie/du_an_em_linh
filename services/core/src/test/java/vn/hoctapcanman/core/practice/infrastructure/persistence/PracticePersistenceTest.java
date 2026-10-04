@@ -221,6 +221,27 @@ class PracticePersistenceTest {
     }
 
     @Test
+    void tabGiuAnhCuNopBaiKhongXoaCoNghiDoanMo() {
+        // Codex #136 (P2): tab A bật cờ nghi đoán mò; tab B giữ ảnh cũ (chưa nghi) nộp bài: cờ và lý do đầu phải còn.
+        Submission anhCu = submissions.openOrGet(Submission.open(lop, an, bai, 1, LUC));
+        submissions.update(anhCu.suspectGuess("Đổi một ô dấu 6 lần trong 30 giây."));
+        submissions.update(anhCu.submit(GradeStatus.SAI, LUC.plusSeconds(60)));
+        Submission daNop = submissions.findById(anhCu.id()).orElseThrow();
+        assertThat(daNop.status()).isEqualTo(SubmissionStatus.DA_NOP);
+        assertThat(daNop.guessSuspected()).isTrue();
+        assertThat(daNop.guessReason()).isEqualTo("Đổi một ô dấu 6 lần trong 30 giây.");
+    }
+
+    @Test
+    void csdlChanTatCoNghiDoanMo() {
+        Submission dangLam = submissions.openOrGet(Submission.open(lop, an, bai, 1, LUC));
+        submissions.update(dangLam.suspectGuess("Đổi ô nhiều lần."));
+        assertThatThrownBy(() -> jdbc.sql("update submissions set guess_suspected = false, guess_reason = null where id = ?")
+                .params(dangLam.id()).update())
+            .isInstanceOf(DataIntegrityViolationException.class).hasMessageContaining("nghi đoán mò");
+    }
+
+    @Test
     void baiLamCuaPhienBanCuThoiDuocGhiChamVaNop() {
         // Codex #136 (P1): đổi đề khi học sinh đang làm; tab cũ không được ghi bước, kết quả chấm hay nộp cho đề cũ.
         Submission dangLam = submissions.openOrGet(Submission.open(lop, an, bai, 1, LUC));

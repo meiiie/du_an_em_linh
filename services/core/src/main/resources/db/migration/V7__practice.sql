@@ -151,7 +151,8 @@ CREATE TRIGGER assignments_hoc_sinh_va_bai_phat_hanh BEFORE INSERT OR UPDATE OF 
 CREATE TRIGGER submissions_hoc_sinh_va_bai_phat_hanh BEFORE INSERT ON submissions
     FOR EACH ROW EXECUTE FUNCTION practice_hoc_sinh_va_bai_phat_hanh();
 
--- 2. Bài làm: lớp, học sinh, bài, phiên bản nội dung, lúc mở không đổi; chỉ đi DANG_LAM → DA_NOP, một lần.
+-- 2. Bài làm: lớp, học sinh, bài, phiên bản nội dung, lúc mở không đổi; chỉ đi DANG_LAM → DA_NOP, một lần; cờ nghi đoán
+-- mò chỉ bật.
 CREATE FUNCTION submissions_chi_nop_mot_lan() RETURNS trigger LANGUAGE plpgsql AS $$
 BEGIN
     IF (NEW.class_id, NEW.student_id, NEW.problem_id, NEW.content_version, NEW.started_at)
@@ -160,6 +161,11 @@ BEGIN
     END IF;
     IF OLD.status = 'DA_NOP' THEN
         RAISE EXCEPTION 'Bài làm % đã nộp, không sửa được', OLD.id USING ERRCODE = 'check_violation';
+    END IF;
+    -- Cờ nghi đoán mò chỉ bật, lý do đầu giữ nguyên.
+    IF (OLD.guess_suspected AND NOT NEW.guess_suspected)
+            OR (OLD.guess_reason IS NOT NULL AND NEW.guess_reason IS DISTINCT FROM OLD.guess_reason) THEN
+        RAISE EXCEPTION 'Bài làm % đã bị nghi đoán mò: cờ và lý do không đổi được', OLD.id USING ERRCODE = 'check_violation';
     END IF;
     -- Bài làm của phiên bản nội dung cũ (bài đã đổi đề) thôi được nộp hay đánh dấu. Khóa dòng bài FOR SHARE: lần đổi nội
     -- dung đồng thời chờ tới khi giao dịch này xong.

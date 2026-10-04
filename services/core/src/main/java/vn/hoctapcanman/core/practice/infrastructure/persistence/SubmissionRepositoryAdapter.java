@@ -188,8 +188,10 @@ public class SubmissionRepositoryAdapter implements SubmissionRepository {
     @Transactional
     public void update(Submission baiLam) {
         khoaDangLam(baiLam.id());
+        // Cờ nghi đoán mò chỉ bật, giữ lý do đầu: tab giữ ảnh cũ (chưa nghi) nộp bài không xóa được cờ tab kia đã bật.
         int dong = jdbc.sql("""
-                update submissions set status = :st, guess_suspected = :nghi, guess_reason = :lyDo, result = :kq, submitted_at = :nop
+                update submissions set status = :st, guess_suspected = guess_suspected or :nghi,
+                    guess_reason = coalesce(guess_reason, :lyDo), result = :kq, submitted_at = :nop
                 where id = :id and status = 'DANG_LAM'""")
             .param("st", baiLam.status().name()).param("nghi", baiLam.guessSuspected()).param("lyDo", baiLam.guessReason())
             .param("kq", tenNeuCo(baiLam.result())).param("nop", Cot.lucNeuCo(baiLam.submittedAt())).param("id", baiLam.id())
