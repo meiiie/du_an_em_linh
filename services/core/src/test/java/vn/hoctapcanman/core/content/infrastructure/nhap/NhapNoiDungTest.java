@@ -223,9 +223,11 @@ class NhapNoiDungTest {
                 join verification_tier_results t on t.run_id = r.run_id where r.class_id = ? and p.code = ? order by t.tier""")
             .params(lop, ma)
             .query((rs, i) -> {
-                float tinCay = rs.getFloat(6);
+                // wasNull() nói về cột đọc ngay trước nó: đọc độ tin cậy rồi hỏi liền, trước mọi cột khác (Codex #135).
+                float soTinCay = rs.getFloat(6);
+                @Nullable Float tinCay = rs.wasNull() ? null : soTinCay;
                 return Arrays.<@Nullable Object>asList(rs.getInt(1), rs.getString(2), rs.getString(3), cay(rs.getString(4)),
-                    rs.getString(5), rs.wasNull() ? null : tinCay, rs.getString(7), cay(rs.getString(8)), cay(rs.getString(9)));
+                    rs.getString(5), tinCay, rs.getString(7), cay(rs.getString(8)), cay(rs.getString(9)));
             })
             .list();
         assertThat(dong).as("số tầng của %s", ma).hasSize(theoTang.size());
