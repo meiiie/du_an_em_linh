@@ -82,6 +82,12 @@ import vn.hoctapcanman.core.content.infrastructure.persistence.VerificationRunRe
 class NhapNoiDungTest {
 
     private static final JsonMapper JSON = JsonMapper.builder().build();
+    /**
+     * Hai mã Bloom v0 ghi mà thang Bloom 6 mức của v2 không có (CHECK của V4): {@code APPLY} của {@code /v1/generate} và
+     * {@code NHAN_BIET} (mã mức 4) của bài demo bị chặn. Phép đổi đã chọn ở #122 (javadoc {@code NhapNoiDungChung.bloom}),
+     * viết lại ở đây để test không so importer với chính nó.
+     */
+    private static final Map<Object, Object> BLOOM_V2 = Map.of("APPLY", "VAN_DUNG", "NHAN_BIET", "NHO");
 
     @DynamicPropertySource
     static void nguon(DynamicPropertyRegistry r) {
@@ -156,55 +162,48 @@ class NhapNoiDungTest {
     }
 
     /**
-     * Codex #135 (P2): dấu vân tay v0 tính trên bài đã dựng trong bộ nhớ, nên phải chắc CSDL giữ đúng bài đó. Đọc lại bằng SQL
-     * (không qua adapter, để lỗi ánh xạ đối xứng ghi / đọc không che nhau): hàng {@code problems}, lời giải (so cây JSON, vì
-     * {@code jsonb} đổi thứ tự khóa), dữ kiện bảo vệ (so với {@code su_kien_bao_ve} mà v0 ghi, trong tệp vàng: dấu vân tay
-     * v0 không gồm chúng), các cấp gợi ý (cấp có nội dung, đã cắt khoảng trắng hai đầu: SP-08).
+     * Codex #135 (P2, nhiều lần): so nội dung core đã ghi với nội dung v0 đã ghi, từng cột, không với chính bài core dựng
+     * (một cột core dựng sai thì so với chính nó vẫn khớp). Đọc lại bằng SQL, không qua adapter, để lỗi ánh xạ đối xứng ghi /
+     * đọc không che nhau. Nguồn so là {@code cot_v0} và {@code su_kien_bao_ve} của tệp vàng: mọi cột nội dung mà mã nạp bài
+     * của seed.ts ghi (lời giải và dữ kiện bảo vệ so cây JSON, vì {@code jsonb} đổi thứ tự khóa). Riêng {@code content_hash}
+     * là dấu vân tay của v2 (data-model §problems), so với bài đã dựng.
      */
     @SuppressWarnings("unchecked")
     private void soVoiDaGhi(NhapNoiDungChung.BaiNhap b, Map<String, Object> vangCuaBai) {
-        List<@Nullable String> de = jdbc.sql("""
-                select statement_text, statement_latex, function_sympy, answer_form, start_step, origin, content_hash
-                from problems where code = ?""").params(b.ma())
-            .query((rs, i) -> Arrays.asList(rs.getString(1), rs.getString(2), rs.getString(3), rs.getString(4), rs.getString(5),
-                rs.getString(6), rs.getString(7))).single();
-        assertThat(de).as("bài đã ghi %s", b.ma()).containsExactly(b.deBai(), b.latex(), b.ham(), b.dangTraLoi(), b.buocBatDau(),
-            b.nguonBai(), NhapNoiDungChung.dauVanTay(b));
-        // Codex #135 (P2): phân loại dùng để chọn bài; độ khó 0.5 cho mọi bài như seed.ts của v0.
-        List<@Nullable String> phanLoai = jdbc.sql("""
-                select skill_code, array_to_string(extra_skill_codes, ','), level4, level3, bloom_level, difficulty::text
-                from problems where code = ?""").params(b.ma())
-            .query((rs, i) -> Arrays.asList(rs.getString(1), rs.getString(2), rs.getString(3), rs.getString(4), rs.getString(5),
-                rs.getString(6))).single();
-        var muc3 = b.muc3();
-        var bloom = b.bloom();
-        assertThat(phanLoai).as("phân loại đã ghi của %s", b.ma()).containsExactly(b.kyNang(), String.join(",", b.kyNangPhu()),
-            b.muc4().name(), muc3 == null ? null : muc3.name(), bloom == null ? null : bloom.name(), "0.5");
+        Map<String, @Nullable Object> v0 = (Map<String, @Nullable Object>) vangCuaBai.get("cot_v0");
+        List<@Nullable Object> cotV2 = jdbc.sql("""
+                select skill_code, array_to_string(extra_skill_codes, ','), level4, level3, bloom_level, difficulty::text,
+                    statement_text, statement_latex, function_sympy, start_step from problems where code = ?""").params(b.ma())
+            .query((rs, i) -> Arrays.<@Nullable Object>asList(rs.getString(1), rs.getString(2), rs.getString(3), rs.getString(4),
+                rs.getString(5), rs.getString(6), rs.getString(7), rs.getString(8), rs.getString(9), rs.getString(10)))
+            .single();
+        assertThat(cotV2).as("các cột của bài %s so với v0", b.ma()).containsExactly(v0.get("skillCode"),
+            String.join(",", (List<String>) Objects.requireNonNull(v0.get("skillCodesPhu"))), v0.get("mucDo4"), v0.get("mucDoBo3"),
+            BLOOM_V2.getOrDefault(v0.get("bloomLevel"), v0.get("bloomLevel")), String.valueOf(v0.get("difficulty")), v0.get("statementText"), v0.get("statementLatex"),
+            v0.get("hamSympy"), v0.get("buocBatDau"));
+        assertThat(jdbc.sql("select content_hash from problems where code = ?").params(b.ma()).query(String.class).single())
+            .as("content_hash của %s", b.ma()).isEqualTo(NhapNoiDungChung.dauVanTay(b));
         List<@Nullable String> loiGiai = jdbc.sql("""
                 select s.worked_solution::text, s.protected_facts::text from solutions s join problems p on p.id = s.problem_id
                 where p.code = ?""").params(b.ma()).query((rs, i) -> Arrays.asList(rs.getString(1), rs.getString(2))).single();
-        assertThat(cay(loiGiai.get(0))).as("lời giải đã ghi của %s", b.ma())
-            .isEqualTo(cay(b.baiLam() == null ? null : JsonKieuJs.stringify(b.baiLam())));
-        // Codex #135 (P2): so với dữ kiện v0 ghi, không với chính BaiNhap (bộ lọc lộ đáp án của gia sư dùng chúng).
+        assertThat(cay(loiGiai.get(0))).as("lời giải đã ghi của %s so với v0", b.ma()).isEqualTo(cayV0(v0.get("baiLam")));
         assertThat(cay(loiGiai.get(1))).as("dữ kiện bảo vệ đã ghi của %s so với v0", b.ma())
-            .isEqualTo(JSON.valueToTree(vangCuaBai.get("su_kien_bao_ve")));
-        List<String> capMongDoi = new ArrayList<>();
-        for (Map<String, @Nullable Object> khoi : b.thangGoiY()) {
-            for (Map<String, @Nullable Object> c : (List<Map<String, @Nullable Object>>) Objects.requireNonNull(khoi.get("cac_cap"))) {
-                String noiDung = c.get("noi_dung") == null ? "" : ((String) c.get("noi_dung")).strip();
-                if (!noiDung.isEmpty()) {
-                    capMongDoi.add(khoi.get("ma_buoc") + " " + c.get("cap") + " " + noiDung);
-                }
-            }
-        }
+            .isEqualTo(cayV0(vangCuaBai.get("su_kien_bao_ve")));
+        List<String> capV0 = ((List<Map<String, Object>>) Objects.requireNonNull(v0.get("goiY"))).stream()
+            .map(h -> h.get("maBuoc") + " " + h.get("cap") + " " + h.get("noiDung")).toList();
         List<String> capDaGhi = jdbc.sql("""
                 select h.step_code || ' ' || h.level || ' ' || h.text from hint_levels h join problems p on p.id = h.problem_id
                 where p.code = ?""").params(b.ma()).query(String.class).list();
-        assertThat(capDaGhi).as("thang gợi ý đã ghi của %s", b.ma()).containsExactlyInAnyOrderElementsOf(capMongDoi);
+        assertThat(capDaGhi).as("thang gợi ý đã ghi của %s so với v0", b.ma()).containsExactlyInAnyOrderElementsOf(capV0);
     }
 
     private static @Nullable JsonNode cay(@Nullable String json) {
         return json == null ? null : JSON.readTree(json);
+    }
+
+    /** Giá trị của tệp vàng thành cây JSON; trống (v0 không ghi lời giải) thì {@code null} như cột CSDL trống. */
+    private static @Nullable JsonNode cayV0(@Nullable Object giaTri) {
+        return giaTri == null ? null : JSON.valueToTree(giaTri);
     }
 
     private static Object docJson(String ten) {
