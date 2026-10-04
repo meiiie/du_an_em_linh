@@ -11,11 +11,13 @@ import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicLong;
@@ -31,6 +33,7 @@ import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.junit.jupiter.Testcontainers;
+import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.SerializationFeature;
 import tools.jackson.databind.json.JsonMapper;
 import vn.hoctapcanman.core.TestcontainersConfiguration;
@@ -46,10 +49,11 @@ import vn.hoctapcanman.core.content.infrastructure.persistence.VerificationRunRe
 /**
  * Đối chiếu với v0 (T014, #85): nhập nội dung chung và nhập theo lớp trên PostgreSQL 18, với dịch vụ toán giả phát lại đúng
  * các phản hồi mà dịch vụ toán thật đã trả cho mã của v0 ({@code specs/001-lat-cat-doc/doi-chieu/phan-hoi-toan.json}, T013),
- * rồi so từng bài với tệp vàng {@code v0-bai.json}: cùng tập mã bài, cùng dấu vân tay kiểu v0, cùng nguồn bài, dạng trả lời,
- * trạng thái tổng, trạng thái phát hành và trạng thái từng tầng. Phản hồi được tra theo yêu cầu đã chuẩn hóa (khóa xếp theo thứ tự, bỏ kho lớp); kho lớp của mỗi
- * yêu cầu kiểm bài được so riêng với mã băm kho của tệp vàng. Core gửi yêu cầu khác v0 dù một chút thì không có phản hồi và
- * test đỏ, nên test này cũng giữ importer dựng bài và kho đúng như {@code seed.ts}.
+ * rồi so từng bài với tệp vàng {@code v0-bai.json} (sau khi đọc lại từ CSDL thấy nội dung đã ghi đúng bài đã dựng): cùng tập
+ * mã bài, cùng dấu vân tay kiểu v0, cùng nguồn bài, dạng trả lời, trạng thái tổng, trạng thái phát hành và trạng thái từng
+ * tầng. Phản hồi được tra theo yêu cầu đã chuẩn hóa (khóa xếp theo thứ tự, bỏ kho lớp); kho lớp của mỗi yêu cầu kiểm bài được
+ * so riêng với mã băm kho của tệp vàng. Core gửi yêu cầu khác v0 dù một chút thì không có phản hồi và test đỏ, nên test này
+ * cũng giữ importer dựng bài và kho đúng như {@code seed.ts}.
  *
  * <p>Job khóa bảng ({@code /v1/kiem-dong-cong-thuc}) không có ở v0 nên không có trong tệp vàng: job giả trả mọi dòng đạt hai
  * tầng, trích đoạn đầu của tài liệu đầu của kho; bảng khóa là điều kiện để kiểm bài, không phải đối tượng so ở đây (test của
@@ -110,6 +114,7 @@ class NhapNoiDungTest {
             noiDung.put("hints", b.thangGoiY());
             assertThat(NhapNoiDungChung.sha256(JsonKieuJs.stringify(noiDung))).as("dấu vân tay v0 của %s", b.ma())
                 .isEqualTo(v0.get(b.ma()).get("dau_van_tay_v0"));
+            soVoiDaGhi(b);
         }
 
         UUID lop = UUID.randomUUID();
@@ -140,6 +145,45 @@ class NhapNoiDungTest {
         assertThat(lai.daKiem()).isZero();
         assertThat(lai.phatHanh()).isEqualTo(kq.phatHanh());
         jdbc.sql("set constraints all immediate").update();
+    }
+
+    /**
+     * Codex #135 (P2): dấu vân tay v0 tính trên bài đã dựng trong bộ nhớ, nên phải chắc CSDL giữ đúng bài đó. Đọc lại bằng SQL
+     * (không qua adapter, để lỗi ánh xạ đối xứng ghi / đọc không che nhau): hàng {@code problems}, lời giải và dữ kiện bảo vệ
+     * (so cây JSON, vì {@code jsonb} đổi thứ tự khóa), các cấp gợi ý (cấp có nội dung, đã cắt khoảng trắng hai đầu: SP-08).
+     */
+    @SuppressWarnings("unchecked")
+    private void soVoiDaGhi(NhapNoiDungChung.BaiNhap b) {
+        List<@Nullable String> de = jdbc.sql("""
+                select statement_text, statement_latex, function_sympy, answer_form, start_step, origin, content_hash
+                from problems where code = ?""").params(b.ma())
+            .query((rs, i) -> Arrays.asList(rs.getString(1), rs.getString(2), rs.getString(3), rs.getString(4), rs.getString(5),
+                rs.getString(6), rs.getString(7))).single();
+        assertThat(de).as("bài đã ghi %s", b.ma()).containsExactly(b.deBai(), b.latex(), b.ham(), b.dangTraLoi(), b.buocBatDau(),
+            b.nguonBai(), NhapNoiDungChung.dauVanTay(b));
+        List<@Nullable String> loiGiai = jdbc.sql("""
+                select s.worked_solution::text, s.protected_facts::text from solutions s join problems p on p.id = s.problem_id
+                where p.code = ?""").params(b.ma()).query((rs, i) -> Arrays.asList(rs.getString(1), rs.getString(2))).single();
+        assertThat(cay(loiGiai.get(0))).as("lời giải đã ghi của %s", b.ma())
+            .isEqualTo(cay(b.baiLam() == null ? null : JsonKieuJs.stringify(b.baiLam())));
+        assertThat(cay(loiGiai.get(1))).as("dữ kiện bảo vệ đã ghi của %s", b.ma()).isEqualTo(cay(JsonKieuJs.stringify(b.suKien())));
+        List<String> capMongDoi = new ArrayList<>();
+        for (Map<String, @Nullable Object> khoi : b.thangGoiY()) {
+            for (Map<String, @Nullable Object> c : (List<Map<String, @Nullable Object>>) Objects.requireNonNull(khoi.get("cac_cap"))) {
+                String noiDung = c.get("noi_dung") == null ? "" : ((String) c.get("noi_dung")).strip();
+                if (!noiDung.isEmpty()) {
+                    capMongDoi.add(khoi.get("ma_buoc") + " " + c.get("cap") + " " + noiDung);
+                }
+            }
+        }
+        List<String> capDaGhi = jdbc.sql("""
+                select h.step_code || ' ' || h.level || ' ' || h.text from hint_levels h join problems p on p.id = h.problem_id
+                where p.code = ?""").params(b.ma()).query(String.class).list();
+        assertThat(capDaGhi).as("thang gợi ý đã ghi của %s", b.ma()).containsExactlyInAnyOrderElementsOf(capMongDoi);
+    }
+
+    private static @Nullable JsonNode cay(@Nullable String json) {
+        return json == null ? null : JSON.readTree(json);
     }
 
     private static Object docJson(String ten) {
