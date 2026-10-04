@@ -152,6 +152,14 @@ final class KienTrucRules {
         .as("Repository Spring Data chỉ quản lý @Entity *JpaEntity trong infrastructure.persistence.entity")
         .because("JpaRepository<DomainModel, …> làm hỏng khởi động: «Not a managed type» (bài học LMS)");
 
+    // ---- Đề cho học sinh không mang lời giải (FR-006, ADR 003, T015) ------------------------------------------
+
+    static final ArchRule DTO_HOC_SINH_KHONG_MANG_LOI_GIAI = classes().that().resideInAPackage("..application.dto.hocsinh..")
+        .should().onlyDependOnClassesThat().resideInAnyPackage("..application.dto.hocsinh..", "java..", "org.jspecify..")
+        .as("DTO của học sinh chỉ dùng kiểu Java và DTO học sinh khác")
+        .because("FR-006, ADR 003: đề cho học sinh khi đang làm không bao giờ mang lời giải, đáp án hay dữ kiện bảo vệ; "
+            + "DTO không tham chiếu được Solution hay bất kỳ kiểu domain nào");
+
     // ---- Ranh giới module (research R1, #111) -----------------------------------------------------------------
 
     /** Chỉ gói của dự án (mã thật và lớp mẫu) mới chia module. */
@@ -184,6 +192,7 @@ final class KienTrucRules {
         ADAPTER_DAT_TEN,
         ENTITY_DAT_TEN_DUNG_CHO,
         REPOSITORY_CHI_QUAN_LY_JPA_ENTITY,
+        DTO_HOC_SINH_KHONG_MANG_LOI_GIAI,
         MODULE_CHI_GOI_NHAU_QUA_CONG);
 
     static final List<ArchRule> TAT_CA = concat(CLEAN, DDD);
