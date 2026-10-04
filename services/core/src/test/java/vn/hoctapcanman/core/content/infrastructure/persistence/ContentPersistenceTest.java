@@ -263,6 +263,31 @@ class ContentPersistenceTest {
         assertThat(trangThaiPhatHanh(p.id())).isEqualTo("NHAP");
     }
 
+    @Test
+    void baiDangPhatHanhCuaLopDocCungMotAnhChup() {
+        // Codex #133 (P1): bài và phát hành đọc trong một câu lệnh; sửa đề rút phát hành nên không còn trả bài đó.
+        UUID lop = lopMoi("12A7 thử");
+        UUID lopKhac = lopMoi("12A8 thử");
+        Problem p = new Problem(UUID.randomUUID(), "DH12-TH-12", "T12.DH.03", List.of(), Level4.THONG_HIEU, null, null, null, "Đề",
+            "y", null, Problem.TU_LUAN_5_BUOC, null, "SUPHAM", BAM, null, LUC, LUC);
+        Problem chuaMo = new Problem(UUID.randomUUID(), "DH12-TH-13", "T12.DH.03", List.of(), Level4.THONG_HIEU, null, null, null,
+            "Đề khác", "y", null, Problem.TU_LUAN_5_BUOC, null, "SUPHAM", BAM, null, LUC, LUC);
+        problems.save(p);
+        problems.save(chuaMo);
+        phatHanh(lop, p.id());
+
+        assertThat(problems.findReleasedInClass(lop)).extracting(Problem::code).containsExactly("DH12-TH-12");
+        assertThat(problems.findReleasedInClass(lop, "DH12-TH-12")).isPresent();
+        assertThat(problems.findReleasedInClass(lop, "DH12-TH-13")).isEmpty();
+        assertThat(problems.findReleasedInClass(lopKhac)).isEmpty();
+        assertThat(problems.findReleasedInClass(lopKhac, "DH12-TH-12")).isEmpty();
+
+        problems.save(new Problem(p.id(), p.code(), p.skillCode(), p.extraSkillCodes(), p.level4(), null, null, null, "Đề đã sửa",
+            "y", null, p.answerForm(), null, p.origin(), "d".repeat(64), null, LUC, LUC));
+        assertThat(problems.findReleasedInClass(lop)).isEmpty();
+        assertThat(problems.findReleasedInClass(lop, "DH12-TH-12")).isEmpty();
+    }
+
     /** Lượt kiểm DAT mới cho bài ở lớp, rồi phát hành theo lượt đó. */
     private void phatHanh(UUID lop, UUID baiId) {
         UUID luot = UUID.randomUUID();

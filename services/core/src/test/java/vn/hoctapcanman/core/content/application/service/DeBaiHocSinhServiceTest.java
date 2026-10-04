@@ -17,7 +17,6 @@ import vn.hoctapcanman.core.content.domain.model.Level4;
 import vn.hoctapcanman.core.content.domain.model.Problem;
 import vn.hoctapcanman.core.content.domain.model.ProblemRelease;
 import vn.hoctapcanman.core.content.domain.model.ReleaseStatus;
-import vn.hoctapcanman.core.content.domain.repository.ProblemReleaseRepository;
 import vn.hoctapcanman.core.content.domain.repository.ProblemRepository;
 
 /** T015: học sinh chỉ thấy bài đã phát hành ở lớp mình, và đề không mang lời giải. */
@@ -29,7 +28,7 @@ class DeBaiHocSinhServiceTest {
 
     private final List<Problem> bai = new ArrayList<>();
     private final List<ProblemRelease> phatHanh = new ArrayList<>();
-    private final DeBaiHocSinhService dichVu = new DeBaiHocSinhService(new KhoBai(), new KhoPhatHanh());
+    private final DeBaiHocSinhService dichVu = new DeBaiHocSinhService(new KhoBai());
 
     @Test
     void chiBaiDaPhatHanhOLopMinh() {
@@ -89,22 +88,19 @@ class DeBaiHocSinhServiceTest {
         public Optional<Integer> findContentVersion(UUID problemId) {
             return findById(problemId).map(p -> 1);
         }
-    }
 
-    private final class KhoPhatHanh implements ProblemReleaseRepository {
         @Override
-        public void save(ProblemRelease release) {
-            phatHanh.add(release);
+        public List<Problem> findReleasedInClass(UUID classId) {
+            return bai.stream().filter(p -> dangPhatHanh(classId, p)).sorted(Comparator.comparing(Problem::code)).toList();
         }
 
         @Override
-        public Optional<ProblemRelease> find(UUID classId, UUID problemId) {
-            return phatHanh.stream().filter(r -> r.classId().equals(classId) && r.problemId().equals(problemId)).findFirst();
+        public Optional<Problem> findReleasedInClass(UUID classId, String code) {
+            return bai.stream().filter(p -> p.code().equals(code) && dangPhatHanh(classId, p)).findFirst();
         }
 
-        @Override
-        public List<ProblemRelease> findByClass(UUID classId) {
-            return phatHanh.stream().filter(r -> r.classId().equals(classId)).toList();
+        private boolean dangPhatHanh(UUID classId, Problem p) {
+            return phatHanh.stream().anyMatch(r -> r.classId().equals(classId) && r.problemId().equals(p.id()) && r.visibleToStudents());
         }
     }
 }
