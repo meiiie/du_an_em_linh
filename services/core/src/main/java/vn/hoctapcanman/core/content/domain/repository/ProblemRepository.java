@@ -18,4 +18,10 @@ public interface ProblemRepository {
 
     /** Các bài có id trong {@code ids}, theo mã bài. */
     List<Problem> findAllById(Collection<UUID> ids);
+
+    /**
+     * Phiên bản nội dung hiện tại của bài ({@code problems.content_version}, CSDL tăng mỗi khi đề, lời giải hay thang gợi ý
+     * đổi). Lượt kiểm bài ghi phiên bản này ({@code VerificationRun.forProblem}).
+     */
+    Optional<Integer> findContentVersion(UUID problemId);
 }

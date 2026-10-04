@@ -53,10 +53,10 @@ class ProblemReleaseTest {
     @Test
     void khongApLuotCuaLopKhacBaiKhacHayLuotGiaSu() {
         ProblemRelease nhap = ProblemRelease.draft(Mau.LOP, Mau.BAI, Mau.LUC);
-        VerificationRun lopKhac = VerificationRun.forProblem(UUID.randomUUID(), Mau.BAI, Mau.BAM, Mau.BANG, Mau.tang(DAT, DAT, DAT), Mau.LUC);
-        VerificationRun baiKhac = VerificationRun.forProblem(Mau.LOP, UUID.randomUUID(), Mau.BAM, Mau.BANG, Mau.tang(DAT, DAT, DAT), Mau.LUC);
-        VerificationRun giaSu = new VerificationRun(UUID.randomUUID(), Mau.LOP, SubjectKind.TUTOR_FORMULA, Mau.BAI, Mau.BAM, Mau.BANG,
-            SAI, null, false, Mau.LUC, Mau.tang(SAI, SAI, SAI));
+        VerificationRun lopKhac = VerificationRun.forProblem(UUID.randomUUID(), Mau.BAI, Mau.BAM, 1, Mau.BANG, Mau.tang(DAT, DAT, DAT), Mau.LUC);
+        VerificationRun baiKhac = VerificationRun.forProblem(Mau.LOP, UUID.randomUUID(), Mau.BAM, 1, Mau.BANG, Mau.tang(DAT, DAT, DAT), Mau.LUC);
+        VerificationRun giaSu = new VerificationRun(UUID.randomUUID(), Mau.LOP, SubjectKind.TUTOR_FORMULA, Mau.BAI, Mau.BAM, null, Mau.BANG,
+            SAI, null, false, Mau.LUC, Mau.tang(SAI, SAI, SAI), List.of());
         assertThatThrownBy(() -> ap(nhap, lopKhac)).isInstanceOf(IllegalArgumentException.class);
         assertThatThrownBy(() -> ap(nhap, baiKhac)).isInstanceOf(IllegalArgumentException.class);
         assertThatThrownBy(() -> ap(nhap, giaSu)).isInstanceOf(IllegalArgumentException.class);
