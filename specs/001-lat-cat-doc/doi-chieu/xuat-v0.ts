@@ -238,6 +238,7 @@ async function xuat(seed: ReturnType<typeof nguonDaCommit>, kho: ReturnType<type
           hamSympy: p.hamSympy,
           buocBatDau: p.buocBatDau,
           baiLam: (loiGiai.get(p.id) as Record<string, unknown>).baiLam,
+          finalAnswer: (loiGiai.get(p.id) as Record<string, unknown>).finalAnswer,
           goiY: goiY
             .filter((h) => h.problemId === p.id)
             .map((h) => ({ maBuoc: h.maBuoc, cap: h.cap, noiDung: h.noiDung })),
