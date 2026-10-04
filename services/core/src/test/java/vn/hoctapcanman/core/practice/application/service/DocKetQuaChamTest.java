@@ -49,13 +49,13 @@ class DocKetQuaChamTest {
     void coDauUChiCoNghiaKhiSai() {
         Map<String, @Nullable Object> sai = phanHoiSai();
         sai.put("toan_dung", true);
-        assertThat(DocKetQuaCham.ketQua(BAI_LAM, "B.DH.KETLUAN", KHUNG, BAM, sai, LUC).mathOk()).isTrue();
+        assertThat(DocKetQuaCham.ketQua(BAI_LAM, "B.DH.XETDAU", KHUNG, BAM, sai, LUC).mathOk()).isTrue();
         Map<String, @Nullable Object> dat = phanHoiDat("B.DH.KETLUAN");
         dat.put("toan_dung", true);
         assertThat(DocKetQuaCham.ketQua(BAI_LAM, "B.DH.KETLUAN", KHUNG, BAM, dat, LUC).mathOk()).isNull();
         Map<String, @Nullable Object> khongPhaiBool = phanHoiSai();
         khongPhaiBool.put("toan_dung", "true");
-        assertThat(DocKetQuaCham.ketQua(BAI_LAM, "B.DH.KETLUAN", KHUNG, BAM, khongPhaiBool, LUC).mathOk()).isNull();
+        assertThat(DocKetQuaCham.ketQua(BAI_LAM, "B.DH.XETDAU", KHUNG, BAM, khongPhaiBool, LUC).mathOk()).isNull();
     }
 
     @Test
@@ -88,14 +88,29 @@ class DocKetQuaChamTest {
     void phongBiThieuHayKhongNhatQuanThiKhongChamDuoc() {
         // Codex #140 (P1): phản hồi thiếu như {"ket_qua":"DAT"} không được thành đạt.
         List<Map<String, @Nullable Object>> hong = new java.util.ArrayList<>();
+        List<Map<String, @Nullable Object>> hongSai = new java.util.ArrayList<>();
         Map<String, @Nullable Object> chiKetQua = new LinkedHashMap<>();
         chiKetQua.put("ket_qua", "DAT");
         hong.add(chiKetQua);
-        for (String khoa : List.of("loai_ket_qua", "per_buoc", "thong_bao", "chua_xong", "cac_van_de", "buoc_sai", "ma_loi", "do_tin_cay",
-                "nop_toi")) {
+        // 12 khóa _pack luôn trả (grader.py, hàm _pack), viết tay ở đây, không đọc từ mã sản phẩm. Thiếu khóa nào cũng không đạt,
+        // ở phong bì DAT lẫn SAI.
+        for (String khoa : List.of("cac_van_de", "ket_qua", "loai_ket_qua", "buoc_sai", "ma_loi", "do_tin_cay", "per_buoc", "chuan_hoa",
+                "phien_ban_chuan_hoa", "thong_bao", "chua_xong", "nop_toi")) {
             Map<String, @Nullable Object> thieu = phanHoiDat("B.DH.DAOHAM");
             thieu.remove(khoa);
             hong.add(thieu);
+            Map<String, @Nullable Object> saiThieu = phanHoiSai();
+            saiThieu.remove(khoa);
+            hongSai.add(saiThieu);
+        }
+        Map<String, @Nullable Object> chuanHoaSaiKieu = phanHoiSai();
+        chuanHoaSaiKieu.put("chuan_hoa", "OK");
+        hongSai.add(chuanHoaSaiKieu);
+        Map<String, @Nullable Object> saiKhacBuoc = phanHoiSai();
+        saiKhacBuoc.put("nop_toi", "B.DH.KETLUAN");
+        hongSai.add(saiKhacBuoc);
+        for (Map<String, @Nullable Object> p : hongSai) {
+            assertThat(DocKetQuaCham.ketQua(BAI_LAM, "B.DH.XETDAU", KHUNG, BAM, p, LUC).result()).as("%s", p).isEqualTo(GradeStatus.KHONG_CHAM_DUOC);
         }
         Map<String, @Nullable Object> datMaCoBuocSai = phanHoiDat("B.DH.DAOHAM");
         datMaCoBuocSai.put("buoc_sai", Map.of("ma_buoc", "B.DH.TXD"));
@@ -132,12 +147,12 @@ class DocKetQuaChamTest {
             assertThat(DocKetQuaCham.ketQua(BAI_LAM, "B.DH.DAOHAM", KHUNG, BAM, p, LUC).result()).as("%s", p).isEqualTo(GradeStatus.KHONG_CHAM_DUOC);
         }
         assertThat(DocKetQuaCham.ketQua(BAI_LAM, "B.DH.DAOHAM", KHUNG, BAM, phanHoiDat("B.DH.DAOHAM"), LUC).result()).isEqualTo(GradeStatus.DAT);
-        // Bước cuối: grader.py trả chua_xong cả true lẫn false (dòng 1066, 1071), đều là phong bì DAT hợp lệ.
-        for (boolean chuaXong : List.of(true, false)) {
-            Map<String, @Nullable Object> cuoi = phanHoiDat("B.DH.KETLUAN");
-            cuoi.put("chua_xong", chuaXong);
-            assertThat(DocKetQuaCham.ketQua(BAI_LAM, "B.DH.KETLUAN", KHUNG, BAM, cuoi, LUC).result()).isEqualTo(GradeStatus.DAT);
-        }
+        assertThat(DocKetQuaCham.ketQua(BAI_LAM, "B.DH.KETLUAN", KHUNG, BAM, phanHoiDat("B.DH.KETLUAN"), LUC).result())
+            .isEqualTo(GradeStatus.DAT);
+        // Codex #140 (vòng ba): ở bước cuối, DAT của _pack luôn có chua_xong=false (nhánh chua_xong=True cần lỗi ở bước sau).
+        Map<String, @Nullable Object> cuoiChuaXong = phanHoiDat("B.DH.KETLUAN");
+        cuoiChuaXong.put("chua_xong", true);
+        assertThat(DocKetQuaCham.ketQua(BAI_LAM, "B.DH.KETLUAN", KHUNG, BAM, cuoiChuaXong, LUC).result()).isEqualTo(GradeStatus.KHONG_CHAM_DUOC);
     }
 
     @Test
@@ -187,6 +202,8 @@ class DocKetQuaChamTest {
         p.put("cac_van_de", List.of());
         p.put("chua_xong", !nopToi.equals(KHUNG.getLast()));
         p.put("nop_toi", nopToi);
+        p.put("chuan_hoa", List.of());
+        p.put("phien_ban_chuan_hoa", "norm-0.2");
         return p;
     }
 
@@ -215,6 +232,7 @@ class DocKetQuaChamTest {
         p.put("phien_ban_chuan_hoa", "norm-0.2");
         p.put("chuan_hoa", List.of(theoThuTu("ma_buoc", "B.DH.XETDAU", "dong", 0, "trang_thai_chuan_hoa", "OK")));
         p.put("chua_xong", false);
+        p.put("nop_toi", "B.DH.XETDAU");
         return p;
     }
 

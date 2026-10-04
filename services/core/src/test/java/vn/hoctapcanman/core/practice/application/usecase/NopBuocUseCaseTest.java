@@ -192,6 +192,9 @@ class NopBuocUseCaseTest {
             p.put("gia_tri_dung", BI_MAT);
             p.put("cac_van_de", List.of(Map.of("buoc_sai", buocSai, "goi_y_dung", BI_MAT)));
             p.put("chua_xong", false);
+            p.put("chuan_hoa", List.of());
+            p.put("phien_ban_chuan_hoa", "norm-0.2");
+            p.put("nop_toi", y.get("nop_toi"));
             return Optional.of(p);
         };
         KetQuaNopBuoc kq = nopBuoc.execute(an, lop, ma, bang(List.of(new ONop("X", 0, "0"), new ONop("DAU_YPHAY", 2, "+")), List.of()));
@@ -342,6 +345,8 @@ class NopBuocUseCaseTest {
             p.put("thong_bao", "Đúng rồi.");
             p.put("cac_van_de", List.of());
             p.put("chua_xong", !nopToi.equals(khung.getLast()));
+            p.put("chuan_hoa", List.of());
+            p.put("phien_ban_chuan_hoa", "norm-0.2");
             p.put("nop_toi", y.get("nop_toi"));
             return Optional.of(p);
         }
