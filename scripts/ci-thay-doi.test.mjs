@@ -11,7 +11,7 @@ const cases = [
   ['services/core', ['services/core/pom.xml'], chi('core')],
   ['apps/frontend', ['apps/frontend/src/app/app.ts'], chi('frontend')],
   ['apps/web', ['apps/web/app/page.tsx'], chi('v0')],
-  ['services/math', ['services/math/app/grader.py'], chi('v0')],
+  ['services/math → core (tệp vàng đối chiếu) + v0', ['services/math/app/grader.py'], chi('core', 'v0')],
   ['dữ liệu đóng gói vào ảnh core → core + v0', ['data/supham/ma-loi-DH.csv'], chi('core', 'v0')],
   ['hằng nội dung v0 → core + v0', ['data/v0/khung-buoc.json'], chi('core', 'v0')],
   ['dữ liệu khác → chỉ v0', ['data/demo/lop.json'], chi('v0')],

@@ -26,7 +26,9 @@ Script chạy **nguyên** mã nạp bài của `apps/web/scripts/seed.ts`: dựn
 - **Dừng khi dữ liệu hay chính script đổi.** Script dừng nếu `data/supham`, `data/v0` (bài ví dụ, bài khung ngắn, tài liệu, bảng công thức) hay chính `xuat-v0.ts` có thay đổi chưa commit. `nguon.du_lieu` ghi cây git của hai thư mục và blob của script.
 - **Dịch vụ toán do script tự dựng.** Script không lấy dịch vụ toán từ một URL có sẵn, vì không biết nó build từ mã nào (`/health` luôn báo `0.1.0`). Nó tự build ảnh `services/math` từ chính checkout và dừng nếu `services/math` có thay đổi chưa commit. Ngữ cảnh build là `git archive HEAD services/math`, chỉ gồm tệp đã commit, nên tệp bị `.gitignore` (khóa, `.env`) không bao giờ vào ảnh. Ảnh chạy chỉ đọc ở một cổng ngẫu nhiên của 127.0.0.1 và bị xóa khi xong. `nguon.dich_vu_toan` ghi cây git của `services/math` (cố định mã), digest bất biến của ảnh gốc trong `FROM` và phiên bản Python (cố định runtime, vì tag `python:3.12-slim` có thể đổi), và `pip freeze` của ảnh (cố định thư viện, như SymPy).
 
-`khoa-bang-v0.py` dừng nếu `services/math`, `data/v0` hay `data/supham` có thay đổi chưa commit, và ghi cây git của ba thư mục vào `nguon`. Chạy bằng Python của môi trường `services/math` (cùng SymPy):
+`khoa-bang-v0.py` dừng nếu `services/math`, `data/v0`, `data/supham` hay chính script có thay đổi chưa commit, và ghi cây git của ba thư mục cùng blob của script vào `nguon`.
+
+**Tệp vàng phải đi cùng cây nguồn.** `TepVangDoiChieuTest` của core so cây git ghi trong `v0-bai.json` (`nguon.dich_vu_toan.cay_git`, `nguon.du_lieu`) và `khoa-bang-v0.json` (`nguon`) với checkout, và đỏ khi các thư mục đó có thay đổi chưa commit. Đổi `services/math`, `data/v0`, `data/supham` hay script sinh thì sinh lại tệp vàng trong cùng PR. Job Core của CI chạy cả khi chỉ `services/math` đổi (`scripts/ci-thay-doi.mjs`). Chạy bằng Python của môi trường `services/math` (cùng SymPy):
 
 ```bash
 services/math/.venv/Scripts/python specs/001-lat-cat-doc/doi-chieu/khoa-bang-v0.py   # Linux, macOS: .venv/bin/python

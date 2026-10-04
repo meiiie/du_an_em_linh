@@ -10,7 +10,9 @@ const GOI_GOC = [/^package\.json$/, /^pnpm-lock\.yaml$/, /^pnpm-workspace\.yaml$
 export const NHOM = {
   harness: [/^\.claude\//],
   // data/supham, data/v0 được đóng gói vào ảnh core (T003b): job Core kiểm chúng có trong ảnh.
-  core: [/^services\/core\//, /^data\/(supham|v0)\//],
+  // services/math: tệp vàng đối chiếu v0 của core ghi cây dịch vụ toán đã sinh ra nó (T014); đổi dịch vụ toán thì test core
+  // phải chạy để bắt tệp vàng cũ (TepVangDoiChieuTest).
+  core: [/^services\/core\//, /^data\/(supham|v0)\//, /^services\/math\//],
   frontend: [/^apps\/frontend\//, ...GOI_GOC],
   v0: [/^apps\/web\//, /^services\/math\//, /^data\//, /^scripts\/(migrate|seed)/, ...GOI_GOC],
 };
