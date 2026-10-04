@@ -161,6 +161,10 @@ BEGIN
         END IF;
         -- Phát hành dựa trên các lượt này giữ nguyên trạng thái (ADR 005) và «cần kiểm lại» (run_id trỏ lượt stale); lượt
         -- cũ không duyệt, không áp được nữa. Kiểm lại với bảng mới rồi áp lượt mới (mục 5) mới đổi trạng thái phát hành.
+        -- Khóa các lượt theo thứ tự id trước khi đánh dấu (như vo_hieu_ket_qua_bai bên dưới): hai lần quét chung lượt của
+        -- (lớp, bài) không khóa chéo nhau.
+        PERFORM 1 FROM verification_runs
+            WHERE class_id = NEW.class_id AND NOT stale AND formula_sheet_id IS DISTINCT FROM NEW.id ORDER BY id FOR NO KEY UPDATE;
         UPDATE verification_runs SET stale = true
             WHERE class_id = NEW.class_id AND NOT stale AND formula_sheet_id IS DISTINCT FROM NEW.id;
     END IF;
@@ -186,3 +190,12 @@ END $$;
 
 CREATE TRIGGER verification_runs_rut_phat_hanh_cu AFTER INSERT ON verification_runs
     FOR EACH ROW EXECUTE FUNCTION verification_runs_rut_phat_hanh_cu();
+
+-- Sửa nội dung bài (V5): như cũ, nhưng khóa các lượt của bài theo thứ tự id trước khi đánh dấu cũ, cùng thứ tự với lần khóa
+-- bảng mới ở trên. Lần sửa giữ khóa dòng bài, lần khóa bảng giữ khóa dòng lớp; hai lần quét chỉ tranh nhau dòng lượt, nên
+-- khóa theo cùng một thứ tự là không khóa chéo. Mọi đường ghi khác khóa lớp rồi bài trước khi đụng dòng lượt hay phát hành.
+CREATE OR REPLACE FUNCTION vo_hieu_ket_qua_bai(bai uuid) RETURNS void LANGUAGE sql AS $$
+    SELECT 1 FROM verification_runs WHERE subject_kind = 'PROBLEM' AND subject_id = bai AND NOT stale ORDER BY id FOR NO KEY UPDATE;
+    UPDATE verification_runs SET stale = true WHERE subject_kind = 'PROBLEM' AND subject_id = bai AND NOT stale;
+    UPDATE problem_releases SET status = 'NHAP', run_id = NULL, updated_at = now() WHERE problem_id = bai AND status <> 'NHAP';
+$$;

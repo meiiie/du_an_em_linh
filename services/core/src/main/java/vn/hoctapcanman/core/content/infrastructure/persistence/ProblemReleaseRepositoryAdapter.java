@@ -7,6 +7,7 @@ import java.util.Optional;
 import java.util.UUID;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 import vn.hoctapcanman.core.content.domain.model.ProblemRelease;
 import vn.hoctapcanman.core.content.domain.model.ReleaseStatus;
 import vn.hoctapcanman.core.content.domain.repository.ProblemReleaseRepository;
@@ -25,7 +26,10 @@ public class ProblemReleaseRepositoryAdapter implements ProblemReleaseRepository
     }
 
     @Override
+    @Transactional
     public void save(ProblemRelease r) {
+        // Khóa lớp rồi bài trước khi đụng dòng phát hành: lần sửa bài khóa bài rồi mới rút phát hành này (KhoaThuTu).
+        KhoaThuTu.lopRoiBai(jdbc, r.classId(), r.problemId());
         jdbc.sql("""
                 insert into problem_releases (class_id, problem_id, status, run_id, updated_at)
                 values (:lop, :bai, :status, :run, :at)

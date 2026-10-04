@@ -48,21 +48,27 @@ public class FormulaSheetRepositoryAdapter implements FormulaSheetRepository {
     @Transactional
     public void save(FormulaSheet s) {
         // Bảng đã khóa ở CSDL: chỉ nhận ghi lại đúng bảng đó (cùng dấu vân tay các dòng, importer chạy lại), không gì khác.
-        Optional<String> dauKhoa = jdbc.sql("select fingerprint from formula_sheets where id = :id and status = 'KHOA' for update")
-            .param("id", s.id()).query(String.class).optional();
+        Optional<String> dauKhoa = jdbc.sql("""
+                select fingerprint from formula_sheets where id = :id and class_id = :lop and status = 'KHOA' for update""")
+            .param("id", s.id()).param("lop", s.classId()).query(String.class).optional();
         if (dauKhoa.isPresent()) {
             if (s.status() != SheetStatus.KHOA || !dauKhoa.get().equals(s.fingerprint())) {
                 throw new IllegalStateException("Bảng " + s.id() + " đã khóa, không ghi khác đi được; tạo bảng nháp phiên bản mới");
             }
             return;
         }
-        jdbc.sql("""
+        // Ghi đè chỉ bảng nháp của chính lớp này: id trùng bảng nháp của lớp khác thì không đụng tới dòng của lớp đó.
+        int ghi = jdbc.sql("""
                 insert into formula_sheets (id, class_id, version, status, note, created_at)
                 values (:id, :lop, :version, 'NHAP', :note, :created)
-                on conflict (id) do update set version = excluded.version, note = excluded.note""")
+                on conflict (id) do update set version = excluded.version, note = excluded.note
+                where formula_sheets.class_id = excluded.class_id and formula_sheets.status = 'NHAP'""")
             .param("id", s.id()).param("lop", s.classId()).param("version", s.version()).param("note", s.note())
             .param("created", Cot.luc(s.createdAt()))
             .update();
+        if (ghi != 1) {
+            throw new IllegalStateException("Bảng " + s.id() + " là bảng của lớp khác, không ghi được cho lớp " + s.classId());
+        }
         jdbc.sql("delete from formulas where formula_sheet_id = :id").param("id", s.id()).update();
         for (Formula f : s.rows()) {
             ghiDong(s.id(), f);

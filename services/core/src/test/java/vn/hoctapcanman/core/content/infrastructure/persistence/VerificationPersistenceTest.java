@@ -375,6 +375,21 @@ class VerificationPersistenceTest {
     }
 
     @Test
+    void khongGhiDeBangNhapCuaLopKhac() {
+        // Codex #121 (P2): id trùng bảng nháp của lớp khác thì từ chối, không đổi ghi chú hay dòng của lớp đó.
+        FormulaSheet cuaLop = bangNhap(1);
+        sheets.save(cuaLop);
+        UUID lopKhac = UUID.randomUUID();
+        jdbc.sql("insert into classes (id, name, grade, school_year, created_at) values (?, '12A3 thử', 12, '2026-2027', now())")
+            .params(lopKhac).update();
+        FormulaSheet maoDanh = new FormulaSheet(cuaLop.id(), lopKhac, 1, cuaLop.status(), "ghi đè", null, null, null, LUC,
+            List.of(Formula.unchecked(1, "d-9", "T12.DH.03", "Lạ", "x", "Dòng lạ.")));
+        assertThatThrownBy(() -> sheets.save(maoDanh)).isInstanceOf(IllegalStateException.class).hasMessageContaining("lớp khác");
+        assertThat(sheets.findDraft(lop)).contains(cuaLop);
+        assertThat(sheets.findDraft(lopKhac)).isEmpty();
+    }
+
+    @Test
     void khongKhoaDuocBangCuHonBangDangDung() {
         // Codex #121 (P2): khóa muộn một bảng phiên bản thấp hơn không được làm lượt của bảng mới nhất thành cũ.
         FormulaSheet bang2 = daKiem(bangNhap(2)).lock(giaoVien, LUC);

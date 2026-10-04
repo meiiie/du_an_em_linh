@@ -87,6 +87,8 @@ public class VerificationRunRepositoryAdapter implements VerificationRunReposito
     @Transactional
     public void saveApproval(VerificationRun.Approval a) {
         ContentReview d = a.review();
+        // Khóa lớp rồi bài trước khi đụng dòng lượt: lần sửa bài khóa bài rồi mới đánh dấu cũ lượt này (KhoaThuTu).
+        KhoaThuTu.lopRoiBai(jdbc, a.run().classId(), a.run().subjectId());
         jdbc.sql("""
                 insert into content_reviews (id, run_id, content_hash, reviewer_id, decision, note, at)
                 values (:id, :run, :hash, :by, 'GV_DUYET', :note, :at)""")
