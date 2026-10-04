@@ -6,7 +6,7 @@ Tệp vàng do chính mã của v0 sinh ra, để test của core v2 so khớp: 
 | --- | --- | --- |
 | `cong-phat-hanh-v0.py` | — (script) | Xuất bảng `cong_phat_hanh` của `services/math/app/verify.py` cho test trạng thái tổng của core |
 | `xuat-v0.ts` | — (script, T013) | Sinh hai tệp dưới |
-| `v0-bai.json` | `xuat-v0.ts` | T014: mỗi bài v0 nạp (mã, dấu vân tay kiểu v0, nguồn, dạng trả lời, trạng thái tổng, trạng thái phát hành, dữ kiện bảo vệ, trạng thái từng tầng) |
+| `v0-bai.json` | `xuat-v0.ts` | T014: mỗi bài v0 nạp (mã, dấu vân tay kiểu v0, nguồn, dạng trả lời, trạng thái tổng, trạng thái phát hành, dữ kiện bảo vệ, trạng thái từng tầng, và `cot_v0`: mọi cột nội dung v0 ghi cho bài — kỹ năng, mức, Bloom, độ khó, đề, LaTeX, hàm, bước bắt đầu, lời giải, các cấp gợi ý đã lưu) |
 | `phan-hoi-toan.json` | `xuat-v0.ts` | T014: mọi cặp yêu cầu → phản hồi của dịch vụ toán theo thứ tự v0 gọi, để dịch vụ toán giả phát lại |
 
 ## `xuat-v0.ts` (T013)
