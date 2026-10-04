@@ -16,9 +16,11 @@ import java.util.Arrays;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicLong;
 import org.jspecify.annotations.Nullable;
@@ -234,6 +236,44 @@ class NhapNoiDungTest {
             assertThat(d).as("tầng %s của %s so với phản hồi phát lại", d.get(0), ma).containsExactly(d.get(0), t.get("trang_thai"),
                 t.get("loai_ket_qua"), cayV0(t.get("buoc_sai")), t.get("ma_loi"), tinCay == null ? null : tinCay.floatValue(),
                 t.get("ly_do"), cayV0(canCu), cayV0(t));
+        }
+        soTrichDanVoiPhanHoi(lop, ma, theoTang.get(2));
+    }
+
+    /**
+     * Codex #135 (P2): quan hệ {@code verification_run_citations} của mọi lượt kiểm (lớp, bài) phải đúng các đoạn mà
+     * {@code trich_dan} tầng 2 của phản hồi phát lại chỉ tới. Test tự giải vị trí, không qua {@code ChiaDoan}: đọc văn bản
+     * tài liệu (mã {@code document_id}) và các đoạn của nó từ CSDL, đổi {@code vi_tri} (điểm mã, như {@code verify.py}) sang
+     * chỉ số UTF-16, kiểm chữ trích nằm đúng chỗ, rồi lấy mọi đoạn giao với khoảng trích. Không có trích dẫn thì không có
+     * quan hệ nào.
+     */
+    @SuppressWarnings("unchecked")
+    private void soTrichDanVoiPhanHoi(UUID lop, String ma, @Nullable Map<String, Object> tang2) {
+        Set<UUID> canCo = new LinkedHashSet<>();
+        Object trichDan = tang2 == null ? null : tang2.get("trich_dan");
+        for (Map<String, Object> tr : trichDan == null ? List.<Map<String, Object>>of() : (List<Map<String, Object>>) trichDan) {
+            String maTaiLieu = (String) tr.get("document_id");
+            int viTriDiemMa = ((Number) tr.get("vi_tri")).intValue();
+            String trich = (String) tr.get("trich");
+            String vanBan = jdbc.sql("select text_content from documents where class_id = ? and code = ?").params(lop, maTaiLieu)
+                .query(String.class).single();
+            int dau = vanBan.offsetByCodePoints(0, viTriDiemMa);
+            int het = dau + trich.length();
+            assertThat(vanBan.substring(dau, het)).as("chữ trích của %s ở %s:%s", ma, maTaiLieu, viTriDiemMa).isEqualTo(trich);
+            List<UUID> giao = jdbc.sql("""
+                    select p.id from document_passages p join documents d on d.id = p.document_id
+                    where d.class_id = ? and d.code = ? and p.char_start < ? and ? < p.char_end order by p.char_start""")
+                .params(lop, maTaiLieu, het, dau).query(UUID.class).list();
+            assertThat(giao).as("đoạn chứa chữ trích của %s ở %s:%s", ma, maTaiLieu, viTriDiemMa).isNotEmpty();
+            canCo.addAll(giao);
+        }
+        List<UUID> luot = jdbc.sql("""
+                select r.id from verification_runs r join problems p on p.id = r.subject_id
+                where r.subject_kind = 'PROBLEM' and r.class_id = ? and p.code = ?""").params(lop, ma).query(UUID.class).list();
+        assertThat(luot).as("lượt kiểm của %s", ma).isNotEmpty();
+        for (UUID run : luot) {
+            assertThat(jdbc.sql("select passage_id from verification_run_citations where run_id = ?").params(run).query(UUID.class).list())
+                .as("đoạn căn cứ của lượt %s (%s) so với trich_dan phát lại", run, ma).containsExactlyInAnyOrderElementsOf(canCo);
         }
     }
 
