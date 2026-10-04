@@ -30,7 +30,7 @@ node specs/001-lat-cat-doc/doi-chieu/xuat-v0.ts
 KHO_LOP=v0 node specs/001-lat-cat-doc/doi-chieu/xuat-v0.ts
 ```
 
-### Kết quả (2026-10-04, cây `services/math` `3e9004c`, sympy theo `nguon.dich_vu_toan.goi_python`)
+### Kết quả (2026-10-04, cây `services/math` `2d833dd`, sympy theo `nguon.dich_vu_toan.goi_python`)
 
 - **17 bài:** 14 `DA_PHAT_HANH`, 2 `CHO_GIAO_VIEN_DUYET` (`DH12-01-TH-01`, `DH12-06-VDC-01`: không có hàm, cả ba tầng `KHONG_KIEM_DUOC`), 1 `BI_CHAN` (`DH12-DEMO-CHAN-01`: tầng 1 `SAI`).
 - **32 lần gọi dịch vụ toán:** 12 `solve`, 3 `generate`, 17 `verify`.

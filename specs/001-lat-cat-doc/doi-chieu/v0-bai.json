@@ -6,7 +6,7 @@
       "blob": "028b8dd42ec05976523a48465936c1d49e05bf60"
     },
     "dich_vu_toan": {
-      "cay_git": "3e9004c640f46b9a82a18a6fa232d0215efb03c2",
+      "cay_git": "2d833dd78bfe594eefc309ffffde19bc6d4cc332",
       "goi_python": [
         "PyYAML==6.0.3",
         "annotated-doc==0.0.5",
