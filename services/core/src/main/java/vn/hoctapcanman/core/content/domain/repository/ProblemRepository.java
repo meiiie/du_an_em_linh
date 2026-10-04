@@ -20,6 +20,16 @@ public interface ProblemRepository {
     List<Problem> findAllById(Collection<UUID> ids);
 
     /**
+     * Các bài đang phát hành ({@code DA_PHAT_HANH}) ở lớp {@code classId}, theo mã bài. Bài và trạng thái phát hành đọc trong
+     * một câu lệnh (một ảnh chụp CSDL): sửa nội dung bài rút phát hành trong cùng giao dịch (V5), nên không bao giờ trả nội
+     * dung vừa sửa, chưa kiểm, kèm phát hành cũ.
+     */
+    List<Problem> findReleasedInClass(UUID classId);
+
+    /** Bài mã {@code code} nếu đang phát hành ở lớp {@code classId}; đọc trong một câu lệnh như {@link #findReleasedInClass(UUID)}. */
+    Optional<Problem> findReleasedInClass(UUID classId, String code);
+
+    /**
      * Phiên bản nội dung hiện tại của bài ({@code problems.content_version}, CSDL tăng mỗi khi đề, lời giải hay thang gợi ý
      * đổi). Lượt kiểm bài ghi phiên bản này ({@code VerificationRun.forProblem}).
      */
