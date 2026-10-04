@@ -9,7 +9,8 @@ const GOI_GOC = [/^package\.json$/, /^pnpm-lock\.yaml$/, /^pnpm-workspace\.yaml$
 
 export const NHOM = {
   harness: [/^\.claude\//],
-  core: [/^services\/core\//],
+  // data/supham, data/v0 được đóng gói vào ảnh core (T003b): job Core kiểm chúng có trong ảnh.
+  core: [/^services\/core\//, /^data\/(supham|v0)\//],
   frontend: [/^apps\/frontend\//, ...GOI_GOC],
   v0: [/^apps\/web\//, /^services\/math\//, /^data\//, /^scripts\/(migrate|seed)/, ...GOI_GOC],
 };

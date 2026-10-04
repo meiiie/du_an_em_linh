@@ -35,7 +35,9 @@ services:
   core:
     <<: *cung
     build:
-      context: services/core
+      # Gốc repo: ảnh chứa data/supham, data/v0 cho importer (T003b), xem services/core/Dockerfile.dockerignore.
+      context: .
+      dockerfile: services/core/Dockerfile
     environment:
       SPRING_PROFILES_ACTIVE: dev
       SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/hoc_toan_core
