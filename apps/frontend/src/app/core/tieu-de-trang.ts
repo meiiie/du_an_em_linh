@@ -4,7 +4,7 @@ import { ActivatedRouteSnapshot, RouterStateSnapshot, TitleStrategy } from '@ang
 import { TEN_SAN_PHAM } from './san-pham';
 
 /**
- * Mỗi lần đổi trang: tab trình duyệt `<tên trang> · Học toán với AI` (docs/DESIGN.md) và thẻ `robots` lấy từ
+ * Mỗi lần đổi trang: tab trình duyệt `<tên trang> · MathL+` (docs/DESIGN.md) và thẻ `robots` lấy từ
  * `data.robots` của route (đăng nhập: `noindex, nofollow` như v0). Route không khai thì gỡ thẻ, để trang công khai
  * sau này được lập chỉ mục.
  */

@@ -29,9 +29,9 @@ describe('định tuyến và tiêu đề tab', () => {
     expect(el?.querySelector('h1')?.textContent).toBe('Đăng nhập');
   });
 
-  it('tab theo mẫu «<trang> · Học toán với AI»', async () => {
+  it('tab theo mẫu «<trang> · MathL+»', async () => {
     await den('/dang-nhap');
-    expect(TestBed.inject(Title).getTitle()).toBe('Đăng nhập · Học toán với AI');
+    expect(TestBed.inject(Title).getTitle()).toBe('Đăng nhập · MathL+');
   });
 
   it('trang đăng nhập không cho lập chỉ mục (như v0)', async () => {
@@ -52,14 +52,14 @@ describe('định tuyến và tiêu đề tab', () => {
     const { url, el } = await den('/hs');
     expect(url).toBe('/hs');
     expect(el?.querySelector('h1')?.textContent?.trim()).toBe('Chào An');
-    expect(TestBed.inject(Title).getTitle()).toBe('Học · Học toán với AI');
+    expect(TestBed.inject(Title).getTitle()).toBe('Học · MathL+');
   });
 
   it('giáo viên: /gv «Chưa có lớp», tab «Lớp»; vào /hs bị đưa về /gv', async () => {
     gia.dangNhapNhu(GV);
     const gv = await den('/gv');
     expect(gv.el?.querySelector('h1')?.textContent?.trim()).toBe('Chưa có lớp');
-    expect(TestBed.inject(Title).getTitle()).toBe('Lớp · Học toán với AI');
+    expect(TestBed.inject(Title).getTitle()).toBe('Lớp · MathL+');
     expect((await den('/hs')).url).toBe('/gv');
   });
 
@@ -74,7 +74,7 @@ describe('định tuyến và tiêu đề tab', () => {
     const { url: duongDan, el } = await den(url);
     expect(duongDan).toBe(url);
     expect(el?.querySelector('main h1')?.textContent?.trim()).toBe(h1);
-    expect(TestBed.inject(Title).getTitle()).toBe(`${tab} · Học toán với AI`);
+    expect(TestBed.inject(Title).getTitle()).toBe(`${tab} · MathL+`);
   });
 
   it.each([
@@ -91,7 +91,7 @@ describe('định tuyến và tiêu đề tab', () => {
     const { url: duongDan, el } = await den(url);
     expect(duongDan).toBe(url);
     expect(el?.querySelector('main h1')?.textContent?.trim()).toBe(h1);
-    expect(TestBed.inject(Title).getTitle()).toBe(`${tab} · Học toán với AI`);
+    expect(TestBed.inject(Title).getTitle()).toBe(`${tab} · MathL+`);
   });
 
   it('trang con cũng chặn sai vai trò: học sinh mở /gv/cai-dat → /hs', async () => {

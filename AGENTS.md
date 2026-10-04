@@ -4,7 +4,7 @@ Nguồn chuẩn cho mọi agent (Codex, Cursor, Claude Code…). Claude Code đ�
 
 ## Đây là gì
 
-**Phần mềm học toán với AI** — hợp đồng dài hạn. Mục tiêu sản phẩm (đọc từ sơ đồ khách): [`docs/product/MUC-TIEU.md`](docs/product/MUC-TIEU.md).
+**MathL+** (phần mềm học toán với AI) — hợp đồng dài hạn. Tên do chủ repo chọn ngày 2026-10-03 (#124). Tên kỹ thuật giữ nguyên: gói `vn.hoctapcanman`, CSDL `hoc_toan_core`, image `hoc-toan-*`, repo. v0 giữ tên hiển thị cũ. Mục tiêu sản phẩm (đọc từ sơ đồ khách): [`docs/product/MUC-TIEU.md`](docs/product/MUC-TIEU.md).
 
 - **v0 (mã hiện có):** nguyên mẫu NCKH, **một** chủ đề Toán 12 — đơn điệu và cực trị. `apps/web` (Next.js) + `services/math` (FastAPI + SymPy). Mọi chữ trên màn hình là tiếng Việt. Demo mặc định nhà `offline` — chạy không cần `LLM_API_KEY`.
 - **v2 (chấp nhận 2026-10-01, [ADR 011](docs/adr/011-kien-truc-v2.md)):** `apps/frontend` (Angular 22) + `services/core` (Spring Boot 4.1, Java 25) + giữ `services/math`. Làm theo pha trong [`docs/product/LO-TRINH.md`](docs/product/LO-TRINH.md); `apps/web` (v0) đóng băng, chỉ sửa lỗi, gỡ khi v2 tương đương.
