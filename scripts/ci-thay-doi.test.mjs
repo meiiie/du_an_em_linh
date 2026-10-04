@@ -1,5 +1,6 @@
 // Chạy: node --test scripts/ci-thay-doi.test.mjs
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import { test } from 'node:test';
 import { phanLoai } from './ci-thay-doi.mjs';
 
@@ -25,3 +26,21 @@ const cases = [
 ];
 
 for (const [ten, files, ket] of cases) test(ten, () => assert.deepEqual(phanLoai(files), ket));
+
+// Codex #135: mọi nguồn mà tệp vàng đối chiếu v0 ghi trong «nguon» phải bật job Core, để đổi nguồn mà quên sinh lại tệp vàng
+// thì TepVangDoiChieuTest được chạy và đỏ. Đường dẫn đọc từ chính tệp vàng; thư mục thì thử một tệp con.
+const DOI_CHIEU = 'specs/001-lat-cat-doc/doi-chieu/';
+const docNguon = (ten) => JSON.parse(readFileSync(new URL('../' + DOI_CHIEU + ten, import.meta.url), 'utf8')).nguon;
+const v0 = docNguon('v0-bai.json');
+const khoaBang = docNguon('khoa-bang-v0.json');
+const nguon = [
+  v0.seed.tep,
+  ...Object.keys(v0.du_lieu),
+  'services/math',
+  ...Object.keys(khoaBang).map((k) => ({ services_math: 'services/math', data_v0: 'data/v0', data_supham: 'data/supham',
+    script: DOI_CHIEU + 'khoa-bang-v0.py' })[k] ?? assert.fail('khóa nguon chưa ánh xạ trong test: ' + k)),
+];
+for (const duongDan of new Set(nguon)) {
+  const tep = /\.[a-z]+$/.test(duongDan) ? duongDan : duongDan + '/tep-con.txt';
+  test('nguồn của tệp vàng bật core: ' + duongDan, () => assert.equal(phanLoai([tep]).core, true));
+}
