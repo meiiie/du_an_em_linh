@@ -25,6 +25,10 @@ import vn.hoctapcanman.core.content.domain.repository.FormulaSheetRepository;
  * Bảng công thức trên {@code formula_sheets}, {@code formulas}, {@code formula_citations}. Bảng khóa được ghi theo thứ tự
  * trigger của V4 đòi: bảng {@code NHAP} và các dòng, rồi đổi sang {@code KHOA}; CSDL tự kiểm lần nữa lúc đổi (bảng có dòng,
  * mọi dòng {@code DAT} có trích dẫn), và mọi trích dẫn khóa căn cứ {@code FOR SHARE} (V5).
+ *
+ * <p>Đọc một bảng có thể là nháp (đang sửa) thì đọc trong một giao dịch, khóa dòng bảng {@code FOR SHARE} trước khi đọc dòng
+ * và trích dẫn: lần ghi luôn khóa dòng bảng trước khi đụng tới dòng con, nên lần đọc chờ lần ghi đang dở commit rồi mới đọc,
+ * không trộn thông tin bảng cũ với dòng mới. Bảng đã khóa không đổi được (V4), nên {@link #findCurrent} không cần khóa.
  */
 @Repository
 public class FormulaSheetRepositoryAdapter implements FormulaSheetRepository {
@@ -89,8 +93,9 @@ public class FormulaSheetRepositoryAdapter implements FormulaSheetRepository {
     }
 
     @Override
+    @Transactional
     public Optional<FormulaSheet> findById(UUID id) {
-        return jdbc.sql("select " + COT_BANG + " from formula_sheets where id = :id").param("id", id)
+        return jdbc.sql("select " + COT_BANG + " from formula_sheets where id = :id for share").param("id", id)
             .query((rs, n) -> new BangCho(rs)).optional().map(this::dung);
     }
 
@@ -101,8 +106,9 @@ public class FormulaSheetRepositoryAdapter implements FormulaSheetRepository {
     }
 
     @Override
+    @Transactional
     public Optional<FormulaSheet> findDraft(UUID classId) {
-        return jdbc.sql("select " + COT_BANG + " from formula_sheets where class_id = :lop and status = 'NHAP'")
+        return jdbc.sql("select " + COT_BANG + " from formula_sheets where class_id = :lop and status = 'NHAP' for share")
             .param("lop", classId).query((rs, n) -> new BangCho(rs)).optional().map(this::dung);
     }
 
