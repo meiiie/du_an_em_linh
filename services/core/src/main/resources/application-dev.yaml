@@ -4,3 +4,7 @@ spring:
     url: jdbc:postgresql://localhost:5432/hoc_toan_core
     username: hoc_toan
     password: hoc_toan
+app:
+  content:
+    source: ../../data # chạy từ services/core: data/supham và data/v0 của repo (ảnh core: /app/noi-dung, T003b)
+    import-on-startup: true # nhập nội dung chung khi khởi động (T012a); dịch vụ toán lỗi thì ghi lỗi, không ghi gì
