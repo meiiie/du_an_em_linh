@@ -74,8 +74,15 @@ class DocKetQuaChamTest {
         maLoiSaiKieu.put("ma_loi", 5);
         Map<String, @Nullable Object> thieuKetQua = phanHoiDat("B.DH.TXD");
         thieuKetQua.remove("ket_qua");
+        // Phán quyết độc lập #140 (ghi chú 7): mỗi ca chấm ở đúng bước của phong bì gốc, để bị từ chối vì đúng lỗi của ca, không
+        // vì nop_toi lệch bước. Phong bì gốc ở mỗi bước thì được nhận.
+        assertThat(DocKetQuaCham.ketQua(BAI_LAM, "B.DH.TXD", KHUNG, BAM, phanHoiDat("B.DH.TXD"), LUC).result()).isEqualTo(GradeStatus.DAT);
+        assertThat(DocKetQuaCham.ketQua(BAI_LAM, "B.DH.XETDAU", KHUNG, BAM, phanHoiSai(), LUC).result()).isEqualTo(GradeStatus.SAI);
+        Map<Map<String, @Nullable Object>, String> buocCua = new java.util.IdentityHashMap<>();
+        buocCua.put(tinCayNgoaiKhoang, "B.DH.XETDAU");
+        buocCua.put(maLoiSaiKieu, "B.DH.XETDAU");
         Stream.of(null, ketQuaLa, khongChamDuoc, perBuocSaiKieu, perBuocKhongPhaiDoiTuong, tinCayNgoaiKhoang, maLoiSaiKieu, thieuKetQua)
-            .map(p -> DocKetQuaCham.ketQua(BAI_LAM, "B.DH.TXD", KHUNG, BAM, p, LUC))
+            .map(p -> DocKetQuaCham.ketQua(BAI_LAM, p == null ? "B.DH.TXD" : buocCua.getOrDefault(p, "B.DH.TXD"), KHUNG, BAM, p, LUC))
             .forEach(g -> {
                 assertThat(g.result()).isEqualTo(GradeStatus.KHONG_CHAM_DUOC);
                 assertThat(g.message()).isEqualTo(DocKetQuaCham.MAY_BAN);
