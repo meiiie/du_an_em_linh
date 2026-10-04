@@ -1,4 +1,4 @@
-# Hiến chương kỹ thuật — Học toán với AI
+# Hiến chương kỹ thuật — MathL+
 
 > **Phiên bản 1.0.0** · Đề xuất 2026-10-01 · Phê chuẩn: chờ chủ repo.
 > Hiến chương đứng trên mọi quy ước khác. Thứ bậc: Hiến chương > ADR đã chấp nhận > `AGENTS.md` / `CLAUDE.md` > rule, skill > ý kiến review. Xung đột thì bậc trên thắng.

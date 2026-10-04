@@ -7,7 +7,7 @@ from app.routers import v1
 from app.schemas import HealthOut
 
 app = FastAPI(
-    title="Dịch vụ toán — Học toán với AI",
+    title="Dịch vụ toán — MathL+",
     version="0.1.0",
     summary="Chấm 5 bước, kiểm định 3 tầng, lọc lộ đáp án, sinh biến thể.",
 )

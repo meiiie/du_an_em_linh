@@ -18,7 +18,7 @@ test('học sinh: vào /hs «Chào An»; tải lại vẫn trong phiên; đăng 
   await vaoLop(page, 'hs.an@demo.local', 'hocsinh123');
   await expect(page).toHaveURL(/\/hs$/);
   await expect(page.getByRole('heading', { level: 1, name: 'Chào An' })).toBeVisible();
-  await expect(page).toHaveTitle('Học · Học toán với AI');
+  await expect(page).toHaveTitle('Học · MathL+');
   await chup(page, 'hs');
 
   // Access token chỉ ở bộ nhớ nên mất khi tải lại; cookie HttpOnly khôi phục phiên qua /api/auth/refresh.
@@ -36,7 +36,7 @@ test('giáo viên: vào /gv «Chưa có lớp»; mở /hs bị đưa về /gv', 
   await vaoLop(page, 'gv@demo.local', 'giaovien123');
   await expect(page).toHaveURL(/\/gv$/);
   await expect(page.getByRole('heading', { level: 1, name: 'Chưa có lớp' })).toBeVisible();
-  await expect(page).toHaveTitle('Lớp · Học toán với AI');
+  await expect(page).toHaveTitle('Lớp · MathL+');
   await chup(page, 'gv');
 
   await page.goto('/hs');
