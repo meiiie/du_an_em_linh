@@ -15,7 +15,7 @@
 // KHO_LOP=v0 giữ nguyên kho của seed.ts (một tài liệu) và chỉ in trạng thái từng bài, không ghi tệp: để tách ảnh hưởng
 // của kho tài liệu khỏi ảnh hưởng của mã.
 import { createHash, randomUUID } from 'node:crypto';
-import { execSync } from 'node:child_process';
+import { execFileSync, execSync } from 'node:child_process';
 import { readFileSync, writeFileSync } from 'node:fs';
 import { stripTypeScriptTypes } from 'node:module';
 import path from 'node:path';
@@ -57,7 +57,16 @@ async function chayDichVuToan() {
         if (r.ok) {
           // Gói Python đã cài trong ảnh (phiên bản SymPy…): cây git cố định mã, danh sách này cố định thư viện.
           const goi = docker('run --rm -e PIP_NO_CACHE_DIR=1 --entrypoint pip ' + anh + ' freeze').split('\n').map((d) => d.trim()).filter(Boolean).sort();
-          return { url, anh, dung, nguon: { cay_git: cay, goi_python: goi, suc_khoe: await r.json() } };
+          // Ảnh gốc của Dockerfile dùng tag có thể đổi (python:3.12-slim): ghi digest bất biến của đúng ảnh gốc đã dùng và
+          // phiên bản Python trong ảnh, để biết tệp vàng sinh trên runtime nào.
+          const tu = git('show HEAD:' + TOAN + '/Dockerfile').split('\n').find((d) => /^FROM\s/i.test(d));
+          const goc = (tu ?? '').trim().split(/\s+/)[1] ?? '';
+          const digest = execFileSync('docker', ['image', 'inspect', '--format', '{{index .RepoDigests 0}}', goc]).toString().trim();
+          const python = execFileSync('docker', ['run', '--rm', '--entrypoint', 'python', anh, '--version']).toString().trim();
+          return {
+            url, anh, dung,
+            nguon: { cay_git: cay, anh_goc: { ten: goc, digest }, python, goi_python: goi, suc_khoe: await r.json() },
+          };
         }
       } catch {
         // chưa sẵn sàng
