@@ -27,7 +27,7 @@ public class NguonNoiDung {
     private final Path goc;
 
     public NguonNoiDung(NoiDungProperties properties) {
-        this.goc = properties.source().toAbsolutePath().normalize();
+        this.goc = Path.of(properties.source()).toAbsolutePath().normalize();
     }
 
     /** Một đối tượng JSON. */

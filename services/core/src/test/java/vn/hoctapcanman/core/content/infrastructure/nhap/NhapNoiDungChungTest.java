@@ -1,6 +1,7 @@
 package vn.hoctapcanman.core.content.infrastructure.nhap;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -11,8 +12,8 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import org.jspecify.annotations.Nullable;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
@@ -34,10 +35,13 @@ import vn.hoctapcanman.core.content.infrastructure.persistence.HintLevelReposito
 import vn.hoctapcanman.core.content.infrastructure.persistence.ProblemRepositoryAdapter;
 import vn.hoctapcanman.core.content.infrastructure.persistence.SolutionRepositoryAdapter;
 import vn.hoctapcanman.core.content.infrastructure.persistence.TopicCatalogRepositoryAdapter;
+import vn.hoctapcanman.core.shared.infrastructure.math.MathJob;
+import vn.hoctapcanman.core.shared.infrastructure.math.MathResult;
 
 /**
  * Nhập nội dung chung (T012a) từ {@code data/} thật của repo trên PostgreSQL 18, với dịch vụ toán giả trả lời cố định:
- * đủ bài, quy đổi mức và Bloom như v0, bài khung ngắn, ví dụ cổng chặn, và nhập lại không nhân bản.
+ * đủ bài, quy đổi mức và Bloom như v0, bài khung ngắn, ví dụ cổng chặn, nhập lại không nhân bản, và dịch vụ toán không
+ * trả lời thì dừng cả lần nhập, không ghi gì.
  */
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
@@ -90,6 +94,11 @@ class NhapNoiDungChungTest {
 
     @Autowired
     private JdbcClient jdbc;
+
+    @AfterEach
+    void henDichVuToan() {
+        ToanGia.KHONG_TRA_LOI = null;
+    }
 
     @Test
     void nhapDuNoiDungChungNhuV0VaNhapLaiKhongNhanBan() {
@@ -146,6 +155,23 @@ class NhapNoiDungChungTest {
         assertThat(phienBan(tuLuan)).isEqualTo(phienBan);
     }
 
+    @Test
+    void dichVuToanKhongTraLoiBaiViDuThiDungVaKhongGhiGi() {
+        // Như seed v0: lỗi gọi dịch vụ toán không được thành «bài ví dụ không có lời giải».
+        ToanGia.KHONG_TRA_LOI = "x**3 - 6*x**2 + 9*x + 2";
+        assertThatThrownBy(nhap::nhap).isInstanceOf(DichVuToanKhongTraLoi.class).hasMessageContaining("SOLVE");
+        assertThat(jdbc.sql("select count(*) from problems").query(Long.class).single()).isZero();
+        assertThat(jdbc.sql("select count(*) from skills").query(Long.class).single()).isZero();
+    }
+
+    @Test
+    void dichVuToanKhongTraLoiBienTheThiDungVaKhongGhiGi() {
+        // Khác biến thể máy trả {@code loi} (bỏ qua như v0): lỗi gọi không được bỏ biến thể trong im lặng.
+        ToanGia.KHONG_TRA_LOI = "trung_phuong";
+        assertThatThrownBy(nhap::nhap).isInstanceOf(DichVuToanKhongTraLoi.class).hasMessageContaining("GENERATE");
+        assertThat(jdbc.sql("select count(*) from problems").query(Long.class).single()).isZero();
+    }
+
     private int phienBan(Problem p) {
         return jdbc.sql("select content_version from problems where id = ?").params(p.id()).query(Integer.class).single();
     }
@@ -159,16 +185,24 @@ class NhapNoiDungChungTest {
         return bam;
     }
 
-    /** Dịch vụ toán giả: giải mọi hàm bằng lời giải cố định; {@code huu_ti} lỗi như khi máy không dùng được. */
+    /**
+     * Dịch vụ toán giả: giải mọi hàm bằng lời giải cố định; {@code huu_ti} trả {@code loi} như khi máy không dùng được;
+     * hàm hay dạng trùng {@link #KHONG_TRA_LOI} thì không trả lời (như {@link MathResult.Failed}).
+     */
     @TestConfiguration
     static class ToanGia {
+
+        static volatile @Nullable String KHONG_TRA_LOI;
 
         @Bean
         GiaiToan giaiToan() {
             return new GiaiToan() {
                 @Override
-                public Optional<Map<String, @Nullable Object>> giai(Map<String, ?> yeuCau) {
+                public Map<String, @Nullable Object> giai(Map<String, ?> yeuCau) {
                     String ham = (String) yeuCau.get("ham");
+                    if (ham.equals(KHONG_TRA_LOI)) {
+                        throw new DichVuToanKhongTraLoi(MathJob.SOLVE, MathResult.Reason.TIMEOUT);
+                    }
                     Map<String, @Nullable Object> kq = new LinkedHashMap<>();
                     kq.put("dat", true);
                     kq.put("latex", "L(" + ham + ")");
@@ -180,13 +214,16 @@ class NhapNoiDungChungTest {
                     capRong.put("ly_do_trong", "Bộ lọc chặn vì có thể lộ kết quả.");
                     kq.put("thang_goi_y", List.of(Map.of("ma_buoc", "B.DH.DAOHAM",
                         "cac_cap", List.of(Map.of("cap", 1, "noi_dung", "Đạo hàm từng hạng tử."), capRong))));
-                    return Optional.of(kq);
+                    return kq;
                 }
 
                 @Override
-                public Optional<Map<String, @Nullable Object>> sinh(Map<String, ?> yeuCau) {
+                public Map<String, @Nullable Object> sinh(Map<String, ?> yeuCau) {
+                    if (yeuCau.get("dang").equals(KHONG_TRA_LOI)) {
+                        throw new DichVuToanKhongTraLoi(MathJob.GENERATE, MathResult.Reason.TIMEOUT);
+                    }
                     if ("huu_ti".equals(yeuCau.get("dang"))) {
-                        return Optional.of(Map.of("loi", "khong dung duoc loi giai may"));
+                        return Map.of("loi", "khong dung duoc loi giai may");
                     }
                     Map<String, @Nullable Object> kq = new LinkedHashMap<>();
                     kq.put("ham", "x**3 - 3*x");
@@ -199,7 +236,7 @@ class NhapNoiDungChungTest {
                     kq.put("su_kien", List.of());
                     kq.put("thang_goi_y", List.of());
                     kq.put("ky_nang_chinh", "T12.DH.03");
-                    return Optional.of(kq);
+                    return kq;
                 }
             };
         }

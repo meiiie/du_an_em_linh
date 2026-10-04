@@ -129,7 +129,10 @@ public class NhapNoiDungChung {
         return bai;
     }
 
-    /** Bài ví dụ của lab: giải bằng máy khi có hàm không tham số; không giải được thì vẫn nhập, không có lời giải. */
+    /**
+     * Bài ví dụ của lab: giải bằng máy khi có hàm không tham số; máy trả lời không giải được thì vẫn nhập, không có lời
+     * giải. Dịch vụ toán không trả lời thì {@link DichVuToanKhongTraLoi} dừng cả lần nhập.
+     */
     private BaiNhap baiViDu(Map<String, @Nullable Object> ex) {
         Map<String, @Nullable Object> de = doiTuong(ex.get("de_bai"));
         String hamDe = chuNeuCo(de.get("ham_so_sympy"));
@@ -138,13 +141,13 @@ public class NhapNoiDungChung {
         Object baiLam = null;
         Object suKien = List.of();
         if (hamDe != null && !hamDe.contains("m")) {
-            Optional<Map<String, @Nullable Object>> giai = toan.giai(Map.of("ham", hamDe));
-            if (giai.isPresent() && Boolean.TRUE.equals(giai.get().get("dat")) && giai.get().get("bai_lam") != null) {
+            Map<String, @Nullable Object> giai = toan.giai(Map.of("ham", hamDe));
+            if (Boolean.TRUE.equals(giai.get("dat")) && giai.get("bai_lam") != null) {
                 ham = hamDe;
-                baiLam = giai.get().get("bai_lam");
-                suKien = Objects.requireNonNullElse(giai.get().get("su_kien"), List.of());
+                baiLam = giai.get("bai_lam");
+                suKien = Objects.requireNonNullElse(giai.get("su_kien"), List.of());
                 if (thang.isEmpty()) {
-                    thang = danhSach(giai.get().get("thang_goi_y"));
+                    thang = danhSach(giai.get("thang_goi_y"));
                 }
             }
         }
@@ -166,14 +169,16 @@ public class NhapNoiDungChung {
             danhSach(giai.get("thang_goi_y")));
     }
 
-    /** Biến thể {@code /v1/generate}; không dùng được (lỗi, thiếu hàm hay lời giải) thì bỏ qua như v0. */
+    /**
+     * Biến thể {@code /v1/generate}; máy trả lời không dùng được ({@code loi}, thiếu hàm hay lời giải) thì bỏ qua như v0.
+     * Dịch vụ toán không trả lời thì {@link DichVuToanKhongTraLoi} dừng cả lần nhập, không bỏ biến thể trong im lặng.
+     */
     private Optional<BaiNhap> baiSinh(String dang, int hatGiong) {
-        Optional<Map<String, @Nullable Object>> sinh = toan.sinh(Map.of("dang", dang, "seed", hatGiong));
-        if (sinh.isEmpty() || sinh.get().get("loi") != null || sinh.get().get("ham") == null || sinh.get().get("bai_lam") == null) {
+        Map<String, @Nullable Object> g = toan.sinh(Map.of("dang", dang, "seed", hatGiong));
+        if (g.get("loi") != null || g.get("ham") == null || g.get("bai_lam") == null) {
             LOG.warn("Biến thể {} hạt giống {} không dùng được", dang, hatGiong);
             return Optional.empty();
         }
-        Map<String, @Nullable Object> g = sinh.get();
         String ham = chu(g.get("ham"));
         String muc4 = Objects.requireNonNullElse(chuNeuCo(g.get("muc_do_4")), "VAN_DUNG");
         return Optional.of(new BaiNhap("GEN-" + dang + "-" + hatGiong,
@@ -215,8 +220,7 @@ public class NhapNoiDungChung {
     }
 
     private Map<String, @Nullable Object> giaiBatBuoc(Map<String, ?> yeuCau, String ma) {
-        Map<String, @Nullable Object> giai = toan.giai(yeuCau)
-            .orElseThrow(() -> new IllegalStateException("Dịch vụ toán không giải được " + ma));
+        Map<String, @Nullable Object> giai = toan.giai(yeuCau);
         if (!Boolean.TRUE.equals(giai.get("dat")) || giai.get("bai_lam") == null) {
             throw new IllegalStateException("Không giải được " + ma);
         }
