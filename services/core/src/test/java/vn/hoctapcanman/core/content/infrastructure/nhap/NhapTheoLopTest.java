@@ -129,6 +129,7 @@ class NhapTheoLopTest {
         KiemGia.DONG_KHONG_DAT = null;
         KiemGia.TRICH_SAI = false;
         KiemGia.TRICH_THEM_HONG = false;
+        KiemGia.TANG2_SAI = false;
     }
 
     @Test
@@ -236,6 +237,12 @@ class NhapTheoLopTest {
                 .put("textContent", vanBanCu + " Câu bổ sung của phiên bản mới.");
             Files.writeString(tep, json.writeValueAsString(taiLieu), StandardCharsets.UTF_8);
 
+            // Codex #134 (P1): lần nhập sau khi đổi tài liệu lỗi giữa chừng (bảng không khóa được) thì lần sau vẫn phải khóa
+            // lại và kiểm lại, dù tài liệu mới đã nạp ở lần lỗi.
+            KiemGia.DONG_KHONG_DAT = "d-3";
+            assertThatThrownBy(() -> theoLop.nhap(lop, da.bai())).isInstanceOf(IllegalStateException.class);
+            KiemGia.DONG_KHONG_DAT = null;
+
             NhapTheoLop.KetQua lai = theoLop.nhap(lop, da.bai());
             assertThat(lai.phienBanBang()).isEqualTo(2);
             assertThat(lai.daKiem()).isEqualTo(16);
@@ -255,6 +262,22 @@ class NhapTheoLopTest {
         jdbc.sql("set constraints all immediate").update();
     }
 
+    @Test
+    void tang2SaiCoTrichDanThiGhiTrichDan() {
+        // Codex #134 (P2): căn cứ của tầng 2 SAI (bài bị chặn) cũng ghi vào verification_run_citations, bất biến như căn cứ đạt.
+        NhapNoiDungChung.DaNhap da = chung.nhapGiuBai();
+        KiemGia.TANG2_SAI = true;
+        NhapTheoLop.KetQua kq = theoLop.nhap(lop, da.bai());
+        assertThat(kq.phatHanh()).containsEntry("DH12-03-VD-01", ReleaseStatus.BI_CHAN);
+        assertThat(dem("""
+                select count(*) from verification_runs r where r.class_id = ?
+                and exists (select 1 from verification_tier_results t where t.run_id = r.id and t.tier = 2 and t.status = 'SAI')
+                and not exists (select 1 from verification_run_citations c where c.run_id = r.id)""")).isZero();
+        assertThat(dem("select count(*) from verification_run_citations c join verification_runs r on r.id = c.run_id where r.class_id = ?"))
+            .isPositive();
+        jdbc.sql("set constraints all immediate").update();
+    }
+
     private long dem(String sql) {
         return jdbc.sql(sql).params(lop).query(Long.class).single();
     }
@@ -270,6 +293,7 @@ class NhapTheoLopTest {
         static volatile @Nullable String DONG_KHONG_DAT;
         static volatile boolean TRICH_SAI;
         static volatile boolean TRICH_THEM_HONG;
+        static volatile boolean TANG2_SAI;
 
         @Bean
         KiemToan kiemToan() {
@@ -309,6 +333,8 @@ class NhapTheoLopTest {
                         tang = List.of("KHONG_KIEM_DUOC", "KHONG_KIEM_DUOC", "KHONG_KIEM_DUOC");
                     } else if (baiLam != null && "3*x".equals(baiLam.get("dao_ham"))) {
                         tang = List.of("SAI", "DAT", "DAT");
+                    } else if (TANG2_SAI) {
+                        tang = List.of("DAT", "SAI", "DAT");
                     } else {
                         tang = List.of("DAT", "DAT", "DAT");
                     }
@@ -317,7 +343,7 @@ class NhapTheoLopTest {
                         Map<String, @Nullable Object> t = new LinkedHashMap<>();
                         t.put("tang", i + 1);
                         t.put("trang_thai", tang.get(i));
-                        if (i == 1 && tang.get(i).equals("DAT")) {
+                        if (i == 1 && !tang.get(i).equals("KHONG_KIEM_DUOC")) {
                             t.put("trich_dan", List.of(Map.of("document_id", "v0-don-dieu", "vi_tri", 0, "trich", trich)));
                         }
                         if (i == 2 && tang.get(i).equals("DAT")) {

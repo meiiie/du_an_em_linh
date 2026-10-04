@@ -99,9 +99,8 @@ public class NhapTheoLop {
     record TaiLieuLop(Document taiLieu, List<DocumentPassage> doan) {}
 
     KetQua nhap(UUID lop, List<NhapNoiDungChung.BaiNhap> bai) {
-        KhoLop khoLop = napTaiLieu(lop);
-        Map<String, TaiLieuLop> kho = khoLop.taiLieu();
-        FormulaSheet bang = khoaBang(lop, kho, khoLop.coBanMoi());
+        Map<String, TaiLieuLop> kho = napTaiLieu(lop);
+        FormulaSheet bang = khoaBang(lop, kho);
         Map<String, ReleaseStatus> phatHanh = new LinkedHashMap<>();
         int daKiem = 0;
         for (NhapNoiDungChung.BaiNhap b : bai) {
@@ -119,20 +118,16 @@ public class NhapTheoLop {
 
     // ---- Tài liệu -------------------------------------------------------------------------------------------------
 
-    /** Tài liệu của lớp sau khi nạp, và có tài liệu nào vừa thay bản mới không (thì phải khóa lại bảng và kiểm lại bài). */
-    record KhoLop(Map<String, TaiLieuLop> taiLieu, boolean coBanMoi) {}
-
     /**
      * Nạp tài liệu nguồn vào lớp. Tài liệu đã có, cùng nội dung: không ghi gì. Tài liệu đã có mà nguồn đổi (văn bản, loại,
      * quyền dùng, phiên bản…): không sửa tại chỗ, vì đoạn của nó có thể đang là căn cứ của bảng đã khóa hay lượt kiểm (V5
      * từ chối, và căn cứ phải bất biến); bản cũ giữ nguyên làm căn cứ, chỉ đổi mã thành {@code mã.cu-<8 ký tự đầu của id>} để
      * nhường mã, rồi nạp bản mới với mã gốc. Kho của lớp gửi dịch vụ toán chỉ gồm các bản mang mã gốc.
      */
-    private KhoLop napTaiLieu(UUID lop) {
+    private Map<String, TaiLieuLop> napTaiLieu(UUID lop) {
         List<Map<String, @Nullable Object>> nguonTaiLieu = new ArrayList<>(nguon.danhSach("v0/tai-lieu.json"));
         TAI_LIEU_LAB.forEach(duong -> nguonTaiLieu.add(nguon.doiTuong(duong)));
         Map<String, TaiLieuLop> kho = new LinkedHashMap<>();
-        boolean[] coBanMoi = {false};
         giaoDich.executeWithoutResult(t -> {
             for (Map<String, @Nullable Object> d : nguonTaiLieu) {
                 String ma = chu(d.get("ma"));
@@ -153,27 +148,36 @@ public class NhapTheoLop {
                         cu.fileRef(), cu.textContent(), cu.version(), cu.uploadedBy(), cu.createdAt()), documents.findPassages(cu.id()));
                     moi = new Document(UUID.randomUUID(), lop, ma, moi.title(), moi.kind(), moi.source(), moi.licenseStatus(), null,
                         vanBan, moi.version(), null, clock.instant());
-                    coBanMoi[0] = true;
                     LOG.info("Tài liệu {} của lớp {} đổi ở nguồn: giữ bản cũ làm căn cứ ({}), nạp bản mới", ma, lop, maCu);
                 }
                 kho.put(ma, new TaiLieuLop(moi, documents.save(moi, ChiaDoan.theoCau(moi.id(), vanBan))));
             }
         });
-        return new KhoLop(kho, coBanMoi[0]);
+        return kho;
+    }
+
+    /**
+     * Thời điểm bản tài liệu mới nhất của kho được nạp vào lớp. Bảng khóa trước thời điểm này, hay lượt kiểm ghi trước nó,
+     * đã kiểm với căn cứ cũ hơn kho hiện tại: phải khóa lại, kiểm lại. Suy từ dữ liệu đã lưu, nên lần nhập trước lỗi giữa
+     * chừng (đã nạp tài liệu mới, chưa khóa được bảng) thì lần sau vẫn khóa lại và kiểm lại.
+     */
+    private static Instant banMoiNhat(Map<String, TaiLieuLop> kho) {
+        return kho.values().stream().map(t -> t.taiLieu().createdAt()).max(Instant::compareTo).orElse(Instant.MIN);
     }
 
     // ---- Bảng công thức -------------------------------------------------------------------------------------------
 
     /**
-     * Bảng đang dùng của lớp sau khi nhập. Giữ bảng đang dùng nếu cùng các dòng của v0 và không tài liệu nào vừa thay bản mới
-     * (căn cứ của bảng vẫn là tài liệu đang dùng); ngược lại khóa bảng phiên bản mới với kho hiện tại: lượt kiểm với bảng cũ
+     * Bảng đang dùng của lớp sau khi nhập. Giữ bảng đang dùng nếu cùng các dòng của v0 và được khóa sau khi mọi tài liệu của
+     * kho đã nạp ({@link #banMoiNhat}); ngược lại khóa bảng phiên bản mới với kho hiện tại: lượt kiểm với bảng cũ
      * thành cũ, phát hành giữ «cần kiểm lại» tới khi kiểm lại (ADR 005). Lớp đang có bảng nháp không do importer tạo (giáo viên
      * đang soạn) thì dừng, không ghi đè.
      */
-    private FormulaSheet khoaBang(UUID lop, Map<String, TaiLieuLop> kho, boolean coBanMoi) {
+    private FormulaSheet khoaBang(UUID lop, Map<String, TaiLieuLop> kho) {
         List<Formula> dong = dongBangV0();
         Optional<FormulaSheet> dangDung = sheets.findCurrent(lop);
-        if (dangDung.isPresent() && !coBanMoi && dauVanTay(dangDung.get().rows()).equals(dauVanTay(dong))) {
+        boolean sauKho = dangDung.map(FormulaSheet::lockedAt).filter(khoa -> !khoa.isBefore(banMoiNhat(kho))).isPresent();
+        if (dangDung.isPresent() && sauKho && dauVanTay(dangDung.get().rows()).equals(dauVanTay(dong))) {
             return dangDung.get();
         }
         Optional<FormulaSheet> banNhap = sheets.findDraft(lop);
@@ -285,8 +289,10 @@ public class NhapTheoLop {
         Problem p = problems.findByCode(b.ma()).orElseThrow(() -> new IllegalStateException("Chưa có bài " + b.ma()));
         int phienBan = problems.findContentVersion(p.id()).orElseThrow();
         Optional<VerificationRun> moiNhat = runs.findLatest(lop, SubjectKind.PROBLEM, p.id());
+        // Còn mới: đúng phiên bản nội dung, đúng bảng đang dùng, chưa cũ, và ghi sau khi mọi tài liệu của kho đã nạp.
         boolean conMoi = moiNhat.isPresent() && Objects.equals(moiNhat.get().contentVersion(), phienBan)
-            && moiNhat.get().freshnessRefusal(true, p.contentHash(), bang.id()).isEmpty();
+            && moiNhat.get().freshnessRefusal(true, p.contentHash(), bang.id()).isEmpty()
+            && !moiNhat.get().createdAt().isBefore(banMoiNhat(kho));
         if (conMoi) {
             VerificationRun luot = moiNhat.get();
             giaoDich.executeWithoutResult(t -> apPhatHanh(lop, p, luot, bang));
@@ -321,15 +327,19 @@ public class NhapTheoLop {
             CheckStatus trangThai = trangThai(t.get("trang_thai"));
             String lyDo = chuNeuCo(t.get("ly_do"));
             Object canCu = t.get("trich_dan") != null ? t.get("trich_dan") : t.get("cong_thuc");
-            if (so == 2 && trangThai == CheckStatus.DAT) {
+            if (so == 2 && t.get("trich_dan") != null) {
+                // Trích dẫn của tầng 2 ghi thành căn cứ bất biến dù tầng DAT hay SAI (căn cứ của bài bị chặn cũng phải giữ).
                 Optional<List<UUID>> doan = doanTrichDan(danhSach(t.get("trich_dan")), kho);
                 if (doan.isPresent()) {
                     trichDan.addAll(doan.get());
-                } else {
+                } else if (trangThai == CheckStatus.DAT) {
                     // Đóng mặc định: dịch vụ toán nói có căn cứ mà không chỉ được về đoạn đã lưu thì không coi là đạt.
                     trangThai = CheckStatus.KHONG_KIEM_DUOC;
                     lyDo = "Trích dẫn của dịch vụ toán không ánh xạ được về đoạn tài liệu đã lưu của lớp.";
                 }
+            } else if (so == 2 && trangThai == CheckStatus.DAT) {
+                trangThai = CheckStatus.KHONG_KIEM_DUOC;
+                lyDo = "Tầng 2 đạt mà dịch vụ toán không trích dẫn đoạn nào.";
             }
             Number tinCay = (Number) t.get("do_tin_cay");
             tang.add(new TierResult(so, trangThai, chuNeuCo(t.get("loai_ket_qua")), t.get("buoc_sai") == null ? null : json(t.get("buoc_sai")),
