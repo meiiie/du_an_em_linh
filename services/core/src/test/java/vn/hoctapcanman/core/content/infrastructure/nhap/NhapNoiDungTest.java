@@ -37,6 +37,7 @@ import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.SerializationFeature;
 import tools.jackson.databind.json.JsonMapper;
 import vn.hoctapcanman.core.TestcontainersConfiguration;
+import vn.hoctapcanman.core.content.domain.model.DocumentPassage;
 import vn.hoctapcanman.core.content.infrastructure.persistence.DocumentRepositoryAdapter;
 import vn.hoctapcanman.core.content.infrastructure.persistence.FormulaSheetRepositoryAdapter;
 import vn.hoctapcanman.core.content.infrastructure.persistence.HintLevelRepositoryAdapter;
@@ -55,9 +56,10 @@ import vn.hoctapcanman.core.content.infrastructure.persistence.VerificationRunRe
  * so riêng với mã băm kho của tệp vàng. Core gửi yêu cầu khác v0 dù một chút thì không có phản hồi và test đỏ, nên test này
  * cũng giữ importer dựng bài và kho đúng như {@code seed.ts}.
  *
- * <p>Job khóa bảng ({@code /v1/kiem-dong-cong-thuc}) không có ở v0 nên không có trong tệp vàng: job giả trả mọi dòng đạt hai
- * tầng, trích đoạn đầu của tài liệu đầu của kho; bảng khóa là điều kiện để kiểm bài, không phải đối tượng so ở đây (test của
- * {@code services/math} kiểm job đó với bảng 6 dòng của v0 và 5 tài liệu).
+ * <p>Job khóa bảng ({@code /v1/kiem-dong-cong-thuc}) không có ở v0 nên không có trong tệp vàng: job giả kiểm yêu cầu đúng 6
+ * dòng của v0 và 5 tài liệu nguồn của lớp ({@link PhatLai#soYeuCauKhoaBang}), rồi trả mọi dòng đạt hai tầng, trích đoạn đầu
+ * của tài liệu đầu của kho; bảng khóa là điều kiện để kiểm bài, không phải đối tượng so ở đây (test của {@code services/math}
+ * kiểm job đó với bảng 6 dòng của v0 và 5 tài liệu).
  */
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
@@ -266,6 +268,49 @@ class NhapNoiDungTest {
         }
 
         /**
+         * Codex #135 (P2): job khóa bảng giả chỉ trả {@code DAT} cho đúng đầu vào của v0, vì dịch vụ toán thật có thể bác
+         * hay phân loại khác khi core gửi sai. Các dòng phải đúng 6 dòng của {@code data/v0/bang-cong-thuc.json} (mã, tiêu
+         * đề, LaTeX, phát biểu); tài liệu phải đúng 5 tài liệu nguồn của lớp theo thứ tự (tên, quyền dùng) và đoạn của mỗi
+         * tài liệu là văn bản nguồn (NFC) tách câu, có id.
+         */
+        @SuppressWarnings("unchecked")
+        static void soYeuCauKhoaBang(Map<String, ?> yeuCau) {
+            Path data = NhapNoiDungChungTest.thuMucData();
+            Map<String, Object> tepBang = (Map<String, Object>) docTep(data.resolve("v0/bang-cong-thuc.json"));
+            List<Map<String, Object>> bang = (List<Map<String, Object>>) tepBang.get("formulas");
+            assertThat((List<Object>) yeuCau.get("dong")).as("các dòng gửi tới /v1/kiem-dong-cong-thuc").isEqualTo(bang.stream()
+                .map(f -> Map.of("id", f.get("ma"), "tieu_de", f.get("title"), "latex", f.get("latex"), "phat_bieu", f.get("noiDung")))
+                .toList());
+            List<Map<String, Object>> nguon = new ArrayList<>((List<Map<String, Object>>) docTep(data.resolve("v0/tai-lieu.json")));
+            for (String lab : List.of("sp-tai-lieu-0001", "sp-tai-lieu-0002")) {
+                nguon.add((Map<String, Object>) docTep(data.resolve("supham/tai-lieu/" + lab + ".json")));
+            }
+            List<Map<String, Object>> gui = (List<Map<String, Object>>) yeuCau.get("tai_lieu");
+            assertThat(gui).as("tài liệu gửi tới /v1/kiem-dong-cong-thuc").hasSize(nguon.size());
+            for (int i = 0; i < nguon.size(); i++) {
+                Map<String, Object> g = gui.get(i);
+                Map<String, Object> n = nguon.get(i);
+                assertThat(g.keySet()).as("tài liệu %s", n.get("ma")).containsExactlyInAnyOrder("id", "ten", "doan", "license_status");
+                assertThat(UUID.fromString((String) g.get("id"))).isNotNull();
+                assertThat(List.of(g.get("ten"), g.get("license_status"))).as("tài liệu %s", n.get("ma"))
+                    .containsExactly(n.get("title"), n.get("licenseStatus"));
+                String vanBan = java.text.Normalizer.normalize((String) n.get("textContent"), java.text.Normalizer.Form.NFC);
+                List<Map<String, Object>> doan = (List<Map<String, Object>>) g.get("doan");
+                assertThat(doan.stream().map(d -> d.get("text")).toList()).as("đoạn của tài liệu %s", n.get("ma"))
+                    .isEqualTo(ChiaDoan.theoCau(UUID.randomUUID(), vanBan).stream().map(DocumentPassage::text).toList());
+                assertThat(doan).allSatisfy(d -> assertThat(UUID.fromString((String) d.get("id"))).isNotNull());
+            }
+        }
+
+        private static Object docTep(Path tep) {
+            try {
+                return JSON.readValue(Files.readString(tep), Object.class);
+            } catch (IOException e) {
+                throw new UncheckedIOException(e);
+            }
+        }
+
+        /**
          * Kho của một yêu cầu {@code verify}, dựng lại theo thứ tự khóa của {@code khoLop()} trong xuat-v0.ts (Map.of của core
          * không giữ thứ tự khóa) rồi băm như tệp vàng. Mỗi mục phải có đúng các trường đó: thiếu hay thừa trường đều đỏ.
          */
@@ -312,6 +357,7 @@ class NhapNoiDungTest {
                 @Override
                 @SuppressWarnings("unchecked")
                 public Map<String, @Nullable Object> kiemDongCongThuc(Map<String, ?> yeuCau) {
+                    soYeuCauKhoaBang(yeuCau);
                     Map<String, Object> taiLieu = ((List<Map<String, Object>>) yeuCau.get("tai_lieu")).getFirst();
                     Map<String, Object> doan = ((List<Map<String, Object>>) taiLieu.get("doan")).getFirst();
                     List<Map<String, Object>> dong = new ArrayList<>();
