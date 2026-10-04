@@ -52,4 +52,23 @@ fi
 bai=$("${COMPOSE[@]}" exec -T db psql -U hoc_toan -d hoc_toan_core -tAc 'select count(*) from problems')
 test "$bai" = 17 || { echo "core nhập $bai bài, cần 17 như v0"; exit 1; }
 dat "core nhập nội dung chung từ ảnh: 17 bài như v0"
+
+# Nội dung theo lớp (T012b): lớp «12A1 thử» của profile dev có 5 tài liệu, bảng 6 dòng đã khóa qua kiem-dong-cong-thuc,
+# và trạng thái phát hành đúng tệp vàng của v0 (specs/001-lat-cat-doc/doi-chieu/v0-bai.json: 14 / 2 / 1).
+for _ in $(seq 1 90); do
+  log=$("${COMPOSE[@]}" logs --no-color core 2>&1 || true)
+  grep -q 'Nhập nội dung cho lớp' <<<"$log" && break
+  sleep 2
+done
+if ! grep -q 'Nhập nội dung cho lớp .*phát hành' <<<"$log"; then
+  grep 'Nhập nội dung cho lớp' <<<"$log" || echo "core chưa ghi dòng kết quả nhập theo lớp sau 180 s"
+  exit 1
+fi
+psql_v2() { "${COMPOSE[@]}" exec -T db psql -U hoc_toan -d hoc_toan_core -tAc "$1"; }
+LOP="(select id from classes where name = '12A1 thử')"
+test "$(psql_v2 "select count(*) from documents where class_id = $LOP")" = 5
+test "$(psql_v2 "select count(*) from formula_sheets where class_id = $LOP and status = 'KHOA'")" = 1
+phat_hanh=$(psql_v2 "select string_agg(status || '=' || n, ',' order by status) from (select status, count(*) n from problem_releases where class_id = $LOP group by status) s")
+test "$phat_hanh" = "BI_CHAN=1,CHO_GIAO_VIEN_DUYET=2,DA_PHAT_HANH=14" || { echo "phát hành của lớp: $phat_hanh"; exit 1; }
+dat "lớp «12A1 thử»: 5 tài liệu, bảng đã khóa, phát hành 14 / 2 / 1 như v0"
 echo "khói v2: đạt"
