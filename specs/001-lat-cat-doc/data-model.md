@@ -55,18 +55,20 @@ ngược lại 409 và phải kiểm lại, để không phát hành bằng phá
 Áp một run vào problem_releases cũng chỉ khi run còn mới như vậy.
 ```
 
-## practice (`V5__practice.sql`)
+## practice (`V7__practice.sql`)
+
+Số V của các migration sau content là số kế tiếp lúc merge: V5, V6 đã dùng cho content (#120, #121), practice là V7 (#87); tutor, mastery, planner lấy số kế tiếp khi làm.
 
 | Bảng | Cột chính | Ghi chú |
 | --- | --- | --- |
-| `assignments` | `id`, `class_id`, `problem_id`, `student_id`, `status`, `set_name`, `due_at`, `assigned_by`, `assigned_at` | Giao cho lớp = một dòng mỗi học sinh; chỉ giao bài `DA_PHAT_HANH` của chính lớp đó (`problem_releases`) |
-| `submissions` | `id`, `class_id`, `student_id`, `problem_id`, `status` (`DANG_LAM`, `DA_NOP`), `guess_suspected`, `guess_reason`, `result`, `started_at`, `submitted_at` | Một bài làm đang mở mỗi (học sinh, lớp, bài); lớp quyết định tài liệu, bảng công thức, cài đặt gia sư dùng cho bài làm |
-| `submission_steps` | `id`, `submission_id`, `step_code`, `line_no`, `latex`, `raw_input`, `normalized_input`, `normalizer_version`, `normalize_status` | Nộp lại cùng bước: idempotent theo (`submission_id`, `step_code`, nội dung) |
-| `submission_tables`, `submission_table_cells` | bảng xét dấu: `row`, `k` (0-based, `docs/chi-so-o-bang.md`), `value` | |
-| `input_events` | `submission_id`, `step_code`, `cell`, `old_value`, `new_value`, `at` | Cho nghi đoán mò |
-| `grading_results` | `submission_id`, `step_code`, `result`, `result_type`, `wrong_steps`, `error_code`, `confidence`, `per_step`, `message`, `issues`, `math_ok` | Lỗi dịch vụ toán → `result = KHONG_CHAM_DUOC`, không bao giờ `DAT` |
+| `assignments` | `id`, `class_id`, `problem_id`, `student_id`, `status` (`DA_GIAO`, `DA_HUY`), `set_name`, `due_at`, `assigned_by`, `assigned_at` | Giao cho lớp = một dòng mỗi học sinh, duy nhất theo (lớp, bài, học sinh); chỉ giao bài `DA_PHAT_HANH` của chính lớp đó cho học sinh của lớp (trigger) |
+| `submissions` | `id`, `class_id`, `student_id`, `problem_id`, `content_version`, `status` (`DANG_LAM`, `DA_NOP`), `guess_suspected`, `guess_reason`, `result`, `started_at`, `submitted_at` | Một bài làm đang làm mỗi (học sinh, lớp, bài) (chỉ mục duy nhất từng phần); mở chỉ khi bài đã phát hành cho lớp, đúng phiên bản nội dung hiện tại; nộp rồi thì bài làm và mọi phần con không đổi; lớp quyết định tài liệu, bảng công thức, cài đặt gia sư dùng cho bài làm |
+| `submission_steps` | `submission_id`, `step_code`, `line_no`, `latex`, `line_kind` | Nội dung mới nhất của bước kiểu dòng; nộp lại cùng bước thì thay trọn. `line_kind` là nhãn `loai` của v0 (`NGHIEM`, `KHONG_XD`, `DONG_BIEN`…) |
+| `submission_tables`, `submission_table_cells` | bảng: `table_kind`; ô: `ordinal` (thứ tự gửi), `row_code`, `k` (0-based, `docs/chi-so-o-bang.md`), `value` | Giữ thứ tự ô để dựng lại đúng payload chấm của v0 |
+| `input_events` | `submission_id`, `step_code`, `cell_row`, `cell_k`, `old_value`, `new_value`, `at` | Cho nghi đoán mò; chỉ thêm |
+| `grading_results` | `submission_id`, `step_code` (bước nộp tới), `request_hash`, `result`, `result_type`, `wrong_steps`, `error_code`, `confidence`, `per_step`, `message`, `issues`, `math_ok`, `unfinished`, `normalizer_version`, `normalization`, `graded_at` | Chỉ thêm. Một lần chấm có phán quyết mỗi (bài làm, `request_hash` = SHA-256 của payload `/v1/grade`): hai tab nộp cùng bước ghi một lần. Lỗi dịch vụ toán → `result = KHONG_CHAM_DUOC`, không phán quyết nào, không bao giờ `DAT`, không chặn lần chấm lại. Chuẩn hóa (`chuan_hoa` của v0) gắn với lần chấm, không với dòng |
 
-## tutor (`V6__tutor.sql`)
+## tutor (`V<n>__tutor.sql`)
 
 | Bảng | Cột chính | Ghi chú |
 | --- | --- | --- |
@@ -76,7 +78,7 @@ ngược lại 409 và phải kiểm lại, để không phát hành bằng phá
 
 **Chuyển trạng thái của lượt gia sư:** `MOI` → `KHO` (mở kho lớp) → `GOI` (hỏi nhà) → `LOC` (lọc lộ đáp án + cổng công thức) → `XONG` hoặc `LOI` hoặc `DUNG` (học sinh dừng). Chỉ `XONG` có câu hiện cho học sinh.
 
-## mastery (`V7__mastery.sql`)
+## mastery (`V<n>__mastery.sql`)
 
 | Bảng | Cột chính | Ghi chú |
 | --- | --- | --- |
@@ -88,7 +90,7 @@ ngược lại 409 và phải kiểm lại, để không phát hành bằng phá
 
 Đề xuất bài kế tính khi đọc: bài kế chọn tay của giáo viên (nếu có) trước, rồi đề xuất của máy (bài, lý do ∈ {`CHUA_LOI`, `CUNG_CO`, `NANG_1_NAC`, `DE_HON`, `THAY_CO_GIAO`}). Máy dùng mức ghi đè nếu có. Bất biến: mức của bài máy đề xuất ≤ mức đang dùng của kỹ năng + 1.
 
-## planner (`V8__planner.sql`)
+## planner (`V<n>__planner.sql`)
 
 | Bảng | Cột chính | Ghi chú |
 | --- | --- | --- |

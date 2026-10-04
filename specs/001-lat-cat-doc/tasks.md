@@ -77,7 +77,7 @@ description: "Danh sách việc của epic P2 — lát cắt dọc một chủ �
 
 ### Issue — Module `practice` (core)
 
-- [ ] T019 [US1] `V5__practice.sql`: `assignments`, `submissions`, `submission_steps`, `submission_tables`, `submission_table_cells`, `input_events`, `grading_results`
+- [ ] T019 [US1] `V7__practice.sql` (V5, V6 đã dùng cho content): `assignments`, `submissions`, `submission_steps`, `submission_tables`, `submission_table_cells`, `input_events`, `grading_results`
 - [ ] T020 [US1] `core/practice/`: nộp bước (idempotent), chấm qua `MathServiceClient.grade`, ghi kết quả; nộp bài; cờ mở lời giải; nghi đoán mò
 - [ ] T021 [US1] `core/practice/infrastructure/web/`: `GET /api/hs/bai`, `GET /api/hs/bai/{maBai}`, `POST …/buoc`, `POST …/nop`, `POST /api/gv/giao-bai` theo hợp đồng; `GET /api/hs/trang-hoc` phần `ten`, `soBaiGiao` (mastery, planner bổ sung phần của mình)
 - [ ] T022 [P] [US1] `core-test/practice/`: chấm sai không lộ đáp án; dịch vụ toán lỗi → `KHONG_CHAM_DUOC`; tải lại giữ bài làm; hai tab nộp cùng bước ghi một lần
@@ -109,7 +109,7 @@ description: "Danh sách việc của epic P2 — lát cắt dọc một chủ �
 
 ### Issue — Module `tutor` (core)
 
-- [ ] T031 [US2] `V6__tutor.sql`: `tutor_sessions`, `tutor_messages`, `llm_calls`
+- [ ] T031 [US2] `V<n>__tutor.sql`: `tutor_sessions`, `tutor_messages`, `llm_calls`
 - [ ] T032 [US2] `core/tutor/domain/`: luật xin đáp án, sai chỗ, gợi ý (chép `apps/web/lib/tutor.ts`), thang 3 cấp, trạng thái lượt
 - [ ] T033 [US2] `core/tutor/infrastructure/ai/`: nhà `offline` (`/v1/goi-y`), OpenAI-compatible, OpenRouter, Z.AI qua Spring AI (research R3); xóa định danh (chép `apps/web/lib/llm.ts`); chỉ tài khoản `synthetic` được gửi ra ngoài; test máy chủ giả: nhà trả 503 hay hết giờ → đúng 1 yêu cầu HTTP, không gửi lại
 - [ ] T034 [US2] `core/tutor/application/LuotGiaSu`: kho lớp + trích dẫn `[n]` (chép `kien-thuc.ts`, `kho-lop.ts`) → nhà → `/v1/filter` → `/v1/kiem-loi-giang` → ghi mục duyệt cho biểu thức bị bỏ; câu thay thế chỉ từ gợi ý đã kiểm trước với phiên bản bảng hiện tại, không có thì câu cố định không chứa toán (ADR 013 mục 6)
@@ -152,7 +152,7 @@ description: "Danh sách việc của epic P2 — lát cắt dọc một chủ �
 
 ### Issue — Module `mastery` (core)
 
-- [ ] T049 [US5] `V7__mastery.sql`: `mastery_config`, `mastery_states`, `mastery_events`, `mastery_overrides`, `next_problem_overrides`
+- [ ] T049 [US5] `V<n>__mastery.sql`: `mastery_config`, `mastery_states`, `mastery_events`, `mastery_overrides`, `next_problem_overrides`
 - [ ] T050 [US5] `core/mastery/`: BKT chép `apps/web/lib/learning.ts` đúng tham số (research R7); ngưỡng 4 mức; mức Bloom lưu kèm; kẹt (ghi `KET` qua `CanhBaoGiaoVien`); hoàn thành kỹ năng / chủ đề
 - [ ] T051 [US5] `core/mastery/`: bài kế (chép `de-hoc-sinh.ts`) với lý do; bất biến «không quá 1 nấc»; bổ sung `baiKe`, `soKyNang`, `hoanThanh` vào `GET /api/hs/trang-hoc`
 - [ ] T052 [P] [US5] Script `specs/001-lat-cat-doc/doi-chieu/bkt-v0.ts` xuất tệp vàng; `core-test/mastery/DoiChieuBktV0Test.java` so từng bước
@@ -165,7 +165,7 @@ description: "Danh sách việc của epic P2 — lát cắt dọc một chủ �
 
 ### Issue — Module `planner` + màn Lịch
 
-- [ ] T055 [US6] `V8__planner.sql`; `core/planner/`: lịch tuần + lời khuyên (chép `lich.ts`, `counsel.ts`), nhắc trong app; `GET /api/hs/lich`; bổ sung `viecHomNay` vào `GET /api/hs/trang-hoc`
+- [ ] T055 [US6] `V<n>__planner.sql`; `core/planner/`: lịch tuần + lời khuyên (chép `lich.ts`, `counsel.ts`), nhắc trong app; `GET /api/hs/lich`; bổ sung `viecHomNay` vào `GET /api/hs/trang-hoc`
 - [ ] T056 [US6] `fe/features/hoc-sinh/lich/` («Lịch học», `lich-tuan`, không tràn ở 390 px); nhắc hôm nay trên trang Học
 - [ ] T057 [P] [US6] Test: lịch mặc định, kỹ năng kẹt, nhắc hôm nay
 
@@ -178,7 +178,7 @@ description: "Danh sách việc của epic P2 — lát cắt dọc một chủ �
 - [ ] T058 [US7] API `GET /api/gv/lop`, `GET /api/gv/tien-do?muc=4|3`, `GET /api/gv/hoc-sinh/{id}`, `GET/PUT /api/gv/cai-dat`, `GET /api/gv/gia-su`
 - [ ] T059 [US7] `fe/features/giao-vien/{lop,tien-do,hoc-sinh,cai-dat,gia-su}/` («Lớp 12A1 thử», `canh-bao-ket`, `san-sang-ai`, `tien-do`, `toggle-muc`, `mo-loi-giai`, `ai-provider-offline`)
 - [ ] T060 [P] [US7] e2e: 4 mức / 3 mức, cảnh báo kẹt có tên Chi, giáo viên lớp khác bị từ chối
-- [ ] T060b [US7] `core/mastery/`: ghi đè mức và bài kế (`mastery_overrides`, `next_problem_overrides` trong `V7__mastery.sql`), API `PUT/DELETE /api/gv/hoc-sinh/{id}/muc/{kyNang}`, `POST /api/gv/hoc-sinh/{id}/bai-ke`; màn học sinh của giáo viên có thao tác ghi đè
+- [ ] T060b [US7] `core/mastery/`: ghi đè mức và bài kế (`mastery_overrides`, `next_problem_overrides` trong `V<n>__mastery.sql`), API `PUT/DELETE /api/gv/hoc-sinh/{id}/muc/{kyNang}`, `POST /api/gv/hoc-sinh/{id}/bai-ke`; màn học sinh của giáo viên có thao tác ghi đè
 - [ ] T060c [P] [US7] Test: bài kế theo mức ghi đè; bài chọn tay hiện trước với lý do «thầy cô giao»; nhật ký người, thời điểm, lý do; gỡ ghi đè
 
 ---
