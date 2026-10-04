@@ -16,6 +16,7 @@ import vn.hoctapcanman.core.content.application.dto.hocsinh.DeBaiChoHocSinh;
 import vn.hoctapcanman.core.content.domain.model.Level4;
 import vn.hoctapcanman.core.content.domain.model.Problem;
 import vn.hoctapcanman.core.content.domain.model.ProblemRelease;
+import vn.hoctapcanman.core.content.domain.model.ReleasedProblem;
 import vn.hoctapcanman.core.content.domain.model.ReleaseStatus;
 import vn.hoctapcanman.core.content.domain.repository.ProblemRepository;
 
@@ -97,6 +98,11 @@ class DeBaiHocSinhServiceTest {
         @Override
         public Optional<Problem> findReleasedInClass(UUID classId, String code) {
             return bai.stream().filter(p -> p.code().equals(code) && dangPhatHanh(classId, p)).findFirst();
+        }
+
+        @Override
+        public Optional<ReleasedProblem> findReleasedForWork(UUID classId, String code) {
+            return findReleasedInClass(classId, code).map(p -> new ReleasedProblem(p, 1, "DH12"));
         }
 
         private boolean dangPhatHanh(UUID classId, Problem p) {

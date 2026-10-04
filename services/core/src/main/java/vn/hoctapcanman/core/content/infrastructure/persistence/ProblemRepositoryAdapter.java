@@ -12,6 +12,7 @@ import vn.hoctapcanman.core.content.domain.model.BloomLevel;
 import vn.hoctapcanman.core.content.domain.model.Level3;
 import vn.hoctapcanman.core.content.domain.model.Level4;
 import vn.hoctapcanman.core.content.domain.model.Problem;
+import vn.hoctapcanman.core.content.domain.model.ReleasedProblem;
 import vn.hoctapcanman.core.content.domain.repository.ProblemRepository;
 
 /** Bài trên bảng {@code problems}. Không đọc bảng {@code solutions} (FR-006). */
@@ -86,6 +87,17 @@ public class ProblemRepositoryAdapter implements ProblemRepository {
                  from problems p where code = :code and exists (
                     select 1 from problem_releases r where r.problem_id = p.id and r.class_id = :lop and r.status = 'DA_PHAT_HANH')""")
             .param("lop", classId).param("code", code).query(ProblemRepositoryAdapter::bai).optional();
+    }
+
+    @Override
+    public Optional<ReleasedProblem> findReleasedForWork(UUID classId, String code) {
+        // Một câu lệnh: bài, phiên bản nội dung, chủ đề và phát hành cùng một ảnh chụp.
+        return jdbc.sql("select " + COT + ", content_version, (select k.topic_code from skills k where k.code = p.skill_code) topic_code "
+                + """
+                 from problems p where code = :code and exists (
+                    select 1 from problem_releases r where r.problem_id = p.id and r.class_id = :lop and r.status = 'DA_PHAT_HANH')""")
+            .param("lop", classId).param("code", code)
+            .query((rs, n) -> new ReleasedProblem(bai(rs, n), rs.getInt("content_version"), rs.getString("topic_code"))).optional();
     }
 
     @Override

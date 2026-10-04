@@ -13,7 +13,7 @@
 | GET | `/api/hs/trang-hoc` | — | `{ten, viecHomNay[], baiKe: {maBai, tieuDe, lyDo: CHUA_LOI\|CUNG_CO\|NANG_1_NAC\|DE_HON\|THAY_CO_GIAO, kyNang, muc}, soBaiGiao[], soKyNang[{kyNang, muc4, kẹt}], hoanThanh: {kyNang[], chuDe}}` | 23–28 |
 | GET | `/api/hs/bai` | — | danh sách bài được giao / đã phát hành: `{maBai, tieuDe, muc4, han, trangThai}` | 31 |
 | GET | `/api/hs/bai/{maBai}` | — | `{de: {text, latex}, cacBuoc: [{maBuoc, moTa, dangNhap}], baiLam: {cacBuoc: [{maBuoc, dong, latex, ketQua, thongBao, oSai[]}], trangThai}, coTheMoLoiGiai}` | 6–10 |
-| POST | `/api/hs/bai/{maBai}/buoc` | `{maBuoc, dong[], bang?: [{hang, k, giaTri}]}` | `{ketQua: DAT\|SAI\|KHONG_CHAM_DUOC, thongBao, oSai[], maLoi?, buocKe?}` — không có giá trị đúng | 8–10 |
+| POST | `/api/hs/bai/{maBai}/buoc` | `{maBuoc, dong?: [{dong, latex, loai?}], bang?: [{hang, k, giaTri}], suKien?: [{maBuoc, hang?, k?, giaTriCu?, giaTriMoi, luc}]}` (`suKien`: sự kiện nhập mới kể từ lần nộp trước, tối đa 500) | `{ketQua: DAT\|SAI\|KHONG_KIEM_DUOC\|KHONG_CHAM_DUOC, thongBao, oSai: [{maBuoc, dong?, hang?, k?}], maLoi?, buocKe?}` — không có giá trị đúng; yêu cầu chấm dựng từ các bước đã lưu, không từ máy học sinh | 8–10 |
 | POST | `/api/hs/bai/{maBai}/nop` | — | `{ketQua, mucHieu: [{kyNang, muc4Truoc, muc4Sau}], loiGiai?}` (`loiGiai` chỉ khi lớp bật cờ) | 6, 23 |
 | POST | `/api/hs/gia-su` | `{maBai, cauHoi?, chip?: GOI_Y\|SAI_CHO\|GUI_THAY_CO}` | **SSE**, xem dưới | 11–21 |
 | GET | `/api/hs/gia-su/{maBai}` | — | lịch sử: `[{vaiTro, noiDung, trichDan[], nhan: "Gia sư AI", luc}]` | 22 |

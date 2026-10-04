@@ -26,6 +26,7 @@ import vn.hoctapcanman.core.content.domain.model.InputKind;
 import vn.hoctapcanman.core.content.domain.model.Level3;
 import vn.hoctapcanman.core.content.domain.model.Level4;
 import vn.hoctapcanman.core.content.domain.model.Problem;
+import vn.hoctapcanman.core.content.domain.model.ReleasedProblem;
 import vn.hoctapcanman.core.content.domain.model.Skill;
 import vn.hoctapcanman.core.content.domain.model.SkillPrerequisite;
 import vn.hoctapcanman.core.content.domain.model.Solution;
@@ -281,11 +282,19 @@ class ContentPersistenceTest {
         assertThat(problems.findReleasedInClass(lop, "DH12-TH-13")).isEmpty();
         assertThat(problems.findReleasedInClass(lopKhac)).isEmpty();
         assertThat(problems.findReleasedInClass(lopKhac, "DH12-TH-12")).isEmpty();
+        // T020: cho bài làm, kèm phiên bản nội dung hiện tại và chủ đề của kỹ năng chính, cùng câu lệnh.
+        assertThat(problems.findReleasedForWork(lop, "DH12-TH-12")).map(r -> List.of(r.problem().id(), r.contentVersion(), r.topicCode()))
+            .contains(List.of(p.id(), 1, "DH12"));
+        assertThat(problems.findReleasedForWork(lop, "DH12-TH-13")).isEmpty();
+        assertThat(problems.findReleasedForWork(lopKhac, "DH12-TH-12")).isEmpty();
 
         problems.save(new Problem(p.id(), p.code(), p.skillCode(), p.extraSkillCodes(), p.level4(), null, null, null, "Đề đã sửa",
             "y", null, p.answerForm(), null, p.origin(), "d".repeat(64), null, LUC, LUC));
         assertThat(problems.findReleasedInClass(lop)).isEmpty();
         assertThat(problems.findReleasedInClass(lop, "DH12-TH-12")).isEmpty();
+        assertThat(problems.findReleasedForWork(lop, "DH12-TH-12")).isEmpty();
+        phatHanh(lop, p.id());
+        assertThat(problems.findReleasedForWork(lop, "DH12-TH-12")).map(ReleasedProblem::contentVersion).contains(2);
     }
 
     /** Lượt kiểm DAT mới cho bài ở lớp, rồi phát hành theo lượt đó. */

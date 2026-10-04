@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import vn.hoctapcanman.core.content.domain.model.Problem;
+import vn.hoctapcanman.core.content.domain.model.ReleasedProblem;
 
 /** Bài của ngân hàng (nội dung chung). Không đọc lời giải: lời giải ở {@link SolutionRepository} riêng (FR-006). */
 public interface ProblemRepository {
@@ -28,6 +29,9 @@ public interface ProblemRepository {
 
     /** Bài mã {@code code} nếu đang phát hành ở lớp {@code classId}; đọc trong một câu lệnh như {@link #findReleasedInClass(UUID)}. */
     Optional<Problem> findReleasedInClass(UUID classId, String code);
+
+    /** Như {@link #findReleasedInClass(UUID, String)}, kèm phiên bản nội dung đọc trong cùng câu lệnh (cho bài làm). */
+    Optional<ReleasedProblem> findReleasedForWork(UUID classId, String code);
 
     /**
      * Phiên bản nội dung hiện tại của bài ({@code problems.content_version}, CSDL tăng mỗi khi đề, lời giải hay thang gợi ý
