@@ -13,6 +13,8 @@ import org.jspecify.annotations.Nullable;
  * NHAP ──lượt kiểm──▶ DA_PHAT_HANH | BI_CHAN | CHO_GIAO_VIEN_DUYET
  * CHO_GIAO_VIEN_DUYET ──GV duyệt (lượt GV_DUYET)──▶ DA_PHAT_HANH
  * đổi nội dung bài ──▶ NHAP (chờ kiểm lại)
+ * đổi bảng công thức ──▶ giữ nguyên, lượt gắn với nó thành stale: «cần kiểm lại» (ADR 005)
+ * ghi lượt kiểm mới nhất của (lớp, bài) ──▶ NHAP, rồi áp lượt đó ngay
  * </pre>
  *
  * Kiểm lại một bài đã phát hành (ví dụ sau khi bảng công thức đổi) cũng áp kết quả mới, kể cả khi kết quả chặn bài:
@@ -59,8 +61,19 @@ public record ProblemRelease(UUID classId, UUID problemId, ReleaseStatus status,
         return new ProblemRelease(classId, problemId, ReleaseStatus.NHAP, null, now);
     }
 
-    /** Học sinh của lớp thấy bài này. */
+    /** Học sinh của lớp thấy bài này (kể cả khi lượt kiểm của nó đã cũ vì đổi bảng: bài không bị gỡ tự động, ADR 005). */
     public boolean visibleToStudents() {
         return status == ReleaseStatus.DA_PHAT_HANH;
+    }
+
+    /**
+     * Phát hành này cần kiểm lại: còn gắn một lượt kiểm, và lượt đó đã {@code stale} (lớp đổi bảng công thức). Giáo viên
+     * thấy cờ này; học sinh vẫn thấy bài {@code DA_PHAT_HANH} tới khi lượt mới được áp.
+     */
+    public boolean needsRecheck(VerificationRun run) {
+        if (!run.id().equals(runId)) {
+            throw new IllegalArgumentException("Lượt kiểm không phải lượt của phát hành này");
+        }
+        return run.stale();
     }
 }

@@ -70,6 +70,11 @@ public class ProblemRepositoryAdapter implements ProblemRepository {
             .param("ids", List.copyOf(ids)).query(ProblemRepositoryAdapter::bai).list();
     }
 
+    @Override
+    public Optional<Integer> findContentVersion(UUID problemId) {
+        return jdbc.sql("select content_version from problems where id = :id").param("id", problemId).query(Integer.class).optional();
+    }
+
     private static Problem bai(ResultSet rs, int n) throws SQLException {
         String level3 = rs.getString("level3");
         String bloom = rs.getString("bloom_level");

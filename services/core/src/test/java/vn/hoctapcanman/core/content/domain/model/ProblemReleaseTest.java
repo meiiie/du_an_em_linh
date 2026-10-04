@@ -53,13 +53,24 @@ class ProblemReleaseTest {
     @Test
     void khongApLuotCuaLopKhacBaiKhacHayLuotGiaSu() {
         ProblemRelease nhap = ProblemRelease.draft(Mau.LOP, Mau.BAI, Mau.LUC);
-        VerificationRun lopKhac = VerificationRun.forProblem(UUID.randomUUID(), Mau.BAI, Mau.BAM, Mau.BANG, Mau.tang(DAT, DAT, DAT), Mau.LUC);
-        VerificationRun baiKhac = VerificationRun.forProblem(Mau.LOP, UUID.randomUUID(), Mau.BAM, Mau.BANG, Mau.tang(DAT, DAT, DAT), Mau.LUC);
-        VerificationRun giaSu = new VerificationRun(UUID.randomUUID(), Mau.LOP, SubjectKind.TUTOR_FORMULA, Mau.BAI, Mau.BAM, Mau.BANG,
-            SAI, null, false, Mau.LUC, Mau.tang(SAI, SAI, SAI));
+        VerificationRun lopKhac = VerificationRun.forProblem(UUID.randomUUID(), Mau.BAI, Mau.BAM, 1, Mau.BANG, Mau.tang(DAT, DAT, DAT), List.of(Mau.DOAN), Mau.LUC);
+        VerificationRun baiKhac = VerificationRun.forProblem(Mau.LOP, UUID.randomUUID(), Mau.BAM, 1, Mau.BANG, Mau.tang(DAT, DAT, DAT), List.of(Mau.DOAN), Mau.LUC);
+        VerificationRun giaSu = new VerificationRun(UUID.randomUUID(), Mau.LOP, SubjectKind.TUTOR_FORMULA, Mau.BAI, Mau.BAM, null, Mau.BANG,
+            SAI, null, false, Mau.LUC, Mau.tang(SAI, SAI, SAI), List.of());
         assertThatThrownBy(() -> ap(nhap, lopKhac)).isInstanceOf(IllegalArgumentException.class);
         assertThatThrownBy(() -> ap(nhap, baiKhac)).isInstanceOf(IllegalArgumentException.class);
         assertThatThrownBy(() -> ap(nhap, giaSu)).isInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
+    void doiBangThiPhatHanhGiuNguyenVaCanKiemLai() {
+        // ADR 005: đổi bảng công thức không gỡ bài đã phát hành; lượt của nó thành stale, phát hành «cần kiểm lại».
+        VerificationRun dat = Mau.luot(DAT, DAT, DAT);
+        ProblemRelease phatHanh = ap(ProblemRelease.draft(Mau.LOP, Mau.BAI, Mau.LUC), dat);
+        assertThat(phatHanh.needsRecheck(dat)).isFalse();
+        assertThat(phatHanh.needsRecheck(dat.markStale())).isTrue();
+        assertThat(phatHanh.visibleToStudents()).isTrue();
+        assertThatThrownBy(() -> phatHanh.needsRecheck(Mau.luot(DAT, DAT, DAT))).isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test

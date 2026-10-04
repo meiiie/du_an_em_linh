@@ -12,12 +12,21 @@ import org.jspecify.annotations.Nullable;
 
 /**
  * Một lượt kiểm 3 tầng, gắn lớp và đúng bảng công thức đã dùng (tầng 2, 3 dùng tài liệu và bảng của lớp, nên một lượt
- * của lớp A không phát hành bài cho lớp B). Đổi bảng công thức thì lượt cũ thành {@code stale}.
+ * của lớp A không phát hành bài cho lớp B). Đổi bảng công thức thì lượt cũ thành {@code stale}: cần kiểm lại, không duyệt
+ * hay áp được nữa, nhưng bài đã phát hành theo nó vẫn giữ nguyên (ADR 005).
  *
  * <p>Với lượt kiểm bài, mọi trạng thái suy từ các tầng: trạng thái tổng bằng {@link #overallOf} của các tầng (hoặc
  * {@code GV_DUYET} khi các tầng đủ 1–3 và tổng là {@code KHONG_KIEM_DUOC}), trạng thái phát hành bằng
  * {@link #publishOf} của trạng thái tổng. Constructor từ chối mọi tổ hợp lệch, kể cả lượt nạp lại từ CSDL, nên một tầng
  * {@code SAI} không bao giờ được duyệt hay phát hành.
+ *
+ * <p>{@code contentVersion} là phiên bản nội dung của bài lúc kiểm ({@code problems.content_version}, V5): bắt buộc với
+ * lượt kiểm bài, trống với lượt công thức gia sư. CSDL chỉ nhận lượt kiểm bài đúng phiên bản hiện tại, nên lượt kiểm trên
+ * nội dung cũ không ghi được. {@code citationPassageIds} là các đoạn tài liệu lượt này trích dẫn ở tầng 2; adapter ghi
+ * vào {@code verification_run_citations} để đoạn và tài liệu căn cứ không đổi dưới chân kết quả kiểm. Tầng 2 {@code DAT}
+ * phải có ít nhất một đoạn, ở mọi loại lượt (ADR 005: tầng 2 bắt buộc trích dẫn; ADR 013: công thức gia sư đạt tầng 2
+ * nhờ đoạn trích của dòng bảng đã khóa mà nó khớp). Tầng 3 {@code DAT} phải kiểm với bảng đã khóa
+ * ({@code formulaSheetId} không trống): lớp chưa khóa bảng nào thì tầng 3 chỉ là {@code KHONG_KIEM_DUOC}.
  */
 public record VerificationRun(
         UUID id,
@@ -25,12 +34,14 @@ public record VerificationRun(
         SubjectKind subjectKind,
         UUID subjectId,
         String contentHash,
+        @Nullable Integer contentVersion,
         @Nullable UUID formulaSheetId,
         CheckStatus overallStatus,
         @Nullable ReleaseStatus publishStatus,
         boolean stale,
         Instant createdAt,
-        List<TierResult> tiers) {
+        List<TierResult> tiers,
+        List<UUID> citationPassageIds) {
 
     private static final Set<Integer> BA_TANG = Set.of(1, 2, 3);
 
@@ -43,7 +54,25 @@ public record VerificationRun(
         Objects.requireNonNull(overallStatus, "overallStatus");
         Objects.requireNonNull(createdAt, "createdAt");
         Objects.requireNonNull(tiers, "tiers");
+        Objects.requireNonNull(citationPassageIds, "citationPassageIds");
         Kiem.sha256(contentHash, "Dấu vân tay nội dung");
+        citationPassageIds = List.copyOf(citationPassageIds);
+        if (new HashSet<>(citationPassageIds).size() != citationPassageIds.size()) {
+            throw new IllegalArgumentException("Đoạn trích dẫn ghi hai lần");
+        }
+        if (contentVersion != null && contentVersion < 1) {
+            throw new IllegalArgumentException("Phiên bản nội dung phải từ 1");
+        }
+        if (subjectKind == SubjectKind.PROBLEM && contentVersion == null) {
+            throw new IllegalArgumentException("Lượt kiểm bài phải ghi phiên bản nội dung đã kiểm");
+        }
+        boolean tang2Dat = tiers.stream().anyMatch(t -> t.tier() == 2 && t.status() == CheckStatus.DAT);
+        if (tang2Dat && citationPassageIds.isEmpty()) {
+            throw new IllegalArgumentException("Tầng 2 DAT phải có đoạn tài liệu được trích dẫn");
+        }
+        if (formulaSheetId == null && tiers.stream().anyMatch(t -> t.tier() == 3 && t.status() == CheckStatus.DAT)) {
+            throw new IllegalArgumentException("Tầng 3 DAT phải kiểm với bảng công thức đã khóa của lớp");
+        }
         tiers = tiers.stream().sorted(Comparator.comparingInt(TierResult::tier)).toList();
         Set<Integer> daCo = new HashSet<>();
         for (TierResult t : tiers) {
@@ -71,12 +100,15 @@ public record VerificationRun(
         }
     }
 
-    /** Lượt kiểm bài mới cho một lớp; trạng thái tổng và phát hành tính từ các tầng. */
-    public static VerificationRun forProblem(
-            UUID classId, UUID problemId, String contentHash, @Nullable UUID formulaSheetId, List<TierResult> tiers, Instant now) {
+    /**
+     * Lượt kiểm bài mới cho một lớp, trên phiên bản nội dung {@code contentVersion}, với các đoạn tài liệu tầng 2 đã trích
+     * dẫn (tầng 2 {@code DAT} thì phải có ít nhất một đoạn); trạng thái tổng và phát hành tính từ các tầng.
+     */
+    public static VerificationRun forProblem(UUID classId, UUID problemId, String contentHash, int contentVersion,
+            @Nullable UUID formulaSheetId, List<TierResult> tiers, List<UUID> citationPassageIds, Instant now) {
         CheckStatus tong = overallOf(tiers);
-        return new VerificationRun(UUID.randomUUID(), classId, SubjectKind.PROBLEM, problemId, contentHash, formulaSheetId,
-            tong, publishOf(tong), false, now, tiers);
+        return new VerificationRun(UUID.randomUUID(), classId, SubjectKind.PROBLEM, problemId, contentHash, contentVersion,
+            formulaSheetId, tong, publishOf(tong), false, now, tiers, citationPassageIds);
     }
 
     /**
@@ -104,10 +136,13 @@ public record VerificationRun(
         };
     }
 
-    /** Bảng công thức của lớp vừa đổi: lượt này không còn là căn cứ phát hành. */
+    /**
+     * Bảng công thức của lớp vừa đổi: lượt này cần kiểm lại, không duyệt hay áp được nữa; phát hành đang theo nó giữ nguyên
+     * và hiện «cần kiểm lại» (ADR 005), tới khi lượt mới được áp.
+     */
     public VerificationRun markStale() {
-        return stale ? this : new VerificationRun(id, classId, subjectKind, subjectId, contentHash, formulaSheetId,
-            overallStatus, publishStatus, true, createdAt, tiers);
+        return stale ? this : new VerificationRun(id, classId, subjectKind, subjectId, contentHash, contentVersion,
+            formulaSheetId, overallStatus, publishStatus, true, createdAt, tiers, citationPassageIds);
     }
 
     /**
@@ -163,8 +198,8 @@ public record VerificationRun(
             throw new IllegalStateException("Không duyệt được lượt kiểm: " + lyDo);
         });
         ContentReview duyet = new ContentReview(UUID.randomUUID(), id, contentHash, reviewerId, note, now);
-        VerificationRun daDuyet = new VerificationRun(id, classId, subjectKind, subjectId, contentHash, formulaSheetId,
-            CheckStatus.GV_DUYET, ReleaseStatus.DA_PHAT_HANH, false, createdAt, tiers);
+        VerificationRun daDuyet = new VerificationRun(id, classId, subjectKind, subjectId, contentHash, contentVersion,
+            formulaSheetId, CheckStatus.GV_DUYET, ReleaseStatus.DA_PHAT_HANH, false, createdAt, tiers, citationPassageIds);
         return new Approval(daDuyet, duyet);
     }
 
