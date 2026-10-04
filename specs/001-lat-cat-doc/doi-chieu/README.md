@@ -21,15 +21,16 @@ Script chạy **nguyên** mã nạp bài của `apps/web/scripts/seed.ts`: dựn
   - id là mã ổn định (`v0-don-dieu`, `d-1`…), không phải UUID ngẫu nhiên.
 - **Ghi lại để phát lại.** Yêu cầu `verify` trong `phan-hoi-toan.json` bỏ trường `tai_lieu`, `cong_thuc`, vì kho chỉ ghi một lần, dưới dạng danh sách mã và băm, ở `v0-bai.json` → `nguon.kho_lop`.
 - **Dừng khi seed.ts đổi.** Script dừng nếu `seed.ts` có thay đổi chưa commit, hoặc thiếu một mốc. `nguon.seed` ghi commit và blob của seed.ts đã chạy.
+- **Dịch vụ toán do script tự dựng.** Script không lấy dịch vụ toán từ một URL có sẵn, vì không biết nó build từ mã nào (`/health` luôn báo `0.1.0`). Nó tự build ảnh `services/math` từ chính checkout và dừng nếu `services/math` có thay đổi chưa commit. Ảnh chạy chỉ đọc ở một cổng ngẫu nhiên của 127.0.0.1 và bị xóa khi xong. `nguon.dich_vu_toan` ghi cây git của `services/math` (cố định mã) và `pip freeze` của ảnh (cố định thư viện, như SymPy).
 
 ```bash
-# từ gốc repo, Node ≥ 23.6, dịch vụ toán đang chạy (ví dụ docker compose up math)
-MATH_SERVICE_URL=http://127.0.0.1:8000 node specs/001-lat-cat-doc/doi-chieu/xuat-v0.ts
+# từ gốc repo, Node ≥ 23.6, Docker đang chạy
+node specs/001-lat-cat-doc/doi-chieu/xuat-v0.ts
 # tách ảnh hưởng của kho: giữ kho một tài liệu của seed.ts, chỉ in trạng thái, không ghi tệp
-KHO_LOP=v0 MATH_SERVICE_URL=http://127.0.0.1:8000 node specs/001-lat-cat-doc/doi-chieu/xuat-v0.ts
+KHO_LOP=v0 node specs/001-lat-cat-doc/doi-chieu/xuat-v0.ts
 ```
 
-### Kết quả (2026-10-04, `services/math` của `main`)
+### Kết quả (2026-10-04, cây `services/math` `3e9004c`, sympy theo `nguon.dich_vu_toan.goi_python`)
 
 - **17 bài:** 14 `DA_PHAT_HANH`, 2 `CHO_GIAO_VIEN_DUYET` (`DH12-01-TH-01`, `DH12-06-VDC-01`: không có hàm, cả ba tầng `KHONG_KIEM_DUOC`), 1 `BI_CHAN` (`DH12-DEMO-CHAN-01`: tầng 1 `SAI`).
 - **32 lần gọi dịch vụ toán:** 12 `solve`, 3 `generate`, 17 `verify`.

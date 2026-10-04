@@ -7,8 +7,11 @@
 // Không gõ lại logic của v0: đoạn mã được cắt theo mốc từ seed.ts, bỏ kiểu bằng stripTypeScriptTypes của Node, rồi chạy
 // trong vm với một `db` giả chỉ ghi lại `db.insert(<bảng>).values(...)`. Thay duy nhất một chỗ: hằng `corpus` (kho của
 // lớp v0, một tài liệu) thành kho của lớp v2.
-// Chạy từ gốc repo (Node ≥ 23.6), khi services/math đang chạy:
-//   MATH_SERVICE_URL=http://127.0.0.1:8000 node specs/001-lat-cat-doc/doi-chieu/xuat-v0.ts
+// Dịch vụ toán không lấy từ một URL có sẵn (không biết nó build từ mã nào: /health luôn báo 0.1.0): script tự build ảnh
+// services/math từ chính checkout này (dừng nếu services/math có thay đổi chưa commit), chạy ở một cổng ngẫu nhiên của
+// 127.0.0.1, rồi ghi cây git của services/math và id ảnh vào nguồn của tệp vàng.
+// Chạy từ gốc repo (Node ≥ 23.6, Docker):
+//   node specs/001-lat-cat-doc/doi-chieu/xuat-v0.ts
 // KHO_LOP=v0 giữ nguyên kho của seed.ts (một tài liệu) và chỉ in trạng thái từng bài, không ghi tệp: để tách ảnh hưởng
 // của kho tài liệu khỏi ảnh hưởng của mã.
 import { createHash, randomUUID } from 'node:crypto';
@@ -20,10 +23,46 @@ import vm from 'node:vm';
 
 const GOC = path.resolve(import.meta.dirname, '..', '..', '..');
 const TEP = 'apps/web/scripts/seed.ts';
-const URL_TOAN = process.env.MATH_SERVICE_URL;
-if (!URL_TOAN) throw new Error('Cần MATH_SERVICE_URL (dịch vụ toán đang chạy), ví dụ http://127.0.0.1:8000');
+const TOAN = 'services/math';
 
 const src = readFileSync(path.join(GOC, TEP), 'utf8');
+const git = (lenh: string) => execSync('git ' + lenh, { cwd: GOC }).toString().trim();
+const docker = (lenh: string) => execSync('docker ' + lenh, { cwd: GOC, env: { ...process.env, MSYS_NO_PATHCONV: '1' } }).toString().trim();
+
+/** Build và chạy services/math của checkout này; trả URL, nguồn (cây git, id ảnh) và hàm dừng. */
+async function chayDichVuToan() {
+  if (git('status --porcelain -- ' + TOAN)) throw new Error(TOAN + ' có thay đổi chưa commit: tệp vàng phải ứng với mã đã commit');
+  const cay = git('rev-parse HEAD:' + TOAN);
+  const anh = docker('build -q -f ' + TOAN + '/Dockerfile .');
+  const hop = docker('run -d --rm --read-only --tmpfs /tmp -p 127.0.0.1::8000 ' + anh);
+  const dung = () => {
+    try {
+      docker('rm -f ' + hop);
+    } catch {
+      // đã dừng
+    }
+  };
+  try {
+    const url = 'http://' + docker('port ' + hop + ' 8000/tcp').split('\n')[0];
+    for (let i = 0; ; i++) {
+      try {
+        const r = await fetch(url + '/health');
+        if (r.ok) {
+          // Gói Python đã cài trong ảnh (phiên bản SymPy…): cây git cố định mã, danh sách này cố định thư viện.
+          const goi = docker('run --rm -e PIP_NO_CACHE_DIR=1 --entrypoint pip ' + anh + ' freeze').split('\n').map((d) => d.trim()).filter(Boolean).sort();
+          return { url, anh, dung, nguon: { cay_git: cay, goi_python: goi, suc_khoe: await r.json() } };
+        }
+      } catch {
+        // chưa sẵn sàng
+      }
+      if (i >= 60) throw new Error('dịch vụ toán không lên sau 60 s');
+      await new Promise((xong) => setTimeout(xong, 1000));
+    }
+  } catch (e) {
+    dung();
+    throw e;
+  }
+}
 
 function viTri(moc: string, tu = 0): number {
   const i = src.indexOf(moc, tu);
@@ -38,7 +77,6 @@ function doan(dau: string, cuoi: string): string {
 }
 
 function nguonDaCommit() {
-  const git = (lenh: string) => execSync('git ' + lenh, { cwd: GOC }).toString().trim();
   if (git('status --porcelain -- ' + TEP)) throw new Error(TEP + ' có thay đổi chưa commit');
   return { tep: TEP, commit: git('log -1 --format=%H -- ' + TEP), blob: git('rev-parse HEAD:' + TEP) };
 }
@@ -67,6 +105,16 @@ function khoLop() {
 async function main() {
   const seed = nguonDaCommit();
   const kho = khoLop();
+  const toan = await chayDichVuToan();
+  try {
+    await xuat(seed, kho, toan);
+  } finally {
+    toan.dung();
+  }
+}
+
+async function xuat(seed: ReturnType<typeof nguonDaCommit>, kho: ReturnType<typeof khoLop>,
+    toan: Awaited<ReturnType<typeof chayDichVuToan>>) {
 
   // Cắt mã của v0 theo mốc. Đoạn nạp bài: từ khung bước tới trước phần dữ liệu học sinh mẫu (`const levels`).
   const CORPUS = doan('const corpus = {', '\n  };\n');
@@ -97,7 +145,7 @@ async function main() {
     GV: '<giao-vien>',
     LOP: '<lop>',
     now: new Date(0),
-    process: { env: { MATH_SERVICE_URL: URL_TOAN } },
+    process: { env: { MATH_SERVICE_URL: toan.url } },
     repoRoot: () => GOC,
     existsSync: () => false,
     spawnSync: () => {
@@ -149,13 +197,12 @@ async function main() {
     for (const b of bai) console.log(`${b.ma}\t${b.trang_thai_phat_hanh}\t${b.tang.map((t) => t.trang_thai).join('/')}`);
     return;
   }
-  const suckhoe = await (await fetch(URL_TOAN + '/health')).json();
   const ghi = (ten: string, giaTri: unknown) =>
     writeFileSync(path.join(import.meta.dirname, ten), JSON.stringify(giaTri, null, 2) + '\n', 'utf8');
   ghi('v0-bai.json', {
     nguon: {
       seed,
-      dich_vu_toan: suckhoe,
+      dich_vu_toan: toan.nguon,
       kho_lop: {
         tai_lieu: kho.tai_lieu.map((d) => d.id),
         cong_thuc: kho.cong_thuc.map((c: { id: string }) => c.id),
@@ -167,7 +214,7 @@ async function main() {
   ghi('phan-hoi-toan.json', goiToan);
   const dem = (k: string) => bai.filter((b) => b.trang_thai_phat_hanh === k).length;
   console.log(`v0: ${bai.length} bài (DA_PHAT_HANH ${dem('DA_PHAT_HANH')}, CHO_GIAO_VIEN_DUYET ${dem('CHO_GIAO_VIEN_DUYET')}, ` +
-    `BI_CHAN ${dem('BI_CHAN')}); ${goiToan.length} lần gọi dịch vụ toán`);
+    `BI_CHAN ${dem('BI_CHAN')}); ${goiToan.length} lần gọi dịch vụ toán; services/math ${toan.nguon.cay_git}, ảnh ${toan.anh}`);
 }
 
 await main();
