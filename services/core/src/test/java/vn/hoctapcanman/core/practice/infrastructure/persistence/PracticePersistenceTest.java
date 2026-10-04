@@ -298,6 +298,17 @@ class PracticePersistenceTest {
     }
 
     @Test
+    void csdlChanKhongChamDuocMangPhanQuyet() {
+        // Codex #136 (P2): kết quả từng bước của một lần không chấm được là phán quyết lẻn vào lịch sử.
+        UUID bl = submissions.openOrGet(Submission.open(lop, an, bai, 1, LUC)).id();
+        assertThatThrownBy(() -> jdbc.sql("""
+                insert into grading_results (id, submission_id, step_code, request_hash, result, per_step, message, graded_at)
+                values (?, ?, 'B.DH.DAOHAM', ?, 'KHONG_CHAM_DUOC', '{"B.DH.TXD": "DAT"}', 'bận', now())""")
+                .params(UUID.randomUUID(), bl, "8".repeat(64)).update())
+            .isInstanceOf(DataIntegrityViolationException.class);
+    }
+
+    @Test
     void ketQuaChamChiThem() {
         UUID bl = submissions.openOrGet(Submission.open(lop, an, bai, 1, LUC)).id();
         grades.record(ketQua(bl, "e".repeat(64), GradeStatus.SAI));

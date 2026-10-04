@@ -13,8 +13,8 @@ import org.jspecify.annotations.Nullable;
  * cờ dấu U ({@code toan_dung}), chưa xong, chuẩn hóa ({@code chuan_hoa}, JSON). {@code requestHash} là SHA-256 của payload
  * đã gửi, để chấm lại đúng yêu cầu đó không ghi lần hai. Các trường JSON giữ nguyên văn phản hồi (core không diễn giải).
  *
- * <p>{@link GradeStatus#KHONG_CHAM_DUOC} không mang phán quyết nào (không bước sai, mã lỗi, độ tin cậy, cờ dấu U), và
- * không bao giờ là đạt (FR-009).
+ * <p>{@link GradeStatus#KHONG_CHAM_DUOC} không mang phán quyết nào (không loại kết quả, kết quả từng bước, bước sai, mã
+ * lỗi, độ tin cậy, vấn đề, cờ dấu U, cờ chưa xong, chuẩn hóa), chỉ có thông báo, và không bao giờ là đạt (FR-009).
  */
 public record GradingResult(
         UUID id,
@@ -51,8 +51,9 @@ public record GradingResult(
         if (confidence != null && (confidence.isNaN() || confidence < 0 || confidence > 1)) {
             throw new IllegalArgumentException("Độ tin cậy phải trong [0, 1]");
         }
-        if (result == GradeStatus.KHONG_CHAM_DUOC
-                && (wrongStepsJson != null || errorCode != null || confidence != null || mathOk != null)) {
+        if (result == GradeStatus.KHONG_CHAM_DUOC && (resultType != null || wrongStepsJson != null || errorCode != null
+                || confidence != null || !perStep.isEmpty() || issuesJson != null || mathOk != null || unfinished
+                || normalizerVersion != null || normalizationJson != null)) {
             throw new IllegalArgumentException("KHONG_CHAM_DUOC không mang phán quyết nào");
         }
     }

@@ -67,6 +67,12 @@ class PracticeModelTest {
             .isEqualTo(GradeStatus.KHONG_CHAM_DUOC);
         assertThatThrownBy(() -> new GradingResult(UUID.randomUUID(), UUID.randomUUID(), "B.DH.DAOHAM", bam, GradeStatus.KHONG_CHAM_DUOC,
             null, null, "ERR.DH.02", null, Map.of(), null, null, null, false, null, null, LUC)).isInstanceOf(IllegalArgumentException.class);
+        // Codex #136: kết quả từng bước, loại kết quả, vấn đề cũng là phán quyết.
+        assertThatThrownBy(() -> new GradingResult(UUID.randomUUID(), UUID.randomUUID(), "B.DH.DAOHAM", bam, GradeStatus.KHONG_CHAM_DUOC,
+            null, null, null, null, Map.of("B.DH.TXD", "DAT"), null, null, null, false, null, null, LUC))
+            .isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> new GradingResult(UUID.randomUUID(), UUID.randomUUID(), "B.DH.DAOHAM", bam, GradeStatus.KHONG_CHAM_DUOC,
+            "SAI_BUOC", null, null, null, Map.of(), null, "[]", null, false, null, null, LUC)).isInstanceOf(IllegalArgumentException.class);
         assertThatThrownBy(() -> new GradingResult(UUID.randomUUID(), UUID.randomUUID(), "B.DH.DAOHAM", "A".repeat(64), GradeStatus.DAT,
             null, null, null, null, Map.of(), null, null, null, false, null, null, LUC)).as("băm").isInstanceOf(IllegalArgumentException.class);
         assertThatThrownBy(() -> new GradingResult(UUID.randomUUID(), UUID.randomUUID(), "B.DH.DAOHAM", bam, GradeStatus.SAI, null, null,

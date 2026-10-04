@@ -115,8 +115,10 @@ CREATE TABLE grading_results (
     normalizer_version varchar(32),
     normalization      jsonb,
     graded_at          timestamptz  NOT NULL,
-    -- Dịch vụ toán lỗi: không có phán quyết nào đi kèm.
-    CHECK (result <> 'KHONG_CHAM_DUOC' OR (wrong_steps IS NULL AND error_code IS NULL AND confidence IS NULL AND math_ok IS NULL))
+    -- Dịch vụ toán lỗi: không có phán quyết nào đi kèm, kể cả loại kết quả, kết quả từng bước, vấn đề, chuẩn hóa.
+    CHECK (result <> 'KHONG_CHAM_DUOC' OR (result_type IS NULL AND wrong_steps IS NULL AND error_code IS NULL AND confidence IS NULL
+        AND per_step = '{}'::jsonb AND issues IS NULL AND math_ok IS NULL AND NOT unfinished AND normalizer_version IS NULL
+        AND normalization IS NULL))
 );
 CREATE UNIQUE INDEX grading_results_mot_lan_cham ON grading_results (submission_id, request_hash) WHERE result <> 'KHONG_CHAM_DUOC';
 CREATE INDEX grading_results_cua_bai_lam ON grading_results (submission_id, graded_at);
