@@ -263,6 +263,30 @@ class NhapTheoLopTest {
     }
 
     @Test
+    void taiLieuBiBoKhoiNguonThiKhoaLaiVaKiemLai() throws IOException {
+        // Codex #134 (P2): bỏ một tài liệu khỏi nguồn làm kho đổi; bảng và lượt kiểm với kho cũ không còn mới.
+        NhapNoiDungChung.DaNhap da = chung.nhapGiuBai();
+        theoLop.nhap(lop, da.bai());
+        Path tep = DATA.resolve("v0/tai-lieu.json");
+        byte[] goc = Files.readAllBytes(tep);
+        try {
+            JsonMapper json = JsonMapper.builder().build();
+            @SuppressWarnings("unchecked")
+            List<Map<String, Object>> taiLieu = json.readValue(goc, List.class);
+            taiLieu.removeIf(d -> "v0-phuong-phap".equals(d.get("ma")));
+            Files.writeString(tep, json.writeValueAsString(taiLieu), StandardCharsets.UTF_8);
+            NhapTheoLop.KetQua lai = theoLop.nhap(lop, da.bai());
+            assertThat(lai.taiLieu()).isEqualTo(4);
+            assertThat(lai.phienBanBang()).isEqualTo(2);
+            assertThat(lai.daKiem()).isEqualTo(16);
+        } finally {
+            Files.write(tep, goc);
+        }
+        assertThat(dem("select count(*) from verification_runs where class_id = ? and stale")).isEqualTo(16);
+        jdbc.sql("set constraints all immediate").update();
+    }
+
+    @Test
     void tang2SaiCoTrichDanThiGhiTrichDan() {
         // Codex #134 (P2): căn cứ của tầng 2 SAI (bài bị chặn) cũng ghi vào verification_run_citations, bất biến như căn cứ đạt.
         NhapNoiDungChung.DaNhap da = chung.nhapGiuBai();

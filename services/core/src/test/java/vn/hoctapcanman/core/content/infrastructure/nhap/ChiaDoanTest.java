@@ -39,6 +39,17 @@ class ChiaDoanTest {
     }
 
     @Test
+    void viTriTheoCodePointCuaPythonDoiSangChiSoJava() {
+        // Codex #134 (P2): ký tự ngoài BMP (𝑥 = U+1D465, hai đơn vị UTF-16) đứng trước chữ trích; Python đếm nó là một.
+        String vanBan = "Cho \uD835\uDC65 là biến. Đạo hàm dương thì đồng biến.";
+        List<DocumentPassage> doan = ChiaDoan.theoCau(TL, vanBan);
+        int viTriPython = vanBan.codePointCount(0, vanBan.indexOf("Đạo hàm"));
+        assertThat(viTriPython).isEqualTo(vanBan.indexOf("Đạo hàm") - 1);
+        assertThat(ChiaDoan.doanCua(doan, vanBan, viTriPython, "Đạo hàm dương")).contains(List.of(doan.get(1)));
+        assertThat(ChiaDoan.doanCua(doan, vanBan, vanBan.codePointCount(0, vanBan.length()) + 1, "x")).isEmpty();
+    }
+
+    @Test
     void trichKhongDungNguyenVanHayRaNgoaiThiKhongAnhXa() {
         String vanBan = "Đạo hàm dương thì đồng biến.";
         List<DocumentPassage> doan = ChiaDoan.theoCau(TL, vanBan);

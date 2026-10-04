@@ -49,12 +49,18 @@ final class ChiaDoan {
     }
 
     /**
-     * Các đoạn chứa chữ trích {@code trich} ở vị trí {@code viTri} của {@code vanBan}, theo thứ tự. Rỗng (không ánh xạ) khi
-     * chữ ở vị trí đó không đúng nguyên văn chữ trích hay vị trí ra ngoài văn bản: không đoán căn cứ.
+     * Các đoạn chứa chữ trích {@code trich} ở vị trí {@code viTriCodePoint} của {@code vanBan}, theo thứ tự. Vị trí do dịch
+     * vụ toán (Python) trả, tính theo code point; đổi sang chỉ số UTF-16 của Java trước khi so, để ký tự ngoài BMP (𝑥, emoji)
+     * đứng trước không làm lệch. Rỗng (không ánh xạ) khi chữ ở vị trí đó không đúng nguyên văn chữ trích hay vị trí ra ngoài
+     * văn bản: không đoán căn cứ.
      */
-    static Optional<List<DocumentPassage>> doanCua(List<DocumentPassage> doan, String vanBan, int viTri, String trich) {
+    static Optional<List<DocumentPassage>> doanCua(List<DocumentPassage> doan, String vanBan, int viTriCodePoint, String trich) {
+        if (trich.isEmpty() || viTriCodePoint < 0 || viTriCodePoint > vanBan.codePointCount(0, vanBan.length())) {
+            return Optional.empty();
+        }
+        int viTri = vanBan.offsetByCodePoints(0, viTriCodePoint);
         int het = viTri + trich.length();
-        if (trich.isEmpty() || viTri < 0 || het > vanBan.length() || !vanBan.startsWith(trich, viTri)) {
+        if (het > vanBan.length() || !vanBan.startsWith(trich, viTri)) {
             return Optional.empty();
         }
         Set<DocumentPassage> trung = new LinkedHashSet<>();

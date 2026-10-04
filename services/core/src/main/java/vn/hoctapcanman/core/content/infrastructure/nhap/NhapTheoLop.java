@@ -157,39 +157,42 @@ public class NhapTheoLop {
     }
 
     /**
-     * Thời điểm bản tài liệu mới nhất của kho được nạp vào lớp. Bảng khóa trước thời điểm này, hay lượt kiểm ghi trước nó,
-     * đã kiểm với căn cứ cũ hơn kho hiện tại: phải khóa lại, kiểm lại. Suy từ dữ liệu đã lưu, nên lần nhập trước lỗi giữa
-     * chừng (đã nạp tài liệu mới, chưa khóa được bảng) thì lần sau vẫn khóa lại và kiểm lại.
+     * Ghi chú của bảng importer khóa: nêu nguồn và dấu vân tay của kho đã dùng khi khóa (mã, id, phiên bản của từng tài liệu
+     * kho, xếp theo mã). Kho đổi theo bất kỳ cách nào (thay bản, thêm, bỏ một tài liệu) thì dấu vân tay khác, nên bảng được
+     * khóa lại và mọi lượt kiểm với bảng cũ thành cũ, phải kiểm lại. Suy từ dữ liệu đã lưu: lần nhập trước lỗi giữa chừng
+     * (đã nạp tài liệu mới, chưa khóa được bảng) thì lần sau vẫn khóa lại và kiểm lại.
      */
-    private static Instant banMoiNhat(Map<String, TaiLieuLop> kho) {
-        return kho.values().stream().map(t -> t.taiLieu().createdAt()).max(Instant::compareTo).orElse(Instant.MIN);
+    private static String ghiChuBang(Map<String, TaiLieuLop> kho) {
+        String dau = kho.values().stream().map(TaiLieuLop::taiLieu).sorted(java.util.Comparator.comparing(d -> Objects.requireNonNull(d.code())))
+            .map(d -> d.code() + ":" + d.id() + ":" + d.version()).collect(java.util.stream.Collectors.joining("\n"));
+        return GHI_CHU_BANG + " · kho " + NhapNoiDungChung.sha256(dau).substring(0, 16);
     }
 
     // ---- Bảng công thức -------------------------------------------------------------------------------------------
 
     /**
-     * Bảng đang dùng của lớp sau khi nhập. Giữ bảng đang dùng nếu cùng các dòng của v0 và được khóa sau khi mọi tài liệu của
-     * kho đã nạp ({@link #banMoiNhat}); ngược lại khóa bảng phiên bản mới với kho hiện tại: lượt kiểm với bảng cũ
+     * Bảng đang dùng của lớp sau khi nhập. Giữ bảng đang dùng nếu cùng các dòng của v0 và được khóa với đúng kho hiện tại
+     * ({@link #ghiChuBang}); ngược lại khóa bảng phiên bản mới với kho hiện tại: lượt kiểm với bảng cũ
      * thành cũ, phát hành giữ «cần kiểm lại» tới khi kiểm lại (ADR 005). Lớp đang có bảng nháp không do importer tạo (giáo viên
      * đang soạn) thì dừng, không ghi đè.
      */
     private FormulaSheet khoaBang(UUID lop, Map<String, TaiLieuLop> kho) {
         List<Formula> dong = dongBangV0();
         Optional<FormulaSheet> dangDung = sheets.findCurrent(lop);
-        boolean sauKho = dangDung.map(FormulaSheet::lockedAt).filter(khoa -> !khoa.isBefore(banMoiNhat(kho))).isPresent();
-        if (dangDung.isPresent() && sauKho && dauVanTay(dangDung.get().rows()).equals(dauVanTay(dong))) {
+        String ghiChu = ghiChuBang(kho);
+        if (dangDung.isPresent() && ghiChu.equals(dangDung.get().note()) && dauVanTay(dangDung.get().rows()).equals(dauVanTay(dong))) {
             return dangDung.get();
         }
         Optional<FormulaSheet> banNhap = sheets.findDraft(lop);
-        if (banNhap.isPresent() && !GHI_CHU_BANG.equals(banNhap.get().note())) {
+        if (banNhap.isPresent() && !Objects.requireNonNullElse(banNhap.get().note(), "").startsWith(GHI_CHU_BANG)) {
             throw new IllegalStateException("Lớp " + lop + " có bảng nháp đang soạn (" + banNhap.get().id()
                 + "), không do importer tạo: không ghi đè, không khóa bảng của v0");
         }
         int phienBan = dangDung.map(b -> b.version() + 1).orElse(1);
         Instant luc = clock.instant();
         FormulaSheet nhap = banNhap
-            .map(d -> new FormulaSheet(d.id(), lop, phienBan, SheetStatus.NHAP, GHI_CHU_BANG, null, null, null, d.createdAt(), dong))
-            .orElseGet(() -> FormulaSheet.draft(lop, phienBan, GHI_CHU_BANG, dong, luc));
+            .map(d -> new FormulaSheet(d.id(), lop, phienBan, SheetStatus.NHAP, ghiChu, null, null, null, d.createdAt(), dong))
+            .orElseGet(() -> FormulaSheet.draft(lop, phienBan, ghiChu, dong, luc));
 
         Map<String, Object> yeuCau = new LinkedHashMap<>();
         yeuCau.put("dong", dong.stream().map(f -> Map.of("id", f.code(), "tieu_de", f.title(), "latex", f.latex(),
@@ -289,10 +292,13 @@ public class NhapTheoLop {
         Problem p = problems.findByCode(b.ma()).orElseThrow(() -> new IllegalStateException("Chưa có bài " + b.ma()));
         int phienBan = problems.findContentVersion(p.id()).orElseThrow();
         Optional<VerificationRun> moiNhat = runs.findLatest(lop, SubjectKind.PROBLEM, p.id());
-        // Còn mới: đúng phiên bản nội dung, đúng bảng đang dùng, chưa cũ, và ghi sau khi mọi tài liệu của kho đã nạp.
+        // Còn mới: đúng phiên bản nội dung, đúng bảng đang dùng (bảng khóa lại khi kho đổi, nên lượt với kho cũ không còn mới),
+        // chưa cũ, và mọi đoạn nó trích dẫn còn thuộc kho hiện tại.
+        Set<UUID> doanKho = new java.util.HashSet<>();
+        kho.values().forEach(t -> t.doan().forEach(d -> doanKho.add(d.id())));
         boolean conMoi = moiNhat.isPresent() && Objects.equals(moiNhat.get().contentVersion(), phienBan)
             && moiNhat.get().freshnessRefusal(true, p.contentHash(), bang.id()).isEmpty()
-            && !moiNhat.get().createdAt().isBefore(banMoiNhat(kho));
+            && doanKho.containsAll(moiNhat.get().citationPassageIds());
         if (conMoi) {
             VerificationRun luot = moiNhat.get();
             giaoDich.executeWithoutResult(t -> apPhatHanh(lop, p, luot, bang));
