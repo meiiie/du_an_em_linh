@@ -291,6 +291,8 @@ class NhapNoiDungTest {
      * Codex #135 (P2): các dòng của bảng đã khóa mang đúng loại, hai tầng, trích dẫn chính ({@code citation_passage_id}) và
      * trích dẫn thêm ({@code formula_citations}) mà job khóa bảng thật trả cho từng dòng ({@code khoa-bang-v0.json}). Đoạn đã
      * ghi đọc lại thành «mã tài liệu#vị trí» bằng SQL (vị trí theo {@code char_start} trong tài liệu), không qua importer.
+     * Chi tiết hai tầng ({@code tier1_detail}, {@code tier2_detail}) phải đúng nguyên {@code tang1}, {@code tang2} của phản
+     * hồi, sau khi đổi id thật về id ổn định của tệp vàng (so cây JSON, vì {@code jsonb} đổi thứ tự khóa).
      */
     @SuppressWarnings("unchecked")
     private void soBangDaKhoaVoiPhanHoiThat(UUID lop) {
@@ -299,6 +301,19 @@ class NhapNoiDungTest {
                 select p.id, d.code || '#' || (row_number() over (partition by p.document_id order by p.char_start) - 1)
                 from document_passages p join documents d on d.id = p.document_id where d.class_id = ?""").params(lop)
             .query((rs, i) -> maDoan.put(rs.getObject(1, UUID.class), rs.getString(2))).list();
+        Map<String, String> idOnDinh = new HashMap<>();
+        maDoan.forEach((id, ma) -> idOnDinh.put(id.toString(), ma));
+        jdbc.sql("select id, code from documents where class_id = ?").params(lop)
+            .query((rs, i) -> idOnDinh.put(rs.getObject(1, UUID.class).toString(), rs.getString(2))).list();
+        Map<String, List<@Nullable JsonNode>> chiTietDaGhi = new LinkedHashMap<>();
+        jdbc.sql("""
+                select f.code, f.tier1_detail::text, f.tier2_detail::text from formulas f
+                join formula_sheets s on s.id = f.formula_sheet_id where s.class_id = ? and s.status = 'KHOA' order by f.ordinal""")
+            .params(lop)
+            .query((rs, i) -> chiTietDaGhi.put(rs.getString(1), Arrays.asList(veIdOnDinh(rs.getString(2), idOnDinh),
+                veIdOnDinh(rs.getString(3), idOnDinh))))
+            .list();
+        Map<String, List<@Nullable JsonNode>> chiTietVang = new LinkedHashMap<>();
         List<String> daGhi = jdbc.sql("""
                 select f.id, f.code, f.kind, f.tier1_status, f.tier2_status, f.citation_passage_id from formulas f
                 join formula_sheets s on s.id = f.formula_sheet_id where s.class_id = ? and s.status = 'KHOA' order by f.ordinal""")
@@ -322,9 +337,16 @@ class NhapNoiDungTest {
                 .map(x -> (String) x.get("doan")).filter(x -> !x.equals(chinh)).distinct().sorted().toList();
             mongDoi.add(String.join(" ", (String) d.get("id"), (String) d.get("loai"),
                 (String) ((Map<String, Object>) d.get("tang1")).get("trang_thai"), (String) t2.get("trang_thai"), chinh, them.toString()));
+            chiTietVang.put((String) d.get("id"), Arrays.asList(cayV0(d.get("tang1")), cayV0(t2)));
         }
+        assertThat(chiTietDaGhi).as("chi tiết hai tầng của các dòng bảng đã khóa so với phản hồi thật").isEqualTo(chiTietVang);
         assertThat(mongDoi).as("tệp vàng khóa bảng có trích dẫn thêm").anyMatch(m -> !m.endsWith("[]"));
         assertThat(daGhi).as("các dòng của bảng đã khóa so với phản hồi thật của job khóa bảng").isEqualTo(mongDoi);
+    }
+
+    /** Cây JSON của chi tiết tầng đã ghi, id thật (tài liệu, đoạn) đổi về id ổn định của tệp vàng; id lạ thì ném. */
+    private static @Nullable JsonNode veIdOnDinh(@Nullable String json, Map<String, String> idOnDinh) {
+        return json == null ? null : JSON.valueToTree(PhatLai.doiId(JSON.readValue(json, Object.class), idOnDinh));
     }
 
     /**
