@@ -47,8 +47,9 @@ import vn.hoctapcanman.core.content.infrastructure.persistence.VerificationRunRe
  * Đối chiếu với v0 (T014, #85): nhập nội dung chung và nhập theo lớp trên PostgreSQL 18, với dịch vụ toán giả phát lại đúng
  * các phản hồi mà dịch vụ toán thật đã trả cho mã của v0 ({@code specs/001-lat-cat-doc/doi-chieu/phan-hoi-toan.json}, T013),
  * rồi so từng bài với tệp vàng {@code v0-bai.json}: cùng tập mã bài, cùng dấu vân tay kiểu v0, cùng trạng thái phát hành và
- * trạng thái từng tầng. Phản hồi được tra theo yêu cầu đã chuẩn hóa (khóa xếp theo thứ tự, bỏ kho lớp): core gửi yêu cầu
- * khác v0 dù một chút thì không có phản hồi và test đỏ, nên test này cũng giữ importer dựng bài đúng như {@code seed.ts}.
+ * trạng thái từng tầng. Phản hồi được tra theo yêu cầu đã chuẩn hóa (khóa xếp theo thứ tự, bỏ kho lớp); kho lớp của mỗi
+ * yêu cầu kiểm bài được so riêng với mã băm kho của tệp vàng. Core gửi yêu cầu khác v0 dù một chút thì không có phản hồi và
+ * test đỏ, nên test này cũng giữ importer dựng bài và kho đúng như {@code seed.ts}.
  *
  * <p>Job khóa bảng ({@code /v1/kiem-dong-cong-thuc}) không có ở v0 nên không có trong tệp vàng: job giả trả mọi dòng đạt hai
  * tầng, trích đoạn đầu của tài liệu đầu của kho; bảng khóa là điều kiện để kiểm bài, không phải đối tượng so ở đây (test của
@@ -153,8 +154,15 @@ class NhapNoiDungTest {
         private static final JsonMapper CHUAN = JsonMapper.builder().enable(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS).build();
         static final Map<String, Map<String, @Nullable Object>> BANG = new HashMap<>();
         static final Set<String> CHUA_DUNG = new HashSet<>();
+        /** Mã băm kho lớp của tệp vàng: sha256(JSON.stringify(khoLop())) trong xuat-v0.ts. */
+        static final String BAM_KHO;
 
         static {
+            @SuppressWarnings("unchecked")
+            Map<String, Object> nguon = (Map<String, Object>) ((Map<String, Object>) docJson("v0-bai.json")).get("nguon");
+            @SuppressWarnings("unchecked")
+            Map<String, Object> khoLop = (Map<String, Object>) nguon.get("kho_lop");
+            BAM_KHO = (String) khoLop.get("bam");
             @SuppressWarnings("unchecked")
             List<Map<String, Object>> goi = (List<Map<String, Object>>) docJson("phan-hoi-toan.json");
             for (Map<String, Object> g : goi) {
@@ -168,7 +176,10 @@ class NhapNoiDungTest {
             }
         }
 
-        /** Yêu cầu chuẩn hóa: bỏ kho lớp (ghi một lần ở v0-bai.json) và hết giờ, khóa xếp theo thứ tự. */
+        /**
+         * Yêu cầu chuẩn hóa: bỏ kho lớp và hết giờ, khóa xếp theo thứ tự. Tệp vàng ghi kho lớp một lần ở v0-bai.json, nên
+         * {@link #tra} so riêng kho của mỗi yêu cầu {@code verify} với mã băm đó trước khi phát lại.
+         */
         static String khoa(String job, Map<String, ?> yeuCau) {
             Map<String, @Nullable Object> gon = new LinkedHashMap<>(yeuCau);
             gon.remove("tai_lieu");
@@ -178,6 +189,12 @@ class NhapNoiDungTest {
         }
 
         static Map<String, @Nullable Object> tra(String job, Map<String, ?> yeuCau) {
+            // Codex #135 (P2): kho gửi đi phải đúng kho của tệp vàng (đủ tài liệu, đúng thứ tự, đúng chữ, đúng các dòng bảng),
+            // nếu không phản hồi phát lại là phán quyết cho một đầu vào khác.
+            if (job.equals("verify")) {
+                assertThat(bamKho(yeuCau)).as("kho lớp gửi tới /v1/verify khác kho của tệp vàng (v0-bai.json nguon.kho_lop)")
+                    .isEqualTo(BAM_KHO);
+            }
             String k = khoa(job, yeuCau);
             Map<String, @Nullable Object> phanHoi = BANG.get(k);
             if (phanHoi == null) {
@@ -185,6 +202,32 @@ class NhapNoiDungTest {
             }
             CHUA_DUNG.remove(k);
             return phanHoi;
+        }
+
+        /**
+         * Kho của một yêu cầu {@code verify}, dựng lại theo thứ tự khóa của {@code khoLop()} trong xuat-v0.ts (Map.of của core
+         * không giữ thứ tự khóa) rồi băm như tệp vàng. Mỗi mục phải có đúng các trường đó: thiếu hay thừa trường đều đỏ.
+         */
+        @SuppressWarnings("unchecked")
+        static String bamKho(Map<String, ?> yeuCau) {
+            Map<String, @Nullable Object> kho = new LinkedHashMap<>();
+            kho.put("tai_lieu", theoThuTu((List<Map<String, ?>>) yeuCau.get("tai_lieu"), "id", "ten", "text", "license_status", "phien_ban"));
+            kho.put("cong_thuc", theoThuTu((List<Map<String, ?>>) yeuCau.get("cong_thuc"), "id", "latex", "noi_dung", "ten"));
+            return NhapNoiDungChung.sha256(JsonKieuJs.stringify(kho));
+        }
+
+        private static List<Map<String, @Nullable Object>> theoThuTu(@Nullable List<Map<String, ?>> muc, String... truong) {
+            assertThat(muc).as("kho lớp của yêu cầu verify").isNotNull();
+            List<Map<String, @Nullable Object>> ra = new ArrayList<>();
+            for (Map<String, ?> m : muc) {
+                assertThat(m.keySet()).containsExactlyInAnyOrder(truong);
+                Map<String, @Nullable Object> sapXep = new LinkedHashMap<>();
+                for (String t : truong) {
+                    sapXep.put(t, m.get(t));
+                }
+                ra.add(sapXep);
+            }
+            return ra;
         }
 
         @Bean
