@@ -195,7 +195,7 @@ class VerificationPersistenceTest {
         hints.replaceForProblem(bai.id(), List.of(new HintLevel(bai.id(), "B.DH.DAOHAM", 1, "Đạo hàm từng hạng tử.")));
         assertThat(problems.findContentVersion(bai.id())).contains(2);
         // Cuối test: lỗi ràng buộc hủy giao dịch của test.
-        VerificationRun cu = VerificationRun.forProblem(lop, bai.id(), BAM, 1, null, ba(CheckStatus.DAT), List.of(doanTong), LUC);
+        VerificationRun cu = VerificationRun.forProblem(lop, bai.id(), BAM, 1, null, ba(CheckStatus.KHONG_KIEM_DUOC), List.of(), LUC);
         assertThatThrownBy(() -> runs.save(cu)).isInstanceOf(DataIntegrityViolationException.class);
     }
 
@@ -303,6 +303,75 @@ class VerificationPersistenceTest {
         }
         // Cuối test: kiểm lúc commit (ép ngay bằng SET CONSTRAINTS), lỗi ràng buộc hủy giao dịch của test.
         assertThatThrownBy(() -> jdbc.sql("set constraints all immediate").update()).isInstanceOf(DataIntegrityViolationException.class);
+    }
+
+    @Test
+    void lopChuaKhoaBangThiTang3KhongDatDuoc() {
+        // Codex #121 (P1, lần 4): lớp chưa khóa bảng nào thì lượt kiểm không có bảng; tầng 3 chỉ KHONG_KIEM_DUOC.
+        VerificationRun cho = VerificationRun.forProblem(lop, bai.id(), BAM, 1, null,
+            List.of(TierResult.of(1, CheckStatus.DAT), TierResult.of(2, CheckStatus.DAT), TierResult.of(3, CheckStatus.KHONG_KIEM_DUOC)),
+            List.of(doanTong), LUC);
+        runs.save(cho);
+        jdbc.sql("set constraints all immediate").update();
+        assertThat(runs.findById(cho.id())).contains(cho);
+        jdbc.sql("set constraints all deferred").update();
+        assertThatThrownBy(() -> VerificationRun.forProblem(lop, bai.id(), BAM, 1, null, ba(CheckStatus.DAT), List.of(doanTong), LUC))
+            .isInstanceOf(IllegalArgumentException.class).hasMessageContaining("Tầng 3");
+
+        // Nơi ghi khác (SQL thẳng): lượt không bảng mà thêm tầng 3 DAT bị từ chối lúc commit.
+        UUID khongBang = UUID.randomUUID();
+        jdbc.sql("""
+                insert into verification_runs (id, class_id, subject_kind, subject_id, content_hash, overall_status, publish_status,
+                    content_version, created_at)
+                values (?, ?, 'PROBLEM', ?, ?, 'KHONG_KIEM_DUOC', 'CHO_GIAO_VIEN_DUYET', 1, clock_timestamp())""")
+            .params(khongBang, lop, bai.id(), BAM).update();
+        jdbc.sql("insert into verification_tier_results (run_id, tier, status) values (?, 3, 'DAT')").params(khongBang).update();
+        // Cuối test: lỗi ràng buộc hủy giao dịch của test.
+        assertThatThrownBy(() -> jdbc.sql("set constraints all immediate").update()).isInstanceOf(DataIntegrityViolationException.class);
+    }
+
+    @Test
+    void themTang2DatSauMaKhongTrichDanBiTuChoi() {
+        // Codex #121 (P1, lần 4): ghi lượt trước, thêm tầng 2 DAT sau (đã qua lần kiểm của lượt) vẫn bị kiểm căn cứ.
+        FormulaSheet bang = daKiem(bangNhap(1)).lock(giaoVien, LUC);
+        sheets.save(bang);
+        VerificationRun motTang = VerificationRun.forProblem(lop, bai.id(), BAM, 1, bang.id(), List.of(TierResult.of(1, CheckStatus.DAT)),
+            List.of(), LUC);
+        runs.save(motTang);
+        jdbc.sql("set constraints all immediate").update();
+        jdbc.sql("set constraints all deferred").update();
+        jdbc.sql("insert into verification_tier_results (run_id, tier, status) values (?, 2, 'DAT')").params(motTang.id()).update();
+        // Cuối test: lỗi ràng buộc hủy giao dịch của test.
+        assertThatThrownBy(() -> jdbc.sql("set constraints all immediate").update()).isInstanceOf(DataIntegrityViolationException.class);
+    }
+
+    @Test
+    void ketQuaTangKhongSuaDuoc() {
+        // Kết quả tầng chỉ thêm như lượt và trích dẫn: không đổi phán quyết SAI thành DAT sau khi đã ghi.
+        FormulaSheet bang = daKiem(bangNhap(1)).lock(giaoVien, LUC);
+        sheets.save(bang);
+        VerificationRun sai = VerificationRun.forProblem(lop, bai.id(), BAM, 1, bang.id(), ba(CheckStatus.SAI), List.of(), LUC);
+        runs.save(sai);
+        // Cuối test: lỗi ràng buộc hủy giao dịch của test.
+        assertThatThrownBy(() -> jdbc.sql("update verification_tier_results set status = 'DAT' where run_id = ? and tier = 1")
+            .params(sai.id()).update()).isInstanceOf(DataIntegrityViolationException.class);
+    }
+
+    @Test
+    void xoaLuotThiKetQuaTangXoaTheoDayChuyenXoaRiengThiKhong() {
+        FormulaSheet bang = daKiem(bangNhap(1)).lock(giaoVien, LUC);
+        sheets.save(bang);
+        VerificationRun xoa = VerificationRun.forProblem(lop, bai.id(), BAM, 1, bang.id(), ba(CheckStatus.SAI), List.of(), LUC);
+        VerificationRun con = VerificationRun.forProblem(lop, bai.id(), BAM, 1, bang.id(), ba(CheckStatus.SAI), List.of(),
+            LUC.plusSeconds(1));
+        runs.save(xoa);
+        runs.save(con);
+        jdbc.sql("delete from verification_runs where id = ?").params(xoa.id()).update();
+        assertThat(jdbc.sql("select count(*) from verification_tier_results where run_id = ?").params(xoa.id()).query(Long.class).single())
+            .isZero();
+        // Cuối test: xóa riêng một tầng của lượt còn đó bị từ chối (lỗi ràng buộc hủy giao dịch của test).
+        assertThatThrownBy(() -> jdbc.sql("delete from verification_tier_results where run_id = ? and tier = 1").params(con.id()).update())
+            .isInstanceOf(DataIntegrityViolationException.class);
     }
 
     @Test

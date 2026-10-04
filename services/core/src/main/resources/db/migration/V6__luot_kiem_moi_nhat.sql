@@ -1,7 +1,9 @@
 -- Lượt kiểm mới nhất và căn cứ của tầng 2 (#121). Các bất biến, giữ ở CSDL vì lượt kiểm, phát hành và duyệt có thể được
 -- ghi từ nhiều giao dịch cùng lúc (importer, giáo viên, kiểm lại sau khi đổi bảng):
---   1. Lượt kiểm có tầng 2 DAT (bài hay công thức gia sư) phải trích dẫn ít nhất một đoạn tài liệu
---      (verification_run_citations), kiểm lúc commit. ADR 005: tầng 2 bắt buộc có trích dẫn.
+--   1. Căn cứ của tầng đạt, ở mọi loại lượt (bài, công thức gia sư), kiểm lúc commit: tầng 2 DAT phải trích dẫn ít nhất
+--      một đoạn tài liệu (verification_run_citations; ADR 005: tầng 2 bắt buộc có trích dẫn); tầng 3 DAT phải kiểm với
+--      bảng công thức đã khóa của lớp (lớp chưa khóa bảng nào thì tầng 3 chỉ KHONG_KIEM_DUOC). Kết quả tầng chỉ thêm như
+--      lượt và trích dẫn: không sửa, không xóa riêng; thêm tầng sau lúc ghi lượt cũng kiểm lại căn cứ.
 --   2. Phát hành chỉ gắn được vào lượt kiểm mới nhất của (lớp, bài), xếp theo (created_at, id).
 --   3. Giáo viên chỉ duyệt được lượt mới nhất, kiểm với bảng công thức đang dùng của lớp.
 --   4. Lớp khóa bảng công thức mới: mọi lượt kiểm của lớp với bảng khác thành cũ, cùng giao dịch với lệnh khóa; lượt kiểm
@@ -26,19 +28,60 @@ CREATE FUNCTION bang_dang_dung(lop uuid) RETURNS uuid LANGUAGE sql STABLE AS $$
     SELECT id FROM formula_sheets WHERE class_id = lop AND status = 'KHOA' ORDER BY version DESC LIMIT 1
 $$;
 
--- 1. Tầng 2 DAT có trích dẫn, mọi loại lượt (công thức gia sư trích đoạn của dòng bảng đã khóa mà nó khớp, ADR 013).
--- Tầng và trích dẫn ghi sau lượt trong cùng giao dịch, nên kiểm lúc commit.
-CREATE FUNCTION luot_tang2_co_trich_dan() RETURNS trigger LANGUAGE plpgsql AS $$
+-- 1. Căn cứ của tầng đạt, mọi loại lượt (công thức gia sư trích đoạn của dòng bảng đã khóa mà nó khớp, ADR 013). Tầng
+-- và trích dẫn ghi sau lượt trong cùng giao dịch, nên kiểm lúc commit; chạy khi ghi lượt và khi ghi thêm tầng. Lượt mới
+-- chỉ ghi được với bảng đang dùng của lớp (verification_runs_dung_phien_ban), nên formula_sheet_id không trống nghĩa là
+-- lớp đã có bảng khóa lúc kiểm.
+CREATE FUNCTION kiem_can_cu_luot(luot uuid) RETURNS void LANGUAGE plpgsql AS $$
+DECLARE
+    bang uuid;
 BEGIN
-    IF EXISTS (SELECT 1 FROM verification_tier_results WHERE run_id = NEW.id AND tier = 2 AND status = 'DAT')
-       AND NOT EXISTS (SELECT 1 FROM verification_run_citations WHERE run_id = NEW.id) THEN
-        RAISE EXCEPTION 'Lượt kiểm % có tầng 2 DAT mà không trích dẫn đoạn tài liệu nào', NEW.id USING ERRCODE = 'check_violation';
+    SELECT formula_sheet_id INTO bang FROM verification_runs WHERE id = luot;
+    IF NOT FOUND THEN
+        RETURN;
     END IF;
+    IF EXISTS (SELECT 1 FROM verification_tier_results WHERE run_id = luot AND tier = 2 AND status = 'DAT')
+       AND NOT EXISTS (SELECT 1 FROM verification_run_citations WHERE run_id = luot) THEN
+        RAISE EXCEPTION 'Lượt kiểm % có tầng 2 DAT mà không trích dẫn đoạn tài liệu nào', luot USING ERRCODE = 'check_violation';
+    END IF;
+    IF bang IS NULL AND EXISTS (SELECT 1 FROM verification_tier_results WHERE run_id = luot AND tier = 3 AND status = 'DAT') THEN
+        RAISE EXCEPTION 'Lượt kiểm % có tầng 3 DAT mà không kiểm với bảng công thức đã khóa nào', luot
+            USING ERRCODE = 'check_violation';
+    END IF;
+END $$;
+
+CREATE FUNCTION luot_can_cu_tang_dat() RETURNS trigger LANGUAGE plpgsql AS $$
+BEGIN
+    PERFORM kiem_can_cu_luot(NEW.id);
     RETURN NULL;
 END $$;
 
-CREATE CONSTRAINT TRIGGER luot_tang2_co_trich_dan AFTER INSERT ON verification_runs
-    DEFERRABLE INITIALLY DEFERRED FOR EACH ROW EXECUTE FUNCTION luot_tang2_co_trich_dan();
+CREATE CONSTRAINT TRIGGER luot_can_cu_tang_dat AFTER INSERT ON verification_runs
+    DEFERRABLE INITIALLY DEFERRED FOR EACH ROW EXECUTE FUNCTION luot_can_cu_tang_dat();
+
+CREATE FUNCTION tang_can_cu_tang_dat() RETURNS trigger LANGUAGE plpgsql AS $$
+BEGIN
+    PERFORM kiem_can_cu_luot(NEW.run_id);
+    RETURN NULL;
+END $$;
+
+CREATE CONSTRAINT TRIGGER tang_can_cu_tang_dat AFTER INSERT ON verification_tier_results
+    DEFERRABLE INITIALLY DEFERRED FOR EACH ROW EXECUTE FUNCTION tang_can_cu_tang_dat();
+
+-- Kết quả tầng chỉ thêm: không sửa phán quyết của một tầng đã ghi; chỉ xóa theo dây chuyền khi lượt cha đã bị xóa.
+CREATE FUNCTION verification_tier_results_chi_them() RETURNS trigger LANGUAGE plpgsql AS $$
+BEGIN
+    IF TG_OP = 'UPDATE' THEN
+        RAISE EXCEPTION 'Kết quả tầng của lượt kiểm không sửa được' USING ERRCODE = 'check_violation';
+    END IF;
+    IF EXISTS (SELECT 1 FROM verification_runs WHERE id = OLD.run_id) THEN
+        RAISE EXCEPTION 'Kết quả tầng của lượt kiểm % không xóa riêng được', OLD.run_id USING ERRCODE = 'check_violation';
+    END IF;
+    RETURN OLD;
+END $$;
+
+CREATE TRIGGER verification_tier_results_chi_them BEFORE UPDATE OR DELETE ON verification_tier_results
+    FOR EACH ROW EXECUTE FUNCTION verification_tier_results_chi_them();
 
 -- Ghi lượt kiểm bài: như V5 (đúng phiên bản nội dung hiện tại), nhưng khóa dòng bài FOR NO KEY UPDATE.
 CREATE OR REPLACE FUNCTION verification_runs_dung_phien_ban() RETURNS trigger LANGUAGE plpgsql AS $$

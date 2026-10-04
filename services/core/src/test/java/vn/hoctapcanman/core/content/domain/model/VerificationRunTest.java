@@ -142,6 +142,9 @@ class VerificationRunTest {
         // Lớp chưa có bảng khóa: lượt kiểm không có bảng, bảng hiện tại cũng trống → duyệt được.
         VerificationRun khongBang = VerificationRun.forProblem(Mau.LOP, Mau.BAI, Mau.BAM, 1, null, Mau.tang(DAT, DAT, KHONG_KIEM_DUOC), List.of(Mau.DOAN), Mau.LUC);
         assertThat(khongBang.approvalRefusal(true, Mau.BAM, null)).isEmpty();
+        // Codex #121 (lần 4): không có bảng thì tầng 3 không DAT được (không có gì để khớp).
+        assertThatThrownBy(() -> VerificationRun.forProblem(Mau.LOP, Mau.BAI, Mau.BAM, 1, null, Mau.tang(DAT, DAT, DAT), List.of(Mau.DOAN),
+            Mau.LUC)).isInstanceOf(IllegalArgumentException.class).hasMessageContaining("Tầng 3");
     }
 
     @Test

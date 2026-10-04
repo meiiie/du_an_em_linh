@@ -25,7 +25,8 @@ import org.jspecify.annotations.Nullable;
  * nội dung cũ không ghi được. {@code citationPassageIds} là các đoạn tài liệu lượt này trích dẫn ở tầng 2; adapter ghi
  * vào {@code verification_run_citations} để đoạn và tài liệu căn cứ không đổi dưới chân kết quả kiểm. Tầng 2 {@code DAT}
  * phải có ít nhất một đoạn, ở mọi loại lượt (ADR 005: tầng 2 bắt buộc trích dẫn; ADR 013: công thức gia sư đạt tầng 2
- * nhờ đoạn trích của dòng bảng đã khóa mà nó khớp).
+ * nhờ đoạn trích của dòng bảng đã khóa mà nó khớp). Tầng 3 {@code DAT} phải kiểm với bảng đã khóa
+ * ({@code formulaSheetId} không trống): lớp chưa khóa bảng nào thì tầng 3 chỉ là {@code KHONG_KIEM_DUOC}.
  */
 public record VerificationRun(
         UUID id,
@@ -68,6 +69,9 @@ public record VerificationRun(
         boolean tang2Dat = tiers.stream().anyMatch(t -> t.tier() == 2 && t.status() == CheckStatus.DAT);
         if (tang2Dat && citationPassageIds.isEmpty()) {
             throw new IllegalArgumentException("Tầng 2 DAT phải có đoạn tài liệu được trích dẫn");
+        }
+        if (formulaSheetId == null && tiers.stream().anyMatch(t -> t.tier() == 3 && t.status() == CheckStatus.DAT)) {
+            throw new IllegalArgumentException("Tầng 3 DAT phải kiểm với bảng công thức đã khóa của lớp");
         }
         tiers = tiers.stream().sorted(Comparator.comparingInt(TierResult::tier)).toList();
         Set<Integer> daCo = new HashSet<>();
