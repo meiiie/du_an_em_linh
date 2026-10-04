@@ -8,6 +8,8 @@ Tệp vàng do chính mã của v0 sinh ra, để test của core v2 so khớp: 
 | `xuat-v0.ts` | — (script, T013) | Sinh hai tệp dưới |
 | `v0-bai.json` | `xuat-v0.ts` | T014: mỗi bài v0 nạp (mã, dấu vân tay kiểu v0, nguồn, dạng trả lời, trạng thái tổng, trạng thái phát hành, dữ kiện bảo vệ, trạng thái từng tầng, và `cot_v0`: mọi cột nội dung v0 ghi cho bài — kỹ năng, mức, Bloom, độ khó, đề, LaTeX, hàm, bước bắt đầu, lời giải, đáp án cuối, các cấp gợi ý đã lưu) |
 | `phan-hoi-toan.json` | `xuat-v0.ts` | T014: mọi cặp yêu cầu → phản hồi của dịch vụ toán theo thứ tự v0 gọi, để dịch vụ toán giả phát lại |
+| `khoa-bang-v0.py` | — (script) | Sinh tệp dưới |
+| `khoa-bang-v0.json` | `khoa-bang-v0.py` | T014: phản hồi thật của job khóa bảng (`kiem_dong_cong_thuc`) cho 6 dòng của v0 và 5 tài liệu của lớp, gửi như importer v2 gửi (thứ tự tài liệu, NFC, mỗi câu một đoạn); id ổn định: mã tài liệu, «mã#vị trí» của đoạn. Job giả của test đổi sang id thật rồi phát lại; test so loại, hai tầng, trích dẫn chính và trích dẫn thêm đã ghi của từng dòng |
 
 ## `xuat-v0.ts` (T013)
 
@@ -23,6 +25,14 @@ Script chạy **nguyên** mã nạp bài của `apps/web/scripts/seed.ts`: dựn
 - **Dừng khi seed.ts đổi.** Script dừng nếu `seed.ts` có thay đổi chưa commit, hoặc thiếu một mốc. `nguon.seed` ghi commit và blob của seed.ts đã chạy.
 - **Dừng khi dữ liệu hay chính script đổi.** Script dừng nếu `data/supham`, `data/v0` (bài ví dụ, bài khung ngắn, tài liệu, bảng công thức) hay chính `xuat-v0.ts` có thay đổi chưa commit. `nguon.du_lieu` ghi cây git của hai thư mục và blob của script.
 - **Dịch vụ toán do script tự dựng.** Script không lấy dịch vụ toán từ một URL có sẵn, vì không biết nó build từ mã nào (`/health` luôn báo `0.1.0`). Nó tự build ảnh `services/math` từ chính checkout và dừng nếu `services/math` có thay đổi chưa commit. Ngữ cảnh build là `git archive HEAD services/math`, chỉ gồm tệp đã commit, nên tệp bị `.gitignore` (khóa, `.env`) không bao giờ vào ảnh. Ảnh chạy chỉ đọc ở một cổng ngẫu nhiên của 127.0.0.1 và bị xóa khi xong. `nguon.dich_vu_toan` ghi cây git của `services/math` (cố định mã), digest bất biến của ảnh gốc trong `FROM` và phiên bản Python (cố định runtime, vì tag `python:3.12-slim` có thể đổi), và `pip freeze` của ảnh (cố định thư viện, như SymPy).
+
+`khoa-bang-v0.py` dừng nếu `services/math`, `data/v0` hay `data/supham` có thay đổi chưa commit, và ghi cây git của ba thư mục vào `nguon`. Chạy bằng Python của môi trường `services/math` (cùng SymPy):
+
+```bash
+services/math/.venv/Scripts/python specs/001-lat-cat-doc/doi-chieu/khoa-bang-v0.py   # Linux, macOS: .venv/bin/python
+```
+
+Kết quả (2026-10-05, cây `services/math` `2d833dd`): 6 dòng `DAT` hai tầng; d-1…d-3 `DANG_THUC` trích `sp-tai-lieu-0001`, d-4 `DINH_LI` trích `v0-don-dieu`, d-5 trích `v0-don-dieu` và thêm `sp-tai-lieu-0002`, d-6 trích `sp-tai-lieu-0002`, khớp `services/math/tests/test_dong_cong_thuc.py`.
 
 ```bash
 # từ gốc repo, Node ≥ 23.6, Docker đang chạy

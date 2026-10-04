@@ -1,0 +1,198 @@
+{
+  "nguon": {
+    "services_math": "2d833dd78bfe594eefc309ffffde19bc6d4cc332",
+    "data_v0": "6a666e3bde67052c928973f9041ba7ddfd1ce04e",
+    "data_supham": "a821fd14243ee607371420b50e20e1f848148d36"
+  },
+  "doan": {
+    "v0-don-dieu#0": "Ghi chú tự soạn cho lớp 12A1 thử, không chép sách.",
+    "v0-don-dieu#1": "Với hàm số xác định trên một khoảng: nếu đạo hàm không âm trên khoảng đó và chỉ bằng 0 tại hữu hạn điểm thì hàm đồng biến;",
+    "v0-don-dieu#2": "nếu đạo hàm không dương và chỉ bằng 0 tại hữu hạn điểm thì hàm nghịch biến.",
+    "v0-don-dieu#3": "Lập bảng xét dấu của đạo hàm trên từng khoảng xác định bởi nghiệm y' = 0 và điểm y' không xác định.",
+    "v0-don-dieu#4": "Nếu đạo hàm đổi từ dương sang âm khi đi qua một điểm trong thì đó là cực đại;",
+    "v0-don-dieu#5": "từ âm sang dương là cực tiểu.",
+    "v0-don-dieu#6": "Điểm cực trị phải nằm trong một khoảng mở chứa trong tập xác định.",
+    "v0-de-mau#0": "Đề tự soạn, không chép sách.",
+    "v0-de-mau#1": "Dạng: tìm khoảng đồng biến, nghịch biến của y = ax^3 + bx^2 + cx + d với a khác 0.",
+    "v0-de-mau#2": "Học sinh đi đủ năm bước: tập xác định, đạo hàm, nghiệm y′, bảng xét dấu, kết luận.",
+    "v0-de-mau#3": "Yêu cầu cần đạt công khai (CT GDPT môn Toán 2018, TT 32/2018/TT-BGDĐT, lớp 12): nhận biết đơn điệu từ dấu y′;",
+    "v0-de-mau#4": "thể hiện trên bảng biến thiên.",
+    "v0-de-mau#5": "Không dùng làm lời giải chuẩn cho gia sư.",
+    "v0-phuong-phap#0": "Văn bản tự soạn.",
+    "v0-phuong-phap#1": "Mỗi buổi tự viết lại quy tắc đạo hàm rồi làm một bài, không mở đáp án trước.",
+    "v0-phuong-phap#2": "Gia sư chỉ gợi ý quy trình, không đưa kết quả.",
+    "v0-phuong-phap#3": "Khi kẹt cùng bước ba lần thì gửi thầy cô, chưa chuyển mức khó hơn.",
+    "sp-tai-lieu-0001#0": "Ghi chú tự soạn cho lớp 12A1 thử, không chép sách.",
+    "sp-tai-lieu-0001#1": "Dùng khi tính đạo hàm của hàm đa thức và hàm phân thức trong chủ đề đơn điệu và cực trị;",
+    "sp-tai-lieu-0001#2": "u, v là các hàm số có đạo hàm trên khoảng đang xét, k là hằng số.",
+    "sp-tai-lieu-0001#3": "Đạo hàm lũy thừa, với n nguyên dương: $(x^n)' = n x^{n-1}$.",
+    "sp-tai-lieu-0001#4": "Đạo hàm của x mũ n là n nhân x mũ n trừ 1.",
+    "sp-tai-lieu-0001#5": "Hằng số có đạo hàm bằng 0.",
+    "sp-tai-lieu-0001#6": "Hằng số nhân với hàm: $(k u)' = k u'$.",
+    "sp-tai-lieu-0001#7": "Đạo hàm tổng: $(u+v)' = u' + v'$.",
+    "sp-tai-lieu-0001#8": "Đạo hàm của tổng bằng tổng các đạo hàm.",
+    "sp-tai-lieu-0001#9": "Với hiệu cũng vậy: $(u-v)' = u' - v'$.",
+    "sp-tai-lieu-0001#10": "Đạo hàm thương, tại các điểm có v khác 0: $(u/v)' = (u'v - uv') / v^2$.",
+    "sp-tai-lieu-0001#11": "Với thương, tử là u'v trừ uv', mẫu là v bình.",
+    "sp-tai-lieu-0001#12": "Tính xong đạo hàm thì tìm các điểm mà y' bằng 0 hoặc không xác định, rồi xét dấu y' theo ghi chú «đơn điệu và cực trị» của lớp.",
+    "sp-tai-lieu-0001#13": "Ôn lại khi cần: Toán 11, các quy tắc tính đạo hàm.",
+    "sp-tai-lieu-0002#0": "Ghi chú tự soạn cho lớp 12A1 thử, không chép sách.",
+    "sp-tai-lieu-0002#1": "Điểm tới hạn gồm nghiệm của đạo hàm bằng 0 và điểm thuộc tập xác định mà đạo hàm không xác định.",
+    "sp-tai-lieu-0002#2": "Bảng xét dấu của y' có hàng x gồm các điểm tới hạn và các điểm bị loại khỏi tập xác định, xếp từ nhỏ đến lớn.",
+    "sp-tai-lieu-0002#3": "Đạo hàm bằng 0 mà không đổi dấu thì chưa phải cực trị.",
+    "sp-tai-lieu-0002#4": "Ôn lại khi cần: Toán 12, cực trị của hàm số;",
+    "sp-tai-lieu-0002#5": "Toán 10, tập xác định của hàm số."
+  },
+  "phan_hoi": {
+    "dong": [
+      {
+        "id": "d-1",
+        "loai": "DANG_THUC",
+        "tang1": {
+          "trang_thai": "DAT",
+          "muc_bang_chung": "CAS",
+          "can_cu": "SymPy: d/dx(x^n) − (n*x^(n-1)) rút gọn bằng 0 với u(x), v(x) ký hiệu, n nguyên dương; lời của dòng khớp danh mục câu đọc đã kiểm."
+        },
+        "tang2": {
+          "trang_thai": "DAT",
+          "trich_dan": {
+            "tai_lieu": "sp-tai-lieu-0001",
+            "doan": "sp-tai-lieu-0001#3",
+            "trich": "Đạo hàm lũy thừa, với n nguyên dương: $(x^n)' = n x^{n-1}$."
+          },
+          "trich_dan_them": [
+            {
+              "tai_lieu": "sp-tai-lieu-0001",
+              "doan": "sp-tai-lieu-0001#4",
+              "trich": "Đạo hàm của x mũ n là n nhân x mũ n trừ 1."
+            },
+            {
+              "tai_lieu": "sp-tai-lieu-0001",
+              "doan": "sp-tai-lieu-0001#5",
+              "trich": "Hằng số có đạo hàm bằng 0."
+            }
+          ]
+        }
+      },
+      {
+        "id": "d-2",
+        "loai": "DANG_THUC",
+        "tang1": {
+          "trang_thai": "DAT",
+          "muc_bang_chung": "CAS",
+          "can_cu": "SymPy: d/dx(u+v) − (Du+Dv) rút gọn bằng 0 với u(x), v(x) ký hiệu, n nguyên dương; lời của dòng khớp danh mục câu đọc đã kiểm."
+        },
+        "tang2": {
+          "trang_thai": "DAT",
+          "trich_dan": {
+            "tai_lieu": "sp-tai-lieu-0001",
+            "doan": "sp-tai-lieu-0001#7",
+            "trich": "Đạo hàm tổng: $(u+v)' = u' + v'$."
+          },
+          "trich_dan_them": [
+            {
+              "tai_lieu": "sp-tai-lieu-0001",
+              "doan": "sp-tai-lieu-0001#8",
+              "trich": "Đạo hàm của tổng bằng tổng các đạo hàm."
+            }
+          ]
+        }
+      },
+      {
+        "id": "d-3",
+        "loai": "DANG_THUC",
+        "tang1": {
+          "trang_thai": "DAT",
+          "muc_bang_chung": "CAS",
+          "can_cu": "SymPy: d/dx(u/v) − ((Du*v-u*Dv)/v^2) rút gọn bằng 0 với u(x), v(x) ký hiệu, n nguyên dương; lời của dòng khớp danh mục câu đọc đã kiểm."
+        },
+        "tang2": {
+          "trang_thai": "DAT",
+          "trich_dan": {
+            "tai_lieu": "sp-tai-lieu-0001",
+            "doan": "sp-tai-lieu-0001#10",
+            "trich": "Đạo hàm thương, tại các điểm có v khác 0: $(u/v)' = (u'v - uv') / v^2$."
+          },
+          "trich_dan_them": [
+            {
+              "tai_lieu": "sp-tai-lieu-0001",
+              "doan": "sp-tai-lieu-0001#11",
+              "trich": "Với thương, tử là u'v trừ uv', mẫu là v bình."
+            }
+          ]
+        }
+      },
+      {
+        "id": "d-4",
+        "loai": "DINH_LI",
+        "tang1": {
+          "trang_thai": "DAT",
+          "muc_bang_chung": "DANH_MUC",
+          "can_cu": "«y' ≥ 0, y' = 0 chỉ tại hữu hạn điểm ⇒ đồng biến» khớp DD2. «y' ≤ 0, y' = 0 chỉ tại hữu hạn điểm ⇒ nghịch biến» khớp DD2."
+        },
+        "tang2": {
+          "trang_thai": "DAT",
+          "trich_dan": {
+            "tai_lieu": "v0-don-dieu",
+            "doan": "v0-don-dieu#1",
+            "trich": "Với hàm số xác định trên một khoảng: nếu đạo hàm không âm trên khoảng đó và chỉ bằng 0 tại hữu hạn điểm thì hàm đồng biến;"
+          },
+          "trich_dan_them": [
+            {
+              "tai_lieu": "v0-don-dieu",
+              "doan": "v0-don-dieu#2",
+              "trich": "nếu đạo hàm không dương và chỉ bằng 0 tại hữu hạn điểm thì hàm nghịch biến."
+            }
+          ]
+        }
+      },
+      {
+        "id": "d-5",
+        "loai": "DINH_LI",
+        "tang1": {
+          "trang_thai": "DAT",
+          "muc_bang_chung": "DANH_MUC",
+          "can_cu": "Dấu hiệu cực trị khớp CT1. Dấu hiệu cực trị khớp CT2."
+        },
+        "tang2": {
+          "trang_thai": "DAT",
+          "trich_dan": {
+            "tai_lieu": "v0-don-dieu",
+            "doan": "v0-don-dieu#4",
+            "trich": "Nếu đạo hàm đổi từ dương sang âm khi đi qua một điểm trong thì đó là cực đại;"
+          },
+          "trich_dan_them": [
+            {
+              "tai_lieu": "v0-don-dieu",
+              "doan": "v0-don-dieu#5",
+              "trich": "từ âm sang dương là cực tiểu."
+            },
+            {
+              "tai_lieu": "sp-tai-lieu-0002",
+              "doan": "sp-tai-lieu-0002#3",
+              "trich": "Đạo hàm bằng 0 mà không đổi dấu thì chưa phải cực trị."
+            }
+          ]
+        }
+      },
+      {
+        "id": "d-6",
+        "loai": "DINH_LI",
+        "tang1": {
+          "trang_thai": "DAT",
+          "muc_bang_chung": "DANH_MUC",
+          "can_cu": "Dạng ký hiệu tóm tắt định nghĩa TH. Định nghĩa điểm tới hạn đủ ba thành phần, khớp TH."
+        },
+        "tang2": {
+          "trang_thai": "DAT",
+          "trich_dan": {
+            "tai_lieu": "sp-tai-lieu-0002",
+            "doan": "sp-tai-lieu-0002#1",
+            "trich": "Điểm tới hạn gồm nghiệm của đạo hàm bằng 0 và điểm thuộc tập xác định mà đạo hàm không xác định."
+          }
+        }
+      }
+    ],
+    "bo_qua": []
+  }
+}

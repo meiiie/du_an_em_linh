@@ -93,13 +93,6 @@ class NhapNoiDungTest {
      * viết lại ở đây để test không so importer với chính nó.
      */
     private static final Map<Object, Object> BLOOM_V2 = Map.of("APPLY", "VAN_DUNG", "NHAN_BIET", "NHO");
-    /**
-     * Codex #135 (P2): loại mà dịch vụ toán thật trả cho 6 dòng của bảng v0 ({@code services/math/tests/test_dong_cong_thuc.py},
-     * {@code test_bang_v0_dat_ca_6_o_hai_tang_voi_5_tai_lieu}): job khóa bảng giả trả đúng loại từng dòng, để importer gán
-     * sai hay làm rơi loại thì {@code formulas.kind} lệch.
-     */
-    private static final Map<Object, String> LOAI_DONG_V0 = Map.of("d-1", "DANG_THUC", "d-2", "DANG_THUC", "d-3", "DANG_THUC",
-        "d-4", "DINH_LI", "d-5", "DINH_LI", "d-6", "DINH_LI");
 
     @DynamicPropertySource
     static void nguon(DynamicPropertyRegistry r) {
@@ -163,13 +156,7 @@ class NhapNoiDungTest {
         }
         assertThat(PhatLai.chuaDung()).as("mọi bản ghi của tệp vàng được dùng đúng một lần").isEmpty();
         assertThat(PhatLai.soLanKhoaBang()).as("lần nhập đầu khóa bảng một lần").isOne();
-        assertThat(jdbc.sql("""
-                select f.code || ' ' || f.kind || ' ' || f.tier1_status || ' ' || f.tier2_status from formulas f
-                join formula_sheets s on s.id = f.formula_sheet_id where s.class_id = ? and s.status = 'KHOA' order by f.ordinal""")
-                .params(lop).query(String.class).list())
-            .as("các dòng của bảng đã khóa mang đúng loại job trả")
-            .containsExactly("d-1 DANG_THUC DAT DAT", "d-2 DANG_THUC DAT DAT", "d-3 DANG_THUC DAT DAT", "d-4 DINH_LI DAT DAT",
-                "d-5 DINH_LI DAT DAT", "d-6 DINH_LI DAT DAT");
+        soBangDaKhoaVoiPhanHoiThat(lop);
 
         // Lần nhập thứ hai dựng lại bài (solve, generate như lần đầu) nhưng không kiểm lại bài nào: còn nguyên 17 bản ghi verify.
         PhatLai.napLai();
@@ -298,6 +285,46 @@ class NhapNoiDungTest {
             assertThat(jdbc.sql("select passage_id from verification_run_citations where run_id = ?").params(run).query(UUID.class).list())
                 .as("đoạn căn cứ của lượt %s (%s) so với trich_dan phát lại", run, ma).containsExactlyInAnyOrderElementsOf(canCo);
         }
+    }
+
+    /**
+     * Codex #135 (P2): các dòng của bảng đã khóa mang đúng loại, hai tầng, trích dẫn chính ({@code citation_passage_id}) và
+     * trích dẫn thêm ({@code formula_citations}) mà job khóa bảng thật trả cho từng dòng ({@code khoa-bang-v0.json}). Đoạn đã
+     * ghi đọc lại thành «mã tài liệu#vị trí» bằng SQL (vị trí theo {@code char_start} trong tài liệu), không qua importer.
+     */
+    @SuppressWarnings("unchecked")
+    private void soBangDaKhoaVoiPhanHoiThat(UUID lop) {
+        Map<UUID, String> maDoan = new HashMap<>();
+        jdbc.sql("""
+                select p.id, d.code || '#' || (row_number() over (partition by p.document_id order by p.char_start) - 1)
+                from document_passages p join documents d on d.id = p.document_id where d.class_id = ?""").params(lop)
+            .query((rs, i) -> maDoan.put(rs.getObject(1, UUID.class), rs.getString(2))).list();
+        List<String> daGhi = jdbc.sql("""
+                select f.id, f.code, f.kind, f.tier1_status, f.tier2_status, f.citation_passage_id from formulas f
+                join formula_sheets s on s.id = f.formula_sheet_id where s.class_id = ? and s.status = 'KHOA' order by f.ordinal""")
+            .params(lop)
+            .query((rs, i) -> List.of(rs.getObject(1, UUID.class).toString(), rs.getString(2), rs.getString(3), rs.getString(4),
+                rs.getString(5), String.valueOf(maDoan.get(rs.getObject(6, UUID.class)))))
+            .list()
+            .stream()
+            .map(f -> {
+                List<String> them = jdbc.sql("select passage_id from formula_citations where formula_id = ?").params(UUID.fromString(f.get(0)))
+                    .query(UUID.class).list().stream().map(maDoan::get).sorted().toList();
+                return String.join(" ", f.get(1), f.get(2), f.get(3), f.get(4), f.get(5), them.toString());
+            })
+            .toList();
+        List<String> mongDoi = new ArrayList<>();
+        for (Map<String, Object> d : (List<Map<String, Object>>) ((Map<String, Object>) ((Map<String, Object>) docJson("khoa-bang-v0.json"))
+                .get("phan_hoi")).get("dong")) {
+            Map<String, Object> t2 = (Map<String, Object>) d.get("tang2");
+            String chinh = (String) ((Map<String, Object>) t2.get("trich_dan")).get("doan");
+            List<String> them = ((List<Map<String, Object>>) Objects.requireNonNullElse(t2.get("trich_dan_them"), List.of())).stream()
+                .map(x -> (String) x.get("doan")).filter(x -> !x.equals(chinh)).distinct().sorted().toList();
+            mongDoi.add(String.join(" ", (String) d.get("id"), (String) d.get("loai"),
+                (String) ((Map<String, Object>) d.get("tang1")).get("trang_thai"), (String) t2.get("trang_thai"), chinh, them.toString()));
+        }
+        assertThat(mongDoi).as("tệp vàng khóa bảng có trích dẫn thêm").anyMatch(m -> !m.endsWith("[]"));
+        assertThat(daGhi).as("các dòng của bảng đã khóa so với phản hồi thật của job khóa bảng").isEqualTo(mongDoi);
     }
 
     /**
@@ -479,6 +506,50 @@ class NhapNoiDungTest {
             }
         }
 
+        /**
+         * Codex #135 (P2): phản hồi thật của job khóa bảng cho đúng yêu cầu này ({@code khoa-bang-v0.json}, sinh bằng
+         * {@code khoa-bang-v0.py} từ {@code kiem_dong_cong_thuc} của dịch vụ toán): loại, hai tầng, trích dẫn chính và trích
+         * dẫn thêm của từng dòng. Id ổn định của tệp vàng (mã tài liệu, «mã#vị trí» của đoạn) đổi sang id thật của yêu cầu;
+         * đoạn ở vị trí đó phải đúng chữ của tệp vàng (importer và script chia đoạn như nhau). Yêu cầu đã được
+         * {@link #soYeuCauKhoaBang} kiểm: tài liệu thứ i là tài liệu nguồn thứ i.
+         */
+        @SuppressWarnings("unchecked")
+        static Map<String, @Nullable Object> phatLaiKhoaBang(Map<String, ?> yeuCau) {
+            Map<String, Object> vang = (Map<String, Object>) docJson("khoa-bang-v0.json");
+            Map<String, Object> chuDoan = (Map<String, Object>) vang.get("doan");
+            List<String> ma = new ArrayList<>(((List<Map<String, Object>>) docTep(NhapNoiDungChungTest.thuMucData().resolve("v0/tai-lieu.json")))
+                .stream().map(t -> (String) t.get("ma")).toList());
+            ma.addAll(List.of("sp-tai-lieu-0001", "sp-tai-lieu-0002"));
+            List<Map<String, Object>> gui = (List<Map<String, Object>>) yeuCau.get("tai_lieu");
+            Map<String, String> id = new HashMap<>();
+            for (int i = 0; i < ma.size(); i++) {
+                id.put(ma.get(i), (String) gui.get(i).get("id"));
+                List<Map<String, Object>> doan = (List<Map<String, Object>>) gui.get(i).get("doan");
+                for (int k = 0; k < doan.size(); k++) {
+                    String maDoan = ma.get(i) + "#" + k;
+                    assertThat(doan.get(k).get("text")).as("đoạn %s so với tệp vàng khóa bảng", maDoan).isEqualTo(chuDoan.get(maDoan));
+                    id.put(maDoan, (String) doan.get(k).get("id"));
+                }
+            }
+            assertThat(id).as("số đoạn đã gửi so với tệp vàng khóa bảng").hasSize(ma.size() + chuDoan.size());
+            return (Map<String, @Nullable Object>) Objects.requireNonNull(doiId(vang.get("phan_hoi"), id));
+        }
+
+        /** Chép sâu, đổi giá trị chuỗi của khóa {@code tai_lieu}, {@code doan} theo {@code id} (thiếu thì ném: test đỏ). */
+        @SuppressWarnings("unchecked")
+        private static @Nullable Object doiId(@Nullable Object giaTri, Map<String, String> id) {
+            if (giaTri instanceof Map<?, ?> m) {
+                Map<String, @Nullable Object> ra = new LinkedHashMap<>();
+                ((Map<String, @Nullable Object>) m).forEach((k, v) -> ra.put(k, (k.equals("tai_lieu") || k.equals("doan")) && v instanceof String s
+                    ? Objects.requireNonNull(id.get(s), "id của " + s) : doiId(v, id)));
+                return ra;
+            }
+            if (giaTri instanceof List<?> l) {
+                return l.stream().map(x -> doiId(x, id)).toList();
+            }
+            return giaTri;
+        }
+
         private static Object docTep(Path tep) {
             try {
                 return JSON.readValue(Files.readString(tep), Object.class);
@@ -536,16 +607,7 @@ class NhapNoiDungTest {
                 public Map<String, @Nullable Object> kiemDongCongThuc(Map<String, ?> yeuCau) {
                     demKhoaBang();
                     soYeuCauKhoaBang(yeuCau);
-                    Map<String, Object> taiLieu = ((List<Map<String, Object>>) yeuCau.get("tai_lieu")).getFirst();
-                    Map<String, Object> doan = ((List<Map<String, Object>>) taiLieu.get("doan")).getFirst();
-                    List<Map<String, Object>> dong = new ArrayList<>();
-                    for (Map<String, Object> d : (List<Map<String, Object>>) yeuCau.get("dong")) {
-                        dong.add(Map.of("id", d.get("id"), "loai", Objects.requireNonNull(LOAI_DONG_V0.get(d.get("id")), "loại của dòng"),
-                            "tang1", Map.of("trang_thai", "DAT"),
-                            "tang2", Map.of("trang_thai", "DAT",
-                                "trich_dan", Map.of("tai_lieu", taiLieu.get("id"), "doan", doan.get("id"), "trich", doan.get("text")))));
-                    }
-                    return Map.of("dong", dong, "bo_qua", List.of());
+                    return phatLaiKhoaBang(yeuCau);
                 }
 
                 @Override
