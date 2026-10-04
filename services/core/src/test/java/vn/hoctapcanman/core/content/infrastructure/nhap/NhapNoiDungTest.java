@@ -147,6 +147,7 @@ class NhapNoiDungTest {
                     where r.class_id = ? and p.code = ? order by t.tier""").params(lop, ma).query(String.class).list();
             List<String> tangV0 = ((List<Map<String, Object>>) b.get("tang")).stream().map(t -> (String) t.get("trang_thai")).toList();
             assertThat(tangV2).as("các tầng của %s", ma).isEqualTo(tangV0);
+            soTangVoiPhanHoi(lop, ma);
         }
         assertThat(PhatLai.chuaDung()).as("mọi bản ghi của tệp vàng được dùng đúng một lần").isEmpty();
         assertThat(PhatLai.soLanKhoaBang()).as("lần nhập đầu khóa bảng một lần").isOne();
@@ -198,6 +199,42 @@ class NhapNoiDungTest {
                 select h.step_code || ' ' || h.level || ' ' || h.text from hint_levels h join problems p on p.id = h.problem_id
                 where p.code = ?""").params(b.ma()).query(String.class).list();
         assertThat(capDaGhi).as("thang gợi ý đã ghi của %s so với v0", b.ma()).containsExactlyInAnyOrderElementsOf(capV0);
+    }
+
+    /**
+     * Codex #135 (P2): mỗi dòng tầng đã ghi phải mang đúng bằng chứng của mục {@code tang} tương ứng trong phản hồi
+     * {@code /v1/verify} đã phát lại (tìm theo đề bài): trạng thái, loại kết quả, bước sai, mã lỗi, độ tin cậy, lý do, căn
+     * cứ ({@code trich_dan}, không có thì {@code cong_thuc}), JSON gốc. Importer không đổi bằng chứng nào khi không có lý do
+     * đóng mặc định (ở bộ v0, trạng thái các tầng đã khớp v0 ở trên, nên không có).
+     */
+    @SuppressWarnings("unchecked")
+    private void soTangVoiPhanHoi(UUID lop, String ma) {
+        String deBai = jdbc.sql("select statement_text from problems where code = ?").params(ma).query(String.class).single();
+        Map<String, @Nullable Object> phanHoi = Objects.requireNonNull(PhatLai.verifyTheoDe(deBai), "phản hồi verify của " + ma);
+        Map<Integer, Map<String, Object>> theoTang = new LinkedHashMap<>();
+        for (Map<String, Object> t : (List<Map<String, Object>>) Objects.requireNonNull(phanHoi.get("tang"))) {
+            theoTang.put(((Number) t.get("tang")).intValue(), t);
+        }
+        List<List<@Nullable Object>> dong = jdbc.sql("""
+                select t.tier, t.status, t.result_type, t.wrong_steps::text, t.error_code, t.confidence, t.reason,
+                    t.citation::text, t.raw::text from problem_releases r join problems p on p.id = r.problem_id
+                join verification_tier_results t on t.run_id = r.run_id where r.class_id = ? and p.code = ? order by t.tier""")
+            .params(lop, ma)
+            .query((rs, i) -> {
+                float tinCay = rs.getFloat(6);
+                return Arrays.<@Nullable Object>asList(rs.getInt(1), rs.getString(2), rs.getString(3), cay(rs.getString(4)),
+                    rs.getString(5), rs.wasNull() ? null : tinCay, rs.getString(7), cay(rs.getString(8)), cay(rs.getString(9)));
+            })
+            .list();
+        assertThat(dong).as("số tầng của %s", ma).hasSize(theoTang.size());
+        for (List<@Nullable Object> d : dong) {
+            Map<String, Object> t = Objects.requireNonNull(theoTang.get((Integer) d.get(0)));
+            Object canCu = t.get("trich_dan") != null ? t.get("trich_dan") : t.get("cong_thuc");
+            Number tinCay = (Number) t.get("do_tin_cay");
+            assertThat(d).as("tầng %s của %s so với phản hồi phát lại", d.get(0), ma).containsExactly(d.get(0), t.get("trang_thai"),
+                t.get("loai_ket_qua"), cayV0(t.get("buoc_sai")), t.get("ma_loi"), tinCay == null ? null : tinCay.floatValue(),
+                t.get("ly_do"), cayV0(canCu), cayV0(t));
+        }
     }
 
     private static @Nullable JsonNode cay(@Nullable String json) {
@@ -292,6 +329,13 @@ class NhapNoiDungTest {
             return job + " " + CHUAN.writeValueAsString(gon);
         }
 
+        /** Phản hồi verify đã phát lại ở lượt hiện tại, theo đề bài của yêu cầu. */
+        private static final Map<Object, Map<String, @Nullable Object>> VERIFY_THEO_DE = new HashMap<>();
+
+        static synchronized @Nullable Map<String, @Nullable Object> verifyTheoDe(String deBai) {
+            return VERIFY_THEO_DE.get(deBai);
+        }
+
         static synchronized Map<String, @Nullable Object> tra(String job, Map<String, ?> yeuCau) {
             // Codex #135 (P2): kho gửi đi phải đúng kho của tệp vàng (đủ tài liệu, đúng thứ tự, đúng chữ, đúng các dòng bảng),
             // nếu không phản hồi phát lại là phán quyết cho một đầu vào khác.
@@ -307,6 +351,9 @@ class NhapNoiDungTest {
             Map<String, @Nullable Object> phanHoi = con.poll();
             if (phanHoi == null) {
                 throw new AssertionError("Yêu cầu được gọi nhiều lần hơn tệp vàng v0 ghi: " + k);
+            }
+            if (job.equals("verify")) {
+                VERIFY_THEO_DE.put(Objects.requireNonNull(yeuCau.get("de_bai")), phanHoi);
             }
             return phanHoi;
         }
