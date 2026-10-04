@@ -93,6 +93,13 @@ class NhapNoiDungTest {
      * viết lại ở đây để test không so importer với chính nó.
      */
     private static final Map<Object, Object> BLOOM_V2 = Map.of("APPLY", "VAN_DUNG", "NHAN_BIET", "NHO");
+    /**
+     * Codex #135 (P2): loại mà dịch vụ toán thật trả cho 6 dòng của bảng v0 ({@code services/math/tests/test_dong_cong_thuc.py},
+     * {@code test_bang_v0_dat_ca_6_o_hai_tang_voi_5_tai_lieu}): job khóa bảng giả trả đúng loại từng dòng, để importer gán
+     * sai hay làm rơi loại thì {@code formulas.kind} lệch.
+     */
+    private static final Map<Object, String> LOAI_DONG_V0 = Map.of("d-1", "DANG_THUC", "d-2", "DANG_THUC", "d-3", "DANG_THUC",
+        "d-4", "DINH_LI", "d-5", "DINH_LI", "d-6", "DINH_LI");
 
     @DynamicPropertySource
     static void nguon(DynamicPropertyRegistry r) {
@@ -156,6 +163,13 @@ class NhapNoiDungTest {
         }
         assertThat(PhatLai.chuaDung()).as("mọi bản ghi của tệp vàng được dùng đúng một lần").isEmpty();
         assertThat(PhatLai.soLanKhoaBang()).as("lần nhập đầu khóa bảng một lần").isOne();
+        assertThat(jdbc.sql("""
+                select f.code || ' ' || f.kind || ' ' || f.tier1_status || ' ' || f.tier2_status from formulas f
+                join formula_sheets s on s.id = f.formula_sheet_id where s.class_id = ? and s.status = 'KHOA' order by f.ordinal""")
+                .params(lop).query(String.class).list())
+            .as("các dòng của bảng đã khóa mang đúng loại job trả")
+            .containsExactly("d-1 DANG_THUC DAT DAT", "d-2 DANG_THUC DAT DAT", "d-3 DANG_THUC DAT DAT", "d-4 DINH_LI DAT DAT",
+                "d-5 DINH_LI DAT DAT", "d-6 DINH_LI DAT DAT");
 
         // Lần nhập thứ hai dựng lại bài (solve, generate như lần đầu) nhưng không kiểm lại bài nào: còn nguyên 17 bản ghi verify.
         PhatLai.napLai();
@@ -193,8 +207,12 @@ class NhapNoiDungTest {
         assertThat(jdbc.sql("select content_hash from problems where code = ?").params(b.ma()).query(String.class).single())
             .as("content_hash của %s", b.ma()).isEqualTo(vanTayDocLap(b));
         List<@Nullable String> loiGiai = jdbc.sql("""
-                select s.worked_solution::text, s.protected_facts::text from solutions s join problems p on p.id = s.problem_id
-                where p.code = ?""").params(b.ma()).query((rs, i) -> Arrays.asList(rs.getString(1), rs.getString(2))).single();
+                select s.worked_solution::text, s.protected_facts::text, s.final_answer from solutions s
+                join problems p on p.id = s.problem_id where p.code = ?""").params(b.ma())
+            .query((rs, i) -> Arrays.asList(rs.getString(1), rs.getString(2), rs.getString(3))).single();
+        // Codex #135 (P2): đáp án cuối là nội dung lời giải (lộ theo cài lớp), v0 ghi rõ null.
+        assertThat(v0).as("tệp vàng xuất đáp án cuối của %s", b.ma()).containsKey("finalAnswer");
+        assertThat(loiGiai.get(2)).as("đáp án cuối đã ghi của %s so với v0", b.ma()).isEqualTo(v0.get("finalAnswer"));
         assertThat(cay(loiGiai.get(0))).as("lời giải đã ghi của %s so với v0", b.ma()).isEqualTo(cayV0(v0.get("baiLam")));
         assertThat(cay(loiGiai.get(1))).as("dữ kiện bảo vệ đã ghi của %s so với v0", b.ma())
             .isEqualTo(cayV0(vangCuaBai.get("su_kien_bao_ve")));
@@ -522,7 +540,8 @@ class NhapNoiDungTest {
                     Map<String, Object> doan = ((List<Map<String, Object>>) taiLieu.get("doan")).getFirst();
                     List<Map<String, Object>> dong = new ArrayList<>();
                     for (Map<String, Object> d : (List<Map<String, Object>>) yeuCau.get("dong")) {
-                        dong.add(Map.of("id", d.get("id"), "loai", "DANG_THUC", "tang1", Map.of("trang_thai", "DAT"),
+                        dong.add(Map.of("id", d.get("id"), "loai", Objects.requireNonNull(LOAI_DONG_V0.get(d.get("id")), "loại của dòng"),
+                            "tang1", Map.of("trang_thai", "DAT"),
                             "tang2", Map.of("trang_thai", "DAT",
                                 "trich_dan", Map.of("tai_lieu", taiLieu.get("id"), "doan", doan.get("id"), "trich", doan.get("text")))));
                     }

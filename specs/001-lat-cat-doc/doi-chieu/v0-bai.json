@@ -8,7 +8,7 @@
     "du_lieu": {
       "data/supham": "a821fd14243ee607371420b50e20e1f848148d36",
       "data/v0": "6a666e3bde67052c928973f9041ba7ddfd1ce04e",
-      "specs/001-lat-cat-doc/doi-chieu/xuat-v0.ts": "afd2f019beb7315725c6e29fc7dbf4edd7c20598"
+      "specs/001-lat-cat-doc/doi-chieu/xuat-v0.ts": "8cc3a5d2a194bde7899d7ff0153321ff8156dd6f"
     },
     "dich_vu_toan": {
       "cay_git": "2d833dd78bfe594eefc309ffffde19bc6d4cc332",
@@ -89,6 +89,7 @@
         "hamSympy": null,
         "buocBatDau": null,
         "baiLam": null,
+        "finalAnswer": null,
         "goiY": [
           {
             "maBuoc": "B.DH.XETDAU",
@@ -256,6 +257,7 @@
             ]
           }
         },
+        "finalAnswer": null,
         "goiY": [
           {
             "maBuoc": "B.DH.XETDAU",
@@ -391,6 +393,7 @@
             "gia_tri_cuc_tieu": []
           }
         },
+        "finalAnswer": null,
         "goiY": [
           {
             "maBuoc": "B.DH.XETDAU",
@@ -558,6 +561,7 @@
             ]
           }
         },
+        "finalAnswer": null,
         "goiY": [
           {
             "maBuoc": "B.DH.NGHIEM",
@@ -749,6 +753,7 @@
             ]
           }
         },
+        "finalAnswer": null,
         "goiY": [
           {
             "maBuoc": "B.DH.NGHIEM",
@@ -927,6 +932,7 @@
             ]
           }
         },
+        "finalAnswer": null,
         "goiY": [
           {
             "maBuoc": "B.DH.TXD",
@@ -1159,6 +1165,7 @@
             ]
           }
         },
+        "finalAnswer": null,
         "goiY": [
           {
             "maBuoc": "B.DH.XETDAU",
@@ -1351,6 +1358,7 @@
             ]
           }
         },
+        "finalAnswer": null,
         "goiY": [
           {
             "maBuoc": "B.DH.XETDAU",
@@ -1543,6 +1551,7 @@
             ]
           }
         },
+        "finalAnswer": null,
         "goiY": [
           {
             "maBuoc": "B.DH.NGHIEM",
@@ -1704,6 +1713,7 @@
             ]
           }
         },
+        "finalAnswer": null,
         "goiY": [
           {
             "maBuoc": "B.DH.NGHIEM",
@@ -1789,6 +1799,7 @@
         "hamSympy": null,
         "buocBatDau": null,
         "baiLam": null,
+        "finalAnswer": null,
         "goiY": [
           {
             "maBuoc": "B.DH.DAOHAM",
@@ -1953,6 +1964,7 @@
             ]
           }
         },
+        "finalAnswer": null,
         "goiY": [
           {
             "maBuoc": "B.DH.TXD",
@@ -2132,6 +2144,7 @@
             ]
           }
         },
+        "finalAnswer": null,
         "goiY": [
           {
             "maBuoc": "B.DH.TXD",
@@ -2333,6 +2346,7 @@
             ]
           }
         },
+        "finalAnswer": null,
         "goiY": [
           {
             "maBuoc": "B.DH.TXD",
@@ -2534,6 +2548,7 @@
             ]
           }
         },
+        "finalAnswer": null,
         "goiY": [
           {
             "maBuoc": "B.DH.TXD",
@@ -2702,6 +2717,7 @@
             "gia_tri_cuc_tieu": []
           }
         },
+        "finalAnswer": null,
         "goiY": [
           {
             "maBuoc": "B.DH.TXD",
@@ -2932,6 +2948,7 @@
             ]
           }
         },
+        "finalAnswer": null,
         "goiY": [
           {
             "maBuoc": "B.DH.TXD",
