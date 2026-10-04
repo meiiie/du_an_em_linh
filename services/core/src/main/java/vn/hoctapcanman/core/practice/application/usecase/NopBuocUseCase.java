@@ -126,7 +126,7 @@ public class NopBuocUseCase {
         String bam = YeuCauCham.bam(payload);
         GradingResult ketQua = grades.findByRequest(daLuu.baiLamId(), bam).orElseGet(() -> {
             Map<String, @Nullable Object> phanHoi = mayCham.cham(payload).orElse(null);
-            return grades.record(DocKetQuaCham.ketQua(daLuu.baiLamId(), yeuCau.maBuoc(), bam, phanHoi, clock.instant()));
+            return grades.record(DocKetQuaCham.ketQua(daLuu.baiLamId(), yeuCau.maBuoc(), bai.cacBuoc(), bam, phanHoi, clock.instant()));
         });
         return DocKetQuaCham.choHocSinh(ketQua, bai.cacBuoc(), daLuu.nghiDoanMo());
     }

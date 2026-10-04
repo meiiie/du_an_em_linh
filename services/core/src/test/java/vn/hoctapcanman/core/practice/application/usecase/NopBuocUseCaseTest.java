@@ -334,10 +334,14 @@ class NopBuocUseCaseTest {
             p.put("buoc_sai", null);
             p.put("ma_loi", null);
             p.put("do_tin_cay", null);
-            p.put("per_buoc", Map.of((String) y.get("nop_toi"), "DAT"));
+            List<String> khung = List.of("B.DH.TXD", "B.DH.DAOHAM", "B.DH.NGHIEM", "B.DH.XETDAU", "B.DH.KETLUAN");
+            String nopToi = (String) y.get("nop_toi");
+            Map<String, @Nullable Object> per = new LinkedHashMap<>();
+            khung.subList(0, khung.indexOf(nopToi) + 1).forEach(b -> per.put(b, "DAT"));
+            p.put("per_buoc", per);
             p.put("thong_bao", "Đúng rồi.");
             p.put("cac_van_de", List.of());
-            p.put("chua_xong", false);
+            p.put("chua_xong", !nopToi.equals(khung.getLast()));
             p.put("nop_toi", y.get("nop_toi"));
             return Optional.of(p);
         }

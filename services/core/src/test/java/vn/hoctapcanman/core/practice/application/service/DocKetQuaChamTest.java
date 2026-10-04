@@ -28,7 +28,7 @@ class DocKetQuaChamTest {
 
     @Test
     void docDuPhanHoiSaiNhuV0() {
-        GradingResult g = DocKetQuaCham.ketQua(BAI_LAM, "B.DH.XETDAU", BAM, phanHoiSai(), LUC);
+        GradingResult g = DocKetQuaCham.ketQua(BAI_LAM, "B.DH.XETDAU", KHUNG, BAM, phanHoiSai(), LUC);
         assertThat(g.result()).isEqualTo(GradeStatus.SAI);
         assertThat(g.stepCode()).isEqualTo("B.DH.XETDAU");
         assertThat(g.requestHash()).isEqualTo(BAM);
@@ -49,33 +49,33 @@ class DocKetQuaChamTest {
     void coDauUChiCoNghiaKhiSai() {
         Map<String, @Nullable Object> sai = phanHoiSai();
         sai.put("toan_dung", true);
-        assertThat(DocKetQuaCham.ketQua(BAI_LAM, "B.DH.KETLUAN", BAM, sai, LUC).mathOk()).isTrue();
-        Map<String, @Nullable Object> dat = phanHoiDat();
+        assertThat(DocKetQuaCham.ketQua(BAI_LAM, "B.DH.KETLUAN", KHUNG, BAM, sai, LUC).mathOk()).isTrue();
+        Map<String, @Nullable Object> dat = phanHoiDat("B.DH.KETLUAN");
         dat.put("toan_dung", true);
-        assertThat(DocKetQuaCham.ketQua(BAI_LAM, "B.DH.KETLUAN", BAM, dat, LUC).mathOk()).isNull();
+        assertThat(DocKetQuaCham.ketQua(BAI_LAM, "B.DH.KETLUAN", KHUNG, BAM, dat, LUC).mathOk()).isNull();
         Map<String, @Nullable Object> khongPhaiBool = phanHoiSai();
         khongPhaiBool.put("toan_dung", "true");
-        assertThat(DocKetQuaCham.ketQua(BAI_LAM, "B.DH.KETLUAN", BAM, khongPhaiBool, LUC).mathOk()).isNull();
+        assertThat(DocKetQuaCham.ketQua(BAI_LAM, "B.DH.KETLUAN", KHUNG, BAM, khongPhaiBool, LUC).mathOk()).isNull();
     }
 
     @Test
     void khongCoPhanHoiHayPhanHoiHongThiKhongChamDuoc() {
-        Map<String, @Nullable Object> ketQuaLa = phanHoiDat();
+        Map<String, @Nullable Object> ketQuaLa = phanHoiDat("B.DH.TXD");
         ketQuaLa.put("ket_qua", "DAT_ROI");
-        Map<String, @Nullable Object> khongChamDuoc = phanHoiDat();
+        Map<String, @Nullable Object> khongChamDuoc = phanHoiDat("B.DH.TXD");
         khongChamDuoc.put("ket_qua", "KHONG_CHAM_DUOC");
-        Map<String, @Nullable Object> perBuocSaiKieu = phanHoiDat();
+        Map<String, @Nullable Object> perBuocSaiKieu = phanHoiDat("B.DH.TXD");
         perBuocSaiKieu.put("per_buoc", Map.of("B.DH.TXD", 1));
-        Map<String, @Nullable Object> perBuocKhongPhaiDoiTuong = phanHoiDat();
+        Map<String, @Nullable Object> perBuocKhongPhaiDoiTuong = phanHoiDat("B.DH.TXD");
         perBuocKhongPhaiDoiTuong.put("per_buoc", List.of("DAT"));
         Map<String, @Nullable Object> tinCayNgoaiKhoang = phanHoiSai();
         tinCayNgoaiKhoang.put("do_tin_cay", 1.5);
         Map<String, @Nullable Object> maLoiSaiKieu = phanHoiSai();
         maLoiSaiKieu.put("ma_loi", 5);
-        Map<String, @Nullable Object> thieuKetQua = phanHoiDat();
+        Map<String, @Nullable Object> thieuKetQua = phanHoiDat("B.DH.TXD");
         thieuKetQua.remove("ket_qua");
         Stream.of(null, ketQuaLa, khongChamDuoc, perBuocSaiKieu, perBuocKhongPhaiDoiTuong, tinCayNgoaiKhoang, maLoiSaiKieu, thieuKetQua)
-            .map(p -> DocKetQuaCham.ketQua(BAI_LAM, "B.DH.TXD", BAM, p, LUC))
+            .map(p -> DocKetQuaCham.ketQua(BAI_LAM, "B.DH.TXD", KHUNG, BAM, p, LUC))
             .forEach(g -> {
                 assertThat(g.result()).isEqualTo(GradeStatus.KHONG_CHAM_DUOC);
                 assertThat(g.message()).isEqualTo(DocKetQuaCham.MAY_BAN);
@@ -91,37 +91,58 @@ class DocKetQuaChamTest {
         Map<String, @Nullable Object> chiKetQua = new LinkedHashMap<>();
         chiKetQua.put("ket_qua", "DAT");
         hong.add(chiKetQua);
-        for (String khoa : List.of("loai_ket_qua", "per_buoc", "thong_bao", "chua_xong", "cac_van_de", "buoc_sai", "ma_loi", "do_tin_cay")) {
-            Map<String, @Nullable Object> thieu = phanHoiDat();
+        for (String khoa : List.of("loai_ket_qua", "per_buoc", "thong_bao", "chua_xong", "cac_van_de", "buoc_sai", "ma_loi", "do_tin_cay",
+                "nop_toi")) {
+            Map<String, @Nullable Object> thieu = phanHoiDat("B.DH.DAOHAM");
             thieu.remove(khoa);
             hong.add(thieu);
         }
-        Map<String, @Nullable Object> datMaCoBuocSai = phanHoiDat();
+        Map<String, @Nullable Object> datMaCoBuocSai = phanHoiDat("B.DH.DAOHAM");
         datMaCoBuocSai.put("buoc_sai", Map.of("ma_buoc", "B.DH.TXD"));
         hong.add(datMaCoBuocSai);
-        Map<String, @Nullable Object> datMaCoVanDe = phanHoiDat();
+        Map<String, @Nullable Object> datMaCoVanDe = phanHoiDat("B.DH.DAOHAM");
         datMaCoVanDe.put("cac_van_de", List.of(Map.of("id", "VD1")));
         hong.add(datMaCoVanDe);
-        Map<String, @Nullable Object> datLoaiKhac = phanHoiDat();
+        Map<String, @Nullable Object> datLoaiKhac = phanHoiDat("B.DH.DAOHAM");
         datLoaiKhac.put("loai_ket_qua", "SAI_BIEN_DOI");
         hong.add(datLoaiKhac);
-        Map<String, @Nullable Object> sauBuoc = phanHoiDat();
+        Map<String, @Nullable Object> sauBuoc = phanHoiDat("B.DH.DAOHAM");
         sauBuoc.put("nop_toi", "B.DH.KETLUAN");
         hong.add(sauBuoc);
-        Map<String, @Nullable Object> chuaXongChu = phanHoiDat();
-        chuaXongChu.put("chua_xong", "false");
+        Map<String, @Nullable Object> chuaXongChu = phanHoiDat("B.DH.DAOHAM");
+        chuaXongChu.put("chua_xong", "true");
         hong.add(chuaXongChu);
+        // Codex #140 (P1, vòng hai): per_buoc và chua_xong của DAT phải đúng _per(den) và bước nộp.
+        Map<String, @Nullable Object> buocNopSai = phanHoiDat("B.DH.DAOHAM");
+        buocNopSai.put("per_buoc", Map.of("B.DH.TXD", "DAT", "B.DH.DAOHAM", "SAI"));
+        hong.add(buocNopSai);
+        Map<String, @Nullable Object> perRong = phanHoiDat("B.DH.DAOHAM");
+        perRong.put("per_buoc", Map.of());
+        hong.add(perRong);
+        Map<String, @Nullable Object> thieuBuocDau = phanHoiDat("B.DH.DAOHAM");
+        thieuBuocDau.put("per_buoc", Map.of("B.DH.DAOHAM", "DAT"));
+        hong.add(thieuBuocDau);
+        Map<String, @Nullable Object> quaBuocNop = phanHoiDat("B.DH.DAOHAM");
+        quaBuocNop.put("per_buoc", Map.of("B.DH.TXD", "DAT", "B.DH.DAOHAM", "DAT", "B.DH.NGHIEM", "DAT"));
+        hong.add(quaBuocNop);
+        Map<String, @Nullable Object> xongGiuaChung = phanHoiDat("B.DH.DAOHAM");
+        xongGiuaChung.put("chua_xong", false);
+        hong.add(xongGiuaChung);
         for (Map<String, @Nullable Object> p : hong) {
-            assertThat(DocKetQuaCham.ketQua(BAI_LAM, "B.DH.DAOHAM", BAM, p, LUC).result()).as("%s", p).isEqualTo(GradeStatus.KHONG_CHAM_DUOC);
+            assertThat(DocKetQuaCham.ketQua(BAI_LAM, "B.DH.DAOHAM", KHUNG, BAM, p, LUC).result()).as("%s", p).isEqualTo(GradeStatus.KHONG_CHAM_DUOC);
         }
-        Map<String, @Nullable Object> dungBuoc = phanHoiDat();
-        dungBuoc.put("nop_toi", "B.DH.DAOHAM");
-        assertThat(DocKetQuaCham.ketQua(BAI_LAM, "B.DH.DAOHAM", BAM, dungBuoc, LUC).result()).isEqualTo(GradeStatus.DAT);
+        assertThat(DocKetQuaCham.ketQua(BAI_LAM, "B.DH.DAOHAM", KHUNG, BAM, phanHoiDat("B.DH.DAOHAM"), LUC).result()).isEqualTo(GradeStatus.DAT);
+        // Bước cuối: grader.py trả chua_xong cả true lẫn false (dòng 1066, 1071), đều là phong bì DAT hợp lệ.
+        for (boolean chuaXong : List.of(true, false)) {
+            Map<String, @Nullable Object> cuoi = phanHoiDat("B.DH.KETLUAN");
+            cuoi.put("chua_xong", chuaXong);
+            assertThat(DocKetQuaCham.ketQua(BAI_LAM, "B.DH.KETLUAN", KHUNG, BAM, cuoi, LUC).result()).isEqualTo(GradeStatus.DAT);
+        }
     }
 
     @Test
     void choHocSinhChoSaiKhongTrungVaKhongCoGiaTriDung() {
-        KetQuaNopBuoc kq = DocKetQuaCham.choHocSinh(DocKetQuaCham.ketQua(BAI_LAM, "B.DH.XETDAU", BAM, phanHoiSai(), LUC), KHUNG, false);
+        KetQuaNopBuoc kq = DocKetQuaCham.choHocSinh(DocKetQuaCham.ketQua(BAI_LAM, "B.DH.XETDAU", KHUNG, BAM, phanHoiSai(), LUC), KHUNG, false);
         assertThat(kq.ketQua()).isEqualTo("SAI");
         assertThat(kq.thongBao()).isEqualTo("Bước Xét dấu, ô dấu thứ 2 cần xem lại.");
         assertThat(kq.maLoi()).isEqualTo("ERR.DH.05");
@@ -137,31 +158,35 @@ class DocKetQuaChamTest {
 
     @Test
     void datThiCoBuocKeTruBuocCuoi() {
-        assertThat(DocKetQuaCham.choHocSinh(DocKetQuaCham.ketQua(BAI_LAM, "B.DH.DAOHAM", BAM, phanHoiDat(), LUC), KHUNG, false).buocKe())
+        assertThat(DocKetQuaCham.choHocSinh(DocKetQuaCham.ketQua(BAI_LAM, "B.DH.DAOHAM", KHUNG, BAM, phanHoiDat("B.DH.DAOHAM"), LUC), KHUNG, false).buocKe())
             .isEqualTo("B.DH.NGHIEM");
-        assertThat(DocKetQuaCham.choHocSinh(DocKetQuaCham.ketQua(BAI_LAM, "B.DH.KETLUAN", BAM, phanHoiDat(), LUC), KHUNG, false).buocKe())
+        assertThat(DocKetQuaCham.choHocSinh(DocKetQuaCham.ketQua(BAI_LAM, "B.DH.KETLUAN", KHUNG, BAM, phanHoiDat("B.DH.KETLUAN"), LUC), KHUNG, false).buocKe())
             .isNull();
-        assertThat(DocKetQuaCham.choHocSinh(DocKetQuaCham.ketQua(BAI_LAM, "B.DH.DAOHAM", BAM, null, LUC), KHUNG, false))
+        assertThat(DocKetQuaCham.choHocSinh(DocKetQuaCham.ketQua(BAI_LAM, "B.DH.DAOHAM", KHUNG, BAM, null, LUC), KHUNG, false))
             .isEqualTo(new KetQuaNopBuoc("KHONG_CHAM_DUOC", DocKetQuaCham.MAY_BAN, List.of(), null, null));
     }
 
     @Test
     void nghiDoanMoThemCauNhuV0() {
-        assertThat(DocKetQuaCham.choHocSinh(DocKetQuaCham.ketQua(BAI_LAM, "B.DH.DAOHAM", BAM, phanHoiDat(), LUC), KHUNG, true).thongBao())
+        assertThat(DocKetQuaCham.choHocSinh(DocKetQuaCham.ketQua(BAI_LAM, "B.DH.DAOHAM", KHUNG, BAM, phanHoiDat("B.DH.DAOHAM"), LUC), KHUNG, true).thongBao())
             .isEqualTo("Đúng rồi. " + DocKetQuaCham.DOAN_MO);
     }
 
-    private static Map<String, @Nullable Object> phanHoiDat() {
+    /** Phong bì DAT như _pack("DAT", ..., _per(den), ..., chua_xong=den != KETLUAN, nop_toi=den) của grader.py. */
+    private static Map<String, @Nullable Object> phanHoiDat(String nopToi) {
         Map<String, @Nullable Object> p = new LinkedHashMap<>();
+        Map<String, @Nullable Object> per = new LinkedHashMap<>();
+        KHUNG.subList(0, KHUNG.indexOf(nopToi) + 1).forEach(b -> per.put(b, "DAT"));
         p.put("ket_qua", "DAT");
         p.put("loai_ket_qua", "DAT");
         p.put("buoc_sai", null);
         p.put("ma_loi", null);
         p.put("do_tin_cay", null);
-        p.put("per_buoc", Map.of("B.DH.DAOHAM", "DAT"));
+        p.put("per_buoc", per);
         p.put("thong_bao", "Đúng rồi.");
         p.put("cac_van_de", List.of());
-        p.put("chua_xong", false);
+        p.put("chua_xong", !nopToi.equals(KHUNG.getLast()));
+        p.put("nop_toi", nopToi);
         return p;
     }
 

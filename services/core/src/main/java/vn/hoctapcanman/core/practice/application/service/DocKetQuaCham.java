@@ -28,9 +28,9 @@ import vn.hoctapcanman.core.practice.domain.model.GradingResult;
  * <p>Phong bì bắt buộc là phong bì mà {@code _pack} của {@code services/math/app/grader.py} luôn trả (Codex #140: phản hồi
  * thiếu như {@code {"ket_qua":"DAT"}} không được thành đạt): {@code ket_qua}, {@code loai_ket_qua} (chữ), {@code per_buoc}
  * (đối tượng chữ → chữ), {@code thong_bao} (chữ), {@code chua_xong} (boolean), {@code cac_van_de} (danh sách), và có mặt
- * {@code buoc_sai} (đối tượng hay null), {@code ma_loi} (chữ hay null), {@code do_tin_cay} (số hay null). {@code DAT} phải
- * nhất quán như {@code _pack}: loại {@code DAT}, không bước sai, mã lỗi, độ tin cậy, vấn đề nào. {@code nop_toi} có thì
- * phải đúng bước đã nộp.
+ * {@code buoc_sai} (đối tượng hay null), {@code ma_loi} (chữ hay null), {@code do_tin_cay} (số hay null). {@code nop_toi} có
+ * thì phải đúng bước đã nộp. {@code DAT} phải trùng trọn phong bì mà {@code _pack} sinh cho bước đã nộp (xem
+ * {@link #datDungPhongBi}).
  */
 public final class DocKetQuaCham {
 
@@ -44,21 +44,22 @@ public final class DocKetQuaCham {
 
     private DocKetQuaCham() {}
 
-    /** Kết quả chấm bài làm {@code baiLam} tới bước {@code nopToi} cho yêu cầu có băm {@code bam}. */
-    public static GradingResult ketQua(UUID baiLam, String nopToi, String bam, @Nullable Map<String, @Nullable Object> phanHoi,
-            Instant luc) {
+    /** Kết quả chấm bài làm {@code baiLam} tới bước {@code nopToi} của khung {@code khung} cho yêu cầu có băm {@code bam}. */
+    public static GradingResult ketQua(UUID baiLam, String nopToi, List<String> khung, String bam,
+            @Nullable Map<String, @Nullable Object> phanHoi, Instant luc) {
         if (phanHoi == null) {
             return GradingResult.notGraded(baiLam, nopToi, bam, MAY_BAN, luc);
         }
         try {
-            return doc(baiLam, nopToi, bam, phanHoi, luc);
+            return doc(baiLam, nopToi, khung, bam, phanHoi, luc);
         } catch (RuntimeException e) {
             LOG.warn("Phản hồi chấm không đọc được ({}), coi như không chấm được", e.getClass().getSimpleName());
             return GradingResult.notGraded(baiLam, nopToi, bam, MAY_BAN, luc);
         }
     }
 
-    private static GradingResult doc(UUID baiLam, String nopToi, String bam, Map<String, @Nullable Object> p, Instant luc) {
+    private static GradingResult doc(UUID baiLam, String nopToi, List<String> khung, String bam, Map<String, @Nullable Object> p,
+            Instant luc) {
         GradeStatus ketQua = GradeStatus.tuDichVuToan(p.get("ket_qua"))
             .orElseThrow(() -> new IllegalArgumentException("ket_qua lạ"));
         for (String khoa : List.of("buoc_sai", "ma_loi", "do_tin_cay")) {
@@ -74,15 +75,14 @@ public final class DocKetQuaCham {
         if (p.get("buoc_sai") != null && !(p.get("buoc_sai") instanceof Map<?, ?>)) {
             throw new IllegalArgumentException("buoc_sai không phải đối tượng");
         }
-        if (ketQua == GradeStatus.DAT && (!"DAT".equals(loai) || p.get("buoc_sai") != null || p.get("ma_loi") != null
-                || p.get("do_tin_cay") != null || !vanDe.isEmpty())) {
-            throw new IllegalArgumentException("Phong bì DAT không nhất quán");
-        }
         if (p.get("nop_toi") != null && !nopToi.equals(p.get("nop_toi"))) {
             throw new IllegalArgumentException("nop_toi khác bước đã nộp");
         }
         Map<String, String> perBuoc = new LinkedHashMap<>();
         m.forEach((k, v) -> perBuoc.put((String) k, (String) v));
+        if (ketQua == GradeStatus.DAT && !datDungPhongBi(p, loai, vanDe, perBuoc, nopToi, khung)) {
+            throw new IllegalArgumentException("Phong bì DAT khác phong bì _pack sinh cho bước đã nộp");
+        }
         Number tinCay = (Number) p.get("do_tin_cay");
         // Cờ dấu U (0002c) chỉ có nghĩa khi SAI và là boolean, như laDauU của v0.
         Boolean toanDung = ketQua == GradeStatus.SAI && p.get("toan_dung") instanceof Boolean b ? b : null;
@@ -90,6 +90,25 @@ public final class DocKetQuaCham {
             (String) p.get("ma_loi"), tinCay == null ? null : tinCay.doubleValue(), perBuoc, (String) p.get("thong_bao"),
             json(p.get("cac_van_de")), toanDung, Boolean.TRUE.equals(p.get("chua_xong")), (String) p.get("phien_ban_chuan_hoa"),
             json(p.get("chuan_hoa")), luc);
+    }
+
+    /**
+     * Phong bì {@code DAT} mà {@code _pack(..., _per(den), ..., nop_toi=den)} của {@code grader.py} sinh cho bước {@code nopToi}:
+     * loại {@code DAT}; không bước sai, mã lỗi, độ tin cậy, vấn đề; {@code nop_toi} đúng bước; {@code per_buoc} đúng
+     * {@code _per(den)}, tức mọi bước từ đầu khung tới bước nộp, đều {@code DAT}; chưa tới bước cuối thì {@code chua_xong}. So
+     * trọn phong bì, không thêm từng điều kiện (Codex #140 hai vòng chỉ ra phần kiểm từng trường còn sót).
+     */
+    private static boolean datDungPhongBi(Map<String, @Nullable Object> p, String loai, List<?> vanDe, Map<String, String> perBuoc,
+            String nopToi, List<String> khung) {
+        int den = khung.indexOf(nopToi);
+        if (den < 0) {
+            return false;
+        }
+        Map<String, String> perDat = new LinkedHashMap<>();
+        khung.subList(0, den + 1).forEach(b -> perDat.put(b, "DAT"));
+        return "DAT".equals(loai) && p.get("buoc_sai") == null && p.get("ma_loi") == null && p.get("do_tin_cay") == null
+            && vanDe.isEmpty() && nopToi.equals(p.get("nop_toi")) && perBuoc.equals(perDat)
+            && (den == khung.size() - 1 || Boolean.TRUE.equals(p.get("chua_xong")));
     }
 
     /**
