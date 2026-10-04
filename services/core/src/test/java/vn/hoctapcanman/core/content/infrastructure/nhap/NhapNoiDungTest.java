@@ -157,6 +157,8 @@ class NhapNoiDungTest {
         assertThat(PhatLai.chuaDung()).as("mọi bản ghi của tệp vàng được dùng đúng một lần").isEmpty();
         assertThat(PhatLai.soLanKhoaBang()).as("lần nhập đầu khóa bảng một lần").isOne();
         soBangDaKhoaVoiPhanHoiThat(lop);
+        soDanhMucVaKhoLop(lop, v0);
+        Map<String, List<String>> sauLanDau = chupBang(lop);
 
         // Lần nhập thứ hai dựng lại bài (solve, generate như lần đầu) nhưng không kiểm lại bài nào: còn nguyên 17 bản ghi verify.
         PhatLai.napLai();
@@ -168,7 +170,292 @@ class NhapNoiDungTest {
         // Codex #135 (P2): bảng đang dùng vẫn đúng kho, nên lần nhập thứ hai không gọi lại job khóa bảng.
         assertThat(PhatLai.soLanKhoaBang()).as("lần nhập thứ hai không khóa lại bảng").isZero();
         assertThat(lai.phatHanh()).isEqualTo(kq.phatHanh());
+        // «Nhập hai lần cùng kết quả» trên chính CSDL: mọi dòng của mọi bảng importer ghi giống hệt sau lần thứ hai.
+        Map<String, List<String>> sauLanHai = chupBang(lop);
+        sauLanDau.forEach((bang, dong) -> assertThat(sauLanHai.get(bang))
+            .as("dòng của %s sau lần nhập thứ hai so với sau lần đầu", bang).containsExactlyElementsOf(dong));
         jdbc.sql("set constraints all immediate").update();
+    }
+
+    /**
+     * Codex #135, tấn công tiền đề: 19 vòng góp ý đều là «test chưa so cột X», vì test liệt kê tay cột cần so. Bảng này khai
+     * cách kiểm của từng cột mà importer ghi: tên phương thức so của test này, hay «v2: …» khi giá trị do v2 sinh và không có
+     * bản tương ứng ở v0 hay tệp nguồn. {@link #moiCotImporterGhiDeuCoCachKiem} đọc cột thật từ CSDL và đỏ khi có cột chưa
+     * khai, nên thêm cột mà quên kiểm thì test chặn, không chờ người rà phát hiện.
+     */
+    private static final Map<String, String> CACH_KIEM = new LinkedHashMap<>();
+
+    static {
+        String v2Id = "v2: khóa chính hay khóa ngoại UUID do v2 sinh; các phép so nối bảng qua nó";
+        String v2Luc = "v2: thời điểm ghi theo đồng hồ của lần nhập";
+        khai("topics", "soDanhMucVaKhoLop", "code", "name", "grade");
+        khai("skills", "soDanhMucVaKhoLop", "code", "topic_code", "name", "description", "grade", "is_core");
+        khai("skill_prerequisites", "soDanhMucVaKhoLop", "skill_code", "prerequisite_code", "min_level");
+        khai("step_templates", "soDanhMucVaKhoLop", "step_code", "topic_code", "ordinal", "input_kind", "skill_code", "description");
+        khai("error_types", "soDanhMucVaKhoLop", "code", "skill_code", "step_code", "name", "fix_hint", "result_types");
+        khai("problems", "soVoiDaGhi", "code", "skill_code", "extra_skill_codes", "level4", "level3", "bloom_level", "difficulty",
+            "statement_text", "statement_latex", "function_sympy", "start_step");
+        khai("problems", "nhapNhuV0TrenCungDauVaoVaNhapHaiLanCungKetQua", "origin", "answer_form");
+        khai("problems", "vanTayDocLap", "content_hash");
+        // content_version: bằng phiên bản của lượt kiểm và không đổi khi nhập lại (chupBang). Không so với 1: V5 tăng theo
+        // từng dòng lời giải / gợi ý trong cùng lần ghi (#141).
+        khai("problems", "soDanhMucVaKhoLop", "content_version", "created_by");
+        khai("problems", v2Id, "id");
+        khai("problems", v2Luc, "created_at", "updated_at");
+        khai("solutions", "soVoiDaGhi", "problem_id", "worked_solution", "protected_facts", "final_answer");
+        khai("hint_levels", "soVoiDaGhi", "problem_id", "step_code", "level", "text");
+        khai("documents", "soDanhMucVaKhoLop", "class_id", "code", "title", "kind", "source", "license_status", "file_ref", "text_content",
+            "version", "uploaded_by");
+        khai("documents", v2Id, "id");
+        khai("documents", v2Luc, "created_at");
+        khai("document_passages", "soDanhMucVaKhoLop", "document_id", "page", "char_start", "char_end", "text");
+        khai("document_passages", v2Id, "id");
+        khai("document_passages", "v2: chữ đã gấp (thường, bỏ dấu) dẫn xuất từ text để tìm kiếm; text đã được so", "text_folded");
+        khai("formula_sheets", "soDanhMucVaKhoLop", "class_id", "version", "status", "locked_by");
+        khai("formula_sheets", v2Id, "id");
+        khai("formula_sheets", v2Luc, "created_at", "locked_at");
+        khai("formula_sheets", "v2: ghi chú đánh dấu bảng của importer và dấu vân tay các dòng lúc khóa; NhapTheoLopTest kiểm chúng",
+            "note", "fingerprint");
+        khai("formulas", "soDanhMucVaKhoLop", "formula_sheet_id", "ordinal", "code", "skill_code", "title", "latex", "statement");
+        khai("formulas", "soBangDaKhoaVoiPhanHoiThat", "kind", "tier1_status", "tier2_status", "tier1_detail", "tier2_detail",
+            "citation_passage_id");
+        khai("formulas", v2Id, "id");
+        khai("formulas", "v2: dấu vân tay nội dung dòng lúc kiểm (Formula.contentFingerprint), trigger V4 giữ nó khớp nội dung",
+            "checked_fingerprint");
+        khai("formula_citations", "soBangDaKhoaVoiPhanHoiThat", "formula_id", "passage_id");
+        khai("verification_runs", "soDanhMucVaKhoLop", "class_id", "subject_kind", "subject_id", "content_hash", "formula_sheet_id",
+            "formula_sheet_status", "publish_status", "stale", "content_version");
+        khai("verification_runs", "nhapNhuV0TrenCungDauVaoVaNhapHaiLanCungKetQua", "overall_status");
+        khai("verification_runs", v2Id, "id");
+        khai("verification_runs", v2Luc, "created_at");
+        khai("verification_tier_results", "soTangVoiPhanHoi", "run_id", "tier", "status", "result_type", "wrong_steps", "error_code",
+            "confidence", "reason", "citation", "raw");
+        khai("verification_run_citations", "soTrichDanVoiPhanHoi", "run_id", "passage_id");
+        khai("problem_releases", "soDanhMucVaKhoLop", "class_id", "problem_id", "status", "run_id");
+        khai("problem_releases", v2Luc, "updated_at");
+    }
+
+    private static void khai(String bang, String cach, String... cot) {
+        for (String c : cot) {
+            assertThat(CACH_KIEM.put(bang + "." + c, cach)).as("khai hai lần %s.%s", bang, c).isNull();
+        }
+    }
+
+    @Test
+    void moiCotImporterGhiDeuCoCachKiem() {
+        List<String> bang = CACH_KIEM.keySet().stream().map(k -> k.substring(0, k.indexOf('.'))).distinct().toList();
+        List<String> cotThat = jdbc.sql("""
+                select table_name || '.' || column_name from information_schema.columns
+                where table_schema = 'public' and table_name in (:bang) order by 1""").param("bang", bang).query(String.class).list();
+        assertThat(cotThat).as("cột của các bảng importer ghi, so với bảng khai cách kiểm")
+            .containsExactlyInAnyOrderElementsOf(CACH_KIEM.keySet());
+        Set<String> phuongThuc = Arrays.stream(NhapNoiDungTest.class.getDeclaredMethods()).map(java.lang.reflect.Method::getName)
+            .collect(java.util.stream.Collectors.toSet());
+        CACH_KIEM.forEach((cot, cach) -> assertThat(cach.startsWith("v2: ") || phuongThuc.contains(cach))
+            .as("%s khai cách kiểm «%s»: phải là phương thức so của test hay «v2: lý do»", cot, cach).isTrue());
+    }
+
+    /**
+     * Mọi dòng của các bảng importer ghi (danh mục và nội dung chung toàn bộ, phần của lớp theo {@code lop}), mỗi dòng là
+     * {@code row_to_json} sắp theo chữ, để so hai lần nhập.
+     */
+    private Map<String, List<String>> chupBang(UUID lop) {
+        Map<String, String> phamVi = new LinkedHashMap<>();
+        for (String b : List.of("topics", "skills", "skill_prerequisites", "step_templates", "error_types", "problems", "solutions",
+                "hint_levels")) {
+            phamVi.put(b, "select row_to_json(t)::text from " + b + " t");
+        }
+        phamVi.put("documents", "select row_to_json(t)::text from documents t where t.class_id = :lop");
+        phamVi.put("document_passages", """
+                select row_to_json(t)::text from document_passages t join documents d on d.id = t.document_id where d.class_id = :lop""");
+        phamVi.put("formula_sheets", "select row_to_json(t)::text from formula_sheets t where t.class_id = :lop");
+        phamVi.put("formulas", """
+                select row_to_json(t)::text from formulas t join formula_sheets s on s.id = t.formula_sheet_id where s.class_id = :lop""");
+        phamVi.put("formula_citations", """
+                select row_to_json(t)::text from formula_citations t join formulas f on f.id = t.formula_id
+                join formula_sheets s on s.id = f.formula_sheet_id where s.class_id = :lop""");
+        phamVi.put("verification_runs", "select row_to_json(t)::text from verification_runs t where t.class_id = :lop");
+        phamVi.put("verification_tier_results", """
+                select row_to_json(t)::text from verification_tier_results t join verification_runs r on r.id = t.run_id
+                where r.class_id = :lop""");
+        phamVi.put("verification_run_citations", """
+                select row_to_json(t)::text from verification_run_citations t join verification_runs r on r.id = t.run_id
+                where r.class_id = :lop""");
+        phamVi.put("problem_releases", "select row_to_json(t)::text from problem_releases t where t.class_id = :lop");
+        Map<String, List<String>> anh = new LinkedHashMap<>();
+        phamVi.forEach((b, sql) -> anh.put(b, (sql.contains(":lop") ? jdbc.sql(sql).param("lop", lop) : jdbc.sql(sql)).query(String.class)
+            .list().stream().sorted().toList()));
+        assertThat(anh.keySet()).as("bảng được chụp là đúng các bảng đã khai").containsExactlyInAnyOrderElementsOf(
+            CACH_KIEM.keySet().stream().map(k -> k.substring(0, k.indexOf('.'))).distinct().toList());
+        return anh;
+    }
+
+    /**
+     * Phần importer ghi mà các phép so khác chưa phủ, so với tệp nguồn ({@code data/supham}, {@code data/v0}), tệp vàng
+     * khóa bảng (chữ từng đoạn do script Python chia) và tệp vàng v0 (trạng thái phát hành): danh mục; tài liệu, đoạn, bảng
+     * công thức của lớp; thuộc tính lượt kiểm và phát hành đã ghi.
+     */
+    @SuppressWarnings("unchecked")
+    private void soDanhMucVaKhoLop(UUID lop, Map<String, Map<String, Object>> v0) {
+        Path data = NhapNoiDungChungTest.thuMucData();
+        Map<String, Object> danhMuc = (Map<String, Object>) PhatLai.docTep(data.resolve("supham/danh-muc-ky-nang-DH.json"));
+        List<Map<String, Object>> kyNang = (List<Map<String, Object>>) danhMuc.get("ky_nang");
+        assertThat(dong("select code || '|' || name || '|' || grade from topics")).as("chủ đề")
+            .containsExactly("DH12|" + danhMuc.get("chu_de") + "|12");
+        assertThat(dong("select concat_ws('|', code, topic_code, name, coalesce(description, '∅'), grade, is_core::text) from skills"))
+            .as("kỹ năng").containsExactlyInAnyOrderElementsOf(kyNang.stream().map(k -> String.join("|", (String) k.get("ma"), "DH12",
+                (String) k.get("ten"), k.get("yccd_gdpt2018") == null ? "∅" : (String) k.get("yccd_gdpt2018"), String.valueOf(k.get("lop")),
+                String.valueOf(Boolean.TRUE.equals(k.get("la_cot_loi_chu_de"))))).toList());
+        assertThat(dong("select concat_ws('|', skill_code, prerequisite_code, coalesce(min_level, '∅')) from skill_prerequisites"))
+            .as("tiên quyết").containsExactlyInAnyOrderElementsOf(kyNang.stream().flatMap(k -> ((List<Map<String, Object>>) k.get("tien_quyet"))
+                .stream().map(t -> String.join("|", (String) k.get("ma"), (String) t.get("ma"),
+                    t.get("muc_toi_thieu") == null ? "∅" : (String) t.get("muc_toi_thieu")))).toList());
+        List<Map<String, Object>> khung = (List<Map<String, Object>>) PhatLai.docTep(data.resolve("v0/khung-buoc.json"));
+        assertThat(dong("select concat_ws('|', step_code, topic_code, ordinal, input_kind, coalesce(skill_code, '∅'), description) from step_templates"))
+            .as("khung bước").containsExactlyInAnyOrderElementsOf(khung.stream().map(b -> String.join("|", (String) b.get("maBuoc"),
+                (String) b.get("topicCode"), String.valueOf(b.get("thuTu")), (String) b.get("dangNhap"),
+                b.get("skillCode") == null ? "∅" : (String) b.get("skillCode"), (String) b.get("moTa"))).toList());
+        List<List<String>> csv = docCsv(data.resolve("supham/ma-loi-DH.csv"));
+        List<String> cot = csv.getFirst();
+        List<String> maLoi = new ArrayList<>();
+        for (List<String> h : csv.subList(1, csv.size())) {
+            String ma = h.get(cot.indexOf("ma_loi")).strip();
+            if (ma.isEmpty()) {
+                continue;
+            }
+            java.util.function.Function<String, String> o = ten -> h.get(cot.indexOf(ten)).strip().isEmpty() ? "∅" : h.get(cot.indexOf(ten)).strip();
+            maLoi.add(String.join("|", ma, o.apply("ky_nang_chinh"), o.apply("ma_buoc"), h.get(cot.indexOf("mo_ta")).strip(),
+                o.apply("goi_y_sua"), Arrays.stream(h.get(cot.indexOf("loai_ket_qua_lien_quan")).split("\\|")).map(String::strip)
+                    .filter(x -> !x.isEmpty()).collect(java.util.stream.Collectors.joining(","))));
+        }
+        assertThat(dong("""
+                select concat_ws('|', code, coalesce(skill_code, '∅'), coalesce(step_code, '∅'), name, coalesce(fix_hint, '∅'),
+                    array_to_string(result_types, ',')) from error_types"""))
+            .as("mã lỗi").containsExactlyInAnyOrderElementsOf(maLoi);
+
+        List<Map<String, Object>> taiLieu = new ArrayList<>((List<Map<String, Object>>) PhatLai.docTep(data.resolve("v0/tai-lieu.json")));
+        for (String lab : List.of("sp-tai-lieu-0001", "sp-tai-lieu-0002")) {
+            taiLieu.add((Map<String, Object>) PhatLai.docTep(data.resolve("supham/tai-lieu/" + lab + ".json")));
+        }
+        Map<String, Object> chuDoan = (Map<String, Object>) ((Map<String, Object>) docJson("khoa-bang-v0.json")).get("doan");
+        for (Map<String, Object> t : taiLieu) {
+            String ma = (String) t.get("ma");
+            String vanBan = java.text.Normalizer.normalize((String) t.get("textContent"), java.text.Normalizer.Form.NFC);
+            assertThat(jdbc.sql("""
+                    select concat_ws('|', title, kind, coalesce(source, '∅'), license_status, coalesce(file_ref, '∅'), version,
+                        coalesce(uploaded_by::text, '∅')), text_content from documents where class_id = ? and code = ?""")
+                    .params(lop, ma).query((rs, i) -> List.of(rs.getString(1), rs.getString(2))).single())
+                .as("tài liệu %s", ma).containsExactly(String.join("|", (String) t.get("title"), (String) t.get("kind"),
+                    t.get("source") == null ? "∅" : (String) t.get("source"), (String) t.get("licenseStatus"), "∅",
+                    String.valueOf(t.get("version")), "∅"), vanBan);
+            List<String> mongDoi = new ArrayList<>();
+            int tu = 0;
+            for (int k = 0; chuDoan.containsKey(ma + "#" + k); k++) {
+                String chu = (String) chuDoan.get(ma + "#" + k);
+                int dau = vanBan.indexOf(chu, tu);
+                assertThat(dau).as("đoạn %s#%d nằm trong văn bản nguồn", ma, k).isNotNegative();
+                mongDoi.add(dau + "|" + (dau + chu.length()) + "|∅|" + chu);
+                tu = dau + chu.length();
+            }
+            assertThat(jdbc.sql("""
+                    select concat_ws('|', p.char_start, p.char_end, coalesce(p.page::text, '∅'), p.text) from document_passages p
+                    join documents d on d.id = p.document_id where d.class_id = ? and d.code = ? order by p.char_start""")
+                    .params(lop, ma).query(String.class).list())
+                .as("đoạn của tài liệu %s so với chữ Python chia trong tệp vàng khóa bảng", ma).isEqualTo(mongDoi);
+        }
+        assertThat(jdbc.sql("select count(*) from documents where class_id = ?").params(lop).query(Integer.class).single())
+            .as("số tài liệu của lớp").isEqualTo(taiLieu.size());
+
+        assertThat(jdbc.sql("""
+                select concat_ws('|', version, status, coalesce(locked_by::text, '∅')) from formula_sheets where class_id = ?""")
+                .params(lop).query(String.class).list())
+            .as("bảng công thức của lớp").containsExactly("1|KHOA|∅");
+        List<Map<String, Object>> dongBang = (List<Map<String, Object>>) ((Map<String, Object>) PhatLai.docTep(
+            data.resolve("v0/bang-cong-thuc.json"))).get("formulas");
+        List<String> mongDoiDong = new ArrayList<>();
+        for (int i = 0; i < dongBang.size(); i++) {
+            Map<String, Object> f = dongBang.get(i);
+            mongDoiDong.add(String.join("|", String.valueOf(i + 1), (String) f.get("ma"), (String) f.get("skillCode"),
+                (String) f.get("title"), (String) f.get("latex"), (String) f.get("noiDung")));
+        }
+        assertThat(jdbc.sql("""
+                select concat_ws('|', f.ordinal, f.code, coalesce(f.skill_code, '∅'), f.title, f.latex, f.statement) from formulas f
+                join formula_sheets s on s.id = f.formula_sheet_id where s.class_id = ? order by f.ordinal""")
+                .params(lop).query(String.class).list())
+            .as("các dòng của bảng công thức so với data/v0/bang-cong-thuc.json").isEqualTo(mongDoiDong);
+
+        List<String> luot = new ArrayList<>();
+        List<String> phatHanh = new ArrayList<>();
+        v0.values().stream().sorted(java.util.Comparator.comparing(b -> (String) b.get("ma"))).forEach(b -> {
+            luot.add(b.get("ma") + "|PROBLEM|true|true|true|true|KHOA|" + b.get("trang_thai_phat_hanh") + "|false|∅");
+            phatHanh.add(b.get("ma") + "|" + b.get("trang_thai_phat_hanh") + "|true");
+        });
+        assertThat(jdbc.sql("""
+                select concat_ws('|', p.code, v.subject_kind, (v.subject_id = p.id)::text, (v.content_hash = p.content_hash)::text,
+                    (v.content_version = p.content_version)::text, coalesce((v.formula_sheet_id = s.id)::text, '∅'), v.formula_sheet_status,
+                    coalesce(v.publish_status, '∅'), v.stale::text, coalesce(p.created_by::text, '∅'))
+                from verification_runs v join problems p on p.id = v.subject_id
+                join formula_sheets s on s.class_id = v.class_id and s.status = 'KHOA'
+                where v.class_id = ? order by p.code""").params(lop).query(String.class).list())
+            .as("lượt kiểm của lớp (một mỗi bài), phiên bản lượt bằng phiên bản bài, người tạo của bài").isEqualTo(luot);
+        assertThat(jdbc.sql("""
+                select concat_ws('|', p.code, r.status, (r.run_id = v.id)::text) from problem_releases r join problems p on p.id = r.problem_id
+                join verification_runs v on v.class_id = r.class_id and v.subject_id = r.problem_id
+                where r.class_id = ? order by p.code""").params(lop).query(String.class).list())
+            .as("phát hành đã ghi của lớp so với v0").isEqualTo(phatHanh);
+    }
+
+    private List<String> dong(String sql) {
+        return jdbc.sql(sql).query(String.class).list();
+    }
+
+    /** CSV theo RFC 4180 (ngoặc kép, «""» là một dấu ngoặc kép), độc lập với bộ đọc của importer. */
+    private static List<List<String>> docCsv(Path tep) {
+        String chu;
+        try {
+            chu = Files.readString(tep);
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+        List<List<String>> hang = new ArrayList<>();
+        List<String> o = new ArrayList<>();
+        StringBuilder cur = new StringBuilder();
+        boolean trongNgoac = false;
+        for (int i = 0; i < chu.length(); i++) {
+            char c = chu.charAt(i);
+            if (trongNgoac) {
+                if (c == '"' && i + 1 < chu.length() && chu.charAt(i + 1) == '"') {
+                    cur.append('"');
+                    i++;
+                } else if (c == '"') {
+                    trongNgoac = false;
+                } else {
+                    cur.append(c);
+                }
+            } else if (c == '"') {
+                trongNgoac = true;
+            } else if (c == ',') {
+                o.add(cur.toString());
+                cur.setLength(0);
+            } else if (c == '\n' || c == '\r') {
+                if (c == '\r' && i + 1 < chu.length() && chu.charAt(i + 1) == '\n') {
+                    i++;
+                }
+                o.add(cur.toString());
+                cur.setLength(0);
+                if (!(o.size() == 1 && o.getFirst().isEmpty())) {
+                    hang.add(o);
+                }
+                o = new ArrayList<>();
+            } else {
+                cur.append(c);
+            }
+        }
+        if (cur.length() > 0 || !o.isEmpty()) {
+            o.add(cur.toString());
+            hang.add(o);
+        }
+        return hang;
     }
 
     /**
