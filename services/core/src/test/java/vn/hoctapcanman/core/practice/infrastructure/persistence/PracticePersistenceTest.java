@@ -7,6 +7,7 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -185,6 +186,43 @@ class PracticePersistenceTest {
         assertThatThrownBy(() -> jdbc.sql("update submission_steps set latex = '3x^2' where submission_id = ?").params(dangLam.id())
                 .update())
             .isInstanceOf(DataIntegrityViolationException.class).hasMessageContaining("đã nộp");
+    }
+
+    @Test
+    void moLaiKhiTabKhacNopBaiLamGiuaLanGhiVaLanDoc() {
+        // Codex #136 (P2): lần ghi trùng bài làm đang mở nên không ghi; tab khác nộp bài làm đó trước lần đọc; lần đọc trượt.
+        Submission cu = submissions.openOrGet(Submission.open(lop, an, bai, 1, LUC));
+        int[] lanDoc = {0};
+        SubmissionRepositoryAdapter xenNop = new SubmissionRepositoryAdapter(jdbc) {
+            @Override
+            public Optional<Submission> findOpen(UUID studentId, UUID classId, UUID problemId, int contentVersion) {
+                if (lanDoc[0]++ == 0) {
+                    submissions.update(cu.submit(GradeStatus.SAI, LUC.plusSeconds(30)));
+                }
+                return super.findOpen(studentId, classId, problemId, contentVersion);
+            }
+        };
+        Submission moi = Submission.open(lop, an, bai, 1, LUC.plusSeconds(60));
+        Submission moRa = xenNop.openOrGet(moi);
+        assertThat(lanDoc[0]).isEqualTo(2);
+        assertThat(moRa.id()).isEqualTo(moi.id()).isNotEqualTo(cu.id());
+        assertThat(moRa.status()).isEqualTo(SubmissionStatus.DANG_LAM);
+        assertThat(submissions.findById(cu.id()).orElseThrow().status()).isEqualTo(SubmissionStatus.DA_NOP);
+    }
+
+    @Test
+    void moBaoLoiSauSoVongCoHan() {
+        int[] lanDoc = {0};
+        SubmissionRepositoryAdapter luonTruot = new SubmissionRepositoryAdapter(jdbc) {
+            @Override
+            public Optional<Submission> findOpen(UUID studentId, UUID classId, UUID problemId, int contentVersion) {
+                lanDoc[0]++;
+                return Optional.empty();
+            }
+        };
+        assertThatThrownBy(() -> luonTruot.openOrGet(Submission.open(lop, an, bai, 1, LUC)))
+            .isInstanceOf(IllegalStateException.class).hasMessage("Không mở được bài làm");
+        assertThat(lanDoc[0]).isEqualTo(SubmissionRepositoryAdapter.SO_LAN_MO);
     }
 
     @Test

@@ -36,6 +36,9 @@ public class SubmissionRepositoryAdapter implements SubmissionRepository {
             id, class_id, student_id, problem_id, content_version, status, guess_suspected, guess_reason, result, started_at,
             submitted_at""";
 
+    /** Số vòng ghi rồi đọc của {@link #openOrGet(Submission)}. */
+    static final int SO_LAN_MO = 3;
+
     private final JdbcClient jdbc;
 
     public SubmissionRepositoryAdapter(JdbcClient jdbc) {
@@ -49,15 +52,22 @@ public class SubmissionRepositoryAdapter implements SubmissionRepository {
             throw new IllegalArgumentException("Chỉ mở được bài làm đang làm");
         }
         // Hai tab mở cùng lúc: lần ghi sau chờ lần trước commit rồi trùng chỉ mục từng phần, không ghi; đọc lại thấy bài làm đó.
-        jdbc.sql("""
-                insert into submissions (id, class_id, student_id, problem_id, content_version, status, guess_suspected, started_at)
-                values (:id, :lop, :hs, :bai, :pb, 'DANG_LAM', false, :luc)
-                on conflict (student_id, class_id, problem_id, content_version) where status = 'DANG_LAM' do nothing""")
-            .param("id", moi.id()).param("lop", moi.classId()).param("hs", moi.studentId()).param("bai", moi.problemId())
-            .param("pb", moi.contentVersion()).param("luc", Cot.luc(moi.startedAt()))
-            .update();
-        return findOpen(moi.studentId(), moi.classId(), moi.problemId(), moi.contentVersion())
-            .orElseThrow(() -> new IllegalStateException("Không mở được bài làm"));
+        // Tab khác nộp bài làm đang mở giữa lần ghi (trùng, không ghi) và lần đọc thì lần đọc trượt: ghi lại, lúc này không
+        // còn trùng (Codex #136). Mỗi vòng trượt cần một lần nộp xen giữa, nên vài vòng là đủ; quá thì báo lỗi, không lặp mãi.
+        for (int lan = 0; lan < SO_LAN_MO; lan++) {
+            jdbc.sql("""
+                    insert into submissions (id, class_id, student_id, problem_id, content_version, status, guess_suspected, started_at)
+                    values (:id, :lop, :hs, :bai, :pb, 'DANG_LAM', false, :luc)
+                    on conflict (student_id, class_id, problem_id, content_version) where status = 'DANG_LAM' do nothing""")
+                .param("id", moi.id()).param("lop", moi.classId()).param("hs", moi.studentId()).param("bai", moi.problemId())
+                .param("pb", moi.contentVersion()).param("luc", Cot.luc(moi.startedAt()))
+                .update();
+            Optional<Submission> dangMo = findOpen(moi.studentId(), moi.classId(), moi.problemId(), moi.contentVersion());
+            if (dangMo.isPresent()) {
+                return dangMo.get();
+            }
+        }
+        throw new IllegalStateException("Không mở được bài làm");
     }
 
     @Override
