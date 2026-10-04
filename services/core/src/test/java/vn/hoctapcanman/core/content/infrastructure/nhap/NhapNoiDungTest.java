@@ -6,6 +6,8 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneId;
@@ -15,6 +17,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Deque;
 import java.util.HashMap;
+import java.util.HexFormat;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -188,7 +191,7 @@ class NhapNoiDungTest {
             BLOOM_V2.getOrDefault(v0.get("bloomLevel"), v0.get("bloomLevel")), String.valueOf(v0.get("difficulty")), v0.get("statementText"), v0.get("statementLatex"),
             v0.get("hamSympy"), v0.get("buocBatDau"));
         assertThat(jdbc.sql("select content_hash from problems where code = ?").params(b.ma()).query(String.class).single())
-            .as("content_hash của %s", b.ma()).isEqualTo(NhapNoiDungChung.dauVanTay(b));
+            .as("content_hash của %s", b.ma()).isEqualTo(vanTayDocLap(b));
         List<@Nullable String> loiGiai = jdbc.sql("""
                 select s.worked_solution::text, s.protected_facts::text from solutions s join problems p on p.id = s.problem_id
                 where p.code = ?""").params(b.ma()).query((rs, i) -> Arrays.asList(rs.getString(1), rs.getString(2))).single();
@@ -276,6 +279,29 @@ class NhapNoiDungTest {
         for (UUID run : luot) {
             assertThat(jdbc.sql("select passage_id from verification_run_citations where run_id = ?").params(run).query(UUID.class).list())
                 .as("đoạn căn cứ của lượt %s (%s) so với trich_dan phát lại", run, ma).containsExactlyInAnyOrderElementsOf(canCo);
+        }
+    }
+
+    /**
+     * Codex #135 (P2): dấu vân tay v2 tính độc lập theo định nghĩa (data-model §problems, đề, LaTeX, hàm, dạng trả lời, bước
+     * bắt đầu, lời giải, dữ kiện bảo vệ, thang gợi ý), bằng Jackson, không qua {@code dauVanTay} hay {@code JsonKieuJs}: hàm
+     * sản phẩm bỏ sót một trường thì lệch. Các trường của bài đã dựng đều được so với v0 ở trên (cột, cây lời giải, cây dữ
+     * kiện, các cấp gợi ý). Độ nhạy từng trường: {@code DauVanTayTest}.
+     */
+    private static String vanTayDocLap(NhapNoiDungChung.BaiNhap b) {
+        Map<String, @Nullable Object> noiDung = new LinkedHashMap<>();
+        noiDung.put("de", b.deBai());
+        noiDung.put("latex", b.latex());
+        noiDung.put("ham", b.ham());
+        noiDung.put("dang", b.dangTraLoi());
+        noiDung.put("buoc", b.buocBatDau());
+        noiDung.put("bl", b.baiLam());
+        noiDung.put("su_kien", b.suKien());
+        noiDung.put("hints", b.thangGoiY());
+        try {
+            return HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(JSON.writeValueAsBytes(noiDung)));
+        } catch (NoSuchAlgorithmException e) {
+            throw new IllegalStateException(e);
         }
     }
 
