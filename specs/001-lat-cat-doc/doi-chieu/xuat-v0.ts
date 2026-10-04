@@ -33,7 +33,14 @@ const docker = (lenh: string) => execSync('docker ' + lenh, { cwd: GOC, env: { .
 async function chayDichVuToan() {
   if (git('status --porcelain -- ' + TOAN)) throw new Error(TOAN + ' có thay đổi chưa commit: tệp vàng phải ứng với mã đã commit');
   const cay = git('rev-parse HEAD:' + TOAN);
-  const anh = docker('build -q -f ' + TOAN + '/Dockerfile .');
+  // Ngữ cảnh build chỉ gồm tệp đã commit của services/math (git archive HEAD), không phải thư mục làm việc: tệp bị
+  // .gitignore (khóa *.pem, *apikey*, .env…) không bao giờ vào ảnh, và ảnh đúng cây git ghi ở dưới.
+  const nguCanh = execSync('git archive --format=tar HEAD ' + TOAN, { cwd: GOC, maxBuffer: 512 * 1024 * 1024 });
+  const anh = execSync('docker build -q -f ' + TOAN + '/Dockerfile -', {
+    cwd: GOC,
+    input: nguCanh,
+    env: { ...process.env, MSYS_NO_PATHCONV: '1' },
+  }).toString().trim();
   const hop = docker('run -d --rm --read-only --tmpfs /tmp -p 127.0.0.1::8000 ' + anh);
   const dung = () => {
     try {
