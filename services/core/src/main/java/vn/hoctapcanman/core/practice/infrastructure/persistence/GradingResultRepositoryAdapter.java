@@ -13,9 +13,9 @@ import vn.hoctapcanman.core.practice.domain.model.GradingResult;
 import vn.hoctapcanman.core.practice.domain.repository.GradingResultRepository;
 
 /**
- * Kết quả chấm trên {@code grading_results} (chỉ thêm, V7). Chỉ mục duy nhất từng phần {@code (submission_id,
- * request_hash) WHERE result <> 'KHONG_CHAM_DUOC'}: hai tab ghi cùng yêu cầu thì lần sau chờ lần trước commit rồi không ghi,
- * đọc lại lần đã có.
+ * Kết quả chấm trên {@code grading_results} (chỉ thêm, V7). Mỗi lần ghi khóa dòng bài làm {@code FOR NO KEY UPDATE}: hai
+ * tab ghi cùng yêu cầu thì lần sau chờ lần trước commit, thấy phán quyết đã có thì trả nó, không ghi. Chỉ mục duy nhất từng
+ * phần {@code (submission_id, request_hash) WHERE result <> 'KHONG_CHAM_DUOC'} và trigger của V7 giữ cùng bất biến ở CSDL.
  */
 @Repository
 public class GradingResultRepositoryAdapter implements GradingResultRepository {
@@ -34,10 +34,12 @@ public class GradingResultRepositoryAdapter implements GradingResultRepository {
     @Override
     @Transactional
     public GradingResult record(GradingResult k) {
-        String trangThai = jdbc.sql("select status from submissions where id = :id for share").param("id", k.submissionId())
-            .query(String.class).optional().orElse(null);
-        if (!"DANG_LAM".equals(trangThai)) {
-            throw new IllegalStateException("Bài làm đã nộp hoặc không có");
+        // Khóa dòng bài làm: các lần ghi kết quả của cùng bài làm nối tiếp nhau, nên kiểm-rồi-ghi dưới đây an toàn.
+        SubmissionRepositoryAdapter.khoaDangLam(jdbc, k.submissionId());
+        // Đã có phán quyết cho yêu cầu này thì trả nó, kể cả khi lần này dịch vụ toán lỗi (V7 cũng chặn ở CSDL).
+        Optional<GradingResult> daCo = findByRequest(k.submissionId(), k.requestHash());
+        if (daCo.isPresent()) {
+            return daCo.get();
         }
         int ghi = jdbc.sql("""
                 insert into grading_results (id, submission_id, step_code, request_hash, result, result_type, wrong_steps, error_code,

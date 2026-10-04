@@ -5,7 +5,9 @@
 --      (viết cho đề cũ) thôi được chấm và học sinh mở bài làm mới. Bài làm đã nộp thì bước, bảng, sự kiện nhập và kết
 --      quả chấm của nó không đổi nữa.
 --   3. Kết quả chấm chỉ thêm. Chấm lại đúng một yêu cầu (băm của payload /v1/grade) không ghi lần hai: hai tab nộp cùng
---      bước ghi một lần. Riêng KHONG_CHAM_DUOC (dịch vụ toán lỗi, không bao giờ là đạt: FR-009) không chặn lần chấm lại.
+--      bước ghi một lần. Riêng KHONG_CHAM_DUOC (dịch vụ toán lỗi, không bao giờ là đạt: FR-009) không chặn lần chấm lại;
+--      nhưng đã có phán quyết thì không ghi thêm KHONG_CHAM_DUOC cho yêu cầu đó.
+--   4. Bài làm của phiên bản nội dung cũ (bài đã đổi đề) thôi được chấm, ghi bước hay nộp.
 -- Bài làm lưu nội dung mới nhất của từng bước, đủ để dựng lại đúng payload /v1/grade của v0 (thứ tự dòng, nhãn dòng, thứ
 -- tự ô bảng), để kết quả chấm so được với v0 (SC-006).
 
@@ -159,24 +161,41 @@ BEGIN
     IF OLD.status = 'DA_NOP' THEN
         RAISE EXCEPTION 'Bài làm % đã nộp, không sửa được', OLD.id USING ERRCODE = 'check_violation';
     END IF;
+    -- Bài làm của phiên bản nội dung cũ (bài đã đổi đề) thôi được nộp hay đánh dấu. Khóa dòng bài FOR SHARE: lần đổi nội
+    -- dung đồng thời chờ tới khi giao dịch này xong.
+    PERFORM 1 FROM problems WHERE id = OLD.problem_id AND content_version = OLD.content_version FOR SHARE;
+    IF NOT FOUND THEN
+        RAISE EXCEPTION 'Bài làm % là của phiên bản nội dung cũ: không ghi được', OLD.id USING ERRCODE = 'check_violation';
+    END IF;
     RETURN NEW;
 END $$;
 CREATE TRIGGER submissions_chi_nop_mot_lan BEFORE UPDATE ON submissions
     FOR EACH ROW EXECUTE FUNCTION submissions_chi_nop_mot_lan();
 
--- 2. Phần con của bài làm (bước, bảng, ô, sự kiện, kết quả chấm) chỉ ghi khi bài làm còn DANG_LAM. Khóa dòng bài làm
--- FOR SHARE: lần nộp bài đồng thời (UPDATE status) chờ, nên không có phần con nào vào sau lúc nộp.
+-- 2. Phần con của bài làm (bước, bảng, ô, sự kiện, kết quả chấm) chỉ ghi khi bài làm còn DANG_LAM và đúng phiên bản nội
+-- dung hiện tại của bài. Khóa dòng bài làm và dòng bài: lần nộp bài và lần đổi nội dung đồng thời chờ, nên không có phần
+-- con nào vào sau lúc nộp hay cho đề đã đổi. Kết quả chấm khóa dòng bài làm FOR NO KEY UPDATE (các lần ghi kết quả của
+-- cùng bài làm nối tiếp nhau, cho luật 3); phần con khác FOR SHARE. Nơi ghi phải khóa dòng bài làm từ đầu bằng mức đó
+-- hay mạnh hơn (adapter: FOR NO KEY UPDATE), để không có hai giao dịch cùng nâng khóa rồi chờ nhau.
 CREATE FUNCTION practice_bai_lam_dang_mo() RETURNS trigger LANGUAGE plpgsql AS $$
 DECLARE
     bai_lam uuid := CASE WHEN TG_OP = 'DELETE' THEN OLD.submission_id ELSE NEW.submission_id END;
 BEGIN
-    -- Xóa theo dây chuyền khi xóa cả bài làm (hay lớp, học sinh) thì cho qua.
+    -- Xóa theo dây chuyền khi xóa cả bài làm (hay lớp, học sinh, bài) thì cho qua.
     IF TG_OP = 'DELETE' AND NOT EXISTS (SELECT 1 FROM submissions WHERE id = bai_lam) THEN
         RETURN OLD;
     END IF;
-    PERFORM 1 FROM submissions WHERE id = bai_lam AND status = 'DANG_LAM' FOR SHARE;
+    IF TG_TABLE_NAME = 'grading_results' THEN
+        PERFORM 1 FROM submissions s JOIN problems p ON p.id = s.problem_id
+            WHERE s.id = bai_lam AND s.status = 'DANG_LAM' AND p.content_version = s.content_version
+            FOR NO KEY UPDATE OF s FOR SHARE OF p;
+    ELSE
+        PERFORM 1 FROM submissions s JOIN problems p ON p.id = s.problem_id
+            WHERE s.id = bai_lam AND s.status = 'DANG_LAM' AND p.content_version = s.content_version FOR SHARE OF s, p;
+    END IF;
     IF NOT FOUND THEN
-        RAISE EXCEPTION 'Bài làm % đã nộp hoặc không có: không ghi thêm được', bai_lam USING ERRCODE = 'check_violation';
+        RAISE EXCEPTION 'Bài làm % đã nộp, không có, hay là của phiên bản nội dung cũ: không ghi thêm được', bai_lam
+            USING ERRCODE = 'check_violation';
     END IF;
     RETURN CASE WHEN TG_OP = 'DELETE' THEN OLD ELSE NEW END;
 END $$;
@@ -190,6 +209,20 @@ CREATE TRIGGER input_events_bai_lam_dang_mo BEFORE INSERT ON input_events
     FOR EACH ROW EXECUTE FUNCTION practice_bai_lam_dang_mo();
 CREATE TRIGGER grading_results_bai_lam_dang_mo BEFORE INSERT ON grading_results
     FOR EACH ROW EXECUTE FUNCTION practice_bai_lam_dang_mo();
+
+-- 3. Yêu cầu chấm đã có phán quyết thì không ghi thêm lần «không chấm được» cho nó: lịch sử của một yêu cầu không bao giờ
+-- có lỗi sau phán quyết. Chạy sau trigger trên (tên xếp sau), khi dòng bài làm đã bị khóa FOR NO KEY UPDATE.
+CREATE FUNCTION grading_results_giu_phan_quyet() RETURNS trigger LANGUAGE plpgsql AS $$
+BEGIN
+    IF NEW.result = 'KHONG_CHAM_DUOC' AND EXISTS (SELECT 1 FROM grading_results
+            WHERE submission_id = NEW.submission_id AND request_hash = NEW.request_hash AND result <> 'KHONG_CHAM_DUOC') THEN
+        RAISE EXCEPTION 'Yêu cầu chấm % của bài làm % đã có phán quyết', NEW.request_hash, NEW.submission_id
+            USING ERRCODE = 'unique_violation';
+    END IF;
+    RETURN NEW;
+END $$;
+CREATE TRIGGER grading_results_giu_phan_quyet BEFORE INSERT ON grading_results
+    FOR EACH ROW EXECUTE FUNCTION grading_results_giu_phan_quyet();
 
 -- 3. Sự kiện nhập và kết quả chấm chỉ thêm: không sửa, không xóa riêng (xóa cả bài làm thì theo dây chuyền).
 CREATE FUNCTION practice_chi_them() RETURNS trigger LANGUAGE plpgsql AS $$

@@ -221,6 +221,41 @@ class PracticePersistenceTest {
     }
 
     @Test
+    void baiLamCuaPhienBanCuThoiDuocGhiChamVaNop() {
+        // Codex #136 (P1): đổi đề khi học sinh đang làm; tab cũ không được ghi bước, kết quả chấm hay nộp cho đề cũ.
+        Submission dangLam = submissions.openOrGet(Submission.open(lop, an, bai, 1, LUC));
+        submissions.saveStep(dangLam.id(), new StepWork("B.DH.DAOHAM", List.of(new StepLine(0, "3x^2-6x", null)), null));
+        jdbc.sql("update problems set content_hash = ? where id = ?").params("b".repeat(64), bai).update();
+        StepWork buoc = new StepWork("B.DH.DAOHAM", List.of(new StepLine(0, "3x^2", null)), null);
+        assertThatThrownBy(() -> submissions.saveStep(dangLam.id(), buoc)).isInstanceOf(IllegalStateException.class)
+            .hasMessageContaining("phiên bản nội dung cũ");
+        assertThatThrownBy(() -> submissions.addEvents(dangLam.id(), List.of(suKien("+", LUC)))).isInstanceOf(IllegalStateException.class);
+        assertThatThrownBy(() -> grades.record(ketQua(dangLam.id(), "a".repeat(64), GradeStatus.DAT)))
+            .isInstanceOf(IllegalStateException.class);
+        assertThatThrownBy(() -> submissions.update(dangLam.submit(GradeStatus.DAT, LUC))).isInstanceOf(IllegalStateException.class);
+        assertThat(submissions.findById(dangLam.id()).orElseThrow().status()).isEqualTo(SubmissionStatus.DANG_LAM);
+        assertThatThrownBy(() -> jdbc.sql("""
+                insert into grading_results (id, submission_id, step_code, request_hash, result, graded_at)
+                values (?, ?, 'B.DH.DAOHAM', ?, 'DAT', now())""").params(UUID.randomUUID(), dangLam.id(), "a".repeat(64)).update())
+            .isInstanceOf(DataIntegrityViolationException.class).hasMessageContaining("phiên bản nội dung cũ");
+    }
+
+    @Test
+    void daCoPhanQuyetThiLanKhongChamDuocSauTraPhanQuyet() {
+        // Codex #136 (P2): lần chấm lại lỗi dịch vụ toán sau khi đã có phán quyết không thêm dòng KHONG_CHAM_DUOC.
+        UUID bl = submissions.openOrGet(Submission.open(lop, an, bai, 1, LUC)).id();
+        String bam = "9".repeat(64);
+        GradingResult phanQuyet = grades.record(ketQua(bl, bam, GradeStatus.SAI));
+        assertThat(grades.record(GradingResult.notGraded(bl, "B.DH.DAOHAM", bam, "Máy chấm đang bận.", LUC.plusSeconds(5))))
+            .isEqualTo(phanQuyet);
+        assertThat(grades.bySubmission(bl)).containsExactly(phanQuyet);
+        assertThatThrownBy(() -> jdbc.sql("""
+                insert into grading_results (id, submission_id, step_code, request_hash, result, message, graded_at)
+                values (?, ?, 'B.DH.DAOHAM', ?, 'KHONG_CHAM_DUOC', 'bận', now())""").params(UUID.randomUUID(), bl, bam).update())
+            .isInstanceOf(DataIntegrityViolationException.class).hasMessageContaining("đã có phán quyết");
+    }
+
+    @Test
     void ketQuaChamChiThem() {
         UUID bl = submissions.openOrGet(Submission.open(lop, an, bai, 1, LUC)).id();
         grades.record(ketQua(bl, "e".repeat(64), GradeStatus.SAI));

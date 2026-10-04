@@ -187,6 +187,7 @@ public class SubmissionRepositoryAdapter implements SubmissionRepository {
     @Override
     @Transactional
     public void update(Submission baiLam) {
+        khoaDangLam(baiLam.id());
         int dong = jdbc.sql("""
                 update submissions set status = :st, guess_suspected = :nghi, guess_reason = :lyDo, result = :kq, submitted_at = :nop
                 where id = :id and status = 'DANG_LAM'""")
@@ -198,13 +199,23 @@ public class SubmissionRepositoryAdapter implements SubmissionRepository {
         }
     }
 
-    /** Khóa dòng bài làm cho tới hết giao dịch; bài làm đã nộp hay không có thì {@link IllegalStateException}. */
-    private void khoaDangLam(UUID submissionId) {
-        String trangThai = jdbc.sql("select status from submissions where id = :id for no key update").param("id", submissionId)
-            .query(String.class).optional().orElse(null);
-        if (!SubmissionStatus.DANG_LAM.name().equals(trangThai)) {
-            throw new IllegalStateException("Bài làm đã nộp hoặc không có");
+    /**
+     * Khóa dòng bài làm ({@code FOR NO KEY UPDATE}) và dòng bài ({@code FOR SHARE}) cho tới hết giao dịch; bài làm đã nộp,
+     * không có, hay là của phiên bản nội dung cũ thì {@link IllegalStateException}. Dùng chung cho mọi lần ghi phần con
+     * (cả kết quả chấm), để trigger của V7 không phải nâng khóa.
+     */
+    static void khoaDangLam(JdbcClient jdbc, UUID submissionId) {
+        boolean ghiDuoc = jdbc.sql("""
+                select s.status = 'DANG_LAM' and s.content_version = p.content_version from submissions s
+                join problems p on p.id = s.problem_id where s.id = :id for no key update of s for share of p""")
+            .param("id", submissionId).query(Boolean.class).optional().orElse(false);
+        if (!ghiDuoc) {
+            throw new IllegalStateException("Bài làm đã nộp, không có, hay là của phiên bản nội dung cũ");
         }
+    }
+
+    private void khoaDangLam(UUID submissionId) {
+        khoaDangLam(jdbc, submissionId);
     }
 
     private static @Nullable String tenNeuCo(@Nullable GradeStatus s) {
