@@ -8,7 +8,7 @@
     "du_lieu": {
       "data/supham": "a821fd14243ee607371420b50e20e1f848148d36",
       "data/v0": "6a666e3bde67052c928973f9041ba7ddfd1ce04e",
-      "specs/001-lat-cat-doc/doi-chieu/xuat-v0.ts": "d092b6e1b612daa285feb126e7ede08bafbd0723"
+      "specs/001-lat-cat-doc/doi-chieu/xuat-v0.ts": "5c05554c63da68e6c724214bbd91396839a0c9e7"
     },
     "dich_vu_toan": {
       "cay_git": "2d833dd78bfe594eefc309ffffde19bc6d4cc332",
@@ -74,6 +74,7 @@
       "dang_tra_loi": "TN_DUNG_SAI",
       "trang_thai_tong": "KHONG_KIEM_DUOC",
       "trang_thai_phat_hanh": "CHO_GIAO_VIEN_DUYET",
+      "su_kien_bao_ve": [],
       "tang": [
         {
           "tang": 1,
@@ -96,6 +97,52 @@
       "dang_tra_loi": "TU_LUAN_5_BUOC",
       "trang_thai_tong": "DAT",
       "trang_thai_phat_hanh": "DA_PHAT_HANH",
+      "su_kien_bao_ve": [
+        {
+          "loai": "DB",
+          "gia_tri": "(-oo;-1)"
+        },
+        {
+          "loai": "DB",
+          "gia_tri": "(3;oo)"
+        },
+        {
+          "loai": "NB",
+          "gia_tri": "(-1;3)"
+        },
+        {
+          "loai": "DCD",
+          "gia_tri": "-1"
+        },
+        {
+          "loai": "DCT",
+          "gia_tri": "3"
+        },
+        {
+          "loai": "GTCD",
+          "gia_tri": "7"
+        },
+        {
+          "loai": "GTCT",
+          "gia_tri": "-25"
+        },
+        {
+          "loai": "NGHIEM",
+          "gia_tri": "-1"
+        },
+        {
+          "loai": "NGHIEM",
+          "gia_tri": "3"
+        },
+        {
+          "loai": "YPHAY",
+          "gia_tri": "3*x**2-6*x-9"
+        },
+        {
+          "loai": "YPHAY_DE",
+          "gia_tri": "3(x + 1)(x − 3)"
+        }
+      ],
       "tang": [
         {
           "tang": 1,
@@ -118,6 +165,36 @@
       "dang_tra_loi": "TN_NHIEU_LUA_CHON",
       "trang_thai_tong": "DAT",
       "trang_thai_phat_hanh": "DA_PHAT_HANH",
+      "su_kien_bao_ve": [
+        {
+          "loai": "NB",
+          "gia_tri": "(-oo;1)"
+        },
+        {
+          "loai": "NB",
+          "gia_tri": "(1;oo)"
+        },
+        {
+          "loai": "KHONG_CUC_TRI",
+          "gia_tri": ""
+        },
+        {
+          "loai": "KHONG_DONG_BIEN",
+          "gia_tri": ""
+        },
+        {
+          "loai": "KHONG_NGHIEM",
+          "gia_tri": ""
+        },
+        {
+          "loai": "YPHAY",
+          "gia_tri": "-3/(x-1)**2"
+        },
+        {
+          "loai": "YPHAY_DE",
+          "gia_tri": "−3/(x − 1)²"
+        }
+      ],
       "tang": [
         {
           "tang": 1,
@@ -140,6 +217,52 @@
       "dang_tra_loi": "TU_LUAN_5_BUOC",
       "trang_thai_tong": "DAT",
       "trang_thai_phat_hanh": "DA_PHAT_HANH",
+      "su_kien_bao_ve": [
+        {
+          "loai": "DB",
+          "gia_tri": "(-oo;-4)"
+        },
+        {
+          "loai": "DB",
+          "gia_tri": "(2;oo)"
+        },
+        {
+          "loai": "NB",
+          "gia_tri": "(-4;2)"
+        },
+        {
+          "loai": "DCD",
+          "gia_tri": "-4"
+        },
+        {
+          "loai": "DCT",
+          "gia_tri": "2"
+        },
+        {
+          "loai": "GTCD",
+          "gia_tri": "81"
+        },
+        {
+          "loai": "GTCT",
+          "gia_tri": "-27"
+        },
+        {
+          "loai": "NGHIEM",
+          "gia_tri": "-4"
+        },
+        {
+          "loai": "NGHIEM",
+          "gia_tri": "2"
+        },
+        {
+          "loai": "YPHAY",
+          "gia_tri": "3*x**2+6*x-24"
+        },
+        {
+          "loai": "YPHAY_DE",
+          "gia_tri": "3x² + 6x − 24"
+        }
+      ],
       "tang": [
         {
           "tang": 1,
@@ -162,6 +285,56 @@
       "dang_tra_loi": "TU_LUAN_5_BUOC",
       "trang_thai_tong": "DAT",
       "trang_thai_phat_hanh": "DA_PHAT_HANH",
+      "su_kien_bao_ve": [
+        {
+          "loai": "DB",
+          "gia_tri": "(-oo;-1)"
+        },
+        {
+          "loai": "DB",
+          "gia_tri": "(3;oo)"
+        },
+        {
+          "loai": "NB",
+          "gia_tri": "(-1;1)"
+        },
+        {
+          "loai": "NB",
+          "gia_tri": "(1;3)"
+        },
+        {
+          "loai": "DCD",
+          "gia_tri": "-1"
+        },
+        {
+          "loai": "DCT",
+          "gia_tri": "3"
+        },
+        {
+          "loai": "GTCD",
+          "gia_tri": "-5"
+        },
+        {
+          "loai": "GTCT",
+          "gia_tri": "3"
+        },
+        {
+          "loai": "NGHIEM",
+          "gia_tri": "-1"
+        },
+        {
+          "loai": "NGHIEM",
+          "gia_tri": "3"
+        },
+        {
+          "loai": "YPHAY",
+          "gia_tri": "(x**2-2*x-3)/(x**2-2*x+1)"
+        },
+        {
+          "loai": "YPHAY_DE",
+          "gia_tri": "(x² − 2x − 3)/(x − 1)²"
+        }
+      ],
       "tang": [
         {
           "tang": 1,
@@ -184,6 +357,48 @@
       "dang_tra_loi": "TU_LUAN_5_BUOC",
       "trang_thai_tong": "DAT",
       "trang_thai_phat_hanh": "DA_PHAT_HANH",
+      "su_kien_bao_ve": [
+        {
+          "loai": "DB",
+          "gia_tri": "(-oo;1)"
+        },
+        {
+          "loai": "DB",
+          "gia_tri": "(3;oo)"
+        },
+        {
+          "loai": "NB",
+          "gia_tri": "(1;3)"
+        },
+        {
+          "loai": "DCD",
+          "gia_tri": "1"
+        },
+        {
+          "loai": "DCT",
+          "gia_tri": "3"
+        },
+        {
+          "loai": "GTCD",
+          "gia_tri": "6"
+        },
+        {
+          "loai": "GTCT",
+          "gia_tri": "2"
+        },
+        {
+          "loai": "NGHIEM",
+          "gia_tri": "1"
+        },
+        {
+          "loai": "NGHIEM",
+          "gia_tri": "3"
+        },
+        {
+          "loai": "YPHAY",
+          "gia_tri": "3*x**2-12*x+9"
+        }
+      ],
       "tang": [
         {
           "tang": 1,
@@ -206,6 +421,68 @@
       "dang_tra_loi": "TU_LUAN_5_BUOC",
       "trang_thai_tong": "DAT",
       "trang_thai_phat_hanh": "DA_PHAT_HANH",
+      "su_kien_bao_ve": [
+        {
+          "loai": "DB",
+          "gia_tri": "(-3;0)"
+        },
+        {
+          "loai": "DB",
+          "gia_tri": "(3;oo)"
+        },
+        {
+          "loai": "NB",
+          "gia_tri": "(-oo;-3)"
+        },
+        {
+          "loai": "NB",
+          "gia_tri": "(0;3)"
+        },
+        {
+          "loai": "DCD",
+          "gia_tri": "0"
+        },
+        {
+          "loai": "DCT",
+          "gia_tri": "-3"
+        },
+        {
+          "loai": "DCT",
+          "gia_tri": "3"
+        },
+        {
+          "loai": "GTCD",
+          "gia_tri": "4"
+        },
+        {
+          "loai": "GTCT",
+          "gia_tri": "-77"
+        },
+        {
+          "loai": "GTCT",
+          "gia_tri": "-77"
+        },
+        {
+          "loai": "NGHIEM",
+          "gia_tri": "-3"
+        },
+        {
+          "loai": "NGHIEM",
+          "gia_tri": "0"
+        },
+        {
+          "loai": "NGHIEM",
+          "gia_tri": "3"
+        },
+        {
+          "loai": "YPHAY",
+          "gia_tri": "4*x*(x**2-9)"
+        },
+        {
+          "loai": "YPHAY_DE",
+          "gia_tri": "4x(x − 3)(x + 3)"
+        }
+      ],
       "tang": [
         {
           "tang": 1,
@@ -228,6 +505,68 @@
       "dang_tra_loi": "TN_NHIEU_LUA_CHON",
       "trang_thai_tong": "DAT",
       "trang_thai_phat_hanh": "DA_PHAT_HANH",
+      "su_kien_bao_ve": [
+        {
+          "loai": "DB",
+          "gia_tri": "(-oo;-2)"
+        },
+        {
+          "loai": "DB",
+          "gia_tri": "(0;2)"
+        },
+        {
+          "loai": "NB",
+          "gia_tri": "(-2;0)"
+        },
+        {
+          "loai": "NB",
+          "gia_tri": "(2;oo)"
+        },
+        {
+          "loai": "DCD",
+          "gia_tri": "-2"
+        },
+        {
+          "loai": "DCD",
+          "gia_tri": "2"
+        },
+        {
+          "loai": "DCT",
+          "gia_tri": "0"
+        },
+        {
+          "loai": "GTCD",
+          "gia_tri": "11"
+        },
+        {
+          "loai": "GTCD",
+          "gia_tri": "11"
+        },
+        {
+          "loai": "GTCT",
+          "gia_tri": "-5"
+        },
+        {
+          "loai": "NGHIEM",
+          "gia_tri": "-2"
+        },
+        {
+          "loai": "NGHIEM",
+          "gia_tri": "0"
+        },
+        {
+          "loai": "NGHIEM",
+          "gia_tri": "2"
+        },
+        {
+          "loai": "YPHAY",
+          "gia_tri": "4*x*(4-x**2)"
+        },
+        {
+          "loai": "YPHAY_DE",
+          "gia_tri": "−4x(x − 2)(x + 2)"
+        }
+      ],
       "tang": [
         {
           "tang": 1,
@@ -250,6 +589,68 @@
       "dang_tra_loi": "TU_LUAN_5_BUOC",
       "trang_thai_tong": "DAT",
       "trang_thai_phat_hanh": "DA_PHAT_HANH",
+      "su_kien_bao_ve": [
+        {
+          "loai": "DB",
+          "gia_tri": "(-oo;-1)"
+        },
+        {
+          "loai": "DB",
+          "gia_tri": "(0;1)"
+        },
+        {
+          "loai": "NB",
+          "gia_tri": "(-1;0)"
+        },
+        {
+          "loai": "NB",
+          "gia_tri": "(1;oo)"
+        },
+        {
+          "loai": "DCD",
+          "gia_tri": "-1"
+        },
+        {
+          "loai": "DCD",
+          "gia_tri": "1"
+        },
+        {
+          "loai": "DCT",
+          "gia_tri": "0"
+        },
+        {
+          "loai": "GTCD",
+          "gia_tri": "4"
+        },
+        {
+          "loai": "GTCD",
+          "gia_tri": "4"
+        },
+        {
+          "loai": "GTCT",
+          "gia_tri": "3"
+        },
+        {
+          "loai": "NGHIEM",
+          "gia_tri": "-1"
+        },
+        {
+          "loai": "NGHIEM",
+          "gia_tri": "0"
+        },
+        {
+          "loai": "NGHIEM",
+          "gia_tri": "1"
+        },
+        {
+          "loai": "YPHAY",
+          "gia_tri": "4*x*(1-x**2)"
+        },
+        {
+          "loai": "YPHAY_DE",
+          "gia_tri": "−4x³ + 4x"
+        }
+      ],
       "tang": [
         {
           "tang": 1,
@@ -272,6 +673,40 @@
       "dang_tra_loi": "TU_LUAN_5_BUOC",
       "trang_thai_tong": "DAT",
       "trang_thai_phat_hanh": "DA_PHAT_HANH",
+      "su_kien_bao_ve": [
+        {
+          "loai": "DB",
+          "gia_tri": "(0;oo)"
+        },
+        {
+          "loai": "NB",
+          "gia_tri": "(-oo;0)"
+        },
+        {
+          "loai": "DCT",
+          "gia_tri": "0"
+        },
+        {
+          "loai": "GTCT",
+          "gia_tri": "-1"
+        },
+        {
+          "loai": "NGHIEM",
+          "gia_tri": "0"
+        },
+        {
+          "loai": "KHONG_CUC_DAI",
+          "gia_tri": ""
+        },
+        {
+          "loai": "YPHAY",
+          "gia_tri": "4*x*(x**2+1)"
+        },
+        {
+          "loai": "YPHAY_DE",
+          "gia_tri": "4x³ + 4x"
+        }
+      ],
       "tang": [
         {
           "tang": 1,
@@ -294,6 +729,7 @@
       "dang_tra_loi": "TRA_LOI_NGAN",
       "trang_thai_tong": "KHONG_KIEM_DUOC",
       "trang_thai_phat_hanh": "CHO_GIAO_VIEN_DUYET",
+      "su_kien_bao_ve": [],
       "tang": [
         {
           "tang": 1,
@@ -316,6 +752,36 @@
       "dang_tra_loi": "TU_LUAN_5_BUOC",
       "trang_thai_tong": "SAI",
       "trang_thai_phat_hanh": "BI_CHAN",
+      "su_kien_bao_ve": [
+        {
+          "loai": "DB",
+          "gia_tri": "(0;oo)"
+        },
+        {
+          "loai": "NB",
+          "gia_tri": "(-oo;0)"
+        },
+        {
+          "loai": "DCT",
+          "gia_tri": "0"
+        },
+        {
+          "loai": "GTCT",
+          "gia_tri": "0"
+        },
+        {
+          "loai": "NGHIEM",
+          "gia_tri": "0"
+        },
+        {
+          "loai": "KHONG_CUC_DAI",
+          "gia_tri": ""
+        },
+        {
+          "loai": "YPHAY",
+          "gia_tri": "2*x"
+        }
+      ],
       "tang": [
         {
           "tang": 1,
@@ -338,6 +804,36 @@
       "dang_tra_loi": "TU_LUAN_5_BUOC",
       "trang_thai_tong": "DAT",
       "trang_thai_phat_hanh": "DA_PHAT_HANH",
+      "su_kien_bao_ve": [
+        {
+          "loai": "DB",
+          "gia_tri": "(0;oo)"
+        },
+        {
+          "loai": "NB",
+          "gia_tri": "(-oo;0)"
+        },
+        {
+          "loai": "DCT",
+          "gia_tri": "0"
+        },
+        {
+          "loai": "GTCT",
+          "gia_tri": "0"
+        },
+        {
+          "loai": "NGHIEM",
+          "gia_tri": "0"
+        },
+        {
+          "loai": "KHONG_CUC_DAI",
+          "gia_tri": ""
+        },
+        {
+          "loai": "YPHAY",
+          "gia_tri": "2*x"
+        }
+      ],
       "tang": [
         {
           "tang": 1,
@@ -360,6 +856,48 @@
       "dang_tra_loi": "TU_LUAN_5_BUOC",
       "trang_thai_tong": "DAT",
       "trang_thai_phat_hanh": "DA_PHAT_HANH",
+      "su_kien_bao_ve": [
+        {
+          "loai": "DB",
+          "gia_tri": "(-oo;-1)"
+        },
+        {
+          "loai": "DB",
+          "gia_tri": "(1;oo)"
+        },
+        {
+          "loai": "NB",
+          "gia_tri": "(-1;1)"
+        },
+        {
+          "loai": "DCD",
+          "gia_tri": "-1"
+        },
+        {
+          "loai": "DCT",
+          "gia_tri": "1"
+        },
+        {
+          "loai": "GTCD",
+          "gia_tri": "2"
+        },
+        {
+          "loai": "GTCT",
+          "gia_tri": "-2"
+        },
+        {
+          "loai": "NGHIEM",
+          "gia_tri": "-1"
+        },
+        {
+          "loai": "NGHIEM",
+          "gia_tri": "1"
+        },
+        {
+          "loai": "YPHAY",
+          "gia_tri": "3*x**2-3"
+        }
+      ],
       "tang": [
         {
           "tang": 1,
@@ -382,6 +920,48 @@
       "dang_tra_loi": "TU_LUAN_5_BUOC",
       "trang_thai_tong": "DAT",
       "trang_thai_phat_hanh": "DA_PHAT_HANH",
+      "su_kien_bao_ve": [
+        {
+          "loai": "DB",
+          "gia_tri": "(-oo;0)"
+        },
+        {
+          "loai": "DB",
+          "gia_tri": "(4;oo)"
+        },
+        {
+          "loai": "NB",
+          "gia_tri": "(0;4)"
+        },
+        {
+          "loai": "DCD",
+          "gia_tri": "0"
+        },
+        {
+          "loai": "DCT",
+          "gia_tri": "4"
+        },
+        {
+          "loai": "GTCD",
+          "gia_tri": "1"
+        },
+        {
+          "loai": "GTCT",
+          "gia_tri": "-31"
+        },
+        {
+          "loai": "NGHIEM",
+          "gia_tri": "0"
+        },
+        {
+          "loai": "NGHIEM",
+          "gia_tri": "4"
+        },
+        {
+          "loai": "YPHAY",
+          "gia_tri": "3*x*(x-4)"
+        }
+      ],
       "tang": [
         {
           "tang": 1,
@@ -404,6 +984,32 @@
       "dang_tra_loi": "TU_LUAN_5_BUOC",
       "trang_thai_tong": "DAT",
       "trang_thai_phat_hanh": "DA_PHAT_HANH",
+      "su_kien_bao_ve": [
+        {
+          "loai": "DB",
+          "gia_tri": "(-oo;-3)"
+        },
+        {
+          "loai": "DB",
+          "gia_tri": "(-3;oo)"
+        },
+        {
+          "loai": "KHONG_CUC_TRI",
+          "gia_tri": ""
+        },
+        {
+          "loai": "KHONG_NGHICH_BIEN",
+          "gia_tri": ""
+        },
+        {
+          "loai": "KHONG_NGHIEM",
+          "gia_tri": ""
+        },
+        {
+          "loai": "YPHAY",
+          "gia_tri": "3/(x+3)**2"
+        }
+      ],
       "tang": [
         {
           "tang": 1,
@@ -426,6 +1032,64 @@
       "dang_tra_loi": "TU_LUAN_5_BUOC",
       "trang_thai_tong": "DAT",
       "trang_thai_phat_hanh": "DA_PHAT_HANH",
+      "su_kien_bao_ve": [
+        {
+          "loai": "DB",
+          "gia_tri": "(-2;0)"
+        },
+        {
+          "loai": "DB",
+          "gia_tri": "(2;oo)"
+        },
+        {
+          "loai": "NB",
+          "gia_tri": "(-oo;-2)"
+        },
+        {
+          "loai": "NB",
+          "gia_tri": "(0;2)"
+        },
+        {
+          "loai": "DCD",
+          "gia_tri": "0"
+        },
+        {
+          "loai": "DCT",
+          "gia_tri": "-2"
+        },
+        {
+          "loai": "DCT",
+          "gia_tri": "2"
+        },
+        {
+          "loai": "GTCD",
+          "gia_tri": "-1"
+        },
+        {
+          "loai": "GTCT",
+          "gia_tri": "-17"
+        },
+        {
+          "loai": "GTCT",
+          "gia_tri": "-17"
+        },
+        {
+          "loai": "NGHIEM",
+          "gia_tri": "-2"
+        },
+        {
+          "loai": "NGHIEM",
+          "gia_tri": "0"
+        },
+        {
+          "loai": "NGHIEM",
+          "gia_tri": "2"
+        },
+        {
+          "loai": "YPHAY",
+          "gia_tri": "4*x*(x**2-4)"
+        }
+      ],
       "tang": [
         {
           "tang": 1,
