@@ -115,7 +115,11 @@ public class SubmissionRepositoryAdapter implements SubmissionRepository {
     }
 
     @Override
+    @Transactional
     public List<StepWork> steps(UUID submissionId) {
+        // Khóa dòng bài làm FOR SHARE cho cả lần đọc: lần thay một bước (FOR NO KEY UPDATE) chờ, nên hai câu đọc dưới thấy
+        // cùng một trạng thái, không trộn dòng và bảng của hai lần nộp khác nhau.
+        jdbc.sql("select 1 from submissions where id = :bl for share").param("bl", submissionId).query(Integer.class).optional();
         // Thứ tự bước của khung (step_templates.ordinal), rồi số dòng / thứ tự ô.
         Map<Integer, String> buocTheoThuTu = new TreeMap<>();
         Map<String, List<StepLine>> dong = new LinkedHashMap<>();

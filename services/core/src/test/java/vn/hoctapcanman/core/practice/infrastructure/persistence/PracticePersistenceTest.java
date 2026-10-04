@@ -200,6 +200,15 @@ class PracticePersistenceTest {
     }
 
     @Test
+    void csdlChanNopBaiVoiKetQuaKhongChamDuoc() {
+        // Codex #136 (P2): lần chấm cuối lỗi dịch vụ toán không được đóng bài làm.
+        Submission dangLam = submissions.openOrGet(Submission.open(lop, an, bai, 1, LUC));
+        assertThatThrownBy(() -> jdbc.sql("update submissions set status = 'DA_NOP', result = 'KHONG_CHAM_DUOC', submitted_at = now()"
+                + " where id = ?").params(dangLam.id()).update())
+            .isInstanceOf(DataIntegrityViolationException.class);
+    }
+
+    @Test
     void csdlChanDoiPhienBanCuaBaiLam() {
         Submission dangLam = submissions.openOrGet(Submission.open(lop, an, bai, 1, LUC));
         assertThatThrownBy(() -> jdbc.sql("update submissions set content_version = 2 where id = ?").params(dangLam.id()).update())

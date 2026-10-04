@@ -27,6 +27,8 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import vn.hoctapcanman.core.TestcontainersConfiguration;
 import vn.hoctapcanman.core.practice.domain.model.GradeStatus;
 import vn.hoctapcanman.core.practice.domain.model.GradingResult;
+import vn.hoctapcanman.core.practice.domain.model.StepLine;
+import vn.hoctapcanman.core.practice.domain.model.StepWork;
 import vn.hoctapcanman.core.practice.domain.model.Submission;
 
 /**
@@ -95,6 +97,21 @@ class PracticeDongThoiTest {
             () -> grades.record(ketQua(bl, bam, GradeStatus.SAI)));
         assertThat(ketQua.get(1)).isEqualTo(ketQua.get(0));
         assertThat(grades.bySubmission(bl)).hasSize(1);
+    }
+
+    @Test
+    void docBuocGiuKhoaNenKhongTronVoiLanThayBuocDongThoi() throws Exception {
+        // Codex #136 (P2): đọc dòng và bảng là hai câu lệnh; lần thay bước đồng thời phải chờ tới khi đọc xong.
+        UUID bl = submissions.openOrGet(Submission.open(lop, an, bai, 1, LUC)).id();
+        submissions.saveStep(bl, new StepWork("B.DH.DAOHAM", List.of(new StepLine(0, "3x^2-6x", null)), null));
+        List<Object> ketQua = haiGiaoDichChongNhau(
+            () -> submissions.steps(bl),
+            () -> {
+                submissions.saveStep(bl, new StepWork("B.DH.DAOHAM", List.of(new StepLine(0, "3x^2", null)), null));
+                return List.of();
+            });
+        assertThat(ketQua.get(0)).isEqualTo(List.of(new StepWork("B.DH.DAOHAM", List.of(new StepLine(0, "3x^2-6x", null)), null)));
+        assertThat(submissions.steps(bl).getFirst().lines()).containsExactly(new StepLine(0, "3x^2", null));
     }
 
     /**

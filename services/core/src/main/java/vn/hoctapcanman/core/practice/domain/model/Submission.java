@@ -40,6 +40,9 @@ public record Submission(
         if (contentVersion < 1) {
             throw new IllegalArgumentException("contentVersion phải dương");
         }
+        if (result == GradeStatus.KHONG_CHAM_DUOC) {
+            throw new IllegalArgumentException("Kết quả nộp là một phán quyết, không phải KHONG_CHAM_DUOC");
+        }
         boolean daNop = status == SubmissionStatus.DA_NOP;
         if (daNop != (submittedAt != null) || daNop != (result != null)) {
             throw new IllegalArgumentException("Chỉ bài làm đã nộp mới có lúc nộp và kết quả");
@@ -62,9 +65,15 @@ public record Submission(
         return status == SubmissionStatus.DANG_LAM;
     }
 
-    /** Nộp bài với kết quả cuối; bài làm đã nộp thì {@link IllegalStateException}. */
+    /**
+     * Nộp bài với kết quả cuối, là một phán quyết của bộ chấm. {@code KHONG_CHAM_DUOC} (dịch vụ toán lỗi) không đóng được
+     * bài làm: {@link IllegalArgumentException}, bài làm vẫn mở để nộp lại. Bài làm đã nộp thì {@link IllegalStateException}.
+     */
     public Submission submit(GradeStatus ketQua, Instant now) {
         Objects.requireNonNull(ketQua, "ketQua");
+        if (ketQua == GradeStatus.KHONG_CHAM_DUOC) {
+            throw new IllegalArgumentException("Không nộp bài với kết quả không chấm được");
+        }
         if (!isOpen()) {
             throw new IllegalStateException("Bài làm đã nộp");
         }

@@ -34,7 +34,7 @@ public interface SubmissionRepository {
      */
     void saveStep(UUID submissionId, StepWork buoc);
 
-    /** Nội dung các bước của bài làm, theo thứ tự bước của khung. */
+    /** Nội dung các bước của bài làm, theo thứ tự bước của khung; đọc nhất quán (không trộn với một lần thay bước đồng thời). */
     List<StepWork> steps(UUID submissionId);
 
     /** Thêm sự kiện nhập (chỉ thêm). Bài làm đã nộp thì {@link IllegalStateException}. */

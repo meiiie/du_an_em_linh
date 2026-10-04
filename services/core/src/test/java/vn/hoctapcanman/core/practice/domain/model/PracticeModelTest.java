@@ -27,6 +27,8 @@ class PracticeModelTest {
         assertThat(daNop.status()).isEqualTo(SubmissionStatus.DA_NOP);
         assertThat(daNop.guessSuspected()).isTrue();
         assertThatThrownBy(() -> daNop.submit(GradeStatus.DAT, LUC)).isInstanceOf(IllegalStateException.class);
+        // Dịch vụ toán lỗi lúc nộp: không đóng bài làm (Codex #136).
+        assertThatThrownBy(() -> dangLam.submit(GradeStatus.KHONG_CHAM_DUOC, LUC)).isInstanceOf(IllegalArgumentException.class);
         assertThatThrownBy(() -> daNop.suspectGuess("x")).isInstanceOf(IllegalStateException.class);
     }
 

@@ -37,8 +37,9 @@ CREATE TABLE submissions (
     status          varchar(8)   NOT NULL CHECK (status IN ('DANG_LAM', 'DA_NOP')),
     guess_suspected boolean      NOT NULL DEFAULT false,
     guess_reason    varchar(300),
-    -- Kết quả lúc nộp; KHONG_CHAM_DUOC = dịch vụ toán lỗi, không bao giờ là đạt.
-    result          varchar(16)  CHECK (result IN ('DAT', 'SAI', 'KHONG_KIEM_DUOC', 'KHONG_CHAM_DUOC')),
+    -- Kết quả lúc nộp, luôn là một phán quyết của bộ chấm. Không có KHONG_CHAM_DUOC: dịch vụ toán lỗi lúc nộp thì bài làm
+    -- vẫn mở để nộp lại, không đóng với kết quả không chấm được.
+    result          varchar(16)  CHECK (result IN ('DAT', 'SAI', 'KHONG_KIEM_DUOC')),
     started_at      timestamptz  NOT NULL,
     submitted_at    timestamptz,
     FOREIGN KEY (class_id, student_id) REFERENCES enrollments (class_id, user_id) ON DELETE CASCADE,
