@@ -4,6 +4,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
+import java.util.regex.Pattern;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -34,6 +35,9 @@ public record Problem(
 
     /** Dạng trả lời có khung 5 bước trên app (SP-06 của v0). */
     public static final String TU_LUAN_5_BUOC = "TU_LUAN_5_BUOC";
+
+    /** Đề hỏi cực trị, như {@code deHoiCucTri} của v0 ({@code apps/web/components/solve-client.tsx}). */
+    private static final Pattern HOI_CUC_TRI = Pattern.compile("cực trị|cực đại|cực tiểu", Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
 
     public Problem {
         Objects.requireNonNull(id, "id");
@@ -68,5 +72,19 @@ public record Problem(
     /** Làm theo khung 5 bước trên app. */
     public boolean isFiveStep() {
         return TU_LUAN_5_BUOC.equals(answerForm);
+    }
+
+    /**
+     * Các ô bước kết luận phải khai ({@code khai_bao} của {@code /v1/grade}), suy từ đề như v0: luôn đồng biến, nghịch biến;
+     * thêm cực đại, cực tiểu khi đề hỏi cực trị. Bộ chấm chỉ kiểm ô có trong {@code khai_bao}, nên danh sách này lấy từ bài,
+     * không từ bài làm. Rỗng khi bài không làm theo khung 5 bước.
+     */
+    public List<String> conclusionClaims() {
+        if (!isFiveStep()) {
+            return List.of();
+        }
+        return HOI_CUC_TRI.matcher(statementText).find()
+            ? List.of("dong_bien", "nghich_bien", "cuc_dai", "cuc_tieu")
+            : List.of("dong_bien", "nghich_bien");
     }
 }

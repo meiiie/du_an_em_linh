@@ -7,14 +7,14 @@ import org.springframework.jdbc.core.simple.JdbcClient;
  * Dữ liệu nền cho test của practice, ghi bằng SQL (không dùng adapter của module khác): danh mục chủ đề, người dùng, lớp,
  * ghi danh, bài, phát hành bài cho lớp theo một lượt kiểm DAT.
  */
-final class DuLieuPractice {
+public final class DuLieuPractice {
 
-    static final String BAM = "a".repeat(64);
+    public static final String BAM = "a".repeat(64);
 
     private DuLieuPractice() {}
 
     /** Chủ đề, kỹ năng và khung 5 bước của v0; ghi rồi thì giữ (test khác dùng chung). */
-    static void danhMuc(JdbcClient jdbc) {
+    public static void danhMuc(JdbcClient jdbc) {
         jdbc.sql("insert into topics (code, name, grade) values ('DH12', 'Đơn điệu và cực trị', 12) on conflict do nothing").update();
         jdbc.sql("insert into skills (code, topic_code, name, is_core) values ('T12.DH.02', 'DH12', 'Tính đạo hàm', true)"
             + " on conflict do nothing").update();
@@ -30,7 +30,7 @@ final class DuLieuPractice {
         }
     }
 
-    static UUID nguoi(JdbcClient jdbc, String vaiTro) {
+    public static UUID nguoi(JdbcClient jdbc, String vaiTro) {
         UUID id = UUID.randomUUID();
         jdbc.sql("""
                 insert into users (id, email, password_hash, display_name, role, synthetic, created_at, updated_at)
@@ -39,19 +39,19 @@ final class DuLieuPractice {
         return id;
     }
 
-    static UUID lop(JdbcClient jdbc) {
+    public static UUID lop(JdbcClient jdbc) {
         UUID id = UUID.randomUUID();
         jdbc.sql("insert into classes (id, name, grade, school_year, created_at) values (?, ?, 12, '2026-2027', now())")
             .params(id, "Lớp " + id.toString().substring(0, 8)).update();
         return id;
     }
 
-    static void ghiDanh(JdbcClient jdbc, UUID lop, UUID nguoi, String vaiTro) {
+    public static void ghiDanh(JdbcClient jdbc, UUID lop, UUID nguoi, String vaiTro) {
         jdbc.sql("insert into enrollments (class_id, user_id, role_in_class, enrolled_at) values (?, ?, ?, now())")
             .params(lop, nguoi, vaiTro).update();
     }
 
-    static UUID bai(JdbcClient jdbc, String ma) {
+    public static UUID bai(JdbcClient jdbc, String ma) {
         UUID id = UUID.randomUUID();
         jdbc.sql("""
                 insert into problems (id, code, skill_code, level4, statement_text, statement_latex, function_sympy, origin,
@@ -63,7 +63,7 @@ final class DuLieuPractice {
     }
 
     /** Lượt kiểm DAT mới cho bài ở lớp, rồi phát hành theo lượt đó. */
-    static void phatHanh(JdbcClient jdbc, UUID lop, UUID bai) {
+    public static void phatHanh(JdbcClient jdbc, UUID lop, UUID bai) {
         UUID luot = UUID.randomUUID();
         jdbc.sql("""
                 insert into verification_runs (id, class_id, subject_kind, subject_id, content_hash, overall_status,

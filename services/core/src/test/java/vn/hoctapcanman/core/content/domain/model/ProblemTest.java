@@ -23,6 +23,26 @@ class ProblemTest {
     }
 
     @Test
+    void khaiBaoKetLuanSuyTuDeNhuV0() {
+        Problem m = Mau.bai();
+        assertThat(deLa(m, "Xét tính đơn điệu của hàm số y = x^3 - 3x^2 + 2.").conclusionClaims())
+            .containsExactly("dong_bien", "nghich_bien");
+        assertThat(deLa(m, "Tìm khoảng đơn điệu và CỰC TRỊ của hàm số y = x^3 - 3x.").conclusionClaims())
+            .containsExactly("dong_bien", "nghich_bien", "cuc_dai", "cuc_tieu");
+        assertThat(deLa(m, "Tìm điểm cực tiểu của hàm số y = x^2.").conclusionClaims()).hasSize(4);
+        Problem tracNghiem = new Problem(m.id(), m.code(), m.skillCode(), m.extraSkillCodes(), m.level4(), m.level3(), m.bloomLevel(),
+            m.difficulty(), "Tìm cực trị.", m.statementLatex(), m.functionSympy(), "TRAC_NGHIEM", m.startStep(), m.origin(), m.contentHash(),
+            m.createdBy(), m.createdAt(), m.updatedAt());
+        assertThat(tracNghiem.conclusionClaims()).isEmpty();
+    }
+
+    private static Problem deLa(Problem m, String de) {
+        return new Problem(m.id(), m.code(), m.skillCode(), m.extraSkillCodes(), m.level4(), m.level3(), m.bloomLevel(), m.difficulty(), de,
+            m.statementLatex(), m.functionSympy(), m.answerForm(), m.startStep(), m.origin(), m.contentHash(), m.createdBy(), m.createdAt(),
+            m.updatedAt());
+    }
+
+    @Test
     void tuChoiMaNguonDauVanTayDoKhoKhongHopLe() {
         Problem m = Mau.bai();
         assertThatThrownBy(() -> sua(m, "DH12 NB 01", m.contentHash(), m.difficulty(), m.origin())).isInstanceOf(IllegalArgumentException.class);

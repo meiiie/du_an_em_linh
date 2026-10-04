@@ -54,3 +54,5 @@ app:
     refresh-token-ttl: P30D
     refresh-cookie-secure: true # cookie hta_refresh chỉ đi qua HTTPS (trình duyệt coi http://localhost là an toàn)
     login-failure-cleanup-cron: "0 27 3 * * *" # dọn lần đăng nhập sai quá một ngày (F-10)
+  practice:
+    nguong-doan-mo: 4 # một ô bị đổi từ chừng này lần thì nghi đoán mò (v0: nguong_doan_mo_so_lan_doi_o, data/v0/bkt.json)
