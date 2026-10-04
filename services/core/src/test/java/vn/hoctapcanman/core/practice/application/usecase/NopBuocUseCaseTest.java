@@ -94,6 +94,7 @@ class NopBuocUseCaseTest {
     private UUID bai;
     private String ma;
     private final List<UUID> nguoi = new ArrayList<>();
+    private final List<UUID> baiThem = new ArrayList<>();
 
     @BeforeEach
     void duLieu() {
@@ -113,6 +114,7 @@ class NopBuocUseCaseTest {
     void don() {
         jdbc.sql("delete from classes where id = ?").params(lop).update();
         jdbc.sql("delete from problems where id = ?").params(bai).update();
+        baiThem.forEach(id -> jdbc.sql("delete from problems where id = ?").params(id).update());
         nguoi.forEach(id -> jdbc.sql("delete from users where id = ?").params(id).update());
     }
 
@@ -189,6 +191,7 @@ class NopBuocUseCaseTest {
             // Trường lạ mang giá trị đúng: không bao giờ được tới học sinh.
             p.put("gia_tri_dung", BI_MAT);
             p.put("cac_van_de", List.of(Map.of("buoc_sai", buocSai, "goi_y_dung", BI_MAT)));
+            p.put("chua_xong", false);
             return Optional.of(p);
         };
         KetQuaNopBuoc kq = nopBuoc.execute(an, lop, ma, bang(List.of(new ONop("X", 0, "0"), new ONop("DAU_YPHAY", 2, "+")), List.of()));
@@ -229,6 +232,48 @@ class NopBuocUseCaseTest {
         assertThat(bon.thongBao()).endsWith(DocKetQuaCham.DOAN_MO);
         assertThat(jdbc.sql("select guess_reason from submissions where class_id = ? and student_id = ?").params(lop, an)
             .query(String.class).single()).isEqualTo("Ô DAU_YPHAY:1 bị đổi 4 lần trước khi nộp (ngưỡng 4).");
+    }
+
+    @Test
+    void guiLaiCungSuKienKhongGhiTrungVaKhongThanhDoanMo() {
+        // Codex #140 (P2): mất phản hồi rồi gửi lại cùng yêu cầu: ba lần đổi ô không thành sáu.
+        List<SuKienNop> doi = new ArrayList<>();
+        for (int i = 0; i < 3; i++) {
+            doi.add(new SuKienNop("B.DH.XETDAU", "DAU_YPHAY", 1, i % 2 == 0 ? "+" : "-", i % 2 == 0 ? "-" : "+",
+                LUC.plusMillis(1001 * i).plusNanos(123)));
+        }
+        NopBuocRequest yeuCau = bang(List.of(new ONop("DAU_YPHAY", 1, "-")), doi);
+        KetQuaNopBuoc dau = nopBuoc.execute(an, lop, ma, yeuCau);
+        KetQuaNopBuoc lai = nopBuoc.execute(an, lop, ma, yeuCau);
+        assertThat(lai).isEqualTo(dau);
+        assertThat(lai.thongBao()).doesNotContain(DocKetQuaCham.DOAN_MO);
+        assertThat(jdbc.sql("""
+                select count(*) from input_events e join submissions s on s.id = e.submission_id where s.class_id = ?""")
+            .params(lop).query(Integer.class).single()).isEqualTo(3);
+        assertThat(jdbc.sql("select guess_suspected from submissions where class_id = ?").params(lop).query(Boolean.class).single()).isFalse();
+    }
+
+    @Test
+    void ketLuanKhaiBaoTheoDeVaChiNhanODeHoi() {
+        // Codex #140 (P1): khai_bao của bước kết luận lấy từ đề. Đề của bài mẫu chỉ hỏi đơn điệu.
+        NopBuocRequest coCucDai = new NopBuocRequest("B.DH.KETLUAN", List.of(new DongNop(0, "(2; +\\infty)", "DONG_BIEN"),
+            new DongNop(1, "(0; 2)", "NGHICH_BIEN"), new DongNop(2, "x = 0", "CUC_DAI")), null, null);
+        assertThatThrownBy(() -> nopBuoc.execute(an, lop, ma, coCucDai)).isInstanceOf(IllegalArgumentException.class);
+        assertThat(mayCham.yeuCau).isEmpty();
+        // Bài hỏi cực trị: học sinh bỏ hai ô cực trị, khai_bao vẫn đủ bốn ô.
+        UUID hoiCucTri = DuLieuPractice.bai(jdbc, "NB-CT");
+        try {
+            jdbc.sql("update problems set statement_text = 'Tìm khoảng đơn điệu và cực trị của y = x^3 - 3x^2 + 2.' where id = ?")
+                .params(hoiCucTri).update();
+            DuLieuPractice.phatHanh(jdbc, lop, hoiCucTri);
+            String maCt = jdbc.sql("select code from problems where id = ?").params(hoiCucTri).query(String.class).single();
+            nopBuoc.execute(an, lop, maCt, new NopBuocRequest("B.DH.KETLUAN", List.of(new DongNop(0, "(2; +\\infty)", "DONG_BIEN"),
+                new DongNop(1, "(0; 2)", "NGHICH_BIEN")), null, null));
+            assertThat(JSON.writeValueAsString(mayCham.yeuCau.getLast()))
+                .contains("\"khai_bao\":[\"dong_bien\",\"nghich_bien\",\"cuc_dai\",\"cuc_tieu\"]");
+        } finally {
+            baiThem.add(hoiCucTri);
+        }
     }
 
     private List<String> ketQuaDaGhi() {
@@ -291,6 +336,9 @@ class NopBuocUseCaseTest {
             p.put("do_tin_cay", null);
             p.put("per_buoc", Map.of((String) y.get("nop_toi"), "DAT"));
             p.put("thong_bao", "Đúng rồi.");
+            p.put("cac_van_de", List.of());
+            p.put("chua_xong", false);
+            p.put("nop_toi", y.get("nop_toi"));
             return Optional.of(p);
         }
     }

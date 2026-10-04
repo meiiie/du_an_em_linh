@@ -2,6 +2,7 @@ package vn.hoctapcanman.core.practice.application.usecase;
 
 import java.time.Clock;
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -38,8 +39,10 @@ import vn.hoctapcanman.core.practice.domain.repository.SubmissionRepository;
  * <ol>
  *   <li>Người gọi phải là học sinh của lớp (id lớp tường minh) và bài phải đang phát hành ở lớp, chấm từng bước được; không
  *       thì {@link BaiKhongTimThayException}, cùng một lỗi, không lộ bài hay lớp.</li>
- *   <li>Trong một giao dịch: mở (hoặc lấy) bài làm đang làm ở phiên bản nội dung hiện tại, thay trọn nội dung bước, thêm sự
- *       kiện nhập, bật nghi đoán mò khi một ô bị đổi từ ngưỡng trở lên, đọc lại các bước đã lưu.</li>
+ *   <li>Trong một giao dịch: mở (hoặc lấy) bài làm đang làm ở phiên bản nội dung hiện tại, thay trọn nội dung bước (khóa
+ *       dòng bài làm tới hết giao dịch), thêm sự kiện nhập chưa có (gửi lại sau khi mất phản hồi không ghi trùng, Codex
+ *       #140), bật nghi đoán mò khi một ô bị đổi từ ngưỡng trở lên, đọc lại các bước đã lưu.</li>
+ *   <li>Bước kết luận chỉ nhận ô đề hỏi; ô phải khai lấy từ bài ({@code khaiBaoKetLuan}), không từ bài làm.</li>
  *   <li>Dựng yêu cầu {@code /v1/grade} như v0 từ các bước đã lưu (không từ máy học sinh) và băm nó. Đã có lần chấm có phán
  *       quyết cho đúng yêu cầu này thì trả lần đó, không gọi lại dịch vụ toán (hai tab nộp cùng bước ghi một lần).</li>
  *   <li>Gọi dịch vụ toán ngoài giao dịch (không giữ khóa dòng trong lúc chờ tới 12 s), rồi ghi kết quả. Dịch vụ toán lỗi
@@ -89,13 +92,24 @@ public class NopBuocUseCase {
             throw new IllegalArgumentException("Bước không thuộc khung của bài: " + yeuCau.maBuoc());
         }
         StepWork buoc = buoc(yeuCau);
+        if (yeuCau.maBuoc().equals(bai.cacBuoc().getLast())) {
+            for (StepLine l : buoc.lines()) {
+                String khoa = l.kind() == null ? null : YeuCauCham.KHAI_BAO.get(l.kind());
+                if (khoa != null && !bai.khaiBaoKetLuan().contains(khoa)) {
+                    throw new IllegalArgumentException("Đề không hỏi ô kết luận " + l.kind());
+                }
+            }
+        }
         List<InputEvent> suKien = suKien(yeuCau.suKien());
         Instant moLuc = clock.instant();
         DaLuu daLuu = Objects.requireNonNull(tx.execute(s -> {
             Submission baiLam = submissions.openOrGet(Submission.open(lopId, hocSinhId, bai.problemId(), bai.phienBan(), moLuc));
             submissions.saveStep(baiLam.id(), buoc);
-            if (!suKien.isEmpty()) {
-                submissions.addEvents(baiLam.id(), suKien);
+            // Dòng bài làm đang khóa (saveStep), nên hai lần gửi lại cùng lúc đọc và ghi sự kiện lần lượt.
+            List<InputEvent> daCo = submissions.events(baiLam.id());
+            List<InputEvent> moi = suKien.stream().distinct().filter(e -> !daCo.contains(e)).toList();
+            if (!moi.isEmpty()) {
+                submissions.addEvents(baiLam.id(), moi);
             }
             boolean nghi = baiLam.guessSuspected();
             if (!nghi) {
@@ -107,7 +121,8 @@ public class NopBuocUseCase {
             }
             return new DaLuu(baiLam.id(), submissions.steps(baiLam.id()), nghi);
         }));
-        Map<String, @Nullable Object> payload = YeuCauCham.dung(ham, bai.cacBuoc(), bai.buocBatDau(), yeuCau.maBuoc(), daLuu.cacBuoc());
+        Map<String, @Nullable Object> payload = YeuCauCham.dung(ham, bai.cacBuoc(), bai.khaiBaoKetLuan(), bai.buocBatDau(), yeuCau.maBuoc(),
+            daLuu.cacBuoc());
         String bam = YeuCauCham.bam(payload);
         GradingResult ketQua = grades.findByRequest(daLuu.baiLamId(), bam).orElseGet(() -> {
             Map<String, @Nullable Object> phanHoi = mayCham.cham(payload).orElse(null);
@@ -131,7 +146,10 @@ public class NopBuocUseCase {
         if (suKien.size() > TOI_DA_SU_KIEN) {
             throw new IllegalArgumentException("Quá nhiều sự kiện nhập trong một lần nộp (tối đa " + TOI_DA_SU_KIEN + ")");
         }
-        return suKien.stream().map(e -> new InputEvent(e.maBuoc(), e.hang(), e.k(), e.giaTriCu(), e.giaTriMoi(), e.luc())).toList();
+        // Thời điểm cắt về micro giây như cột timestamptz, để sự kiện gửi lại so trùng được với sự kiện đã lưu.
+        return suKien.stream()
+            .map(e -> new InputEvent(e.maBuoc(), e.hang(), e.k(), e.giaTriCu(), e.giaTriMoi(), e.luc().truncatedTo(ChronoUnit.MICROS)))
+            .toList();
     }
 
     /** Bài làm sau khi lưu bước: id, các bước đã lưu (thứ tự khung), cờ nghi đoán mò. */

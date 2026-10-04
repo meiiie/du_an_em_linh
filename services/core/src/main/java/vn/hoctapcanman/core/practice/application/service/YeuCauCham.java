@@ -2,7 +2,6 @@ package vn.hoctapcanman.core.practice.application.service;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HexFormat;
 import java.util.LinkedHashMap;
@@ -19,9 +18,11 @@ import vn.hoctapcanman.core.practice.domain.model.TableCell;
  * Yêu cầu chấm {@code /v1/grade} dựng lại từ các bước đã lưu của bài làm, trùng payload của v0 ({@code nopBuoc} ở
  * {@code apps/web/lib/actions/hs.ts}, {@code payload()} ở {@code components/solve-client.tsx}): {@code ham}, {@code nop_toi},
  * {@code cac_buoc} từ bước bắt đầu tới bước nộp theo thứ tự khung, {@code buoc_bat_dau} khi bài khung ngắn (lấy từ bài, không
- * tin máy học sinh). Mỗi bước: {@code ma_buoc}; {@code khai_bao} khi bước có dòng kết luận (khóa của nhãn theo thứ tự dòng,
- * như v0 dựng từ các ô kết luận); {@code cac_dong} ({@code dong}, {@code latex}, {@code loai} khi có); {@code bang}
- * ({@code loai_bang}, {@code cac_o} theo thứ tự gửi: {@code hang}, {@code k}, {@code gia_tri}).
+ * tin máy học sinh). Mỗi bước: {@code ma_buoc}; {@code khai_bao} ở bước kết luận (bước cuối của khung), lấy từ bài (các ô
+ * đề hỏi, {@code BaiChoLamBai.khaiBaoKetLuan}), không từ nhãn dòng học sinh gửi: bộ chấm chỉ kiểm ô có trong
+ * {@code khai_bao}, nên bỏ ô cực trị khỏi bài làm không né được phần chấm cực trị (Codex #140); {@code cac_dong}
+ * ({@code dong}, {@code latex}, {@code loai} khi có); {@code bang} ({@code loai_bang}, {@code cac_o} theo thứ tự gửi:
+ * {@code hang}, {@code k}, {@code gia_tri}).
  *
  * <p>Băm là SHA-256 của JSON payload (UTF-8, khóa theo thứ tự dựng): cùng nội dung các bước tới cùng bước nộp thì cùng băm,
  * nên hai tab nộp cùng bước chỉ có một lần chấm (V7).
@@ -30,7 +31,7 @@ public final class YeuCauCham {
 
     private static final JsonMapper JSON = JsonMapper.builder().build();
     /** Nhãn ô kết luận của v0 (SP-03) và khóa {@code khai_bao} tương ứng. */
-    private static final Map<String, String> KHAI_BAO = Map.of(
+    public static final Map<String, String> KHAI_BAO = Map.of(
         "DONG_BIEN", "dong_bien", "NGHICH_BIEN", "nghich_bien", "CUC_DAI", "cuc_dai", "CUC_TIEU", "cuc_tieu");
 
     private YeuCauCham() {}
@@ -44,8 +45,8 @@ public final class YeuCauCham {
      * Payload chấm tới bước {@code nopToi}. Bước nộp phải thuộc khung và không trước bước bắt đầu, không thì
      * {@link IllegalArgumentException}.
      */
-    public static Map<String, @Nullable Object> dung(String ham, List<String> khung, @Nullable String buocBatDau, String nopToi,
-            List<StepWork> daLuu) {
+    public static Map<String, @Nullable Object> dung(String ham, List<String> khung, List<String> khaiBaoKetLuan,
+            @Nullable String buocBatDau, String nopToi, List<StepWork> daLuu) {
         int dau = batDau(khung, buocBatDau);
         int den = khung.indexOf(nopToi);
         if (den < dau) {
@@ -54,7 +55,7 @@ public final class YeuCauCham {
         List<Map<String, @Nullable Object>> cacBuoc = daLuu.stream()
             .filter(b -> khung.indexOf(b.stepCode()) >= dau && khung.indexOf(b.stepCode()) <= den)
             .sorted(Comparator.comparingInt(b -> khung.indexOf(b.stepCode())))
-            .map(YeuCauCham::buoc)
+            .map(b -> buoc(b, b.stepCode().equals(khung.getLast()) ? khaiBaoKetLuan : List.of()))
             .toList();
         Map<String, @Nullable Object> yeuCau = new LinkedHashMap<>();
         yeuCau.put("ham", ham);
@@ -75,16 +76,9 @@ public final class YeuCauCham {
         }
     }
 
-    private static Map<String, @Nullable Object> buoc(StepWork b) {
+    private static Map<String, @Nullable Object> buoc(StepWork b, List<String> khaiBao) {
         Map<String, @Nullable Object> m = new LinkedHashMap<>();
         m.put("ma_buoc", b.stepCode());
-        List<String> khaiBao = new ArrayList<>();
-        for (StepLine l : b.lines()) {
-            String khoa = l.kind() == null ? null : KHAI_BAO.get(l.kind());
-            if (khoa != null) {
-                khaiBao.add(khoa);
-            }
-        }
         if (!khaiBao.isEmpty()) {
             m.put("khai_bao", khaiBao);
         }

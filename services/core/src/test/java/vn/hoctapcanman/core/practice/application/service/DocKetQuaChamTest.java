@@ -85,6 +85,41 @@ class DocKetQuaChamTest {
     }
 
     @Test
+    void phongBiThieuHayKhongNhatQuanThiKhongChamDuoc() {
+        // Codex #140 (P1): phản hồi thiếu như {"ket_qua":"DAT"} không được thành đạt.
+        List<Map<String, @Nullable Object>> hong = new java.util.ArrayList<>();
+        Map<String, @Nullable Object> chiKetQua = new LinkedHashMap<>();
+        chiKetQua.put("ket_qua", "DAT");
+        hong.add(chiKetQua);
+        for (String khoa : List.of("loai_ket_qua", "per_buoc", "thong_bao", "chua_xong", "cac_van_de", "buoc_sai", "ma_loi", "do_tin_cay")) {
+            Map<String, @Nullable Object> thieu = phanHoiDat();
+            thieu.remove(khoa);
+            hong.add(thieu);
+        }
+        Map<String, @Nullable Object> datMaCoBuocSai = phanHoiDat();
+        datMaCoBuocSai.put("buoc_sai", Map.of("ma_buoc", "B.DH.TXD"));
+        hong.add(datMaCoBuocSai);
+        Map<String, @Nullable Object> datMaCoVanDe = phanHoiDat();
+        datMaCoVanDe.put("cac_van_de", List.of(Map.of("id", "VD1")));
+        hong.add(datMaCoVanDe);
+        Map<String, @Nullable Object> datLoaiKhac = phanHoiDat();
+        datLoaiKhac.put("loai_ket_qua", "SAI_BIEN_DOI");
+        hong.add(datLoaiKhac);
+        Map<String, @Nullable Object> sauBuoc = phanHoiDat();
+        sauBuoc.put("nop_toi", "B.DH.KETLUAN");
+        hong.add(sauBuoc);
+        Map<String, @Nullable Object> chuaXongChu = phanHoiDat();
+        chuaXongChu.put("chua_xong", "false");
+        hong.add(chuaXongChu);
+        for (Map<String, @Nullable Object> p : hong) {
+            assertThat(DocKetQuaCham.ketQua(BAI_LAM, "B.DH.DAOHAM", BAM, p, LUC).result()).as("%s", p).isEqualTo(GradeStatus.KHONG_CHAM_DUOC);
+        }
+        Map<String, @Nullable Object> dungBuoc = phanHoiDat();
+        dungBuoc.put("nop_toi", "B.DH.DAOHAM");
+        assertThat(DocKetQuaCham.ketQua(BAI_LAM, "B.DH.DAOHAM", BAM, dungBuoc, LUC).result()).isEqualTo(GradeStatus.DAT);
+    }
+
+    @Test
     void choHocSinhChoSaiKhongTrungVaKhongCoGiaTriDung() {
         KetQuaNopBuoc kq = DocKetQuaCham.choHocSinh(DocKetQuaCham.ketQua(BAI_LAM, "B.DH.XETDAU", BAM, phanHoiSai(), LUC), KHUNG, false);
         assertThat(kq.ketQua()).isEqualTo("SAI");
@@ -125,6 +160,8 @@ class DocKetQuaChamTest {
         p.put("do_tin_cay", null);
         p.put("per_buoc", Map.of("B.DH.DAOHAM", "DAT"));
         p.put("thong_bao", "Đúng rồi.");
+        p.put("cac_van_de", List.of());
+        p.put("chua_xong", false);
         return p;
     }
 
@@ -152,6 +189,7 @@ class DocKetQuaChamTest {
         p.put("thong_bao", "Bước Xét dấu, ô dấu thứ 2 cần xem lại.");
         p.put("phien_ban_chuan_hoa", "norm-0.2");
         p.put("chuan_hoa", List.of(theoThuTu("ma_buoc", "B.DH.XETDAU", "dong", 0, "trang_thai_chuan_hoa", "OK")));
+        p.put("chua_xong", false);
         return p;
     }
 

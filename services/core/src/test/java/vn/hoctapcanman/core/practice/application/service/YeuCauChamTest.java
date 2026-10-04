@@ -25,6 +25,8 @@ class YeuCauChamTest {
     private static final JsonMapper JSON = JsonMapper.builder().build();
     private static final String HAM = "x**3 - 3*x**2 + 2";
     private static final List<String> KHUNG = List.of("B.DH.TXD", "B.DH.DAOHAM", "B.DH.NGHIEM", "B.DH.XETDAU", "B.DH.KETLUAN");
+    private static final List<String> HOI_CUC_TRI = List.of("dong_bien", "nghich_bien", "cuc_dai", "cuc_tieu");
+    private static final List<String> CHI_DON_DIEU = List.of("dong_bien", "nghich_bien");
 
     private static final StepWork TXD = new StepWork("B.DH.TXD", List.of(new StepLine(0, "D = \\mathbb{R}", null)), null);
     private static final StepWork DAOHAM = new StepWork("B.DH.DAOHAM", List.of(new StepLine(0, "y' = 3x^2 - 6x", null)), null);
@@ -59,7 +61,7 @@ class YeuCauChamTest {
     @Test
     void trungTungByteVoiPayloadV0VaBamLaSha256CuaChinhCacByteDo() throws Exception {
         // Thứ tự lưu không quan trọng: payload theo thứ tự khung.
-        Map<String, ?> yeuCau = YeuCauCham.dung(HAM, KHUNG, null, "B.DH.KETLUAN", List.of(KETLUAN, XETDAU, TXD, NGHIEM, DAOHAM));
+        Map<String, ?> yeuCau = YeuCauCham.dung(HAM, KHUNG, HOI_CUC_TRI, null, "B.DH.KETLUAN", List.of(KETLUAN, XETDAU, TXD, NGHIEM, DAOHAM));
         assertThat(JSON.writeValueAsString(yeuCau)).isEqualTo(V0_KET_LUAN);
         assertThat(YeuCauCham.bam(yeuCau)).isEqualTo(HexFormat.of().formatHex(
             MessageDigest.getInstance("SHA-256").digest(V0_KET_LUAN.getBytes(StandardCharsets.UTF_8))));
@@ -67,7 +69,7 @@ class YeuCauChamTest {
 
     @Test
     void chiGuiCacBuocTuBuocBatDauToiBuocNop() {
-        Map<String, ?> yeuCau = YeuCauCham.dung(HAM, KHUNG, "B.DH.NGHIEM", "B.DH.XETDAU", List.of(TXD, DAOHAM, NGHIEM, XETDAU, KETLUAN));
+        Map<String, ?> yeuCau = YeuCauCham.dung(HAM, KHUNG, HOI_CUC_TRI, "B.DH.NGHIEM", "B.DH.XETDAU", List.of(TXD, DAOHAM, NGHIEM, XETDAU, KETLUAN));
         assertThat(JSON.writeValueAsString(yeuCau)).startsWith("{\"ham\":\"x**3 - 3*x**2 + 2\",\"nop_toi\":\"B.DH.XETDAU\","
             + "\"cac_buoc\":[{\"ma_buoc\":\"B.DH.NGHIEM\"").endsWith("]}}],\"buoc_bat_dau\":\"B.DH.NGHIEM\"}");
         assertThat(((List<?>) yeuCau.get("cac_buoc")).stream().map(b -> (Object) ((Map<?, ?>) b).get("ma_buoc")).toList())
@@ -75,29 +77,34 @@ class YeuCauChamTest {
     }
 
     @Test
-    void khaiBaoTheoNhanDongKetLuanChiHaiODeKhongHoiCucTri() {
-        StepWork chiDonDieu = new StepWork("B.DH.KETLUAN",
+    void khaiBaoLayTuBaiKhongTuNhanDongHocSinhGui() {
+        // Codex #140 (P1): đề hỏi cực trị mà bài làm bỏ hai ô cực trị: khai_bao vẫn đủ bốn ô, bộ chấm vẫn chấm cực trị.
+        StepWork boCucTri = new StepWork("B.DH.KETLUAN",
             List.of(new StepLine(0, "(2; +\\infty)", "DONG_BIEN"), new StepLine(1, "(-\\infty; 2)", "NGHICH_BIEN")), null);
-        Map<String, ?> yeuCau = YeuCauCham.dung(HAM, KHUNG, null, "B.DH.KETLUAN", List.of(chiDonDieu));
-        assertThat(JSON.writeValueAsString(yeuCau)).contains("\"khai_bao\":[\"dong_bien\",\"nghich_bien\"],\"cac_dong\"");
-        // Bước nghiệm có nhãn NGHIEM, không phải nhãn kết luận: không có khai_bao.
-        assertThat(JSON.writeValueAsString(YeuCauCham.dung(HAM, KHUNG, null, "B.DH.NGHIEM", List.of(NGHIEM)))).doesNotContain("khai_bao");
+        assertThat(JSON.writeValueAsString(YeuCauCham.dung(HAM, KHUNG, HOI_CUC_TRI, null, "B.DH.KETLUAN", List.of(boCucTri))))
+            .contains("\"khai_bao\":[\"dong_bien\",\"nghich_bien\",\"cuc_dai\",\"cuc_tieu\"],\"cac_dong\"");
+        assertThat(JSON.writeValueAsString(YeuCauCham.dung(HAM, KHUNG, CHI_DON_DIEU, null, "B.DH.KETLUAN", List.of(KETLUAN))))
+            .contains("\"khai_bao\":[\"dong_bien\",\"nghich_bien\"],\"cac_dong\"");
+        // Chỉ bước kết luận (bước cuối của khung) mang khai_bao.
+        assertThat(JSON.writeValueAsString(YeuCauCham.dung(HAM, KHUNG, HOI_CUC_TRI, null, "B.DH.NGHIEM", List.of(NGHIEM))))
+            .doesNotContain("khai_bao");
     }
 
     @Test
     void bamDoiKhiNoiDungDoiVaGiuNguyenKhiNoiDungGiuNguyen() {
-        String goc = YeuCauCham.bam(YeuCauCham.dung(HAM, KHUNG, null, "B.DH.DAOHAM", List.of(TXD, DAOHAM)));
-        assertThat(YeuCauCham.bam(YeuCauCham.dung(HAM, KHUNG, null, "B.DH.DAOHAM", List.of(DAOHAM, TXD)))).isEqualTo(goc);
+        String goc = YeuCauCham.bam(YeuCauCham.dung(HAM, KHUNG, HOI_CUC_TRI, null, "B.DH.DAOHAM", List.of(TXD, DAOHAM)));
+        assertThat(YeuCauCham.bam(YeuCauCham.dung(HAM, KHUNG, HOI_CUC_TRI, null, "B.DH.DAOHAM", List.of(DAOHAM, TXD)))).isEqualTo(goc);
         StepWork khac = new StepWork("B.DH.DAOHAM", List.of(new StepLine(0, "y' = 3x^2 - 6", null)), null);
-        assertThat(YeuCauCham.bam(YeuCauCham.dung(HAM, KHUNG, null, "B.DH.DAOHAM", List.of(TXD, khac)))).isNotEqualTo(goc);
-        assertThat(YeuCauCham.bam(YeuCauCham.dung(HAM, KHUNG, null, "B.DH.TXD", List.of(TXD, DAOHAM)))).isNotEqualTo(goc);
+        assertThat(YeuCauCham.bam(YeuCauCham.dung(HAM, KHUNG, HOI_CUC_TRI, null, "B.DH.DAOHAM", List.of(TXD, khac)))).isNotEqualTo(goc);
+        assertThat(YeuCauCham.bam(YeuCauCham.dung(HAM, KHUNG, HOI_CUC_TRI, null, "B.DH.TXD", List.of(TXD, DAOHAM)))).isNotEqualTo(goc);
         assertThat(goc).matches("[0-9a-f]{64}");
     }
 
     @Test
     void buocNopNgoaiKhungHayTruocBuocBatDauBiTuChoi() {
-        assertThatThrownBy(() -> YeuCauCham.dung(HAM, KHUNG, null, "B.KHAC", List.of(TXD))).isInstanceOf(IllegalArgumentException.class);
-        assertThatThrownBy(() -> YeuCauCham.dung(HAM, KHUNG, "B.DH.NGHIEM", "B.DH.DAOHAM", List.of(DAOHAM)))
+        assertThatThrownBy(() -> YeuCauCham.dung(HAM, KHUNG, HOI_CUC_TRI, null, "B.KHAC", List.of(TXD)))
+            .isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> YeuCauCham.dung(HAM, KHUNG, HOI_CUC_TRI, "B.DH.NGHIEM", "B.DH.DAOHAM", List.of(DAOHAM)))
             .isInstanceOf(IllegalArgumentException.class);
         assertThat(YeuCauCham.batDau(KHUNG, "B.KHAC")).isZero();
         assertThat(YeuCauCham.batDau(KHUNG, null)).isZero();

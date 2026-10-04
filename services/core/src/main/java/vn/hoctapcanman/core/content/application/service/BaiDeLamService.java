@@ -38,7 +38,7 @@ public class BaiDeLamService implements BaiDeLam {
                 ? catalog.findStepTemplates(r.topicCode()).stream().map(StepTemplate::stepCode).toList()
                 : List.of();
             return new BaiChoLamBai(p.id(), p.code(), r.contentVersion(), p.skillCode(), p.level4().name(),
-                chamTungBuoc ? p.functionSympy() : null, khung, p.startStep());
+                chamTungBuoc ? p.functionSympy() : null, khung, chamTungBuoc ? p.conclusionClaims() : List.of(), p.startStep());
         });
     }
 }
