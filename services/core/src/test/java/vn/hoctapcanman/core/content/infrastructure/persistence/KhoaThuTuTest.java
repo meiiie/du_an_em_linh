@@ -124,4 +124,38 @@ class KhoaThuTuTest {
         assertThat(runs.findById(cho.id()).orElseThrow().stale()).isTrue();
         assertThat(runs.findReview(cho.id())).isEmpty();
     }
+
+    @Test
+    void danhDauCuChoLanGhiPhatHanhDangDo() throws Exception {
+        // Codex #121 (P2): lần ghi phát hành đang giữ dòng bài (đã đọc lượt còn mới); đánh dấu cũ bằng tay phải chờ nó commit,
+        // không chen giữa lúc trigger đọc stale = false và lúc phát hành commit.
+        VerificationRun luot = VerificationRun.forProblem(lop, bai.id(), BAM, 1, null,
+            List.of(TierResult.of(1, CheckStatus.KHONG_KIEM_DUOC), TierResult.of(2, CheckStatus.KHONG_KIEM_DUOC),
+                TierResult.of(3, CheckStatus.KHONG_KIEM_DUOC)), List.of(), LUC);
+        runs.save(luot);
+
+        CountDownLatch giuBai = new CountDownLatch(1);
+        CountDownLatch xong = new CountDownLatch(1);
+        CompletableFuture<Void> phatHanh = CompletableFuture.runAsync(() -> new TransactionTemplate(tx).executeWithoutResult(t -> {
+            jdbc.sql("select 1 from classes where id = ? for share").params(lop).query(Integer.class).single();
+            jdbc.sql("select 1 from problems where id = ? for no key update").params(bai.id()).query(Integer.class).single();
+            giuBai.countDown();
+            try {
+                xong.await(10, TimeUnit.SECONDS);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+        }));
+        assertThat(giuBai.await(10, TimeUnit.SECONDS)).isTrue();
+
+        CompletableFuture<Void> danhDau = CompletableFuture.runAsync(() -> runs.markStale(luot.id()));
+        Thread.sleep(500);
+        assertThat(danhDau).isNotDone();
+        assertThat(jdbc.sql("select stale from verification_runs where id = ?").params(luot.id()).query(Boolean.class).single()).isFalse();
+
+        xong.countDown();
+        phatHanh.get(10, TimeUnit.SECONDS);
+        danhDau.get(10, TimeUnit.SECONDS);
+        assertThat(runs.findById(luot.id()).orElseThrow().stale()).isTrue();
+    }
 }

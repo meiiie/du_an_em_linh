@@ -4,6 +4,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import org.jspecify.annotations.Nullable;
@@ -79,7 +80,15 @@ public class VerificationRunRepositoryAdapter implements VerificationRunReposito
     }
 
     @Override
+    @Transactional
     public void markStale(UUID runId) {
+        // Lượt kiểm bài: khóa lớp rồi bài trước khi đụng dòng lượt (KhoaThuTu), như mọi đường ghi lượt hay phát hành. Lần ghi
+        // phát hành đang dở (đã đọc lượt còn mới) commit trước, hoặc chạy sau và thấy lượt đã cũ; không gắn vào lượt vừa cũ.
+        jdbc.sql("select class_id, subject_id from verification_runs where id = :id and subject_kind = 'PROBLEM'")
+            .param("id", runId)
+            .query((rs, n) -> Map.entry(Cot.uuid(rs, "class_id"), Cot.uuid(rs, "subject_id")))
+            .optional()
+            .ifPresent(lopBai -> KhoaThuTu.lopRoiBai(jdbc, lopBai.getKey(), lopBai.getValue()));
         jdbc.sql("update verification_runs set stale = true where id = :id and not stale").param("id", runId).update();
     }
 
