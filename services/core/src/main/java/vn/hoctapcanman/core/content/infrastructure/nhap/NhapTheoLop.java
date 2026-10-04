@@ -99,8 +99,9 @@ public class NhapTheoLop {
     record TaiLieuLop(Document taiLieu, List<DocumentPassage> doan) {}
 
     KetQua nhap(UUID lop, List<NhapNoiDungChung.BaiNhap> bai) {
-        Map<String, TaiLieuLop> kho = napTaiLieu(lop);
-        FormulaSheet bang = khoaBang(lop, kho);
+        KhoLop khoLop = napTaiLieu(lop);
+        Map<String, TaiLieuLop> kho = khoLop.taiLieu();
+        FormulaSheet bang = khoaBang(lop, kho, khoLop.coBanMoi());
         Map<String, ReleaseStatus> phatHanh = new LinkedHashMap<>();
         int daKiem = 0;
         for (NhapNoiDungChung.BaiNhap b : bai) {
@@ -118,36 +119,71 @@ public class NhapTheoLop {
 
     // ---- Tài liệu -------------------------------------------------------------------------------------------------
 
-    private Map<String, TaiLieuLop> napTaiLieu(UUID lop) {
+    /** Tài liệu của lớp sau khi nạp, và có tài liệu nào vừa thay bản mới không (thì phải khóa lại bảng và kiểm lại bài). */
+    record KhoLop(Map<String, TaiLieuLop> taiLieu, boolean coBanMoi) {}
+
+    /**
+     * Nạp tài liệu nguồn vào lớp. Tài liệu đã có, cùng nội dung: không ghi gì. Tài liệu đã có mà nguồn đổi (văn bản, loại,
+     * quyền dùng, phiên bản…): không sửa tại chỗ, vì đoạn của nó có thể đang là căn cứ của bảng đã khóa hay lượt kiểm (V5
+     * từ chối, và căn cứ phải bất biến); bản cũ giữ nguyên làm căn cứ, chỉ đổi mã thành {@code mã.cu-<8 ký tự đầu của id>} để
+     * nhường mã, rồi nạp bản mới với mã gốc. Kho của lớp gửi dịch vụ toán chỉ gồm các bản mang mã gốc.
+     */
+    private KhoLop napTaiLieu(UUID lop) {
         List<Map<String, @Nullable Object>> nguonTaiLieu = new ArrayList<>(nguon.danhSach("v0/tai-lieu.json"));
         TAI_LIEU_LAB.forEach(duong -> nguonTaiLieu.add(nguon.doiTuong(duong)));
         Map<String, TaiLieuLop> kho = new LinkedHashMap<>();
+        boolean[] coBanMoi = {false};
         giaoDich.executeWithoutResult(t -> {
             for (Map<String, @Nullable Object> d : nguonTaiLieu) {
                 String ma = chu(d.get("ma"));
                 Optional<Document> daCo = documents.findByClassAndCode(lop, ma);
-                UUID id = daCo.map(Document::id).orElseGet(UUID::randomUUID);
                 String vanBan = chu(d.get("textContent"));
-                Document taiLieu = new Document(id, lop, ma, chu(d.get("title")), DocumentKind.parse(chu(d.get("kind"))),
-                    chuNeuCo(d.get("source")), chu(d.get("licenseStatus")), null, vanBan, ((Number) Objects.requireNonNull(d.get("version"))).intValue(),
-                    null, daCo.map(Document::createdAt).orElseGet(clock::instant));
-                kho.put(ma, new TaiLieuLop(taiLieu, documents.save(taiLieu, ChiaDoan.theoCau(id, vanBan))));
+                Document moi = new Document(daCo.map(Document::id).orElseGet(UUID::randomUUID), lop, ma, chu(d.get("title")),
+                    DocumentKind.parse(chu(d.get("kind"))), chuNeuCo(d.get("source")), chu(d.get("licenseStatus")), null, vanBan,
+                    ((Number) Objects.requireNonNull(d.get("version"))).intValue(), null,
+                    daCo.map(Document::createdAt).orElseGet(clock::instant));
+                if (daCo.isPresent() && daCo.get().equals(moi)) {
+                    kho.put(ma, new TaiLieuLop(daCo.get(), documents.findPassages(daCo.get().id())));
+                    continue;
+                }
+                if (daCo.isPresent()) {
+                    Document cu = daCo.get();
+                    String maCu = ma + ".cu-" + cu.id().toString().substring(0, 8);
+                    documents.save(new Document(cu.id(), cu.classId(), maCu, cu.title(), cu.kind(), cu.source(), cu.licenseStatus(),
+                        cu.fileRef(), cu.textContent(), cu.version(), cu.uploadedBy(), cu.createdAt()), documents.findPassages(cu.id()));
+                    moi = new Document(UUID.randomUUID(), lop, ma, moi.title(), moi.kind(), moi.source(), moi.licenseStatus(), null,
+                        vanBan, moi.version(), null, clock.instant());
+                    coBanMoi[0] = true;
+                    LOG.info("Tài liệu {} của lớp {} đổi ở nguồn: giữ bản cũ làm căn cứ ({}), nạp bản mới", ma, lop, maCu);
+                }
+                kho.put(ma, new TaiLieuLop(moi, documents.save(moi, ChiaDoan.theoCau(moi.id(), vanBan))));
             }
         });
-        return kho;
+        return new KhoLop(kho, coBanMoi[0]);
     }
 
     // ---- Bảng công thức -------------------------------------------------------------------------------------------
 
-    private FormulaSheet khoaBang(UUID lop, Map<String, TaiLieuLop> kho) {
+    /**
+     * Bảng đang dùng của lớp sau khi nhập. Giữ bảng đang dùng nếu cùng các dòng của v0 và không tài liệu nào vừa thay bản mới
+     * (căn cứ của bảng vẫn là tài liệu đang dùng); ngược lại khóa bảng phiên bản mới với kho hiện tại: lượt kiểm với bảng cũ
+     * thành cũ, phát hành giữ «cần kiểm lại» tới khi kiểm lại (ADR 005). Lớp đang có bảng nháp không do importer tạo (giáo viên
+     * đang soạn) thì dừng, không ghi đè.
+     */
+    private FormulaSheet khoaBang(UUID lop, Map<String, TaiLieuLop> kho, boolean coBanMoi) {
         List<Formula> dong = dongBangV0();
         Optional<FormulaSheet> dangDung = sheets.findCurrent(lop);
-        if (dangDung.isPresent() && dauVanTay(dangDung.get().rows()).equals(dauVanTay(dong))) {
+        if (dangDung.isPresent() && !coBanMoi && dauVanTay(dangDung.get().rows()).equals(dauVanTay(dong))) {
             return dangDung.get();
+        }
+        Optional<FormulaSheet> banNhap = sheets.findDraft(lop);
+        if (banNhap.isPresent() && !GHI_CHU_BANG.equals(banNhap.get().note())) {
+            throw new IllegalStateException("Lớp " + lop + " có bảng nháp đang soạn (" + banNhap.get().id()
+                + "), không do importer tạo: không ghi đè, không khóa bảng của v0");
         }
         int phienBan = dangDung.map(b -> b.version() + 1).orElse(1);
         Instant luc = clock.instant();
-        FormulaSheet nhap = sheets.findDraft(lop)
+        FormulaSheet nhap = banNhap
             .map(d -> new FormulaSheet(d.id(), lop, phienBan, SheetStatus.NHAP, GHI_CHU_BANG, null, null, null, d.createdAt(), dong))
             .orElseGet(() -> FormulaSheet.draft(lop, phienBan, GHI_CHU_BANG, dong, luc));
 
@@ -185,19 +221,25 @@ public class NhapTheoLop {
             Map<String, @Nullable Object> t2 = doiTuong(r.get("tang2"));
             UUID trich = null;
             List<UUID> them = new ArrayList<>();
+            boolean themHong = false;
             if (t2.get("trich_dan") != null) {
                 trich = doanThuocLop(chuNeuCo(doiTuong(t2.get("trich_dan")).get("doan")), doanCuaLop);
             }
             for (Map<String, @Nullable Object> x : danhSach(t2.get("trich_dan_them"))) {
                 UUID d = doanThuocLop(chuNeuCo(x.get("doan")), doanCuaLop);
-                if (d != null && !d.equals(trich) && !them.contains(d)) {
+                if (d == null) {
+                    themHong = true;
+                } else if (!d.equals(trich) && !them.contains(d)) {
                     them.add(d);
                 }
             }
             CheckStatus tang2 = trangThai(t2.get("trang_thai"));
-            if (tang2 == CheckStatus.DAT && trich == null) {
-                // Đạt mà không chỉ được về đoạn của lớp: không coi là đạt, dòng này chặn khóa (lock báo mã dòng).
+            if (tang2 == CheckStatus.DAT && (trich == null || themHong)) {
+                // Đạt mà có trích dẫn (chính hay thêm, cho mệnh đề khác của dòng định lí) không chỉ được về đoạn của lớp: không
+                // coi là đạt, dòng này chặn khóa (lock báo mã dòng).
                 tang2 = CheckStatus.KHONG_KIEM_DUOC;
+                trich = null;
+                them = List.of();
             }
             ketQua.put(f.code(), FormulaCheck.of(f, FormulaKind.valueOf(chu(r.get("loai"))), trangThai(t1.get("trang_thai")), tang2,
                 json(t1), json(t2), trich, them));

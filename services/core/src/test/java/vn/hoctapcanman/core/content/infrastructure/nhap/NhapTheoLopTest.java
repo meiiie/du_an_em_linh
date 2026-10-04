@@ -3,6 +3,11 @@ package vn.hoctapcanman.core.content.infrastructure.nhap;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -24,9 +29,12 @@ import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.event.ApplicationEvents;
 import org.springframework.test.context.event.RecordApplicationEvents;
 import org.testcontainers.junit.jupiter.Testcontainers;
+import tools.jackson.databind.json.JsonMapper;
 import vn.hoctapcanman.core.TestcontainersConfiguration;
 import vn.hoctapcanman.core.content.domain.event.BaiDaNhap;
 import vn.hoctapcanman.core.content.domain.event.BangCongThucDaKhoa;
+import vn.hoctapcanman.core.content.domain.model.Formula;
+import vn.hoctapcanman.core.content.domain.model.FormulaSheet;
 import vn.hoctapcanman.core.content.domain.model.ReleaseStatus;
 import vn.hoctapcanman.core.content.infrastructure.persistence.DocumentRepositoryAdapter;
 import vn.hoctapcanman.core.content.infrastructure.persistence.FormulaSheetRepositoryAdapter;
@@ -64,9 +72,32 @@ import vn.hoctapcanman.core.content.infrastructure.persistence.VerificationRunRe
 @RecordApplicationEvents
 class NhapTheoLopTest {
 
+    /** Bản sao tạm của data/ của repo: test sửa tài liệu nguồn giữa hai lần nhập mà không đụng repo. */
+    private static final Path DATA = saoDuLieu();
+
     @DynamicPropertySource
     static void nguon(DynamicPropertyRegistry r) {
-        r.add("app.content.source", () -> NhapNoiDungChungTest.thuMucData().toString());
+        r.add("app.content.source", DATA::toString);
+    }
+
+    private static Path saoDuLieu() {
+        try {
+            Path goc = NhapNoiDungChungTest.thuMucData();
+            Path tam = Files.createTempDirectory("noi-dung-");
+            try (var cay = Files.walk(goc)) {
+                for (Path p : cay.toList()) {
+                    Path dich = tam.resolve(goc.relativize(p).toString());
+                    if (Files.isDirectory(p)) {
+                        Files.createDirectories(dich);
+                    } else {
+                        Files.copy(p, dich);
+                    }
+                }
+            }
+            return tam;
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
     }
 
     @Autowired
@@ -97,6 +128,7 @@ class NhapTheoLopTest {
     void hen() {
         KiemGia.DONG_KHONG_DAT = null;
         KiemGia.TRICH_SAI = false;
+        KiemGia.TRICH_THEM_HONG = false;
     }
 
     @Test
@@ -162,6 +194,67 @@ class NhapTheoLopTest {
         jdbc.sql("set constraints all immediate").update();
     }
 
+    @Test
+    void trichDanThemKhongAnhXaDuocThiDongKhongDatVaKhongKhoa() {
+        // Codex #134 (P2): trích dẫn thêm (mệnh đề khác của dòng định lí) chỉ ra ngoài lớp thì dòng không đạt, không khóa.
+        NhapNoiDungChung.DaNhap da = chung.nhapGiuBai();
+        KiemGia.TRICH_THEM_HONG = true;
+        assertThatThrownBy(() -> theoLop.nhap(lop, da.bai())).isInstanceOf(IllegalStateException.class).hasMessageContaining("d-5");
+        assertThat(sheets.findCurrent(lop)).isEmpty();
+        assertThat(dem("select count(*) from verification_runs where class_id = ?")).isZero();
+    }
+
+    @Test
+    void lopCoBangNhapCuaGiaoVienThiKhongGhiDe() {
+        // Codex #134 (P2): bảng nháp giáo viên đang soạn không bị importer thay dòng rồi khóa.
+        FormulaSheet nhapGv = FormulaSheet.draft(lop, 1, "Bảng giáo viên đang soạn",
+            List.of(Formula.unchecked(1, "gv-1", null, "Dòng của giáo viên", "x", "Phát biểu của giáo viên.")), java.time.Instant.EPOCH);
+        sheets.save(nhapGv);
+        NhapNoiDungChung.DaNhap da = chung.nhapGiuBai();
+        assertThatThrownBy(() -> theoLop.nhap(lop, da.bai())).isInstanceOf(IllegalStateException.class).hasMessageContaining("bảng nháp");
+        assertThat(sheets.findDraft(lop)).contains(nhapGv);
+        assertThat(sheets.findCurrent(lop)).isEmpty();
+        assertThat(dem("select count(*) from verification_runs where class_id = ?")).isZero();
+    }
+
+    @Test
+    void taiLieuNguonDoiThiGiuBanCuLamCanCuKhoaLaiVaKiemLai() throws IOException {
+        // Codex #134 (P2): sửa tài liệu nguồn sau lần nhập đầu không sửa tại chỗ tài liệu đang là căn cứ (V5 từ chối);
+        // giữ bản cũ (đổi mã), nạp bản mới, khóa bảng phiên bản mới, kiểm lại mọi bài (data-model: nạp phiên bản mới và kiểm lại).
+        NhapNoiDungChung.DaNhap da = chung.nhapGiuBai();
+        NhapTheoLop.KetQua dau = theoLop.nhap(lop, da.bai());
+        UUID cu = jdbc.sql("select id from documents where class_id = ? and code = 'v0-don-dieu'").params(lop).query(UUID.class).single();
+        String vanBanCu = jdbc.sql("select text_content from documents where id = ?").params(cu).query(String.class).single();
+
+        Path tep = DATA.resolve("v0/tai-lieu.json");
+        byte[] goc = Files.readAllBytes(tep);
+        try {
+            JsonMapper json = JsonMapper.builder().build();
+            @SuppressWarnings("unchecked")
+            List<Map<String, Object>> taiLieu = json.readValue(goc, List.class);
+            taiLieu.stream().filter(d -> "v0-don-dieu".equals(d.get("ma"))).findFirst().orElseThrow()
+                .put("textContent", vanBanCu + " Câu bổ sung của phiên bản mới.");
+            Files.writeString(tep, json.writeValueAsString(taiLieu), StandardCharsets.UTF_8);
+
+            NhapTheoLop.KetQua lai = theoLop.nhap(lop, da.bai());
+            assertThat(lai.phienBanBang()).isEqualTo(2);
+            assertThat(lai.daKiem()).isEqualTo(16);
+            assertThat(lai.phatHanh()).isEqualTo(dau.phatHanh());
+        } finally {
+            Files.write(tep, goc);
+        }
+        // Bản cũ còn nguyên chữ, nhường mã; bản mới mang mã gốc và chữ mới.
+        assertThat(jdbc.sql("select code from documents where id = ?").params(cu).query(String.class).single())
+            .startsWith("v0-don-dieu.cu-");
+        assertThat(jdbc.sql("select text_content from documents where id = ?").params(cu).query(String.class).single()).isEqualTo(vanBanCu);
+        assertThat(jdbc.sql("select text_content from documents where class_id = ? and code = 'v0-don-dieu'").params(lop)
+            .query(String.class).single()).endsWith("Câu bổ sung của phiên bản mới.");
+        assertThat(dem("select count(*) from documents where class_id = ?")).isEqualTo(6);
+        assertThat(dem("select count(*) from verification_runs where class_id = ? and stale")).isEqualTo(16);
+        assertThat(suKien.stream(BangCongThucDaKhoa.class)).hasSize(2);
+        jdbc.sql("set constraints all immediate").update();
+    }
+
     private long dem(String sql) {
         return jdbc.sql(sql).params(lop).query(Long.class).single();
     }
@@ -176,6 +269,7 @@ class NhapTheoLopTest {
 
         static volatile @Nullable String DONG_KHONG_DAT;
         static volatile boolean TRICH_SAI;
+        static volatile boolean TRICH_THEM_HONG;
 
         @Bean
         KiemToan kiemToan() {
@@ -188,10 +282,16 @@ class NhapTheoLopTest {
                     List<Map<String, Object>> dong = new ArrayList<>();
                     for (Map<String, Object> d : (List<Map<String, Object>>) yeuCau.get("dong")) {
                         boolean dat = !d.get("id").equals(DONG_KHONG_DAT);
+                        Map<String, Object> tang2 = new LinkedHashMap<>();
+                        tang2.put("trang_thai", dat ? "DAT" : "KHONG_KIEM_DUOC");
+                        if (dat) {
+                            tang2.put("trich_dan", Map.of("tai_lieu", taiLieu.get("id"), "doan", doan.get("id"), "trich", doan.get("text")));
+                        }
+                        if (TRICH_THEM_HONG && "d-5".equals(d.get("id"))) {
+                            tang2.put("trich_dan_them", List.of(Map.of("tai_lieu", taiLieu.get("id"), "doan", UUID.randomUUID().toString(), "trich", "?")));
+                        }
                         dong.add(Map.of("id", d.get("id"), "loai", "DANG_THUC", "tang1", Map.of("trang_thai", "DAT", "muc_bang_chung", "CAS"),
-                            "tang2", dat
-                                ? Map.of("trang_thai", "DAT", "trich_dan", Map.of("tai_lieu", taiLieu.get("id"), "doan", doan.get("id"), "trich", doan.get("text")))
-                                : Map.of("trang_thai", "KHONG_KIEM_DUOC", "ly_do", "giả: không có đoạn")));
+                            "tang2", tang2));
                     }
                     return Map.of("dong", dong, "bo_qua", List.of());
                 }
