@@ -4,7 +4,7 @@
 | --- | --- |
 | Ngày | 2026-10-05 |
 | Người làm | Claude Code, lab Quyết định |
-| Trạng thái | Chủ repo giao quyền thiết kế (2026-10-05). Chờ chủ repo xác nhận ADR đi kèm: [015](../../docs/adr/015-mo-hinh-truong-lop-thpt.md) («Đề xuất») |
+| Trạng thái | Chủ repo giao quyền thiết kế (2026-10-05). Rà độc lập `privacy-reviewer`: 3 mục chặn, đã sửa ở ADR. Chờ chủ repo xác nhận ADR đi kèm: [015](../../docs/adr/015-mo-hinh-truong-lop-thpt.md) («Đề xuất») |
 | Liên quan | `docs/product/MUC-TIEU.md` (Q1, Q4), ADR 006 (dữ liệu tổng hợp), ADR 011 (v2), ADR 012 (quyền riêng tư, «Đề xuất»), #81 (classroom), T058 |
 
 ## 1. Câu hỏi quyết định
@@ -32,17 +32,17 @@ Từ 2026-10-05, MathL+ là sản phẩm thật cho học sinh THPT lớp 10–1
 | Lời mời email: token ngẫu nhiên lưu băm, dùng một lần, hạn 1–30 ngày | `OrganizationInvite.createEmailInvite`, `AcceptInviteUseCase` | Mời giáo viên vào trường |
 | Vai trò `ADMIN`, `ORG_ADMIN`, `TEACHER`, `STUDENT` | `identity/domain/model/Role.java` | Đã có tương đương (`SCHOOL_ADMIN`) |
 | Năm học, học kỳ (`academicYear`, `termNumber`) | `academic/domain/model/AcademicTerm.java` | Năm học của trường |
-| Thành viên lớp có `ACTIVE`/`INACTIVE`, `joinedAt`, `leftAt` | `academic/domain/model/AcademicClassGroupMembership.java` | Ghi danh có lịch sử, không xóa |
+| Thành viên lớp có `ACTIVE`/`INACTIVE`, `joinedAt`, `leftAt` | `academic/domain/model/AcademicClassGroupMembership.java` | Ghi danh có lịch sử: không xóa khi rời lớp; xóa hay giả danh hóa khi hết hạn lưu hoặc có yêu cầu xóa (ADR 012) |
 | Lớp `OPEN`/`CLOSED`/`ARCHIVED`/`CANCELLED`, `maxStudents` | `learning_delivery/domain/model/LearningClass.java` | Trạng thái lớp, sĩ số tối đa |
 | Giáo viên chính và đồng giảng dạy; không gỡ được giáo viên chính | `learning_delivery/application/usecase/ManageClassTeachersUseCase.java` | Lớp có nhiều giáo viên |
-| Thêm học sinh theo email, báo lỗi chung để không lộ email nào có tài khoản (OWASP) | `EnrollStudentByEmailUseCase.java` | Thêm học sinh đã có tài khoản |
+| Thêm học sinh theo email đã có tài khoản. **Không dùng nguyên:** mã LMS trả ba kết quả khác nhau (`STUDENT_NOT_FOUND`, `ALREADY_ENROLLED`, thành công) nên dò được email nào có tài khoản, ghi email rõ vào log, không kiểm cùng tổ chức (rà `privacy-reviewer`) | `learning_delivery/application/usecase/EnrollStudentByEmailUseCase.java` | Đổi thành lời mời học sinh tự chấp nhận, một thông điệp chung (ADR 015 mục 6) |
 | Nhập danh sách Excel: xem trước, đối soát, báo lỗi từng dòng | `fe/.../class-students/add-student-drawer` | Nhập danh sách lớp |
 
 Mô hình học thuật của LMS theo kiểu đại học: khoa, chương trình, khóa, lớp hành chính và lớp học phần (`academic`, `learning_delivery`). Với THPT thì thừa.
 
 **Quy định THPT Việt Nam:**
 - Mỗi lớp THPT không quá 45 học sinh. Tỉnh quy định cụ thể theo hướng giảm sĩ số (Thông tư 32/2020/TT-BGDĐT, Điều lệ trường THCS, THPT, hiệu lực 01/11/2020; [văn bản](https://tulieuvankien.dangcongsan.vn/he-thong-van-ban/van-ban-quy-pham-phap-luat/thong-tu-so-322020tt-bgddt-ngay-1592020-cua-bo-giao-duc-va-dao-tao-ban-hanh-dieu-le-truong-trung-hoc-co-so-truong-trung-hoc-6829), truy cập 2026-10-05).
-- Luật BVDLCN 91/2025/QH15 (hiệu lực 01/01/2026): xử lý dữ liệu của trẻ em cần đồng ý của người đại diện theo pháp luật; trẻ từ đủ 7 tuổi đồng ý thêm trong một số trường hợp ([Bộ Công an](https://mps.gov.vn/chinh-sach-phap-luat/bai-viet/bao-ve-du-lieu-ca-nhan-trong-mot-so-hoat-dong-1754989261), [LSVN](https://lsvn.vn/bao-ve-du-lieu-ca-nhan-cua-tre-em-theo-luat-bao-ve-du-lieu-ca-nhan-nam-2025-khoang-trong-phap-ly-va-kien-nghi-hoan-thien-a176510.html), truy cập 2026-10-05; độ tin trung bình, chưa đọc nguyên văn điều luật). Học sinh lớp 10 và một phần lớp 11 dưới 16 tuổi. Cách xin đồng ý thuộc ADR 012, đang chờ luật sư.
+- Luật BVDLCN 91/2025/QH15 (hiệu lực 01/01/2026): xử lý dữ liệu của trẻ em cần đồng ý của người đại diện theo pháp luật; trẻ từ đủ 7 tuổi đồng ý thêm trong một số trường hợp ([Bộ Công an](https://mps.gov.vn/chinh-sach-phap-luat/bai-viet/bao-ve-du-lieu-ca-nhan-trong-mot-so-hoat-dong-1754989261), [LSVN](https://lsvn.vn/bao-ve-du-lieu-ca-nhan-cua-tre-em-theo-luat-bao-ve-du-lieu-ca-nhan-nam-2025-khoang-trong-phap-ly-va-kien-nghi-hoan-thien-a176510.html), truy cập 2026-10-05; độ tin trung bình, chưa đọc nguyên văn điều luật). ADR 012 («Đề xuất») đặt ngưỡng chặt hơn: đồng ý của cả phụ huynh và học sinh cho **mọi học sinh dưới 18 tuổi**, tức gần như toàn bộ học sinh THPT. Cách xin đồng ý thuộc ADR 012, đang chờ luật sư.
 
 ## 3. Tiêu chí loại
 
@@ -115,7 +115,7 @@ Tổng = Σ (trọng số × điểm) / 5. C đứng đầu ở mọi phân bổ
 2. **Mã lớp:** học sinh đã có tài khoản trong trường nhập mã để vào lớp.
 3. **Theo email:** học sinh đã có tài khoản. Báo lỗi chung như LMS, không cho dò email nào có tài khoản.
 
-Học sinh **tự đăng ký** tài khoản bằng mã lớp thì tắt mặc định cho tới khi ADR 012 có cách xin đồng ý của cha mẹ cho học sinh dưới 16 tuổi. Nhà trường tạo tài khoản qua danh sách (cách 1) theo thỏa thuận xử lý dữ liệu với đối tác.
+**Không có đường tự đăng ký** tài khoản học sinh; muốn mở (B2C) phải có ADR mới. Mọi đường thêm học sinh chỉ dùng cho trường thật sau khi ADR 012 được chấp nhận và có thỏa thuận xử lý dữ liệu, hồ sơ đánh giá tác động. Trước đó chỉ có trường `synthetic`. Chi tiết an toàn của từng cách (tên đăng nhập, mật khẩu tạm, mã lớp, lời mời, cột được nhận khi nhập danh sách) ở ADR 015 mục 6–8.
 
 **Năm học mới:** lớp năm cũ chuyển `ARCHIVED`, chỉ đọc. Giáo viên tạo lớp năm mới và ghi danh lại, có lối tắt «lên lớp» chép danh sách từ lớp cũ. Bỏ chỉ mục «một học sinh một lớp»: một học sinh có thể ở nhiều lớp (lớp chính khóa, nhóm bồi dưỡng), mọi dữ liệu học vẫn tính theo lớp.
 
@@ -139,8 +139,10 @@ Học sinh **tự đăng ký** tài khoản bằng mã lớp thì tắt mặc đ
 | Rủi ro | Giảm thiểu |
 | --- | --- |
 | Chuyển dữ liệu P2 (lớp «12A1 thử», ràng buộc toàn hệ thống) | Migration mới: thêm trường mặc định cho lớp cũ, đổi ràng buộc duy nhất sang theo trường; giữ nguyên dữ liệu |
-| Mật khẩu tạm bị lộ qua phiếu in | Phải đổi khi đăng nhập lần đầu; giáo viên đặt lại được; hết hạn sau 14 ngày nếu chưa dùng |
-| Đồng ý của cha mẹ cho học sinh dưới 16 tuổi | Tắt tự đăng ký; ADR 012; lưu năm sinh để biết ai dưới 16 |
+| Mật khẩu tạm bị lộ qua phiếu in | Mỗi em một mật khẩu ngẫu nhiên, chỉ hiện một lần; phiên mật khẩu tạm chỉ đổi được mật khẩu; hết hạn sau 14 ngày; chỉ giáo viên chính hay quản trị trường đặt lại, có nhật ký |
+| Quản trị trường đọc mọi dữ liệu học | Mặc định chỉ số liệu tổng hợp; xem nội dung một học sinh phải nhập lý do, có nhật ký (ADR 015 mục 5) |
+| Cổng quyền suy ra «lớp duy nhất» (`lopHoc`) sai từ năm học thứ hai | Đổi hợp đồng cổng sang id lớp tường minh, chỉ ghi danh `ACTIVE` cùng trường; test IDOR (ADR 015 Hệ quả) |
+| Đồng ý của phụ huynh và học sinh (ADR 012: dưới 18 tuổi) | Học sinh thật chỉ vào sau ADR 012; trạng thái đồng ý theo mục đích chặn ghi dữ liệu học và gọi nhà AI; không có tự đăng ký |
 | Phạm vi nội dung ba khối rất lớn | Danh mục đủ ba khối trước, bài theo thứ tự ở quyết định con 1 |
 
 ## 10. Điều làm quyết định này sai
