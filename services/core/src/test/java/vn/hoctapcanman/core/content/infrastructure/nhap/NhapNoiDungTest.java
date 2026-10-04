@@ -149,6 +149,7 @@ class NhapNoiDungTest {
             assertThat(tangV2).as("các tầng của %s", ma).isEqualTo(tangV0);
         }
         assertThat(PhatLai.chuaDung()).as("mọi bản ghi của tệp vàng được dùng đúng một lần").isEmpty();
+        assertThat(PhatLai.soLanKhoaBang()).as("lần nhập đầu khóa bảng một lần").isOne();
 
         // Lần nhập thứ hai dựng lại bài (solve, generate như lần đầu) nhưng không kiểm lại bài nào: còn nguyên 17 bản ghi verify.
         PhatLai.napLai();
@@ -157,6 +158,8 @@ class NhapNoiDungTest {
         Map<String, Integer> conLai = PhatLai.chuaDung();
         assertThat(conLai.keySet()).as("lần nhập thứ hai chỉ gọi lại solve, generate").allMatch(k -> k.startsWith("verify "));
         assertThat(conLai.values().stream().mapToInt(Integer::intValue).sum()).isEqualTo(v0.size());
+        // Codex #135 (P2): bảng đang dùng vẫn đúng kho, nên lần nhập thứ hai không gọi lại job khóa bảng.
+        assertThat(PhatLai.soLanKhoaBang()).as("lần nhập thứ hai không khóa lại bảng").isZero();
         assertThat(lai.phatHanh()).isEqualTo(kq.phatHanh());
         jdbc.sql("set constraints all immediate").update();
     }
@@ -248,10 +251,22 @@ class NhapNoiDungTest {
             }
         }
 
-        /** Bắt đầu một lượt nhập: mọi bản ghi của tệp vàng lại dùng được, mỗi bản một lần. */
+        /** Số lần gọi job khóa bảng ở lượt nhập hiện tại. */
+        private static int khoaBang;
+
+        /** Bắt đầu một lượt nhập: mọi bản ghi của tệp vàng lại dùng được, mỗi bản một lần; đếm lại số lần khóa bảng. */
         static synchronized void napLai() {
+            khoaBang = 0;
             CON.clear();
             BANG.forEach((k, v) -> CON.put(k, new ArrayDeque<>(v)));
+        }
+
+        static synchronized int soLanKhoaBang() {
+            return khoaBang;
+        }
+
+        static synchronized void demKhoaBang() {
+            khoaBang++;
         }
 
         /** Khóa còn bản ghi chưa dùng ở lượt hiện tại, kèm số bản còn lại. */
@@ -386,6 +401,7 @@ class NhapNoiDungTest {
                 @Override
                 @SuppressWarnings("unchecked")
                 public Map<String, @Nullable Object> kiemDongCongThuc(Map<String, ?> yeuCau) {
+                    demKhoaBang();
                     soYeuCauKhoaBang(yeuCau);
                     Map<String, Object> taiLieu = ((List<Map<String, Object>>) yeuCau.get("tai_lieu")).getFirst();
                     Map<String, Object> doan = ((List<Map<String, Object>>) taiLieu.get("doan")).getFirst();
