@@ -10,6 +10,11 @@ services/core/.vscode/
 services/core/*.iml
 services/core/AGENTS.md
 services/core/CLAUDE.md
+# Tệp này thay hẳn .dockerignore ở gốc (Docker ưu tiên <Dockerfile>.dockerignore), nên lặp lại mọi luật chặn khóa của nó:
+# không bao giờ đưa khóa hay biến môi trường cục bộ vào ngữ cảnh, kể cả khi nằm lạc trong thư mục được cho phép.
 **/.env
 **/.env.*
+**/zaiapikey.txt
 **/secrets
+**/*.pem
+**/*.key
