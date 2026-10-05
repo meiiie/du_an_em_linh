@@ -1,4 +1,6 @@
-# Hệ thống thiết kế — Phiếu làm bài
+# Hệ thống thiết kế — Phòng Wiii, bảng phấn 3b1b
+
+**Hướng từ 2026-10-06 (chủ repo):** giao diện v2 (`apps/frontend`, Angular) theo kiểu ứng dụng Wiii của chủ repo, pha toán học kiểu 3Blue1Brown. Khung ứng dụng ấm như Wiii (sáng mặc định, tối theo máy hoặc nút đổi); mọi vùng toán (công thức lớn, bảng xét dấu, đồ thị) là tấm bảng tối kiểu 3b1b ở cả hai chế độ. Nghiên cứu, ảnh mô phỏng và lý do: `labs/design/studies/2026-10-06-wiii-3b1b.md`. Cấu trúc trang (phiếu, hàng việc, mục lục năm bước, quy tắc chữ) giữ như dưới; màu, chữ, bán kính, bóng đổi theo hướng mới. v0 (`apps/web`) đóng băng, giữ giao diện cũ.
 
 Không dùng kit Figma EduPlus / Eduva / EduTracker / EduFlow (Poppins, thẻ KPI, gradient). Đó chính là slop. Nghiên cứu **sản phẩm đang chạy**, lấy cấu trúc chứ không lấy thương hiệu.
 
@@ -10,45 +12,62 @@ Không dùng kit Figma EduPlus / Eduva / EduTracker / EduFlow (Poppins, thẻ KP
 | [Brilliant solvables](https://www.paigeormiston.com/brilliant) | Một luồng bước; sai = banner ngay dưới bài; một CTA | Pear / CoFo / logo |
 | [Canvas InstUI](https://instructure.design/) | Ray điều hướng đặc, việc là danh sách/bảng | Electric brand, widget KPI |
 | [Google Classroom](https://support.google.com/chrome/a/answer/15210733) | Hàng việc 2 dòng (tên + meta), không lưới thẻ khóa học | Material purple |
-| Linear / Stripe Dashboard | CTA mực, kẻ 1 px, không bóng mềm dưới mọi thẻ | — |
+| Linear / Stripe Dashboard | Kẻ 1 px, không bóng mềm dưới mọi thẻ | — |
+| Wiii desktop (`github.com/meiiie/wiii`, `wiii-desktop/src/styles/globals.css`, commit `6b1c30b`) | Bảng màu ấm sáng / tối theo biến CSS, đất nung cho hành động, bóng ba mức rất nhẹ, easing `cubic-bezier(0.165, 0.85, 0.45, 1)`, thanh bên 260 px, vệt màu mờ ở góc nền; thẻ thương hiệu: lưới mờ trên nền than, nhãn chữ hoa giãn chữ màu xanh nhạt | Mascot Neko, logo, chữ «Wiii» |
+| 3Blue1Brown / Manim (bảng màu trong skill stencil `pptx-math-3b1b/scripts/style.py`, commit `8f5c5a2`) | Nền bảng `#1C1C1C`, màu nhấn BLUE `#58C4DD`, TEAL `#5CD0B3`, YELLOW_D `#F4D345`, RED `#FC6255`, GOLD `#F0AC5F`, GREEN `#83C167`; nét cong dày bo tròn; công thức serif Computer Modern (KaTeX) | Video, nhân vật Pi |
+| Desmos | Đồ thị là đối tượng chính, lưới mờ, điểm đặc biệt có chấm và nhãn | Màu, logo |
 
-Coursera `#0056D2`, IBM `#0F62FE`, Khan blue, Canvas electric: không chép.
+Coursera `#0056D2`, IBM `#0F62FE`, Khan blue, Canvas electric: không chép. Từ 2026-10-06, nền kem và đất nung của Wiii được dùng theo chỉ đạo của chủ repo (thay dòng cấm «cream + Literata + terracotta» cũ); Literata vẫn không dùng.
 
 ## Brief
 
-Sản phẩm là **một trang toán**: công thức là điểm nhìn, năm bước là mục lục, gia sư chỉ mở khi được hỏi. Chữ giao diện tiết chế; biểu thức mang sự biểu đạt. Không landing phần mềm (khẩu hiệu lớn, khung trình duyệt, ba thẻ tính năng).
+Sản phẩm là **một trang toán**: công thức là điểm nhìn, năm bước là mục lục, gia sư chỉ mở khi được hỏi. Công thức, bảng xét dấu và đồ thị nằm trên tấm bảng tối kiểu 3b1b, nên toán nổi lên khỏi khung ấm. Chữ giao diện tiết chế; biểu thức mang sự biểu đạt. Không landing phần mềm (khẩu hiệu lớn, khung trình duyệt, ba thẻ tính năng).
 
 ## Token
 
-| Tên | Hex | Việc |
-| --- | --- | --- |
-| `ink` / `board` | `#17181C` | Chữ, ray, CTA |
-| `canvas` / `paper` | `#FFFFFF` | Trang — không nền xanh xám |
-| `wash` | `#F6F6F7` | Hàng xen, ô nhập |
-| `muted` | `#5C5F66` | Chữ phụ |
-| `line` | `#E2E3E6` | Kẻ |
-| `chalk` | `#F4F4F5` | Chữ trên ray |
-| `mark` / `danger` | `#C81E1E` | Bút đỏ chấm — **một** màu nhớ |
-| `pass` / `teal` | `#1B7A4B` | Đạt / duyệt |
-| `wait` / `warn` | `#9A6700` | Chờ |
-| `primary` | `#17181C` | Bí danh ink — hết xanh học thuật |
+Chữ đạt ≥ 4,5 : 1, thành phần giao diện ≥ 3 : 1, đo bằng script trên màu đã vẽ (số đo trong PR áp token). Chế độ tối: `prefers-color-scheme: dark`, hay `data-theme` trên `<html>` khi người dùng bấm nút đổi (nhớ trong `localStorage`).
+
+| Tên | Sáng | Tối | Việc |
+| --- | --- | --- | --- |
+| `canvas` | `#FAF9F5` | `#1E1D1B` | Nền trang (Wiii `--surface`) |
+| `wash` | `#F0EEE6` | `#282724` | Thanh bên, khối phụ, ô nhập |
+| `raise` | `#FFFFFF` | `#353330` | Thẻ nổi, ngăn kéo |
+| `line` | `#D8D5CD` | `#3A3935` | Kẻ 1 px |
+| `ink` | `#141413` | `#E8E8E4` | Chữ chính |
+| `ink-2` | `#3D3D3A` | `#C9C8C2` | Chữ phụ đậm |
+| `muted` | `#5F5E58` | `#A8A7A2` | Chữ phụ (Wiii `--text-tertiary` chỉnh đậm cho AA) |
+| `accent` | `#C75B39` | `#C75B39` | Vạch mục đang chọn, viền focus, dấu «+» của chữ hiệu (sáng) |
+| `action` | `#AE5630` | `#AE5630` | Nền nút chính, chữ trắng (`#C75B39` với chữ trắng chỉ ≈ 4,2 : 1) |
+| `label` | `#2C6FB0` | `#58C4DD` | Nhãn khu vực chữ hoa nhỏ giãn chữ |
+| `pass` | `#1A7A45` | `#5CD0B3` | Đạt |
+| `mark` | `#B83B2E` | `#FC6255` | Bút đỏ: sai — vẫn **một** màu nhớ |
+| `wait` | `#8A5A00` | `#F0AC5F` | Chờ |
+| `board` | `#1C1C1C` | `#161615` | Tấm bảng toán (luôn tối) |
+| `board-line` | `#3A3A3A` | `#34332F` | Kẻ trên bảng |
+| `board-ink` | `#F2EFE6` | `#F2EFE6` | Chữ và công thức trên bảng |
+| `m-blue` / `m-teal` / `m-yellow` / `m-red` / `m-gold` / `m-green` | `#58C4DD` / `#5CD0B3` / `#F4D345` / `#FC6255` / `#F0AC5F` / `#83C167` | như sáng | Màu Manim, **chỉ** trên bảng: đường cong xanh, điểm đặc biệt vàng, dấu dương ngọc, dấu âm đỏ |
+
+Giá trị cuối cùng là giá trị trong `apps/frontend/src/styles.css` sau khi đo tương phản; bảng này ghi họ màu và việc.
 
 ## Chữ
 
-- **IBM Plex Sans** (`latin` + `latin-ext` + `vietnamese`, 400/500/600/700). Carbon / InstUI-adjacent, có tiếng Việt, không phải Inter / Source Sans / Poppins.
-- **IBM Plex Mono** cho mã bài và số thành thạo.
+- Giao diện: chồng phông hệ thống như Wiii — `system-ui, -apple-system, "Segoe UI", "Noto Sans", sans-serif`. Chạy offline, không tải phông, tiếng Việt đủ dấu trên Windows, macOS, Android, iOS. Bỏ IBM Plex.
+- Công thức: KaTeX (họ Computer Modern, đúng chất 3b1b). Mã bài và số: `ui-monospace, "Cascadia Mono", Consolas, monospace`.
+- Chữ hiệu «MathL+»: đậm 800, giãn −0,02 em; dấu «+» màu `accent` (sáng) hay `m-blue` (tối).
+- Heading trang 28/36, đậm 700. Nhãn khu vực: 12 px, chữ hoa, giãn 0,14 em, màu `label`.
 
 ## Bố cục
 
 ```
 +--------+--------------------------------+
-| RAY    | trang trắng                    |
-| 220px  | phiếu / danh sách / bảng       |
-| mực    |                                |
+| THANH  | trang `canvas`                 |
+| BÊN    | phiếu / danh sách / bảng       |
+| 260px  | toán trên tấm `board`          |
+| `wash` |                                |
 +--------+--------------------------------+
 ```
 
-Desktop: không top bar. Điện thoại: top bar + ngăn kéo mực. Skip `#noi-dung`.
+Desktop: không top bar. Điện thoại: top bar + ngăn kéo (`raise`, bóng `lg`). Mục đang chọn: nền nhạt theo `accent` và vạch trái 3 px `accent`. Nền trang có vệt màu mờ ở góc như Wiii; chế độ tối thêm lưới mờ 32 px như thẻ thương hiệu Wiii. Bóng ba mức của Wiii chỉ cho thẻ nổi và ngăn kéo, không đặt dưới mọi thẻ. Skip `#noi-dung`.
 
 Thẻ không còn là đơn vị mặc định. Việc = hàng (Classroom). Bài đang làm = một phiếu (Brilliant). Thành thạo = hàng ô (Khan).
 
@@ -58,8 +77,8 @@ Không dashboard thẻ. Phiếu là bài kế: thân đề, công thức lớn, 
 
 ```
 +--------+---------------------------+------------------+
-| RAY    | Chào An                   | 12A1 thử         |
-| 220    | Đơn điệu và cực trị       |                  |
+| THANH  | Chào An                   | 12A1 thử         |
+| BÊN 260| Đơn điệu và cực trị       |                  |
 |        +---------------------------+------------------+
 |        | PHIẾU                     | SỔ (tab gạch)    |
 |        | đề                        | Kỹ năng | Bài tập |
@@ -99,7 +118,7 @@ Một lưới **8 px** — cùng hệ Apple HIG, Material 3, IBM Carbon. Bậc: 
 
 ## Giải phẫu nút
 
-Không lấy viên thuốc Material Expressive. Giữ phiếu: chữ nhật, bán kính **6 px**.
+Không lấy viên thuốc Material Expressive. Chữ nhật bo nhẹ như Wiii: bán kính **8 px** cho nút, **12 px** cho thẻ.
 
 | Trục | Giá trị | Nguồn |
 | --- | --- | --- |
@@ -116,7 +135,7 @@ Thanh công cụ điện thoại 48 px (`h-12`) — Material touch 48 dp, cao h�
 
 ## Thành phần
 
-- Nút primary = mực đặc, bán kính 6 px, giải phẫu trên.
+- Nút primary = nền `action` (đất nung), chữ trắng, bán kính 8 px, giải phẫu trên. Nút phụ: nền `raise`, viền `line`.
 - Bước 5 bước = mục lục tên + số mono, vạch 2 px ở bước hiện tại. Mỗi hàng `min-h-11`. Không chip viên thuốc, không nền mực cả hàng.
 - Sai = vạch `mark` trên mục và dòng phản hồi ngay dưới chỗ viết. Ô sai trong bảng vẫn `cell-bad`.
 - Composer gia sư: chỉ khi bấm `Cần gợi ý?`. Dưới `lg` là tờ full màn; `lg+` là tờ phải 24 rem, có Đóng. Không chiếm cột khi đóng. Thanh đáy điện thoại: **Kiểm tra + Cần gợi ý?** Chip «Sai chỗ nào?» (gửi vẫn «Em sai chỗ nào?»). `visualViewport` khi bàn phím, composer đáy, Đóng 44. `textarea` tối thiểu 44, nút Gửi **luôn** 44×44, Enter gửi / Shift+Enter dòng / Escape Dừng hoặc đóng tờ. Ô vẫn gõ được lúc đang nghĩ. Cuộn theo đáy (Open WebUI); kéo lên thì giữ chỗ, có «Xuống». Lỗi: «Hỏi lại» đổ câu vào ô — không tự gửi. SSE `trang_thai` kho/gọi/lọc rồi `xong` — **không** xả token. Chờ = 3 ô CSS (bước đang làm nhịp, scale 0,85↔1) + chữ `Đang nghĩ…` / `Đang mở công thức…` / `Đang hỏi gia sư…` / `Đang kiểm lời…`. Câu mới và dòng chấm vào bằng `phieu-vao` (180 ms, 6 px); tờ dưới `lg` dùng `to-len` (200 ms, 16 px). Không khối SVG trang trí, không bong bóng gradient, không gọi lại model khi SSE lỗi. Hình trang chủ là đồ thị của hàm minh họa, không phải họa tiết.
@@ -147,7 +166,7 @@ Nguồn: optical center ~46% từ đỉnh (bố cục in / biển hiệu); cân 
 
 ## A11y
 
-Skip link, `:focus-visible` mực, `prefers-reduced-motion`, `aria-live` khi chấm. Giữ `data-testid`. `touch-action: manipulation`.
+Skip link, `:focus-visible` viền 2 px màu `accent`, `prefers-reduced-motion`, `aria-live` khi chấm. Giữ `data-testid`. `touch-action: manipulation`.
 
 ## Nguồn khoảng cách (không chép thương hiệu)
 
