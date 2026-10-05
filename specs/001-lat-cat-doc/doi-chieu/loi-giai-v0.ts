@@ -9,7 +9,14 @@ import { loiGiaiHocSinh } from '../../../apps/web/lib/loi-giai.ts';
 
 const GOC = path.resolve(import.meta.dirname, '..', '..', '..');
 const TEP = 'apps/web/lib/loi-giai.ts';
-const blob = execFileSync('git', ['hash-object', TEP], { cwd: GOC }).toString().trim();
+const SCRIPT = 'specs/001-lat-cat-doc/doi-chieu/loi-giai-v0.ts';
+const blobCua = (tep: string) => execFileSync('git', ['hash-object', tep], { cwd: GOC }).toString().trim();
+// TepVangDoiChieuTest của core so hai blob này với checkout: đổi nguồn hay script mà không sinh lại tệp vàng thì đỏ.
+for (const tep of [TEP, SCRIPT]) {
+  if (execFileSync('git', ['status', '--porcelain', '--', tep], { cwd: GOC }).toString().trim()) {
+    throw new Error(`Dừng: ${tep} có thay đổi chưa commit`);
+  }
+}
 
 // Ca đầu có dạng máy giải dựng (services/math/app/machine.py, «bai_lam»); các ca sau là các nhánh của loiGiaiHocSinh.
 const ca: { ten: string; baiLam: unknown; finalAnswer: string | null }[] = [
@@ -35,7 +42,7 @@ const ca: { ten: string; baiLam: unknown; finalAnswer: string | null }[] = [
 
 const ra = path.join(GOC, 'services/core/src/test/resources/content/loi-giai-v0.json');
 const tep = {
-  nguon: { tep: TEP, blob, sinh_boi: 'specs/001-lat-cat-doc/doi-chieu/loi-giai-v0.ts; không sửa tay' },
+  nguon: { tep: TEP, blob: blobCua(TEP), script: blobCua(SCRIPT) },
   ca: ca.map((c) => ({ ...c, loiGiai: loiGiaiHocSinh(c.baiLam, c.finalAnswer) })),
 };
 writeFileSync(ra, JSON.stringify(tep, null, 2) + '\n', 'utf8');
