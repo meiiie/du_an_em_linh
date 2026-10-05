@@ -12,7 +12,7 @@ import { BieuTuong } from './bieu-tuong';
   template: `
     <button
       type="button"
-      class="nut"
+      class="nut-icon"
       data-testid="doi-giao-dien"
       aria-label="Giao diện tối"
       title="Giao diện tối"
@@ -27,30 +27,16 @@ import { BieuTuong } from './bieu-tuong';
       display: inline-flex;
     }
 
-    .nut {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      inline-size: var(--target);
-      block-size: var(--target);
-      padding: 0;
+    /* Nổi như ô vuông có viền của ảnh mô phỏng A / B, khác nút menu trong suốt. */
+    .nut-icon {
       border: 1px solid var(--line);
       border-radius: 10px;
       background: var(--raise);
       box-shadow: var(--shadow-sm);
-      color: var(--ink-2);
-      cursor: pointer;
-      transition: background-color 150ms var(--ease);
     }
 
-    .nut:hover {
+    .nut-icon:hover {
       background: var(--wash);
-      color: var(--ink);
-    }
-
-    app-bieu-tuong {
-      inline-size: 20px;
-      block-size: 20px;
     }
   `,
 })

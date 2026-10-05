@@ -215,6 +215,38 @@ body {
   background: var(--wash);
 }
 
+/* Nút chỉ có biểu tượng (menu, đóng, đổi giao diện): vuông bằng mục tiêu chạm 44, hình 20, luôn có `aria-label`. */
+.nut-icon {
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  inline-size: var(--target);
+  block-size: var(--target);
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius);
+  background: none;
+  color: var(--ink-2);
+  cursor: pointer;
+  transition: background-color 150ms var(--ease);
+}
+
+.nut-icon:hover {
+  background: color-mix(in srgb, var(--ink) 6%, transparent);
+  color: var(--ink);
+}
+
+/* Nút này hay nằm sát mép (thanh trên 48 px, mép ngăn kéo): vòng tiêu điểm vẽ vào trong, không bị cắt. */
+.nut-icon:focus-visible {
+  outline-offset: -2px;
+}
+
+.nut-icon app-bieu-tuong {
+  inline-size: 20px;
+  block-size: 20px;
+}
+
 @media (pointer: coarse) {
   .btn {
     min-height: var(--target);

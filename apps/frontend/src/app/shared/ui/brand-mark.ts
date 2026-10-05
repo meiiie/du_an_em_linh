@@ -1,51 +1,38 @@
-import { booleanAttribute, Component, input } from '@angular/core';
+import { Component, input } from '@angular/core';
+import { TEN_SAN_PHAM } from '../../core/san-pham';
 
-/** Dấu sản phẩm: đồ thị hàm trên nền mực (port từ apps/web/components/brand-mark.tsx); `dao` cho nền tối (ray mực). */
+/**
+ * Chữ hiệu «MathL+»: đậm 800, giãn −0,02 em; dấu «+» mang `--brand-plus` (đất nung khi sáng, xanh Manim khi tối).
+ * Trình đọc màn hình đọc tên liền một khối, không tách «+» thành phần tử riêng.
+ */
 @Component({
   selector: 'app-brand-mark',
-  host: { 'aria-hidden': 'true', '[attr.data-co]': 'size()', '[attr.data-dao]': "dao() ? '' : null" },
-  template: `
-    <svg viewBox="0 0 32 32" fill="none" aria-hidden="true">
-      <path
-        d="M4 20C7 20 8 8 11.5 8s3.7 14 7 14 3.5-8 6.5-12"
-        stroke="currentColor"
-        stroke-width="2.2"
-        stroke-linecap="round"
-        stroke-linejoin="round"
-      />
-      <path d="M4 25h20" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" opacity="0.4" />
-    </svg>
-  `,
+  host: { '[attr.data-co]': 'size()' },
+  template: `<span aria-hidden="true">{{ than }}<span class="cong">{{ dau }}</span></span><span class="sr-only">{{ ten }}</span>`,
   styles: `
     :host {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      border-radius: var(--radius);
-      background: var(--ink);
-      color: var(--canvas);
-      inline-size: 32px;
-      block-size: 32px;
-    }
-    :host([data-dao]) {
-      background: var(--canvas);
+      display: inline-block;
       color: var(--ink);
+      font-size: 20px;
+      font-weight: 800;
+      line-height: 1;
+      letter-spacing: -0.02em;
+      white-space: nowrap;
     }
     :host([data-co='md']) {
-      inline-size: 40px;
-      block-size: 40px;
+      font-size: 30px;
     }
     :host([data-co='lg']) {
-      inline-size: 64px;
-      block-size: 64px;
+      font-size: 44px;
     }
-    svg {
-      inline-size: 50%;
-      block-size: 50%;
+    .cong {
+      color: var(--brand-plus);
     }
   `,
 })
 export class BrandMark {
   readonly size = input<'sm' | 'md' | 'lg'>('sm');
-  readonly dao = input(false, { transform: booleanAttribute });
+  protected readonly ten = TEN_SAN_PHAM;
+  protected readonly than = TEN_SAN_PHAM.slice(0, -1);
+  protected readonly dau = TEN_SAN_PHAM.slice(-1);
 }
