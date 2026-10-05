@@ -7,12 +7,17 @@ Ngày: 2026-10-06. Nhánh `feat/frontend-wiii-3b1b`. Nghiên cứu và lựa ch�
 - Bản dựng production (`ng build`) phục vụ tĩnh trên `localhost`, API giả (`/api/auth/refresh` trả phiên học sinh hay giáo viên, chưa đăng nhập thì 401), Chromium của Playwright 1.63.
 - 5 trạng thái × 2 khổ (1280 × 800, 390 × 844) × 2 chế độ (sáng, tối), cộng ngăn kéo mở trên điện thoại.
 - Tương phản: script ẩn mọi chữ, chụp nền thật dưới từng chữ, so màu chữ với điểm ảnh phía sau (352 phần tử). Thêm một cặp đối chứng phải trượt (`--line` trên `canvas`, 1,39 : 1) để chắc script bắt được lỗi.
+- Vòng focus: Tab tới từng điều khiển, lấy điểm ảnh của vòng và của nền hai bên (script của lượt kiểm độc lập, chạy lại trên bản sửa).
+- Lần vẽ đầu: CSS trả chậm 2 giây, chụp điểm ảnh nền ở 700 ms, ba tổ hợp máy / lựa chọn đã lưu.
 
 ## Kết quả
 
 - Không tràn ngang, CLS = 0, chế độ đúng ở mọi trạng thái; lỗi console duy nhất là 401 cố ý của lần làm mới phiên khi chưa đăng nhập.
 - Mọi chữ ≥ 4,5 : 1 (chữ lớn ≥ 3 : 1), trừ nút «Tiếp tục» khi bị vô hiệu (WCAG 1.4.3 miễn).
-- Cặp khóa (sáng / tối): chữ trên nền 17,50 / 13,71; chữ phụ trên nền 6,17 / 6,99; chữ nút chính 5,03 / 5,03; chữ nút khi trỏ 6,21 / 4,56; nhãn 4,97 / 8,31; bút đỏ 5,38 / 5,63; chữ trên bảng toán 14,82 / 15,75; viền focus trên `wash` 3,63 / 3,55; viền ô nhập trên `canvas` 3,41 / 4,27.
+- Cặp khóa (sáng / tối): chữ trên nền 17,50 / 13,71; chữ phụ trên nền 6,17 / 6,99; chữ nút chính 5,03 / 5,03; chữ nút khi trỏ 6,21 / 4,56; nhãn 4,97 / 8,31; bút đỏ 5,38 / 5,63; chữ trên bảng toán 14,82 / 15,75; `focus` trên `canvas` / `wash` / `raise` 4,00 / 3,63 / 4,21 và 6,18 / 5,48 / 4,62; viền ô nhập trên `canvas` 3,41 / 4,27; kẻ bảng xét dấu `board-rule` trên bảng 4,81 / 5,11.
+- Vòng focus: ≥ 3,63 : 1 (sáng) và ≥ 4,62 : 1 (tối) với nền hai bên ở mọi điều khiển. Trước khi có token `focus`, vòng `accent` vẽ vào trong nút đổi giao diện tối chỉ 2,99 : 1.
+- Lần vẽ đầu đúng chế độ khi CSS chậm: CSS toàn cục chặn vẽ (`inlineCritical: false`). Trước đó CSS trọng yếu nội tuyến chỉ có token sáng, chế độ tối hiện nền `#FAF9F5` suốt 2 giây.
+- Ngăn kéo giữ nền `wash` như thanh bên: thử `raise` thì biểu tượng mục đang chọn (`accent`) ở chế độ tối còn 2,69 : 1.
 
 ## Ảnh
 

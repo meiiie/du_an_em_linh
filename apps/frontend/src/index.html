@@ -7,7 +7,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <link rel="icon" href="favicon.ico" sizes="any" />
     <link rel="icon" href="icon.svg" type="image/svg+xml" />
-    <!-- Đặt chế độ sáng / tối trước lần vẽ đầu để trang không chớp; cùng khóa và cùng luật với GiaoDien (src/app/core/giao-dien.ts). -->
+    <!-- Đặt chế độ sáng / tối trước lần vẽ đầu để trang không chớp; cùng khóa và cùng luật với GiaoDien (src/app/core/giao-dien.ts).
+         CSS toàn cục chặn vẽ (angular.json: inlineCritical false): CSS trọng yếu nội tuyến không có token tối, nên khi CSS chậm
+         chế độ tối sẽ chớp sáng. -->
     <script>
       (function () {
         var c = null;

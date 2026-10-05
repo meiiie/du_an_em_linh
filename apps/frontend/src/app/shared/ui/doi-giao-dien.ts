@@ -29,8 +29,7 @@ import { BieuTuong } from './bieu-tuong';
 
     /* Nổi như ô vuông có viền của ảnh mô phỏng A / B, khác nút menu trong suốt. */
     .nut-icon {
-      border: 1px solid var(--line);
-      border-radius: 10px;
+      border: 1px solid var(--line-strong);
       background: var(--raise);
       box-shadow: var(--shadow-sm);
     }

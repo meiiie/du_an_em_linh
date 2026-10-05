@@ -14,6 +14,7 @@
   --ink-2: #3d3d3a;
   --muted: #5f5e58;
   --accent: #c75b39;
+  --focus: #c75b39;
   --action: #ae5630;
   --action-ink: #ffffff;
   --action-hover: #9a4a28;
@@ -25,6 +26,8 @@
   --wait: #8a5a00;
   --board: #1c1c1c;
   --board-line: #3a3a3a;
+  /* Kẻ mang nghĩa trên bảng (bảng xét dấu): ≥ 3 : 1 với `--board`; `--board-line` chỉ để trang trí. */
+  --board-rule: #888888;
   --board-ink: #f2efe6;
   --m-blue: #58c4dd;
   --m-teal: #5cd0b3;
@@ -63,6 +66,8 @@
   --ink: #e8e8e4;
   --ink-2: #c9c8c2;
   --muted: #a8a7a2;
+  /* `--accent` trên `--raise` tối chỉ 2,99 : 1. */
+  --focus: #d78970;
   --action-hover: #c4633a;
   --action-hover-ink: #141413;
   --label: #58c4dd;
@@ -117,7 +122,7 @@ body {
 }
 
 :focus-visible {
-  outline: 2px solid var(--accent);
+  outline: 2px solid var(--focus);
   outline-offset: 2px;
 }
 
@@ -207,7 +212,7 @@ body {
   background: var(--raise);
   color: var(--ink);
   box-shadow:
-    inset 0 0 0 1px var(--line),
+    inset 0 0 0 1px var(--line-strong),
     var(--shadow-sm);
 }
 
@@ -237,7 +242,7 @@ body {
   color: var(--ink);
 }
 
-/* Nút này hay nằm sát mép (thanh trên 48 px, mép ngăn kéo): vòng tiêu điểm vẽ vào trong, không bị cắt. */
+/* Nút này hay nằm trong thanh trên 48 px: vòng ngoài bị cắt ở mép màn nên vẽ vào trong; `--focus` vẫn ≥ 3 : 1 với nền nút. */
 .nut-icon:focus-visible {
   outline-offset: -2px;
 }

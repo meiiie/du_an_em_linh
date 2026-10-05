@@ -9,8 +9,8 @@ import katex from 'katex';
  *   gia sư.
  * - `khoi` là công thức riêng một dòng, căn trái (styles.css). Dòng dài thì cuộn ngang trong chính nó, không đẩy trang;
  *   khi đang cuộn, khung nhận Tab và có nhãn để cuộn được bằng bàn phím (WCAG 2.1.1).
- * - `bang` vẽ công thức trên tấm bảng tối kiểu 3b1b (`--board`, chữ `--board-ink`), như nhau ở cả hai chế độ; cuộn ngang
- *   như `khoi`. Mặc định (không `bang`) vẫn là công thức trong dòng chữ.
+ * - `bang` vẽ công thức khối trên tấm bảng tối kiểu 3b1b (`--board`, chữ `--board-ink`), như nhau ở cả hai chế độ;
+ *   cuộn ngang như `khoi`. Mặc định (không `bang`) vẫn là công thức trong dòng chữ.
  */
 @Component({
   selector: 'app-katex',
@@ -63,7 +63,7 @@ export class Katex {
       katex.render(this.latex(), this.el.nativeElement, {
         throwOnError: false,
         errorColor: 'var(--muted)',
-        displayMode: this.khoi(),
+        displayMode: this.khoi() || this.bang(),
         trust: false,
         strict: 'ignore',
         output: 'htmlAndMathml',

@@ -49,7 +49,7 @@ describe('Katex', () => {
     expect(t.el.querySelector('.katex-display')).not.toBeNull();
   });
 
-  it('bang: tấm bảng tối, công thức rộng hơn bảng → bảng nhận Tab như khối; mặc định vẫn trong dòng', async () => {
+  it('bang: tấm bảng tối, công thức khối; rộng hơn bảng → bảng nhận Tab như khối; mặc định vẫn trong dòng', async () => {
     const t = await mo();
     expect(t.host().classList).not.toContain('bang');
     expect(t.el.querySelector('.katex-display')).toBeNull();
@@ -57,6 +57,7 @@ describe('Katex', () => {
     t.fixture.componentInstance.bang.set(true);
     await t.fixture.whenStable();
     expect(t.host().classList).toContain('bang');
+    expect(t.el.querySelector('.katex-display')).not.toBeNull();
     Object.defineProperty(t.host(), 'scrollWidth', { configurable: true, get: () => 600 });
     Object.defineProperty(t.host(), 'clientWidth', { configurable: true, get: () => 358 });
     await t.dat('y = x^3 - 3x^2 + 3x - 1');

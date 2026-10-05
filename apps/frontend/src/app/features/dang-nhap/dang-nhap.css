@@ -121,9 +121,7 @@ h1 {
 }
 
 .o-nhap:focus-visible {
-  outline: none;
-  border-color: var(--accent);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 22%, transparent);
+  border-color: var(--focus);
 }
 
 .o-nhap[readonly] {
