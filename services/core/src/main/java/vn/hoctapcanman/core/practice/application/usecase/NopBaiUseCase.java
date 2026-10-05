@@ -38,15 +38,17 @@ import vn.hoctapcanman.core.practice.domain.repository.SubmissionRepository;
  *   <li>Không phải học sinh của lớp, bài chưa phát hành ở lớp hay không chấm từng bước được: {@link BaiKhongTimThayException},
  *       cùng một lỗi như nộp bước.</li>
  *   <li>Trong một giao dịch, khóa bài làm đang làm ở phiên bản nội dung hiện tại như mọi lần ghi phần con. Thiếu một bước từ
- *       bước bắt đầu tới bước kết luận thì {@code CHUA_LAM_DU_BUOC}: chỉ nộp bước kết luận thì máy chấm vẫn ghi một phán
+ *       bước bắt đầu tới bước kết luận, hay bước đó không có chữ ({@code StepWork.coChu}), thì {@code CHUA_LAM_DU_BUOC}: chỉ nộp bước kết luận thì máy chấm vẫn ghi một phán
  *       quyết (thiếu dòng), nhưng đó không phải bài đã làm. Đủ bước thì dựng lại yêu cầu chấm tới bước kết luận từ các bước
  *       đã lưu như {@code NopBuocUseCase} và tra phán quyết theo băm. Không có (chấm lỗi, hay đã sửa một bước sau lần chấm
  *       đó) thì {@code CHUA_CHAM_BUOC_KET_LUAN}. Cả hai trường hợp không ghi gì.</li>
- *   <li>Không khóa được bài làm đang làm: còn bài làm đang làm ở đúng phiên bản đã đọc (đề đổi trong lúc chờ khóa) hay ở
- *       phiên bản khác thì {@code DE_DA_DOI}; không thì lần nộp mới nhất ở đúng phiên bản được phát lại (gửi lại sau khi mất
- *       phản hồi, hai tab cùng nộp); chưa có thì {@code CHUA_LAM_DU_BUOC}.</li>
+ *   <li>Không khóa được bài làm đang làm mà lịch sử còn bài làm đang làm ở đúng phiên bản đã đọc: khóa lại một lần. Tab
+ *       khác vừa mở nó thì nộp như trên; vẫn không khóa được thì đề đổi trong lúc chờ khóa, {@code DE_DA_DOI}.</li>
+ *   <li>Không có bài làm đang làm ở phiên bản đó: lần nộp mới nhất ở đúng phiên bản được phát lại (gửi lại sau khi mất phản
+ *       hồi, hai tab cùng nộp). Không có lần nộp đó: còn bài làm đang làm ở phiên bản khác thì {@code DE_DA_DOI}, không thì
+ *       {@code CHUA_LAM_DU_BUOC}.</li>
  *   <li>Cuối giao dịch: mọi {@link CapNhatMucHieu} (idempotent theo bài làm, nên phát lại trả đúng lần đầu).</li>
- *   <li>Sau commit: lời giải qua {@link MoLoiGiai}.</li>
+ *   <li>Sau commit: lời giải qua {@link MoLoiGiai} (đọc trong một ảnh chụp).</li>
  * </ol>
  * Không gọi dịch vụ toán. Chưa làm ở đây: giới hạn tần suất (web, T021).
  */
@@ -106,10 +108,12 @@ public class NopBaiUseCase {
 
     private CoCanCu phatLai(UUID hocSinhId, UUID lopId, BaiChoLamBai bai) {
         SubmissionHistory lichSu = submissions.history(hocSinhId, bai.problemId());
-        // lockOpen chỉ bỏ qua bài làm đang làm ở đúng phiên bản đã đọc khi đề đổi trong lúc chờ khóa: lần nộp cũ hơn của
-        // phiên bản đó không phải kết quả của bài làm này.
+        // Bài làm đang làm ở phiên bản đã đọc mà lần khóa trên không thấy: tab khác vừa mở nó (khóa lại được, nộp như thường),
+        // hay đề đổi trong lúc chờ khóa (vẫn không khóa được). Lần nộp cũ hơn không phải kết quả của bài làm này.
         if (lichSu.dangLam(lopId, bai.phienBan())) {
-            throw new BaiChuaNopDuocException(LyDo.DE_DA_DOI);
+            return submissions.lockOpen(hocSinhId, lopId, bai.problemId(), bai.phienBan())
+                .map(dangLam -> nop(dangLam, bai))
+                .orElseThrow(() -> new BaiChuaNopDuocException(LyDo.DE_DA_DOI));
         }
         Submission.DaNop daNop = lichSu.daNopMoiNhat(lopId, bai.phienBan()).orElseThrow(() -> new BaiChuaNopDuocException(
             lichSu.dangLamDeKhac(lopId, bai.phienBan()) ? LyDo.DE_DA_DOI : LyDo.CHUA_LAM_DU_BUOC));
@@ -118,7 +122,7 @@ public class NopBaiUseCase {
 
     private static boolean daLamDuBuoc(BaiChoLamBai bai, List<StepWork> daLuu) {
         List<String> khung = bai.cacBuoc();
-        Set<String> daLam = daLuu.stream().map(StepWork::stepCode).collect(Collectors.toSet());
+        Set<String> daLam = daLuu.stream().filter(StepWork::coChu).map(StepWork::stepCode).collect(Collectors.toSet());
         return daLam.containsAll(khung.subList(YeuCauCham.batDau(khung, bai.buocBatDau()), khung.size()));
     }
 

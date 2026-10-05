@@ -3,6 +3,8 @@ package vn.hoctapcanman.core.practice.application.usecase;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Proxy;
 import java.time.Clock;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -13,6 +15,7 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.assertj.core.api.ThrowableAssert.ThrowingCallable;
 import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.AfterEach;
@@ -23,6 +26,7 @@ import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase;
 import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.simple.JdbcClient;
+import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -50,6 +54,7 @@ import vn.hoctapcanman.core.practice.application.exception.BaiKhongTimThayExcept
 import vn.hoctapcanman.core.practice.application.port.CapNhatMucHieu;
 import vn.hoctapcanman.core.practice.application.service.MoLoiGiai;
 import vn.hoctapcanman.core.practice.domain.model.Submission;
+import vn.hoctapcanman.core.practice.domain.repository.SubmissionRepository;
 import vn.hoctapcanman.core.practice.infrastructure.persistence.DuLieuPractice;
 import vn.hoctapcanman.core.practice.infrastructure.persistence.GradingResultRepositoryAdapter;
 import vn.hoctapcanman.core.practice.infrastructure.persistence.SubmissionRepositoryAdapter;
@@ -116,7 +121,13 @@ class NopBaiUseCaseTest {
     private GradingResultRepositoryAdapter grades;
 
     @Autowired
+    private LoiGiaiSauKhiNopService loiGiaiCong;
+
+    @Autowired
     private TransactionTemplate tx;
+
+    @Autowired
+    private PlatformTransactionManager giaoDich;
 
     @Autowired
     private Clock clock;
@@ -192,6 +203,20 @@ class NopBaiUseCaseTest {
     void thieuBuocTruocKetLuanThi409KhongNopKhongMoLoiGiai() {
         datCo(true);
         mayCham.traLoi = NopBaiUseCaseTest::thieuDongTapXacDinh;
+        nopBuoc.execute(an, lop, ma, ketLuan());
+        ketQua409(() -> nopBai.execute(an, lop, ma), LyDo.CHUA_LAM_DU_BUOC);
+        assertThat(trangThai()).containsExactly("DANG_LAM");
+    }
+
+    /** Phán quyết #142 (vòng 2): dòng rỗng, dòng chỉ khoảng trắng, bảng không ô là chưa viết gì vào bước, không phải đã làm. */
+    @Test
+    void buocKhongCoChuKhongTinhLaDaLam() {
+        datCo(true);
+        mayCham.traLoi = NopBaiUseCaseTest::thieuDongTapXacDinh;
+        nopBuoc.execute(an, lop, ma, dong("B.DH.TXD", ""));
+        nopBuoc.execute(an, lop, ma, dong("B.DH.DAOHAM", "   "));
+        nopBuoc.execute(an, lop, ma, new NopBuocRequest("B.DH.NGHIEM", null, List.of(), null));
+        nopBuoc.execute(an, lop, ma, new NopBuocRequest("B.DH.XETDAU", null, List.of(new ONop("DAU_YPHAY", 0, " ")), null));
         nopBuoc.execute(an, lop, ma, ketLuan());
         ketQua409(() -> nopBai.execute(an, lop, ma), LyDo.CHUA_LAM_DU_BUOC);
         assertThat(trangThai()).containsExactly("DANG_LAM");
@@ -282,6 +307,37 @@ class NopBaiUseCaseTest {
         assertThat(trangThai()).containsExactly("DA_NOP", "DANG_LAM");
     }
 
+    /**
+     * Phán quyết #142 (vòng 2): tab khác mở bài làm mới giữa lúc khóa không thấy bài làm đang làm và lúc đọc lịch sử. Đề không
+     * đổi, nên không được báo DE_DA_DOI: kết quả phải như chạy tuần tự (bài làm mới chưa đủ bước).
+     */
+    @Test
+    void lamLaiChenGiuaKhoaVaLichSuThiNopBaiLamMoiKhongBaoDeDoi() {
+        lamDuBuoc();
+        assertThat(nopBai.execute(an, lop, ma)).isEqualTo(DAT_KHONG_LOI_GIAI);
+        SubmissionRepository chen = chenSauKhiGoi("history", false, () -> nopBuoc.execute(an, lop, ma, dong("B.DH.TXD", "D = R")));
+        NopBaiUseCase coChen = new NopBaiUseCase(membership, baiDeLam, chen, grades, List.of(), moLoiGiai, tx, clock);
+        ketQua409(() -> coChen.execute(an, lop, ma), LyDo.CHUA_LAM_DU_BUOC);
+        assertThat(trangThai()).containsExactly("DA_NOP", "DANG_LAM");
+    }
+
+    /**
+     * Phán quyết #142 (vòng 2), ba tác nhân: sau khi {@code cho} thấy «không làm lại», học sinh mở bài làm mới rồi giáo viên bật
+     * cờ. Đọc trong một ảnh chụp thì kết quả là của một thời điểm (chưa bật cờ): không có lời giải.
+     */
+    @Test
+    void moLoiGiaiDocMotAnhChupKhongGhepLamLaiVaCoBatLucKhac() {
+        lamDuBuoc();
+        nopBai.execute(an, lop, ma);
+        Submission.DaNop daNop = daNop();
+        SubmissionRepository chen = chenSauKhiGoi("history", true, () -> {
+            nopBuoc.execute(an, lop, ma, dong("B.DH.TXD", "D = R"));
+            datCo(true);
+        });
+        assertThat(new MoLoiGiai(chen, membership, loiGiaiCong, giaoDich).cho(daNop)).isEmpty();
+        assertThat(moLoiGiai.cho(daNop)).as("đang làm lại").isEmpty();
+    }
+
     @Test
     void deDoiSauKhiNopThiLoiGiaiCuDongVaKhongPhatLaiChoDeMoi() {
         datCo(true);
@@ -332,6 +388,31 @@ class NopBaiUseCaseTest {
         assertThat(List.of(tab1.get(30, TimeUnit.SECONDS), tab2.get(30, TimeUnit.SECONDS)))
             .containsExactly(DAT_KHONG_LOI_GIAI, DAT_KHONG_LOI_GIAI);
         assertThat(trangThai()).containsExactly("DA_NOP");
+    }
+
+    /**
+     * Kho bài làm chạy {@code chen} ở luồng khác (giao dịch riêng, đã commit) ở lần gọi {@code ham} đầu tiên: trước lần gọi, hay
+     * sau khi lần gọi đã đọc ({@code sau}, ảnh chụp của giao dịch đang chạy đã chụp).
+     */
+    private SubmissionRepository chenSauKhiGoi(String ham, boolean sau, Runnable chen) {
+        AtomicBoolean daChen = new AtomicBoolean();
+        return (SubmissionRepository) Proxy.newProxyInstance(getClass().getClassLoader(), new Class<?>[] {SubmissionRepository.class},
+            (p, m, a) -> {
+                boolean lanDau = m.getName().equals(ham) && daChen.compareAndSet(false, true);
+                if (lanDau && !sau) {
+                    CompletableFuture.runAsync(chen).get(30, TimeUnit.SECONDS);
+                }
+                Object ra;
+                try {
+                    ra = m.invoke(submissions, a);
+                } catch (InvocationTargetException e) {
+                    throw e.getCause();
+                }
+                if (lanDau && sau) {
+                    CompletableFuture.runAsync(chen).get(30, TimeUnit.SECONDS);
+                }
+                return ra;
+            });
     }
 
     private Submission.DaNop daNop() {

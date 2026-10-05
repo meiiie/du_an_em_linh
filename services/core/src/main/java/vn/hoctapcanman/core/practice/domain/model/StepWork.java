@@ -37,4 +37,10 @@ public record StepWork(String stepCode, List<StepLine> lines, @Nullable SignTabl
             truoc = l.lineNo();
         }
     }
+
+    /** Có ít nhất một dòng hay một ô có chữ: máy học sinh gửi dòng rỗng, bảng không ô khi em chưa viết gì vào bước. */
+    public boolean coChu() {
+        return lines.stream().anyMatch(l -> !l.latex().isBlank())
+            || (table != null && table.cells().stream().anyMatch(o -> !o.value().isBlank()));
+    }
 }
