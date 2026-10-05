@@ -132,9 +132,9 @@ interface MathField extends HTMLElement {
       min-inline-size: 0;
       min-block-size: var(--target);
       padding: var(--space-2) var(--space-3);
-      border: 1px solid var(--line);
+      border: 1px solid var(--line-strong);
       border-radius: var(--radius);
-      background: var(--canvas);
+      background: var(--raise);
       color: var(--ink);
       font-size: 16px;
     }
@@ -150,7 +150,7 @@ interface MathField extends HTMLElement {
 
     .o:focus-within,
     .o:focus {
-      outline: 2px solid var(--ink);
+      outline: 2px solid var(--accent);
       outline-offset: 1px;
     }
 

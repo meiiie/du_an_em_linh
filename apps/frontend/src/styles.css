@@ -335,3 +335,14 @@ app-katex.khoi .katex-display,
 app-katex.khoi .katex-display > .katex {
   text-align: left;
 }
+
+/* Trên bảng (ảnh mô phỏng A / B): công thức căn giữa, đệm của bảng thay lề 1em của KaTeX. Dòng dài hơn bảng thì
+   trình duyệt đặt từ mép trái và cuộn sang phải, không cắt đầu công thức. */
+app-katex.bang .katex-display {
+  margin: 0;
+}
+
+app-katex.bang .katex-display,
+app-katex.bang .katex-display > .katex {
+  text-align: center;
+}
