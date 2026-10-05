@@ -5,7 +5,9 @@
  * - cặp bắt buộc dưới ngưỡng;
  * - cặp đối chứng (chỗ DESIGN.md ghi «dưới ngưỡng, không dùng») lại đạt: lời ghi đã sai;
  * - token trong bảng không nằm trong cặp nào: màu mới chưa được đo;
- * - bảng chép tay một tỉ lệ (dạng 4,81): bảng chỉ ghi ngưỡng, tỉ lệ là kết quả của script này, chép tay sẽ cũ.
+ * - bảng chép tay một tỉ lệ (dạng «4,81 : 1»): bảng chỉ ghi ngưỡng «3 : 1» / «4,5 : 1», tỉ lệ là kết quả của script này.
+ * Script đọc màu từ bảng, không đọc câu chữ: thêm hay đổi một câu ngưỡng trong DESIGN.md thì thêm cặp tương ứng vào
+ * BAT_BUOC (phải đạt) hay DOI_CHUNG (ghi «dưới ngưỡng») ở dưới.
  */
 import { readFileSync } from "node:fs";
 
@@ -29,7 +31,9 @@ function docBang(md) {
       if (bang[t]) throw new Error(`token lặp: ${t}`);
       bang[t] = { light: sang[nhieu ? i : 0], dark: toi[nhieu ? i : 0] };
     });
-    for (const m of dong.matchAll(/\d+,\d\d/g)) chepTay.push({ so: m[0], ten: ten.join(", ") });
+    for (const m of dong.matchAll(/(\d+(?:,\d+)?)\s*:\s*1\b/g)) {
+      if (!["3", "4,5"].includes(m[1])) chepTay.push({ so: m[1], ten: ten.join(", ") });
+    }
   }
   return { bang, chepTay };
 }
