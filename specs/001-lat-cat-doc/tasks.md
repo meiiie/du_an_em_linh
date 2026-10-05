@@ -78,7 +78,7 @@ description: "Danh sách việc của epic P2 — lát cắt dọc một chủ �
 ### Issue — Module `practice` (core)
 
 - [x] T019 (#136) [US1] `V7__practice.sql` (V5, V6 đã dùng cho content): `assignments`, `submissions`, `submission_steps`, `submission_tables`, `submission_table_cells`, `input_events`, `grading_results`
-- [ ] T020 [US1] `core/practice/`: nộp bước (idempotent), chấm qua `MathServiceClient.grade`, ghi kết quả; nộp bài; cờ mở lời giải; nghi đoán mò
+- [x] T020 [US1] `core/practice/`: nộp bước (idempotent), chấm qua `MathServiceClient.grade`, ghi kết quả; nộp bài; cờ mở lời giải; nghi đoán mò
 - [ ] T021 [US1] `core/practice/infrastructure/web/`: `GET /api/hs/bai`, `GET /api/hs/bai/{maBai}`, `POST …/buoc`, `POST …/nop`, `POST /api/gv/giao-bai` theo hợp đồng; `GET /api/hs/trang-hoc` phần `ten`, `soBaiGiao` (mastery, planner bổ sung phần của mình)
 - [ ] T022 [P] [US1] `core-test/practice/`: chấm sai không lộ đáp án; dịch vụ toán lỗi → `KHONG_CHAM_DUOC`; tải lại giữ bài làm; hai tab nộp cùng bước ghi một lần
 - [ ] T023 [P] [US1] `core-test/practice/DoiChieuChamV0Test.java`: chấm toàn ngân hàng với bài làm mẫu, so tệp vàng do script `specs/001-lat-cat-doc/doi-chieu/cham-v0.ts` chạy trên v0 xuất ra, như T013 (SC-006)

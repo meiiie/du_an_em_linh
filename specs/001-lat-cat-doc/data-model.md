@@ -55,14 +55,14 @@ ngược lại 409 và phải kiểm lại, để không phát hành bằng phá
 Áp một run vào problem_releases cũng chỉ khi run còn mới như vậy.
 ```
 
-## practice (`V7__practice.sql`)
+## practice (`V7__practice.sql`, `V8__nop_bai_co_can_cu.sql`)
 
 Số V của các migration sau content là số kế tiếp lúc merge: V5, V6 đã dùng cho content (#120, #121), practice là V7 (#87); tutor, mastery, planner lấy số kế tiếp khi làm.
 
 | Bảng | Cột chính | Ghi chú |
 | --- | --- | --- |
 | `assignments` | `id`, `class_id`, `problem_id`, `student_id`, `status` (`DA_GIAO`, `DA_HUY`), `set_name`, `due_at`, `assigned_by`, `assigned_at` | Giao cho lớp = một dòng mỗi học sinh, duy nhất theo (lớp, bài, học sinh); chỉ giao bài `DA_PHAT_HANH` của chính lớp đó cho học sinh của lớp (trigger) |
-| `submissions` | `id`, `class_id`, `student_id`, `problem_id`, `content_version`, `status` (`DANG_LAM`, `DA_NOP`), `guess_suspected`, `guess_reason`, `result`, `started_at`, `submitted_at` | Một bài làm đang làm mỗi (học sinh, lớp, bài, phiên bản nội dung) (chỉ mục duy nhất từng phần): nội dung đổi thì bài làm dở cũ thôi được chấm; mở chỉ khi bài đã phát hành cho lớp, đúng phiên bản nội dung hiện tại; nộp rồi thì bài làm và mọi phần con không đổi; lớp quyết định tài liệu, bảng công thức, cài đặt gia sư dùng cho bài làm |
+| `submissions` | `id`, `class_id`, `student_id`, `problem_id`, `content_version`, `status` (`DANG_LAM`, `DA_NOP`), `guess_suspected`, `guess_reason`, `result`, `result_grading_id` (V8), `started_at`, `submitted_at` | Một bài làm đang làm mỗi (học sinh, lớp, bài, phiên bản nội dung) (chỉ mục duy nhất từng phần): nội dung đổi thì bài làm dở cũ thôi được chấm; mở chỉ khi bài đã phát hành cho lớp, đúng phiên bản nội dung hiện tại; nộp rồi thì bài làm và mọi phần con không đổi; lớp quyết định tài liệu, bảng công thức, cài đặt gia sư dùng cho bài làm. `result_grading_id` là căn cứ của kết quả nộp: có khi và chỉ khi `DA_NOP`, là lần chấm có phán quyết của chính bài làm (bước kết luận trên nội dung lúc nộp) với cùng `result` (khóa ngoại nhiều cột tới `grading_results`); màn giáo viên đọc lỗi từng bước của bài đã nộp qua đây, kể cả sau khi đề đổi |
 | `submission_steps` | `submission_id`, `step_code`, `line_no`, `latex`, `line_kind` | Nội dung mới nhất của bước kiểu dòng; nộp lại cùng bước thì thay trọn. `line_kind` là nhãn `loai` của v0 (`NGHIEM`, `KHONG_XD`, `DONG_BIEN`…) |
 | `submission_tables`, `submission_table_cells` | bảng: `table_kind`; ô: `ordinal` (thứ tự gửi), `row_code`, `k` (0-based, `docs/chi-so-o-bang.md`), `value` | Giữ thứ tự ô để dựng lại đúng payload chấm của v0 |
 | `input_events` | `submission_id`, `step_code`, `cell_row`, `cell_k`, `old_value`, `new_value`, `at` | Cho nghi đoán mò; chỉ thêm |
