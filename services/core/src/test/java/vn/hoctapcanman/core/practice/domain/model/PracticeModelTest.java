@@ -4,8 +4,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
@@ -59,6 +61,26 @@ class PracticeModelTest {
         assertThat(bang().coChu()).as("bảng không ô").isFalse();
         assertThat(bang(new TableCell("DAU_YPHAY", 0, ""), new TableCell("X", 0, " ")).coChu()).as("bảng toàn ô trống").isFalse();
         assertThat(bang(new TableCell("X", 0, "0")).coChu()).as("chỉ hàng X").isTrue();
+    }
+
+    /**
+     * Codex #142: khoảng trắng của {@code coChu} phải đúng tập của {@code str.isspace()} trong Python (bộ chấm cắt bằng
+     * {@code str.strip()}), trên mọi điểm mã, không vá từng ký tự. Bảng sinh bằng Python 3.13.7 (Unicode 15.1):
+     * {@code [c for c in range(0x110000) if chr(c).isspace()]}; dịch vụ toán chạy 3.12 (Unicode 15.0), cùng tập.
+     */
+    @Test
+    void khoangTrangDungTapCuaPython() {
+        Set<Integer> python = Set.of(0x0009, 0x000A, 0x000B, 0x000C, 0x000D, 0x001C, 0x001D, 0x001E, 0x001F, 0x0020, 0x0085, 0x00A0,
+            0x1680, 0x2000, 0x2001, 0x2002, 0x2003, 0x2004, 0x2005, 0x2006, 0x2007, 0x2008, 0x2009, 0x200A, 0x2028, 0x2029, 0x202F,
+            0x205F, 0x3000);
+        List<String> lech = new ArrayList<>();
+        for (int c = 0; c <= Character.MAX_CODE_POINT; c++) {
+            if (StepWork.khoangTrang(c) != python.contains(c)) {
+                lech.add(String.format("U+%04X", c));
+            }
+        }
+        assertThat(lech).isEmpty();
+        assertThat(dong("\u0085").coChu()).as("dòng chỉ NEL").isFalse();
     }
 
     @Test

@@ -39,8 +39,9 @@ public record StepWork(String stepCode, List<StepLine> lines, @Nullable SignTabl
     }
 
     /**
-     * Có ít nhất một dòng hay một ô có chữ: máy học sinh gửi dòng rỗng, ô rỗng khi em chưa viết gì vào bước. Khoảng trắng tính
-     * như {@code str.strip()} của dịch vụ toán, gồm cả khoảng trắng Unicode ({@code U+00A0}) mà {@code String.isBlank} bỏ sót.
+     * Có ít nhất một dòng hay một ô có chữ: máy học sinh gửi dòng rỗng, ô rỗng khi em chưa viết gì vào bước. Khoảng trắng là
+     * khoảng trắng của dịch vụ toán ({@link #khoangTrang}), không phải {@code String.isBlank} (bỏ sót {@code U+00A0},
+     * {@code U+0085}).
      */
     public boolean coChu() {
         return lines.stream().anyMatch(l -> coChu(l.latex()))
@@ -48,6 +49,16 @@ public record StepWork(String stepCode, List<StepLine> lines, @Nullable SignTabl
     }
 
     private static boolean coChu(String s) {
-        return s.codePoints().anyMatch(c -> !Character.isWhitespace(c) && !Character.isSpaceChar(c));
+        return s.codePoints().anyMatch(c -> !khoangTrang(c));
+    }
+
+    /**
+     * Định nghĩa của {@code str.isspace()} trong Python, mà {@code str.strip()} của bộ chấm dùng: loại chung {@code Zs}, hay
+     * hướng hai chiều {@code WS}, {@code B}, {@code S}. Test so với bảng do chính Python sinh trên mọi điểm mã.
+     */
+    static boolean khoangTrang(int c) {
+        byte huong = Character.getDirectionality(c);
+        return Character.getType(c) == Character.SPACE_SEPARATOR || huong == Character.DIRECTIONALITY_WHITESPACE
+            || huong == Character.DIRECTIONALITY_PARAGRAPH_SEPARATOR || huong == Character.DIRECTIONALITY_SEGMENT_SEPARATOR;
     }
 }
