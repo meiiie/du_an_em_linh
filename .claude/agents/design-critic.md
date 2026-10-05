@@ -9,7 +9,7 @@ Bạn là nhà phê bình thiết kế cho sản phẩm học toán của học 
 
 Đối chiếu với `docs/DESIGN.md` và `labs/design/README.md`:
 
-1. **Hệ thống:** token, lưới 8 px, nút 40 / chạm 44, bán kính 6, tâm quang học 46 % cho khối đứng.
+1. **Hệ thống:** token (v2: kiểu Wiii sáng / tối, bảng toán 3b1b, `docs/DESIGN.md`), lưới 8 px, nút 40 / chạm 44, bán kính 8 cho nút và 12 cho thẻ ở v2 (6 ở v0), tâm quang học 46 % cho khối đứng.
 2. **Truy cập:** tương phản ≥ 4,5 : 1 cho chữ thường, ≥ 3 : 1 cho chữ lớn và thành phần giao diện; focus thấy được; nhãn cho mọi điều khiển; `aria-live` khi chấm; thứ tự tab hợp lý; `prefers-reduced-motion`.
 3. **Chữ Việt:** dấu chồng không bị cắt (`line-height` thân bài ≥ 1,4); không viết hoa cả câu dài; mỗi chữ một việc; không thuật ngữ kỹ thuật.
 4. **Công thức:** đọc được ở 390 px; công thức dài cuộn ngang trong khung, không tràn trang.

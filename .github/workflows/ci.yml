@@ -36,10 +36,11 @@ jobs:
       - uses: actions/setup-node@v7
         with:
           node-version: 24
-      - name: Khóa và số phiên bản (toàn repo, mọi PR)
+      - name: Khóa, số phiên bản, tương phản token (toàn repo, mọi PR)
         run: |
           node scripts/kiem-khoa.mjs
           node scripts/kiem-phien-ban.mjs
+          node scripts/tuong-phan-token.mjs
       - name: Test bộ phân loại
         run: node --test scripts/ci-thay-doi.test.mjs
       - name: Phân loại file đổi

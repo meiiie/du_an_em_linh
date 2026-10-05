@@ -32,7 +32,7 @@
 - Cài đặt lớp: bật/tắt mở lời giải sau khi nộp xong cả năm bước.
 - Trích dẫn tầng 2/3 hiện đoạn tài liệu / tên công thức, không in cụm khớp hay JSON thô.
 - Tạo đề báo trạng thái Đã mở / Chờ duyệt / Bị chặn, không in mã bài.
-- Hệ thống thiết kế «phiếu làm bài» (IBM Plex, ray mực, danh sách thay thẻ, ô thành thạo, lưới 8 px, nút 40/44) ghi ở `docs/DESIGN.md`. Lấy cấu trúc Khan/Classroom/Canvas/Brilliant; không chép màu/logo.
+- Hệ thống thiết kế «phiếu làm bài» của v0 (IBM Plex, ray mực, danh sách thay thẻ, ô thành thạo, lưới 8 px, nút 40/44). Từ 2026-10-06, v2 giữ cấu trúc đó (danh sách thay thẻ, ô thành thạo, lưới 8 px, nút 40/44) nhưng đổi màu, chữ, bán kính theo kiểu Wiii pha bảng toán 3b1b: xem `docs/DESIGN.md`. Lấy cấu trúc Khan/Classroom/Canvas/Brilliant; không chép màu/logo.
 - Harness agent: `AGENTS.md` + `CLAUDE.md` lớp theo thư mục, `.claude/settings.json`, `docs/CODEMAP.md`.
 - Harness gia sư: bốn nhà tường minh, composer 44 px, khóa lớp tùy chọn, thử `GET /models`.
 - Kết nối khóa chính thức cho giáo viên không chuyên: `/gv/ket-noi-ai` (hai bước ChatGPT / OpenRouter / Z.AI; OAuth định danh nếu có client_id). Trang Lớp hiện trạng thái.
@@ -40,7 +40,7 @@
 
 ## Skill dùng khi chỉnh UI / API
 
-- `.cursor/skills/frontend-design` — tránh cụm cream + serif + terracotta.
+- `.cursor/skills/frontend-design` — theo `docs/DESIGN.md`: từ 2026-10-06 v2 dùng kiểu Wiii (kem, than ấm, đất nung) với bảng toán 3b1b; vẫn tránh Literata; v0 giữ giao diện cũ.
 - `.cursor/skills/web-design-guidelines` — a11y, focus, form, motion.
 - `.cursor/skills/fastapi-routers` — router / Pydantic / không import SymPy ở process API.
 
