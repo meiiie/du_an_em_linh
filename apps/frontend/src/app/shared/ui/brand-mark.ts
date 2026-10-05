@@ -23,12 +23,12 @@ import { booleanAttribute, Component, input } from '@angular/core';
       justify-content: center;
       border-radius: var(--radius);
       background: var(--ink);
-      color: var(--chalk);
+      color: var(--canvas);
       inline-size: 32px;
       block-size: 32px;
     }
     :host([data-dao]) {
-      background: var(--chalk);
+      background: var(--canvas);
       color: var(--ink);
     }
     :host([data-co='md']) {

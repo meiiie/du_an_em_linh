@@ -232,7 +232,7 @@ const MAN_HINH_RONG = '(min-width: 64rem)';
       inline-size: calc(220px + env(safe-area-inset-left));
       padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom) env(safe-area-inset-left);
       background: var(--ink);
-      color: var(--chalk);
+      color: var(--canvas);
       transform: translateX(-100%);
       visibility: hidden;
       /* Đóng: trượt ra xong mới ẩn (visibility trễ 200 ms). */
@@ -250,7 +250,7 @@ const MAN_HINH_RONG = '(min-width: 64rem)';
     }
 
     .ray :focus-visible {
-      outline-color: var(--chalk);
+      outline-color: var(--canvas);
     }
 
     .ray-dau {
@@ -268,7 +268,7 @@ const MAN_HINH_RONG = '(min-width: 64rem)';
     .nut-toi:hover,
     .muc:hover {
       background: rgb(255 255 255 / 0.05);
-      color: var(--chalk);
+      color: var(--canvas);
     }
 
     /* Như v0: khối thương hiệu trên ray là chữ, không phải link (mục «Học» / «Lớp» đã dẫn về trang chủ). */
@@ -319,7 +319,7 @@ const MAN_HINH_RONG = '(min-width: 64rem)';
 
     .muc.dang-mo {
       background: rgb(255 255 255 / 0.1);
-      color: var(--chalk);
+      color: var(--canvas);
       font-weight: 500;
     }
 
@@ -361,7 +361,7 @@ const MAN_HINH_RONG = '(min-width: 64rem)';
     }
 
     .ray-thoat:hover:not(:disabled) {
-      color: var(--chalk);
+      color: var(--canvas);
     }
 
     .ray-thoat:disabled {
