@@ -1,6 +1,7 @@
 package vn.hoctapcanman.core.practice.infrastructure.persistence;
 
 import java.util.UUID;
+import org.jspecify.annotations.Nullable;
 import org.springframework.jdbc.core.simple.JdbcClient;
 
 /**
@@ -61,6 +62,32 @@ public final class DuLieuPractice {
             .params(id, ma + "-" + id.toString().substring(0, 8), BAM).update();
         return id;
     }
+
+    /** Kỹ năng của chủ đề DH12 mà bài v0 dùng (T12.DH.01 tới 06); ghi rồi thì giữ. */
+    public static void kyNang(JdbcClient jdbc, String ma) {
+        jdbc.sql("insert into skills (code, topic_code, name, is_core) values (?, 'DH12', ?, true) on conflict do nothing")
+            .params(ma, "Kỹ năng " + ma).update();
+    }
+
+    /**
+     * Bài với các cột core đọc khi chấm, lấy từ {@code cot_v0} của {@code v0-bai.json} (T014 đã đối chiếu nhập của core với
+     * mọi cột đó). Mã thêm hậu tố ngẫu nhiên để không đụng bài do test nhập nội dung ghi trong cùng CSDL; dấu vân tay là
+     * {@link #BAM} như {@link #phatHanh} ghi. Trả id và mã.
+     */
+    public static BaiDaGhi baiV0(JdbcClient jdbc, String ma, String kyNang, String muc4, String de, String deLatex,
+            @Nullable String ham, String dangTraLoi, @Nullable String buocBatDau, String nguon) {
+        UUID id = UUID.randomUUID();
+        String maCore = ma + "-" + id.toString().substring(0, 8);
+        jdbc.sql("""
+                insert into problems (id, code, skill_code, level4, statement_text, statement_latex, function_sympy, answer_form,
+                    start_step, origin, content_hash, created_at, updated_at)
+                values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, now(), now())""")
+            .params(id, maCore, kyNang, muc4, de, deLatex, ham, dangTraLoi, buocBatDau, nguon, BAM).update();
+        return new BaiDaGhi(id, maCore);
+    }
+
+    /** Bài vừa ghi: id và mã trong CSDL. */
+    public record BaiDaGhi(UUID id, String ma) {}
 
     /** Lượt kiểm DAT mới cho bài ở lớp, rồi phát hành theo lượt đó. */
     public static void phatHanh(JdbcClient jdbc, UUID lop, UUID bai) {

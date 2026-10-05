@@ -8,7 +8,8 @@
     "du_lieu": {
       "data/supham": "a821fd14243ee607371420b50e20e1f848148d36",
       "data/v0": "6a666e3bde67052c928973f9041ba7ddfd1ce04e",
-      "specs/001-lat-cat-doc/doi-chieu/xuat-v0.ts": "8cc3a5d2a194bde7899d7ff0153321ff8156dd6f"
+      "specs/001-lat-cat-doc/doi-chieu/xuat-v0.ts": "a4033b8b79d69634b065a31be187299b84625e69",
+      "specs/001-lat-cat-doc/doi-chieu/chung.ts": "88fefe051fe63d20b562fe536cae5a2ade5c57c5"
     },
     "dich_vu_toan": {
       "cay_git": "2d833dd78bfe594eefc309ffffde19bc6d4cc332",

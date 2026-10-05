@@ -69,6 +69,13 @@ class TepVangDoiChieuTest {
     }
 
     @Test
+    void moiNguonCuaChamV0DeuKhopCheckout() {
+        kiemNguon("cham-v0.json (node " + DOI_CHIEU + "cham-v0.ts)", phang(doc(DOI_CHIEU + "cham-v0.json")),
+            khoa -> khoa.startsWith("git.") ? khoa.substring("git.".length()) : null,
+            Map.of("dich_vu_toan.", "môi trường chạy lúc sinh (ảnh gốc, Python, gói, /health), không suy ra được từ checkout"));
+    }
+
+    @Test
     void moiNguonCuaLoiGiaiV0DeuKhopCheckout() {
         Map<String, Object> nguon = phang(doc(LOI_GIAI_V0));
         kiemNguon(LOI_GIAI_V0 + " (node " + DOI_CHIEU + "loi-giai-v0.ts)", nguon, khoa -> switch (khoa) {
@@ -95,7 +102,7 @@ class TepVangDoiChieuTest {
             }
         }
         assertThat(coNguon).as("tệp vàng có «nguon» so với tệp vàng có test kiểm nguồn")
-            .containsExactlyInAnyOrder(DOI_CHIEU + "v0-bai.json", DOI_CHIEU + "khoa-bang-v0.json", LOI_GIAI_V0);
+            .containsExactlyInAnyOrder(DOI_CHIEU + "v0-bai.json", DOI_CHIEU + "khoa-bang-v0.json", DOI_CHIEU + "cham-v0.json", LOI_GIAI_V0);
     }
 
     @Test
@@ -117,7 +124,8 @@ class TepVangDoiChieuTest {
         for (Map.Entry<String, Object> e : nguon.entrySet()) {
             String duongDan = duongDanCua.apply(e.getKey());
             if (duongDan != null) {
-                assertThat(git("status", "--porcelain", "--", duongDan))
+                // Đường dẫn so nguyên văn: [id] của Next.js là glob với git, khớp nhầm thư mục i, d.
+                assertThat(git("--literal-pathspecs", "status", "--porcelain", "--", duongDan))
                     .as("%s có thay đổi chưa commit: commit rồi sinh lại %s", duongDan, tepVang).isEmpty();
                 assertThat(git("rev-parse", "HEAD:" + duongDan))
                     .as("%s (nguon.%s) đã đổi so với lúc sinh %s: sinh lại tệp vàng", duongDan, e.getKey(), tepVang)
