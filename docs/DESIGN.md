@@ -37,7 +37,8 @@ Chữ đạt ≥ 4,5 : 1, thành phần giao diện ≥ 3 : 1. Số trong bảng
 | `ink` | `#141413` | `#E8E8E4` | Chữ chính |
 | `ink-2` | `#3D3D3A` | `#C9C8C2` | Chữ phụ đậm |
 | `muted` | `#5F5E58` | `#A8A7A2` | Chữ phụ (Wiii `--text-tertiary` chỉnh đậm cho AA) |
-| `accent` | `#C75B39` | `#C75B39` | Vạch mục đang chọn, viền focus, dấu «+» của chữ hiệu (sáng) |
+| `accent` | `#C75B39` | `#C75B39` | Vạch mục đang chọn, dấu «+» của chữ hiệu (sáng) |
+| `focus` | `#C75B39` (3,63–4,21 : 1 trên `wash`, `canvas`, `raise`) | `#D78970` = `accent` 72 % pha trắng như Wiii (4,62–6,18 : 1; `#C75B39` chỉ 2,99 : 1 trên `raise` tối) | Viền focus 2 px, `outline-offset: 2px` để viền không chạm nền nút |
 | `action` | `#AE5630` | `#AE5630` | Nền nút chính, chữ trắng 5,03 : 1 (`#C75B39` với chữ trắng chỉ 4,21 : 1) |
 | `action-hover` | `#9A4A28`, chữ trắng 6,21 : 1 | `#C4633A`, chữ `#141413` 4,56 : 1 | Nút chính khi trỏ; trên nền tối chữ trắng chỉ 4,04 : 1 nên đổi sang chữ mực |
 | `label` | `#2C6FB0` | `#58C4DD` | Nhãn khu vực chữ hoa nhỏ giãn chữ |
@@ -168,7 +169,7 @@ Nguồn: optical center ~46% từ đỉnh (bố cục in / biển hiệu); cân 
 
 ## A11y
 
-Skip link, `:focus-visible` viền 2 px màu `accent`, `prefers-reduced-motion`, `aria-live` khi chấm. Giữ `data-testid`. `touch-action: manipulation`.
+Skip link, `:focus-visible` viền 2 px màu `focus` cách 2 px, `prefers-reduced-motion`, `aria-live` khi chấm. Giữ `data-testid`. `touch-action: manipulation`.
 
 ## Nguồn khoảng cách (không chép thương hiệu)
 
