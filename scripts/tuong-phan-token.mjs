@@ -1,8 +1,11 @@
 #!/usr/bin/env node
 /**
  * Tương phản WCAG 2.x (độ chói sRGB) của các cặp token trong bảng màu `docs/DESIGN.md`. Đọc thẳng bảng, nên đổi màu
- * ở đó là đo lại. Cặp bắt buộc dưới ngưỡng → exit 1. Cặp đối chứng là chỗ DESIGN.md ghi «dưới ngưỡng, không dùng»:
- * nếu nó lại đạt thì lời ghi đã sai → cũng exit 1.
+ * ở đó là đo lại. Exit 1 khi:
+ * - cặp bắt buộc dưới ngưỡng;
+ * - cặp đối chứng (chỗ DESIGN.md ghi «dưới ngưỡng, không dùng») lại đạt: lời ghi đã sai;
+ * - token trong bảng không nằm trong cặp nào: màu mới chưa được đo;
+ * - một tỉ lệ ghi trong bảng (dạng 4,81) không phải kết quả của lần chạy này: số trong bảng đã cũ.
  */
 import { readFileSync } from "node:fs";
 
@@ -11,6 +14,7 @@ const DIEU_KHIEN = 3;
 
 function docBang(md) {
   const bang = {};
+  const soGhi = [];
   for (const dong of md.split("\n")) {
     const o = dong.split(" | ");
     if (o.length < 4 || !dong.startsWith("| `")) continue;
@@ -25,8 +29,9 @@ function docBang(md) {
       if (bang[t]) throw new Error(`token lặp: ${t}`);
       bang[t] = { light: sang[nhieu ? i : 0], dark: toi[nhieu ? i : 0] };
     });
+    for (const m of dong.matchAll(/\d+,\d\d/g)) soGhi.push({ so: m[0], ten: ten.join(", ") });
   }
-  return bang;
+  return { bang, soGhi };
 }
 
 const kenh = (c) => {
@@ -42,7 +47,7 @@ const tiLe = (a, b) => {
   return (x + 0.05) / (y + 0.05);
 };
 
-const bang = docBang(readFileSync("docs/DESIGN.md", "utf8"));
+const { bang, soGhi } = docBang(readFileSync("docs/DESIGN.md", "utf8"));
 const mau = (ten, cheDo) => {
   const t = typeof ten === "string" ? ten : ten[cheDo];
   if (t.startsWith("#")) return t;
@@ -61,6 +66,8 @@ const BAT_BUOC = [
   chu("wait", "canvas"),
   chu("mark", "canvas"),
   chu("mark", "wash"),
+  dk("accent", "canvas"),
+  dk("accent", "wash"),
   chu("#FFFFFF", "action"),
   chu({ light: "#FFFFFF", dark: "#141413" }, "action-hover"),
   chu("board-ink", "board"),
@@ -79,11 +86,13 @@ const DOI_CHUNG = [
 
 const so = (x) => x.toFixed(2).replace(".", ",");
 const ten = (x) => (typeof x === "string" ? x : `${x.light} | ${x.dark}`);
+const daDo = new Set();
 let loi = 0;
 
 console.log("cặp bắt buộc (sáng / tối, ngưỡng)");
 for (const c of BAT_BUOC) {
   const r = HAI.map((m) => tiLe(mau(c.fg, m), mau(c.bg, m)));
+  r.forEach((x) => daDo.add(so(x)));
   const dat = r.every((x) => x >= c.nguong);
   if (!dat) loi++;
   console.log(`  ${dat ? "đạt " : "TRƯỢT"} ${ten(c.fg)} / ${c.bg}: ${r.map(so).join(" / ")} (≥ ${so(c.nguong)})`);
@@ -93,13 +102,26 @@ console.log("đối chứng: DESIGN.md ghi dưới ngưỡng");
 for (const c of DOI_CHUNG) {
   const cheDo = c.cheDo ?? HAI;
   const r = cheDo.map((m) => tiLe(mau(c.fg, m), mau(c.bg, m)));
+  r.forEach((x) => daDo.add(so(x)));
   const van = r.every((x) => x < c.nguong);
   if (!van) loi++;
   console.log(`  ${van ? "dưới" : "ĐÃ ĐẠT, sửa DESIGN.md"} ${ten(c.fg)} / ${c.bg} (${cheDo.join(", ")}): ${r.map(so).join(" / ")} (< ${so(c.nguong)}; ${c.ly})`);
 }
 
+const coCap = new Set([...BAT_BUOC, ...DOI_CHUNG].flatMap((c) => [c.fg, c.bg]).filter((t) => typeof t === "string"));
+for (const t of Object.keys(bang).filter((t) => !coCap.has(t))) {
+  loi++;
+  console.log(`  CHƯA ĐO token ${t}: thêm cặp vào BAT_BUOC hay DOI_CHUNG`);
+}
+for (const { so: s, ten: t } of soGhi.filter(({ so: s }) => !daDo.has(s))) {
+  loi++;
+  console.log(`  SỐ CŨ ${s} ở hàng ${t}: lần chạy này không ra số đó`);
+}
+
 if (loi) {
-  console.error(`${loi} cặp sai so với DESIGN.md`);
+  console.error(`${loi} chỗ sai so với DESIGN.md`);
   process.exit(1);
 }
-console.log(`${Object.keys(bang).length} token, ${BAT_BUOC.length} cặp bắt buộc, ${DOI_CHUNG.length} đối chứng`);
+console.log(
+  `${Object.keys(bang).length} token, ${BAT_BUOC.length} cặp bắt buộc, ${DOI_CHUNG.length} đối chứng, ${soGhi.length} số ghi trong bảng đều khớp`,
+);

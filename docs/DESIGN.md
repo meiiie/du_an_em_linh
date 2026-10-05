@@ -13,9 +13,9 @@ Không dùng kit Figma EduPlus / Eduva / EduTracker / EduFlow (Poppins, thẻ KP
 | [Canvas InstUI](https://instructure.design/) | Ray điều hướng đặc, việc là danh sách/bảng | Electric brand, widget KPI |
 | [Google Classroom](https://support.google.com/chrome/a/answer/15210733) | Hàng việc 2 dòng (tên + meta), không lưới thẻ khóa học | Material purple |
 | Linear / Stripe Dashboard | Kẻ 1 px, không bóng mềm dưới mọi thẻ | — |
-| Wiii desktop (`github.com/meiiie/wiii`, `wiii-desktop/src/styles/globals.css`, commit `6b1c30b`) | Bảng màu ấm sáng / tối theo biến CSS, đất nung cho hành động, bóng ba mức rất nhẹ, easing `cubic-bezier(0.165, 0.85, 0.45, 1)`, thanh bên 260 px, vệt màu mờ ở góc nền; thẻ thương hiệu: lưới mờ trên nền than, nhãn chữ hoa giãn chữ màu xanh nhạt | Mascot Neko, logo, chữ «Wiii» |
-| 3Blue1Brown / Manim (bảng màu trong skill stencil `pptx-math-3b1b/scripts/style.py`, commit `8f5c5a2`) | Nền bảng `#1C1C1C`, màu nhấn BLUE `#58C4DD`, TEAL `#5CD0B3`, YELLOW_D `#F4D345`, RED `#FC6255`, GOLD `#F0AC5F`, GREEN `#83C167`; nét cong dày bo tròn; công thức serif Computer Modern (KaTeX) | Video, nhân vật Pi |
-| Desmos | Đồ thị là đối tượng chính, lưới mờ, điểm đặc biệt có chấm và nhãn | Màu, logo |
+| Wiii desktop (`github.com/meiiie/wiii`, `wiii-desktop/src/styles/globals.css`, commit `6b1c30b`; đọc mã 2026-10-06, độ tin cao cho giá trị CSS) | Bảng màu ấm sáng / tối theo biến CSS, đất nung cho hành động, bóng ba mức rất nhẹ, easing `cubic-bezier(0.165, 0.85, 0.45, 1)`, thanh bên 260 px, vệt màu mờ ở góc nền; thẻ thương hiệu: lưới mờ trên nền than, nhãn chữ hoa giãn chữ màu xanh nhạt | Mascot Neko, logo, chữ «Wiii» |
+| 3Blue1Brown / Manim (stencil `github.com/ghanemja/stencil`, `pptx-math-3b1b/scripts/style.py`, commit `8f5c5a2`; mã màu đối chiếu 3b1b/manim `fafa083` và ManimCE `8dbfd3b` ngày 2026-10-06, độ tin cao; nền `#1C1C1C` là lựa chọn của stencil, Manim mặc định `#333333`) | Nền bảng `#1C1C1C`, màu nhấn BLUE_C `#58C4DD`, TEAL_C `#5CD0B3`, YELLOW_D `#F4D345`, RED_C `#FC6255`, GOLD_C `#F0AC5F`, GREEN_C `#83C167`, GREY_C `#888888` cho kẻ mang nghĩa; nét cong dày bo tròn; công thức serif Computer Modern (KaTeX) | Video, nhân vật Pi |
+| Desmos (`www.desmos.com/calculator`; xem bằng Chromium 2026-10-06, một hàm, độ tin trung bình) | Đồ thị là đối tượng chính, lưới mờ, điểm đặc biệt có chấm, bấm thì hiện tọa độ | Màu, logo |
 
 Coursera `#0056D2`, IBM `#0F62FE`, Khan blue, Canvas electric: không chép. Từ 2026-10-06, nền kem và đất nung của Wiii được dùng theo chỉ đạo của chủ repo (thay dòng cấm «cream + Literata + terracotta» cũ); Literata vẫn không dùng.
 
@@ -41,7 +41,7 @@ Chữ đạt ≥ 4,5 : 1, thành phần giao diện ≥ 3 : 1. Số trong bảng
 | `focus` | `#C75B39` (3,63–4,21 : 1 trên `wash`, `canvas`, `raise`) | `#D78970` = `accent` 72 % pha trắng như Wiii (4,62–6,18 : 1; `#C75B39` chỉ 2,99 : 1 trên `raise` tối) | Viền focus 2 px, `outline-offset: 2px` để viền không chạm nền nút. Mọi điều khiển trong thanh trên 48 px vẽ viền vào trong (`-2px`): điều khiển cao 44 px, viền ngoài bị cắt ở mép trên màn; `focus` vẫn ≥ 3 : 1 với nền nút |
 | `action` | `#AE5630` | `#AE5630` | Nền nút chính, chữ trắng 5,03 : 1 (`#C75B39` với chữ trắng chỉ 4,21 : 1) |
 | `action-hover` | `#9A4A28`, chữ trắng 6,21 : 1 | `#C4633A`, chữ `#141413` 4,56 : 1 | Nút chính khi trỏ; trên nền tối chữ trắng chỉ 4,04 : 1 nên đổi sang chữ mực |
-| `label` | `#2C6FB0` | `#58C4DD` | Nhãn khu vực chữ hoa nhỏ giãn chữ |
+| `label` | `#2C6FB0` | `#58C4DD` | Nhãn khu vực chữ hoa nhỏ giãn chữ; dấu «+» của chữ hiệu (tối) |
 | `pass` | `#1A7A45` | `#5CD0B3` | Đạt |
 | `mark` | `#B83B2E` | `#FC6255` | Bút đỏ: sai — vẫn **một** màu nhớ. Chữ `mark` chỉ trên `canvas`, `wash` (trên `raise` tối chỉ 4,21 : 1) |
 | `wait` | `#8A5A00` | `#F0AC5F` | Chờ |
@@ -51,13 +51,13 @@ Chữ đạt ≥ 4,5 : 1, thành phần giao diện ≥ 3 : 1. Số trong bảng
 | `board-ink` | `#F2EFE6` | `#F2EFE6` | Chữ và công thức trên bảng |
 | `m-blue` / `m-teal` / `m-yellow` / `m-red` / `m-gold` / `m-green` | `#58C4DD` / `#5CD0B3` / `#F4D345` / `#FC6255` / `#F0AC5F` / `#83C167` | như sáng | Màu Manim, **chỉ** trên bảng: đường cong xanh, điểm đặc biệt vàng, dấu dương ngọc, dấu âm đỏ |
 
-Bảng này là nguồn chuẩn của giá trị và việc; `apps/frontend/src/styles.css` hiện thực theo bảng. Đổi màu thì sửa bảng trước, chạy `node scripts/tuong-phan-token.mjs`, rồi sửa CSS theo.
+Bảng này là nguồn chuẩn của giá trị và việc; `apps/frontend/src/styles.css` hiện thực theo bảng (từ PR #146; trước đó CSS còn token cũ). Đổi màu thì sửa bảng trước, chạy `node scripts/tuong-phan-token.mjs`, rồi sửa CSS theo.
 
 ## Chữ
 
 - Giao diện: chồng phông hệ thống như Wiii — `system-ui, -apple-system, "Segoe UI", "Noto Sans", sans-serif`. Chạy offline, không tải phông, tiếng Việt đủ dấu trên Windows, macOS, Android, iOS. Bỏ IBM Plex.
 - Công thức: KaTeX (họ Computer Modern, đúng chất 3b1b). Mã bài và số: `ui-monospace, "Cascadia Mono", Consolas, monospace`.
-- Chữ hiệu «MathL+»: đậm 800, giãn −0,02 em; dấu «+» màu `accent` (sáng) hay `m-blue` (tối).
+- Chữ hiệu «MathL+»: đậm 800, giãn −0,02 em; dấu «+» màu `accent` (sáng) hay `label` (tối; cùng giá trị BLUE_C nhưng là token của khung, vì màu Manim chỉ trên bảng).
 - Heading trang 28/36, đậm 700. Nhãn khu vực: 12 px, chữ hoa, giãn 0,14 em, màu `label`.
 
 ## Bố cục
