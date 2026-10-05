@@ -15,7 +15,7 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.assertj.core.api.ThrowableAssert.ThrowingCallable;
 import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.AfterEach;
@@ -315,10 +315,43 @@ class NopBaiUseCaseTest {
     void lamLaiChenGiuaKhoaVaLichSuThiNopBaiLamMoiKhongBaoDeDoi() {
         lamDuBuoc();
         assertThat(nopBai.execute(an, lop, ma)).isEqualTo(DAT_KHONG_LOI_GIAI);
-        SubmissionRepository chen = chenSauKhiGoi("history", false, () -> nopBuoc.execute(an, lop, ma, dong("B.DH.TXD", "D = R")));
-        NopBaiUseCase coChen = new NopBaiUseCase(membership, baiDeLam, chen, grades, List.of(), moLoiGiai, tx, clock);
-        ketQua409(() -> coChen.execute(an, lop, ma), LyDo.CHUA_LAM_DU_BUOC);
+        SubmissionRepository coChen = chen(submissions, "history", 1, false, () -> nopBuoc.execute(an, lop, ma, dong("B.DH.TXD", "D = R")));
+        NopBaiUseCase uc = new NopBaiUseCase(membership, baiDeLam, coChen, grades, List.of(), moLoiGiai, tx, clock);
+        ketQua409(() -> uc.execute(an, lop, ma), LyDo.CHUA_LAM_DU_BUOC);
         assertThat(trangThai()).containsExactly("DA_NOP", "DANG_LAM");
+    }
+
+    /** Phán quyết #142 (vòng 3): tab khác mở và làm xong bài làm mới ở cùng chỗ chen: khóa lại thấy nó thì nộp nó. */
+    @Test
+    void khoaLaiThayBaiLamTabKhacVuaLamXongThiNopNo() {
+        lamDuBuoc();
+        assertThat(nopBai.execute(an, lop, ma)).isEqualTo(DAT_KHONG_LOI_GIAI);
+        NopBaiUseCase uc = new NopBaiUseCase(membership, baiDeLam, chen(submissions, "history", 1, false, this::lamDuBuoc), grades,
+            List.of(), moLoiGiai, tx, clock);
+        assertThat(uc.execute(an, lop, ma)).isEqualTo(DAT_KHONG_LOI_GIAI);
+        assertThat(trangThai()).containsExactly("DA_NOP", "DA_NOP");
+        assertThat(jdbc.sql("select count(distinct result_grading_id) from submissions where class_id = ?").params(lop)
+            .query(Integer.class).single()).isEqualTo(2);
+    }
+
+    /**
+     * Phán quyết #142 (vòng 3), bốn tác nhân: tab khác mở bài làm mới trước lúc đọc lịch sử, rồi làm xong và nộp nó trước lần
+     * khóa lại. Đề không đổi: phát lại lần nộp mới nhất, không báo DE_DA_DOI (trước đây suy đề đổi từ «khóa trượt hai lần»).
+     */
+    @Test
+    void tabKhacNopBaiLamGiuaHaiLanKhoaThiPhatLaiKhongBaoDeDoi() {
+        lamDuBuoc();
+        assertThat(nopBai.execute(an, lop, ma)).isEqualTo(DAT_KHONG_LOI_GIAI);
+        SubmissionRepository moBaiLam = chen(submissions, "history", 1, false, () -> nopBuoc.execute(an, lop, ma, dong("B.DH.TXD", "D = R")));
+        SubmissionRepository nopBaiLam = chen(moBaiLam, "lockOpen", 2, false, () -> {
+            lamDuBuoc();
+            nopBai.execute(an, lop, ma);
+        });
+        int phienBan = phienBanBai();
+        NopBaiUseCase uc = new NopBaiUseCase(membership, baiDeLam, nopBaiLam, grades, List.of(), moLoiGiai, tx, clock);
+        assertThat(uc.execute(an, lop, ma)).isEqualTo(DAT_KHONG_LOI_GIAI);
+        assertThat(phienBanBai()).isEqualTo(phienBan);
+        assertThat(trangThai()).containsExactly("DA_NOP", "DA_NOP");
     }
 
     /**
@@ -330,12 +363,30 @@ class NopBaiUseCaseTest {
         lamDuBuoc();
         nopBai.execute(an, lop, ma);
         Submission.DaNop daNop = daNop();
-        SubmissionRepository chen = chenSauKhiGoi("history", true, () -> {
+        assertThat(new MoLoiGiai(lamLaiRoiBatCo(), membership, loiGiaiCong, giaoDich).cho(daNop)).isEmpty();
+        assertThat(moLoiGiai.cho(daNop)).as("đang làm lại").isEmpty();
+    }
+
+    /**
+     * Phán quyết #142 (vòng 3): gọi {@code cho} từ trong một giao dịch khác (READ COMMITTED) thì ảnh chụp vẫn là giao dịch riêng
+     * REPEATABLE READ, không nhập vào giao dịch ngoài và lặng lẽ mất mức cách ly.
+     */
+    @Test
+    void moLoiGiaiTrongGiaoDichNgoaiVanDocAnhChupRieng() {
+        lamDuBuoc();
+        nopBai.execute(an, lop, ma);
+        Submission.DaNop daNop = daNop();
+        MoLoiGiai coChen = new MoLoiGiai(lamLaiRoiBatCo(), membership, loiGiaiCong, giaoDich);
+        Optional<String> loiGiai = tx.execute(s -> coChen.cho(daNop));
+        assertThat(loiGiai).isEmpty();
+    }
+
+    /** Ngay sau lần đọc lịch sử đầu: học sinh mở bài làm mới, rồi giáo viên bật cờ. */
+    private SubmissionRepository lamLaiRoiBatCo() {
+        return chen(submissions, "history", 1, true, () -> {
             nopBuoc.execute(an, lop, ma, dong("B.DH.TXD", "D = R"));
             datCo(true);
         });
-        assertThat(new MoLoiGiai(chen, membership, loiGiaiCong, giaoDich).cho(daNop)).isEmpty();
-        assertThat(moLoiGiai.cho(daNop)).as("đang làm lại").isEmpty();
     }
 
     @Test
@@ -397,25 +448,26 @@ class NopBaiUseCaseTest {
     }
 
     /**
-     * Kho bài làm chạy {@code chen} ở luồng khác (giao dịch riêng, đã commit) ở lần gọi {@code ham} đầu tiên: trước lần gọi, hay
-     * sau khi lần gọi đã đọc ({@code sau}, ảnh chụp của giao dịch đang chạy đã chụp).
+     * Kho bài làm {@code goc} chạy {@code viec} ở luồng khác (giao dịch riêng, đã commit) ở lần gọi thứ {@code lan} của
+     * {@code ham}: trước lần gọi đó, hay sau khi nó đã đọc ({@code sau}: ảnh chụp của giao dịch đang chạy đã chụp). Lồng được
+     * để chèn ở nhiều chỗ.
      */
-    private SubmissionRepository chenSauKhiGoi(String ham, boolean sau, Runnable chen) {
-        AtomicBoolean daChen = new AtomicBoolean();
-        return (SubmissionRepository) Proxy.newProxyInstance(getClass().getClassLoader(), new Class<?>[] {SubmissionRepository.class},
-            (p, m, a) -> {
-                boolean lanDau = m.getName().equals(ham) && daChen.compareAndSet(false, true);
-                if (lanDau && !sau) {
-                    CompletableFuture.runAsync(chen).get(30, TimeUnit.SECONDS);
+    private static SubmissionRepository chen(SubmissionRepository goc, String ham, int lan, boolean sau, Runnable viec) {
+        AtomicInteger dem = new AtomicInteger();
+        return (SubmissionRepository) Proxy.newProxyInstance(NopBaiUseCaseTest.class.getClassLoader(),
+            new Class<?>[] {SubmissionRepository.class}, (p, m, a) -> {
+                boolean dung = m.getName().equals(ham) && dem.incrementAndGet() == lan;
+                if (dung && !sau) {
+                    CompletableFuture.runAsync(viec).get(30, TimeUnit.SECONDS);
                 }
                 Object ra;
                 try {
-                    ra = m.invoke(submissions, a);
+                    ra = m.invoke(goc, a);
                 } catch (InvocationTargetException e) {
                     throw e.getCause();
                 }
-                if (lanDau && sau) {
-                    CompletableFuture.runAsync(chen).get(30, TimeUnit.SECONDS);
+                if (dung && sau) {
+                    CompletableFuture.runAsync(viec).get(30, TimeUnit.SECONDS);
                 }
                 return ra;
             });

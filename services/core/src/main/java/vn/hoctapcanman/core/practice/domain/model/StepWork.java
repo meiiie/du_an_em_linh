@@ -38,9 +38,16 @@ public record StepWork(String stepCode, List<StepLine> lines, @Nullable SignTabl
         }
     }
 
-    /** Có ít nhất một dòng hay một ô có chữ: máy học sinh gửi dòng rỗng, bảng không ô khi em chưa viết gì vào bước. */
+    /**
+     * Có ít nhất một dòng hay một ô có chữ: máy học sinh gửi dòng rỗng, ô rỗng khi em chưa viết gì vào bước. Khoảng trắng tính
+     * như {@code str.strip()} của dịch vụ toán, gồm cả khoảng trắng Unicode ({@code U+00A0}) mà {@code String.isBlank} bỏ sót.
+     */
     public boolean coChu() {
-        return lines.stream().anyMatch(l -> !l.latex().isBlank())
-            || (table != null && table.cells().stream().anyMatch(o -> !o.value().isBlank()));
+        return lines.stream().anyMatch(l -> coChu(l.latex()))
+            || (table != null && table.cells().stream().anyMatch(o -> coChu(o.value())));
+    }
+
+    private static boolean coChu(String s) {
+        return s.codePoints().anyMatch(c -> !Character.isWhitespace(c) && !Character.isSpaceChar(c));
     }
 }

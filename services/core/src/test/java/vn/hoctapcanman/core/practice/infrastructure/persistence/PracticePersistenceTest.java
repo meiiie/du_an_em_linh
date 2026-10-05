@@ -304,6 +304,24 @@ class PracticePersistenceTest {
     }
 
     @Test
+    void csdlChanNopBaiThieuMaKyNang() {
+        Submission dangLam = submissions.openOrGet(Submission.open(lop, an, bai, 1, LUC));
+        GradingResult dat = grades.record(ketQua(dangLam.id(), "8".repeat(64), GradeStatus.DAT));
+        assertThatThrownBy(() -> jdbc.sql("""
+                update submissions set status = 'DA_NOP', result = 'DAT', result_grading_id = ?, submitted_at = now(),
+                    level4 = 'THONG_HIEU' where id = ?""").params(dat.id(), dangLam.id()).update())
+            .isInstanceOf(DataIntegrityViolationException.class).hasMessageContaining("submissions_nop_ghim_phan_loai");
+    }
+
+    @Test
+    void csdlChanBaiLamDangLamCoPhanLoai() {
+        Submission dangLam = submissions.openOrGet(Submission.open(lop, an, bai, 1, LUC));
+        assertThatThrownBy(() -> jdbc.sql("update submissions set skill_code = 'T12.DH.02', level4 = 'THONG_HIEU' where id = ?")
+                .params(dangLam.id()).update())
+            .isInstanceOf(DataIntegrityViolationException.class).hasMessageContaining("submissions_nop_ghim_phan_loai");
+    }
+
+    @Test
     void csdlChanCanCuCuaBaiLamKhac() {
         UUID binh = DuLieuPractice.nguoi(jdbc, "STUDENT");
         DuLieuPractice.ghiDanh(jdbc, lop, binh, "STUDENT");

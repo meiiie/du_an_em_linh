@@ -32,6 +32,7 @@ public class MoLoiGiai {
         this.membership = membership;
         this.loiGiai = loiGiai;
         this.anhChup = new TransactionTemplate(giaoDich);
+        anhChup.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRES_NEW);
         anhChup.setIsolationLevel(TransactionDefinition.ISOLATION_REPEATABLE_READ);
         anhChup.setReadOnly(true);
     }
@@ -46,7 +47,9 @@ public class MoLoiGiai {
      * </ol>
      * Thiếu một điều thì rỗng, không lộ điều nào thiếu. Cờ đọc lúc gọi: giáo viên tắt cờ thì lời giải đóng lại cả với bài đã
      * nộp. Ba điều đọc trong một ảnh chụp (REPEATABLE READ, chỉ đọc): kết quả đúng với một thời điểm, không ghép «chưa làm
-     * lại» lúc này với «cờ bật» lúc khác (phán quyết #142, ba tác nhân).
+     * lại» lúc này với «cờ bật» lúc khác (phán quyết #142, ba tác nhân). Ảnh chụp ở giao dịch riêng: gọi từ trong giao dịch
+     * khác thì không nhập vào nó (nhập vào thì mức cách ly là của giao dịch ngoài), chỉ thấy dữ liệu đã commit, nên bài làm
+     * nộp trong giao dịch ngoài chưa commit thì chưa mở.
      */
     public Optional<String> cho(Submission.DaNop daNop) {
         return Objects.requireNonNull(anhChup.execute(s -> trongAnhChup(daNop)));

@@ -49,6 +49,18 @@ class PracticeModelTest {
             .isInstanceOf(IllegalArgumentException.class);
     }
 
+    /** Phán quyết #142 (vòng 3): mỗi kiểu bước trống một ca, để mỗi nửa của {@code coChu} có test riêng. */
+    @Test
+    void buocCoChuKhiCoMotDongHayMotOCoChu() {
+        assertThat(dong("").coChu()).as("dòng rỗng").isFalse();
+        assertThat(dong(" \t").coChu()).as("dòng chỉ khoảng trắng").isFalse();
+        assertThat(dong(" ").coChu()).as("dòng chỉ NBSP, như str.strip() của dịch vụ toán").isFalse();
+        assertThat(dong("x = 0").coChu()).isTrue();
+        assertThat(bang().coChu()).as("bảng không ô").isFalse();
+        assertThat(bang(new TableCell("DAU_YPHAY", 0, ""), new TableCell("X", 0, " ")).coChu()).as("bảng toàn ô trống").isFalse();
+        assertThat(bang(new TableCell("X", 0, "0")).coChu()).as("chỉ hàng X").isTrue();
+    }
+
     @Test
     void baiLamKhongHopLe() {
         UUID canCu = UUID.randomUUID();
@@ -117,6 +129,14 @@ class PracticeModelTest {
         assertThat(GradeStatus.tuDichVuToan("dat")).isEmpty();
         assertThat(GradeStatus.tuDichVuToan(null)).isEmpty();
         assertThat(GradeStatus.tuDichVuToan(1)).isEmpty();
+    }
+
+    private static StepWork dong(String latex) {
+        return new StepWork("B.DH.TXD", List.of(new StepLine(0, latex, null)), null);
+    }
+
+    private static StepWork bang(TableCell... o) {
+        return new StepWork("B.DH.XETDAU", List.of(), new SignTable("XET_DAU", List.of(o)));
     }
 
     private static GradingResult cham(UUID baiLam, GradeStatus kq) {

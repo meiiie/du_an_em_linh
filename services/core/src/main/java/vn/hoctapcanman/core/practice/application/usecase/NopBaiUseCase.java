@@ -4,6 +4,7 @@ import java.time.Clock;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -39,17 +40,18 @@ import vn.hoctapcanman.core.practice.domain.repository.SubmissionRepository;
  *   <li>Không phải học sinh của lớp, bài chưa phát hành ở lớp hay không chấm từng bước được: {@link BaiKhongTimThayException},
  *       cùng một lỗi như nộp bước.</li>
  *   <li>Trong một giao dịch, khóa bài làm đang làm ở phiên bản nội dung hiện tại như mọi lần ghi phần con. Thiếu một bước từ
- *       bước bắt đầu tới bước kết luận, hay bước đó không có chữ ({@code StepWork.coChu}), thì {@code CHUA_LAM_DU_BUOC}: chỉ nộp bước kết luận thì máy chấm vẫn ghi một phán
- *       quyết (thiếu dòng), nhưng đó không phải bài đã làm. Đủ bước thì dựng lại yêu cầu chấm tới bước kết luận từ các bước
+ *       bước bắt đầu tới bước kết luận, hay bước đó không có chữ ({@code StepWork.coChu}), thì {@code CHUA_LAM_DU_BUOC}: chỉ
+ *       nộp bước kết luận thì máy chấm vẫn ghi một phán quyết (thiếu dòng), nhưng đó không phải bài đã làm. Đủ bước thì dựng lại yêu cầu chấm tới bước kết luận từ các bước
  *       đã lưu như {@code NopBuocUseCase} và tra phán quyết theo băm. Không có (chấm lỗi, hay đã sửa một bước sau lần chấm
  *       đó) thì {@code CHUA_CHAM_BUOC_KET_LUAN}. Cả hai trường hợp không ghi gì.</li>
  *   <li>Không khóa được bài làm đang làm mà lịch sử còn bài làm đang làm ở đúng phiên bản đã đọc: khóa lại một lần. Tab
- *       khác vừa mở nó thì nộp như trên; vẫn không khóa được thì đề đổi trong lúc chờ khóa, {@code DE_DA_DOI}.</li>
+ *       khác vừa mở nó thì nộp như trên. Vẫn không khóa được: phiên bản đang phát hành khác phiên bản đã đọc (đề đổi trong lúc
+ *       chờ khóa) thì {@code DE_DA_DOI}; không thì tab khác vừa nộp nó, đọc lại lịch sử và đi tiếp như dưới.</li>
  *   <li>Không có bài làm đang làm ở phiên bản đó: lần nộp mới nhất ở đúng phiên bản được phát lại (gửi lại sau khi mất phản
  *       hồi, hai tab cùng nộp). Không có lần nộp đó: còn bài làm đang làm ở phiên bản khác thì {@code DE_DA_DOI}, không thì
  *       {@code CHUA_LAM_DU_BUOC}.</li>
  *   <li>Cuối giao dịch: mọi {@link CapNhatMucHieu} (idempotent theo bài làm, nên phát lại trả đúng lần đầu).</li>
- *   <li>Sau commit: lời giải qua {@link MoLoiGiai} (đọc trong một ảnh chụp).</li>
+ *   <li>Sau commit: lời giải qua {@link MoLoiGiai} (đọc trong một ảnh chụp, giao dịch riêng).</li>
  * </ol>
  * Không gọi dịch vụ toán. Chưa làm ở đây: giới hạn tần suất (web, T021).
  */
@@ -110,13 +112,22 @@ public class NopBaiUseCase {
 
     private CoCanCu phatLai(UUID hocSinhId, UUID lopId, BaiChoLamBai bai) {
         SubmissionHistory lichSu = submissions.history(hocSinhId, bai.problemId());
-        // Bài làm đang làm ở phiên bản đã đọc mà lần khóa trên không thấy: tab khác vừa mở nó (khóa lại được, nộp như thường),
-        // hay đề đổi trong lúc chờ khóa (vẫn không khóa được). Lần nộp cũ hơn không phải kết quả của bài làm này.
+        // Bài làm đang làm ở phiên bản đã đọc mà lần khóa trên không thấy: tab khác vừa mở nó, vừa nộp nó, hay đề đổi trong lúc
+        // chờ khóa. Lần nộp cũ hơn không phải kết quả của bài làm này, nên không phát lại trước khi biết là trường hợp nào.
         if (lichSu.dangLam(lopId, bai.phienBan())) {
-            return submissions.lockOpen(hocSinhId, lopId, bai.problemId(), bai.phienBan())
-                .map(dangLam -> nop(dangLam, bai))
-                .orElseThrow(() -> new BaiChuaNopDuocException(LyDo.DE_DA_DOI));
+            Optional<Submission> dangLam = submissions.lockOpen(hocSinhId, lopId, bai.problemId(), bai.phienBan());
+            if (dangLam.isPresent()) {
+                return nop(dangLam.get(), bai);
+            }
+            if (baiDeLam.bai(lopId, bai.ma()).map(BaiChoLamBai::phienBan).filter(pb -> pb == bai.phienBan()).isEmpty()) {
+                throw new BaiChuaNopDuocException(LyDo.DE_DA_DOI);
+            }
+            return phatLai(submissions.history(hocSinhId, bai.problemId()), lopId, bai);
         }
+        return phatLai(lichSu, lopId, bai);
+    }
+
+    private CoCanCu phatLai(SubmissionHistory lichSu, UUID lopId, BaiChoLamBai bai) {
         Submission.DaNop daNop = lichSu.daNopMoiNhat(lopId, bai.phienBan()).orElseThrow(() -> new BaiChuaNopDuocException(
             lichSu.dangLamDeKhac(lopId, bai.phienBan()) ? LyDo.DE_DA_DOI : LyDo.CHUA_LAM_DU_BUOC));
         return new CoCanCu(daNop, grades.findById(daNop.canCuId()).orElseThrow());
