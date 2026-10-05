@@ -25,29 +25,29 @@ Sản phẩm là **một trang toán**: công thức là điểm nhìn, năm bư
 
 ## Token
 
-Chữ đạt ≥ 4,5 : 1, thành phần giao diện ≥ 3 : 1. Số trong bảng tính theo WCAG 2.x (độ chói sRGB) bằng `node scripts/tuong-phan-token.mjs`: script đọc thẳng bảng này, CI chạy ở mọi PR, đỏ khi một cặp dưới ngưỡng hay khi một chỗ ghi «dưới ngưỡng» lại đạt. Số đo trên giao diện đã vẽ (điểm ảnh thật, vòng focus, lần vẽ đầu) thuộc PR áp token vào Angular (#146), chưa có trong cây này. Chế độ tối: `prefers-color-scheme: dark`, hay `data-theme` trên `<html>` khi người dùng bấm nút đổi (nhớ trong `localStorage`).
+Chữ đạt ≥ 4,5 : 1, thành phần giao diện ≥ 3 : 1. Bảng ghi ngưỡng, không ghi tỉ lệ cụ thể: tỉ lệ tính theo WCAG 2.x (độ chói sRGB) bằng `node scripts/tuong-phan-token.mjs`. Script đọc thẳng bảng này, CI chạy ở mọi PR; đỏ khi một cặp dưới ngưỡng, khi một chỗ ghi «dưới ngưỡng» lại đạt, khi một token chưa được đo, hay khi bảng chép tay một tỉ lệ (số chép tay sẽ cũ). Lần đo có ngày và kết quả: mục «Tương phản đo được» của `labs/design/studies/2026-10-06-wiii-3b1b.md`. Số đo trên giao diện đã vẽ (điểm ảnh thật, vòng focus, lần vẽ đầu) thuộc PR áp token vào Angular (#146), chưa có trong cây này. Chế độ tối: `prefers-color-scheme: dark`, hay `data-theme` trên `<html>` khi người dùng bấm nút đổi (nhớ trong `localStorage`).
 
 | Tên | Sáng | Tối | Việc |
 | --- | --- | --- | --- |
 | `canvas` | `#FAF9F5` | `#1E1D1B` | Nền trang (Wiii `--surface`) |
 | `wash` | `#F0EEE6` | `#282724` | Thanh bên (cả khi là ngăn kéo trên điện thoại), khối phụ |
-| `raise` | `#FFFFFF` | `#353330` | Thẻ nổi, ô nhập. Không đặt `accent` hay `mark` làm chữ / biểu tượng trên `raise` tối (`accent` 2,99 : 1, `mark` 4,21 : 1) |
+| `raise` | `#FFFFFF` | `#353330` | Thẻ nổi, ô nhập. Không đặt `accent` hay `mark` làm chữ / biểu tượng trên `raise` tối (dưới ngưỡng) |
 | `line` | `#D8D5CD` | `#3A3935` | Kẻ chia 1 px (trang trí, không phải ranh giới duy nhất của một điều khiển) |
 | `line-strong` | `#8A877F` | `#82807A` | Viền ô nhập, nút phụ, ranh giới điều khiển: ≥ 3 : 1 trên `canvas`, `wash`, `raise` (WCAG 1.4.11) |
 | `ink` | `#141413` | `#E8E8E4` | Chữ chính |
 | `ink-2` | `#3D3D3A` | `#C9C8C2` | Chữ phụ đậm |
 | `muted` | `#5F5E58` | `#A8A7A2` | Chữ phụ (Wiii `--text-tertiary` chỉnh đậm cho AA) |
 | `accent` | `#C75B39` | `#C75B39` | Vạch mục đang chọn, dấu «+» của chữ hiệu (sáng) |
-| `focus` | `#C75B39` (3,63–4,21 : 1 trên `wash`, `canvas`, `raise`) | `#D78970` = `accent` 72 % pha trắng như Wiii (4,62–6,18 : 1; `#C75B39` chỉ 2,99 : 1 trên `raise` tối) | Viền focus 2 px, `outline-offset: 2px` để viền không chạm nền nút. Mọi điều khiển trong thanh trên 48 px vẽ viền vào trong (`-2px`): điều khiển cao 44 px, viền ngoài bị cắt ở mép trên màn; `focus` vẫn ≥ 3 : 1 với nền nút |
-| `action` | `#AE5630` | `#AE5630` | Nền nút chính, chữ trắng 5,03 : 1 (`#C75B39` với chữ trắng chỉ 4,21 : 1) |
-| `action-hover` | `#9A4A28`, chữ trắng 6,21 : 1 | `#C4633A`, chữ `#141413` 4,56 : 1 | Nút chính khi trỏ; trên nền tối chữ trắng chỉ 4,04 : 1 nên đổi sang chữ mực |
+| `focus` | `#C75B39` (≥ 3 : 1 trên `wash`, `canvas`, `raise`) | `#D78970` = `accent` 72 % pha trắng như Wiii (`#C75B39` dưới 3 : 1 trên `raise` tối) | Viền focus 2 px, `outline-offset: 2px` để viền không chạm nền nút. Mọi điều khiển trong thanh trên 48 px vẽ viền vào trong (`-2px`): điều khiển cao 44 px, viền ngoài bị cắt ở mép trên màn; `focus` vẫn ≥ 3 : 1 với nền nút |
+| `action` | `#AE5630` | `#AE5630` | Nền nút chính, chữ trắng (`#C75B39` với chữ trắng dưới 4,5 : 1 nên không làm nền nút) |
+| `action-hover` | `#9A4A28`, chữ trắng | `#C4633A`, chữ `#141413` | Nút chính khi trỏ; trên nền tối chữ trắng dưới 4,5 : 1 nên đổi sang chữ mực |
 | `label` | `#2C6FB0` | `#58C4DD` | Nhãn khu vực chữ hoa nhỏ giãn chữ; dấu «+» của chữ hiệu (tối) |
 | `pass` | `#1A7A45` | `#5CD0B3` | Đạt |
-| `mark` | `#B83B2E` | `#FC6255` | Bút đỏ: sai — vẫn **một** màu nhớ. Chữ `mark` chỉ trên `canvas`, `wash` (trên `raise` tối chỉ 4,21 : 1) |
+| `mark` | `#B83B2E` | `#FC6255` | Bút đỏ: sai — vẫn **một** màu nhớ. Chữ `mark` chỉ trên `canvas`, `wash` (trên `raise` tối dưới 4,5 : 1) |
 | `wait` | `#8A5A00` | `#F0AC5F` | Chờ |
 | `board` | `#1C1C1C` | `#161615` | Tấm bảng toán (luôn tối) |
-| `board-line` | `#3A3A3A` | `#34332F` | Kẻ trang trí trên bảng (lưới đồ thị, viền tấm bảng): 1,50 / 1,43 : 1, không mang nghĩa |
-| `board-rule` | `#888888` | `#888888` | Kẻ mang nghĩa trên bảng: đường kẻ bảng xét dấu (hàng, cột điểm tới hạn), trục đồ thị. Manim `GREY_C`, 4,81 / 5,11 : 1 trên `board` |
+| `board-line` | `#3A3A3A` | `#34332F` | Kẻ trang trí trên bảng (lưới đồ thị, viền tấm bảng): dưới 3 : 1, không mang nghĩa |
+| `board-rule` | `#888888` | `#888888` | Kẻ mang nghĩa trên bảng: đường kẻ bảng xét dấu (hàng, cột điểm tới hạn), trục đồ thị. Manim `GREY_C`, ≥ 3 : 1 trên `board` |
 | `board-ink` | `#F2EFE6` | `#F2EFE6` | Chữ và công thức trên bảng |
 | `m-blue` / `m-teal` / `m-yellow` / `m-red` / `m-gold` / `m-green` | `#58C4DD` / `#5CD0B3` / `#F4D345` / `#FC6255` / `#F0AC5F` / `#83C167` | như sáng | Màu Manim, **chỉ** trên bảng: đường cong xanh, điểm đặc biệt vàng, dấu dương ngọc, dấu âm đỏ |
 

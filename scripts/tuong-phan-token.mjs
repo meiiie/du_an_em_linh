@@ -5,7 +5,7 @@
  * - cặp bắt buộc dưới ngưỡng;
  * - cặp đối chứng (chỗ DESIGN.md ghi «dưới ngưỡng, không dùng») lại đạt: lời ghi đã sai;
  * - token trong bảng không nằm trong cặp nào: màu mới chưa được đo;
- * - một tỉ lệ ghi trong bảng (dạng 4,81) không phải kết quả của đúng cặp nó nói tới: số trong bảng đã sai hay cũ.
+ * - bảng chép tay một tỉ lệ (dạng 4,81): bảng chỉ ghi ngưỡng, tỉ lệ là kết quả của script này, chép tay sẽ cũ.
  */
 import { readFileSync } from "node:fs";
 
@@ -14,7 +14,7 @@ const DIEU_KHIEN = 3;
 
 function docBang(md) {
   const bang = {};
-  const soGhi = [];
+  const chepTay = [];
   for (const dong of md.split("\n")) {
     const o = dong.split(" | ");
     if (o.length < 4 || !dong.startsWith("| `")) continue;
@@ -29,17 +29,9 @@ function docBang(md) {
       if (bang[t]) throw new Error(`token lặp: ${t}`);
       bang[t] = { light: sang[nhieu ? i : 0], dark: toi[nhieu ? i : 0] };
     });
-    // Số thuộc màu gần nhất đứng trước nó trong cùng ô («`#C75B39` với chữ trắng chỉ 4,21»), không có thì thuộc token
-    // của hàng. Cột sáng chỉ khớp đo sáng, cột tối chỉ khớp đo tối.
-    [["light"], ["dark"], ["light", "dark"]].forEach((cheDo, k) => {
-      let chuThe = null;
-      for (const m of o[k + 1].matchAll(/#[0-9A-Fa-f]{6}\b|\d+,\d\d/g)) {
-        if (m[0].startsWith("#")) chuThe = m[0].toUpperCase();
-        else soGhi.push({ so: m[0], ten, chuThe, cheDo });
-      }
-    });
+    for (const m of dong.matchAll(/\d+,\d\d/g)) chepTay.push({ so: m[0], ten: ten.join(", ") });
   }
-  return { bang, soGhi };
+  return { bang, chepTay };
 }
 
 const kenh = (c) => {
@@ -55,7 +47,7 @@ const tiLe = (a, b) => {
   return (x + 0.05) / (y + 0.05);
 };
 
-const { bang, soGhi } = docBang(readFileSync("docs/DESIGN.md", "utf8"));
+const { bang, chepTay } = docBang(readFileSync("docs/DESIGN.md", "utf8"));
 const mau = (ten, cheDo) => {
   const t = typeof ten === "string" ? ten : ten[cheDo];
   if (t.startsWith("#")) return t;
@@ -94,14 +86,11 @@ const DOI_CHUNG = [
 
 const so = (x) => x.toFixed(2).replace(".", ",");
 const ten = (x) => (typeof x === "string" ? x : `${x.light} | ${x.dark}`);
-const daDo = [];
-const ghi = (c, m, x) => daDo.push({ so: so(x), m, mau: [mau(c.fg, m), mau(c.bg, m)].map((h) => h.toUpperCase()) });
 let loi = 0;
 
 console.log("cặp bắt buộc (sáng / tối, ngưỡng)");
 for (const c of BAT_BUOC) {
   const r = HAI.map((m) => tiLe(mau(c.fg, m), mau(c.bg, m)));
-  HAI.forEach((m, i) => ghi(c, m, r[i]));
   const dat = r.every((x) => x >= c.nguong);
   if (!dat) loi++;
   console.log(`  ${dat ? "đạt " : "TRƯỢT"} ${ten(c.fg)} / ${c.bg}: ${r.map(so).join(" / ")} (≥ ${so(c.nguong)})`);
@@ -111,7 +100,6 @@ console.log("đối chứng: DESIGN.md ghi dưới ngưỡng");
 for (const c of DOI_CHUNG) {
   const cheDo = c.cheDo ?? HAI;
   const r = cheDo.map((m) => tiLe(mau(c.fg, m), mau(c.bg, m)));
-  cheDo.forEach((m, i) => ghi(c, m, r[i]));
   const van = r.every((x) => x < c.nguong);
   if (!van) loi++;
   console.log(`  ${van ? "dưới" : "ĐÃ ĐẠT, sửa DESIGN.md"} ${ten(c.fg)} / ${c.bg} (${cheDo.join(", ")}): ${r.map(so).join(" / ")} (< ${so(c.nguong)}; ${c.ly})`);
@@ -122,17 +110,13 @@ for (const t of Object.keys(bang).filter((t) => !coCap.has(t))) {
   loi++;
   console.log(`  CHƯA ĐO token ${t}: thêm cặp vào BAT_BUOC hay DOI_CHUNG`);
 }
-const khop = ({ so: s, ten: t, chuThe, cheDo }) =>
-  daDo.some((d) => d.so === s && cheDo.includes(d.m) && (chuThe ? [chuThe] : t.map((x) => bang[x][d.m].toUpperCase())).some((h) => d.mau.includes(h)));
-for (const g of soGhi.filter((g) => !khop(g))) {
+for (const g of chepTay) {
   loi++;
-  console.log(`  SỐ SAI ${g.so} ở hàng ${g.ten.join(", ")} (${g.chuThe ?? "màu của hàng"}, ${g.cheDo.join(", ")}): không cặp nào của màu đó ra số này`);
+  console.log(`  TỈ LỆ CHÉP TAY ${g.so} ở hàng ${g.ten}: ghi ngưỡng («≥ 3 : 1», «dưới 4,5 : 1»), tỉ lệ để script đo`);
 }
 
 if (loi) {
   console.error(`${loi} chỗ sai so với DESIGN.md`);
   process.exit(1);
 }
-console.log(
-  `${Object.keys(bang).length} token, ${BAT_BUOC.length} cặp bắt buộc, ${DOI_CHUNG.length} đối chứng, ${soGhi.length} số ghi trong bảng đều khớp`,
-);
+console.log(`${Object.keys(bang).length} token đều được đo, ${BAT_BUOC.length} cặp bắt buộc, ${DOI_CHUNG.length} đối chứng`);
