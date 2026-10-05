@@ -38,7 +38,7 @@ Chữ đạt ≥ 4,5 : 1, thành phần giao diện ≥ 3 : 1. Số trong bảng
 | `ink-2` | `#3D3D3A` | `#C9C8C2` | Chữ phụ đậm |
 | `muted` | `#5F5E58` | `#A8A7A2` | Chữ phụ (Wiii `--text-tertiary` chỉnh đậm cho AA) |
 | `accent` | `#C75B39` | `#C75B39` | Vạch mục đang chọn, dấu «+» của chữ hiệu (sáng) |
-| `focus` | `#C75B39` (3,63–4,21 : 1 trên `wash`, `canvas`, `raise`) | `#D78970` = `accent` 72 % pha trắng như Wiii (4,62–6,18 : 1; `#C75B39` chỉ 2,99 : 1 trên `raise` tối) | Viền focus 2 px, `outline-offset: 2px` để viền không chạm nền nút. Nút biểu tượng và chữ hiệu trong thanh trên 48 px vẽ viền vào trong (`-2px`) vì viền ngoài bị cắt ở mép màn; `focus` vẫn ≥ 3 : 1 với nền nút |
+| `focus` | `#C75B39` (3,63–4,21 : 1 trên `wash`, `canvas`, `raise`) | `#D78970` = `accent` 72 % pha trắng như Wiii (4,62–6,18 : 1; `#C75B39` chỉ 2,99 : 1 trên `raise` tối) | Viền focus 2 px, `outline-offset: 2px` để viền không chạm nền nút. Mọi điều khiển trong thanh trên 48 px vẽ viền vào trong (`-2px`): điều khiển cao 44 px, viền ngoài bị cắt ở mép trên màn; `focus` vẫn ≥ 3 : 1 với nền nút |
 | `action` | `#AE5630` | `#AE5630` | Nền nút chính, chữ trắng 5,03 : 1 (`#C75B39` với chữ trắng chỉ 4,21 : 1) |
 | `action-hover` | `#9A4A28`, chữ trắng 6,21 : 1 | `#C4633A`, chữ `#141413` 4,56 : 1 | Nút chính khi trỏ; trên nền tối chữ trắng chỉ 4,04 : 1 nên đổi sang chữ mực |
 | `label` | `#2C6FB0` | `#58C4DD` | Nhãn khu vực chữ hoa nhỏ giãn chữ |
@@ -51,7 +51,7 @@ Chữ đạt ≥ 4,5 : 1, thành phần giao diện ≥ 3 : 1. Số trong bảng
 | `board-ink` | `#F2EFE6` | `#F2EFE6` | Chữ và công thức trên bảng |
 | `m-blue` / `m-teal` / `m-yellow` / `m-red` / `m-gold` / `m-green` | `#58C4DD` / `#5CD0B3` / `#F4D345` / `#FC6255` / `#F0AC5F` / `#83C167` | như sáng | Màu Manim, **chỉ** trên bảng: đường cong xanh, điểm đặc biệt vàng, dấu dương ngọc, dấu âm đỏ |
 
-Giá trị cuối cùng là giá trị trong `apps/frontend/src/styles.css` sau khi đo tương phản; bảng này ghi họ màu và việc.
+Bảng này là nguồn chuẩn của giá trị và việc; `apps/frontend/src/styles.css` hiện thực theo bảng. Đổi màu thì sửa bảng trước, chạy `node scripts/tuong-phan-token.mjs`, rồi sửa CSS theo.
 
 ## Chữ
 
@@ -143,7 +143,7 @@ Thanh công cụ điện thoại 48 px (`h-12`) — Material touch 48 dp, cao h�
 - Bước 5 bước = mục lục tên + số mono, vạch 2 px ở bước hiện tại. Mỗi hàng `min-h-11`. Không chip viên thuốc, không tô nền đặc cả hàng.
 - Sai = vạch `mark` trên mục và dòng phản hồi ngay dưới chỗ viết. Ô sai trong bảng vẫn `cell-bad`.
 - Composer gia sư: chỉ khi bấm `Cần gợi ý?`. Dưới `lg` là tờ full màn; `lg+` là tờ phải 24 rem, có Đóng. Không chiếm cột khi đóng. Thanh đáy điện thoại: **Kiểm tra + Cần gợi ý?** Chip «Sai chỗ nào?» (gửi vẫn «Em sai chỗ nào?»). `visualViewport` khi bàn phím, composer đáy, Đóng 44. `textarea` tối thiểu 44, nút Gửi **luôn** 44×44, Enter gửi / Shift+Enter dòng / Escape Dừng hoặc đóng tờ. Ô vẫn gõ được lúc đang nghĩ. Cuộn theo đáy (Open WebUI); kéo lên thì giữ chỗ, có «Xuống». Lỗi: «Hỏi lại» đổ câu vào ô — không tự gửi. SSE `trang_thai` kho/gọi/lọc rồi `xong` — **không** xả token. Chờ = 3 ô CSS (bước đang làm nhịp, scale 0,85↔1) + chữ `Đang nghĩ…` / `Đang mở công thức…` / `Đang hỏi gia sư…` / `Đang kiểm lời…`. Câu mới và dòng chấm vào bằng `phieu-vao` (180 ms, 6 px); tờ dưới `lg` dùng `to-len` (200 ms, 16 px). Không khối SVG trang trí, không bong bóng gradient, không gọi lại model khi SSE lỗi. Hình trang chủ là đồ thị của hàm minh họa, không phải họa tiết.
-- Lời gia sư: Markdown + KaTeX (nhịp Claude / assistant-ui / Open WebUI — flush trái trên `canvas`, học sinh mới có bong bóng `wash` (sáng) / `raise` (tối) như Wiii). Cột hẹp: đoạn ngắn, danh sách, công thức căn trái cuộn ngang. Chuẩn hóa `\[ \]`, `\(...\)`, `align` trần, hàng rào `latex`. KaTeX lỗi thì chữ mờ, không hộp đỏ. Tiêu đề `#` thành chữ đậm cùng cỡ. Không HTML thô, không bong bóng wash. Không tự giới thiệu trên mặt («Chào em», «Mình là AI…») — lời mở chỉ việc: đọc công thức, không đáp án. Trích dẫn: số `[n]` trong lời là badge (không lẫn số danh sách). Bấm số / chip = xem đúng đoạn trên phiếu. **Mở công thức** / **Mở tài liệu** mới về `#ct-` / `#tl-`. Một đoạn, không chồng 5–6.
+- Lời gia sư: Markdown + KaTeX (nhịp Claude / assistant-ui / Open WebUI — flush trái trên `canvas`, học sinh mới có bong bóng `wash` (sáng) / `raise` (tối) như Wiii). Cột hẹp: đoạn ngắn, danh sách, công thức căn trái cuộn ngang. Chuẩn hóa `\[ \]`, `\(...\)`, `align` trần, hàng rào `latex`. KaTeX lỗi thì chữ mờ, không hộp đỏ. Tiêu đề `#` thành chữ đậm cùng cỡ. Không HTML thô; lời gia sư không có bong bóng. Không tự giới thiệu trên mặt («Chào em», «Mình là AI…») — lời mở chỉ việc: đọc công thức, không đáp án. Trích dẫn: số `[n]` trong lời là badge (không lẫn số danh sách). Bấm số / chip = xem đúng đoạn trên phiếu. **Mở công thức** / **Mở tài liệu** mới về `#ct-` / `#tl-`. Một đoạn, không chồng 5–6.
 - Kết nối tài khoản: hai bước như Notion/Linear (mở trang chính thức → dán một lần). Không nút xanh ChatGPT, không logo.
 - Không hero navy, không số khổng lồ trên 3 thẻ giống nhau.
 
@@ -170,7 +170,7 @@ Nguồn: optical center ~46% từ đỉnh (bố cục in / biển hiệu); cân 
 
 ## A11y
 
-Skip link, `:focus-visible` viền 2 px màu `focus` cách 2 px (nút trong thanh trên 48 px: vào trong 2 px), `prefers-reduced-motion`, `aria-live` khi chấm. Giữ `data-testid`. `touch-action: manipulation`.
+Skip link, `:focus-visible` viền 2 px màu `focus` cách 2 px (mọi điều khiển trong thanh trên 48 px: vào trong 2 px), `prefers-reduced-motion`, `aria-live` khi chấm. Giữ `data-testid`. `touch-action: manipulation`.
 
 ## Nguồn khoảng cách (không chép thương hiệu)
 
