@@ -136,7 +136,8 @@ public class NopBaiUseCase {
     private CoCanCu phatLai(SubmissionHistory lichSu, UUID lopId, BaiChoLamBai bai) {
         Submission.DaNop daNop = lichSu.daNopMoiNhat(lopId, bai.phienBan()).orElseThrow(() -> new BaiChuaNopDuocException(
             lichSu.dangLamDeKhac(lopId, bai.phienBan()) ? LyDo.DE_DA_DOI : LyDo.CHUA_LAM_DU_BUOC));
-        return new CoCanCu(daNop, grades.findById(daNop.canCuId()).orElseThrow());
+        // Kết quả chấm chỉ thêm (V7): căn cứ mất giữa hai lần đọc chỉ khi bài làm bị xóa dây chuyền (xóa lớp, ghi danh, bài).
+        return new CoCanCu(daNop, grades.findById(daNop.canCuId()).orElseThrow(BaiKhongTimThayException::new));
     }
 
     private static boolean daLamDuBuoc(BaiChoLamBai bai, List<StepWork> daLuu) {

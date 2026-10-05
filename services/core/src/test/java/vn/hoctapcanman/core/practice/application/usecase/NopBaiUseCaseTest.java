@@ -440,6 +440,17 @@ class NopBaiUseCaseTest {
         assertThat(trangThai()).containsExactly("DANG_LAM");
     }
 
+    /** Codex #142: lớp bị xóa giữa lúc đọc lịch sử và lúc đọc căn cứ của lần phát lại thì 404 như không có bài, không 500. */
+    @Test
+    void xoaLopGiuaLichSuVaCanCuThiNhuKhongCoBai() {
+        lamDuBuoc();
+        nopBai.execute(an, lop, ma);
+        NopBaiUseCase uc = new NopBaiUseCase(membership, baiDeLam,
+            chen(submissions, "history", 1, true, () -> jdbc.sql("delete from classes where id = ?").params(lop).update()), grades,
+            List.of(), moLoiGiai, tx, clock);
+        assertThatThrownBy(() -> uc.execute(an, lop, ma)).isInstanceOf(BaiKhongTimThayException.class);
+    }
+
     /** Phán quyết #142 (vòng 4): gọi từ trong một giao dịch thì bài vừa nộp chưa commit lúc đọc lời giải; chặn hẳn. */
     @Test
     void goiTuTrongGiaoDichKhacThiLoi() {
