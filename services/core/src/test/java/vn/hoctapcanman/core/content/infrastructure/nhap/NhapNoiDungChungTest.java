@@ -56,7 +56,7 @@ import vn.hoctapcanman.core.shared.infrastructure.math.MathResult;
     NhapNoiDungChungTest.ToanGia.class
 })
 @Testcontainers(disabledWithoutDocker = true)
-class NhapNoiDungChungTest {
+public class NhapNoiDungChungTest {
 
     @DynamicPropertySource
     static void nguon(DynamicPropertyRegistry r) {
@@ -64,7 +64,7 @@ class NhapNoiDungChungTest {
     }
 
     /** {@code data/} của repo, tìm ngược từ thư mục chạy (Maven chạy ở {@code services/core}). */
-    static Path thuMucData() {
+    public static Path thuMucData() {
         for (Path p = Path.of("").toAbsolutePath(); p != null; p = p.getParent()) {
             if (Files.exists(p.resolve("data/supham/danh-muc-ky-nang-DH.json"))) {
                 return p.resolve("data");
