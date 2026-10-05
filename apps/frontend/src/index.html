@@ -7,6 +7,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <link rel="icon" href="favicon.ico" sizes="any" />
     <link rel="icon" href="icon.svg" type="image/svg+xml" />
+    <!-- Đặt chế độ sáng / tối trước lần vẽ đầu để trang không chớp; cùng khóa và cùng luật với GiaoDien (src/app/core/giao-dien.ts). -->
+    <script>
+      (function () {
+        var c = null;
+        try {
+          c = localStorage.getItem('mathl-giao-dien');
+        } catch (e) {}
+        if (c !== 'light' && c !== 'dark') c = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        document.documentElement.setAttribute('data-theme', c);
+      })();
+    </script>
   </head>
   <body>
     <app-root></app-root>
