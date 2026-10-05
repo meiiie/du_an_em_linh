@@ -25,7 +25,7 @@ Sản phẩm là **một trang toán**: công thức là điểm nhìn, năm bư
 
 ## Token
 
-Chữ đạt ≥ 4,5 : 1, thành phần giao diện ≥ 3 : 1. Bảng ghi ngưỡng, không ghi tỉ lệ cụ thể: tỉ lệ tính theo WCAG 2.x (độ chói sRGB) bằng `node scripts/tuong-phan-token.mjs`. Script đọc thẳng bảng này, CI chạy ở mọi PR; đỏ khi một cặp dưới ngưỡng, khi một chỗ ghi «dưới ngưỡng» lại đạt, khi một token chưa được đo, hay khi bảng chép tay một tỉ lệ (số chép tay sẽ cũ). Script đọc màu, không đọc câu chữ: thêm hay đổi một câu ngưỡng thì thêm cặp tương ứng vào `BAT_BUOC` / `DOI_CHUNG` trong script. Lần đo có ngày và kết quả: mục «Tương phản đo được» của `labs/design/studies/2026-10-06-wiii-3b1b.md`. Số đo trên giao diện đã vẽ (điểm ảnh thật, vòng focus, lần vẽ đầu): `labs/design/audits/2026-10-06-wiii-3b1b-angular.md`. Chế độ tối: `prefers-color-scheme: dark`, hay `data-theme` trên `<html>` khi người dùng bấm nút đổi (nhớ trong `localStorage`).
+Chữ đạt ≥ 4,5 : 1, thành phần giao diện ≥ 3 : 1. Bảng ghi ngưỡng, không ghi tỉ lệ cụ thể: tỉ lệ tính theo WCAG 2.x (độ chói sRGB) bằng `node scripts/tuong-phan-token.mjs`. Script đọc thẳng bảng này, CI chạy ở mọi PR; đỏ khi một cặp dưới ngưỡng, khi một chỗ ghi «dưới ngưỡng» lại đạt, khi một token chưa được đo, khi bảng chép tay một tỉ lệ (số chép tay sẽ cũ), hay khi `apps/frontend/src/styles.css` lệch bảng. Script đọc màu, không đọc câu chữ: thêm hay đổi một câu ngưỡng thì thêm cặp tương ứng vào `BAT_BUOC` / `DOI_CHUNG` trong script. Lần đo có ngày và kết quả: mục «Tương phản đo được» của `labs/design/studies/2026-10-06-wiii-3b1b.md`. Số đo trên giao diện đã vẽ (điểm ảnh thật, vòng focus, lần vẽ đầu): `labs/design/audits/2026-10-06-wiii-3b1b-angular.md`. Chế độ tối: `prefers-color-scheme: dark`, hay `data-theme` trên `<html>` khi người dùng bấm nút đổi (nhớ trong `localStorage`).
 
 | Tên | Sáng | Tối | Việc |
 | --- | --- | --- | --- |
@@ -51,7 +51,7 @@ Chữ đạt ≥ 4,5 : 1, thành phần giao diện ≥ 3 : 1. Bảng ghi ngư�
 | `board-ink` | `#F2EFE6` | `#F2EFE6` | Chữ và công thức trên bảng |
 | `m-blue` / `m-teal` / `m-yellow` / `m-red` / `m-gold` / `m-green` | `#58C4DD` / `#5CD0B3` / `#F4D345` / `#FC6255` / `#F0AC5F` / `#83C167` | như sáng | Màu Manim, **chỉ** trên bảng: đường cong xanh, điểm đặc biệt vàng, dấu dương ngọc, dấu âm đỏ |
 
-Bảng này là nguồn chuẩn của giá trị và việc; `apps/frontend/src/styles.css` hiện thực theo bảng (từ PR #146; trước đó CSS còn token cũ). Đổi màu thì sửa bảng trước, chạy `node scripts/tuong-phan-token.mjs`, rồi sửa CSS theo.
+Bảng này là nguồn chuẩn của giá trị và việc; `apps/frontend/src/styles.css` hiện thực theo bảng (từ PR #146; trước đó CSS còn token cũ). Đổi màu thì sửa bảng và CSS trong cùng PR; `node scripts/tuong-phan-token.mjs` đỏ khi hai bên lệch.
 
 ## Chữ
 
