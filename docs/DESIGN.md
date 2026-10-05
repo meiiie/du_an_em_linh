@@ -25,7 +25,7 @@ Sản phẩm là **một trang toán**: công thức là điểm nhìn, năm bư
 
 ## Token
 
-Chữ đạt ≥ 4,5 : 1, thành phần giao diện ≥ 3 : 1. Số trong bảng tính theo WCAG 2.x (độ chói sRGB) bằng `node scripts/tuong-phan-token.mjs`: script đọc thẳng bảng này, CI chạy ở mọi PR, đỏ khi một cặp dưới ngưỡng hay khi một chỗ ghi «dưới ngưỡng» lại đạt. Số đo trên giao diện đã vẽ: `labs/design/audits/2026-10-06-wiii-3b1b-angular.md`. Chế độ tối: `prefers-color-scheme: dark`, hay `data-theme` trên `<html>` khi người dùng bấm nút đổi (nhớ trong `localStorage`).
+Chữ đạt ≥ 4,5 : 1, thành phần giao diện ≥ 3 : 1. Số trong bảng tính theo WCAG 2.x (độ chói sRGB) bằng `node scripts/tuong-phan-token.mjs`: script đọc thẳng bảng này, CI chạy ở mọi PR, đỏ khi một cặp dưới ngưỡng hay khi một chỗ ghi «dưới ngưỡng» lại đạt. Số đo trên giao diện đã vẽ (điểm ảnh thật, vòng focus, lần vẽ đầu) thuộc PR áp token vào Angular (#146), chưa có trong cây này. Chế độ tối: `prefers-color-scheme: dark`, hay `data-theme` trên `<html>` khi người dùng bấm nút đổi (nhớ trong `localStorage`).
 
 | Tên | Sáng | Tối | Việc |
 | --- | --- | --- | --- |
