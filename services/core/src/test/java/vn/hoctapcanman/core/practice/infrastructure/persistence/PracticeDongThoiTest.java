@@ -32,6 +32,7 @@ import vn.hoctapcanman.core.practice.domain.model.GradeStatus;
 import vn.hoctapcanman.core.practice.domain.model.GradingResult;
 import vn.hoctapcanman.core.practice.domain.model.StepLine;
 import vn.hoctapcanman.core.practice.domain.model.StepWork;
+import vn.hoctapcanman.core.practice.domain.model.SkillLevel;
 import vn.hoctapcanman.core.practice.domain.model.Submission;
 
 /**
@@ -124,7 +125,7 @@ class PracticeDongThoiTest {
         GradingResult canCu = grades.record(ketQua(dangLam.id(), "e".repeat(64), GradeStatus.DAT));
         List<Optional<UUID>> ketQua = haiGiaoDichChongNhau(
             () -> submissions.lockOpen(an, lop, bai, 1).map(mo -> {
-                submissions.update(mo.submit(canCu, LUC.plusSeconds(5)).baiLam());
+                submissions.update(mo.submit(canCu, new SkillLevel("T12.DH.02", "THONG_HIEU"), LUC.plusSeconds(5)).baiLam());
                 return mo.id();
             }),
             () -> submissions.lockOpen(an, lop, bai, 1).map(Submission::id));

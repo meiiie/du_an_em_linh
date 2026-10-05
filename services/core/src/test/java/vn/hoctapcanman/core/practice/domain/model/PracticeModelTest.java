@@ -13,6 +13,7 @@ import org.junit.jupiter.api.Test;
 class PracticeModelTest {
 
     private static final Instant LUC = Instant.parse("2026-10-05T08:00:00Z");
+    private static final SkillLevel PHAN_LOAI = new SkillLevel("T12.DH.02", "THONG_HIEU");
     private static final UUID LOP = UUID.randomUUID();
     private static final UUID HS = UUID.randomUUID();
     private static final UUID BAI = UUID.randomUUID();
@@ -25,23 +26,26 @@ class PracticeModelTest {
         Submission nghi = dangLam.suspectGuess("Đổi ô 6 lần.");
         assertThat(nghi.suspectGuess("Lý do khác").guessReason()).isEqualTo("Đổi ô 6 lần.");
         GradingResult canCu = cham(dangLam.id(), GradeStatus.SAI);
-        Submission.DaNop daNop = nghi.submit(canCu, LUC.plusSeconds(5));
+        Submission.DaNop daNop = nghi.submit(canCu, PHAN_LOAI, LUC.plusSeconds(5));
         assertThat(daNop.baiLam()).isEqualTo(new Submission(dangLam.id(), LOP, HS, BAI, 3, SubmissionStatus.DA_NOP, true, "Đổi ô 6 lần.",
-            GradeStatus.SAI, canCu.id(), LUC, LUC.plusSeconds(5)));
+            GradeStatus.SAI, canCu.id(), LUC, LUC.plusSeconds(5), PHAN_LOAI));
+        assertThat(daNop.phanLoai()).isEqualTo(PHAN_LOAI);
         assertThat(daNop.ketQua()).isEqualTo(GradeStatus.SAI);
         assertThat(daNop.canCuId()).isEqualTo(canCu.id());
         assertThat(daNop.baiLam().daNop()).contains(daNop);
-        assertThatThrownBy(() -> daNop.baiLam().submit(cham(dangLam.id(), GradeStatus.DAT), LUC)).isInstanceOf(IllegalStateException.class);
+        assertThatThrownBy(() -> daNop.baiLam().submit(cham(dangLam.id(), GradeStatus.DAT), PHAN_LOAI, LUC))
+            .isInstanceOf(IllegalStateException.class);
         assertThatThrownBy(() -> daNop.baiLam().suspectGuess("x")).isInstanceOf(IllegalStateException.class);
     }
 
     @Test
     void canCuPhaiLaPhanQuyetCuaChinhBaiLam() {
         Submission dangLam = Submission.open(LOP, HS, BAI, 1, LUC);
-        assertThatThrownBy(() -> dangLam.submit(cham(UUID.randomUUID(), GradeStatus.DAT), LUC)).as("lần chấm của bài làm khác")
+        assertThatThrownBy(() -> dangLam.submit(cham(UUID.randomUUID(), GradeStatus.DAT), PHAN_LOAI, LUC)).as("lần chấm của bài làm khác")
             .isInstanceOf(IllegalArgumentException.class);
         // Dịch vụ toán lỗi lúc chấm bước kết luận: không đóng bài làm (Codex #136).
-        assertThatThrownBy(() -> dangLam.submit(GradingResult.notGraded(dangLam.id(), "B.DH.KETLUAN", "a".repeat(64), "bận", LUC), LUC))
+        assertThatThrownBy(() -> dangLam.submit(GradingResult.notGraded(dangLam.id(), "B.DH.KETLUAN", "a".repeat(64), "bận", LUC),
+                PHAN_LOAI, LUC))
             .isInstanceOf(IllegalArgumentException.class);
     }
 
@@ -50,15 +54,21 @@ class PracticeModelTest {
         UUID canCu = UUID.randomUUID();
         assertThatThrownBy(() -> Submission.open(LOP, HS, BAI, 0, LUC)).isInstanceOf(IllegalArgumentException.class);
         assertThatThrownBy(() -> new Submission(UUID.randomUUID(), LOP, HS, BAI, 1, SubmissionStatus.DANG_LAM, false, null,
-            GradeStatus.DAT, null, LUC, null)).as("đang làm mà có kết quả").isInstanceOf(IllegalArgumentException.class);
+            GradeStatus.DAT, null, LUC, null, null)).as("đang làm mà có kết quả").isInstanceOf(IllegalArgumentException.class);
         assertThatThrownBy(() -> new Submission(UUID.randomUUID(), LOP, HS, BAI, 1, SubmissionStatus.DANG_LAM, false, null, null, canCu,
-            LUC, null)).as("đang làm mà có căn cứ").isInstanceOf(IllegalArgumentException.class);
+            LUC, null, null)).as("đang làm mà có căn cứ").isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> new Submission(UUID.randomUUID(), LOP, HS, BAI, 1, SubmissionStatus.DANG_LAM, false, null, null, null,
+            LUC, null, PHAN_LOAI)).as("đang làm mà có phân loại").isInstanceOf(IllegalArgumentException.class);
         assertThatThrownBy(() -> new Submission(UUID.randomUUID(), LOP, HS, BAI, 1, SubmissionStatus.DA_NOP, false, null, null, canCu,
-            LUC, LUC)).as("đã nộp mà không có kết quả").isInstanceOf(IllegalArgumentException.class);
+            LUC, LUC, PHAN_LOAI)).as("đã nộp mà không có kết quả").isInstanceOf(IllegalArgumentException.class);
         assertThatThrownBy(() -> new Submission(UUID.randomUUID(), LOP, HS, BAI, 1, SubmissionStatus.DA_NOP, false, null, GradeStatus.DAT,
-            null, LUC, LUC)).as("đã nộp mà không có căn cứ").isInstanceOf(IllegalArgumentException.class);
+            null, LUC, LUC, PHAN_LOAI)).as("đã nộp mà không có căn cứ").isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> new Submission(UUID.randomUUID(), LOP, HS, BAI, 1, SubmissionStatus.DA_NOP, false, null, GradeStatus.DAT,
+            canCu, LUC, LUC, null)).as("đã nộp mà không có phân loại").isInstanceOf(IllegalArgumentException.class);
         assertThatThrownBy(() -> new Submission(UUID.randomUUID(), LOP, HS, BAI, 1, SubmissionStatus.DANG_LAM, false, "lý do", null,
-            null, LUC, null)).as("lý do mà không nghi").isInstanceOf(IllegalArgumentException.class);
+            null, LUC, null, null)).as("lý do mà không nghi").isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> new SkillLevel("T12.DH.02", "KHO")).isInstanceOf(IllegalArgumentException.class);
+        assertThatThrownBy(() -> new SkillLevel(" ", "VAN_DUNG")).isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test

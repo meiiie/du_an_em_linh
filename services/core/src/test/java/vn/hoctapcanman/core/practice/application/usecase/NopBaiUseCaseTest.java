@@ -365,6 +365,12 @@ class NopBaiUseCaseTest {
         Submission nop = daNop().baiLam();
         assertThat(daNhan).containsExactly(new BaiDaNop(nop.id(), an, lop, bai, "T12.DH.02", "THONG_HIEU", KetQuaBai.SAI,
             new ViTriSai("B.DH.KETLUAN", 1, null, null), "ERR.DH.06", 0.9, false, false, nop.submittedAt()));
+        // Codex #142 (P2): sửa kỹ năng, mức của bài không đổi content_hash nên không tăng phiên bản; phát lại vẫn dựng y hệt.
+        jdbc.sql("insert into skills (code, topic_code, name, is_core) values ('T12.DH.03', 'DH12', 'Cực trị', true) on conflict do nothing")
+            .update();
+        int phienBan = phienBanBai();
+        jdbc.sql("update problems set skill_code = 'T12.DH.03', level4 = 'VAN_DUNG' where id = ?").params(bai).update();
+        assertThat(phienBanBai()).isEqualTo(phienBan);
         assertThat(coMucHieu.execute(an, lop, ma)).isEqualTo(kq);
         assertThat(daNhan).hasSize(2).containsOnly(daNhan.getFirst());
     }
@@ -413,6 +419,10 @@ class NopBaiUseCaseTest {
                 }
                 return ra;
             });
+    }
+
+    private int phienBanBai() {
+        return jdbc.sql("select content_version from problems where id = ?").params(bai).query(Integer.class).single();
     }
 
     private Submission.DaNop daNop() {

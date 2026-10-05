@@ -18,6 +18,7 @@ import vn.hoctapcanman.core.practice.domain.model.GradeStatus;
 import vn.hoctapcanman.core.practice.domain.model.InputEvent;
 import vn.hoctapcanman.core.practice.domain.model.SignTable;
 import vn.hoctapcanman.core.practice.domain.model.StepLine;
+import vn.hoctapcanman.core.practice.domain.model.SkillLevel;
 import vn.hoctapcanman.core.practice.domain.model.StepWork;
 import vn.hoctapcanman.core.practice.domain.model.Submission;
 import vn.hoctapcanman.core.practice.domain.model.SubmissionHistory;
@@ -36,7 +37,7 @@ public class SubmissionRepositoryAdapter implements SubmissionRepository {
 
     private static final String COT = """
             id, class_id, student_id, problem_id, content_version, status, guess_suspected, guess_reason, result, result_grading_id,
-            started_at, submitted_at""";
+            started_at, submitted_at, skill_code, level4""";
 
     /** Số vòng ghi rồi đọc của {@link #openOrGet(Submission)}. */
     static final int SO_LAN_MO = 3;
@@ -230,11 +231,14 @@ public class SubmissionRepositoryAdapter implements SubmissionRepository {
         // Cờ nghi đoán mò chỉ bật, giữ lý do đầu: tab giữ ảnh cũ (chưa nghi) nộp bài không xóa được cờ tab kia đã bật.
         int dong = jdbc.sql("""
                 update submissions set status = :st, guess_suspected = guess_suspected or :nghi,
-                    guess_reason = coalesce(guess_reason, :lyDo), result = :kq, result_grading_id = :canCu, submitted_at = :nop
+                    guess_reason = coalesce(guess_reason, :lyDo), result = :kq, result_grading_id = :canCu, submitted_at = :nop,
+                    skill_code = :kyNang, level4 = :muc
                 where id = :id and status = 'DANG_LAM'""")
             .param("st", baiLam.status().name()).param("nghi", baiLam.guessSuspected()).param("lyDo", baiLam.guessReason())
             .param("kq", tenNeuCo(baiLam.result())).param("canCu", baiLam.resultGradingId())
             .param("nop", Cot.lucNeuCo(baiLam.submittedAt())).param("id", baiLam.id())
+            .param("kyNang", baiLam.skillLevel() == null ? null : baiLam.skillLevel().skillCode())
+            .param("muc", baiLam.skillLevel() == null ? null : baiLam.skillLevel().level4())
             .update();
         if (dong != 1) {
             throw new IllegalStateException("Bài làm đã nộp hoặc không có");
@@ -266,9 +270,11 @@ public class SubmissionRepositoryAdapter implements SubmissionRepository {
 
     private static Submission baiLam(ResultSet rs, int n) throws SQLException {
         String kq = rs.getString("result");
+        String kyNang = rs.getString("skill_code");
         return new Submission(Cot.uuid(rs, "id"), Cot.uuid(rs, "class_id"), Cot.uuid(rs, "student_id"), Cot.uuid(rs, "problem_id"),
             rs.getInt("content_version"), SubmissionStatus.valueOf(Cot.chu(rs, "status")), rs.getBoolean("guess_suspected"),
             rs.getString("guess_reason"), kq == null ? null : GradeStatus.valueOf(kq), Cot.uuidNeuCo(rs, "result_grading_id"),
-            Cot.thoiDiem(rs, "started_at"), Cot.thoiDiemNeuCo(rs, "submitted_at"));
+            Cot.thoiDiem(rs, "started_at"), Cot.thoiDiemNeuCo(rs, "submitted_at"),
+            kyNang == null ? null : new SkillLevel(kyNang, Cot.chu(rs, "level4")));
     }
 }

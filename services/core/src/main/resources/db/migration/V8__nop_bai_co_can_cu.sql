@@ -18,3 +18,11 @@ ALTER TABLE submissions ADD CONSTRAINT submissions_can_cu_cua_chinh_bai_lam
     FOREIGN KEY (result_grading_id, id, result) REFERENCES grading_results (id, submission_id, result);
 -- Xóa lần chấm (dây chuyền) kiểm khóa ngoại trên cột này.
 CREATE INDEX submissions_can_cu ON submissions (result_grading_id);
+
+-- Kỹ năng và mức của bài lúc nộp (Codex #142): sửa skill_code, level4 của bài không đổi content_hash nên không tăng phiên
+-- bản nội dung (V5); bài làm đã nộp giữ phân loại nó được chấm theo, phát lại và mức hiểu dựng từ đây. Là bản chụp, không
+-- phải khóa ngoại: xóa hay đổi kỹ năng không đụng bài đã nộp.
+ALTER TABLE submissions ADD COLUMN skill_code varchar(32);
+ALTER TABLE submissions ADD COLUMN level4 varchar(16) CHECK (level4 IN ('NHAN_BIET', 'THONG_HIEU', 'VAN_DUNG', 'VAN_DUNG_CAO'));
+ALTER TABLE submissions ADD CONSTRAINT submissions_nop_ghim_phan_loai
+    CHECK ((status = 'DA_NOP') = (skill_code IS NOT NULL) AND (status = 'DA_NOP') = (level4 IS NOT NULL));

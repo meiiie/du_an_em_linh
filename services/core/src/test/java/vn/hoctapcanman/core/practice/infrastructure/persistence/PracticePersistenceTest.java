@@ -28,6 +28,7 @@ import vn.hoctapcanman.core.practice.domain.model.InputEvent;
 import vn.hoctapcanman.core.practice.domain.model.SignTable;
 import vn.hoctapcanman.core.practice.domain.model.StepLine;
 import vn.hoctapcanman.core.practice.domain.model.StepWork;
+import vn.hoctapcanman.core.practice.domain.model.SkillLevel;
 import vn.hoctapcanman.core.practice.domain.model.Submission;
 import vn.hoctapcanman.core.practice.domain.model.SubmissionStatus;
 import vn.hoctapcanman.core.practice.domain.model.TableCell;
@@ -50,6 +51,7 @@ import vn.hoctapcanman.core.practice.domain.model.TableCell;
 class PracticePersistenceTest {
 
     private static final Instant LUC = Instant.parse("2026-10-05T08:00:00.123456789Z");
+    private static final SkillLevel PHAN_LOAI = new SkillLevel("T12.DH.02", "THONG_HIEU");
     private static final JsonMapper JSON = JsonMapper.builder().build();
 
     @Autowired
@@ -186,14 +188,15 @@ class PracticePersistenceTest {
         Submission dangLam = submissions.openOrGet(Submission.open(lop, an, bai, 1, LUC));
         submissions.saveStep(dangLam.id(), new StepWork("B.DH.DAOHAM", List.of(new StepLine(0, "3x^2-6x", null)), null));
         GradingResult canCu = grades.record(ketQua(dangLam.id(), "1".repeat(64), GradeStatus.SAI));
-        Submission daNop = dangLam.submit(canCu, LUC.plusSeconds(60)).baiLam();
+        Submission daNop = dangLam.submit(canCu, PHAN_LOAI, LUC.plusSeconds(60)).baiLam();
         submissions.update(daNop);
         assertThat(grades.findById(canCu.id())).contains(canCu);
 
         assertThat(submissions.findById(dangLam.id()).orElseThrow().status()).isEqualTo(SubmissionStatus.DA_NOP);
         assertThat(submissions.findOpen(an, lop, bai, 1)).isEmpty();
         assertThat(submissions.findLatest(an, lop, bai)).contains(new Submission(dangLam.id(), lop, an, bai, 1, SubmissionStatus.DA_NOP,
-            false, null, GradeStatus.SAI, canCu.id(), LUC.truncatedTo(ChronoUnit.MICROS), LUC.plusSeconds(60).truncatedTo(ChronoUnit.MICROS)));
+            false, null, GradeStatus.SAI, canCu.id(), LUC.truncatedTo(ChronoUnit.MICROS), LUC.plusSeconds(60).truncatedTo(ChronoUnit.MICROS),
+            PHAN_LOAI));
         StepWork buoc = new StepWork("B.DH.DAOHAM", List.of(new StepLine(0, "3x^2", null)), null);
         assertThatThrownBy(() -> submissions.saveStep(dangLam.id(), buoc)).isInstanceOf(IllegalStateException.class);
         assertThatThrownBy(() -> submissions.addEvents(dangLam.id(), List.of(suKien("a", LUC))))
@@ -274,7 +277,8 @@ class PracticePersistenceTest {
         Submission dangLam = submissions.openOrGet(Submission.open(lop, an, bai, 1, LUC));
         GradingResult loi = grades.record(GradingResult.notGraded(dangLam.id(), "B.DH.KETLUAN", "3".repeat(64), "bận", LUC));
         assertThatThrownBy(() -> jdbc.sql("""
-                update submissions set status = 'DA_NOP', result = 'KHONG_CHAM_DUOC', result_grading_id = ?, submitted_at = now()
+                update submissions set status = 'DA_NOP', result = 'KHONG_CHAM_DUOC', result_grading_id = ?, submitted_at = now(),
+                    skill_code = 'T12.DH.02', level4 = 'THONG_HIEU'
                 where id = ?""").params(loi.id(), dangLam.id()).update())
             .isInstanceOf(DataIntegrityViolationException.class);
     }
@@ -282,9 +286,21 @@ class PracticePersistenceTest {
     @Test
     void csdlChanNopBaiKhongCanCu() {
         Submission dangLam = submissions.openOrGet(Submission.open(lop, an, bai, 1, LUC));
-        assertThatThrownBy(() -> jdbc.sql("update submissions set status = 'DA_NOP', result = 'DAT', submitted_at = now() where id = ?")
+        assertThatThrownBy(() -> jdbc.sql("""
+                update submissions set status = 'DA_NOP', result = 'DAT', submitted_at = now(), skill_code = 'T12.DH.02',
+                    level4 = 'THONG_HIEU' where id = ?""")
                 .params(dangLam.id()).update())
             .isInstanceOf(DataIntegrityViolationException.class).hasMessageContaining("submissions_nop_co_can_cu");
+    }
+
+    @Test
+    void csdlChanNopBaiKhongGhimPhanLoai() {
+        Submission dangLam = submissions.openOrGet(Submission.open(lop, an, bai, 1, LUC));
+        GradingResult dat = grades.record(ketQua(dangLam.id(), "7".repeat(64), GradeStatus.DAT));
+        assertThatThrownBy(() -> jdbc.sql("""
+                update submissions set status = 'DA_NOP', result = 'DAT', result_grading_id = ?, submitted_at = now(),
+                    skill_code = 'T12.DH.02' where id = ?""").params(dat.id(), dangLam.id()).update())
+            .isInstanceOf(DataIntegrityViolationException.class).hasMessageContaining("submissions_nop_ghim_phan_loai");
     }
 
     @Test
@@ -397,7 +413,7 @@ class PracticePersistenceTest {
         assertThatThrownBy(() -> submissions.addEvents(dangLam.id(), List.of(suKien("+", LUC)))).isInstanceOf(IllegalStateException.class);
         assertThatThrownBy(() -> grades.record(ketQua(dangLam.id(), "a".repeat(64), GradeStatus.DAT)))
             .isInstanceOf(IllegalStateException.class);
-        assertThatThrownBy(() -> submissions.update(dangLam.submit(canCu, LUC).baiLam())).isInstanceOf(IllegalStateException.class);
+        assertThatThrownBy(() -> submissions.update(dangLam.submit(canCu, PHAN_LOAI, LUC).baiLam())).isInstanceOf(IllegalStateException.class);
         assertThat(submissions.findById(dangLam.id()).orElseThrow().status()).isEqualTo(SubmissionStatus.DANG_LAM);
         assertThatThrownBy(() -> jdbc.sql("""
                 insert into grading_results (id, submission_id, step_code, request_hash, result, graded_at)
@@ -484,12 +500,13 @@ class PracticePersistenceTest {
     /** Ghi một lần chấm có phán quyết {@code kq} cho bài làm rồi trả bài làm đã nộp với căn cứ là lần đó. */
     private Submission nop(Submission dangLam, GradeStatus kq, Instant luc) {
         GradingResult canCu = grades.record(ketQua(dangLam.id(), "0".repeat(64), kq, luc));
-        return dangLam.submit(canCu, luc).baiLam();
+        return dangLam.submit(canCu, PHAN_LOAI, luc).baiLam();
     }
 
     private int ghimCanCu(UUID baiLam, String ketQua, UUID canCu) {
         return jdbc.sql("""
-                update submissions set status = 'DA_NOP', result = ?, result_grading_id = ?, submitted_at = now() where id = ?""")
+                update submissions set status = 'DA_NOP', result = ?, result_grading_id = ?, submitted_at = now(),
+                    skill_code = 'T12.DH.02', level4 = 'THONG_HIEU' where id = ?""")
             .params(ketQua, canCu, baiLam).update();
     }
 

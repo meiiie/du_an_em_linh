@@ -30,7 +30,7 @@ class SubmissionHistoryTest {
         // Chứng nhận của bài làm mà lịch sử (CSDL) không thấy đã nộp: đóng.
         assertThat(lichSu().choMoLoiGiai(daNop)).isFalse();
         Submission cungIdDangLam = new Submission(daNop.baiLam().id(), LOP_A, HS, BAI, 2, SubmissionStatus.DANG_LAM, false, null, null,
-            null, LUC, null);
+            null, LUC, null, null);
         assertThat(lichSu(cungIdDangLam).choMoLoiGiai(daNop)).isFalse();
     }
 
@@ -40,9 +40,9 @@ class SubmissionHistoryTest {
         Submission.DaNop that = nop(LOP_A, 2, LUC);
         Submission b = that.baiLam();
         Submission.DaNop lopKhac = new Submission(b.id(), LOP_B, HS, BAI, 2, SubmissionStatus.DA_NOP, false, null, b.result(),
-            b.resultGradingId(), b.startedAt(), b.submittedAt()).daNop().orElseThrow();
+            b.resultGradingId(), b.startedAt(), b.submittedAt(), b.skillLevel()).daNop().orElseThrow();
         Submission.DaNop phienBanKhac = new Submission(b.id(), LOP_A, HS, BAI, 3, SubmissionStatus.DA_NOP, false, null, b.result(),
-            b.resultGradingId(), b.startedAt(), b.submittedAt()).daNop().orElseThrow();
+            b.resultGradingId(), b.startedAt(), b.submittedAt(), b.skillLevel()).daNop().orElseThrow();
         assertThat(lichSu(b).choMoLoiGiai(that)).isTrue();
         assertThat(lichSu(b).choMoLoiGiai(lopKhac)).isFalse();
         assertThat(lichSu(b).choMoLoiGiai(phienBanKhac)).isFalse();
@@ -95,6 +95,6 @@ class SubmissionHistoryTest {
         Submission dangLam = Submission.open(lop, HS, BAI, phienBan, luc);
         GradingResult canCu = new GradingResult(UUID.randomUUID(), dangLam.id(), "B.DH.KETLUAN", "c".repeat(64), GradeStatus.DAT, null,
             null, null, null, Map.of(), null, null, null, false, null, null, luc);
-        return dangLam.submit(canCu, luc.plusSeconds(1));
+        return dangLam.submit(canCu, new SkillLevel("T12.DH.02", "THONG_HIEU"), luc.plusSeconds(1));
     }
 }

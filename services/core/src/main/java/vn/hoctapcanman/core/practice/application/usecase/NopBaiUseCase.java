@@ -25,6 +25,7 @@ import vn.hoctapcanman.core.practice.application.service.MoLoiGiai;
 import vn.hoctapcanman.core.practice.application.service.YeuCauCham;
 import vn.hoctapcanman.core.practice.domain.model.GradeStatus;
 import vn.hoctapcanman.core.practice.domain.model.GradingResult;
+import vn.hoctapcanman.core.practice.domain.model.SkillLevel;
 import vn.hoctapcanman.core.practice.domain.model.StepWork;
 import vn.hoctapcanman.core.practice.domain.model.Submission;
 import vn.hoctapcanman.core.practice.domain.model.SubmissionHistory;
@@ -85,7 +86,7 @@ public class NopBaiUseCase {
             CoCanCu nop = submissions.lockOpen(hocSinhId, lopId, bai.problemId(), bai.phienBan())
                 .map(dangLam -> nop(dangLam, bai))
                 .orElseGet(() -> phatLai(hocSinhId, lopId, bai));
-            BaiDaNop baiDaNop = baiDaNop(nop, bai);
+            BaiDaNop baiDaNop = baiDaNop(nop);
             return new DaNopVaMucHieu(nop.daNop(), mucHieu.stream().flatMap(m -> m.sauKhiNop(baiDaNop).stream()).toList());
         }));
         return new KetQuaNopBai(ketQua(kq.daNop().ketQua()), kq.mucHieu(), moLoiGiai.cho(kq.daNop()).orElse(null));
@@ -101,7 +102,8 @@ public class NopBaiUseCase {
         GradingResult canCu = grades.findByRequest(dangLam.id(), bam)
             .orElseThrow(() -> new BaiChuaNopDuocException(LyDo.CHUA_CHAM_BUOC_KET_LUAN));
         // Cắt về micro giây như cột timestamptz: phát lại đọc lúc nộp từ CSDL, BaiDaNop phải y hệt lần đầu.
-        Submission.DaNop daNop = dangLam.submit(canCu, clock.instant().truncatedTo(ChronoUnit.MICROS));
+        Submission.DaNop daNop = dangLam.submit(canCu, new SkillLevel(bai.kyNang(), bai.mucDo()),
+            clock.instant().truncatedTo(ChronoUnit.MICROS));
         submissions.update(daNop.baiLam());
         return new CoCanCu(daNop, canCu);
     }
@@ -126,11 +128,16 @@ public class NopBaiUseCase {
         return daLam.containsAll(khung.subList(YeuCauCham.batDau(khung, bai.buocBatDau()), khung.size()));
     }
 
-    /** Dựng chỉ từ bài làm đã nộp và căn cứ đã ghim, nên phát lại dựng ra y hệt. */
-    private static BaiDaNop baiDaNop(CoCanCu nop, BaiChoLamBai bai) {
+    /**
+     * Dựng chỉ từ bài làm đã nộp (cả kỹ năng và mức ghim lúc nộp, không đọc lại bài) và căn cứ đã ghim, nên phát lại dựng ra y
+     * hệt.
+     */
+    private static BaiDaNop baiDaNop(CoCanCu nop) {
         Submission bl = nop.daNop().baiLam();
         GradingResult g = nop.canCu();
-        return new BaiDaNop(bl.id(), bl.studentId(), bl.classId(), bl.problemId(), bai.kyNang(), bai.mucDo(), ketQua(nop.daNop().ketQua()),
+        SkillLevel phanLoai = nop.daNop().phanLoai();
+        return new BaiDaNop(bl.id(), bl.studentId(), bl.classId(), bl.problemId(), phanLoai.skillCode(), phanLoai.level4(),
+            ketQua(nop.daNop().ketQua()),
             DocKetQuaCham.buocSai(g).orElse(null), g.errorCode(), g.confidence(), g.mathOk(), bl.guessSuspected(), nop.daNop().nopLuc());
     }
 
