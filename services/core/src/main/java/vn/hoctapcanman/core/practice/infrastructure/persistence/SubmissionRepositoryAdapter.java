@@ -33,8 +33,8 @@ import vn.hoctapcanman.core.practice.domain.repository.SubmissionRepository;
 public class SubmissionRepositoryAdapter implements SubmissionRepository {
 
     private static final String COT = """
-            id, class_id, student_id, problem_id, content_version, status, guess_suspected, guess_reason, result, started_at,
-            submitted_at""";
+            id, class_id, student_id, problem_id, content_version, status, guess_suspected, guess_reason, result, result_grading_id,
+            started_at, submitted_at""";
 
     /** Số vòng ghi rồi đọc của {@link #openOrGet(Submission)}. */
     static final int SO_LAN_MO = 3;
@@ -205,10 +205,11 @@ public class SubmissionRepositoryAdapter implements SubmissionRepository {
         // Cờ nghi đoán mò chỉ bật, giữ lý do đầu: tab giữ ảnh cũ (chưa nghi) nộp bài không xóa được cờ tab kia đã bật.
         int dong = jdbc.sql("""
                 update submissions set status = :st, guess_suspected = guess_suspected or :nghi,
-                    guess_reason = coalesce(guess_reason, :lyDo), result = :kq, submitted_at = :nop
+                    guess_reason = coalesce(guess_reason, :lyDo), result = :kq, result_grading_id = :canCu, submitted_at = :nop
                 where id = :id and status = 'DANG_LAM'""")
             .param("st", baiLam.status().name()).param("nghi", baiLam.guessSuspected()).param("lyDo", baiLam.guessReason())
-            .param("kq", tenNeuCo(baiLam.result())).param("nop", Cot.lucNeuCo(baiLam.submittedAt())).param("id", baiLam.id())
+            .param("kq", tenNeuCo(baiLam.result())).param("canCu", baiLam.resultGradingId())
+            .param("nop", Cot.lucNeuCo(baiLam.submittedAt())).param("id", baiLam.id())
             .update();
         if (dong != 1) {
             throw new IllegalStateException("Bài làm đã nộp hoặc không có");
@@ -242,7 +243,7 @@ public class SubmissionRepositoryAdapter implements SubmissionRepository {
         String kq = rs.getString("result");
         return new Submission(Cot.uuid(rs, "id"), Cot.uuid(rs, "class_id"), Cot.uuid(rs, "student_id"), Cot.uuid(rs, "problem_id"),
             rs.getInt("content_version"), SubmissionStatus.valueOf(Cot.chu(rs, "status")), rs.getBoolean("guess_suspected"),
-            rs.getString("guess_reason"), kq == null ? null : GradeStatus.valueOf(kq), Cot.thoiDiem(rs, "started_at"),
-            Cot.thoiDiemNeuCo(rs, "submitted_at"));
+            rs.getString("guess_reason"), kq == null ? null : GradeStatus.valueOf(kq), Cot.uuidNeuCo(rs, "result_grading_id"),
+            Cot.thoiDiem(rs, "started_at"), Cot.thoiDiemNeuCo(rs, "submitted_at"));
     }
 }

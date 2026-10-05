@@ -44,8 +44,8 @@ public interface SubmissionRepository {
     List<InputEvent> events(UUID submissionId);
 
     /**
-     * Ghi cờ nghi đoán mò hay kết quả nộp của bài làm ({@link Submission#suspectGuess}, {@link Submission#submit}). Chỉ ghi
-     * được khi bài làm còn đang làm; không thì {@link IllegalStateException}.
+     * Ghi cờ nghi đoán mò hay lần nộp (kết quả, căn cứ, lúc nộp) của bài làm ({@link Submission#suspectGuess},
+     * {@link Submission#submit}). Chỉ ghi được khi bài làm còn đang làm; không thì {@link IllegalStateException}.
      */
     void update(Submission baiLam);
 }
