@@ -1,0 +1,172 @@
+{
+  "nguon": {
+    "tep": "apps/web/lib/loi-giai.ts",
+    "blob": "6527e6f861b1425e7ad3957bfa821c06b222fd7e",
+    "sinh_boi": "specs/001-lat-cat-doc/doi-chieu/loi-giai-v0.ts; không sửa tay"
+  },
+  "ca": [
+    {
+      "ten": "đủ các câu, dạng của máy giải",
+      "finalAnswer": null,
+      "baiLam": {
+        "ham": "x**3 - 3*x**2 + 2",
+        "TXD": "D = \\mathbb{R}",
+        "dao_ham": "3*x**2 - 6*x",
+        "y_phay_bang_0": [
+          "0",
+          "2"
+        ],
+        "y_phay_khong_xd": [],
+        "bang": {
+          "moc": [
+            "-oo",
+            "0",
+            "2",
+            "+oo"
+          ],
+          "dau": [
+            "+",
+            "-",
+            "+"
+          ],
+          "dau_tai_diem": [
+            "0",
+            "0"
+          ],
+          "chieu": [
+            "tang",
+            "giam",
+            "tang"
+          ]
+        },
+        "ket_luan": {
+          "dong_bien": [
+            "(-oo; 0)",
+            "(2; +oo)"
+          ],
+          "nghich_bien": [
+            "(0; 2)"
+          ],
+          "cuc_dai_x": [
+            "0"
+          ],
+          "cuc_tieu_x": [
+            "2"
+          ],
+          "gia_tri_cuc_dai": [
+            "2"
+          ],
+          "gia_tri_cuc_tieu": [
+            "-2"
+          ]
+        }
+      },
+      "loiGiai": "Tập xác định: D = \\mathbb{R}. Đạo hàm: 3*x**2 - 6*x. y′ = 0 tại 0, 2. Đồng biến trên (-oo; 0) và (2; +oo). Nghịch biến trên (0; 2). Cực đại tại x = 0, y = 2. Cực tiểu tại x = 2, y = -2."
+    },
+    {
+      "ten": "có đáp án cuối thì dùng đáp án cuối",
+      "finalAnswer": "Hàm số đồng biến trên \\mathbb{R}.",
+      "baiLam": {
+        "TXD": "R"
+      },
+      "loiGiai": "Hàm số đồng biến trên \\mathbb{R}."
+    },
+    {
+      "ten": "đáp án cuối rỗng thì viết từ lời giải",
+      "finalAnswer": "",
+      "baiLam": {
+        "TXD": "R"
+      },
+      "loiGiai": "Tập xác định: R."
+    },
+    {
+      "ten": "khóa kết luận có mà rỗng hay null",
+      "finalAnswer": null,
+      "baiLam": {
+        "ket_luan": {
+          "dong_bien": [],
+          "nghich_bien": null,
+          "cuc_dai_x": [],
+          "cuc_tieu_x": []
+        }
+      },
+      "loiGiai": "Không đồng biến trên khoảng nào. Không nghịch biến trên khoảng nào. Không có cực đại. Không có cực tiểu."
+    },
+    {
+      "ten": "y phẩy không xác định",
+      "finalAnswer": null,
+      "baiLam": {
+        "TXD": "D = \\mathbb{R} \\setminus \\{1\\}",
+        "y_phay_khong_xd": [
+          "1"
+        ],
+        "ket_luan": {
+          "nghich_bien": [
+            "(-oo; 1)",
+            "(1; +oo)"
+          ]
+        }
+      },
+      "loiGiai": "Tập xác định: D = \\mathbb{R} \\setminus \\{1\\}. y′ không xác định tại 1. Nghịch biến trên (-oo; 1) và (1; +oo)."
+    },
+    {
+      "ten": "thiếu hay rỗng giá trị cực trị",
+      "finalAnswer": null,
+      "baiLam": {
+        "ket_luan": {
+          "cuc_dai_x": [
+            "-1",
+            "1"
+          ],
+          "gia_tri_cuc_dai": [
+            "3"
+          ],
+          "cuc_tieu_x": [
+            "0"
+          ],
+          "gia_tri_cuc_tieu": [
+            ""
+          ]
+        }
+      },
+      "loiGiai": "Cực đại tại x = -1, y = 3; x = 1. Cực tiểu tại x = 0."
+    },
+    {
+      "ten": "chuỗi và mảng rỗng",
+      "finalAnswer": null,
+      "baiLam": {
+        "TXD": "",
+        "dao_ham": "",
+        "y_phay_bang_0": []
+      },
+      "loiGiai": null
+    },
+    {
+      "ten": "kết luận null",
+      "finalAnswer": null,
+      "baiLam": {
+        "TXD": "R",
+        "ket_luan": null
+      },
+      "loiGiai": "Tập xác định: R."
+    },
+    {
+      "ten": "đối tượng rỗng",
+      "finalAnswer": null,
+      "baiLam": {},
+      "loiGiai": null
+    },
+    {
+      "ten": "mảng",
+      "finalAnswer": null,
+      "baiLam": [],
+      "loiGiai": null
+    },
+    {
+      "ten": "null",
+      "finalAnswer": null,
+      "baiLam": null,
+      "loiGiai": null
+    }
+  ]
+}

@@ -1,5 +1,7 @@
 package vn.hoctapcanman.core.content.infrastructure.persistence;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.jdbc.core.simple.JdbcClient;
@@ -39,8 +41,24 @@ public class SolutionRepositoryAdapter implements SolutionRepository {
     public Optional<Solution> findByProblemId(UUID problemId) {
         return jdbc.sql("select problem_id, worked_solution, protected_facts, final_answer from solutions where problem_id = :id")
             .param("id", problemId)
-            .query((rs, n) -> new Solution(Cot.uuid(rs, "problem_id"), rs.getString("worked_solution"),
-                Cot.chu(rs, "protected_facts"), rs.getString("final_answer")))
+            .query(SolutionRepositoryAdapter::loiGiai)
             .optional();
+    }
+
+    @Override
+    public Optional<Solution> findReleased(UUID classId, UUID problemId, int contentVersion) {
+        return jdbc.sql("""
+                select s.problem_id, s.worked_solution, s.protected_facts, s.final_answer from solutions s
+                join problems p on p.id = s.problem_id
+                where s.problem_id = :bai and p.content_version = :pb and exists (
+                    select 1 from problem_releases r where r.class_id = :lop and r.problem_id = :bai and r.status = 'DA_PHAT_HANH')""")
+            .param("bai", problemId).param("pb", contentVersion).param("lop", classId)
+            .query(SolutionRepositoryAdapter::loiGiai)
+            .optional();
+    }
+
+    private static Solution loiGiai(ResultSet rs, int n) throws SQLException {
+        return new Solution(Cot.uuid(rs, "problem_id"), rs.getString("worked_solution"), Cot.chu(rs, "protected_facts"),
+            rs.getString("final_answer"));
     }
 }

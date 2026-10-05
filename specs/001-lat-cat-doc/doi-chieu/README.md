@@ -9,6 +9,7 @@ Tệp vàng do chính mã của v0 sinh ra, để test của core v2 so khớp: 
 | `v0-bai.json` | `xuat-v0.ts` | T014: mỗi bài v0 nạp (mã, dấu vân tay kiểu v0, nguồn, dạng trả lời, trạng thái tổng, trạng thái phát hành, dữ kiện bảo vệ, trạng thái từng tầng, và `cot_v0`: mọi cột nội dung v0 ghi cho bài — kỹ năng, mức, Bloom, độ khó, đề, LaTeX, hàm, bước bắt đầu, lời giải, đáp án cuối, các cấp gợi ý đã lưu) |
 | `phan-hoi-toan.json` | `xuat-v0.ts` | T014: mọi cặp yêu cầu → phản hồi của dịch vụ toán theo thứ tự v0 gọi, để dịch vụ toán giả phát lại |
 | `khoa-bang-v0.py` | — (script) | Sinh tệp dưới |
+| `loi-giai-v0.ts` | — (script, T020) | Chạy nguyên `loiGiaiHocSinh` của `apps/web/lib/loi-giai.ts` trên 11 ca, ghi `services/core/src/test/resources/content/loi-giai-v0.json` (kèm blob của tệp v0); `VietLoiGiaiTest` so từng chữ. Chạy: `node specs/001-lat-cat-doc/doi-chieu/loi-giai-v0.ts` |
 | `khoa-bang-v0.json` | `khoa-bang-v0.py` | T014: phản hồi thật của job khóa bảng (`kiem_dong_cong_thuc`) cho 6 dòng của v0 và 5 tài liệu của lớp, gửi như importer v2 gửi (thứ tự tài liệu, NFC, mỗi câu một đoạn); id ổn định: mã tài liệu, «mã#vị trí» của đoạn. Job giả của test đổi sang id thật rồi phát lại; test so loại, hai tầng, trích dẫn chính và trích dẫn thêm đã ghi của từng dòng |
 
 ## `xuat-v0.ts` (T013)
