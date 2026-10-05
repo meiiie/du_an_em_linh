@@ -71,7 +71,7 @@
   --action-hover: #c4633a;
   --action-hover-ink: #141413;
   --label: #58c4dd;
-  --brand-plus: var(--m-blue);
+  --brand-plus: var(--label);
   --pass: #5cd0b3;
   --mark: #fc6255;
   --wait: #f0ac5f;
@@ -157,8 +157,10 @@ body {
   font-weight: 600;
 }
 
+/* Link hiện đè lên tiêu đề: viền `canvas` 6 px dưới vòng focus để vòng nằm trên nền phẳng, không trên chữ. */
 .skip-link:focus {
   transform: none;
+  box-shadow: 0 0 0 6px var(--canvas);
 }
 
 /* Nút — cao thị giác 40, chạm 44 (pointer: coarse), đệm ngang 16, bán kính 8.
@@ -242,8 +244,9 @@ body {
   color: var(--ink);
 }
 
-/* Nút này hay nằm trong thanh trên 48 px: vòng ngoài bị cắt ở mép màn nên vẽ vào trong; `--focus` vẫn ≥ 3 : 1 với nền nút. */
-.nut-icon:focus-visible {
+/* Thanh trên 48 px của khung (khung-trang.ts): điều khiển cao 44 px, vòng ngoài nằm trên mép trên màn nên vẽ vào trong;
+   `--focus` vẫn ≥ 3 : 1 với nền nút. */
+.thanh-tren :focus-visible {
   outline-offset: -2px;
 }
 

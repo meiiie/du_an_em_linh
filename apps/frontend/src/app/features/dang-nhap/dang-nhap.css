@@ -180,6 +180,11 @@ h1 {
   cursor: pointer;
 }
 
+/* Vòng ngoài sẽ nằm trên viền ô nhập (1,17 : 1); vẽ vào trong, trên nền ô. */
+.nut-trong-o:focus-visible {
+  outline-offset: -2px;
+}
+
 .nut-trong-o:hover {
   background: var(--wash);
   color: var(--ink);

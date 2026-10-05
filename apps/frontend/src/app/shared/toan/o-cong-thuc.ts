@@ -151,7 +151,7 @@ interface MathField extends HTMLElement {
     .o:focus-within,
     .o:focus {
       outline: 2px solid var(--focus);
-      outline-offset: 1px;
+      outline-offset: 2px;
     }
 
     /* Ô khóa không trông như ô đang dùng được. */

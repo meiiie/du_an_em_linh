@@ -8,8 +8,8 @@
     <link rel="icon" href="favicon.ico" sizes="any" />
     <link rel="icon" href="icon.svg" type="image/svg+xml" />
     <!-- Đặt chế độ sáng / tối trước lần vẽ đầu để trang không chớp; cùng khóa và cùng luật với GiaoDien (src/app/core/giao-dien.ts).
-         CSS toàn cục chặn vẽ (angular.json: inlineCritical false): CSS trọng yếu nội tuyến không có token tối, nên khi CSS chậm
-         chế độ tối sẽ chớp sáng. -->
+         CSS toàn cục chặn vẽ (angular.json: inlineCritical false): CSS chậm thì trang chưa vẽ gì cho tới khi CSS về, và khung
+         đầu đã đúng chế độ. Nếu bật lại CSS trọng yếu nội tuyến, chế độ tối sẽ chớp sáng vì phần nội tuyến chỉ có token sáng. -->
     <script>
       (function () {
         var c = null;

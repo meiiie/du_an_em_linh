@@ -174,11 +174,6 @@ const MAN_HINH_RONG = '(min-width: 64rem)';
       block-size: 20px;
     }
 
-    /* Chữ hiệu sát mép thanh 48 px: vòng tiêu điểm vẽ vào trong, không bị cắt ở mép. */
-    .thuong-hieu:focus-visible {
-      outline-offset: -2px;
-    }
-
     .thuong-hieu {
       display: inline-flex;
       align-items: center;
