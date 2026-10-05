@@ -337,6 +337,7 @@ class NopBaiUseCaseTest {
     /**
      * Phán quyết #142 (vòng 3), bốn tác nhân: tab khác mở bài làm mới trước lúc đọc lịch sử, rồi làm xong và nộp nó trước lần
      * khóa lại. Đề không đổi: phát lại lần nộp mới nhất, không báo DE_DA_DOI (trước đây suy đề đổi từ «khóa trượt hai lần»).
+     * Lần nộp của tab kia là SAI, khác DAT của lần đầu: phát lại từ lịch sử đọc trước đó thì ra DAT (phán quyết #142 vòng 4).
      */
     @Test
     void tabKhacNopBaiLamGiuaHaiLanKhoaThiPhatLaiKhongBaoDeDoi() {
@@ -344,12 +345,14 @@ class NopBaiUseCaseTest {
         assertThat(nopBai.execute(an, lop, ma)).isEqualTo(DAT_KHONG_LOI_GIAI);
         SubmissionRepository moBaiLam = chen(submissions, "history", 1, false, () -> nopBuoc.execute(an, lop, ma, dong("B.DH.TXD", "D = R")));
         SubmissionRepository nopBaiLam = chen(moBaiLam, "lockOpen", 2, false, () -> {
-            lamDuBuoc();
+            lamTruocKetLuan();
+            mayCham.traLoi = NopBaiUseCaseTest::saiOKetLuan;
+            nopBuoc.execute(an, lop, ma, ketLuan());
             nopBai.execute(an, lop, ma);
         });
         int phienBan = phienBanBai();
         NopBaiUseCase uc = new NopBaiUseCase(membership, baiDeLam, nopBaiLam, grades, List.of(), moLoiGiai, tx, clock);
-        assertThat(uc.execute(an, lop, ma)).isEqualTo(DAT_KHONG_LOI_GIAI);
+        assertThat(uc.execute(an, lop, ma)).isEqualTo(new KetQuaNopBai(KetQuaBai.SAI, List.of(), null));
         assertThat(phienBanBai()).isEqualTo(phienBan);
         assertThat(trangThai()).containsExactly("DA_NOP", "DA_NOP");
     }
@@ -434,6 +437,14 @@ class NopBaiUseCaseTest {
         NopBaiUseCase coLoi = new NopBaiUseCase(membership, baiDeLam, submissions, grades, List.of(loi), moLoiGiai, tx, clock);
         lamDuBuoc();
         assertThatThrownBy(() -> coLoi.execute(an, lop, ma)).hasMessage("mức hiểu lỗi");
+        assertThat(trangThai()).containsExactly("DANG_LAM");
+    }
+
+    /** Phán quyết #142 (vòng 4): gọi từ trong một giao dịch thì bài vừa nộp chưa commit lúc đọc lời giải; chặn hẳn. */
+    @Test
+    void goiTuTrongGiaoDichKhacThiLoi() {
+        lamDuBuoc();
+        assertThatThrownBy(() -> tx.execute(s -> nopBai.execute(an, lop, ma))).isInstanceOf(IllegalStateException.class);
         assertThat(trangThai()).containsExactly("DANG_LAM");
     }
 

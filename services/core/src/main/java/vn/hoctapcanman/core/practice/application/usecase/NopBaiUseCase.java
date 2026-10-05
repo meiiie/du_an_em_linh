@@ -9,6 +9,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.transaction.support.TransactionTemplate;
 import vn.hoctapcanman.core.classroom.application.port.ClassMembership;
 import vn.hoctapcanman.core.content.application.dto.hocsinh.BaiChoLamBai;
@@ -80,6 +81,11 @@ public class NopBaiUseCase {
     }
 
     public KetQuaNopBai execute(UUID hocSinhId, UUID lopId, String maBai) {
+        // Lời giải đọc sau khi giao dịch nộp commit, ở giao dịch riêng (MoLoiGiai): gọi từ trong giao dịch khác thì giao dịch nộp
+        // nhập vào nó, chưa commit lúc đọc, và lời giải lặng lẽ không mở.
+        if (TransactionSynchronizationManager.isActualTransactionActive()) {
+            throw new IllegalStateException("NopBaiUseCase tự mở giao dịch; không gọi từ trong giao dịch khác");
+        }
         if (!membership.laHocSinh(hocSinhId, lopId)) {
             throw new BaiKhongTimThayException();
         }
