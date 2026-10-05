@@ -12,7 +12,7 @@ Tệp vàng do chính mã của v0 sinh ra, để test của core v2 so khớp: 
 | `loi-giai-v0.ts` | — (script, T020) | Chạy nguyên `loiGiaiHocSinh` của `apps/web/lib/loi-giai.ts` trên 11 ca, ghi `services/core/src/test/resources/content/loi-giai-v0.json` (kèm blob của tệp v0); `VietLoiGiaiTest` so từng chữ. Chạy: `node specs/001-lat-cat-doc/doi-chieu/loi-giai-v0.ts` |
 | `chung.ts` | — (mô-đun) | Phần dùng chung của `xuat-v0.ts` và `cham-v0.ts`: dựng dịch vụ toán từ checkout, cắt mã v0 theo mốc, ghi nguồn git |
 | `cham-v0.ts` | — (script, T023) | Sinh tệp dưới |
-| `cham-v0.json` | `cham-v0.ts` | T023 (SC-006): `DoiChieuChamV0Test` cho 187 học sinh tổng hợp nộp từng bước trên 12 bài chấm được như lúc ghi; so yêu cầu `/v1/grade` từng byte, kết quả cho học sinh và hàng `grading_results` với v0 |
+| `cham-v0.json` | `cham-v0.ts` | T023 (SC-006): `DoiChieuChamV0Test` cho 187 học sinh tổng hợp nộp từng bước trên 12 bài chấm được như lúc ghi; so yêu cầu `/v1/grade` (cây và byte Jackson đem băm), kết quả cho học sinh và hàng `grading_results` với v0 |
 | `khoa-bang-v0.json` | `khoa-bang-v0.py` | T014: phản hồi thật của job khóa bảng (`kiem_dong_cong_thuc`) cho 6 dòng của v0 và 5 tài liệu của lớp, gửi như importer v2 gửi (thứ tự tài liệu, NFC, mỗi câu một đoạn); id ổn định: mã tài liệu, «mã#vị trí» của đoạn. Job giả của test đổi sang id thật rồi phát lại; test so loại, hai tầng, trích dẫn chính và trích dẫn thêm đã ghi của từng dòng |
 
 ## `xuat-v0.ts` (T013)
@@ -112,3 +112,11 @@ Kết quả không đạt của từng biến thể (số bài chạy):
 | `dao_db_nb`, `gop_U` | KẾT LUẬN `SAI_KET_LUAN` ERR.DH.08 (12); ERR.DH.07, luật dấu U (10) |
 | `cuc_tri_trong`, `chi_tung_do` | KẾT LUẬN `SAI_KET_LUAN` ERR.DH.12; ERR.DH.11 (5, 5) |
 | `ket_luan_chu` | KẾT LUẬN `KHONG_KIEM_DUOC` (12) |
+
+### Giới hạn (phán quyết độc lập #144)
+
+- **`oSai` so với mô hình của `lineBad`, không với mã v0 chạy thật.** Đoạn cắt thân `SolveClient` dừng ở `const badStep =`, nên `vanDe`, `hien`, `lineBad` của v0 không chạy. Kỳ vọng `oSai` trong `DoiChieuChamV0Test` là quy tắc `lineBad` chép tay, cùng dạng với quy tắc trong `DocKetQuaCham.choHocSinh`: lỗi giống nhau ở cả hai thì test không thấy. v0 đóng băng nên rủi ro thấp; nâng lên thì kéo đoạn cắt qua `lineBad` và ghi tập ô tô cho từng lần chấm.
+- **Byte được chứng minh là byte đem băm.** Test so cây yêu cầu và SHA-256 của byte Jackson (cùng bộ ghi `YeuCauCham` dùng để băm) với `bam` của v0; byte thật trên đường truyền đi qua bộ chuyển của RestClient (`MathServiceClient`) chưa có test riêng.
+- **Kiểm «bước đã gõ mà chưa nộp» trong script** so thân yêu cầu với `payload()` của cùng một lần vẽ, nên không bắt được ca đó; chặn thật là phép so byte bên Java.
+- Các cột chỉ core có (`unfinished`, `normalizer_version`, `normalization`, `step_code`) được so với chính yêu cầu và phản hồi đã ghi: là kiểm ghi đọc của core, không phải so với v0.
+- Hai chốt của quy tắc dòng liên quan (vấn đề có `nguyen_nhan`, kết quả không `SAI`) chỉ có test đơn vị (`DocKetQuaChamTest`): trong tệp vàng, cả 10 lần chấm có `dong_lien_quan` đều là vấn đề gốc `SAI`.
