@@ -15,90 +15,21 @@
 // KHO_LOP=v0 giữ nguyên kho của seed.ts (một tài liệu) và chỉ in trạng thái từng bài, không ghi tệp: để tách ảnh hưởng
 // của kho tài liệu khỏi ảnh hưởng của mã.
 import { createHash, randomUUID } from 'node:crypto';
-import { execFileSync, execSync } from 'node:child_process';
+import { execSync } from 'node:child_process';
 import { readFileSync, writeFileSync } from 'node:fs';
 import { stripTypeScriptTypes } from 'node:module';
 import path from 'node:path';
 import vm from 'node:vm';
+import { chayDichVuToan, doan, giua, nguonGit, type DichVuToan } from './chung.ts';
 
 const GOC = path.resolve(import.meta.dirname, '..', '..', '..');
 const TEP = 'apps/web/scripts/seed.ts';
-const TOAN = 'services/math';
 
 const src = readFileSync(path.join(GOC, TEP), 'utf8');
-const git = (lenh: string) => execSync('git ' + lenh, { cwd: GOC }).toString().trim();
-const docker = (lenh: string) => execSync('docker ' + lenh, { cwd: GOC, env: { ...process.env, MSYS_NO_PATHCONV: '1' } }).toString().trim();
-
-/** Build và chạy services/math của checkout này; trả URL, nguồn (cây git, id ảnh) và hàm dừng. */
-async function chayDichVuToan() {
-  if (git('status --porcelain -- ' + TOAN)) throw new Error(TOAN + ' có thay đổi chưa commit: tệp vàng phải ứng với mã đã commit');
-  const cay = git('rev-parse HEAD:' + TOAN);
-  // Ảnh gốc trong FROM là tag có thể đổi (python:3.12-slim): kéo về trước khi build để bản build dùng đúng bản cục bộ này,
-  // rồi ghi digest bất biến của nó; cùng cây git thì cùng runtime.
-  const tu = git('show HEAD:' + TOAN + '/Dockerfile').split('\n').find((d) => /^FROM\s/i.test(d));
-  const goc = (tu ?? '').trim().split(/\s+/)[1];
-  if (!goc) throw new Error('Không đọc được ảnh gốc trong FROM của ' + TOAN + '/Dockerfile');
-  execFileSync('docker', ['pull', '-q', goc]);
-  const digest = execFileSync('docker', ['image', 'inspect', '--format', '{{index .RepoDigests 0}}', goc]).toString().trim();
-  // Ngữ cảnh build chỉ gồm tệp đã commit của services/math (git archive HEAD), không phải thư mục làm việc: tệp bị
-  // .gitignore (khóa *.pem, *apikey*, .env…) không bao giờ vào ảnh, và ảnh đúng cây git ghi ở dưới.
-  const nguCanh = execSync('git archive --format=tar HEAD ' + TOAN, { cwd: GOC, maxBuffer: 512 * 1024 * 1024 });
-  const anh = execSync('docker build -q -f ' + TOAN + '/Dockerfile -', {
-    cwd: GOC,
-    input: nguCanh,
-    env: { ...process.env, MSYS_NO_PATHCONV: '1' },
-  }).toString().trim();
-  // Gói Python đã cài (phiên bản SymPy…) và phiên bản Python của ảnh: cùng với cây git và digest, cố định thư viện, runtime.
-  const goi = execFileSync('docker', ['run', '--rm', '-e', 'PIP_NO_CACHE_DIR=1', '--entrypoint', 'pip', anh, 'freeze']).toString()
-    .split('\n').map((d) => d.trim()).filter(Boolean).sort();
-  const python = execFileSync('docker', ['run', '--rm', '--entrypoint', 'python', anh, '--version']).toString().trim();
-  const hop = docker('run -d --rm --read-only --tmpfs /tmp -p 127.0.0.1::8000 ' + anh);
-  const dung = () => {
-    try {
-      docker('rm -f ' + hop);
-    } catch {
-      // đã dừng
-    }
-  };
-  try {
-    const url = 'http://' + docker('port ' + hop + ' 8000/tcp').split('\n')[0];
-    for (let i = 0; ; i++) {
-      let r: Response | null = null;
-      try {
-        r = await fetch(url + '/health');
-      } catch {
-        // chưa sẵn sàng
-      }
-      if (r?.ok) {
-        return {
-          url, anh, dung,
-          nguon: { cay_git: cay, anh_goc: { ten: goc, digest }, python, goi_python: goi, suc_khoe: await r.json() },
-        };
-      }
-      if (i >= 60) throw new Error('dịch vụ toán không lên sau 60 s');
-      await new Promise((xong) => setTimeout(xong, 1000));
-    }
-  } catch (e) {
-    dung();
-    throw e;
-  }
-}
-
-function viTri(moc: string, tu = 0): number {
-  const i = src.indexOf(moc, tu);
-  if (i < 0) throw new Error('seed.ts thiếu mốc ' + JSON.stringify(moc));
-  return i;
-}
-
-/** Đoạn từ mốc `dau` tới hết mốc `cuoi` đầu tiên sau đó. */
-function doan(dau: string, cuoi: string): string {
-  const a = viTri(dau);
-  return src.slice(a, viTri(cuoi, a + dau.length) + cuoi.length);
-}
 
 function nguonDaCommit() {
-  if (git('status --porcelain -- ' + TEP)) throw new Error(TEP + ' có thay đổi chưa commit');
-  return { tep: TEP, commit: git('log -1 --format=%H -- ' + TEP), blob: git('rev-parse HEAD:' + TEP) };
+  const blob = nguonGit(GOC, [TEP])[TEP];
+  return { tep: TEP, commit: execSync('git log -1 --format=%H -- ' + TEP, { cwd: GOC }).toString().trim(), blob };
 }
 
 /**
@@ -107,13 +38,7 @@ function nguonDaCommit() {
  * (dữ liệu lab chỉ đổi qua bản vá nguyên văn có mã), và ghi cây hay blob git của từng thứ để tệp vàng tái lập được từ đúng
  * các phiên bản đã ghi.
  */
-const DU_LIEU = ['data/supham', 'data/v0', 'specs/001-lat-cat-doc/doi-chieu/xuat-v0.ts'];
-
-function duLieuDaCommit() {
-  const ban = git('status --porcelain -- ' + DU_LIEU.join(' '));
-  if (ban) throw new Error('Dữ liệu đầu vào có thay đổi chưa commit:\n' + ban);
-  return Object.fromEntries(DU_LIEU.map((d) => [d, git('rev-parse HEAD:' + d)]));
-}
+const DU_LIEU = ['data/supham', 'data/v0', 'specs/001-lat-cat-doc/doi-chieu/xuat-v0.ts', 'specs/001-lat-cat-doc/doi-chieu/chung.ts'];
 
 const docJson = (tep: string) => JSON.parse(readFileSync(path.join(GOC, tep), 'utf8'));
 
@@ -138,9 +63,9 @@ function khoLop() {
 
 async function main() {
   const seed = nguonDaCommit();
-  duLieuDaCommit();
+  nguonGit(GOC, DU_LIEU);
   const kho = khoLop();
-  const toan = await chayDichVuToan();
+  const toan = await chayDichVuToan(GOC);
   try {
     await xuat(seed, kho, toan);
   } finally {
@@ -148,22 +73,21 @@ async function main() {
   }
 }
 
-async function xuat(seed: ReturnType<typeof nguonDaCommit>, kho: ReturnType<typeof khoLop>,
-    toan: Awaited<ReturnType<typeof chayDichVuToan>>) {
+async function xuat(seed: ReturnType<typeof nguonDaCommit>, kho: ReturnType<typeof khoLop>, toan: DichVuToan) {
 
   // Cắt mã của v0 theo mốc. Đoạn nạp bài: từ khung bước tới trước phần dữ liệu học sinh mẫu (`const levels`).
-  const CORPUS = doan('const corpus = {', '\n  };\n');
-  let doanNap = src.slice(viTri('const steps = ['), viTri('const levels'));
+  const CORPUS = doan(src, TEP, 'const corpus = {', '\n  };\n');
+  let doanNap = giua(src, TEP, 'const steps = [', 'const levels');
   if (doanNap.split(CORPUS).length !== 2) throw new Error('cần đúng một hằng corpus trong đoạn nạp bài');
   const khoGoc = process.env.KHO_LOP === 'v0';
   if (!khoGoc) doanNap = doanNap.replace(CORPUS, 'const corpus = __khoLop;\n');
   const ma = [
-    doan('const MUC4: Record<string, string> = {', '\n};\n'),
-    doan('const MUC3: Record<string, string> = {', '\n};\n'),
-    doan('function contentHash(', '\n}\n'),
-    doan('async function math<T>(', '\n}\n'),
-    doan('function hintText(', '\n}\n'),
-    doan('async function napBai(', '\n}\n'),
+    doan(src, TEP, 'const MUC4: Record<string, string> = {', '\n};\n'),
+    doan(src, TEP, 'const MUC3: Record<string, string> = {', '\n};\n'),
+    doan(src, TEP, 'function contentHash(', '\n}\n'),
+    doan(src, TEP, 'async function math<T>(', '\n}\n'),
+    doan(src, TEP, 'function hintText(', '\n}\n'),
+    doan(src, TEP, 'async function napBai(', '\n}\n'),
     doanNap,
   ].join('\n');
   const js = stripTypeScriptTypes('(async () => {\n' + ma + '\n})()', { mode: 'strip' });
@@ -260,7 +184,7 @@ async function xuat(seed: ReturnType<typeof nguonDaCommit>, kho: ReturnType<type
   ghi('v0-bai.json', {
     nguon: {
       seed,
-      du_lieu: duLieuDaCommit(),
+      du_lieu: nguonGit(GOC, DU_LIEU),
       dich_vu_toan: toan.nguon,
       kho_lop: {
         tai_lieu: kho.tai_lieu.map((d) => d.id),
