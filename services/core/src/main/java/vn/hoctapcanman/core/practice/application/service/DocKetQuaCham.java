@@ -122,8 +122,12 @@ public final class DocKetQuaCham {
     }
 
     /**
-     * Phản hồi cho học sinh: kết quả, thông báo (thêm câu đoán mò khi bài làm bị nghi), chỗ sai để tô (bước sai gốc rồi bước
-     * sai của từng vấn đề, không trùng), mã lỗi, bước kế trong khung khi đạt mà chưa xong khung. Không có giá trị đúng nào.
+     * Phản hồi cho học sinh: kết quả, thông báo (thêm câu đoán mò khi bài làm bị nghi), chỗ sai để tô (bước sai gốc, bước sai
+     * của từng vấn đề, rồi dòng liên quan của vấn đề gốc khi {@code SAI}; không trùng), mã lỗi, bước kế trong khung khi đạt mà
+     * chưa xong khung. Không có giá trị đúng nào.
+     *
+     * <p>Dòng liên quan như {@code lineBad} của {@code solve-client.tsx} (SC-006, T023): vấn đề không có {@code nguyen_nhan} mà
+     * có {@code dong_lien_quan} (mốc thừa ERR.DH.24: dòng nghiệm chứa mốc) thì tô thêm dòng đó của bước sai của vấn đề.
      */
     public static KetQuaNopBuoc choHocSinh(GradingResult g, List<String> khung, boolean nghiDoanMo) {
         String thongBao = g.message() == null ? "" : g.message();
@@ -135,7 +139,12 @@ public final class DocKetQuaCham {
         JsonNode vanDe = cay(g.issuesJson());
         if (vanDe != null && vanDe.isArray()) {
             for (JsonNode v : vanDe) {
-                viTri(v.get("buoc_sai")).ifPresent(oSai::add);
+                Optional<ViTriSai> o = viTri(v.get("buoc_sai"));
+                o.ifPresent(oSai::add);
+                JsonNode lienQuan = v.path("dong_lien_quan");
+                if (g.result() == GradeStatus.SAI && o.isPresent() && lienQuan.isInt() && v.path("nguyen_nhan").asString("").isEmpty()) {
+                    oSai.add(new ViTriSai(o.get().maBuoc(), lienQuan.intValue(), null, null));
+                }
             }
         }
         String buocKe = null;

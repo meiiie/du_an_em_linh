@@ -179,6 +179,25 @@ class DocKetQuaChamTest {
     }
 
     @Test
+    void choHocSinhToDongLienQuanCuaVanDeGocKhiSaiNhuV0() {
+        // Như cham-v0.json (DH12-03-TH-01, thua_diem_xuyen_buoc): mốc thừa 100 ở ô X k=2, dòng nghiệm 2 chứa mốc đó.
+        Map<String, @Nullable Object> p = phanHoiSai();
+        Map<String, @Nullable Object> moc = theoThuTu("ma_buoc", "B.DH.NGHIEM", "dong", null, "o", theoThuTu("hang", "X", "k", 2));
+        p.put("buoc_sai", moc);
+        p.put("cac_van_de", List.of(
+            theoThuTu("id", "VD1", "loai_ket_qua", "DIEM_THUA", "buoc_sai", moc, "dong_lien_quan", 2),
+            theoThuTu("id", "VD2", "buoc_sai", theoThuTu("ma_buoc", "B.DH.XETDAU", "dong", null, "o", theoThuTu("hang", "DAU_YPHAY", "k", 4)),
+                "nguyen_nhan", "VD1", "dong_lien_quan", 1)));
+        assertThat(DocKetQuaCham.choHocSinh(DocKetQuaCham.ketQua(BAI_LAM, "B.DH.XETDAU", KHUNG, BAM, p, LUC), KHUNG, false).oSai())
+            .containsExactly(new ViTriSai("B.DH.NGHIEM", null, "X", 2), new ViTriSai("B.DH.NGHIEM", 2, null, null),
+                new ViTriSai("B.DH.XETDAU", null, "DAU_YPHAY", 4));
+        // Không SAI thì v0 không tô từ danh sách vấn đề, nên không có dòng liên quan.
+        p.put("ket_qua", "KHONG_KIEM_DUOC");
+        assertThat(DocKetQuaCham.choHocSinh(DocKetQuaCham.ketQua(BAI_LAM, "B.DH.XETDAU", KHUNG, BAM, p, LUC), KHUNG, false).oSai())
+            .containsExactly(new ViTriSai("B.DH.NGHIEM", null, "X", 2), new ViTriSai("B.DH.XETDAU", null, "DAU_YPHAY", 4));
+    }
+
+    @Test
     void datThiCoBuocKeTruBuocCuoi() {
         assertThat(DocKetQuaCham.choHocSinh(DocKetQuaCham.ketQua(BAI_LAM, "B.DH.DAOHAM", KHUNG, BAM, phanHoiDat("B.DH.DAOHAM"), LUC), KHUNG, false).buocKe())
             .isEqualTo("B.DH.NGHIEM");
