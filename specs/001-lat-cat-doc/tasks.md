@@ -58,7 +58,7 @@ description: "Danh sách việc của epic P2 — lát cắt dọc một chủ �
 - [x] T003b Đóng gói nội dung vào ảnh core (sau T011b, vì cần `data/v0/`): ngữ cảnh build là gốc repo, `services/core/Dockerfile.dockerignore` (chỉ `services/core/`, `data/supham/`, `data/v0/`), `COPY` vào `/app/noi-dung/{supham,v0}`; sửa `compose.v2.yaml` và job CI «Core — Maven + image» (`docker build -f services/core/Dockerfile .`)
 - [ ] T012 `core/content/infrastructure/import/`: importer đọc `${app.content.source}` (ảnh: `/app/noi-dung`; test: `${project.basedir}/../../data` đặt trong `systemPropertyVariables` của Surefire), gồm `supham/` và `v0/`, như `apps/web/scripts/seed.ts` (cả biến thể `/v1/generate` hạt giống cố định và 3 bài demo), idempotent theo mã + dấu vân tay; với mỗi lớp đã có (profile `dev`: «12A1 thử»): nạp 3 tài liệu của v0, `sp-tai-lieu-0001` và `sp-tai-lieu-0002`, khóa bảng 6 dòng qua `/v1/kiem-dong-cong-thuc` (không đạt thì báo lỗi, không khóa thiếu; ADR 013), chạy `/v1/verify` từng bài và ghi `problem_releases` của lớp; phát sự kiện miền `BangCongThucDaKhoa` và `BaiDaNhap`
 - [ ] T013 [P] Script một lần `specs/001-lat-cat-doc/doi-chieu/xuat-v0.ts` (chạy trên v0, với cùng 5 tài liệu của lớp v2: 3 của v0, `sp-tai-lieu-0001`, `sp-tai-lieu-0002`): xuất (mã bài, dấu vân tay, trạng thái cổng) ra `doi-chieu/v0-bai.json`
-- [ ] T014 `core-test/content/NhapNoiDungTest.java`: nhập trên Testcontainers + dịch vụ toán giả; so `v0-bai.json`
+- [x] T014 (#135) `core-test/content/NhapNoiDungTest.java`: nhập trên Testcontainers + dịch vụ toán giả; so `v0-bai.json`
 - [ ] T015 `core/content/application/`: port đọc bài cho học sinh **không** có lời giải; ArchUnit thêm luật: DTO của học sinh không phụ thuộc `Solution`
 
 ### Issue — Khung frontend P2
@@ -77,7 +77,7 @@ description: "Danh sách việc của epic P2 — lát cắt dọc một chủ �
 
 ### Issue — Module `practice` (core)
 
-- [ ] T019 [US1] `V7__practice.sql` (V5, V6 đã dùng cho content): `assignments`, `submissions`, `submission_steps`, `submission_tables`, `submission_table_cells`, `input_events`, `grading_results`
+- [x] T019 (#136) [US1] `V7__practice.sql` (V5, V6 đã dùng cho content): `assignments`, `submissions`, `submission_steps`, `submission_tables`, `submission_table_cells`, `input_events`, `grading_results`
 - [ ] T020 [US1] `core/practice/`: nộp bước (idempotent), chấm qua `MathServiceClient.grade`, ghi kết quả; nộp bài; cờ mở lời giải; nghi đoán mò
 - [ ] T021 [US1] `core/practice/infrastructure/web/`: `GET /api/hs/bai`, `GET /api/hs/bai/{maBai}`, `POST …/buoc`, `POST …/nop`, `POST /api/gv/giao-bai` theo hợp đồng; `GET /api/hs/trang-hoc` phần `ten`, `soBaiGiao` (mastery, planner bổ sung phần của mình)
 - [ ] T022 [P] [US1] `core-test/practice/`: chấm sai không lộ đáp án; dịch vụ toán lỗi → `KHONG_CHAM_DUOC`; tải lại giữ bài làm; hai tab nộp cùng bước ghi một lần
