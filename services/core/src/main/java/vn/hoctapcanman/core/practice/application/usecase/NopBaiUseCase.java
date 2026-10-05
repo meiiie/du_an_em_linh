@@ -38,6 +38,8 @@ import vn.hoctapcanman.core.practice.domain.repository.SubmissionRepository;
  * Học sinh nộp bài của một bài ở một lớp (T020, FR-006, FR-023). Nộp bài không chấm: kết quả cả bài là phán quyết đã ghi
  * của bước kết luận (bước cuối của khung) trên nội dung hiện tại của bài làm, và lần chấm đó thành căn cứ ghim vào bài làm.
  * <ol>
+ *   <li>Gọi từ trong một giao dịch khác: {@link IllegalStateException}. Giao dịch nộp phải commit trước khi {@link MoLoiGiai}
+ *       đọc ở giao dịch riêng, không thì lời giải lặng lẽ không mở.</li>
  *   <li>Không phải học sinh của lớp, bài chưa phát hành ở lớp hay không chấm từng bước được: {@link BaiKhongTimThayException},
  *       cùng một lỗi như nộp bước.</li>
  *   <li>Trong một giao dịch, khóa bài làm đang làm ở phiên bản nội dung hiện tại như mọi lần ghi phần con. Thiếu một bước từ
@@ -49,8 +51,8 @@ import vn.hoctapcanman.core.practice.domain.repository.SubmissionRepository;
  *       khác vừa mở nó thì nộp như trên. Vẫn không khóa được: phiên bản đang phát hành khác phiên bản đã đọc (đề đổi trong lúc
  *       chờ khóa) thì {@code DE_DA_DOI}; không thì tab khác vừa nộp nó, đọc lại lịch sử và đi tiếp như dưới.</li>
  *   <li>Không có bài làm đang làm ở phiên bản đó: lần nộp mới nhất ở đúng phiên bản được phát lại (gửi lại sau khi mất phản
- *       hồi, hai tab cùng nộp). Không có lần nộp đó: còn bài làm đang làm ở phiên bản khác thì {@code DE_DA_DOI}, không thì
- *       {@code CHUA_LAM_DU_BUOC}.</li>
+ *       hồi, hai tab cùng nộp); bài làm bị xóa dây chuyền giữa chừng thì {@link BaiKhongTimThayException}. Không có lần nộp đó:
+ *       còn bài làm đang làm ở phiên bản khác thì {@code DE_DA_DOI}, không thì {@code CHUA_LAM_DU_BUOC}.</li>
  *   <li>Cuối giao dịch: mọi {@link CapNhatMucHieu} (idempotent theo bài làm, nên phát lại trả đúng lần đầu).</li>
  *   <li>Sau commit: lời giải qua {@link MoLoiGiai} (đọc trong một ảnh chụp, giao dịch riêng).</li>
  * </ol>
