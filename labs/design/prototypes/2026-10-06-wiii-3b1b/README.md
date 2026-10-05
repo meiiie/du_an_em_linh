@@ -6,6 +6,8 @@ Brief: [2026-10-06-wiii-3b1b.md](../../studies/2026-10-06-wiii-3b1b.md). Danh s�
 
 Imagegen xuất ảnh desktop 1586 × 992 và điện thoại 853 × 1844. Từng ảnh được sao chép vào thư mục này rồi thu nhỏ toàn khung bằng nội suy bicubic để xuất đúng 1280 × 800 hoặc 390 × 844; không thêm chữ, vẽ lại thành phần hay cắt nội dung bằng mã. Các bản sửa thiết kế cũng do imagegen thực hiện.
 
+Lời nhắc dưới đây ghi bán kính nút 6 px theo chuẩn cũ lúc sinh ảnh; chuẩn đã chọn là 8 px cho nút, 12 px cho thẻ (`docs/DESIGN.md`). Ảnh chỉ để so phong cách.
+
 Trong repo, ảnh lưu dạng WebP chất lượng 86 (Pillow 12.0, `method=6`): 12 ảnh PNG gốc 7 527 568 byte còn 325 370 byte; kích thước khung giữ nguyên. Các lời nhắc dưới đây nói «PNG» vì đó là định dạng lúc sinh.
 
 Đã xem đủ 12 ảnh để kiểm tra chữ Việt, tên MathL+, nội dung màn và tính đúng của bảng dấu/điểm cực trị. Kích thước cùng định dạng PNG được kiểm tra sau khi xuất. Ảnh raster phục vụ so sánh thiết kế; chưa phải bằng chứng kiểm định WCAG hoặc giao diện chạy thật.

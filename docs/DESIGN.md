@@ -25,22 +25,24 @@ Sản phẩm là **một trang toán**: công thức là điểm nhìn, năm bư
 
 ## Token
 
-Chữ đạt ≥ 4,5 : 1, thành phần giao diện ≥ 3 : 1, đo bằng script trên màu đã vẽ (số đo trong PR áp token). Chế độ tối: `prefers-color-scheme: dark`, hay `data-theme` trên `<html>` khi người dùng bấm nút đổi (nhớ trong `localStorage`).
+Chữ đạt ≥ 4,5 : 1, thành phần giao diện ≥ 3 : 1. Số trong bảng tính theo WCAG 2.x (độ chói sRGB) bằng script ở lượt kiểm độc lập của PR #145; số đo trên giao diện đã vẽ ở PR áp token vào Angular. Chế độ tối: `prefers-color-scheme: dark`, hay `data-theme` trên `<html>` khi người dùng bấm nút đổi (nhớ trong `localStorage`).
 
 | Tên | Sáng | Tối | Việc |
 | --- | --- | --- | --- |
 | `canvas` | `#FAF9F5` | `#1E1D1B` | Nền trang (Wiii `--surface`) |
 | `wash` | `#F0EEE6` | `#282724` | Thanh bên, khối phụ, ô nhập |
 | `raise` | `#FFFFFF` | `#353330` | Thẻ nổi, ngăn kéo |
-| `line` | `#D8D5CD` | `#3A3935` | Kẻ 1 px |
+| `line` | `#D8D5CD` | `#3A3935` | Kẻ chia 1 px (trang trí, không phải ranh giới duy nhất của một điều khiển) |
+| `line-strong` | `#8A877F` | `#82807A` | Viền ô nhập, nút phụ, ranh giới điều khiển: ≥ 3 : 1 trên `canvas`, `wash`, `raise` (WCAG 1.4.11) |
 | `ink` | `#141413` | `#E8E8E4` | Chữ chính |
 | `ink-2` | `#3D3D3A` | `#C9C8C2` | Chữ phụ đậm |
 | `muted` | `#5F5E58` | `#A8A7A2` | Chữ phụ (Wiii `--text-tertiary` chỉnh đậm cho AA) |
 | `accent` | `#C75B39` | `#C75B39` | Vạch mục đang chọn, viền focus, dấu «+» của chữ hiệu (sáng) |
-| `action` | `#AE5630` | `#AE5630` | Nền nút chính, chữ trắng (`#C75B39` với chữ trắng chỉ ≈ 4,2 : 1) |
+| `action` | `#AE5630` | `#AE5630` | Nền nút chính, chữ trắng 5,03 : 1 (`#C75B39` với chữ trắng chỉ 4,21 : 1) |
+| `action-hover` | `#9A4A28`, chữ trắng 6,21 : 1 | `#C4633A`, chữ `#141413` 4,56 : 1 | Nút chính khi trỏ; trên nền tối chữ trắng chỉ 4,04 : 1 nên đổi sang chữ mực |
 | `label` | `#2C6FB0` | `#58C4DD` | Nhãn khu vực chữ hoa nhỏ giãn chữ |
 | `pass` | `#1A7A45` | `#5CD0B3` | Đạt |
-| `mark` | `#B83B2E` | `#FC6255` | Bút đỏ: sai — vẫn **một** màu nhớ |
+| `mark` | `#B83B2E` | `#FC6255` | Bút đỏ: sai — vẫn **một** màu nhớ. Chữ `mark` chỉ trên `canvas`, `wash` (trên `raise` tối chỉ 4,21 : 1) |
 | `wait` | `#8A5A00` | `#F0AC5F` | Chờ |
 | `board` | `#1C1C1C` | `#161615` | Tấm bảng toán (luôn tối) |
 | `board-line` | `#3A3A3A` | `#34332F` | Kẻ trên bảng |
@@ -88,7 +90,7 @@ Không dashboard thẻ. Phiếu là bài kế: thân đề, công thức lớn, 
 +--------+---------------------------+------------------+
 ```
 
-Desktop (`lg`): cột phiếu `1fr` | kẻ 1 px | cột sổ `18–24rem`. Điện thoại / máy tính bảng: phiếu rồi sổ. Sổ là **tab gạch chân mực** (Carbon / InstUI) — `Kỹ năng` mặc định, `?so=giao` cho bài tập. Không viên thuốc. Tab trình duyệt ngắn: `Học` / `Đề bài` / `Lịch` / `Công thức` (template `· MathL+` ở v2, #124; v0 giữ `· Học toán với AI`). Ray HS cùng bốn chữ đó (testid `nav-hs-*` giữ nguyên).
+Desktop (`lg`): cột phiếu `1fr` | kẻ 1 px | cột sổ `18–24rem`. Điện thoại / máy tính bảng: phiếu rồi sổ. Sổ là **tab gạch chân `accent`** (Carbon / InstUI) — `Kỹ năng` mặc định, `?so=giao` cho bài tập. Không viên thuốc. Tab trình duyệt ngắn: `Học` / `Đề bài` / `Lịch` / `Công thức` (template `· MathL+` ở v2, #124; v0 giữ `· Học toán với AI`). Ray HS cùng bốn chữ đó (testid `nav-hs-*` giữ nguyên).
 
 Đề = KaTeX từ `statementLatex`. Một thang 4 mức — không Bloom trên mặt học sinh (3 mức CV 7991 chỉ ở cổng GV). Sổ kỹ năng: tên + mức 4 + ô vững; không câu giải thích UI. Hàng yếu lên trên, hàng đang gợi tô `wash`. Tab Bài tập ≠ Đề bài: chỉ bài thầy cô giao chưa đạt. Số chưa làm chỉ trên tab Bài tập. Mục lục đủ tên năm bước nằm trên trang làm bài, không trên phiếu. Nút trên điện thoại: `Kiểm tra` cạnh `Cần gợi ý?`.
 
@@ -98,7 +100,7 @@ Desktop (`lg`): cột phiếu `1fr` | kẻ 1 px | cột sổ `18–24rem`. Đi�
 
 **Chữ giáo viên:** ray `Lớp` / `Duyệt` / `Đề bài` / `Tạo đề` / `Tài liệu` / `Công thức` / `Mức` / `Gia sư` / `Cài lớp` (testid `nav-gv-*` giữ nguyên). Heading khóa: `Lớp 12A1 thử`, `Cài đặt lớp`, `Kết nối ChatGPT`. `/gv` = letterhead + hàng việc (Gia sư, kẹt, chờ, chặn, đã mở) — không nút trùng ray. Hàng kẹt dẫn `Mức`. Gia sư: dán khóa ChatGPT / OpenRouter / Z.AI (coding) — không nhập URL; khối đầu ghi `ChatGPT`, không «Lớp»; ba nhà cùng chữ «Tạo một khóa, sao chép.»; **Cài lớp không dán khóa**, không lặp «Dán ở Gia sư», không điểm 9/9 trên mặt, mô hình trong `details`. Duyệt: không liệt kê công thức khi Không kiểm được; một căn cứ khi Đạt/Sai; lý do thôi «có trích dẫn». Trạng thái bài: `Đã mở` / `Chờ duyệt` / `Bị chặn`. Cổng 3 tầng giữ `Đạt` / `Sai` / `Không kiểm được`; lý do không calque «máy tự kiểm». Banner GV vào bằng `phieu-vao`. 3 mức CV 7991 chỉ ở `/gv/tien-do?muc=3`. Mức trên điện thoại = danh sách từng em; `md+` mới bảng.
 
-**Trang công khai:** `/` chia như một trang mở: chữ trái, hình `y = x^3 - 3x` phải (kéo `x`, tiếp tuyến và `y′` đổi theo). Heading khóa `Học toán với AI` ở đầu trang. Dưới là ba việc có thật (năm bước, một chủ đề, không đáp án) và mục lục năm bước — không thẻ icon giống nhau, không số học sinh giả, không ảnh kiến trúc. Dải mực cuối: một câu và Vào học. `data-testid=vao-hoc` chỉ một nút trên header. Không khung trình duyệt, không SymPy, không email, không gắn nhãn cực trị trên hình. `/dang-nhap`: không câu «tài khoản thử» dưới tiêu đề; mật khẩu thử chỉ khi sai.
+**Trang công khai:** `/` chia như một trang mở: chữ trái, hình `y = x^3 - 3x` phải (kéo `x`, tiếp tuyến và `y′` đổi theo). Heading khóa `Học toán với AI` ở đầu trang. Dưới là ba việc có thật (năm bước, một chủ đề, không đáp án) và mục lục năm bước — không thẻ icon giống nhau, không số học sinh giả, không ảnh kiến trúc. Dải cuối trên nền `board`: một câu và Vào học. `data-testid=vao-hoc` chỉ một nút trên header. Không khung trình duyệt, không SymPy, không email, không gắn nhãn cực trị trên hình. `/dang-nhap`: không câu «tài khoản thử» dưới tiêu đề; mật khẩu thử chỉ khi sai.
 
 **Trang làm bài** (`/hs/luyen`): từ `sm` mục lục trái — số mono, tên bước, vạch trái 2 px ở bước đang làm (bút đỏ nếu sai). Dưới `sm` cùng mục lục thành một dòng phía trên, vạch dưới, tên ngắn, để công thức lấy hết chiều ngang. Không nền mực cho cả hàng. Trang: `02 / Đạo hàm`, một câu việc của bước, công thức lớn căn trái, chỗ viết ngay dưới. Phản hồi một câu ngay dưới chỗ viết (vạch `mark` hoặc `pass`), không thẻ màu. Nút chính `Kiểm tra` / `Kiểm tra lại`; `Cần gợi ý?` là phụ và mới mở tờ gia sư. Không đồ thị bài đang chấm. Không cột gia sư khi chưa hỏi.
 
@@ -139,7 +141,7 @@ Thanh công cụ điện thoại 48 px (`h-12`) — Material touch 48 dp, cao h�
 - Bước 5 bước = mục lục tên + số mono, vạch 2 px ở bước hiện tại. Mỗi hàng `min-h-11`. Không chip viên thuốc, không nền mực cả hàng.
 - Sai = vạch `mark` trên mục và dòng phản hồi ngay dưới chỗ viết. Ô sai trong bảng vẫn `cell-bad`.
 - Composer gia sư: chỉ khi bấm `Cần gợi ý?`. Dưới `lg` là tờ full màn; `lg+` là tờ phải 24 rem, có Đóng. Không chiếm cột khi đóng. Thanh đáy điện thoại: **Kiểm tra + Cần gợi ý?** Chip «Sai chỗ nào?» (gửi vẫn «Em sai chỗ nào?»). `visualViewport` khi bàn phím, composer đáy, Đóng 44. `textarea` tối thiểu 44, nút Gửi **luôn** 44×44, Enter gửi / Shift+Enter dòng / Escape Dừng hoặc đóng tờ. Ô vẫn gõ được lúc đang nghĩ. Cuộn theo đáy (Open WebUI); kéo lên thì giữ chỗ, có «Xuống». Lỗi: «Hỏi lại» đổ câu vào ô — không tự gửi. SSE `trang_thai` kho/gọi/lọc rồi `xong` — **không** xả token. Chờ = 3 ô CSS (bước đang làm nhịp, scale 0,85↔1) + chữ `Đang nghĩ…` / `Đang mở công thức…` / `Đang hỏi gia sư…` / `Đang kiểm lời…`. Câu mới và dòng chấm vào bằng `phieu-vao` (180 ms, 6 px); tờ dưới `lg` dùng `to-len` (200 ms, 16 px). Không khối SVG trang trí, không bong bóng gradient, không gọi lại model khi SSE lỗi. Hình trang chủ là đồ thị của hàm minh họa, không phải họa tiết.
-- Lời gia sư: Markdown + KaTeX (nhịp Claude / assistant-ui / Open WebUI — flush trái trên giấy, học sinh mới có bong bóng mực). Cột hẹp: đoạn ngắn, danh sách, công thức căn trái cuộn ngang. Chuẩn hóa `\[ \]`, `\(...\)`, `align` trần, hàng rào `latex`. KaTeX lỗi thì chữ mờ, không hộp đỏ. Tiêu đề `#` thành chữ đậm cùng cỡ. Không HTML thô, không bong bóng wash. Không tự giới thiệu trên mặt («Chào em», «Mình là AI…») — lời mở chỉ việc: đọc công thức, không đáp án. Trích dẫn: số `[n]` trong lời là badge (không lẫn số danh sách). Bấm số / chip = xem đúng đoạn trên phiếu. **Mở công thức** / **Mở tài liệu** mới về `#ct-` / `#tl-`. Một đoạn, không chồng 5–6.
+- Lời gia sư: Markdown + KaTeX (nhịp Claude / assistant-ui / Open WebUI — flush trái trên `canvas`, học sinh mới có bong bóng `wash` (sáng) / `raise` (tối) như Wiii). Cột hẹp: đoạn ngắn, danh sách, công thức căn trái cuộn ngang. Chuẩn hóa `\[ \]`, `\(...\)`, `align` trần, hàng rào `latex`. KaTeX lỗi thì chữ mờ, không hộp đỏ. Tiêu đề `#` thành chữ đậm cùng cỡ. Không HTML thô, không bong bóng wash. Không tự giới thiệu trên mặt («Chào em», «Mình là AI…») — lời mở chỉ việc: đọc công thức, không đáp án. Trích dẫn: số `[n]` trong lời là badge (không lẫn số danh sách). Bấm số / chip = xem đúng đoạn trên phiếu. **Mở công thức** / **Mở tài liệu** mới về `#ct-` / `#tl-`. Một đoạn, không chồng 5–6.
 - Kết nối tài khoản: hai bước như Notion/Linear (mở trang chính thức → dán một lần). Không nút xanh ChatGPT, không logo.
 - Không hero navy, không số khổng lồ trên 3 thẻ giống nhau.
 
