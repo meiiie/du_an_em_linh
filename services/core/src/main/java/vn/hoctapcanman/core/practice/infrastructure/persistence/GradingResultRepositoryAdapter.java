@@ -74,7 +74,8 @@ public class GradingResultRepositoryAdapter implements GradingResultRepository {
             .param("bl", submissionId).query(GradingResultRepositoryAdapter::ketQua).list();
     }
 
-    private Optional<GradingResult> findById(UUID id) {
+    @Override
+    public Optional<GradingResult> findById(UUID id) {
         return jdbc.sql("select " + COT + " from grading_results where id = :id").param("id", id)
             .query(GradingResultRepositoryAdapter::ketQua).optional();
     }

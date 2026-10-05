@@ -28,15 +28,16 @@ import vn.hoctapcanman.core.practice.domain.model.InputEvent;
 import vn.hoctapcanman.core.practice.domain.model.SignTable;
 import vn.hoctapcanman.core.practice.domain.model.StepLine;
 import vn.hoctapcanman.core.practice.domain.model.StepWork;
+import vn.hoctapcanman.core.practice.domain.model.SkillLevel;
 import vn.hoctapcanman.core.practice.domain.model.Submission;
 import vn.hoctapcanman.core.practice.domain.model.SubmissionStatus;
 import vn.hoctapcanman.core.practice.domain.model.TableCell;
 
 /**
- * Flyway V7 trên PostgreSQL 18 thật + adapter JDBC của practice: bất biến của bài làm (học sinh của lớp, bài đã phát hành,
- * đúng phiên bản nội dung, một bài làm đang làm, đã nộp thì không ghi thêm), nội dung bước thay trọn và giữ thứ tự, kết quả
- * chấm chỉ thêm và không ghi lần hai cho cùng yêu cầu, giao bài. Mỗi ca CSDL từ chối là lệnh cuối của test (lỗi làm hỏng
- * giao dịch của test).
+ * Flyway V7, V8 trên PostgreSQL 18 thật + adapter JDBC của practice: bất biến của bài làm (học sinh của lớp, bài đã phát
+ * hành, đúng phiên bản nội dung, một bài làm đang làm, đã nộp thì không ghi thêm, nộp có căn cứ là lần chấm có phán quyết
+ * của chính bài làm), nội dung bước thay trọn và giữ thứ tự, kết quả chấm chỉ thêm và không ghi lần hai cho cùng yêu cầu,
+ * giao bài. Mỗi ca CSDL từ chối là lệnh cuối của test (lỗi làm hỏng giao dịch của test).
  */
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
@@ -50,6 +51,7 @@ import vn.hoctapcanman.core.practice.domain.model.TableCell;
 class PracticePersistenceTest {
 
     private static final Instant LUC = Instant.parse("2026-10-05T08:00:00.123456789Z");
+    private static final SkillLevel PHAN_LOAI = new SkillLevel("T12.DH.02", "THONG_HIEU");
     private static final JsonMapper JSON = JsonMapper.builder().build();
 
     @Autowired
@@ -107,6 +109,35 @@ class PracticePersistenceTest {
     }
 
     @Test
+    void khoaChiBaiLamDangLamOPhienBanHienTai() {
+        Submission dangLam = submissions.openOrGet(Submission.open(lop, an, bai, 1, LUC));
+        assertThat(submissions.lockOpen(an, lop, bai, 1)).contains(dangLam);
+        assertThat(submissions.lockOpen(an, lop, bai, 2)).isEmpty();
+        submissions.update(nop(dangLam, GradeStatus.SAI, LUC.plusSeconds(10)));
+        assertThat(submissions.lockOpen(an, lop, bai, 1)).as("đã nộp").isEmpty();
+        Submission lamLai = submissions.openOrGet(Submission.open(lop, an, bai, 1, LUC.plusSeconds(20)));
+        assertThat(submissions.lockOpen(an, lop, bai, 1)).contains(lamLai);
+        jdbc.sql("update problems set content_hash = ? where id = ?").params("b".repeat(64), bai).update();
+        assertThat(submissions.lockOpen(an, lop, bai, 1)).as("đề đã đổi").isEmpty();
+    }
+
+    @Test
+    void lichSuGomMoiBaiLamCuaHocSinhChoBai() {
+        // Mỗi học sinh một lớp (V3), nên lịch sử nhiều lớp chỉ thử được ở SubmissionHistoryTest.
+        UUID binh = DuLieuPractice.nguoi(jdbc, "STUDENT");
+        DuLieuPractice.ghiDanh(jdbc, lop, binh, "STUDENT");
+        UUID baiKhac = DuLieuPractice.bai(jdbc, "PR-04");
+        DuLieuPractice.phatHanh(jdbc, lop, baiKhac);
+        Submission daNop = submissions.openOrGet(Submission.open(lop, an, bai, 1, LUC));
+        submissions.update(nop(daNop, GradeStatus.DAT, LUC.plusSeconds(10)));
+        Submission lamLai = submissions.openOrGet(Submission.open(lop, an, bai, 1, LUC.plusSeconds(20)));
+        submissions.openOrGet(Submission.open(lop, binh, bai, 1, LUC.plusSeconds(30)));
+        submissions.openOrGet(Submission.open(lop, an, baiKhac, 1, LUC.plusSeconds(40)));
+        assertThat(submissions.history(an, bai).attempts())
+            .containsExactly(submissions.findById(daNop.id()).orElseThrow(), lamLai);
+    }
+
+    @Test
     void giaoVienKhongMoDuocBaiLam() {
         assertThatThrownBy(() -> submissions.openOrGet(Submission.open(lop, giaoVien, bai, 1, LUC)))
             .isInstanceOf(DataIntegrityViolationException.class).hasMessageContaining("không là học sinh");
@@ -156,13 +187,16 @@ class PracticePersistenceTest {
     void nopBaiRoiThiKhongGhiThemDuoc() {
         Submission dangLam = submissions.openOrGet(Submission.open(lop, an, bai, 1, LUC));
         submissions.saveStep(dangLam.id(), new StepWork("B.DH.DAOHAM", List.of(new StepLine(0, "3x^2-6x", null)), null));
-        Submission daNop = dangLam.submit(GradeStatus.SAI, LUC.plusSeconds(60));
+        GradingResult canCu = grades.record(ketQua(dangLam.id(), "1".repeat(64), GradeStatus.SAI));
+        Submission daNop = dangLam.submit(canCu, PHAN_LOAI, LUC.plusSeconds(60)).baiLam();
         submissions.update(daNop);
+        assertThat(grades.findById(canCu.id())).contains(canCu);
 
         assertThat(submissions.findById(dangLam.id()).orElseThrow().status()).isEqualTo(SubmissionStatus.DA_NOP);
         assertThat(submissions.findOpen(an, lop, bai, 1)).isEmpty();
         assertThat(submissions.findLatest(an, lop, bai)).contains(new Submission(dangLam.id(), lop, an, bai, 1, SubmissionStatus.DA_NOP,
-            false, null, GradeStatus.SAI, LUC.truncatedTo(ChronoUnit.MICROS), LUC.plusSeconds(60).truncatedTo(ChronoUnit.MICROS)));
+            false, null, GradeStatus.SAI, canCu.id(), LUC.truncatedTo(ChronoUnit.MICROS), LUC.plusSeconds(60).truncatedTo(ChronoUnit.MICROS),
+            PHAN_LOAI));
         StepWork buoc = new StepWork("B.DH.DAOHAM", List.of(new StepLine(0, "3x^2", null)), null);
         assertThatThrownBy(() -> submissions.saveStep(dangLam.id(), buoc)).isInstanceOf(IllegalStateException.class);
         assertThatThrownBy(() -> submissions.addEvents(dangLam.id(), List.of(suKien("a", LUC))))
@@ -182,7 +216,7 @@ class PracticePersistenceTest {
     void csdlChanSuaBuocCuaBaiLamDaNop() {
         Submission dangLam = submissions.openOrGet(Submission.open(lop, an, bai, 1, LUC));
         submissions.saveStep(dangLam.id(), new StepWork("B.DH.DAOHAM", List.of(new StepLine(0, "3x^2-6x", null)), null));
-        submissions.update(dangLam.submit(GradeStatus.SAI, LUC));
+        submissions.update(nop(dangLam, GradeStatus.SAI, LUC));
         assertThatThrownBy(() -> jdbc.sql("update submission_steps set latex = '3x^2' where submission_id = ?").params(dangLam.id())
                 .update())
             .isInstanceOf(DataIntegrityViolationException.class).hasMessageContaining("đã nộp");
@@ -197,7 +231,7 @@ class PracticePersistenceTest {
             @Override
             public Optional<Submission> findOpen(UUID studentId, UUID classId, UUID problemId, int contentVersion) {
                 if (lanDoc[0]++ == 0) {
-                    submissions.update(cu.submit(GradeStatus.SAI, LUC.plusSeconds(30)));
+                    submissions.update(nop(cu, GradeStatus.SAI, LUC.plusSeconds(30)));
                 }
                 return super.findOpen(studentId, classId, problemId, contentVersion);
             }
@@ -230,7 +264,7 @@ class PracticePersistenceTest {
         // Codex #136 (P2): UPDATE đổi submission_id không được rút dòng khỏi bài làm đã nộp.
         Submission daNop = submissions.openOrGet(Submission.open(lop, an, bai, 1, LUC));
         submissions.saveStep(daNop.id(), new StepWork("B.DH.DAOHAM", List.of(new StepLine(0, "3x^2-6x", null)), null));
-        submissions.update(daNop.submit(GradeStatus.SAI, LUC));
+        submissions.update(nop(daNop, GradeStatus.SAI, LUC));
         Submission moi = submissions.openOrGet(Submission.open(lop, an, bai, 1, LUC.plusSeconds(60)));
         assertThatThrownBy(() -> jdbc.sql("update submission_steps set submission_id = ? where submission_id = ?")
                 .params(moi.id(), daNop.id()).update())
@@ -241,9 +275,93 @@ class PracticePersistenceTest {
     void csdlChanNopBaiVoiKetQuaKhongChamDuoc() {
         // Codex #136 (P2): lần chấm cuối lỗi dịch vụ toán không được đóng bài làm.
         Submission dangLam = submissions.openOrGet(Submission.open(lop, an, bai, 1, LUC));
-        assertThatThrownBy(() -> jdbc.sql("update submissions set status = 'DA_NOP', result = 'KHONG_CHAM_DUOC', submitted_at = now()"
-                + " where id = ?").params(dangLam.id()).update())
+        GradingResult loi = grades.record(GradingResult.notGraded(dangLam.id(), "B.DH.KETLUAN", "3".repeat(64), "bận", LUC));
+        assertThatThrownBy(() -> jdbc.sql("""
+                update submissions set status = 'DA_NOP', result = 'KHONG_CHAM_DUOC', result_grading_id = ?, submitted_at = now(),
+                    skill_code = 'T12.DH.02', level4 = 'THONG_HIEU'
+                where id = ?""").params(loi.id(), dangLam.id()).update())
             .isInstanceOf(DataIntegrityViolationException.class);
+    }
+
+    @Test
+    void csdlChanNopBaiKhongCanCu() {
+        Submission dangLam = submissions.openOrGet(Submission.open(lop, an, bai, 1, LUC));
+        assertThatThrownBy(() -> jdbc.sql("""
+                update submissions set status = 'DA_NOP', result = 'DAT', submitted_at = now(), skill_code = 'T12.DH.02',
+                    level4 = 'THONG_HIEU' where id = ?""")
+                .params(dangLam.id()).update())
+            .isInstanceOf(DataIntegrityViolationException.class).hasMessageContaining("submissions_nop_co_can_cu");
+    }
+
+    @Test
+    void csdlChanNopBaiKhongGhimPhanLoai() {
+        Submission dangLam = submissions.openOrGet(Submission.open(lop, an, bai, 1, LUC));
+        GradingResult dat = grades.record(ketQua(dangLam.id(), "7".repeat(64), GradeStatus.DAT));
+        assertThatThrownBy(() -> jdbc.sql("""
+                update submissions set status = 'DA_NOP', result = 'DAT', result_grading_id = ?, submitted_at = now(),
+                    skill_code = 'T12.DH.02' where id = ?""").params(dat.id(), dangLam.id()).update())
+            .isInstanceOf(DataIntegrityViolationException.class).hasMessageContaining("submissions_nop_ghim_phan_loai");
+    }
+
+    @Test
+    void csdlChanNopBaiThieuMaKyNang() {
+        Submission dangLam = submissions.openOrGet(Submission.open(lop, an, bai, 1, LUC));
+        GradingResult dat = grades.record(ketQua(dangLam.id(), "8".repeat(64), GradeStatus.DAT));
+        assertThatThrownBy(() -> jdbc.sql("""
+                update submissions set status = 'DA_NOP', result = 'DAT', result_grading_id = ?, submitted_at = now(),
+                    level4 = 'THONG_HIEU' where id = ?""").params(dat.id(), dangLam.id()).update())
+            .isInstanceOf(DataIntegrityViolationException.class).hasMessageContaining("submissions_nop_ghim_phan_loai");
+    }
+
+    @Test
+    void csdlChanBaiLamDangLamCoPhanLoai() {
+        Submission dangLam = submissions.openOrGet(Submission.open(lop, an, bai, 1, LUC));
+        assertThatThrownBy(() -> jdbc.sql("update submissions set skill_code = 'T12.DH.02', level4 = 'THONG_HIEU' where id = ?")
+                .params(dangLam.id()).update())
+            .isInstanceOf(DataIntegrityViolationException.class).hasMessageContaining("submissions_nop_ghim_phan_loai");
+    }
+
+    @Test
+    void csdlChanCanCuCuaBaiLamKhac() {
+        UUID binh = DuLieuPractice.nguoi(jdbc, "STUDENT");
+        DuLieuPractice.ghiDanh(jdbc, lop, binh, "STUDENT");
+        Submission cuaAn = submissions.openOrGet(Submission.open(lop, an, bai, 1, LUC));
+        Submission cuaBinh = submissions.openOrGet(Submission.open(lop, binh, bai, 1, LUC));
+        GradingResult chamBinh = grades.record(ketQua(cuaBinh.id(), "4".repeat(64), GradeStatus.DAT));
+        assertThat(ghimCanCu(cuaBinh.id(), "DAT", chamBinh.id())).isOne();
+        assertThatThrownBy(() -> ghimCanCu(cuaAn.id(), "DAT", chamBinh.id()))
+            .isInstanceOf(DataIntegrityViolationException.class).hasMessageContaining("submissions_can_cu_cua_chinh_bai_lam");
+    }
+
+    @Test
+    void csdlChanCanCuKhongCoPhanQuyet() {
+        Submission dangLam = submissions.openOrGet(Submission.open(lop, an, bai, 1, LUC));
+        GradingResult loi = grades.record(GradingResult.notGraded(dangLam.id(), "B.DH.KETLUAN", "5".repeat(64), "bận", LUC));
+        assertThatThrownBy(() -> ghimCanCu(dangLam.id(), "DAT", loi.id()))
+            .isInstanceOf(DataIntegrityViolationException.class).hasMessageContaining("submissions_can_cu_cua_chinh_bai_lam");
+    }
+
+    @Test
+    void csdlChanCanCuLechKetQua() {
+        Submission dangLam = submissions.openOrGet(Submission.open(lop, an, bai, 1, LUC));
+        GradingResult sai = grades.record(ketQua(dangLam.id(), "6".repeat(64), GradeStatus.SAI));
+        assertThatThrownBy(() -> ghimCanCu(dangLam.id(), "DAT", sai.id()))
+            .isInstanceOf(DataIntegrityViolationException.class).hasMessageContaining("submissions_can_cu_cua_chinh_bai_lam");
+    }
+
+    @Test
+    void xoaLopXoaCaBaiLamDaNopVaCanCu() {
+        // Khóa ngoại vòng submissions ⇄ grading_results (V8) không chặn xóa dây chuyền.
+        Submission daNop = submissions.openOrGet(Submission.open(lop, an, bai, 1, LUC));
+        grades.record(ketQua(daNop.id(), "7".repeat(64), GradeStatus.SAI));
+        submissions.update(nop(daNop, GradeStatus.DAT, LUC.plusSeconds(10)));
+        Submission dangLam = submissions.openOrGet(Submission.open(lop, an, bai, 1, LUC.plusSeconds(20)));
+        grades.record(ketQua(dangLam.id(), "8".repeat(64), GradeStatus.SAI));
+        assertThat(jdbc.sql("delete from classes where id = ?").params(lop).update()).isOne();
+        assertThat(jdbc.sql("select count(*) from submissions where id in (?, ?)").params(daNop.id(), dangLam.id()).query(Integer.class)
+            .single()).isZero();
+        assertThat(jdbc.sql("select count(*) from grading_results where submission_id in (?, ?)").params(daNop.id(), dangLam.id())
+            .query(Integer.class).single()).isZero();
     }
 
     @Test
@@ -284,7 +402,7 @@ class PracticePersistenceTest {
         // Codex #136 (P2): tab A bật cờ nghi đoán mò; tab B giữ ảnh cũ (chưa nghi) nộp bài: cờ và lý do đầu phải còn.
         Submission anhCu = submissions.openOrGet(Submission.open(lop, an, bai, 1, LUC));
         submissions.update(anhCu.suspectGuess("Đổi một ô dấu 6 lần trong 30 giây."));
-        submissions.update(anhCu.submit(GradeStatus.SAI, LUC.plusSeconds(60)));
+        submissions.update(nop(anhCu, GradeStatus.SAI, LUC.plusSeconds(60)));
         Submission daNop = submissions.findById(anhCu.id()).orElseThrow();
         assertThat(daNop.status()).isEqualTo(SubmissionStatus.DA_NOP);
         assertThat(daNop.guessSuspected()).isTrue();
@@ -305,6 +423,7 @@ class PracticePersistenceTest {
         // Codex #136 (P1): đổi đề khi học sinh đang làm; tab cũ không được ghi bước, kết quả chấm hay nộp cho đề cũ.
         Submission dangLam = submissions.openOrGet(Submission.open(lop, an, bai, 1, LUC));
         submissions.saveStep(dangLam.id(), new StepWork("B.DH.DAOHAM", List.of(new StepLine(0, "3x^2-6x", null)), null));
+        GradingResult canCu = grades.record(ketQua(dangLam.id(), "2".repeat(64), GradeStatus.DAT));
         jdbc.sql("update problems set content_hash = ? where id = ?").params("b".repeat(64), bai).update();
         StepWork buoc = new StepWork("B.DH.DAOHAM", List.of(new StepLine(0, "3x^2", null)), null);
         assertThatThrownBy(() -> submissions.saveStep(dangLam.id(), buoc)).isInstanceOf(IllegalStateException.class)
@@ -312,7 +431,7 @@ class PracticePersistenceTest {
         assertThatThrownBy(() -> submissions.addEvents(dangLam.id(), List.of(suKien("+", LUC)))).isInstanceOf(IllegalStateException.class);
         assertThatThrownBy(() -> grades.record(ketQua(dangLam.id(), "a".repeat(64), GradeStatus.DAT)))
             .isInstanceOf(IllegalStateException.class);
-        assertThatThrownBy(() -> submissions.update(dangLam.submit(GradeStatus.DAT, LUC))).isInstanceOf(IllegalStateException.class);
+        assertThatThrownBy(() -> submissions.update(dangLam.submit(canCu, PHAN_LOAI, LUC).baiLam())).isInstanceOf(IllegalStateException.class);
         assertThat(submissions.findById(dangLam.id()).orElseThrow().status()).isEqualTo(SubmissionStatus.DANG_LAM);
         assertThatThrownBy(() -> jdbc.sql("""
                 insert into grading_results (id, submission_id, step_code, request_hash, result, graded_at)
@@ -394,6 +513,19 @@ class PracticePersistenceTest {
     void khongGiaoBaiChoGiaoVien() {
         assertThatThrownBy(() -> assignments.saveAll(List.of(Assignment.of(lop, bai, giaoVien, null, null, giaoVien, LUC))))
             .isInstanceOf(DataIntegrityViolationException.class).hasMessageContaining("không là học sinh");
+    }
+
+    /** Ghi một lần chấm có phán quyết {@code kq} cho bài làm rồi trả bài làm đã nộp với căn cứ là lần đó. */
+    private Submission nop(Submission dangLam, GradeStatus kq, Instant luc) {
+        GradingResult canCu = grades.record(ketQua(dangLam.id(), "0".repeat(64), kq, luc));
+        return dangLam.submit(canCu, PHAN_LOAI, luc).baiLam();
+    }
+
+    private int ghimCanCu(UUID baiLam, String ketQua, UUID canCu) {
+        return jdbc.sql("""
+                update submissions set status = 'DA_NOP', result = ?, result_grading_id = ?, submitted_at = now(),
+                    skill_code = 'T12.DH.02', level4 = 'THONG_HIEU' where id = ?""")
+            .params(ketQua, canCu, baiLam).update();
     }
 
     private static InputEvent suKien(String giaTri, Instant luc) {

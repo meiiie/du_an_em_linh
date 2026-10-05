@@ -297,6 +297,30 @@ class ContentPersistenceTest {
         assertThat(problems.findReleasedForWork(lop, "DH12-TH-12")).map(ReleasedProblem::contentVersion).contains(2);
     }
 
+    @Test
+    void loiGiaiChoMoChiKhiDangPhatHanhOLopVaDungPhienBan() {
+        // T020: mở lời giải sau khi nộp đọc lời giải, phiên bản và phát hành trong một câu lệnh.
+        UUID lop = lopMoi("12A9 thử");
+        UUID lopKhac = lopMoi("12A10 thử");
+        Problem p = new Problem(UUID.randomUUID(), "DH12-TH-14", "T12.DH.03", List.of(), Level4.THONG_HIEU, null, null, null, "Đề",
+            "y", null, Problem.TU_LUAN_5_BUOC, null, "SUPHAM", BAM, null, LUC, LUC);
+        problems.save(p);
+        solutions.save(new Solution(p.id(), "{\"TXD\": \"R\"}", "[\"x = 1\"]", null));
+        phatHanh(lop, p.id());
+        int phienBan = problems.findContentVersion(p.id()).orElseThrow();
+
+        assertThat(solutions.findReleased(lop, p.id(), phienBan)).map(Solution::workedSolutionJson).contains("{\"TXD\": \"R\"}");
+        assertThat(solutions.findReleased(lop, p.id(), phienBan - 1)).as("bài làm của đề cũ").isEmpty();
+        assertThat(solutions.findReleased(lopKhac, p.id(), phienBan)).as("lớp chưa phát hành").isEmpty();
+
+        // Sửa lời giải: phiên bản tăng, phát hành về NHAP; phát hành lại thì trả lời giải mới cho phiên bản mới.
+        solutions.save(new Solution(p.id(), "{\"TXD\": \"D = R\"}", "[\"x = 1\"]", null));
+        assertThat(solutions.findReleased(lop, p.id(), phienBan + 1)).isEmpty();
+        phatHanh(lop, p.id());
+        assertThat(solutions.findReleased(lop, p.id(), phienBan)).isEmpty();
+        assertThat(solutions.findReleased(lop, p.id(), phienBan + 1)).map(Solution::workedSolutionJson).contains("{\"TXD\": \"D = R\"}");
+    }
+
     /** Lượt kiểm DAT mới cho bài ở lớp, rồi phát hành theo lượt đó. */
     private void phatHanh(UUID lop, UUID baiId) {
         UUID luot = UUID.randomUUID();

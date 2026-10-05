@@ -8,7 +8,9 @@ import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Stream;
@@ -17,8 +19,9 @@ import org.junit.jupiter.api.Test;
 import tools.jackson.databind.json.JsonMapper;
 
 /**
- * Codex #135 (P2): tệp vàng đối chiếu v0 ({@code specs/001-lat-cat-doc/doi-chieu/}) chỉ đúng với nguồn đã sinh ra nó.
- * {@code NhapNoiDungTest} phát lại chúng thay dịch vụ toán, nên nguồn đổi mà không sinh lại tệp vàng thì phép đối chiếu vẫn
+ * Codex #135 (P2): tệp vàng đối chiếu v0 ({@code specs/001-lat-cat-doc/doi-chieu/}, lời giải v0 trong tài nguyên test) chỉ
+ * đúng với nguồn đã sinh ra nó.
+ * Test của core phát lại chúng thay dịch vụ toán và mã v0, nên nguồn đổi mà không sinh lại tệp vàng thì phép đối chiếu vẫn
  * xanh trên hành vi cũ.
  *
  * <p>Test duyệt mọi khóa trong {@code nguon} của tệp vàng. Mỗi khóa hoặc chỉ tới một đối tượng git (cây, blob) được so với
@@ -31,6 +34,7 @@ class TepVangDoiChieuTest {
     private static final JsonMapper JSON = JsonMapper.builder().build();
     private static final Path GOC = NhapNoiDungChungTest.thuMucData().getParent();
     private static final String DOI_CHIEU = "specs/001-lat-cat-doc/doi-chieu/";
+    private static final String LOI_GIAI_V0 = "services/core/src/test/resources/content/loi-giai-v0.json";
 
     /** Khóa của {@code v0-bai.json} không phải đối tượng git của checkout, và vì sao không cần so. */
     private static final Map<String, String> MIEN_XUAT_V0 = Map.of(
@@ -44,7 +48,7 @@ class TepVangDoiChieuTest {
 
     @Test
     void moiNguonCuaXuatV0DeuKhopCheckout() {
-        Map<String, Object> nguon = phang(doc("v0-bai.json"));
+        Map<String, Object> nguon = phang(doc(DOI_CHIEU + "v0-bai.json"));
         kiemNguon("v0-bai.json, phan-hoi-toan.json (node " + DOI_CHIEU + "xuat-v0.ts)", nguon, khoa -> {
             if (khoa.equals("seed.blob")) {
                 return (String) nguon.get("seed.tep");
@@ -60,8 +64,38 @@ class TepVangDoiChieuTest {
     void moiNguonCuaKhoaBangDeuKhopCheckout() {
         Map<String, String> duongDan = Map.of("services_math", "services/math", "data_v0", "data/v0", "data_supham", "data/supham",
             "script", DOI_CHIEU + "khoa-bang-v0.py");
-        kiemNguon("khoa-bang-v0.json (services/math/.venv python " + DOI_CHIEU + "khoa-bang-v0.py)", phang(doc("khoa-bang-v0.json")),
-            duongDan::get, Map.of());
+        kiemNguon("khoa-bang-v0.json (services/math/.venv python " + DOI_CHIEU + "khoa-bang-v0.py)",
+            phang(doc(DOI_CHIEU + "khoa-bang-v0.json")), duongDan::get, Map.of());
+    }
+
+    @Test
+    void moiNguonCuaLoiGiaiV0DeuKhopCheckout() {
+        Map<String, Object> nguon = phang(doc(LOI_GIAI_V0));
+        kiemNguon(LOI_GIAI_V0 + " (node " + DOI_CHIEU + "loi-giai-v0.ts)", nguon, khoa -> switch (khoa) {
+            case "blob" -> (String) nguon.get("tep");
+            case "script" -> DOI_CHIEU + "loi-giai-v0.ts";
+            default -> null;
+        }, Map.of("tep", "đường dẫn của tệp nguồn, dùng để so blob"));
+    }
+
+    /**
+     * Lưới an toàn cho cả lớp lỗi: mọi tệp vàng có khóa {@code nguon} (trong {@code doi-chieu} và tài nguyên test của core)
+     * phải có một test ở đây so nguồn của nó với checkout. Thêm tệp vàng mà quên kiểm nguồn thì đỏ.
+     */
+    @Test
+    void moiTepVangCoNguonDeuDuocKiem() throws IOException {
+        List<String> coNguon = new ArrayList<>();
+        for (Path thuMuc : List.of(GOC.resolve(DOI_CHIEU), GOC.resolve("services/core/src/test/resources"))) {
+            try (Stream<Path> tep = Files.walk(thuMuc)) {
+                for (Path t : tep.filter(x -> x.toString().endsWith(".json")).toList()) {
+                    if (JSON.readTree(Files.readString(t)).has("nguon")) {
+                        coNguon.add(GOC.relativize(t).toString().replace('\\', '/'));
+                    }
+                }
+            }
+        }
+        assertThat(coNguon).as("tệp vàng có «nguon» so với tệp vàng có test kiểm nguồn")
+            .containsExactlyInAnyOrder(DOI_CHIEU + "v0-bai.json", DOI_CHIEU + "khoa-bang-v0.json", LOI_GIAI_V0);
     }
 
     @Test
@@ -126,9 +160,9 @@ class TepVangDoiChieuTest {
     }
 
     @SuppressWarnings("unchecked")
-    private static Map<String, Object> doc(String ten) {
+    private static Map<String, Object> doc(String duongDan) {
         try {
-            return (Map<String, Object>) JSON.readValue(Files.readString(GOC.resolve(DOI_CHIEU + ten)), Map.class).get("nguon");
+            return (Map<String, Object>) JSON.readValue(Files.readString(GOC.resolve(duongDan)), Map.class).get("nguon");
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }

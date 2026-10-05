@@ -19,4 +19,7 @@ public interface GradingResultRepository {
 
     /** Các lần chấm của bài làm, cũ trước. */
     List<GradingResult> bySubmission(UUID submissionId);
+
+    /** Một lần chấm theo id (căn cứ của bài làm đã nộp). */
+    Optional<GradingResult> findById(UUID id);
 }

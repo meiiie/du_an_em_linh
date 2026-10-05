@@ -160,6 +160,36 @@ final class KienTrucRules {
         .because("FR-006, ADR 003: đề cho học sinh khi đang làm không bao giờ mang lời giải, đáp án hay dữ kiện bảo vệ; "
             + "DTO không tham chiếu được Solution hay bất kỳ kiểu domain nào");
 
+    // ---- Lời giải sau khi nộp chỉ qua một cửa (FR-006, ADR 003, T020) -------------------------------------------
+
+    private static final DescribedPredicate<JavaClass> CONG_LOI_GIAI = new DescribedPredicate<>("cổng LoiGiaiSauKhiNop của nội dung") {
+        @Override
+        public boolean test(JavaClass c) {
+            return c.getSimpleName().equals("LoiGiaiSauKhiNop") && c.getPackageName().endsWith(".content.application.port");
+        }
+    };
+
+    private static final DescribedPredicate<JavaClass> CUA_MO_LOI_GIAI = new DescribedPredicate<>("MoLoiGiai của practice") {
+        @Override
+        public boolean test(JavaClass c) {
+            return c.getSimpleName().equals("MoLoiGiai") && c.getPackageName().endsWith(".practice.application.service");
+        }
+    };
+
+    private static final DescribedPredicate<JavaClass> HIEN_THUC_CONG_LOI_GIAI = new DescribedPredicate<>("lớp hiện thực cổng") {
+        @Override
+        public boolean test(JavaClass c) {
+            return c.getSimpleName().equals("LoiGiaiSauKhiNopService") && c.getPackageName().endsWith(".content.application.service");
+        }
+    };
+
+    static final ArchRule LOI_GIAI_CHI_QUA_CUA_MO = noClasses().that(not(CONG_LOI_GIAI))
+        .and(not(HIEN_THUC_CONG_LOI_GIAI)).and(not(CUA_MO_LOI_GIAI))
+        .should().dependOnClassesThat(CONG_LOI_GIAI)
+        .as("Ngoài lớp hiện thực cổng, chỉ MoLoiGiai của practice dùng cổng lời giải sau khi nộp")
+        .because("FR-006, ADR 003: cổng chỉ kiểm phát hành và phiên bản; MoLoiGiai kiểm thêm đã nộp, không làm lại, cờ lớp. "
+            + "Nơi gọi khác là đường tắt tới lời giải");
+
     // ---- Ranh giới module (research R1, #111) -----------------------------------------------------------------
 
     /** Chỉ gói của dự án (mã thật và lớp mẫu) mới chia module. */
@@ -193,6 +223,7 @@ final class KienTrucRules {
         ENTITY_DAT_TEN_DUNG_CHO,
         REPOSITORY_CHI_QUAN_LY_JPA_ENTITY,
         DTO_HOC_SINH_KHONG_MANG_LOI_GIAI,
+        LOI_GIAI_CHI_QUA_CUA_MO,
         MODULE_CHI_GOI_NHAU_QUA_CONG);
 
     static final List<ArchRule> TAT_CA = concat(CLEAN, DDD);

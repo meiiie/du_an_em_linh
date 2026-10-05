@@ -2,6 +2,7 @@ package vn.hoctapcanman.core.practice.domain.model;
 
 import java.time.Instant;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
 import org.jspecify.annotations.Nullable;
 
@@ -11,11 +12,15 @@ import org.jspecify.annotations.Nullable;
  * rồi thì không đổi:
  *
  * <pre>
- * mở ──▶ DANG_LAM ──nộp bước (chấm từng lần)──▶ DANG_LAM ──nộp bài──▶ DA_NOP (kết quả cố định)
+ * mở ──▶ DANG_LAM ──nộp bước (chấm từng lần)──▶ DANG_LAM ──nộp bài (căn cứ = một lần chấm của chính bài làm)──▶ DA_NOP
  * </pre>
  *
  * {@code contentVersion} là phiên bản nội dung của bài lúc mở: nội dung đổi thì bài làm này thôi được chấm (bước đã viết
  * là cho đề cũ) và học sinh mở bài làm mới cho phiên bản mới. Nghi đoán mò (v0 {@code nghiDoanMo}) chỉ bật, không tắt.
+ *
+ * <p>Bài làm đã nộp có kết quả, lúc nộp và căn cứ ({@code resultGradingId}): lần chấm của chính bài làm này mà kết quả là
+ * {@code result}. Kết quả nộp vì vậy luôn là một phán quyết bộ chấm đã đưa (FR-009); CSDL kiểm lại (V8). Nơi cần biết chắc
+ * bài làm đã nộp nhận {@link DaNop}, không nhận {@code Submission}.
  */
 public record Submission(
         UUID id,
@@ -27,8 +32,10 @@ public record Submission(
         boolean guessSuspected,
         @Nullable String guessReason,
         @Nullable GradeStatus result,
+        @Nullable UUID resultGradingId,
         Instant startedAt,
-        @Nullable Instant submittedAt) {
+        @Nullable Instant submittedAt,
+        @Nullable SkillLevel skillLevel) {
 
     public Submission {
         Objects.requireNonNull(id, "id");
@@ -44,8 +51,9 @@ public record Submission(
             throw new IllegalArgumentException("Kết quả nộp là một phán quyết, không phải KHONG_CHAM_DUOC");
         }
         boolean daNop = status == SubmissionStatus.DA_NOP;
-        if (daNop != (submittedAt != null) || daNop != (result != null)) {
-            throw new IllegalArgumentException("Chỉ bài làm đã nộp mới có lúc nộp và kết quả");
+        if (daNop != (submittedAt != null) || daNop != (result != null) || daNop != (resultGradingId != null)
+                || daNop != (skillLevel != null)) {
+            throw new IllegalArgumentException("Chỉ bài làm đã nộp mới có lúc nộp, kết quả, căn cứ và phân loại");
         }
         if (!guessSuspected && guessReason != null) {
             throw new IllegalArgumentException("Lý do nghi đoán mò chỉ đi kèm cờ nghi");
@@ -58,7 +66,7 @@ public record Submission(
     /** Bài làm mới, đang làm. */
     public static Submission open(UUID classId, UUID studentId, UUID problemId, int contentVersion, Instant now) {
         return new Submission(UUID.randomUUID(), classId, studentId, problemId, contentVersion, SubmissionStatus.DANG_LAM, false,
-            null, null, now, null);
+            null, null, null, now, null, null);
     }
 
     public boolean isOpen() {
@@ -66,19 +74,29 @@ public record Submission(
     }
 
     /**
-     * Nộp bài với kết quả cuối, là một phán quyết của bộ chấm. {@code KHONG_CHAM_DUOC} (dịch vụ toán lỗi) không đóng được
-     * bài làm: {@link IllegalArgumentException}, bài làm vẫn mở để nộp lại. Bài làm đã nộp thì {@link IllegalStateException}.
+     * Nộp bài với căn cứ {@code canCu}, một lần chấm có phán quyết của chính bài làm này: kết quả nộp là kết quả của lần
+     * chấm đó, phân loại {@code phanLoai} là kỹ năng và mức của bài lúc nộp. Lần chấm của bài làm khác hay
+     * {@code KHONG_CHAM_DUOC} (dịch vụ toán lỗi) thì {@link IllegalArgumentException},
+     * bài làm vẫn mở. Bài làm đã nộp thì {@link IllegalStateException}. Không kiểm căn cứ có phải lần chấm bước kết luận
+     * trên nội dung hiện tại: việc đó của nơi tìm căn cứ ({@code NopBaiUseCase}).
      */
-    public Submission submit(GradeStatus ketQua, Instant now) {
-        Objects.requireNonNull(ketQua, "ketQua");
-        if (ketQua == GradeStatus.KHONG_CHAM_DUOC) {
+    public DaNop submit(GradingResult canCu, SkillLevel phanLoai, Instant now) {
+        if (!canCu.submissionId().equals(id)) {
+            throw new IllegalArgumentException("Căn cứ là lần chấm của bài làm khác");
+        }
+        if (canCu.result() == GradeStatus.KHONG_CHAM_DUOC) {
             throw new IllegalArgumentException("Không nộp bài với kết quả không chấm được");
         }
         if (!isOpen()) {
             throw new IllegalStateException("Bài làm đã nộp");
         }
-        return new Submission(id, classId, studentId, problemId, contentVersion, SubmissionStatus.DA_NOP, guessSuspected, guessReason,
-            ketQua, startedAt, now);
+        return new DaNop(new Submission(id, classId, studentId, problemId, contentVersion, SubmissionStatus.DA_NOP, guessSuspected,
+            guessReason, canCu.result(), canCu.id(), startedAt, now, Objects.requireNonNull(phanLoai, "phanLoai")));
+    }
+
+    /** Chứng nhận đã nộp của bài làm này; đang làm thì rỗng. */
+    public Optional<DaNop> daNop() {
+        return isOpen() ? Optional.empty() : Optional.of(new DaNop(this));
     }
 
     /** Bật nghi đoán mò; đã nghi thì giữ lý do đầu. Bài làm đã nộp thì {@link IllegalStateException}. */
@@ -89,6 +107,60 @@ public record Submission(
         if (guessSuspected) {
             return this;
         }
-        return new Submission(id, classId, studentId, problemId, contentVersion, status, true, lyDo, null, startedAt, null);
+        return new Submission(id, classId, studentId, problemId, contentVersion, status, true, lyDo, null, null, startedAt, null,
+            null);
+    }
+
+    /**
+     * Chứng nhận bài làm đã nộp. Chỉ {@link Submission#submit} và {@link Submission#daNop} tạo được (constructor
+     * {@code private}; record không giấu được constructor), nên hàm nhận {@code DaNop}, như cửa lời giải, không nhận được
+     * bài làm đang làm.
+     */
+    public static final class DaNop {
+
+        private final Submission baiLam;
+
+        private DaNop(Submission baiLam) {
+            this.baiLam = baiLam;
+        }
+
+        /** Bài làm ở trạng thái {@code DA_NOP}. */
+        public Submission baiLam() {
+            return baiLam;
+        }
+
+        /** {@code DAT}, {@code SAI} hay {@code KHONG_KIEM_DUOC}. */
+        public GradeStatus ketQua() {
+            return Objects.requireNonNull(baiLam.result());
+        }
+
+        /** Id của lần chấm làm căn cứ. */
+        public UUID canCuId() {
+            return Objects.requireNonNull(baiLam.resultGradingId());
+        }
+
+        public Instant nopLuc() {
+            return Objects.requireNonNull(baiLam.submittedAt());
+        }
+
+        /** Kỹ năng và mức của bài lúc nộp. */
+        public SkillLevel phanLoai() {
+            return Objects.requireNonNull(baiLam.skillLevel());
+        }
+
+        @Override
+        public boolean equals(@Nullable Object o) {
+            return o instanceof DaNop d && d.baiLam.equals(baiLam);
+        }
+
+        @Override
+        public int hashCode() {
+            return baiLam.hashCode();
+        }
+
+        @Override
+        public String toString() {
+            return "DaNop[" + baiLam + "]";
+        }
     }
 }

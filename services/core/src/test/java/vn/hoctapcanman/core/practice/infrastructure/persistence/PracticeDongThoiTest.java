@@ -1,11 +1,13 @@
 package vn.hoctapcanman.core.practice.infrastructure.persistence;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
@@ -19,6 +21,7 @@ import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase;
 import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.simple.JdbcClient;
+import org.springframework.transaction.IllegalTransactionStateException;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,11 +32,12 @@ import vn.hoctapcanman.core.practice.domain.model.GradeStatus;
 import vn.hoctapcanman.core.practice.domain.model.GradingResult;
 import vn.hoctapcanman.core.practice.domain.model.StepLine;
 import vn.hoctapcanman.core.practice.domain.model.StepWork;
+import vn.hoctapcanman.core.practice.domain.model.SkillLevel;
 import vn.hoctapcanman.core.practice.domain.model.Submission;
 
 /**
  * Hai tab của cùng học sinh (T022): mở bài làm cùng lúc thì nhận cùng một bài làm; ghi cùng một yêu cầu chấm cùng lúc thì
- * chỉ một dòng. Giao dịch đầu giữ chỗ chưa commit, giao dịch sau phải chờ ở chỉ mục duy nhất từng phần (test xác nhận nó
+ * chỉ một dòng; nộp bài cùng lúc thì chỉ một tab nộp. Giao dịch đầu giữ chỗ chưa commit, giao dịch sau phải chờ ở chỉ mục duy nhất từng phần (test xác nhận nó
  * đang chờ khóa), rồi không ghi mà đọc lại dòng của giao dịch đầu. Hai giao dịch thật trên hai luồng, nên test không chạy
  * trong giao dịch của test và tự dọn dữ liệu.
  */
@@ -112,6 +116,26 @@ class PracticeDongThoiTest {
             });
         assertThat(ketQua.get(0)).isEqualTo(List.of(new StepWork("B.DH.DAOHAM", List.of(new StepLine(0, "3x^2-6x", null)), null)));
         assertThat(submissions.steps(bl).getFirst().lines()).containsExactly(new StepLine(0, "3x^2", null));
+    }
+
+    @Test
+    void haiTabNopBaiCungLucTabSauChoRoiThayDaNop() throws Exception {
+        // T020: tab sau chờ khóa dòng bài làm; tab đầu nộp và commit; tab sau không còn bài làm đang làm để nộp (đi đường phát lại).
+        Submission dangLam = submissions.openOrGet(Submission.open(lop, an, bai, 1, LUC));
+        GradingResult canCu = grades.record(ketQua(dangLam.id(), "e".repeat(64), GradeStatus.DAT));
+        List<Optional<UUID>> ketQua = haiGiaoDichChongNhau(
+            () -> submissions.lockOpen(an, lop, bai, 1).map(mo -> {
+                submissions.update(mo.submit(canCu, new SkillLevel("T12.DH.02", "THONG_HIEU"), LUC.plusSeconds(5)).baiLam());
+                return mo.id();
+            }),
+            () -> submissions.lockOpen(an, lop, bai, 1).map(Submission::id));
+        assertThat(ketQua).containsExactly(Optional.of(dangLam.id()), Optional.empty());
+        assertThat(submissions.findById(dangLam.id()).orElseThrow().resultGradingId()).isEqualTo(canCu.id());
+    }
+
+    @Test
+    void khoaBaiLamChiTrongGiaoDich() {
+        assertThatThrownBy(() -> submissions.lockOpen(an, lop, bai, 1)).isInstanceOf(IllegalTransactionStateException.class);
     }
 
     /**

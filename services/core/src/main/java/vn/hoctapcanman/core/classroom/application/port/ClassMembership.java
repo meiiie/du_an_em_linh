@@ -33,10 +33,11 @@ public interface ClassMembership {
     Optional<UUID> lopHoc(UUID hocSinhId);
 
     /**
-     * Cài của lớp mà học sinh đang học, chỉ phần học sinh được biết (#111); rỗng khi chưa ghi danh. Lớp chưa có dòng
-     * cài thì trả mặc định: không mở lời giải (FR-006, đóng mặc định). Module khác không đọc kho cài lớp.
+     * Cài của lớp {@code lopId}, chỉ phần học sinh được biết (#111), khi {@code hocSinhId} là học sinh của lớp đó; không thì
+     * rỗng. Id lớp tường minh: học sinh học nhiều lớp không nhận cờ của lớp khác. Lớp chưa có dòng cài thì trả mặc định:
+     * không mở lời giải (FR-006, đóng mặc định). Module khác không đọc kho cài lớp.
      */
-    Optional<CaiDatChoHocSinh> caiDatChoHocSinh(UUID hocSinhId);
+    Optional<CaiDatChoHocSinh> caiDatChoHocSinh(UUID hocSinhId, UUID lopId);
 
     boolean laGiaoVien(UUID userId, UUID lopId);
 

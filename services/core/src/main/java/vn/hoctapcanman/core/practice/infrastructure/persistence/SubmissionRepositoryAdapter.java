@@ -12,13 +12,16 @@ import java.util.UUID;
 import org.jspecify.annotations.Nullable;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import vn.hoctapcanman.core.practice.domain.model.GradeStatus;
 import vn.hoctapcanman.core.practice.domain.model.InputEvent;
 import vn.hoctapcanman.core.practice.domain.model.SignTable;
 import vn.hoctapcanman.core.practice.domain.model.StepLine;
+import vn.hoctapcanman.core.practice.domain.model.SkillLevel;
 import vn.hoctapcanman.core.practice.domain.model.StepWork;
 import vn.hoctapcanman.core.practice.domain.model.Submission;
+import vn.hoctapcanman.core.practice.domain.model.SubmissionHistory;
 import vn.hoctapcanman.core.practice.domain.model.SubmissionStatus;
 import vn.hoctapcanman.core.practice.domain.model.TableCell;
 import vn.hoctapcanman.core.practice.domain.repository.SubmissionRepository;
@@ -33,8 +36,8 @@ import vn.hoctapcanman.core.practice.domain.repository.SubmissionRepository;
 public class SubmissionRepositoryAdapter implements SubmissionRepository {
 
     private static final String COT = """
-            id, class_id, student_id, problem_id, content_version, status, guess_suspected, guess_reason, result, started_at,
-            submitted_at""";
+            id, class_id, student_id, problem_id, content_version, status, guess_suspected, guess_reason, result, result_grading_id,
+            started_at, submitted_at, skill_code, level4""";
 
     /** Số vòng ghi rồi đọc của {@link #openOrGet(Submission)}. */
     static final int SO_LAN_MO = 3;
@@ -79,11 +82,34 @@ public class SubmissionRepositoryAdapter implements SubmissionRepository {
     }
 
     @Override
+    @Transactional(propagation = Propagation.MANDATORY)
+    public Optional<Submission> lockOpen(UUID studentId, UUID classId, UUID problemId, int contentVersion) {
+        // Cùng mức và thứ tự khóa với khoaDangLam. Lần nộp đồng thời vừa commit đổi status: PostgreSQL xét lại điều kiện trên
+        // bản dòng mới sau khi chờ khóa, nên lần chờ nhận rỗng thay vì bài làm đã nộp.
+        return jdbc.sql("""
+                select s.id from submissions s join problems p on p.id = s.problem_id and p.content_version = s.content_version
+                where s.student_id = :hs and s.class_id = :lop and s.problem_id = :bai and s.content_version = :pb
+                    and s.status = 'DANG_LAM'
+                for no key update of s for share of p""")
+            .param("hs", studentId).param("lop", classId).param("bai", problemId).param("pb", contentVersion)
+            .query((rs, n) -> Cot.uuid(rs, "id")).optional()
+            .flatMap(this::findById);
+    }
+
+    @Override
     public Optional<Submission> findLatest(UUID studentId, UUID classId, UUID problemId) {
         return jdbc.sql("select " + COT + " from submissions where student_id = :hs and class_id = :lop and problem_id = :bai"
                 + " order by started_at desc, id desc limit 1")
             .param("hs", studentId).param("lop", classId).param("bai", problemId)
             .query(SubmissionRepositoryAdapter::baiLam).optional();
+    }
+
+    @Override
+    public SubmissionHistory history(UUID studentId, UUID problemId) {
+        return new SubmissionHistory(studentId, problemId, jdbc.sql("select " + COT
+                + " from submissions where student_id = :hs and problem_id = :bai order by started_at, id")
+            .param("hs", studentId).param("bai", problemId)
+            .query(SubmissionRepositoryAdapter::baiLam).list());
     }
 
     @Override
@@ -205,10 +231,14 @@ public class SubmissionRepositoryAdapter implements SubmissionRepository {
         // Cờ nghi đoán mò chỉ bật, giữ lý do đầu: tab giữ ảnh cũ (chưa nghi) nộp bài không xóa được cờ tab kia đã bật.
         int dong = jdbc.sql("""
                 update submissions set status = :st, guess_suspected = guess_suspected or :nghi,
-                    guess_reason = coalesce(guess_reason, :lyDo), result = :kq, submitted_at = :nop
+                    guess_reason = coalesce(guess_reason, :lyDo), result = :kq, result_grading_id = :canCu, submitted_at = :nop,
+                    skill_code = :kyNang, level4 = :muc
                 where id = :id and status = 'DANG_LAM'""")
             .param("st", baiLam.status().name()).param("nghi", baiLam.guessSuspected()).param("lyDo", baiLam.guessReason())
-            .param("kq", tenNeuCo(baiLam.result())).param("nop", Cot.lucNeuCo(baiLam.submittedAt())).param("id", baiLam.id())
+            .param("kq", tenNeuCo(baiLam.result())).param("canCu", baiLam.resultGradingId())
+            .param("nop", Cot.lucNeuCo(baiLam.submittedAt())).param("id", baiLam.id())
+            .param("kyNang", baiLam.skillLevel() == null ? null : baiLam.skillLevel().skillCode())
+            .param("muc", baiLam.skillLevel() == null ? null : baiLam.skillLevel().level4())
             .update();
         if (dong != 1) {
             throw new IllegalStateException("Bài làm đã nộp hoặc không có");
@@ -240,9 +270,11 @@ public class SubmissionRepositoryAdapter implements SubmissionRepository {
 
     private static Submission baiLam(ResultSet rs, int n) throws SQLException {
         String kq = rs.getString("result");
+        String kyNang = rs.getString("skill_code");
         return new Submission(Cot.uuid(rs, "id"), Cot.uuid(rs, "class_id"), Cot.uuid(rs, "student_id"), Cot.uuid(rs, "problem_id"),
             rs.getInt("content_version"), SubmissionStatus.valueOf(Cot.chu(rs, "status")), rs.getBoolean("guess_suspected"),
-            rs.getString("guess_reason"), kq == null ? null : GradeStatus.valueOf(kq), Cot.thoiDiem(rs, "started_at"),
-            Cot.thoiDiemNeuCo(rs, "submitted_at"));
+            rs.getString("guess_reason"), kq == null ? null : GradeStatus.valueOf(kq), Cot.uuidNeuCo(rs, "result_grading_id"),
+            Cot.thoiDiem(rs, "started_at"), Cot.thoiDiemNeuCo(rs, "submitted_at"),
+            kyNang == null ? null : new SkillLevel(kyNang, Cot.chu(rs, "level4")));
     }
 }

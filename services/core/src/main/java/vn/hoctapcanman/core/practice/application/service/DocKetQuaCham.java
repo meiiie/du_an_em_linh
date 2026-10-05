@@ -131,7 +131,7 @@ public final class DocKetQuaCham {
             thongBao = thongBao.isEmpty() ? DOAN_MO : thongBao + " " + DOAN_MO;
         }
         Set<ViTriSai> oSai = new LinkedHashSet<>();
-        viTri(cay(g.wrongStepsJson())).ifPresent(oSai::add);
+        buocSai(g).ifPresent(oSai::add);
         JsonNode vanDe = cay(g.issuesJson());
         if (vanDe != null && vanDe.isArray()) {
             for (JsonNode v : vanDe) {
@@ -144,6 +144,11 @@ public final class DocKetQuaCham {
             buocKe = khung.get(vt + 1);
         }
         return new KetQuaNopBuoc(g.result().name(), thongBao, new ArrayList<>(oSai), g.errorCode(), buocKe);
+    }
+
+    /** Bước sai gốc ({@code buoc_sai}) của lần chấm, khi có và đọc được. */
+    public static Optional<ViTriSai> buocSai(GradingResult g) {
+        return viTri(cay(g.wrongStepsJson()));
     }
 
     private static Optional<ViTriSai> viTri(@Nullable JsonNode b) {

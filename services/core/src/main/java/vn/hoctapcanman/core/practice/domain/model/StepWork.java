@@ -37,4 +37,28 @@ public record StepWork(String stepCode, List<StepLine> lines, @Nullable SignTabl
             truoc = l.lineNo();
         }
     }
+
+    /**
+     * Có ít nhất một dòng hay một ô có chữ: máy học sinh gửi dòng rỗng, ô rỗng khi em chưa viết gì vào bước. Khoảng trắng là
+     * khoảng trắng của dịch vụ toán ({@link #khoangTrang}), không phải {@code String.isBlank} (bỏ sót {@code U+00A0},
+     * {@code U+0085}).
+     */
+    public boolean coChu() {
+        return lines.stream().anyMatch(l -> coChu(l.latex()))
+            || (table != null && table.cells().stream().anyMatch(o -> coChu(o.value())));
+    }
+
+    private static boolean coChu(String s) {
+        return s.codePoints().anyMatch(c -> !khoangTrang(c));
+    }
+
+    /**
+     * Định nghĩa của {@code str.isspace()} trong Python, mà {@code str.strip()} của bộ chấm dùng: loại chung {@code Zs}, hay
+     * hướng hai chiều {@code WS}, {@code B}, {@code S}. Test so với bảng do chính Python sinh trên mọi điểm mã.
+     */
+    static boolean khoangTrang(int c) {
+        byte huong = Character.getDirectionality(c);
+        return Character.getType(c) == Character.SPACE_SEPARATOR || huong == Character.DIRECTIONALITY_WHITESPACE
+            || huong == Character.DIRECTIONALITY_PARAGRAPH_SEPARATOR || huong == Character.DIRECTIONALITY_SEGMENT_SEPARATOR;
+    }
 }

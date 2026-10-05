@@ -6,6 +6,7 @@ import java.util.UUID;
 import vn.hoctapcanman.core.practice.domain.model.InputEvent;
 import vn.hoctapcanman.core.practice.domain.model.StepWork;
 import vn.hoctapcanman.core.practice.domain.model.Submission;
+import vn.hoctapcanman.core.practice.domain.model.SubmissionHistory;
 
 /**
  * Bài làm và nội dung từng bước. CSDL giữ các bất biến (V7): chỉ học sinh của lớp, bài đã phát hành, đúng phiên bản nội
@@ -23,8 +24,19 @@ public interface SubmissionRepository {
     /** Bài làm đang làm của (học sinh, lớp, bài) ở đúng phiên bản nội dung này. */
     Optional<Submission> findOpen(UUID studentId, UUID classId, UUID problemId, int contentVersion);
 
+    /**
+     * Bài làm đang làm của (học sinh, lớp, bài) ở phiên bản nội dung {@code contentVersion}, khóa dòng bài làm
+     * {@code FOR NO KEY UPDATE} và dòng bài {@code FOR SHARE} tới hết giao dịch, như mọi lần ghi phần con: lần thay bước, ghi
+     * kết quả chấm hay nộp bài đồng thời của cùng bài làm chờ. Rỗng khi không có bài làm đang làm ở phiên bản đó, phiên bản
+     * đó không còn là phiên bản hiện tại của bài, hay lần nộp đồng thời vừa commit. Chỉ gọi trong một giao dịch đang mở.
+     */
+    Optional<Submission> lockOpen(UUID studentId, UUID classId, UUID problemId, int contentVersion);
+
     /** Bài làm mới nhất (đang làm hay đã nộp) của (học sinh, lớp, bài). */
     Optional<Submission> findLatest(UUID studentId, UUID classId, UUID problemId);
+
+    /** Mọi bài làm của học sinh cho bài, ở mọi lớp và mọi phiên bản nội dung. */
+    SubmissionHistory history(UUID studentId, UUID problemId);
 
     Optional<Submission> findById(UUID id);
 
@@ -44,8 +56,8 @@ public interface SubmissionRepository {
     List<InputEvent> events(UUID submissionId);
 
     /**
-     * Ghi cờ nghi đoán mò hay kết quả nộp của bài làm ({@link Submission#suspectGuess}, {@link Submission#submit}). Chỉ ghi
-     * được khi bài làm còn đang làm; không thì {@link IllegalStateException}.
+     * Ghi cờ nghi đoán mò hay lần nộp (kết quả, căn cứ, lúc nộp) của bài làm ({@link Submission#suspectGuess},
+     * {@link Submission#submit}). Chỉ ghi được khi bài làm còn đang làm; không thì {@link IllegalStateException}.
      */
     void update(Submission baiLam);
 }
