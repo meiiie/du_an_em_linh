@@ -12,6 +12,7 @@ import java.util.UUID;
 import org.jspecify.annotations.Nullable;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import vn.hoctapcanman.core.practice.domain.model.GradeStatus;
 import vn.hoctapcanman.core.practice.domain.model.InputEvent;
@@ -19,6 +20,7 @@ import vn.hoctapcanman.core.practice.domain.model.SignTable;
 import vn.hoctapcanman.core.practice.domain.model.StepLine;
 import vn.hoctapcanman.core.practice.domain.model.StepWork;
 import vn.hoctapcanman.core.practice.domain.model.Submission;
+import vn.hoctapcanman.core.practice.domain.model.SubmissionHistory;
 import vn.hoctapcanman.core.practice.domain.model.SubmissionStatus;
 import vn.hoctapcanman.core.practice.domain.model.TableCell;
 import vn.hoctapcanman.core.practice.domain.repository.SubmissionRepository;
@@ -79,11 +81,34 @@ public class SubmissionRepositoryAdapter implements SubmissionRepository {
     }
 
     @Override
+    @Transactional(propagation = Propagation.MANDATORY)
+    public Optional<Submission> lockOpen(UUID studentId, UUID classId, UUID problemId, int contentVersion) {
+        // Cùng mức và thứ tự khóa với khoaDangLam. Lần nộp đồng thời vừa commit đổi status: PostgreSQL xét lại điều kiện trên
+        // bản dòng mới sau khi chờ khóa, nên lần chờ nhận rỗng thay vì bài làm đã nộp.
+        return jdbc.sql("""
+                select s.id from submissions s join problems p on p.id = s.problem_id and p.content_version = s.content_version
+                where s.student_id = :hs and s.class_id = :lop and s.problem_id = :bai and s.content_version = :pb
+                    and s.status = 'DANG_LAM'
+                for no key update of s for share of p""")
+            .param("hs", studentId).param("lop", classId).param("bai", problemId).param("pb", contentVersion)
+            .query((rs, n) -> Cot.uuid(rs, "id")).optional()
+            .flatMap(this::findById);
+    }
+
+    @Override
     public Optional<Submission> findLatest(UUID studentId, UUID classId, UUID problemId) {
         return jdbc.sql("select " + COT + " from submissions where student_id = :hs and class_id = :lop and problem_id = :bai"
                 + " order by started_at desc, id desc limit 1")
             .param("hs", studentId).param("lop", classId).param("bai", problemId)
             .query(SubmissionRepositoryAdapter::baiLam).optional();
+    }
+
+    @Override
+    public SubmissionHistory history(UUID studentId, UUID problemId) {
+        return new SubmissionHistory(studentId, problemId, jdbc.sql("select " + COT
+                + " from submissions where student_id = :hs and problem_id = :bai order by started_at, id")
+            .param("hs", studentId).param("bai", problemId)
+            .query(SubmissionRepositoryAdapter::baiLam).list());
     }
 
     @Override

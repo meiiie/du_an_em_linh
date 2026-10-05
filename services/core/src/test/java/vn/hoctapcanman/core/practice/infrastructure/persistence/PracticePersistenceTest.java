@@ -107,6 +107,35 @@ class PracticePersistenceTest {
     }
 
     @Test
+    void khoaChiBaiLamDangLamOPhienBanHienTai() {
+        Submission dangLam = submissions.openOrGet(Submission.open(lop, an, bai, 1, LUC));
+        assertThat(submissions.lockOpen(an, lop, bai, 1)).contains(dangLam);
+        assertThat(submissions.lockOpen(an, lop, bai, 2)).isEmpty();
+        submissions.update(nop(dangLam, GradeStatus.SAI, LUC.plusSeconds(10)));
+        assertThat(submissions.lockOpen(an, lop, bai, 1)).as("đã nộp").isEmpty();
+        Submission lamLai = submissions.openOrGet(Submission.open(lop, an, bai, 1, LUC.plusSeconds(20)));
+        assertThat(submissions.lockOpen(an, lop, bai, 1)).contains(lamLai);
+        jdbc.sql("update problems set content_hash = ? where id = ?").params("b".repeat(64), bai).update();
+        assertThat(submissions.lockOpen(an, lop, bai, 1)).as("đề đã đổi").isEmpty();
+    }
+
+    @Test
+    void lichSuGomMoiBaiLamCuaHocSinhChoBai() {
+        // Mỗi học sinh một lớp (V3), nên lịch sử nhiều lớp chỉ thử được ở SubmissionHistoryTest.
+        UUID binh = DuLieuPractice.nguoi(jdbc, "STUDENT");
+        DuLieuPractice.ghiDanh(jdbc, lop, binh, "STUDENT");
+        UUID baiKhac = DuLieuPractice.bai(jdbc, "PR-04");
+        DuLieuPractice.phatHanh(jdbc, lop, baiKhac);
+        Submission daNop = submissions.openOrGet(Submission.open(lop, an, bai, 1, LUC));
+        submissions.update(nop(daNop, GradeStatus.DAT, LUC.plusSeconds(10)));
+        Submission lamLai = submissions.openOrGet(Submission.open(lop, an, bai, 1, LUC.plusSeconds(20)));
+        submissions.openOrGet(Submission.open(lop, binh, bai, 1, LUC.plusSeconds(30)));
+        submissions.openOrGet(Submission.open(lop, an, baiKhac, 1, LUC.plusSeconds(40)));
+        assertThat(submissions.history(an, bai).attempts())
+            .containsExactly(submissions.findById(daNop.id()).orElseThrow(), lamLai);
+    }
+
+    @Test
     void giaoVienKhongMoDuocBaiLam() {
         assertThatThrownBy(() -> submissions.openOrGet(Submission.open(lop, giaoVien, bai, 1, LUC)))
             .isInstanceOf(DataIntegrityViolationException.class).hasMessageContaining("không là học sinh");
@@ -159,6 +188,7 @@ class PracticePersistenceTest {
         GradingResult canCu = grades.record(ketQua(dangLam.id(), "1".repeat(64), GradeStatus.SAI));
         Submission daNop = dangLam.submit(canCu, LUC.plusSeconds(60)).baiLam();
         submissions.update(daNop);
+        assertThat(grades.findById(canCu.id())).contains(canCu);
 
         assertThat(submissions.findById(dangLam.id()).orElseThrow().status()).isEqualTo(SubmissionStatus.DA_NOP);
         assertThat(submissions.findOpen(an, lop, bai, 1)).isEmpty();
