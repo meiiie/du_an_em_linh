@@ -61,7 +61,7 @@ Lệnh cục bộ: `apps/web/AGENTS.md`, `services/math/AGENTS.md`, `services/co
 
 ## Giao diện
 
-Phòng Wiii, bảng phấn 3b1b (chủ repo, 2026-10-06): khung ấm kiểu Wiii (sáng mặc định, tối theo máy), vùng toán là tấm bảng tối với màu Manim. Không kit Figma Edu*, không Literata, không chép hex Coursera `#0056D2`, Khan `#1865f2`, IBM `#0F62FE`, Canvas electric, Brilliant pear.
+v2 (`apps/frontend`): phòng Wiii, bảng phấn 3b1b (chủ repo, 2026-10-06): khung ấm kiểu Wiii (sáng mặc định, tối theo máy), vùng toán là tấm bảng tối với màu Manim. v0 (`apps/web`) giữ giao diện «phiếu làm bài» cũ khi sửa lỗi. Không kit Figma Edu*, không Literata, không chép hex Coursera `#0056D2`, Khan `#1865f2`, IBM `#0F62FE`, Canvas electric, Brilliant pear.
 
 Lưới **8 px**. Nút: cao thị giác **40**, mục tiêu chạm **44**, đệm ngang **16**, bán kính **8**. `padding` nới hit; `margin` không. Khối đứng: **tâm quang học ≈ 46 %** từ đỉnh, dư dưới : dư trên = **3 : 2**. Chi tiết và nguồn: `docs/DESIGN.md`.
 
