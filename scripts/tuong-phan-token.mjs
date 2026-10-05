@@ -115,12 +115,12 @@ for (const t of Object.keys(bang).filter((t) => !coCap.has(t))) {
   loi++;
   console.log(`  CHƯA ĐO token ${t}: thêm cặp vào BAT_BUOC hay DOI_CHUNG`);
 }
-const css = readFileSync("apps/frontend/src/styles.css", "utf8");
+const css = readFileSync("apps/frontend/src/styles.css", "utf8").replace(/\/\*[\s\S]*?\*\//g, "");
 const bienCss = (dau) => {
-  const i = css.indexOf(dau);
-  if (i < 0) throw new Error(`styles.css không có khối ${dau}`);
-  const khoi = css.slice(i, css.indexOf("}", i));
-  return Object.fromEntries([...khoi.matchAll(/--([a-z0-9-]+):\s*(#[0-9A-Fa-f]{6})\s*;/g)].map((m) => [m[1], m[2].toUpperCase()]));
+  const phan = css.split(dau);
+  if (phan.length !== 2) throw new Error(`styles.css cần đúng một khối ${dau}, có ${phan.length - 1}`);
+  const khoi = phan[1].slice(0, phan[1].indexOf("}"));
+  return Object.fromEntries([...khoi.matchAll(/--([a-z0-9-]+):\s*([^;]+);/g)].map((m) => [m[1], m[2].trim().toUpperCase()]));
 };
 const cssSang = bienCss(":root {");
 // Khối tối chỉ ghi chỗ khác sáng; biến không ghi lại thì kế thừa giá trị sáng.

@@ -2,7 +2,7 @@ import { Component, input } from '@angular/core';
 import { TEN_SAN_PHAM } from '../../core/san-pham';
 
 /**
- * Chữ hiệu «MathL+»: đậm 800, giãn −0,02 em; dấu «+» mang `--brand-plus` (đất nung khi sáng, xanh Manim khi tối).
+ * Chữ hiệu «MathL+»: đậm 800, giãn −0,02 em; dấu «+» mang `--brand-plus` (`--accent` khi sáng, `--label` khi tối).
  * Trình đọc màn hình đọc tên liền một khối, không tách «+» thành phần tử riêng.
  */
 @Component({
