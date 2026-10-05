@@ -10,6 +10,9 @@ Tệp vàng do chính mã của v0 sinh ra, để test của core v2 so khớp: 
 | `phan-hoi-toan.json` | `xuat-v0.ts` | T014: mọi cặp yêu cầu → phản hồi của dịch vụ toán theo thứ tự v0 gọi, để dịch vụ toán giả phát lại |
 | `khoa-bang-v0.py` | — (script) | Sinh tệp dưới |
 | `loi-giai-v0.ts` | — (script, T020) | Chạy nguyên `loiGiaiHocSinh` của `apps/web/lib/loi-giai.ts` trên 11 ca, ghi `services/core/src/test/resources/content/loi-giai-v0.json` (kèm blob của tệp v0); `VietLoiGiaiTest` so từng chữ. Chạy: `node specs/001-lat-cat-doc/doi-chieu/loi-giai-v0.ts` |
+| `chung.ts` | — (mô-đun) | Phần dùng chung của `xuat-v0.ts` và `cham-v0.ts`: dựng dịch vụ toán từ checkout, cắt mã v0 theo mốc, ghi nguồn git |
+| `cham-v0.ts` | — (script, T023) | Sinh tệp dưới |
+| `cham-v0.json` | `cham-v0.ts` | T023 (SC-006): `DoiChieuChamV0Test` cho 187 học sinh tổng hợp nộp từng bước trên 12 bài chấm được như lúc ghi; so yêu cầu `/v1/grade` từng byte, kết quả cho học sinh và hàng `grading_results` với v0 |
 | `khoa-bang-v0.json` | `khoa-bang-v0.py` | T014: phản hồi thật của job khóa bảng (`kiem_dong_cong_thuc`) cho 6 dòng của v0 và 5 tài liệu của lớp, gửi như importer v2 gửi (thứ tự tài liệu, NFC, mỗi câu một đoạn); id ổn định: mã tài liệu, «mã#vị trí» của đoạn. Job giả của test đổi sang id thật rồi phát lại; test so loại, hai tầng, trích dẫn chính và trích dẫn thêm đã ghi của từng dòng |
 
 ## `xuat-v0.ts` (T013)
@@ -54,3 +57,58 @@ KHO_LOP=v0 node specs/001-lat-cat-doc/doi-chieu/xuat-v0.ts
   - dấu vân tay `content_hash` khớp 17/17;
   - lượt kiểm mới nhất khớp nguyên văn 15/17;
   - 2 bài còn lại là hai bài `KHONG_KIEM_DUOC` ở trên, đã được giáo viên duyệt trong CSDL đó (2 bản ghi `content_reviews`; v0 ghi đè tầng thành `GV_DUYET`). Phán quyết tự động trước khi duyệt là như nhau.
+
+## `cham-v0.ts` (T023)
+
+Script chạy **nguyên** mã chấm từng bước của v0 trên toàn ngân hàng, với dịch vụ toán build từ checkout (`chung.ts`, như `xuat-v0.ts`). Không dòng nào của v0 dựng payload, đọc kết quả chấm hay ghi `grading_results` được gõ lại.
+
+- **Cách lấy mã.** Cắt theo mốc, bỏ kiểu, chạy trong `vm`:
+  - `components/solve-client.tsx`: `deHoiCucTri`, `ORDER`, và thân `SolveClient` từ chữ ký tới trước `const badStep =` (mọi hook, `payload()`, `submit()`), dưới một React tối thiểu: `useState`, `useRef` giữ ô theo thứ tự gọi như React, `useEffect` bỏ qua (không đụng `localStorage`).
+  - `lib/actions/hs.ts`: `ORDER_BUOC`, `laDauU`, `nopBuoc`. Quyền, CSDL, mức hiểu, gợi ý bài kế, gia sư là giả lập; định danh tự do nào thiếu giả lập thì `ReferenceError`.
+  - `app/hs/luyen/[id]/page.tsx`: điều kiện cho làm bài.
+  - `lib/math.ts` (`mathJob`) và `lib/levels.ts` (`BUOC`): import thật.
+- **Học sinh tổng hợp.** Gõ lời giải mẫu (`cot_v0.baiLam` của `v0-bai.json`) vào state qua setter của chính `SolveClient`, ở dạng màn hình nhận: TXĐ `\mathbb{R}`, `\mathbb{R}\setminus\{1\}`; đạo hàm `3x^{2}-12x+9` (như e2e); mỗi nghiệm một dòng `x = -1`; mốc, dấu `+ - 0 ||`, chiều `TANG GIAM` như nút của bảng; ô kết luận `(-∞;-1) và (3;+∞)`, `x = -1, y = 7` (như `ket_luan_o_nen` của kiemdinh).
+- **Biến thể.** 21 dòng `BIEN_THE`, mỗi dòng một hàm thuần trên state, phủ `DAT`, `SAI`, `KHONG_KIEM_DUOC` ở cả năm bước (bảng dưới). Không sửa dữ liệu lab. Biến thể bỏ qua, kèm lý do, khi đụng bước đề cho, khi không áp dụng cho bài (không có nghiệm để bỏ, TXĐ là ℝ, ít hơn hai mốc, đề không hỏi cực trị, mỗi ô đơn điệu chỉ một khoảng), hay khi không đổi bài làm.
+- **Chính sách học sinh.** Mỗi kịch bản một phiên `SolveClient` mới. Mỗi vòng: gõ các ô của bước đang mở (sai nếu bước thuộc biến thể và chưa sửa), rồi bấm «Kiểm tra» (`submit()` thật). `DAT` thì v0 tự sang bước kế. Không đạt lần đầu: biến thể `di_tiep` bấm sang bước kế một lần, như học sinh bỏ qua chỗ đỏ; không thì sửa mọi bước sai và quay về bước sai sớm nhất bằng thanh bước. Sửa rồi vẫn không đạt, hay lời giải mẫu không đạt, thì dừng sinh. Mỗi kịch bản đi tới khi xong bài. Bước nào gõ cũng được nộp ngay, nên các bước core lưu luôn trùng bộ nhớ máy học sinh của v0.
+- **Tệp vàng.** `kich_ban`: mỗi (bài, biến thể) một dòng. Dòng chạy có `trang_thai` (ô học sinh gõ: `dung`, và `sai` cho các bước của biến thể) và `lan_nop` (`bam`, `nop_toi`, `ket_qua`, `buoc_sau`: bước `submit()` chuyển tới). Dòng bỏ qua có `bo_qua`. `lan_cham`: mỗi yêu cầu khác nhau một bản ghi, khóa là SHA-256 của thân `/v1/grade` đúng từng byte v0 gửi. Bản ghi gồm `yeu_cau`, `phan_hoi`, `tra_ve` (giá trị `nopBuoc` trả, bỏ các khóa do giả lập quyết định: `sub_id`, `tiep_theo`, `loi_giai`, `nghi_doan_mo`, `de_xuat_gui_gv`, `buoc_de_xuat`), `ghi` (hàng `gradingResults` v0 ghi, bỏ `id`, `submissionId`). `khong_cham`: bài cổng trang v0 không cho làm.
+- **Bất biến lúc sinh.** Lời giải mẫu `DAT` mọi bước và xong bài ở mọi bài chấm được. Mỗi bước có đủ `DAT`, `SAI`, `KHONG_KIEM_DUOC`. Mỗi lần nộp gọi máy chấm đúng một lần, và thân chấm trùng payload máy học sinh. Không hai lần nộp trùng yêu cầu trong một kịch bản. Phong bì lỗi của sandbox hay lỗi HTTP là lỗi sinh, không ghi. Tệp không quá 2 MB.
+- **Nguồn.** `nguon.git` ghi blob hay cây HEAD của 9 nguồn: năm tệp v0 ở trên, `v0-bai.json`, `cham-v0.ts`, `chung.ts`, `services/math`. Script dừng nếu nguồn nào có thay đổi chưa commit. `TepVangDoiChieuTest` so từng khóa với checkout. `scripts/ci-thay-doi.mjs` bật job Core khi một tệp v0 trong đó đổi.
+
+```bash
+# từ gốc repo, Node ≥ 23.6, Docker đang chạy; các nguồn phải đã commit
+node specs/001-lat-cat-doc/doi-chieu/cham-v0.ts
+# thử bảng biến thể trước khi commit: không kiểm nguồn, ghi ra tệp khác
+THU=/tmp/cham-v0.json node specs/001-lat-cat-doc/doi-chieu/cham-v0.ts
+```
+
+### Kết quả (2026-10-06, cây `services/math` `2d833dd`, `cham-v0.ts` `8ce6215`)
+
+- **12 bài chấm được.** 5 bài cổng v0 không cho làm: `DH12-01-TH-01`, `DH12-06-VDC-01` (chờ duyệt), `DH12-03-NB-02`, `DH12-05-NB-02` (trắc nghiệm), `DH12-DEMO-CHAN-01` (bị chặn).
+- **21 biến thể, 187 kịch bản chạy, 65 bỏ qua có lý do.** 955 lần nộp, 221 yêu cầu khác nhau. Tệp 1 523 853 byte, sinh trong 297 s.
+- **Chạy hai lần** (hai lần build ảnh): phần ngoài `nguon` giống từng byte.
+
+| Bước | `DAT` | `SAI` | `KHONG_KIEM_DUOC` |
+| --- | --- | --- | --- |
+| `B.DH.TXD` | 110 | 6 | 6 |
+| `B.DH.DAOHAM` | 110 | 6 | 6 |
+| `B.DH.NGHIEM` | 167 | 40 | 10 |
+| `B.DH.XETDAU` | 187 | 64 | 12 |
+| `B.DH.KETLUAN` | 187 | 32 | 12 |
+
+Kết quả không đạt của từng biến thể (số bài chạy):
+
+| Biến thể | Kết quả đo |
+| --- | --- |
+| `dung` | `DAT` mọi bước, xong bài (12) |
+| `txd_sai`, `txd_trong` | TXD `SAI_TXD` ERR.DH.02; TXD `KHONG_KIEM_DUOC` (6, 6) |
+| `dao_ham_hai_dong`, `dao_ham_trong` | ĐẠO HÀM `SAI_BIEN_DOI` ERR.DH.26; `KHONG_KIEM_DUOC` (6, 6) |
+| `thieu_nghiem`, `thua_nghiem`, `nghiem_chu` | NGHIỆM `DIEM_THIEU` ERR.DH.03; `DIEM_THUA` ERR.DH.21; `KHONG_KIEM_DUOC` (9, 10, 10) |
+| `diem_ngoai_txd` | NGHIỆM `DIEM_THUA` ERR.DH.24 (2) |
+| `thua_diem_xuyen_buoc` | NGHIỆM `DIEM_THUA` ERR.DH.21, rồi XÉT DẤU `DIEM_THUA` ERR.DH.24 có `dong_lien_quan` (10) |
+| `thieu_diem_xuyen_buoc` | NGHIỆM `DIEM_THIEU`, rồi XÉT DẤU `DIEM_THIEU` ERR.DH.03 kèm ô hệ quả (9) |
+| `doi_dau`, `o_dau_trong` | XÉT DẤU `SAI_DAU`; `SAI_GIA_TRI` (ô trống), cả hai ERR.DH.06 (12, 12) |
+| `dao_moc`, `thieu_moc` | XÉT DẤU `SAI_THU_TU_MOC` ERR.DH.30 (9); `DIEM_THIEU` ERR.DH.03 (11) hay ERR.DH.02 (1) |
+| `doc_hai` | XÉT DẤU `KHONG_KIEM_DUOC` (12) |
+| `dao_db_nb`, `gop_U` | KẾT LUẬN `SAI_KET_LUAN` ERR.DH.08 (12); ERR.DH.07, luật dấu U (10) |
+| `cuc_tri_trong`, `chi_tung_do` | KẾT LUẬN `SAI_KET_LUAN` ERR.DH.12; ERR.DH.11 (5, 5) |
+| `ket_luan_chu` | KẾT LUẬN `KHONG_KIEM_DUOC` (12) |
