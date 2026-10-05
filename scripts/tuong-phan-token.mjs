@@ -1,0 +1,105 @@
+#!/usr/bin/env node
+/**
+ * Tương phản WCAG 2.x (độ chói sRGB) của các cặp token trong bảng màu `docs/DESIGN.md`. Đọc thẳng bảng, nên đổi màu
+ * ở đó là đo lại. Cặp bắt buộc dưới ngưỡng → exit 1. Cặp đối chứng là chỗ DESIGN.md ghi «dưới ngưỡng, không dùng»:
+ * nếu nó lại đạt thì lời ghi đã sai → cũng exit 1.
+ */
+import { readFileSync } from "node:fs";
+
+const CHU = 4.5;
+const DIEU_KHIEN = 3;
+
+function docBang(md) {
+  const bang = {};
+  for (const dong of md.split("\n")) {
+    const o = dong.split(" | ");
+    if (o.length < 4 || !dong.startsWith("| `")) continue;
+    const ten = [...o[0].matchAll(/`([a-z0-9-]+)`/g)].map((m) => m[1]);
+    const sang = o[1].match(/#[0-9A-Fa-f]{6}\b/g);
+    if (!sang) continue;
+    const toi = o[2].includes("như sáng") ? sang : o[2].match(/#[0-9A-Fa-f]{6}\b/g);
+    if (!toi) throw new Error(`thiếu màu tối: ${dong}`);
+    const nhieu = ten.length > 1;
+    if (nhieu && (sang.length !== ten.length || toi.length !== ten.length)) throw new Error(`số tên ≠ số màu: ${dong}`);
+    ten.forEach((t, i) => {
+      if (bang[t]) throw new Error(`token lặp: ${t}`);
+      bang[t] = { light: sang[nhieu ? i : 0], dark: toi[nhieu ? i : 0] };
+    });
+  }
+  return bang;
+}
+
+const kenh = (c) => {
+  const v = c / 255;
+  return v <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4;
+};
+const doChoi = (hex) => {
+  const [r, g, b] = [1, 3, 5].map((i) => kenh(parseInt(hex.slice(i, i + 2), 16)));
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+};
+const tiLe = (a, b) => {
+  const [x, y] = [doChoi(a), doChoi(b)].sort((p, q) => q - p);
+  return (x + 0.05) / (y + 0.05);
+};
+
+const bang = docBang(readFileSync("docs/DESIGN.md", "utf8"));
+const mau = (ten, cheDo) => {
+  const t = typeof ten === "string" ? ten : ten[cheDo];
+  if (t.startsWith("#")) return t;
+  if (!bang[t]) throw new Error(`DESIGN.md không có token ${t}`);
+  return bang[t][cheDo];
+};
+
+const HAI = ["light", "dark"];
+const chu = (fg, bg) => ({ fg, bg, nguong: CHU });
+const dk = (fg, bg) => ({ fg, bg, nguong: DIEU_KHIEN });
+const BAT_BUOC = [
+  ...["ink", "ink-2", "muted"].flatMap((fg) => ["canvas", "wash", "raise"].map((bg) => chu(fg, bg))),
+  chu("label", "canvas"),
+  chu("label", "wash"),
+  chu("pass", "canvas"),
+  chu("wait", "canvas"),
+  chu("mark", "canvas"),
+  chu("mark", "wash"),
+  chu("#FFFFFF", "action"),
+  chu({ light: "#FFFFFF", dark: "#141413" }, "action-hover"),
+  chu("board-ink", "board"),
+  ...["m-blue", "m-teal", "m-yellow", "m-red", "m-gold", "m-green"].map((fg) => chu(fg, "board")),
+  ...["canvas", "wash", "raise"].flatMap((bg) => [dk("line-strong", bg), dk("focus", bg)]),
+  dk("board-rule", "board"),
+];
+const DOI_CHUNG = [
+  { ...dk("line", "canvas"), ly: "kẻ chia trang trí" },
+  { ...dk("board-line", "board"), ly: "kẻ trang trí trên bảng" },
+  { ...dk("accent", "raise"), cheDo: ["dark"], ly: "vì thế có token focus" },
+  { ...chu("mark", "raise"), cheDo: ["dark"], ly: "chữ mark không trên raise tối" },
+  { ...chu("#FFFFFF", "accent"), ly: "vì thế nền nút là action" },
+  { ...chu("#FFFFFF", "action-hover"), cheDo: ["dark"], ly: "vì thế chữ nút khi trỏ ở tối là mực" },
+];
+
+const so = (x) => x.toFixed(2).replace(".", ",");
+const ten = (x) => (typeof x === "string" ? x : `${x.light} | ${x.dark}`);
+let loi = 0;
+
+console.log("cặp bắt buộc (sáng / tối, ngưỡng)");
+for (const c of BAT_BUOC) {
+  const r = HAI.map((m) => tiLe(mau(c.fg, m), mau(c.bg, m)));
+  const dat = r.every((x) => x >= c.nguong);
+  if (!dat) loi++;
+  console.log(`  ${dat ? "đạt " : "TRƯỢT"} ${ten(c.fg)} / ${c.bg}: ${r.map(so).join(" / ")} (≥ ${so(c.nguong)})`);
+}
+
+console.log("đối chứng: DESIGN.md ghi dưới ngưỡng");
+for (const c of DOI_CHUNG) {
+  const cheDo = c.cheDo ?? HAI;
+  const r = cheDo.map((m) => tiLe(mau(c.fg, m), mau(c.bg, m)));
+  const van = r.every((x) => x < c.nguong);
+  if (!van) loi++;
+  console.log(`  ${van ? "dưới" : "ĐÃ ĐẠT, sửa DESIGN.md"} ${ten(c.fg)} / ${c.bg} (${cheDo.join(", ")}): ${r.map(so).join(" / ")} (< ${so(c.nguong)}; ${c.ly})`);
+}
+
+if (loi) {
+  console.error(`${loi} cặp sai so với DESIGN.md`);
+  process.exit(1);
+}
+console.log(`${Object.keys(bang).length} token, ${BAT_BUOC.length} cặp bắt buộc, ${DOI_CHUNG.length} đối chứng`);
