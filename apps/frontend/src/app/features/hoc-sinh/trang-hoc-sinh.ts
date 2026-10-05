@@ -11,9 +11,11 @@ import { Phien } from '../../core/auth/phien';
     <header class="dau-trang">
       <h1>Chào {{ ten() }}</h1>
     </header>
-    <section class="trong" aria-labelledby="tieu-de-bai-giao">
-      <h2 id="tieu-de-bai-giao">Bài được giao</h2>
-      <p>Chưa có bài. Bài thầy cô giao sẽ hiện ở đây.</p>
+    <section aria-labelledby="tieu-de-bai-giao">
+      <h2 id="tieu-de-bai-giao" class="nhan-muc">Bài được giao</h2>
+      <div class="trong">
+        <p>Chưa có bài. Bài thầy cô giao sẽ hiện ở đây.</p>
+      </div>
     </section>
   `,
 })

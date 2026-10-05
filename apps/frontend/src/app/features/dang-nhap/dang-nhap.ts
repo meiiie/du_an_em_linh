@@ -5,22 +5,24 @@ import { Router, RouterLink } from '@angular/router';
 import { VaiTro } from '../../api/auth';
 import { Phien, trangChuCua } from '../../core/auth/phien';
 import { TEN_SAN_PHAM } from '../../core/san-pham';
+import { BieuTuong } from '../../shared/ui/bieu-tuong';
 import { BrandMark } from '../../shared/ui/brand-mark';
 import { Button } from '../../shared/ui/button';
+import { DoiGiaoDien } from '../../shared/ui/doi-giao-dien';
 
 type Buoc = 'email' | 'mat-khau';
 type LoiDangNhap = 'sai' | 'khoa' | 'may-chu';
 
 // Tài khoản tổng hợp của bản demo (AGENTS.md), không phải học sinh thật.
 const TAI_KHOAN_THU = [
-  { nhan: 'Học sinh An', email: 'hs.an@demo.local' },
-  { nhan: 'Giáo viên', email: 'gv@demo.local' },
+  { nhan: 'Học sinh An', email: 'hs.an@demo.local', bieuTuong: 'user' },
+  { nhan: 'Giáo viên', email: 'gv@demo.local', bieuTuong: 'users' },
 ] as const;
 
 /** Đăng nhập hai bước như v0 (apps/web/components/login-form.tsx): email → mật khẩu. */
 @Component({
   selector: 'app-dang-nhap',
-  imports: [FormField, RouterLink, BrandMark, Button],
+  imports: [FormField, RouterLink, BieuTuong, BrandMark, Button, DoiGiaoDien],
   templateUrl: './dang-nhap.html',
   styleUrl: './dang-nhap.css',
 })
