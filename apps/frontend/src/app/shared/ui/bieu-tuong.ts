@@ -13,7 +13,11 @@ export type TenBieuTuong =
   | 'kho'
   | 'plug'
   | 'menu'
-  | 'x';
+  | 'x'
+  | 'sun'
+  | 'moon'
+  | 'user'
+  | 'users';
 
 /** Một nét SVG; trường không dùng của mỗi loại để trống (template không cần thu hẹp kiểu). */
 interface Net {
@@ -35,7 +39,8 @@ const p = (d: string): Net => ({ kieu: 'path', d });
 /**
  * Nét vẽ chép nguyên văn từ Lucide 0.544.0 (ISC, https://lucide.dev), đúng bộ biểu tượng ray của v0
  * (`apps/web/components/app-shell.tsx`): House, BookOpen, CalendarDays, Inbox, Library, FileText, Sigma,
- * LayoutDashboard, Settings, BookMarked, Plug, Menu, X. Chép thẳng để khỏi thêm thư viện cho mười ba hình.
+ * LayoutDashboard, Settings, BookMarked, Plug, Menu, X; thêm Sun, Moon (nút đổi giao diện), User, Users (tài khoản thử).
+ * Chép thẳng để khỏi thêm thư viện cho mười bảy hình.
  */
 const NET: Record<TenBieuTuong, readonly Net[]> = {
   home: [
@@ -89,6 +94,25 @@ const NET: Record<TenBieuTuong, readonly Net[]> = {
   plug: [p('M12 22v-5'), p('M9 8V2'), p('M15 8V2'), p('M18 8v5a4 4 0 0 1-4 4h-4a4 4 0 0 1-4-4V8Z')],
   menu: [p('M4 5h16'), p('M4 12h16'), p('M4 19h16')],
   x: [p('M18 6 6 18'), p('m6 6 12 12')],
+  sun: [
+    { kieu: 'circle', cx: 12, cy: 12, r: 4 },
+    p('M12 2v2'),
+    p('M12 20v2'),
+    p('m4.93 4.93 1.41 1.41'),
+    p('m17.66 17.66 1.41 1.41'),
+    p('M2 12h2'),
+    p('M20 12h2'),
+    p('m6.34 17.66-1.41 1.41'),
+    p('m19.07 4.93-1.41 1.41'),
+  ],
+  moon: [p('M20.985 12.486a9 9 0 1 1-9.473-9.472c.405-.022.617.46.402.803a6 6 0 0 0 8.268 8.268c.344-.215.825-.004.803.401')],
+  user: [p('M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2'), { kieu: 'circle', cx: 12, cy: 7, r: 4 }],
+  users: [
+    p('M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2'),
+    p('M16 3.128a4 4 0 0 1 0 7.744'),
+    p('M22 21v-2a4 4 0 0 0-3-3.87'),
+    { kieu: 'circle', cx: 9, cy: 7, r: 4 },
+  ],
 };
 
 /** Biểu tượng nét 24×24, màu theo chữ (`currentColor`), chỉ để trang trí: luôn đi kèm chữ hay `aria-label` của nút. */

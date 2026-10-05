@@ -2,10 +2,11 @@ import { Component, signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { Katex } from './katex';
 
-@Component({ imports: [Katex], template: `<app-katex [latex]="latex()" [khoi]="khoi()" />` })
+@Component({ imports: [Katex], template: `<app-katex [latex]="latex()" [khoi]="khoi()" [bang]="bang()" />` })
 class Vo {
   readonly latex = signal('x^2');
   readonly khoi = signal(false);
+  readonly bang = signal(false);
 }
 
 describe('Katex', () => {
@@ -46,6 +47,22 @@ describe('Katex', () => {
     t.fixture.componentInstance.khoi.set(true);
     await t.fixture.whenStable();
     expect(t.el.querySelector('.katex-display')).not.toBeNull();
+  });
+
+  it('bang: tấm bảng tối, công thức khối; rộng hơn bảng → bảng nhận Tab như khối; mặc định vẫn trong dòng', async () => {
+    const t = await mo();
+    expect(t.host().classList).not.toContain('bang');
+    expect(t.el.querySelector('.katex-display')).toBeNull();
+
+    t.fixture.componentInstance.bang.set(true);
+    await t.fixture.whenStable();
+    expect(t.host().classList).toContain('bang');
+    expect(t.el.querySelector('.katex-display')).not.toBeNull();
+    Object.defineProperty(t.host(), 'scrollWidth', { configurable: true, get: () => 600 });
+    Object.defineProperty(t.host(), 'clientWidth', { configurable: true, get: () => 358 });
+    await t.dat('y = x^3 - 3x^2 + 3x - 1');
+    expect(t.host().getAttribute('tabindex')).toBe('0');
+    expect(t.host().getAttribute('aria-label')).toBe('Công thức, cuộn ngang');
   });
 
   it('công thức khối rộng hơn khung → khung nhận Tab, có nhãn; vừa khung thì không', async () => {

@@ -34,11 +34,6 @@
               }
             ],
             "styles": [
-              "@fontsource/ibm-plex-sans/400.css",
-              "@fontsource/ibm-plex-sans/500.css",
-              "@fontsource/ibm-plex-sans/600.css",
-              "@fontsource/ibm-plex-sans/700.css",
-              "@fontsource/ibm-plex-mono/400.css",
               "katex/dist/katex.min.css",
               "src/styles.css"
             ]
@@ -57,6 +52,11 @@
                   "maximumError": "8kB"
                 }
               ],
+              "optimization": {
+                "scripts": true,
+                "styles": { "minify": true, "inlineCritical": false },
+                "fonts": true
+              },
               "outputHashing": "all"
             },
             "development": {

@@ -33,9 +33,10 @@ function go(o: HTMLInputElement, giaTri: string): void {
 }
 
 describe('DangNhap', () => {
-  it('bước email: tiêu đề, ô email, Tiếp tục khóa khi ô trống', async () => {
+  it('bước email: tiêu đề, ô email, Tiếp tục khóa khi ô trống, có nút đổi giao diện', async () => {
     const t = await moTrang();
     expect(t.el.querySelector('h1')?.textContent).toBe('Đăng nhập');
+    expect(t.el.querySelector('[data-testid="doi-giao-dien"]')?.getAttribute('aria-pressed')).toBe('false');
     expect(t.o('email')).not.toBeNull();
     expect(t.o('password')).toBeNull();
     expect(t.nut('Tiếp tục')?.disabled).toBe(true);

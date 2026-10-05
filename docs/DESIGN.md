@@ -25,7 +25,7 @@ Sản phẩm là **một trang toán**: công thức là điểm nhìn, năm bư
 
 ## Token
 
-Chữ đạt ≥ 4,5 : 1, thành phần giao diện ≥ 3 : 1. Bảng ghi ngưỡng, không ghi tỉ lệ cụ thể: tỉ lệ tính theo WCAG 2.x (độ chói sRGB) bằng `node scripts/tuong-phan-token.mjs`. Script đọc thẳng bảng này, CI chạy ở mọi PR; đỏ khi một cặp dưới ngưỡng, khi một chỗ ghi «dưới ngưỡng» lại đạt, khi một token chưa được đo, hay khi bảng chép tay một tỉ lệ (số chép tay sẽ cũ). Script đọc màu, không đọc câu chữ: thêm hay đổi một câu ngưỡng thì thêm cặp tương ứng vào `BAT_BUOC` / `DOI_CHUNG` trong script. Lần đo có ngày và kết quả: mục «Tương phản đo được» của `labs/design/studies/2026-10-06-wiii-3b1b.md`. Số đo trên giao diện đã vẽ (điểm ảnh thật, vòng focus, lần vẽ đầu) thuộc PR áp token vào Angular (#146), chưa có trong cây này. Chế độ tối: `prefers-color-scheme: dark`, hay `data-theme` trên `<html>` khi người dùng bấm nút đổi (nhớ trong `localStorage`).
+Chữ đạt ≥ 4,5 : 1, thành phần giao diện ≥ 3 : 1. Bảng ghi ngưỡng, không ghi tỉ lệ cụ thể: tỉ lệ tính theo WCAG 2.x (độ chói sRGB) bằng `node scripts/tuong-phan-token.mjs`. Script đọc thẳng bảng này, CI chạy ở mọi PR; đỏ khi một cặp dưới ngưỡng, khi một chỗ ghi «dưới ngưỡng» lại đạt, khi một token chưa được đo, khi bảng chép tay một tỉ lệ (số chép tay sẽ cũ), hay khi `apps/frontend/src/styles.css` lệch bảng. Script đọc màu, không đọc câu chữ: thêm hay đổi một câu ngưỡng thì thêm cặp tương ứng vào `BAT_BUOC` / `DOI_CHUNG` trong script. Lần đo có ngày và kết quả: mục «Tương phản đo được» của `labs/design/studies/2026-10-06-wiii-3b1b.md`. Số đo trên giao diện đã vẽ (điểm ảnh thật, vòng focus, lần vẽ đầu): `labs/design/audits/2026-10-06-wiii-3b1b-angular.md`. Chế độ tối: `prefers-color-scheme: dark`, hay `data-theme` trên `<html>` khi người dùng bấm nút đổi (nhớ trong `localStorage`).
 
 | Tên | Sáng | Tối | Việc |
 | --- | --- | --- | --- |
@@ -38,7 +38,7 @@ Chữ đạt ≥ 4,5 : 1, thành phần giao diện ≥ 3 : 1. Bảng ghi ngư�
 | `ink-2` | `#3D3D3A` | `#C9C8C2` | Chữ phụ đậm |
 | `muted` | `#5F5E58` | `#A8A7A2` | Chữ phụ (Wiii `--text-tertiary` chỉnh đậm cho AA) |
 | `accent` | `#C75B39` | `#C75B39` | Vạch mục đang chọn, dấu «+» của chữ hiệu (sáng) |
-| `focus` | `#C75B39` (≥ 3 : 1 trên `wash`, `canvas`, `raise`) | `#D78970` = `accent` 72 % pha trắng như Wiii (`#C75B39` dưới 3 : 1 trên `raise` tối) | Viền focus 2 px, `outline-offset: 2px` để viền không chạm nền nút. Mọi điều khiển trong thanh trên 48 px vẽ viền vào trong (`-2px`): điều khiển cao 44 px, viền ngoài bị cắt ở mép trên màn; `focus` vẫn ≥ 3 : 1 với nền nút |
+| `focus` | `#C75B39` (≥ 3 : 1 trên `wash`, `canvas`, `raise`) | `#D78970` = `accent` 72 % pha trắng như Wiii (`#C75B39` dưới 3 : 1 trên `raise` tối) | Viền focus 2 px, `outline-offset: 2px` để viền không chạm nền nút. Hai chỗ vẽ viền vào trong (`-2px`), `focus` vẫn ≥ 3 : 1 với nền nút: mọi điều khiển trong thanh trên 48 px (cao 44 px, viền ngoài bị cắt ở mép trên màn) và nút nằm trong ô nhập (viền ngoài sẽ đè viền ô) |
 | `action` | `#AE5630` | `#AE5630` | Nền nút chính, chữ trắng (`#C75B39` với chữ trắng dưới 4,5 : 1 nên không làm nền nút) |
 | `action-hover` | `#9A4A28`, chữ trắng | `#C4633A`, chữ `#141413` | Nút chính khi trỏ; trên nền tối chữ trắng dưới 4,5 : 1 nên đổi sang chữ mực |
 | `label` | `#2C6FB0` | `#58C4DD` | Nhãn khu vực chữ hoa nhỏ giãn chữ; dấu «+» của chữ hiệu (tối) |
@@ -51,7 +51,7 @@ Chữ đạt ≥ 4,5 : 1, thành phần giao diện ≥ 3 : 1. Bảng ghi ngư�
 | `board-ink` | `#F2EFE6` | `#F2EFE6` | Chữ và công thức trên bảng |
 | `m-blue` / `m-teal` / `m-yellow` / `m-red` / `m-gold` / `m-green` | `#58C4DD` / `#5CD0B3` / `#F4D345` / `#FC6255` / `#F0AC5F` / `#83C167` | như sáng | Màu Manim, **chỉ** trên bảng: đường cong xanh, điểm đặc biệt vàng, dấu dương ngọc, dấu âm đỏ |
 
-Bảng này là nguồn chuẩn của giá trị và việc; `apps/frontend/src/styles.css` hiện thực theo bảng (từ PR #146; trước đó CSS còn token cũ). Đổi màu thì sửa bảng trước, chạy `node scripts/tuong-phan-token.mjs`, rồi sửa CSS theo.
+Bảng này là nguồn chuẩn của giá trị và việc; `apps/frontend/src/styles.css` hiện thực theo bảng (từ PR #146; trước đó CSS còn token cũ). Đổi màu thì sửa bảng và CSS trong cùng PR; `node scripts/tuong-phan-token.mjs` đỏ khi hai bên lệch.
 
 ## Chữ
 
@@ -170,7 +170,7 @@ Nguồn: optical center ~46% từ đỉnh (bố cục in / biển hiệu); cân 
 
 ## A11y
 
-Skip link, `:focus-visible` viền 2 px màu `focus` cách 2 px (mọi điều khiển trong thanh trên 48 px: vào trong 2 px), `prefers-reduced-motion`, `aria-live` khi chấm. Giữ `data-testid`. `touch-action: manipulation`.
+Skip link, `:focus-visible` viền 2 px màu `focus` cách 2 px (vào trong 2 px ở mọi điều khiển của thanh trên 48 px và ở nút nằm trong ô nhập), `prefers-reduced-motion`, `aria-live` khi chấm. Giữ `data-testid`. `touch-action: manipulation`.
 
 ## Nguồn khoảng cách (không chép thương hiệu)
 

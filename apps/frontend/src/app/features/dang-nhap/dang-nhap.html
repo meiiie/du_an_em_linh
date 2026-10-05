@@ -1,5 +1,6 @@
 <main class="trang">
   <a class="skip-link" href="#form-dang-nhap">Bỏ qua đến form đăng nhập</a>
+  <div class="goc"><app-doi-giao-dien /></div>
   <div class="khung">
     <!-- Tâm quang học ≈ 46 % chiều cao: dư trên : dư dưới = 2 : 3 (docs/DESIGN.md). -->
     <div class="truc">
@@ -119,7 +120,8 @@
         <ul class="tai-khoan-thu" aria-label="Tài khoản thử">
           @for (tk of taiKhoanThu; track tk.email) {
             <li>
-              <button appButton variant="secondary" type="button" class="chip" [disabled]="dangGui()" (click)="chonEmail(tk.email)">
+              <button appButton variant="secondary" size="lg" block type="button" [disabled]="dangGui()" (click)="chonEmail(tk.email)">
+                <app-bieu-tuong [ten]="tk.bieuTuong" />
                 {{ tk.nhan }}
               </button>
             </li>

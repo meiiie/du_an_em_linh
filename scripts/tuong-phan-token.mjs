@@ -6,6 +6,7 @@
  * - cặp đối chứng (chỗ DESIGN.md ghi «dưới ngưỡng, không dùng») lại đạt: lời ghi đã sai;
  * - token trong bảng không nằm trong cặp nào: màu mới chưa được đo;
  * - bảng chép tay một tỉ lệ (dạng «4,81 : 1»): bảng chỉ ghi ngưỡng «3 : 1» / «4,5 : 1», tỉ lệ là kết quả của script này.
+ * - `apps/frontend/src/styles.css` lệch bảng: mỗi token phải là biến `--tên` cùng giá trị sáng / tối.
  * Script đọc màu từ bảng, không đọc câu chữ: thêm hay đổi một câu ngưỡng trong DESIGN.md thì thêm cặp tương ứng vào
  * BAT_BUOC (phải đạt) hay DOI_CHUNG (ghi «dưới ngưỡng») ở dưới.
  */
@@ -114,6 +115,23 @@ for (const t of Object.keys(bang).filter((t) => !coCap.has(t))) {
   loi++;
   console.log(`  CHƯA ĐO token ${t}: thêm cặp vào BAT_BUOC hay DOI_CHUNG`);
 }
+const css = readFileSync("apps/frontend/src/styles.css", "utf8").replace(/\/\*[\s\S]*?\*\//g, "");
+const bienCss = (dau) => {
+  const phan = css.split(dau);
+  if (phan.length !== 2) throw new Error(`styles.css cần đúng một khối ${dau}, có ${phan.length - 1}`);
+  const khoi = phan[1].slice(0, phan[1].indexOf("}"));
+  return Object.fromEntries([...khoi.matchAll(/--([a-z0-9-]+):\s*([^;]+);/g)].map((m) => [m[1], m[2].trim().toUpperCase()]));
+};
+const cssSang = bienCss(":root {");
+// Khối tối chỉ ghi chỗ khác sáng; biến không ghi lại thì kế thừa giá trị sáng.
+const cssToi = { ...cssSang, ...bienCss(":root[data-theme='dark'] {") };
+for (const [t, v] of Object.entries(bang)) {
+  for (const [m, cssMau] of [["light", cssSang], ["dark", cssToi]]) {
+    if (cssMau[t] === v[m].toUpperCase()) continue;
+    loi++;
+    console.log(`  LỆCH CSS --${t} (${m}): styles.css ${cssMau[t] ?? "không có"}, DESIGN.md ${v[m]}`);
+  }
+}
 for (const g of chepTay) {
   loi++;
   console.log(`  TỈ LỆ CHÉP TAY ${g.so} ở hàng ${g.ten}: ghi ngưỡng («≥ 3 : 1», «dưới 4,5 : 1»), tỉ lệ để script đo`);
@@ -123,4 +141,4 @@ if (loi) {
   console.error(`${loi} chỗ sai so với DESIGN.md`);
   process.exit(1);
 }
-console.log(`${Object.keys(bang).length} token đều được đo, ${BAT_BUOC.length} cặp bắt buộc, ${DOI_CHUNG.length} đối chứng`);
+console.log(`${Object.keys(bang).length} token đều được đo và khớp styles.css, ${BAT_BUOC.length} cặp bắt buộc, ${DOI_CHUNG.length} đối chứng`);

@@ -84,11 +84,14 @@ describe('KhungTrang', () => {
     // «Lớp» là trang chủ khu vực: chỉ sáng khi đứng đúng /gv, không sáng ở trang con
     expect(t.tim('nav-gv-tong-quan')?.getAttribute('aria-current')).toBeNull();
     expect(t.tim('sidebar-nav')?.getAttribute('aria-label')).toBe('Menu giáo viên');
+    // Ô tròn ở chân thanh bên lấy chữ đầu của từ cuối («Giáo viên thử» → «T»), như tên gọi tiếng Việt.
+    expect(t.el.querySelector('.chu-dau')?.textContent).toBe('T');
   });
 
-  it('màn rộng: một nút Đăng xuất ở chân ray; bấm → về /dang-nhap', async () => {
+  it('màn rộng: một nút Đăng xuất ở chân ray, một nút đổi giao diện; bấm Đăng xuất → về /dang-nhap', async () => {
     const t = await mo('/hs');
     expect(t.tatCa('dang-xuat')).toHaveLength(1);
+    expect(t.tatCa('doi-giao-dien')).toHaveLength(1);
     t.tim('dang-xuat')!.click();
     await t.on();
     expect(t.gia.daGoiDangXuat).toBe(1);
@@ -132,6 +135,8 @@ describe('KhungTrang', () => {
     expect(ray.hasAttribute('inert')).toBe(true);
     expect(nutMo.getAttribute('aria-expanded')).toBe('false');
     expect(t.tatCa('dang-xuat')).toHaveLength(1);
+    expect(t.el.querySelector('.thanh-tren [data-testid="doi-giao-dien"]')).not.toBeNull();
+    expect(t.tatCa('doi-giao-dien')).toHaveLength(1);
     expect(document.documentElement.classList).toContain('co-thanh-tren');
 
     nutMo.click();
