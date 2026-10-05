@@ -14,8 +14,9 @@ import vn.hoctapcanman.core.content.domain.model.Solution;
  * tiểu dựng từ {@code workedSolutionJson}; không câu nào thì rỗng. Tệp vàng do chính hàm của v0 sinh
  * ({@code specs/001-lat-cat-doc/doi-chieu/loi-giai-v0.ts}). Không đọc dữ kiện bảo vệ.
  *
- * <p>Lời giải mẫu lệch kiểu mà v0 khai báo ({@code BaiLam}: chuỗi, mảng chuỗi, đối tượng {@code ket_luan}, hay null) thì rỗng:
- * v0 khi đó in chữ ép kiểu kiểu JavaScript hay ném lỗi; core không đưa chữ đoán ra cho học sinh.
+ * <p>Lời giải mẫu lệch kiểu mà v0 khai báo ({@code BaiLam}: chuỗi, mảng chuỗi, đối tượng {@code ket_luan}, hay null) thì rỗng.
+ * v0 khi đó in chữ ép kiểu kiểu JavaScript, ném lỗi, hay lặng lẽ bỏ cả phần kết luận ({@code ket_luan} là mảng hay giá trị
+ * rỗng như {@code ""}, {@code false}). Core không đưa ra cho học sinh chữ đoán hay lời giải mất kết luận.
  */
 public final class VietLoiGiai {
 

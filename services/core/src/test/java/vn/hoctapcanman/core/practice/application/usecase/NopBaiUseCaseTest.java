@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import org.assertj.core.api.ThrowableAssert.ThrowingCallable;
 import org.jspecify.annotations.Nullable;
@@ -40,6 +41,7 @@ import vn.hoctapcanman.core.practice.application.dto.DongNop;
 import vn.hoctapcanman.core.practice.application.dto.KetQuaBai;
 import vn.hoctapcanman.core.practice.application.dto.KetQuaNopBai;
 import vn.hoctapcanman.core.practice.application.dto.NopBuocRequest;
+import vn.hoctapcanman.core.practice.application.dto.ONop;
 import vn.hoctapcanman.core.practice.application.dto.ThayDoiMucHieu;
 import vn.hoctapcanman.core.practice.application.dto.ViTriSai;
 import vn.hoctapcanman.core.practice.application.exception.BaiChuaNopDuocException;
@@ -55,7 +57,7 @@ import vn.hoctapcanman.core.shared.infrastructure.ClockConfig;
 
 /**
  * Nộp bài trên PostgreSQL 18 thật (T020 phần 2): kết quả là phán quyết đã ghi của bước kết luận trên nội dung hiện tại, ghim
- * làm căn cứ; không có phán quyết đó thì 409 và không ghi gì; gửi lại phát lại; không gọi dịch vụ toán; lời giải chỉ khi lớp
+ * làm căn cứ; thiếu bước hay không có phán quyết đó thì 409 và không ghi gì; gửi lại phát lại; không gọi dịch vụ toán; lời giải chỉ khi lớp
  * bật cờ, đúng đề, và học sinh không làm lại; mức hiểu gọi trong giao dịch nộp. Bước nộp qua {@link NopBuocUseCase} với máy
  * chấm giả. Use case tự mở giao dịch, nên test không chạy trong giao dịch của test và tự dọn dữ liệu.
  */
@@ -154,8 +156,7 @@ class NopBaiUseCaseTest {
 
     @Test
     void nopSauKhiBuocKetLuanCoPhanQuyetGhimCanCuVaGuiLaiPhatLai() {
-        nopBuoc.execute(an, lop, ma, dong("B.DH.TXD", "D = R"));
-        nopBuoc.execute(an, lop, ma, ketLuan());
+        lamDuBuoc();
         int lanCham = mayCham.yeuCau.size();
         KetQuaNopBai dau = nopBai.execute(an, lop, ma);
         assertThat(dau).isEqualTo(DAT_KHONG_LOI_GIAI);
@@ -167,26 +168,38 @@ class NopBaiUseCaseTest {
     }
 
     @Test
-    void chuaCoPhanQuyetBuocKetLuanThi409KhongGhiGi() {
-        ketQua409(() -> nopBai.execute(an, lop, ma), LyDo.CHUA_CHAM_BUOC_KET_LUAN);
+    void chuaLamDuBuocThi409KhongGhiGi() {
+        ketQua409(() -> nopBai.execute(an, lop, ma), LyDo.CHUA_LAM_DU_BUOC);
         nopBuoc.execute(an, lop, ma, dong("B.DH.TXD", "D = R"));
         nopBuoc.execute(an, lop, ma, dong("B.DH.DAOHAM", "y' = 3x^2 - 6x"));
-        ketQua409(() -> nopBai.execute(an, lop, ma), LyDo.CHUA_CHAM_BUOC_KET_LUAN);
+        ketQua409(() -> nopBai.execute(an, lop, ma), LyDo.CHUA_LAM_DU_BUOC);
+        lamTruocKetLuan();
+        ketQua409(() -> nopBai.execute(an, lop, ma), LyDo.CHUA_LAM_DU_BUOC);
         assertThat(trangThai()).containsExactly("DANG_LAM");
     }
 
     @Test
     void suaBuocSauKhiChamKetLuanThi409NopLaiKetLuanThiNopDuoc() {
-        nopBuoc.execute(an, lop, ma, dong("B.DH.TXD", "D = R"));
-        nopBuoc.execute(an, lop, ma, ketLuan());
+        lamDuBuoc();
         nopBuoc.execute(an, lop, ma, dong("B.DH.TXD", "D = \\mathbb{R}"));
         ketQua409(() -> nopBai.execute(an, lop, ma), LyDo.CHUA_CHAM_BUOC_KET_LUAN);
         nopBuoc.execute(an, lop, ma, ketLuan());
         assertThat(nopBai.execute(an, lop, ma)).isEqualTo(DAT_KHONG_LOI_GIAI);
     }
 
+    /** Codex #142: chỉ nộp bước kết luận thì máy chấm ghi KHONG_KIEM_DUOC (thiếu dòng), nhưng đó không phải bài đã làm. */
+    @Test
+    void thieuBuocTruocKetLuanThi409KhongNopKhongMoLoiGiai() {
+        datCo(true);
+        mayCham.traLoi = NopBaiUseCaseTest::thieuDongTapXacDinh;
+        nopBuoc.execute(an, lop, ma, ketLuan());
+        ketQua409(() -> nopBai.execute(an, lop, ma), LyDo.CHUA_LAM_DU_BUOC);
+        assertThat(trangThai()).containsExactly("DANG_LAM");
+    }
+
     @Test
     void dichVuToanLoiOBuocKetLuanThi409() {
+        lamTruocKetLuan();
         mayCham.traLoi = y -> Optional.empty();
         nopBuoc.execute(an, lop, ma, ketLuan());
         ketQua409(() -> nopBai.execute(an, lop, ma), LyDo.CHUA_CHAM_BUOC_KET_LUAN);
@@ -212,7 +225,7 @@ class NopBaiUseCaseTest {
 
     @Test
     void coLopDocLucGoiTatThiKhongCoLoiGiaiBatThiCoNhuV0() {
-        nopBuoc.execute(an, lop, ma, ketLuan());
+        lamDuBuoc();
         assertThat(nopBai.execute(an, lop, ma)).as("lớp chưa có dòng cài: tắt").isEqualTo(DAT_KHONG_LOI_GIAI);
         datCo(false);
         assertThat(nopBai.execute(an, lop, ma)).isEqualTo(DAT_KHONG_LOI_GIAI);
@@ -225,13 +238,13 @@ class NopBaiUseCaseTest {
     @Test
     void lamLaiThiLoiGiaiDongVaNopLaiNhamBaiLamMoi() {
         datCo(true);
-        nopBuoc.execute(an, lop, ma, ketLuan());
+        lamDuBuoc();
         assertThat(nopBai.execute(an, lop, ma).loiGiai()).isEqualTo(LOI_GIAI);
         Submission.DaNop daNop = daNop();
         // Nộp một bước mở bài làm mới cùng phiên bản: em đang làm lại, lời giải đóng (FR-006).
         nopBuoc.execute(an, lop, ma, dong("B.DH.TXD", "D = R"));
         assertThat(moLoiGiai.cho(daNop)).isEmpty();
-        ketQua409(() -> nopBai.execute(an, lop, ma), LyDo.CHUA_CHAM_BUOC_KET_LUAN);
+        ketQua409(() -> nopBai.execute(an, lop, ma), LyDo.CHUA_LAM_DU_BUOC);
         assertThat(trangThai()).containsExactly("DA_NOP", "DANG_LAM");
     }
 
@@ -243,19 +256,46 @@ class NopBaiUseCaseTest {
         assertThat(trangThai()).containsExactly("DANG_LAM");
     }
 
+    /**
+     * Phán quyết #142: đề đổi trong lúc nộp bài làm thứ hai chờ khóa dòng bài. Khóa bỏ qua bài làm đó (phiên bản cũ), nhưng lần
+     * nộp trước ở phiên bản cũ không phải kết quả của nó: 409 DE_DA_DOI, không phát lại DAT của bài làm đầu.
+     */
+    @Test
+    void deDoiTrongLucChoKhoaThi409DeDaDoiKhongPhatLaiLanNopCu() throws Exception {
+        lamDuBuoc();
+        assertThat(nopBai.execute(an, lop, ma)).isEqualTo(DAT_KHONG_LOI_GIAI);
+        nopBuoc.execute(an, lop, ma, dong("B.DH.TXD", "D = R"));
+        CountDownLatch daGhi = new CountDownLatch(1);
+        CompletableFuture<Void> suaDe = CompletableFuture.runAsync(() -> tx.executeWithoutResult(s -> {
+            jdbc.sql("update problems set content_hash = ? where id = ?").params("b".repeat(64), bai).update();
+            daGhi.countDown();
+            try {
+                Thread.sleep(2000);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                throw new IllegalStateException(e);
+            }
+        }));
+        assertThat(daGhi.await(20, TimeUnit.SECONDS)).isTrue();
+        ketQua409(() -> nopBai.execute(an, lop, ma), LyDo.DE_DA_DOI);
+        suaDe.get(30, TimeUnit.SECONDS);
+        assertThat(trangThai()).containsExactly("DA_NOP", "DANG_LAM");
+    }
+
     @Test
     void deDoiSauKhiNopThiLoiGiaiCuDongVaKhongPhatLaiChoDeMoi() {
         datCo(true);
-        nopBuoc.execute(an, lop, ma, ketLuan());
+        lamDuBuoc();
         assertThat(nopBai.execute(an, lop, ma).loiGiai()).isEqualTo(LOI_GIAI);
         Submission.DaNop daNop = daNop();
         doiDe();
         assertThat(moLoiGiai.cho(daNop)).isEmpty();
-        ketQua409(() -> nopBai.execute(an, lop, ma), LyDo.CHUA_CHAM_BUOC_KET_LUAN);
+        ketQua409(() -> nopBai.execute(an, lop, ma), LyDo.CHUA_LAM_DU_BUOC);
     }
 
     @Test
     void mucHieuNhanBaiDaNopTuCanCuVaPhatLaiGoiLaiCungDuKien() {
+        lamTruocKetLuan();
         mayCham.traLoi = NopBaiUseCaseTest::saiOKetLuan;
         List<BaiDaNop> daNhan = new ArrayList<>();
         CapNhatMucHieu ghiLai = b -> {
@@ -279,14 +319,14 @@ class NopBaiUseCaseTest {
             throw new IllegalStateException("mức hiểu lỗi");
         };
         NopBaiUseCase coLoi = new NopBaiUseCase(membership, baiDeLam, submissions, grades, List.of(loi), moLoiGiai, tx, clock);
-        nopBuoc.execute(an, lop, ma, ketLuan());
+        lamDuBuoc();
         assertThatThrownBy(() -> coLoi.execute(an, lop, ma)).hasMessage("mức hiểu lỗi");
         assertThat(trangThai()).containsExactly("DANG_LAM");
     }
 
     @Test
     void haiTabNopCungLucCungMotKetQua() throws Exception {
-        nopBuoc.execute(an, lop, ma, ketLuan());
+        lamDuBuoc();
         CompletableFuture<KetQuaNopBai> tab1 = CompletableFuture.supplyAsync(() -> nopBai.execute(an, lop, ma));
         CompletableFuture<KetQuaNopBai> tab2 = CompletableFuture.supplyAsync(() -> nopBai.execute(an, lop, ma));
         assertThat(List.of(tab1.get(30, TimeUnit.SECONDS), tab2.get(30, TimeUnit.SECONDS)))
@@ -325,6 +365,20 @@ class NopBaiUseCaseTest {
         assertThatThrownBy(nop).isInstanceOfSatisfying(BaiChuaNopDuocException.class, e -> assertThat(e.lyDo()).isEqualTo(lyDo));
     }
 
+    /** Bốn bước trước kết luận của khung 5 bước. */
+    private void lamTruocKetLuan() {
+        nopBuoc.execute(an, lop, ma, dong("B.DH.TXD", "D = R"));
+        nopBuoc.execute(an, lop, ma, dong("B.DH.DAOHAM", "y' = 3x^2 - 6x"));
+        nopBuoc.execute(an, lop, ma, dong("B.DH.NGHIEM", "x = 0, x = 2"));
+        nopBuoc.execute(an, lop, ma, new NopBuocRequest("B.DH.XETDAU", null,
+            List.of(new ONop("X", 0, "0"), new ONop("DAU_YPHAY", 2, "+")), null));
+    }
+
+    private void lamDuBuoc() {
+        lamTruocKetLuan();
+        nopBuoc.execute(an, lop, ma, ketLuan());
+    }
+
     private static NopBuocRequest dong(String maBuoc, String latex) {
         return new NopBuocRequest(maBuoc, List.of(new DongNop(0, latex, null)), null, null);
     }
@@ -333,6 +387,24 @@ class NopBaiUseCaseTest {
     private static NopBuocRequest ketLuan() {
         return new NopBuocRequest("B.DH.KETLUAN", List.of(new DongNop(0, "(-\\infty; 0), (2; +\\infty)", "DONG_BIEN"),
             new DongNop(1, "(0; 2)", "NGHICH_BIEN")), null, null);
+    }
+
+    /** Phong bì của bộ chấm khi thiếu dòng tập xác định ({@code services/math/app/grader.py}, nhánh {@code thieu_dong}). */
+    private static Optional<Map<String, @Nullable Object>> thieuDongTapXacDinh(Map<String, ?> y) {
+        Map<String, @Nullable Object> p = new LinkedHashMap<>();
+        p.put("cac_van_de", List.of());
+        p.put("ket_qua", "KHONG_KIEM_DUOC");
+        p.put("loai_ket_qua", "KHONG_KIEM_DUOC");
+        p.put("buoc_sai", null);
+        p.put("ma_loi", null);
+        p.put("do_tin_cay", null);
+        p.put("per_buoc", Map.of("B.DH.TXD", "KHONG_KIEM_DUOC"));
+        p.put("chuan_hoa", List.of());
+        p.put("phien_ban_chuan_hoa", "norm-0.2");
+        p.put("thong_bao", "Chưa kiểm được bước Tập xác định.");
+        p.put("chua_xong", false);
+        p.put("nop_toi", y.get("nop_toi"));
+        return Optional.of(p);
     }
 
     /** Phong bì SAI của bộ chấm ở bước kết luận, dòng 1 sai, lỗi toán (không phải dấu U). */

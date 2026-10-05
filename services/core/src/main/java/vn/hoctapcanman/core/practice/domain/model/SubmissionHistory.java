@@ -22,7 +22,8 @@ public record SubmissionHistory(UUID studentId, UUID problemId, List<Submission>
     }
 
     /**
-     * Lời giải của {@code daNop} mở được về phía bài làm (FR-006): lịch sử có đúng bài làm đó ở trạng thái đã nộp, và học
+     * Lời giải của {@code daNop} mở được về phía bài làm (FR-006): lịch sử có đúng bài làm đó, mọi trường như đã lưu (không
+     * nhận chứng nhận dựng tay mang id thật mà lớp hay phiên bản khác), ở trạng thái đã nộp, và học
      * sinh không còn bài làm đang làm nào ở cùng phiên bản nội dung, ở bất kỳ lớp nào (mở bài làm mới là đang làm lại, lời
      * giải đóng). Bài làm dở của phiên bản khác không chặn: cổng lời giải của nội dung chỉ mở cho phiên bản hiện tại. Không
      * xét cờ lớp hay phát hành.
@@ -32,7 +33,7 @@ public record SubmissionHistory(UUID studentId, UUID problemId, List<Submission>
         if (!nop.studentId().equals(studentId) || !nop.problemId().equals(problemId)) {
             throw new IllegalArgumentException("Bài làm không thuộc lịch sử này");
         }
-        boolean daNopThat = attempts.stream().anyMatch(s -> s.id().equals(nop.id()) && !s.isOpen());
+        boolean daNopThat = attempts.stream().anyMatch(s -> s.equals(nop) && !s.isOpen());
         boolean dangLamLai = attempts.stream().anyMatch(s -> s.isOpen() && s.contentVersion() == nop.contentVersion());
         return daNopThat && !dangLamLai;
     }
@@ -43,6 +44,11 @@ public record SubmissionHistory(UUID studentId, UUID problemId, List<Submission>
             .filter(s -> s.classId().equals(classId) && s.contentVersion() == contentVersion)
             .flatMap(s -> s.daNop().stream())
             .max(Comparator.comparing(Submission.DaNop::nopLuc).thenComparing(d -> d.baiLam().id()));
+    }
+
+    /** Còn bài làm đang làm ở lớp {@code classId} cho phiên bản nội dung {@code contentVersion}. */
+    public boolean dangLam(UUID classId, int contentVersion) {
+        return attempts.stream().anyMatch(s -> s.isOpen() && s.classId().equals(classId) && s.contentVersion() == contentVersion);
     }
 
     /** Còn bài làm đang làm ở lớp {@code classId} cho một phiên bản nội dung khác {@code contentVersion}: đề đã đổi khi đang làm. */

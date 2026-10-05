@@ -4,7 +4,9 @@ import java.time.Clock;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.support.TransactionTemplate;
 import vn.hoctapcanman.core.classroom.application.port.ClassMembership;
@@ -23,6 +25,7 @@ import vn.hoctapcanman.core.practice.application.service.MoLoiGiai;
 import vn.hoctapcanman.core.practice.application.service.YeuCauCham;
 import vn.hoctapcanman.core.practice.domain.model.GradeStatus;
 import vn.hoctapcanman.core.practice.domain.model.GradingResult;
+import vn.hoctapcanman.core.practice.domain.model.StepWork;
 import vn.hoctapcanman.core.practice.domain.model.Submission;
 import vn.hoctapcanman.core.practice.domain.model.SubmissionHistory;
 import vn.hoctapcanman.core.practice.domain.repository.GradingResultRepository;
@@ -34,11 +37,14 @@ import vn.hoctapcanman.core.practice.domain.repository.SubmissionRepository;
  * <ol>
  *   <li>Không phải học sinh của lớp, bài chưa phát hành ở lớp hay không chấm từng bước được: {@link BaiKhongTimThayException},
  *       cùng một lỗi như nộp bước.</li>
- *   <li>Trong một giao dịch, khóa bài làm đang làm ở phiên bản nội dung hiện tại như mọi lần ghi phần con, dựng lại yêu cầu
- *       chấm tới bước kết luận từ các bước đã lưu như {@code NopBuocUseCase} và tra phán quyết theo băm. Không có (chưa nộp
- *       bước kết luận, chấm lỗi, hay đã sửa một bước sau lần chấm đó) thì {@link BaiChuaNopDuocException}, không ghi gì.</li>
- *   <li>Không có bài làm đang làm: lần nộp mới nhất ở đúng phiên bản thì phát lại (gửi lại sau khi mất phản hồi, hai tab
- *       cùng nộp); không thì 409, {@code DE_DA_DOI} khi bài làm dở là của đề khác.</li>
+ *   <li>Trong một giao dịch, khóa bài làm đang làm ở phiên bản nội dung hiện tại như mọi lần ghi phần con. Thiếu một bước từ
+ *       bước bắt đầu tới bước kết luận thì {@code CHUA_LAM_DU_BUOC}: chỉ nộp bước kết luận thì máy chấm vẫn ghi một phán
+ *       quyết (thiếu dòng), nhưng đó không phải bài đã làm. Đủ bước thì dựng lại yêu cầu chấm tới bước kết luận từ các bước
+ *       đã lưu như {@code NopBuocUseCase} và tra phán quyết theo băm. Không có (chấm lỗi, hay đã sửa một bước sau lần chấm
+ *       đó) thì {@code CHUA_CHAM_BUOC_KET_LUAN}. Cả hai trường hợp không ghi gì.</li>
+ *   <li>Không khóa được bài làm đang làm: còn bài làm đang làm ở đúng phiên bản đã đọc (đề đổi trong lúc chờ khóa) hay ở
+ *       phiên bản khác thì {@code DE_DA_DOI}; không thì lần nộp mới nhất ở đúng phiên bản được phát lại (gửi lại sau khi mất
+ *       phản hồi, hai tab cùng nộp); chưa có thì {@code CHUA_LAM_DU_BUOC}.</li>
  *   <li>Cuối giao dịch: mọi {@link CapNhatMucHieu} (idempotent theo bài làm, nên phát lại trả đúng lần đầu).</li>
  *   <li>Sau commit: lời giải qua {@link MoLoiGiai}.</li>
  * </ol>
@@ -84,8 +90,12 @@ public class NopBaiUseCase {
     }
 
     private CoCanCu nop(Submission dangLam, BaiChoLamBai bai) {
+        List<StepWork> daLuu = submissions.steps(dangLam.id());
+        if (!daLamDuBuoc(bai, daLuu)) {
+            throw new BaiChuaNopDuocException(LyDo.CHUA_LAM_DU_BUOC);
+        }
         String bam = YeuCauCham.bam(YeuCauCham.dung(Objects.requireNonNull(bai.ham()), bai.cacBuoc(), bai.khaiBaoKetLuan(),
-            bai.buocBatDau(), bai.cacBuoc().getLast(), submissions.steps(dangLam.id())));
+            bai.buocBatDau(), bai.cacBuoc().getLast(), daLuu));
         GradingResult canCu = grades.findByRequest(dangLam.id(), bam)
             .orElseThrow(() -> new BaiChuaNopDuocException(LyDo.CHUA_CHAM_BUOC_KET_LUAN));
         // Cắt về micro giây như cột timestamptz: phát lại đọc lúc nộp từ CSDL, BaiDaNop phải y hệt lần đầu.
@@ -96,9 +106,20 @@ public class NopBaiUseCase {
 
     private CoCanCu phatLai(UUID hocSinhId, UUID lopId, BaiChoLamBai bai) {
         SubmissionHistory lichSu = submissions.history(hocSinhId, bai.problemId());
+        // lockOpen chỉ bỏ qua bài làm đang làm ở đúng phiên bản đã đọc khi đề đổi trong lúc chờ khóa: lần nộp cũ hơn của
+        // phiên bản đó không phải kết quả của bài làm này.
+        if (lichSu.dangLam(lopId, bai.phienBan())) {
+            throw new BaiChuaNopDuocException(LyDo.DE_DA_DOI);
+        }
         Submission.DaNop daNop = lichSu.daNopMoiNhat(lopId, bai.phienBan()).orElseThrow(() -> new BaiChuaNopDuocException(
-            lichSu.dangLamDeKhac(lopId, bai.phienBan()) ? LyDo.DE_DA_DOI : LyDo.CHUA_CHAM_BUOC_KET_LUAN));
+            lichSu.dangLamDeKhac(lopId, bai.phienBan()) ? LyDo.DE_DA_DOI : LyDo.CHUA_LAM_DU_BUOC));
         return new CoCanCu(daNop, grades.findById(daNop.canCuId()).orElseThrow());
+    }
+
+    private static boolean daLamDuBuoc(BaiChoLamBai bai, List<StepWork> daLuu) {
+        List<String> khung = bai.cacBuoc();
+        Set<String> daLam = daLuu.stream().map(StepWork::stepCode).collect(Collectors.toSet());
+        return daLam.containsAll(khung.subList(YeuCauCham.batDau(khung, bai.buocBatDau()), khung.size()));
     }
 
     /** Dựng chỉ từ bài làm đã nộp và căn cứ đã ghim, nên phát lại dựng ra y hệt. */

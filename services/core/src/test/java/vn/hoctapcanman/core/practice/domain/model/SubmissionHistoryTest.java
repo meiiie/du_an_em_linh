@@ -34,6 +34,20 @@ class SubmissionHistoryTest {
         assertThat(lichSu(cungIdDangLam).choMoLoiGiai(daNop)).isFalse();
     }
 
+    /** Phán quyết #142: chứng nhận dựng tay mang id thật nhưng lớp hay phiên bản khác thì không mở. */
+    @Test
+    void chungNhanLechDongDaLuuThiKhongMo() {
+        Submission.DaNop that = nop(LOP_A, 2, LUC);
+        Submission b = that.baiLam();
+        Submission.DaNop lopKhac = new Submission(b.id(), LOP_B, HS, BAI, 2, SubmissionStatus.DA_NOP, false, null, b.result(),
+            b.resultGradingId(), b.startedAt(), b.submittedAt()).daNop().orElseThrow();
+        Submission.DaNop phienBanKhac = new Submission(b.id(), LOP_A, HS, BAI, 3, SubmissionStatus.DA_NOP, false, null, b.result(),
+            b.resultGradingId(), b.startedAt(), b.submittedAt()).daNop().orElseThrow();
+        assertThat(lichSu(b).choMoLoiGiai(that)).isTrue();
+        assertThat(lichSu(b).choMoLoiGiai(lopKhac)).isFalse();
+        assertThat(lichSu(b).choMoLoiGiai(phienBanKhac)).isFalse();
+    }
+
     @Test
     void phatLaiLanNopMoiNhatCuaDungLopVaPhienBan() {
         Submission.DaNop dau = nop(LOP_A, 2, LUC);
@@ -46,6 +60,14 @@ class SubmissionHistoryTest {
         assertThat(h.daNopMoiNhat(LOP_A, 1)).contains(deCu);
         assertThat(h.daNopMoiNhat(LOP_B, 2)).contains(lopKhac);
         assertThat(h.daNopMoiNhat(LOP_A, 3)).isEmpty();
+    }
+
+    @Test
+    void dangLamChiTinhBaiLamDoCuaDungLopVaPhienBan() {
+        SubmissionHistory h = lichSu(nop(LOP_A, 2, LUC).baiLam(), Submission.open(LOP_A, HS, BAI, 1, LUC));
+        assertThat(h.dangLam(LOP_A, 1)).isTrue();
+        assertThat(h.dangLam(LOP_A, 2)).as("đã nộp, không đang làm").isFalse();
+        assertThat(h.dangLam(LOP_B, 1)).isFalse();
     }
 
     @Test

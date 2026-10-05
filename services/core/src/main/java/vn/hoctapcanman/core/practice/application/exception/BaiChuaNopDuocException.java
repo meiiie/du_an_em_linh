@@ -4,7 +4,9 @@ package vn.hoctapcanman.core.practice.application.exception;
 public class BaiChuaNopDuocException extends RuntimeException {
 
     public enum LyDo {
-        /** Bước kết luận chưa có phán quyết cho nội dung hiện tại: chưa nộp, chấm lỗi, hay đã sửa một bước sau lần chấm đó. */
+        /** Chưa có bài làm, hay bài làm thiếu một bước từ bước bắt đầu tới bước kết luận. */
+        CHUA_LAM_DU_BUOC("Em làm đủ các bước, tới bước kết luận, rồi hãy nộp bài."),
+        /** Đủ bước nhưng bước kết luận chưa có phán quyết cho nội dung hiện tại: chấm lỗi, hay đã sửa một bước sau lần chấm đó. */
         CHUA_CHAM_BUOC_KET_LUAN("Em nộp bước kết luận và chờ máy chấm xong rồi hãy nộp bài."),
         /** Bài làm dở là của đề cũ: nội dung bài đã đổi. */
         DE_DA_DOI("Đề bài vừa được cập nhật. Em làm lại theo đề mới nhé.");

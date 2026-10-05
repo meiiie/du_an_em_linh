@@ -176,10 +176,17 @@ final class KienTrucRules {
         }
     };
 
-    static final ArchRule LOI_GIAI_CHI_QUA_CUA_MO = noClasses().that()
-        .resideOutsideOfPackage("..content..").and(not(CUA_MO_LOI_GIAI))
+    private static final DescribedPredicate<JavaClass> HIEN_THUC_CONG_LOI_GIAI = new DescribedPredicate<>("lớp hiện thực cổng") {
+        @Override
+        public boolean test(JavaClass c) {
+            return c.getSimpleName().equals("LoiGiaiSauKhiNopService") && c.getPackageName().endsWith(".content.application.service");
+        }
+    };
+
+    static final ArchRule LOI_GIAI_CHI_QUA_CUA_MO = noClasses().that(not(CONG_LOI_GIAI))
+        .and(not(HIEN_THUC_CONG_LOI_GIAI)).and(not(CUA_MO_LOI_GIAI))
         .should().dependOnClassesThat(CONG_LOI_GIAI)
-        .as("Ngoài nội dung, chỉ MoLoiGiai của practice dùng cổng lời giải sau khi nộp")
+        .as("Ngoài lớp hiện thực cổng, chỉ MoLoiGiai của practice dùng cổng lời giải sau khi nộp")
         .because("FR-006, ADR 003: cổng chỉ kiểm phát hành và phiên bản; MoLoiGiai kiểm thêm đã nộp, không làm lại, cờ lớp. "
             + "Nơi gọi khác là đường tắt tới lời giải");
 

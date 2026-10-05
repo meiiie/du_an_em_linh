@@ -9,9 +9,10 @@ import vn.hoctapcanman.core.practice.domain.model.Submission;
 import vn.hoctapcanman.core.practice.domain.repository.SubmissionRepository;
 
 /**
- * Cửa duy nhất đưa lời giải mẫu tới học sinh (FR-006, ADR 003). Là nơi gọi duy nhất của cổng {@link LoiGiaiSauKhiNop} của
- * nội dung (ArchUnit {@code LOI_GIAI_CHI_QUA_CUA_MO}), và module khác không import được gói này
- * ({@code MODULE_CHI_GOI_NHAU_QUA_CONG}), nên mọi đường tới chữ lời giải đi qua đủ ba điều kiện của {@link #cho}.
+ * Cửa duy nhất đưa lời giải mẫu viết cho học sinh ra khỏi module nội dung (FR-006, ADR 003). Ngoài lớp hiện thực cổng
+ * {@link LoiGiaiSauKhiNop}, đây là lớp duy nhất dùng cổng đó (ArchUnit {@code LOI_GIAI_CHI_QUA_CUA_MO}), và module khác không
+ * import được gói này ({@code MODULE_CHI_GOI_NHAU_QUA_CONG}), nên chữ lời giải qua cổng luôn qua đủ ba điều kiện của
+ * {@link #cho}. Luật không chặn mã trong nội dung đọc thẳng kho lời giải; đường đó dành cho màn giáo viên.
  */
 @Service
 public class MoLoiGiai {

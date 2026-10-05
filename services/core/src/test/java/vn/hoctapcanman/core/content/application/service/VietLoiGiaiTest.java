@@ -42,7 +42,7 @@ class VietLoiGiaiTest {
 
     @Test
     void lechKieuKhaiBaoCuaV0ThiRongKhongDoan() {
-        // v0 sẽ in «Tập xác định: 1.» hay ném lỗi khi gọi join trên chuỗi: core không đưa chữ ép kiểu ra cho học sinh.
+        // v0 in «Tập xác định: 1.», ném lỗi khi gọi join trên chuỗi, hay bỏ cả phần kết luận khi ket_luan là mảng: core rỗng.
         assertThat(VietLoiGiai.viet("{\"TXD\": 1}", null)).isEmpty();
         assertThat(VietLoiGiai.viet("{\"TXD\": \"R\", \"y_phay_bang_0\": \"0, 2\"}", null)).isEmpty();
         assertThat(VietLoiGiai.viet("{\"TXD\": \"R\", \"ket_luan\": {\"dong_bien\": [1]}}", null)).isEmpty();
