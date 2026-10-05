@@ -30,15 +30,15 @@ Chữ đạt ≥ 4,5 : 1, thành phần giao diện ≥ 3 : 1. Số trong bảng
 | Tên | Sáng | Tối | Việc |
 | --- | --- | --- | --- |
 | `canvas` | `#FAF9F5` | `#1E1D1B` | Nền trang (Wiii `--surface`) |
-| `wash` | `#F0EEE6` | `#282724` | Thanh bên, khối phụ, ô nhập |
-| `raise` | `#FFFFFF` | `#353330` | Thẻ nổi, ngăn kéo |
+| `wash` | `#F0EEE6` | `#282724` | Thanh bên (cả khi là ngăn kéo trên điện thoại), khối phụ |
+| `raise` | `#FFFFFF` | `#353330` | Thẻ nổi, ô nhập. Không đặt `accent` hay `mark` làm chữ / biểu tượng trên `raise` tối (2,69–4,21 : 1) |
 | `line` | `#D8D5CD` | `#3A3935` | Kẻ chia 1 px (trang trí, không phải ranh giới duy nhất của một điều khiển) |
 | `line-strong` | `#8A877F` | `#82807A` | Viền ô nhập, nút phụ, ranh giới điều khiển: ≥ 3 : 1 trên `canvas`, `wash`, `raise` (WCAG 1.4.11) |
 | `ink` | `#141413` | `#E8E8E4` | Chữ chính |
 | `ink-2` | `#3D3D3A` | `#C9C8C2` | Chữ phụ đậm |
 | `muted` | `#5F5E58` | `#A8A7A2` | Chữ phụ (Wiii `--text-tertiary` chỉnh đậm cho AA) |
 | `accent` | `#C75B39` | `#C75B39` | Vạch mục đang chọn, dấu «+» của chữ hiệu (sáng) |
-| `focus` | `#C75B39` (3,63–4,21 : 1 trên `wash`, `canvas`, `raise`) | `#D78970` = `accent` 72 % pha trắng như Wiii (4,62–6,18 : 1; `#C75B39` chỉ 2,99 : 1 trên `raise` tối) | Viền focus 2 px, `outline-offset: 2px` để viền không chạm nền nút |
+| `focus` | `#C75B39` (3,63–4,21 : 1 trên `wash`, `canvas`, `raise`) | `#D78970` = `accent` 72 % pha trắng như Wiii (4,62–6,18 : 1; `#C75B39` chỉ 2,99 : 1 trên `raise` tối) | Viền focus 2 px, `outline-offset: 2px` để viền không chạm nền nút. Nút biểu tượng và chữ hiệu trong thanh trên 48 px vẽ viền vào trong (`-2px`) vì viền ngoài bị cắt ở mép màn; `focus` vẫn ≥ 3 : 1 với nền nút |
 | `action` | `#AE5630` | `#AE5630` | Nền nút chính, chữ trắng 5,03 : 1 (`#C75B39` với chữ trắng chỉ 4,21 : 1) |
 | `action-hover` | `#9A4A28`, chữ trắng 6,21 : 1 | `#C4633A`, chữ `#141413` 4,56 : 1 | Nút chính khi trỏ; trên nền tối chữ trắng chỉ 4,04 : 1 nên đổi sang chữ mực |
 | `label` | `#2C6FB0` | `#58C4DD` | Nhãn khu vực chữ hoa nhỏ giãn chữ |
@@ -46,7 +46,8 @@ Chữ đạt ≥ 4,5 : 1, thành phần giao diện ≥ 3 : 1. Số trong bảng
 | `mark` | `#B83B2E` | `#FC6255` | Bút đỏ: sai — vẫn **một** màu nhớ. Chữ `mark` chỉ trên `canvas`, `wash` (trên `raise` tối chỉ 4,21 : 1) |
 | `wait` | `#8A5A00` | `#F0AC5F` | Chờ |
 | `board` | `#1C1C1C` | `#161615` | Tấm bảng toán (luôn tối) |
-| `board-line` | `#3A3A3A` | `#34332F` | Kẻ trên bảng |
+| `board-line` | `#3A3A3A` | `#34332F` | Kẻ trang trí trên bảng (lưới đồ thị, viền tấm bảng): 1,50 / 1,43 : 1, không mang nghĩa |
+| `board-rule` | `#888888` | `#888888` | Kẻ mang nghĩa trên bảng: đường kẻ bảng xét dấu (hàng, cột điểm tới hạn), trục đồ thị. Manim `GREY_C`, 4,81 / 5,11 : 1 trên `board` |
 | `board-ink` | `#F2EFE6` | `#F2EFE6` | Chữ và công thức trên bảng |
 | `m-blue` / `m-teal` / `m-yellow` / `m-red` / `m-gold` / `m-green` | `#58C4DD` / `#5CD0B3` / `#F4D345` / `#FC6255` / `#F0AC5F` / `#83C167` | như sáng | Màu Manim, **chỉ** trên bảng: đường cong xanh, điểm đặc biệt vàng, dấu dương ngọc, dấu âm đỏ |
 
@@ -70,7 +71,7 @@ Giá trị cuối cùng là giá trị trong `apps/frontend/src/styles.css` sau 
 +--------+--------------------------------+
 ```
 
-Desktop: không top bar. Điện thoại: top bar + ngăn kéo (`raise`, bóng `lg`). Mục đang chọn: nền nhạt theo `accent` và vạch trái 3 px `accent`. Nền trang có vệt màu mờ ở góc như Wiii; chế độ tối thêm lưới mờ 32 px như thẻ thương hiệu Wiii. Bóng ba mức của Wiii chỉ cho thẻ nổi và ngăn kéo, không đặt dưới mọi thẻ. Skip `#noi-dung`.
+Desktop: không top bar. Điện thoại: top bar + ngăn kéo (cùng khối thanh bên, nền `wash`, bóng `lg`). Mục đang chọn: nền nhạt theo `accent` và vạch trái 3 px `accent`. Nền trang có vệt màu mờ ở góc như Wiii; chế độ tối thêm lưới mờ 32 px như thẻ thương hiệu Wiii. Bóng ba mức của Wiii chỉ cho thẻ nổi và ngăn kéo, không đặt dưới mọi thẻ. Skip `#noi-dung`.
 
 Thẻ không còn là đơn vị mặc định. Việc = hàng (Classroom). Bài đang làm = một phiếu (Brilliant). Thành thạo = hàng ô (Khan).
 
@@ -169,7 +170,7 @@ Nguồn: optical center ~46% từ đỉnh (bố cục in / biển hiệu); cân 
 
 ## A11y
 
-Skip link, `:focus-visible` viền 2 px màu `focus` cách 2 px, `prefers-reduced-motion`, `aria-live` khi chấm. Giữ `data-testid`. `touch-action: manipulation`.
+Skip link, `:focus-visible` viền 2 px màu `focus` cách 2 px (nút trong thanh trên 48 px: vào trong 2 px), `prefers-reduced-motion`, `aria-live` khi chấm. Giữ `data-testid`. `touch-action: manipulation`.
 
 ## Nguồn khoảng cách (không chép thương hiệu)
 
