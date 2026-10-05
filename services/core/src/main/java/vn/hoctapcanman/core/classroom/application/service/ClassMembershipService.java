@@ -49,8 +49,11 @@ public class ClassMembershipService implements ClassMembership {
     }
 
     @Override
-    public Optional<CaiDatChoHocSinh> caiDatChoHocSinh(UUID hocSinhId) {
-        return lopHoc(hocSinhId).map(lop -> new CaiDatChoHocSinh(lop, settings.findByClassId(new ClassId(lop))
+    public Optional<CaiDatChoHocSinh> caiDatChoHocSinh(UUID hocSinhId, UUID lopId) {
+        if (!laHocSinh(hocSinhId, lopId)) {
+            return Optional.empty();
+        }
+        return Optional.of(new CaiDatChoHocSinh(lopId, settings.findByClassId(new ClassId(lopId))
                 .map(ClassSettings::revealSolutionAfterSubmit)
                 .orElse(false)));
     }

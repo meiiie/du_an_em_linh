@@ -82,18 +82,23 @@ class ClassMembershipServiceTest {
     }
 
     @Test
-    void caiDatChoHocSinhChiLaCoCuaLopEmDangHocMacDinhKhongMoLoiGiai() {
+    void caiDatChoHocSinhLaCoCuaDungLopDaChonMacDinhKhongMoLoiGiai() {
         kho.save(new Enrollment(new ClassId(lopA), hs, ClassRole.STUDENT, NOW));
-        assertThat(membership.caiDatChoHocSinh(hs)).contains(new CaiDatChoHocSinh(lopA, false));
+        assertThat(membership.caiDatChoHocSinh(hs, lopA)).contains(new CaiDatChoHocSinh(lopA, false));
 
         khoCaiDat.save(ClassSettings.macDinh(new ClassId(lopA), NOW).capNhat(true, "offline", false, gv, NOW));
-        assertThat(membership.caiDatChoHocSinh(hs)).contains(new CaiDatChoHocSinh(lopA, true));
+        assertThat(membership.caiDatChoHocSinh(hs, lopA)).contains(new CaiDatChoHocSinh(lopA, true));
 
-        // Cài của lớp khác không lẫn sang; chưa ghi danh, hay chỉ là giáo viên, thì rỗng.
+        // Học sinh học hai lớp: cờ bật của lớp A không lẫn sang lớp B.
+        kho.save(new Enrollment(new ClassId(lopB), hs, ClassRole.STUDENT, NOW.plusSeconds(1)));
         khoCaiDat.save(ClassSettings.macDinh(new ClassId(lopB), NOW));
-        kho.save(new Enrollment(new ClassId(lopB), gv, ClassRole.TEACHER, NOW));
-        assertThat(membership.caiDatChoHocSinh(UUID.randomUUID())).isEmpty();
-        assertThat(membership.caiDatChoHocSinh(gv)).isEmpty();
+        assertThat(membership.caiDatChoHocSinh(hs, lopB)).contains(new CaiDatChoHocSinh(lopB, false));
+
+        // Không phải học sinh của lớp được chọn (chưa ghi danh, hay chỉ là giáo viên) thì rỗng, kể cả khi lớp bật cờ.
+        kho.save(new Enrollment(new ClassId(lopA), gv, ClassRole.TEACHER, NOW));
+        assertThat(membership.caiDatChoHocSinh(UUID.randomUUID(), lopA)).isEmpty();
+        assertThat(membership.caiDatChoHocSinh(gv, lopA)).isEmpty();
+        assertThat(membership.caiDatChoHocSinh(hs, UUID.randomUUID())).isEmpty();
     }
 
     /** Kho ghi danh trong bộ nhớ, thứ tự như adapter thật (ghi danh cũ trước). */
