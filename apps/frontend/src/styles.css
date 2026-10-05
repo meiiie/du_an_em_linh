@@ -9,7 +9,7 @@
   --raise: #ffffff;
   --line: #d8d5cd;
   /* Viền ô nhập: ≥ 3 : 1 với nền quanh ô (WCAG 1.4.11); `--line` chỉ để kẻ chia. */
-  --line-strong: #8c8981;
+  --line-strong: #8a877f;
   --ink: #141413;
   --ink-2: #3d3d3a;
   --muted: #5f5e58;
@@ -59,7 +59,7 @@
   --wash: #282724;
   --raise: #353330;
   --line: #3a3935;
-  --line-strong: #85837d;
+  --line-strong: #82807a;
   --ink: #e8e8e4;
   --ink-2: #c9c8c2;
   --muted: #a8a7a2;
