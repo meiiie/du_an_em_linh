@@ -1,0 +1,177 @@
+:host {
+  display: block;
+}
+
+h2 {
+  margin: 0;
+  font-weight: 400;
+  letter-spacing: -0.02em;
+}
+
+.dong {
+  display: block;
+}
+
+.bat-dau {
+  display: grid;
+  gap: 48px;
+  align-items: center;
+  padding-block: 96px;
+}
+
+.nho {
+  margin: 0 0 16px;
+  color: var(--muted);
+  font-size: 15px;
+}
+
+.bat-dau h2 {
+  font-size: clamp(2.25rem, 1.6rem + 2.2vw, 3rem);
+  line-height: 1.12;
+}
+
+.mo-ta {
+  max-width: 34rem;
+  margin: 24px 0 0;
+  font-size: 17px;
+  line-height: 27px;
+}
+
+.nut {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 32px;
+}
+
+.cua-so {
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--tc-the);
+}
+
+.cua-so-dau {
+  display: flex;
+  justify-content: space-between;
+  margin: 0;
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 13px;
+}
+
+ol {
+  margin: 0;
+  padding: 8px 20px 12px;
+  list-style: none;
+}
+
+li {
+  display: flex;
+  gap: 16px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--line);
+  font-size: 15px;
+  line-height: 22px;
+}
+
+li:last-child {
+  border-bottom: 0;
+}
+
+.so {
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 13px;
+}
+
+li strong {
+  display: block;
+  font-weight: 600;
+}
+
+.chon {
+  padding-block: 32px 96px;
+}
+
+.chon h2 {
+  margin-bottom: 40px;
+  font-size: clamp(1.75rem, 1.4rem + 1.2vw, 2.25rem);
+  text-align: center;
+}
+
+.hai-the {
+  display: grid;
+  gap: 24px;
+}
+
+article {
+  display: flex;
+  flex-direction: column;
+  padding: 40px;
+  border-radius: 16px;
+  background: var(--tc-kem);
+}
+
+h3 {
+  margin: 0;
+  font-size: 26px;
+  font-weight: 400;
+}
+
+article > p {
+  margin: 12px 0 0;
+  padding-bottom: 28px;
+  border-bottom: 1px solid var(--line);
+  font-size: 16px;
+}
+
+ul {
+  flex: 1;
+  margin: 24px 0 40px;
+  padding: 0;
+  list-style: none;
+}
+
+ul li {
+  padding: 6px 0 6px 22px;
+  border: 0;
+  background: no-repeat left 0.55em / 12px url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M2 6.5l2.5 2.5L10 3' fill='none' stroke='%23888888' stroke-width='1.5'/%3E%3C/svg%3E");
+  font-size: 15px;
+}
+
+article .vien {
+  width: 100%;
+}
+
+details {
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 1px solid var(--line);
+}
+
+summary {
+  min-height: var(--target);
+  font-size: 17px;
+  cursor: pointer;
+}
+
+details p {
+  max-width: 42rem;
+  margin: 8px 0 0;
+  color: var(--muted);
+  font-size: 15px;
+  line-height: 24px;
+}
+
+@media (min-width: 64rem) {
+  .bat-dau {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 64px;
+  }
+
+  .hai-the {
+    grid-template-columns: 1fr 1fr;
+  }
+}

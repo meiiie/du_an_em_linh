@@ -4,64 +4,78 @@
   <div class="khung dau-trong">
     <a class="thuong-hieu" routerLink="/"><app-brand-mark /></a>
     <nav class="lien-ket" aria-label="Trang chủ">
-      <a href="#hinh">Hình</a>
+      <a href="#xem">Cách học</a>
       <a href="#nam-buoc">Năm bước</a>
+      <a href="#chon">Giáo viên</a>
     </nav>
     <app-doi-giao-dien />
-    <a appButton routerLink="/dang-nhap" data-testid="vao-hoc">Vào học</a>
+    <a class="vien vien-dam" routerLink="/dang-nhap" data-testid="vao-hoc">Vào học</a>
   </div>
 </header>
 
 <main id="noi-dung" tabindex="-1">
   <section class="khung mo-dau">
-    <div class="chu">
-      <p class="nhan-muc">Toán 12 · Đơn điệu và cực trị</p>
-      <h1><span class="dong">Nhìn tiếp tuyến, </span><span class="dong">đọc được đạo hàm.</span></h1>
-      <p class="phu">Phiếu năm bước. Gia sư sửa bài, không đưa đáp án.</p>
-      <a appButton routerLink="/dang-nhap" class="nut-lon">Vào học</a>
+    <a class="huy-hieu" href="#nam-buoc"
+      ><span class="so">Toán 12</span>Đơn điệu và cực trị<span class="mui" aria-hidden="true">↓</span></a
+    >
+    <h1>
+      <span class="dong">Học toán theo từng bước. </span>
+      <span class="dong"
+        >Tự mình <span class="sr-only">{{ dongTu[0] }}.</span
+        ><span class="xoay" aria-hidden="true">
+          @for (t of dongTu; track t; let i = $index) {
+            <span [class.hien]="i === viTri()"><span class="gach">{{ t }}</span>.</span>
+          }
+        </span></span
+      >
+    </h1>
+    <p class="mo-ta">Phiếu năm bước cho Toán 12. Gia sư AI chỉ ra chỗ sai, không đưa đáp án.</p>
+    <div class="nut">
+      <a class="vien vien-dam" routerLink="/dang-nhap">Vào học</a>
+      <a class="vien vien-kem" href="#xem">Xem cách học</a>
     </div>
-    <app-minh-hoa-dao-ham />
+    <p class="ghi-chu">Bản thử nghiệm · Một chủ đề · <a href="#truoc-khi-dung">Trước khi dùng</a></p>
   </section>
 
-  <section class="ba-viec" aria-label="Việc trang này làm">
-    <dl class="khung">
-      <div>
-        <dt>Năm bước</dt>
-        <dd>Từ tập xác định tới kết luận.</dd>
-      </div>
-      <div>
-        <dt>Một chủ đề</dt>
-        <dd>Đơn điệu và cực trị, Toán 12.</dd>
-      </div>
-      <div>
-        <dt>Không đáp án</dt>
-        <dd>Gia sư chỉ sửa bài.</dd>
-      </div>
-    </dl>
+  <section id="xem" class="khung xem">
+    <app-canh-lam-viec />
   </section>
 
-  <section id="nam-buoc" class="khung phieu">
-    <div>
-      <p class="nhan-muc">Cách làm</p>
-      <h2>Làm trên phiếu</h2>
-      <p class="phu">Học sinh viết từng bước. Đồ thị của bài không mở trước kết luận.</p>
-    </div>
-    <ol>
-      @for (b of namBuoc; track b.so) {
-        <li><span class="so">{{ b.so }}</span>{{ b.ten }}</li>
-      }
-    </ol>
-  </section>
+  <div class="khung"><app-phan-bat-dau /></div>
 </main>
 
-<section class="cuoi" aria-label="Vào học">
-  <div class="khung cuoi-trong">
-    <p>Vào làm một bài.</p>
-    <a appButton routerLink="/dang-nhap">Vào học</a>
-  </div>
-</section>
+<app-dai-bang [chay]="chay()" />
 
-<footer class="khung chan">
-  <span>MathL+ · MIT</span>
-  <a href="https://github.com/meiiie/du_an_em_linh">GitHub</a>
+<footer class="chan">
+  <div class="khung chan-tren">
+    <div class="chan-hieu">
+      <app-brand-mark size="md" />
+      <p>Học toán từng bước, với gia sư không đưa đáp án.</p>
+      <app-doi-giao-dien />
+    </div>
+    <nav class="cot" aria-label="Chân trang">
+      <div>
+        <p>Học</p>
+        <a href="#xem">Cách học</a>
+        <a href="#nam-buoc">Năm bước</a>
+        <a routerLink="/dang-nhap">Vào học</a>
+      </div>
+      <div>
+        <p>Giáo viên</p>
+        <a href="#chon">Chuẩn bị lớp</a>
+        <a routerLink="/dang-nhap">Vào lớp</a>
+      </div>
+      <div>
+        <p>Dự án</p>
+        <a href="https://github.com/meiiie/du_an_em_linh">GitHub</a>
+        <a href="https://github.com/meiiie/du_an_em_linh/blob/main/LICENSE">Giấy phép MIT</a>
+      </div>
+    </nav>
+  </div>
+  <div class="khung chan-duoi">
+    <p>Các hình trên trang minh họa cách học, không phải bài làm của học sinh.</p>
+    <button type="button" class="vien vien-vien" (click)="tamDung.set(!tamDung())">
+      {{ tamDung() ? 'Tiếp tục chuyển động' : 'Tạm dừng chuyển động' }}
+    </button>
+  </div>
 </footer>

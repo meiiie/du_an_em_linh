@@ -3,26 +3,21 @@
   min-width: 0;
 }
 
-.bang {
+figure {
   margin: 0;
-  padding: var(--space-5) var(--space-5) var(--space-4);
-  border: 1px solid var(--board-line);
-  border-radius: var(--radius-card);
-  background: var(--board);
   color: var(--board-ink);
-  box-shadow: var(--shadow-lg);
   color-scheme: dark;
 }
 
 .cong-thuc {
-  font-size: 1.75rem;
+  font-size: 1.375rem;
 }
 
 svg {
   display: block;
   width: 100%;
   height: auto;
-  margin-top: var(--space-4);
+  margin-top: var(--space-2);
   touch-action: none;
   cursor: grab;
 }
@@ -105,11 +100,4 @@ input {
   margin: var(--space-2) 0 0;
   accent-color: var(--m-yellow);
   cursor: pointer;
-}
-
-.chu-thich {
-  margin: var(--space-3) 0 0;
-  color: var(--muted);
-  font-size: 14px;
-  line-height: 22px;
 }

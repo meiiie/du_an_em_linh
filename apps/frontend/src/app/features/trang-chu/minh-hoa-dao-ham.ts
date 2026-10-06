@@ -30,14 +30,14 @@ const LUOI_DOC = [-4, -3, -2, -1, 1, 2, 3, 4].map(sx);
 const LUOI_NGANG = [-1, 1].map(sy);
 
 /**
- * Hình trên trang công khai, vẽ trên tấm bảng 3b1b: kéo điểm (chuột, chạm) hay thanh trượt (bàn phím) đổi `x`; tiếp
- * tuyến và `y′` tính lại từ `x`. Không gắn nhãn cực trị (docs/DESIGN.md).
+ * Hình trên trang công khai, đặt trong thẻ nền `--board` (3b1b): kéo điểm (chuột, chạm) hay thanh trượt (bàn phím)
+ * đổi `x`; tiếp tuyến và `y′` tính lại từ `x`. Không gắn nhãn cực trị (docs/DESIGN.md).
  */
 @Component({
   selector: 'app-minh-hoa-dao-ham',
   imports: [Katex],
   template: `
-    <figure class="bang" id="hinh">
+    <figure>
       <app-katex class="cong-thuc" khoi latex="y = \\dfrac{2x}{x^{2} + 1}" translate="no" />
       <svg
         [attr.viewBox]="'0 0 ' + w + ' ' + h"
@@ -75,7 +75,6 @@ const LUOI_NGANG = [-1, 1].map(sy);
         (input)="x.set(+$any($event.target).value)"
       />
     </figure>
-    <p class="chu-thich">Đạo hàm là hệ số góc của tiếp tuyến tại điểm đó. Kéo điểm để xem.</p>
   `,
   styleUrl: './minh-hoa-dao-ham.css',
 })
