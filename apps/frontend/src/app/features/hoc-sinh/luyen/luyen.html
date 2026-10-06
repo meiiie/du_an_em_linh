@@ -27,9 +27,10 @@
       [attr.data-buoc-bat-dau]="b.buocBatDau ?? b.cacBuoc[0]?.maBuoc"
     >
       <header class="de">
-        <p class="nhan-muc">{{ b.tenKyNang }} · {{ tenMuc[b.muc4] }}</p>
-        <p class="cau-hoi">{{ b.de.text }}</p>
-        <app-katex bang [latex]="hamLatex(b.de.latex)" />
+        <p class="nhan-muc">{{ tenMuc[b.muc4] }}</p>
+        <p class="ky-nang">{{ b.tenKyNang }}</p>
+        <p class="cau-hoi">{{ thanDe(b.de.text) }}</p>
+        <app-katex bang [latex]="deBang(b.de.latex)" />
         @if (deChoSan()) {
           <p class="phu" data-testid="de-cho-san">
             Đề đã cho sẵn: {{ deChoSan() }}. Em bắt đầu từ bước {{ b.cacBuoc[buoc()]?.ten?.toLowerCase() }}.
@@ -171,7 +172,7 @@
               }
             </fieldset>
 
-            <div class="phan-hoi-vung" aria-live="polite">
+            <div #vungPhanHoi class="phan-hoi-vung" aria-live="polite">
               @if (ketQuaHien(); as kq) {
                 <p id="phan-hoi" class="phan-hoi" [attr.data-kq]="kq.ketQua" data-testid="cham-thong-bao">{{ kq.thongBao }}</p>
               } @else if (vuaDat(); as ten) {

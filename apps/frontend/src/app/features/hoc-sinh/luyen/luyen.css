@@ -32,8 +32,15 @@
 }
 
 .de .nhan-muc,
+.ky-nang,
 .cau-hoi {
   margin: 0;
+}
+
+.ky-nang {
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 26px;
 }
 
 .cau-hoi {
@@ -104,6 +111,11 @@
 .buoc[data-tt='sai'] .so {
   border-color: var(--mark);
   color: var(--mark);
+}
+
+.buoc[aria-current][data-tt='sai'] .so {
+  background: var(--mark);
+  color: var(--raise);
 }
 
 .buoc[data-tt='de-cho'] {
@@ -203,6 +215,10 @@
   color: var(--ink);
   font: inherit;
   font-size: 16px;
+}
+
+.phan-hoi-vung {
+  scroll-margin-bottom: calc(6rem + env(safe-area-inset-bottom));
 }
 
 .phan-hoi-vung:empty {

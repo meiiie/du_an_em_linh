@@ -1,5 +1,7 @@
+/* Mục lưới của phiếu: không cho bảng rộng đẩy cả trang tràn ngang, bảng cuộn trong `.cuon`. */
 :host {
   display: block;
+  min-width: 0;
 }
 
 .them {

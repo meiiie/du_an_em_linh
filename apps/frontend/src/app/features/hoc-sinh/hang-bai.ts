@@ -12,6 +12,21 @@ export function hamLatex(latex: string): string {
   return !tho || tho.includes('=') ? tho : `y = ${tho}`;
 }
 
+/** Công thức đề trên tấm bảng: mỗi vế ngăn bởi `,\quad` một dòng, để đề dài không tràn ngang trên điện thoại. */
+export function deBang(latex: string): string {
+  const ve = latex.split(String.raw`,\quad`).map(hamLatex);
+  return ve.length > 1 ? String.raw`\begin{gathered}` + ve.join(' \\\\ ') + String.raw`\end{gathered}` : ve[0];
+}
+
+/**
+ * Câu đề bỏ công thức đứng cuối câu (đã vẽ trên tấm bảng), như `thanDe` của v0. Chỉ bỏ khi công thức là phần cuối câu:
+ * đề kiểu «Cho hàm số y = … có đạo hàm …. Dựa vào …» giữ nguyên.
+ */
+export function thanDe(text: string): string {
+  const gon = text.replace(/\s*y\s*=\s*[^.]*\.?\s*$/, '');
+  return gon === text ? text : gon.replace(/[\s.,;:]+$/, '') || 'Xét tính đơn điệu của hàm số';
+}
+
 export function chuTrangThai(b: BaiCuaHocSinh): string {
   if (b.trangThai === 'DANG_LAM') return `Đang làm ${b.soBuocDat}/${b.soBuoc}`;
   if (b.trangThai === 'CHUA_LAM') return 'Chưa làm';

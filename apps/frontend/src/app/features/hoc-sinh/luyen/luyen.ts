@@ -18,7 +18,7 @@ import { API_HS, ChiTietBai, KetQuaBuoc, KetQuaCham, KetQuaNop, NopBuoc, TEN_MUC
 import { Katex } from '../../../shared/toan/katex';
 import { OCongThuc } from '../../../shared/toan/o-cong-thuc';
 import { Button } from '../../../shared/ui/button';
-import { hamLatex } from '../hang-bai';
+import { deBang, thanDe } from '../hang-bai';
 import { BangXetDau, SuKienO } from './bang-xet-dau';
 import { DAO_HAM, KET_LUAN, Mui, NGHIEM, NhapPhieu, nhapTuBaiLam, oKetLuan, TXD, XET_DAU, yeuCauNop } from './phieu';
 
@@ -58,10 +58,12 @@ export class Luyen {
   private readonly http = inject(HttpClient);
   private readonly injector = inject(Injector);
   private readonly tieuDe = viewChild<ElementRef<HTMLElement>>('tieuDe');
+  private readonly vungPhanHoi = viewChild<ElementRef<HTMLElement>>('vungPhanHoi');
 
   protected readonly bai = httpResource<ChiTietBai>(() => API_HS.chiTietBai(this.maBai()));
   protected readonly tenMuc = TEN_MUC;
-  protected readonly hamLatex = hamLatex;
+  protected readonly deBang = deBang;
+  protected readonly thanDe = thanDe;
   protected readonly ma = { TXD, DAO_HAM, NGHIEM, XET_DAU, KET_LUAN };
 
   protected readonly khongTimThay = computed(() => (this.bai.error() as HttpErrorResponse | undefined)?.status === 404);
@@ -263,9 +265,12 @@ export class Luyen {
         this.vuaDat.set(buoc.ten);
         this.buoc.update((i) => i + 1);
         this.duaTieuDiem();
+      } else {
+        this.hienPhanHoi();
       }
     } catch (e) {
       this.loiGui.set(loiDeDoc(e, 'Chưa gửi được bài làm. Kiểm tra kết nối rồi bấm «Kiểm tra» lại.'));
+      this.hienPhanHoi();
     } finally {
       this.dangGui.set(false);
     }
@@ -280,6 +285,7 @@ export class Luyen {
       this.ketQuaNop.set(await firstValueFrom(this.http.post<KetQuaNop>(API_HS.nopBai(b.maBai), {})));
     } catch (e) {
       this.loiGui.set(loiDeDoc(e, 'Chưa nộp được bài. Kiểm tra kết nối rồi thử lại.'));
+      this.hienPhanHoi();
     } finally {
       this.dangGui.set(false);
     }
@@ -287,6 +293,11 @@ export class Luyen {
 
   private sua(f: (n: NhapPhieu) => NhapPhieu): void {
     this.nhap.update((n) => (n ? f(n) : n));
+  }
+
+  /** Câu chấm nằm dưới các ô: trên điện thoại cuộn tới nó, kẻo thanh «Kiểm tra» dính đáy che mất. */
+  private hienPhanHoi(): void {
+    afterNextRender(() => this.vungPhanHoi()?.nativeElement.scrollIntoView?.({ block: 'nearest' }), { injector: this.injector });
   }
 
   /** Đổi bước thì đưa tiêu điểm về tiêu đề bước, để trình đọc màn hình đọc bước mới. */

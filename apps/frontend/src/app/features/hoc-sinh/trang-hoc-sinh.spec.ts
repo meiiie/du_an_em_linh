@@ -61,7 +61,7 @@ describe('TrangHocSinh', () => {
     const t = await mo();
     t.http.expectOne({ method: 'GET', url: API_HS.bai }).flush(BAI);
     await t.fixture.whenStable();
-    expect(t.chu('.ke-tiep .cau-hoi')).toBe(BAI[1].deBai);
+    expect(t.chu('.ke-tiep .cau-hoi')).toBe('Tìm các khoảng đồng biến, nghịch biến và cực trị của hàm số');
     expect(t.chu('.tien-do span')).toBe('3/5 bước · Vận dụng');
     expect(t.el.querySelector('[data-testid=lam-buoc-tiep]')!.getAttribute('href')).toBe('/hs/luyen/GEN-bac_ba-11');
     expect([...t.el.querySelectorAll('.tt')].map((e) => e.textContent!.trim())).toEqual(['Đạt', 'Đang làm 3/5', 'Chưa làm']);
