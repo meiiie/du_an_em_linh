@@ -56,6 +56,13 @@ def kiem_dong_cong_thuc(body: JobIn) -> dict:
     return run_sympy_job("kiem_dong_cong_thuc", data, timeout=int(data.get("timeout_s") or 20))
 
 
+@v1.post("/kiem-loi-giang")
+def kiem_loi_giang(body: JobIn) -> dict:
+    # ADR 013: cổng công thức cho câu gia sư, chạy sau /v1/filter; lỗi hay hết giờ thì không có `cau_sach` (đóng mặc định)
+    data = _payload(body)
+    return run_sympy_job("kiem_loi_giang", data, timeout=int(data.get("timeout_s") or 12))
+
+
 @v1.post("/extract")
 def trich_pdf(body: JobIn) -> dict:
     data = _payload(body)

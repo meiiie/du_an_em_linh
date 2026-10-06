@@ -52,6 +52,9 @@ def _run(kind, payload):
         # ADR 013: kiểm từng dòng bảng công thức lúc khóa (tầng 1 máy kiểm, tầng 2 tài liệu được phép)
         from app.dong_cong_thuc import kiem_dong_cong_thuc
         return kiem_dong_cong_thuc(payload)
+    if kind == "kiem_loi_giang":
+        from app.loi_giang import kiem_loi_giang
+        return kiem_loi_giang(payload)
     if kind == "spin":
         time.sleep(float(payload.get("giay") or 30))
         return {"ok": True}
