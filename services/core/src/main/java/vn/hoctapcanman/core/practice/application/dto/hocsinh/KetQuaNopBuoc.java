@@ -1,4 +1,4 @@
-package vn.hoctapcanman.core.practice.application.dto;
+package vn.hoctapcanman.core.practice.application.dto.hocsinh;
 
 import java.util.List;
 import org.jspecify.annotations.Nullable;

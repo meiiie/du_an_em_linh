@@ -13,8 +13,8 @@ import java.util.UUID;
 import java.util.stream.Stream;
 import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Test;
-import vn.hoctapcanman.core.practice.application.dto.KetQuaNopBuoc;
-import vn.hoctapcanman.core.practice.application.dto.ViTriSai;
+import vn.hoctapcanman.core.practice.application.dto.hocsinh.KetQuaNopBuoc;
+import vn.hoctapcanman.core.practice.application.dto.hocsinh.ViTriSai;
 import vn.hoctapcanman.core.practice.domain.model.GradeStatus;
 import vn.hoctapcanman.core.practice.domain.model.GradingResult;
 

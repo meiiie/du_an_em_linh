@@ -33,6 +33,9 @@ public interface ProblemRepository {
     /** Như {@link #findReleasedInClass(UUID, String)}, kèm phiên bản nội dung đọc trong cùng câu lệnh (cho bài làm). */
     Optional<ReleasedProblem> findReleasedForWork(UUID classId, String code);
 
+    /** Mọi bài đang phát hành ở lớp {@code classId} kèm phiên bản nội dung, theo mã bài; một câu lệnh. */
+    List<ReleasedProblem> findReleasedForWork(UUID classId);
+
     /**
      * Phiên bản nội dung hiện tại của bài ({@code problems.content_version}, CSDL tăng mỗi khi đề, lời giải hay thang gợi ý
      * đổi). Lượt kiểm bài ghi phiên bản này ({@code VerificationRun.forProblem}).

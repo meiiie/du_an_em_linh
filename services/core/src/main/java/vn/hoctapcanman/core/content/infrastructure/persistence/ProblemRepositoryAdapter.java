@@ -22,6 +22,11 @@ public class ProblemRepositoryAdapter implements ProblemRepository {
     private static final String COT = """
             id, code, skill_code, extra_skill_codes, level4, level3, bloom_level, difficulty, statement_text, statement_latex,
             function_sympy, answer_form, start_step, origin, content_hash, created_by, created_at, updated_at""";
+    /** Bài đang phát hành ở lớp {@code :lop}, phiên bản nội dung và chủ đề: một câu lệnh, cùng một ảnh chụp với phát hành. */
+    private static final String DANG_PHAT_HANH = "select " + COT
+        + ", content_version, (select k.topic_code from skills k where k.code = p.skill_code) topic_code " + """
+         from problems p where exists (
+            select 1 from problem_releases r where r.problem_id = p.id and r.class_id = :lop and r.status = 'DA_PHAT_HANH')""";
 
     private final JdbcClient jdbc;
 
@@ -92,12 +97,18 @@ public class ProblemRepositoryAdapter implements ProblemRepository {
     @Override
     public Optional<ReleasedProblem> findReleasedForWork(UUID classId, String code) {
         // Một câu lệnh: bài, phiên bản nội dung, chủ đề và phát hành cùng một ảnh chụp.
-        return jdbc.sql("select " + COT + ", content_version, (select k.topic_code from skills k where k.code = p.skill_code) topic_code "
-                + """
-                 from problems p where code = :code and exists (
-                    select 1 from problem_releases r where r.problem_id = p.id and r.class_id = :lop and r.status = 'DA_PHAT_HANH')""")
+        return jdbc.sql(DANG_PHAT_HANH + " and code = :code")
             .param("lop", classId).param("code", code)
-            .query((rs, n) -> new ReleasedProblem(bai(rs, n), rs.getInt("content_version"), rs.getString("topic_code"))).optional();
+            .query(ProblemRepositoryAdapter::dangPhatHanh).optional();
+    }
+
+    @Override
+    public List<ReleasedProblem> findReleasedForWork(UUID classId) {
+        return jdbc.sql(DANG_PHAT_HANH + " order by code").param("lop", classId).query(ProblemRepositoryAdapter::dangPhatHanh).list();
+    }
+
+    private static ReleasedProblem dangPhatHanh(ResultSet rs, int n) throws SQLException {
+        return new ReleasedProblem(bai(rs, n), rs.getInt("content_version"), rs.getString("topic_code"));
     }
 
     @Override

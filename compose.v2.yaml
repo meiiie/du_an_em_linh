@@ -1,5 +1,6 @@
 # v2 cục bộ, một lệnh: docker compose -f compose.v2.yaml up --build --wait   → http://localhost:4200
-# PostgreSQL 18 + services/core (profile dev: tài khoản thử, lớp «12A1 thử») + services/math + apps/frontend (nginx,
+# PostgreSQL 18 + services/core (profile dev: tài khoản thử, lớp «12A1 thử», nội dung chủ đề, giao bài thử bằng SQL
+# services/core/src/main/resources/du-lieu-thu/giao-bai.sql) + services/math + apps/frontend (nginx,
 # /api/ → core). Tách khỏi docker-compose.yml của v0 để không đổi cách chạy v0. Chỉ dữ liệu tổng hợp (ADR 006).
 # Mọi cổng chỉ mở trên 127.0.0.1; container không root, bỏ mọi capability, không leo quyền; log xoay vòng.
 name: hoc-toan-v2

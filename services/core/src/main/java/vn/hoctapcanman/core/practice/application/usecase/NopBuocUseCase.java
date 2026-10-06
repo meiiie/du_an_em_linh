@@ -15,9 +15,9 @@ import org.springframework.transaction.support.TransactionTemplate;
 import vn.hoctapcanman.core.classroom.application.port.ClassMembership;
 import vn.hoctapcanman.core.content.application.dto.hocsinh.BaiChoLamBai;
 import vn.hoctapcanman.core.content.application.port.BaiDeLam;
-import vn.hoctapcanman.core.practice.application.dto.KetQuaNopBuoc;
 import vn.hoctapcanman.core.practice.application.dto.NopBuocRequest;
 import vn.hoctapcanman.core.practice.application.dto.SuKienNop;
+import vn.hoctapcanman.core.practice.application.dto.hocsinh.KetQuaNopBuoc;
 import vn.hoctapcanman.core.practice.application.exception.BaiKhongTimThayException;
 import vn.hoctapcanman.core.practice.application.port.MayCham;
 import vn.hoctapcanman.core.practice.application.service.DocKetQuaCham;
@@ -48,7 +48,7 @@ import vn.hoctapcanman.core.practice.domain.repository.SubmissionRepository;
  *   <li>Gọi dịch vụ toán ngoài giao dịch (không giữ khóa dòng trong lúc chờ tới 12 s), rồi ghi kết quả. Dịch vụ toán lỗi
  *       thì {@code KHONG_CHAM_DUOC}, không bao giờ là đạt; nộp lại sẽ chấm lại.</li>
  * </ol>
- * Chưa làm ở đây: cập nhật mức (mastery), đếm kẹt và đề xuất gửi thầy cô (tutor), giới hạn tần suất (web, T021).
+ * Chưa làm ở đây: cập nhật mức (mastery), đếm kẹt và đề xuất gửi thầy cô (tutor), giới hạn tần suất (web, T021b).
  */
 @Service
 public class NopBuocUseCase {
@@ -100,7 +100,7 @@ public class NopBuocUseCase {
                 }
             }
         }
-        List<InputEvent> suKien = suKien(yeuCau.suKien());
+        List<InputEvent> suKien = suKien(yeuCau.suKien(), bai.cacBuoc());
         Instant moLuc = clock.instant();
         DaLuu daLuu = Objects.requireNonNull(tx.execute(s -> {
             Submission baiLam = submissions.openOrGet(Submission.open(lopId, hocSinhId, bai.problemId(), bai.phienBan(), moLuc));
@@ -134,17 +134,23 @@ public class NopBuocUseCase {
     private static StepWork buoc(NopBuocRequest yeuCau) {
         List<StepLine> dong = yeuCau.dong() == null ? List.of()
             : yeuCau.dong().stream().map(d -> new StepLine(d.dong(), d.latex(), d.loai())).toList();
-        SignTable bang = yeuCau.bang() == null ? null
+        SignTable bang = yeuCau.bang() == null || yeuCau.bang().isEmpty() ? null
             : new SignTable(BANG_XET_DAU, yeuCau.bang().stream().map(o -> new TableCell(o.hang(), o.k(), o.giaTri())).toList());
         return new StepWork(yeuCau.maBuoc(), dong, bang);
     }
 
-    private static List<InputEvent> suKien(@Nullable List<SuKienNop> suKien) {
+    private static List<InputEvent> suKien(@Nullable List<SuKienNop> suKien, List<String> khung) {
         if (suKien == null) {
             return List.of();
         }
         if (suKien.size() > TOI_DA_SU_KIEN) {
             throw new IllegalArgumentException("Quá nhiều sự kiện nhập trong một lần nộp (tối đa " + TOI_DA_SU_KIEN + ")");
+        }
+        // Cột step_code là khóa ngoại tới step_templates: bước lạ phải là 400 ở đây, không phải lỗi ghi 500 trong giao dịch.
+        for (SuKienNop e : suKien) {
+            if (!khung.contains(e.maBuoc())) {
+                throw new IllegalArgumentException("Sự kiện nhập của bước không thuộc khung của bài: " + e.maBuoc());
+            }
         }
         // Thời điểm cắt về micro giây như cột timestamptz, để sự kiện gửi lại so trùng được với sự kiện đã lưu.
         return suKien.stream()

@@ -79,7 +79,8 @@ description: "Danh sách việc của epic P2 — lát cắt dọc một chủ �
 
 - [x] T019 (#136) [US1] `V7__practice.sql` (V5, V6 đã dùng cho content): `assignments`, `submissions`, `submission_steps`, `submission_tables`, `submission_table_cells`, `input_events`, `grading_results`
 - [x] T020 [US1] `core/practice/`: nộp bước (idempotent), chấm qua `MathServiceClient.grade`, ghi kết quả; nộp bài; cờ mở lời giải; nghi đoán mò
-- [ ] T021 [US1] `core/practice/infrastructure/web/`: `GET /api/hs/bai`, `GET /api/hs/bai/{maBai}`, `POST …/buoc`, `POST …/nop`, `POST /api/gv/giao-bai` theo hợp đồng; `GET /api/hs/trang-hoc` phần `ten`, `soBaiGiao` (mastery, planner bổ sung phần của mình)
+- [x] T021 [US1] `core/practice/infrastructure/web/`: `GET /api/hs/bai`, `GET /api/hs/bai/{maBai}`, `POST …/buoc`, `POST …/nop` theo hợp đồng (§Làm bài); giao bài thử của profile `dev` bằng SQL (`du-lieu-thu/giao-bai.sql`)
+- [ ] T021b [US1] `core/practice/infrastructure/web/`: `POST /api/gv/giao-bai` theo hợp đồng; `GET /api/hs/trang-hoc` phần `ten`, `soBaiGiao` (mastery, planner bổ sung phần của mình); giới hạn tần suất nộp bước như v0 (`GIOI_HAN.nopBuoc` của `apps/web/lib/gioi-han.ts`: 40 lần / 60 giây)
 - [ ] T022 [P] [US1] `core-test/practice/`: chấm sai không lộ đáp án; dịch vụ toán lỗi → `KHONG_CHAM_DUOC`; tải lại giữ bài làm; hai tab nộp cùng bước ghi một lần
 - [x] T023 [P] [US1] `core-test/practice/DoiChieuChamV0Test.java`: chấm toàn ngân hàng với bài làm mẫu, so tệp vàng do script `specs/001-lat-cat-doc/doi-chieu/cham-v0.ts` chạy trên v0 xuất ra, như T013 (SC-006)
 
@@ -132,7 +133,7 @@ description: "Danh sách việc của epic P2 — lát cắt dọc một chủ �
 
 - [ ] T041 [US3] `core/content/`: tải PDF (≤ 10 MB) → trích chữ bằng Apache PDFBox 3.0.8 trong core (research R9) → đoạn có vị trí; quyền dùng bắt buộc; `chua_ro` không làm căn cứ
 - [ ] T042 [US3] `core/content/`: bảng công thức nháp → khóa chỉ khi mọi dòng `DAT` ở tầng 1 và tầng 2 (ADR 013: đẳng thức kiểm tương đương; định lí loại đã biết kiểm ngữ nghĩa + tìm phản ví dụ), 422 kèm dòng chưa qua → phiên bản mới → đánh dấu «cũ» các kết quả kiểm trước → phát `BangCongThucDaKhoa`
-- [ ] T043 [US3] API `GET/POST /api/gv/tai-lieu`, `GET/PUT /api/gv/cong-thuc`, `POST /api/gv/cong-thuc/khoa`, `GET /api/gv/ngan-hang`, `POST /api/gv/ngan-hang/kiem` (giao bài: `POST /api/gv/giao-bai` của practice, T021)
+- [ ] T043 [US3] API `GET/POST /api/gv/tai-lieu`, `GET/PUT /api/gv/cong-thuc`, `POST /api/gv/cong-thuc/khoa`, `GET /api/gv/ngan-hang`, `POST /api/gv/ngan-hang/kiem` (giao bài: `POST /api/gv/giao-bai` của practice, T021b)
 - [ ] T044 [US3] `fe/features/giao-vien/{tai-lieu,cong-thuc,ngan-hang}/` (giữ tiêu đề v0: «Tài liệu», «Công thức», «Đề bài»)
 - [ ] T045 [P] [US3] Test: khóa bảng tạo phiên bản và «cũ»; tài liệu `chua_ro` bị bỏ qua; tài liệu vừa nạp có mặt trong kho lớp mà gia sư đọc (port của content); trích dẫn đầu–cuối do T061 kiểm (spec US3 kịch bản 5)
 
