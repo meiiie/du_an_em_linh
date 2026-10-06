@@ -1,0 +1,67 @@
+<a class="skip-link" href="#noi-dung">Bỏ qua đến nội dung</a>
+
+<header class="dau">
+  <div class="khung dau-trong">
+    <a class="thuong-hieu" routerLink="/"><app-brand-mark /></a>
+    <nav class="lien-ket" aria-label="Trang chủ">
+      <a href="#hinh">Hình</a>
+      <a href="#nam-buoc">Năm bước</a>
+    </nav>
+    <app-doi-giao-dien />
+    <a appButton routerLink="/dang-nhap" data-testid="vao-hoc">Vào học</a>
+  </div>
+</header>
+
+<main id="noi-dung" tabindex="-1">
+  <section class="khung mo-dau">
+    <div class="chu">
+      <p class="nhan-muc">Toán 12 · Đơn điệu và cực trị</p>
+      <h1><span class="dong">Nhìn tiếp tuyến, </span><span class="dong">đọc được đạo hàm.</span></h1>
+      <p class="phu">Phiếu năm bước. Gia sư sửa bài, không đưa đáp án.</p>
+      <a appButton routerLink="/dang-nhap" class="nut-lon">Vào học</a>
+    </div>
+    <app-minh-hoa-dao-ham />
+  </section>
+
+  <section class="ba-viec" aria-label="Việc trang này làm">
+    <dl class="khung">
+      <div>
+        <dt>Năm bước</dt>
+        <dd>Từ tập xác định tới kết luận.</dd>
+      </div>
+      <div>
+        <dt>Một chủ đề</dt>
+        <dd>Đơn điệu và cực trị, Toán 12.</dd>
+      </div>
+      <div>
+        <dt>Không đáp án</dt>
+        <dd>Gia sư chỉ sửa bài.</dd>
+      </div>
+    </dl>
+  </section>
+
+  <section id="nam-buoc" class="khung phieu">
+    <div>
+      <p class="nhan-muc">Cách làm</p>
+      <h2>Làm trên phiếu</h2>
+      <p class="phu">Học sinh viết từng bước. Đồ thị của bài không mở trước kết luận.</p>
+    </div>
+    <ol>
+      @for (b of namBuoc; track b.so) {
+        <li><span class="so">{{ b.so }}</span>{{ b.ten }}</li>
+      }
+    </ol>
+  </section>
+</main>
+
+<section class="cuoi" aria-label="Vào học">
+  <div class="khung cuoi-trong">
+    <p>Vào làm một bài.</p>
+    <a appButton routerLink="/dang-nhap">Vào học</a>
+  </div>
+</section>
+
+<footer class="khung chan">
+  <span>MathL+ · MIT</span>
+  <a href="https://github.com/meiiie/du_an_em_linh">GitHub</a>
+</footer>
