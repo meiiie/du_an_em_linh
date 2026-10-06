@@ -204,6 +204,48 @@ def test_toan_viet_tran_ngoai_dau_phan_cach_bi_bo(cau, doan):
     assert kq["cau_sach"] == ""
 
 
+# Ca lọt của lượt rà độc lập PR #151 (HEAD 93ad1b5): job giữ nguyên câu và /v1/filter cũng cho qua.
+@pytest.mark.parametrize("cau,doan", [
+    ("y bằng 3 x x trừ 6 x.", ["3 x x", "6 x"]),
+    ("Ta có 3 x x ‒ 6 x.", ["3 x x ‒ 6 x"]),
+    ("Ta có y ꞊ 3 x x ‒ 6 x.", ["y ꞊ 3 x x ‒ 6 x"]),
+    ("Ta có x ᐀ 2.", ["x ᐀ 2"]),
+    ("Ta có x ⹀ 2.", ["x ⹀ 2"]),
+    ("Ta có x゠2.", ["x゠2"]),
+    ("Ta có x \x00 2.", ["x \x00 2"]),
+    ("Ta có y ‐ 2 ‐ x.", ["y ‐ 2 ‐ x"]),
+    ("Ta có x 🟰 2.", ["x 🟰 2"]),
+    ("x thuộc ]0, 2[", ["]0, 2["]),
+    ("Nó đi xuống trên ]0; 2[.", ["]0; 2["]),
+    ("Đỉnh ⟨0; 2⟩, đáy ⟨2; −2⟩.", ["⟨0; 2⟩", "⟨2; −2⟩"]),
+    ("Đỉnh 〔0; 2〕 nhé.", ["〔0; 2〕"]),
+    ("Giá trị ở đáy là −2.", ["−2"]),
+    ("Đáy ở -2.", ["-2"]),
+], ids=["nhan-viet-cach", "gach-so", "bang-chu-sk", "gach-doi-canada", "gach-doi", "gach-doi-kana", "ky-tu-nul",
+        "gach-noi", "emoji-bang", "khoang-nguoc-phay", "khoang-nguoc", "ngoac-goc", "ngoac-mai-rua", "tru-unicode", "tru"])
+def test_ca_lot_ra_doc_lap_bi_bo(cau, doan):
+    kq = _chay(cau)
+    assert _pq(kq) == [(d, KPT, KKD, None) for d in doan]
+    assert len(kq["cac_cau"]) == 1
+    assert (kq["cau_sach"], kq["thay_bang_goi_y"]) == ("", True)
+
+
+def test_khoang_nguoc_khong_bi_tach_cau_o_dau_cham_phay():
+    kq = _chay("Khoảng ]0; 2[ là chỗ nó đi xuống. Em xem lại nhé.")
+    assert kq["cac_cau"] == [{"cau": "Khoảng ]0; 2[ là chỗ nó đi xuống.", "giu": False},
+                             {"cau": "Em xem lại nhé.", "giu": True}]
+    assert _pq(kq) == [("]0; 2[", KPT, KKD, None)]
+    assert kq["cau_sach"] == "Em xem lại nhé."
+
+
+def test_trich_dan_chi_co_khoang_trang_khong_phai_trich_dan():
+    bang = [dict(d, trich_dan={"tai_lieu": "  ", "doan": "p-2"}) if d["id"] == "d-2" else d for d in BANG]
+    kq = _chay("Theo [2]: $(u+v)' = u' + v'$.", bang=bang)
+    assert _pq(kq) == [("(u+v)' = u' + v'", CT, KKD, "d-2")]
+    assert kq["bieu_thuc"][0]["ly_do"] == "Khớp dòng d-2, nhưng dòng chưa có trích dẫn tài liệu."
+    assert (kq["cau_sach"], kq["thay_bang_goi_y"]) == ("", True)
+
+
 def test_ky_hieu_dung_rieng_khong_thuoc_loai_nao():
     assert _pq(_chay("Em kiểm tra lại dòng $y'$ đầu tiên nhé.")) == [("y'", KPT, KKD, None)]
 
