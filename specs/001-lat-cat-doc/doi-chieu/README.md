@@ -13,6 +13,8 @@ Tệp vàng do chính mã của v0 sinh ra, để test của core v2 so khớp: 
 | `chung.ts` | — (mô-đun) | Phần dùng chung của `xuat-v0.ts` và `cham-v0.ts`: dựng dịch vụ toán từ checkout, cắt mã v0 theo mốc, ghi nguồn git |
 | `cham-v0.ts` | — (script, T023) | Sinh tệp dưới |
 | `cham-v0.json` | `cham-v0.ts` | T023 (SC-006): `DoiChieuChamV0Test` cho 187 học sinh tổng hợp nộp từng bước trên 12 bài chấm được như lúc ghi; so yêu cầu `/v1/grade` (cây và byte Jackson đem băm), kết quả cho học sinh và hàng `grading_results` với v0 |
+| `bkt-v0.ts` | — (script, T052) | Sinh tệp dưới |
+| `bkt-v0.json` | `bkt-v0.ts` | T052 (research R7): `DoiChieuBktV0Test` cho 14 học sinh tổng hợp nộp 295 bài qua cổng `CapNhatMucHieu` thật, so thay đổi mức trả về, `mastery_states`, `mastery_events`, cảnh báo kẹt với v0 sau từng lần nộp |
 | `khoa-bang-v0.json` | `khoa-bang-v0.py` | T014: phản hồi thật của job khóa bảng (`kiem_dong_cong_thuc`) cho 6 dòng của v0 và 5 tài liệu của lớp, gửi như importer v2 gửi (thứ tự tài liệu, NFC, mỗi câu một đoạn); id ổn định: mã tài liệu, «mã#vị trí» của đoạn. Job giả của test đổi sang id thật rồi phát lại; test so loại, hai tầng, trích dẫn chính và trích dẫn thêm đã ghi của từng dòng |
 
 ## `xuat-v0.ts` (T013)
@@ -120,3 +122,32 @@ Kết quả không đạt của từng biến thể (số bài chạy):
 - **Kiểm «bước đã gõ mà chưa nộp» trong script** so thân yêu cầu với `payload()` của cùng một lần vẽ, nên không bắt được ca đó; chặn thật là phép so byte bên Java.
 - Các cột chỉ core có (`unfinished`, `normalizer_version`, `normalization`, `step_code`) được so với chính yêu cầu và phản hồi đã ghi: là kiểm ghi đọc của core, không phải so với v0.
 - Hai chốt của quy tắc dòng liên quan (vấn đề có `nguyen_nhan`, kết quả không `SAI`) chỉ có test đơn vị (`DocKetQuaChamTest`): trong tệp vàng, cả 10 lần chấm có `dong_lien_quan` đều là vấn đề gốc `SAI`.
+
+## `bkt-v0.ts` (T052)
+
+Script chạy **nguyên** mã mức hiểu của v0 trên kịch bản dựng sẵn. Không dòng nào của BKT, mức sau bài, chọn kỹ năng, đếm kẹt hay cảnh báo được gõ lại.
+
+- **Cách lấy mã.** Cắt theo mốc, bỏ kiểu, chạy trong `vm`: `DEFAULT_CFG`, `loadConfig`, `bktNext`, `clamp`, `applyMastery`, `IDX`, `mucSauBai` của `lib/learning.ts`; `laDauU`, cờ `finished` và điều kiện gọi `applyMastery` trong `nopBuoc` của `lib/actions/hs.ts`. `MUC4`, `mucFromMastery` của `lib/levels.ts` là import thật.
+- **CSDL giả.** Chỉ các lệnh `applyMastery` và `loadConfig` dùng. `mastery_config` là dòng seed.ts ghi (`data/v0/bkt.json`); `error_types`, `step_templates` như seed.ts nạp từ `data/supham/ma-loi-DH.csv` (kỹ năng chính) và `data/v0/khung-buoc.json`. Cột `real` của v0 (`mastery`, `delta`, `doTinCay`) làm tròn về float4 rồi đọc lại bằng chữ số ngắn nhất, như PostgreSQL và postgres.js: lượt sau tính trên đúng số v0 đọc lại.
+- **Kịch bản.** Mỗi kịch bản một học sinh mới nộp lần lượt các bài (kỹ năng, mức, phán quyết của bước kết luận, cờ nghi đoán mò), có bước «giáo viên xử lý cảnh báo». 8 kịch bản viết tay: lên từng nấc tới Vận dụng cao (SC-010), bài dễ hơn không đẩy lên, kẹt và cảnh báo (không ghi trùng khi đang mở, ghi lại sau khi xử lý), chọn kỹ năng theo mã lỗi (kể cả đúng ngưỡng 0,65), theo bước, mã lạ, bước ngoài khung, mã rỗng, không tính (`KHONG_KIEM_DUOC`, lỗi trình bày dấu U), nghi đoán mò, 8 mã lỗi cuối, tụt mức. 6 dãy 40 lượt giả ngẫu nhiên (mulberry32, hạt cố định).
+- **Tệp vàng.** `cau_hinh` (dòng `bkt`), `danh_muc` (mã lỗi và bước → kỹ năng), `dem` (số lần nộp, được tính, cảnh báo, đổi mức), `kich_ban`: mỗi lần nộp có đầu vào, `su_kien` (dòng `masteryEvents` v0 ghi, hay `null`), `muc_truoc`, `canh_bao` vừa ghi, `trang_thai` (mọi dòng `masteryStates` của em sau lần nộp).
+- **Nguồn.** `nguon.git` ghi blob HEAD của 8 nguồn (ba tệp v0, ba tệp dữ liệu, script, `chung.ts`); script dừng nếu nguồn nào có thay đổi chưa commit. `TepVangDoiChieuTest` so với checkout; `scripts/ci-thay-doi.mjs` bật job Core khi `learning.ts` đổi.
+
+```bash
+# từ gốc repo, Node ≥ 23.6; các nguồn phải đã commit
+node specs/001-lat-cat-doc/doi-chieu/bkt-v0.ts
+# thử kịch bản trước khi commit: không kiểm nguồn, ghi ra tệp khác
+THU=/tmp/bkt-v0.json node specs/001-lat-cat-doc/doi-chieu/bkt-v0.ts
+```
+
+### Kết quả (2026-10-06)
+
+- **14 kịch bản, 295 lần nộp:** 274 được tính (153 theo kỹ năng của bài, 57 theo mã lỗi, 49 theo bước, 15 nghi đoán mò), 21 không tính. 17 cảnh báo kẹt, 78 lần đổi mức. Tệp 458 543 byte.
+- **Chạy hai lần:** giống từng byte.
+- **Core:** `DoiChieuBktV0Test` khớp mọi lần nộp: thay đổi mức trả về, mọi dòng trạng thái (mastery tới từng bit sau khi đọc lại cột real, mức, số lượt, kẹt, mã lỗi), dòng sự kiện, cảnh báo. Gửi lại cùng bài làm trả y hệt, không ghi gì thêm.
+
+### Khác v0 có chủ đích
+
+- **Lúc tính.** v0 gọi `applyMastery` ở mỗi lần nộp bước, kể cả bước sai giữa bài. v2 tính một lần khi nộp bài, với phán quyết của bước kết luận làm căn cứ (cổng `CapNhatMucHieu` của practice), nên `DAT` luôn là xong bài. Kịch bản vì thế luôn nộp tới `B.DH.KETLUAN`.
+- **Cảnh báo trùng.** v0 không ghi `KET` khi em đang có bất kỳ cảnh báo mở nào ở kỹ năng đó (kể cả «Gửi thầy cô»); cổng `CanhBaoGiaoVien` của v2 chỉ chặn cảnh báo mở cùng loại (#81). Kịch bản chỉ có `KET`, nên hai bên trùng.
+- **Làm tròn khi ghi.** v0 gửi số thực dạng chữ thập phân ngắn nhất, PostgreSQL làm tròn chữ đó về float4; script và core làm tròn chính số thực về float4. Hai cách chỉ có thể khác khi số thực nằm sát điểm giữa hai số float4 (làm tròn kép); chưa đo trên CSDL của v0.

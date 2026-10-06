@@ -57,7 +57,7 @@ ngược lại 409 và phải kiểm lại, để không phát hành bằng phá
 
 ## practice (`V7__practice.sql`, `V8__nop_bai_co_can_cu.sql`)
 
-Số V của các migration sau content là số kế tiếp lúc merge: V5, V6 đã dùng cho content (#120, #121), practice là V7 (#87); tutor, mastery, planner lấy số kế tiếp khi làm.
+Số V của các migration sau content là số kế tiếp lúc merge: V5, V6 đã dùng cho content (#120, #121), practice là V7 (#87), V8; mastery là V9; tutor, planner lấy số kế tiếp khi làm.
 
 | Bảng | Cột chính | Ghi chú |
 | --- | --- | --- |
@@ -78,13 +78,15 @@ Số V của các migration sau content là số kế tiếp lúc merge: V5, V6 
 
 **Chuyển trạng thái của lượt gia sư:** `MOI` → `KHO` (mở kho lớp) → `GOI` (hỏi nhà) → `LOC` (lọc lộ đáp án + cổng công thức) → `XONG` hoặc `LOI` hoặc `DUNG` (học sinh dừng). Chỉ `XONG` có câu hiện cho học sinh.
 
-## mastery (`V<n>__mastery.sql`)
+## mastery (`V9__mastery.sql`)
+
+Mức hiểu theo (học sinh, kỹ năng), không theo lớp. Practice gọi cổng ra `CapNhatMucHieu` một lần khi nộp bài, trong giao dịch nộp; module mastery hiện thực nó như `applyMastery` của v0. Kỹ năng là mã chụp lại như `submissions.skill_code` (V8), không khóa ngoại sang `skills`.
 
 | Bảng | Cột chính | Ghi chú |
 | --- | --- | --- |
-| `mastery_config` | `key`, `value`, `version` | Tham số BKT của v0 (research R7) |
-| `mastery_states` | `student_id`, `skill_code`, `mastery`, `level4`, `bloom_level`, `attempts`, `stuck_counter`, `last_error_codes`, `completed_at` | `completed_at` khi đạt Vận dụng cao (FR-026) |
-| `mastery_events` | `id`, `student_id`, `skill_code`, `submission_id`, `delta`, `rule_applied`, `wrong_steps`, `error_code`, `confidence`, `guess_suspected` | |
+| `mastery_config` | `key`, `value` (`jsonb`), `version` | Tham số BKT của v0 (research R7): dòng `bkt` chép nguyên `data/v0/bkt.json`, phiên bản 1 |
+| `mastery_states` | `student_id`, `skill_code`, `mastery` (`real` như v0), `level4`, `bloom_level` (cột sinh từ `level4`), `attempts`, `stuck_counter`, `last_error_codes` (tối đa 8), `completed_at` | PK (`student_id`, `skill_code`). `completed_at` là lúc lên Vận dụng cao, có khi và chỉ khi đang ở đó (FR-026). Bloom theo thang của lab Sư phạm: Nhận biết → `NHO`, Thông hiểu → `HIEU`, Vận dụng → `VAN_DUNG`, Vận dụng cao → `PHAN_TICH` (mức thấp nhất trong ba mức Bloom mà Vận dụng cao gộp) |
+| `mastery_events` | `id`, `student_id`, `skill_code`, `submission_id` (duy nhất), `delta`, `rule_applied` (`THEO_KY_NANG_BAI`, `THEO_MA_LOI`, `THEO_BUOC`, `NGHI_DOAN_MO`), `wrong_step`, `error_code`, `confidence`, `guess_suspected`, `level4_before`, `level4_after`, `config_version`, `created_at` | Một sự kiện mỗi bài làm được tính: nộp lại phát lại `level4_before` → `level4_after`, không tính lần hai. Bài không được tính (`KHONG_KIEM_DUOC`, lỗi trình bày dấu U) không có sự kiện. Không khóa ngoại sang `submissions`: xóa lớp không xóa điều em đã học |
 | `mastery_overrides` | `id`, `student_id`, `skill_code`, `level4`, `reason`, `teacher_id`, `created_at`, `removed_at`, `removed_by` | Ghi đè mức của giáo viên (FR-034); bản ghi đang hiệu lực là bản chưa gỡ mới nhất |
 | `next_problem_overrides` | `id`, `student_id`, `problem_id`, `reason`, `teacher_id`, `created_at`, `consumed_at` | Bài kế chọn tay (FR-035); hết hiệu lực khi học sinh mở bài |
 

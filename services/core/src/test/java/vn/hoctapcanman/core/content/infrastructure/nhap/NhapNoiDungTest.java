@@ -159,10 +159,11 @@ class NhapNoiDungTest {
         soBangDaKhoaVoiPhanHoiThat(lop);
         soDanhMucVaKhoLop(lop, v0);
         // Phán quyết độc lập #135 (N4): tập bảng của CACH_KIEM không suy ra từ chính nó. Mọi bảng có dòng sau lần nhập, trừ
-        // bảng lớp do test tự ghi và lịch sử Flyway, phải đúng là các bảng đã khai: importer ghi thêm bảng thì đỏ.
+        // bảng lớp do test tự ghi, lịch sử Flyway và tham số BKT do chính V9 ghi, phải đúng là các bảng đã khai: importer ghi
+        // thêm bảng thì đỏ.
         List<String> coDong = jdbc.sql("""
                 select table_name from information_schema.tables where table_schema = 'public' and table_type = 'BASE TABLE'
-                and table_name not in ('classes', 'flyway_schema_history') order by 1""").query(String.class).list().stream()
+                and table_name not in ('classes', 'flyway_schema_history', 'mastery_config') order by 1""").query(String.class).list().stream()
             .filter(b -> jdbc.sql("select exists (select 1 from " + b + ")").query(Boolean.class).single()).toList();
         assertThat(coDong).as("bảng có dòng sau lần nhập so với bảng đã khai cách kiểm").containsExactlyInAnyOrderElementsOf(
             CACH_KIEM.keySet().stream().map(k -> k.substring(0, k.indexOf('.'))).distinct().toList());
