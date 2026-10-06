@@ -76,7 +76,7 @@ Có trong core từ T021 (`practice/infrastructure/web/HocSinhBaiController`). Q
 
 `POST /api/hs/bai/{maBai}/buoc` → 200 như bảng trên. Ví dụ `{"ketQua": "SAI", "thongBao": "…", "oSai": [{"maBuoc": "B.DH.DAOHAM", "dong": 0}], "maLoi": "ERR.DH.03"}`; đạt thì `{"ketQua": "DAT", "thongBao": "Đúng rồi.", "oSai": [], "buocKe": "B.DH.NGHIEM"}`.
 
-- 400 (`title` «Bài làm không hợp lệ»): thân không đọc được; thiếu `maBuoc`; `dong[].latex` thiếu hay dài quá 2000; `dong[].dong` âm; quá 50 dòng, 200 ô, 500 sự kiện; `bang[].giaTri` dài quá 200; bước ngoài khung của bài hay trước bước bắt đầu; bước không có dòng hay ô nào; ô kết luận đề không hỏi. `detail` nói trường hay lỗi nào. Không ghi gì.
+- 400 (`title` «Bài làm không hợp lệ»): thân không đọc được; thiếu `maBuoc`; `dong[].latex` thiếu hay dài quá 2000; `dong[].dong` âm; quá 50 dòng, 200 ô, 500 sự kiện; `bang[].giaTri` dài quá 200; bước ngoài khung của bài hay trước bước bắt đầu; bước không có dòng hay ô nào (kể cả `bang: []`); ô kết luận đề không hỏi; sự kiện nhập của bước ngoài khung hay `k` quá 32767. `detail` nói trường hay lỗi nào. Không ghi gì.
 
 `POST /api/hs/bai/{maBai}/nop` (không thân) → 200 `{"ketQua": "DAT", "mucHieu": []}`, thêm `"loiGiai": "…"` khi lớp mở. 409 (`title` «Chưa nộp được bài») kèm `lyDo`:
 

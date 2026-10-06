@@ -255,6 +255,12 @@ class HocSinhBaiApiTest {
         thanSai.put("{\"maBuoc\":", "Không đọc được bài làm gửi lên.");
         thanSai.put("{\"maBuoc\":\"B.DH.KHAC\",\"dong\":[{\"dong\":0,\"latex\":\"x\"}]}", "Bước không thuộc khung của bài: B.DH.KHAC");
         thanSai.put("{\"maBuoc\":\"B.DH.TXD\"}", "Bước B.DH.TXD không có dòng hay bảng nào");
+        thanSai.put("{\"maBuoc\":\"B.DH.XETDAU\",\"bang\":[]}", "Bước B.DH.XETDAU không có dòng hay bảng nào");
+        String dongTxd = "\"maBuoc\":\"B.DH.TXD\",\"dong\":[{\"dong\":0,\"latex\":\"D = R\"}]";
+        thanSai.put("{" + dongTxd + ",\"suKien\":[{\"maBuoc\":\"B.XX\",\"giaTriMoi\":\"1\",\"luc\":\"2026-10-06T00:00:00Z\"}]}",
+            "Sự kiện nhập của bước không thuộc khung của bài: B.XX");
+        thanSai.put("{" + dongTxd + ",\"suKien\":[{\"maBuoc\":\"B.DH.XETDAU\",\"hang\":\"X\",\"k\":40000,\"giaTriMoi\":\"1\",\"luc\":\"2026-10-06T00:00:00Z\"}]}",
+            "Bài làm gửi lên thiếu hay sai trường: suKien[0].k.");
         thanSai.forEach((than, chiTiet) -> {
             Phan p = nopBuoc(ma1, than);
             assertThat(p.status()).as(than).isEqualTo(400);
