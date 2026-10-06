@@ -215,7 +215,7 @@ class NopBaiUseCaseTest {
         mayCham.traLoi = NopBaiUseCaseTest::thieuDongTapXacDinh;
         nopBuoc.execute(an, lop, ma, dong("B.DH.TXD", ""));
         nopBuoc.execute(an, lop, ma, dong("B.DH.DAOHAM", "   "));
-        nopBuoc.execute(an, lop, ma, new NopBuocRequest("B.DH.NGHIEM", null, List.of(), null));
+        nopBuoc.execute(an, lop, ma, dong("B.DH.NGHIEM", "\t"));
         nopBuoc.execute(an, lop, ma, new NopBuocRequest("B.DH.XETDAU", null, List.of(new ONop("DAU_YPHAY", 0, " ")), null));
         nopBuoc.execute(an, lop, ma, ketLuan());
         ketQua409(() -> nopBai.execute(an, lop, ma), LyDo.CHUA_LAM_DU_BUOC);
