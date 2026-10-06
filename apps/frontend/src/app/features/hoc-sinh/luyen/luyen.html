@@ -217,7 +217,9 @@
             <a appButton routerLink="/hs">Về bài được giao</a>
           </section>
         } @else {
-          @if (nopDuoc() && !datHet()) {
+          @if (buocCanKiemLai(); as ten) {
+            <p class="phu canh-bao">Em vừa sửa bước {{ ten }}. Bấm «Kiểm tra» ở bước đó rồi hãy nộp.</p>
+          } @else if (nopDuoc() && !datHet()) {
             <p class="phu canh-bao">Còn bước chưa đạt. Nộp bây giờ thì thầy cô thấy bài như hiện tại.</p>
           }
           <div class="thanh-nop" data-testid="thanh-nop">

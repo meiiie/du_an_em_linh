@@ -28,7 +28,7 @@ interface KetQuaHien {
   readonly oSai: readonly ViTriSai[];
 }
 
-type TrangThaiBuoc = 'de-cho' | 'sai' | 'dat' | 'cho' | 'dang-lam' | 'chua-lam';
+type TrangThaiBuoc = 'de-cho' | 'sai' | 'dat' | 'cho' | 'da-sua' | 'dang-lam' | 'chua-lam';
 type SuKien = NonNullable<NopBuoc['suKien']>[number];
 
 const TEN_TRANG_THAI: Record<TrangThaiBuoc, string> = {
@@ -36,6 +36,7 @@ const TEN_TRANG_THAI: Record<TrangThaiBuoc, string> = {
   sai: 'chưa đạt',
   dat: 'đạt',
   cho: 'chờ thầy cô xem',
+  'da-sua': 'đã sửa, chưa kiểm tra lại',
   'dang-lam': 'đang làm',
   'chua-lam': 'chưa làm',
 };
@@ -137,22 +138,57 @@ export class Luyen {
     return i >= this.batDau() && i < this.buoc() ? { i, ...b.cacBuoc[i] } : undefined;
   });
 
-  protected readonly datHet = computed(() => {
+  /**
+   * Bước có nháp khác nội dung core đang lưu (em sửa sau lần gửi cuối, hay chưa gửi lần nào). Kết quả chấm cũ không còn là
+   * của nháp, và nộp bài chỉ nộp nội dung đã lưu, nên các bước này chặn «Nộp bài».
+   */
+  protected readonly daSua = computed(() => {
     const b = this.bai.value();
-    return !!b && b.cacBuoc.slice(this.batDau()).every((s) => this.ketQua()[s.maBuoc]?.ketQua === 'DAT');
+    const n = this.nhap();
+    if (!b || !n) return new Set<string>();
+    const luu = this.daLuu();
+    return new Set(
+      b.cacBuoc
+        .slice(this.batDau())
+        .map((s) => s.maBuoc)
+        .filter((ma) => luu[ma] !== JSON.stringify(yeuCauNop(ma, n, b.khaiBaoKetLuan))),
+    );
   });
 
-  /** Nộp được khi bước kết luận có phán quyết (core trả 409 nếu thiếu bước; `detail` nói em phải làm gì). */
-  protected readonly nopDuoc = computed(() => {
+  protected readonly datHet = computed(() => {
+    const b = this.bai.value();
+    return (
+      !!b && !this.daSua().size && b.cacBuoc.slice(this.batDau()).every((s) => this.ketQua()[s.maBuoc]?.ketQua === 'DAT')
+    );
+  });
+
+  private readonly ketLuanCoPhanQuyet = computed(() => {
     const kq = this.ketQua()[KET_LUAN]?.ketQua;
     return !!kq && kq !== 'KHONG_CHAM_DUOC';
+  });
+
+  /** Nộp được khi bước kết luận có phán quyết và không bước nào sửa mà chưa kiểm (core trả 409 nếu thiếu bước). */
+  protected readonly nopDuoc = computed(() => this.ketLuanCoPhanQuyet() && !this.daSua().size);
+
+  /** Tên bước em sửa sau khi đã có kết luận, để nhắc kiểm tra lại trước khi nộp. */
+  protected readonly buocCanKiemLai = computed(() => {
+    if (!this.ketLuanCoPhanQuyet()) return null;
+    return this.bai.value()?.cacBuoc.find((s) => this.daSua().has(s.maBuoc))?.ten ?? null;
   });
 
   /** Tên bước vừa đạt, để bước kế báo «Bước … đạt» (v0) cho tới khi em chấm bước này hay đổi bước. */
   protected readonly vuaDat = signal<string | null>(null);
   protected readonly dangGui = signal(false);
   protected readonly loiGui = signal<string | null>(null);
-  protected readonly ketQuaNop = signal<KetQuaNop | null>(null);
+  /** Bài đã nộp từ trước: gửi lại `POST …/nop`, core phát lại lần nộp (kết quả, mức hiểu, lời giải nếu lớp mở). */
+  private readonly nopTruoc = httpResource<KetQuaNop>(() => {
+    const b = this.bai.value();
+    return b?.baiLam.trangThai === 'DA_NOP' ? { url: API_HS.nopBai(b.maBai), method: 'POST', body: {} } : undefined;
+  });
+  protected readonly ketQuaNop = linkedSignal<KetQuaNop | undefined, KetQuaNop | null>({
+    source: () => this.nopTruoc.value(),
+    computation: (k) => k ?? null,
+  });
   protected readonly daNop = computed(() => !!this.ketQuaNop() || this.bai.value()?.baiLam.trangThai === 'DA_NOP');
   protected readonly chuDaNop = computed(() => {
     switch (this.ketQuaNop()?.ketQua ?? this.ketQua()[KET_LUAN]?.ketQua) {
@@ -176,7 +212,9 @@ export class Luyen {
     const b = this.bai.value();
     if (!b) return 'chua-lam';
     if (i < this.batDau()) return 'de-cho';
-    const kq = this.ketQua()[b.cacBuoc[i].maBuoc]?.ketQua;
+    const ma = b.cacBuoc[i].maBuoc;
+    const kq = this.ketQua()[ma]?.ketQua;
+    if (kq && this.daSua().has(ma)) return 'da-sua';
     if (kq === 'SAI') return 'sai';
     if (kq === 'DAT') return 'dat';
     if (kq === 'KHONG_KIEM_DUOC') return 'cho';
@@ -288,8 +326,8 @@ export class Luyen {
       this.daLuu.update((m) => ({ ...m, [buoc.maBuoc]: moi }));
       this.ketQua.update((m) => ({ ...m, [buoc.maBuoc]: { ketQua: kq.ketQua, thongBao: kq.thongBao, oSai: kq.oSai } }));
       this.vuaDat.set(null);
-      // Em đã bấm sang bước khác trong lúc chờ thì để em ở đó.
-      if (kq.ketQua === 'DAT' && this.buoc() === i && i < b.cacBuoc.length - 1) {
+      // Em đã bấm sang bước khác, hay sửa bước này trong lúc chờ, thì để em ở đó.
+      if (kq.ketQua === 'DAT' && this.buoc() === i && !this.daSua().has(buoc.maBuoc) && i < b.cacBuoc.length - 1) {
         this.vuaDat.set(buoc.ten);
         this.buoc.set(i + 1);
         this.duaTieuDiem();

@@ -1,5 +1,6 @@
 import { Component, computed, input, model, output, signal } from '@angular/core';
 import { ViTriSai } from '../../../api/hoc-sinh';
+import { Button } from '../../../shared/ui/button';
 import { HANG_DAU, HANG_MUI, HANG_X, Mui, XET_DAU } from './phieu';
 
 export interface SuKienO {
@@ -28,6 +29,7 @@ const MUI: { gia: Mui; chu: string; ten: string }[] = [
  */
 @Component({
   selector: 'app-bang-xet-dau',
+  imports: [Button],
   template: `
     <div class="them">
       <input
@@ -40,7 +42,7 @@ const MUI: { gia: Mui; chu: string; ten: string }[] = [
         (input)="nhapMoc.set($any($event.target).value)"
         (keydown.enter)="themMoc()"
       />
-      <button type="button" class="nut-them" data-testid="moc-them" (click)="themMoc()">Thêm mốc</button>
+      <button appButton variant="secondary" type="button" data-testid="moc-them" (click)="themMoc()">Thêm mốc</button>
     </div>
     <div class="cuon" data-testid="bang-xet-dau">
       <table>
@@ -181,8 +183,14 @@ export class BangXetDau {
     this.nhapMoc.set('');
   }
 
-  /** Bỏ một mốc làm lệch mọi chỉ số `k` sau nó, nên xóa luôn dấu và mũi tên đã chọn (như v0). */
+  /**
+   * Bỏ một mốc làm lệch mọi chỉ số `k` sau nó, nên xóa luôn dấu và mũi tên đã chọn (như v0). Mỗi ô bị xóa là một sự kiện
+   * (giá trị mới rỗng), để core đếm đủ số lần sửa khi nghi đoán mò.
+   */
   protected xoaMoc(i: number): void {
+    this.suKien.emit({ hang: HANG_X, k: i, giaTriCu: this.moc()[i], giaTriMoi: '' });
+    for (const [k, v] of Object.entries(this.dau())) this.suKien.emit({ hang: HANG_DAU, k: Number(k), giaTriCu: v, giaTriMoi: '' });
+    for (const [k, v] of Object.entries(this.mui())) this.suKien.emit({ hang: HANG_MUI, k: Number(k), giaTriCu: v, giaTriMoi: '' });
     this.moc.update((m) => m.filter((_, j) => j !== i));
     this.dau.set({});
     this.mui.set({});

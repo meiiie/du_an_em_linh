@@ -22,19 +22,6 @@
   font-size: 16px;
 }
 
-.nut-them {
-  min-height: var(--target);
-  padding: 0 var(--space-4);
-  border: 0;
-  border-radius: var(--radius);
-  background: var(--ink);
-  color: var(--raise);
-  font: inherit;
-  font-size: 15px;
-  font-weight: 600;
-  cursor: pointer;
-}
-
 /* Bảng trên tấm bảng tối 3b1b: cuộn ngang trong chính nó, cột nhãn đứng yên. */
 .cuon {
   overflow-x: auto;
@@ -134,7 +121,8 @@ td.sai {
   outline-offset: -2px;
 }
 
-@media (pointer: coarse) {
+/* Cả máy lai (cảm ứng là con trỏ phụ): nút trong bảng chạm được 44 px. */
+@media (any-pointer: coarse) {
   .chon {
     grid-template-columns: repeat(2, 44px);
   }
