@@ -49,13 +49,13 @@ class PhanQuyenDuongDanTest {
     @Test
     void giaoVienVaQuanTriKhongVaoDuocApiHocSinh() {
         for (Role role : new Role[] {Role.TEACHER, Role.SCHOOL_ADMIN, Role.ADMIN}) {
-            assertThat(mvc.get().uri("/api/hs/bai").header("Authorization", bearer(role))).as(role.name()).hasStatus(403);
+            assertThat(mvc.get().uri("/api/hs/lich").header("Authorization", bearer(role))).as(role.name()).hasStatus(403);
         }
     }
 
     @Test
     void dungVaiTroThiQuaLopQuyen() {
-        assertThat(mvc.get().uri("/api/hs/bai").header("Authorization", bearer(Role.STUDENT))).hasStatus(404);
+        assertThat(mvc.get().uri("/api/hs/lich").header("Authorization", bearer(Role.STUDENT))).hasStatus(404);
         for (Role role : new Role[] {Role.TEACHER, Role.SCHOOL_ADMIN, Role.ADMIN}) {
             assertThat(mvc.get().uri("/api/gv/lop").header("Authorization", bearer(role))).as(role.name()).hasStatus(404);
         }
@@ -64,6 +64,6 @@ class PhanQuyenDuongDanTest {
     @Test
     void chuaDangNhapThi401() {
         assertThat(mvc.get().uri("/api/gv/lop")).hasStatus(401);
-        assertThat(mvc.get().uri("/api/hs/bai")).hasStatus(401);
+        assertThat(mvc.get().uri("/api/hs/lich")).hasStatus(401);
     }
 }

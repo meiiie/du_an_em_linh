@@ -48,7 +48,7 @@ import vn.hoctapcanman.core.practice.domain.repository.SubmissionRepository;
  *   <li>Gọi dịch vụ toán ngoài giao dịch (không giữ khóa dòng trong lúc chờ tới 12 s), rồi ghi kết quả. Dịch vụ toán lỗi
  *       thì {@code KHONG_CHAM_DUOC}, không bao giờ là đạt; nộp lại sẽ chấm lại.</li>
  * </ol>
- * Chưa làm ở đây: cập nhật mức (mastery), đếm kẹt và đề xuất gửi thầy cô (tutor), giới hạn tần suất (web, T021).
+ * Chưa làm ở đây: cập nhật mức (mastery), đếm kẹt và đề xuất gửi thầy cô (tutor), giới hạn tần suất (web, T021b).
  */
 @Service
 public class NopBuocUseCase {
