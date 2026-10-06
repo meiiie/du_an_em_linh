@@ -91,6 +91,14 @@
   color: var(--pass);
 }
 
+.tt.sai {
+  color: var(--mark);
+}
+
+.tt.cho {
+  color: var(--wait);
+}
+
 .mui {
   grid-area: mui;
   width: 20px;

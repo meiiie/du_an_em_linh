@@ -1,29 +1,37 @@
-import { Component, inject } from '@angular/core';
-import { BaiHocSinh, Muc4, TEN_MUC } from './bai-mau';
+import { httpResource } from '@angular/common/http';
+import { Component, computed } from '@angular/core';
+import { API_HS, BaiCuaHocSinh, Muc4, TEN_MUC } from '../../api/hoc-sinh';
+import { Button } from '../../shared/ui/button';
 import { HangBai } from './hang-bai';
 
 const THU_TU: readonly Muc4[] = ['NHAN_BIET', 'THONG_HIEU', 'VAN_DUNG', 'VAN_DUNG_CAO'];
 
-/** `/hs/bai`: mọi bài được giao, nhóm theo bốn mức; mỗi hàng dẫn tới phiếu làm bài. */
+/** `/hs/bai`: mọi bài được giao (`GET /api/hs/bai`), nhóm theo bốn mức; mỗi hàng dẫn tới phiếu làm bài. */
 @Component({
   selector: 'app-de-bai',
-  imports: [HangBai],
+  imports: [Button, HangBai],
   template: `
-    <header class="dau-trang">
-      <h1>Đề bài</h1>
-      @if (du.laMau) {
-        <p class="mau">Bài mẫu để xem trước. Bài của lớp sẽ hiện khi thầy cô giao.</p>
+    <header class="dau-trang"><h1>Đề bài</h1></header>
+    @if (ds.isLoading() && !ds.hasValue()) {
+      <div class="dang-tai" aria-busy="true"><span class="sr-only">Đang tải đề bài</span></div>
+    } @else if (ds.error()) {
+      <div class="trong" role="alert">
+        <p>Chưa tải được đề bài. Kiểm tra kết nối rồi thử lại.</p>
+        <button appButton variant="secondary" type="button" (click)="ds.reload()">Thử lại</button>
+      </div>
+    } @else if (!nhom().length) {
+      <div class="trong"><p>Chưa có bài. Bài thầy cô giao sẽ hiện ở đây.</p></div>
+    } @else {
+      @for (n of nhom(); track n.muc) {
+        <section [attr.aria-labelledby]="'muc-' + n.muc">
+          <h2 [id]="'muc-' + n.muc" class="nhan-muc">{{ n.ten }}</h2>
+          <ul class="danh-sach">
+            @for (h of n.hang; track h.bai.maBai) {
+              <li><app-hang-bai [bai]="h.bai" [so]="h.so" /></li>
+            }
+          </ul>
+        </section>
       }
-    </header>
-    @for (n of nhom; track n.muc) {
-      <section [attr.aria-labelledby]="'muc-' + n.muc">
-        <h2 [id]="'muc-' + n.muc" class="nhan-muc">{{ n.ten }}</h2>
-        <ul class="danh-sach">
-          @for (b of n.bai; track b.ma) {
-            <li><app-hang-bai [bai]="b" [so]="n.so[$index]" /></li>
-          }
-        </ul>
-      </section>
     }
   `,
   styles: `
@@ -34,10 +42,13 @@ const THU_TU: readonly Muc4[] = ['NHAN_BIET', 'THONG_HIEU', 'VAN_DUNG', 'VAN_DUN
     h1 {
       margin: 0;
     }
-    .mau {
-      margin: var(--space-2) 0 0;
-      color: var(--muted);
-      font-size: 14px;
+    .dang-tai {
+      height: 220px;
+      border-radius: var(--radius-card);
+      background: var(--wash);
+    }
+    .trong .btn {
+      margin-top: var(--space-3);
     }
     .danh-sach {
       margin: 0;
@@ -54,11 +65,13 @@ const THU_TU: readonly Muc4[] = ['NHAN_BIET', 'THONG_HIEU', 'VAN_DUNG', 'VAN_DUN
   `,
 })
 export class DeBai {
-  protected readonly du = inject(BaiHocSinh);
-  protected readonly nhom = THU_TU.map((muc) => ({
-    muc,
-    ten: TEN_MUC[muc],
-    bai: this.du.bai.filter((b) => b.muc === muc),
-    so: this.du.bai.flatMap((b, i) => (b.muc === muc ? [i + 1] : [])),
-  })).filter((n) => n.bai.length > 0);
+  protected readonly ds = httpResource<BaiCuaHocSinh[]>(() => API_HS.bai);
+  protected readonly nhom = computed(() => {
+    const bai = this.ds.value() ?? [];
+    return THU_TU.map((muc) => ({
+      muc,
+      ten: TEN_MUC[muc],
+      hang: bai.flatMap((b, i) => (b.muc4 === muc ? [{ bai: b, so: i + 1 }] : [])),
+    })).filter((n) => n.hang.length > 0);
+  });
 }
