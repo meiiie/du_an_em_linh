@@ -59,6 +59,11 @@ class HocSinhBaiApiTest {
              {"maBuoc":"B.DH.XETDAU","ten":"Xét dấu","viec":"Xét dấu y′ và chiều biến thiên"},
              {"maBuoc":"B.DH.KETLUAN","ten":"Kết luận","viec":"Kết luận khoảng đơn điệu và cực trị"}]""";
     private static final String KHONG_CO_BAI = "Bài chưa mở hoặc không chấm được.";
+    /** Bài đầu tiên của em, đạt, ở bài mức Thông hiểu: BKT của v0 đưa mastery 0,3 lên 0,6995 và mức lên đúng một nấc. */
+    private static final String NOP_DAT_LEN_THONG_HIEU = """
+            {"ketQua":"DAT","mucHieu":[{"kyNang":"T12.DH.02","muc4Truoc":"NHAN_BIET","muc4Sau":"THONG_HIEU"}]}""";
+    private static final String TRANG_HOC_TRONG = """
+            {"ten":"Người thử","soKyNang":[],"hoanThanh":{"kyNang":[],"chuDe":[]}}""";
 
     @Autowired
     private MockMvcTester mvc;
@@ -165,8 +170,7 @@ class HocSinhBaiApiTest {
             {"ketQua":"DAT","thongBao":"Đúng rồi.","oSai":[],"buocKe":"B.DH.NGHIEM"}""");
         lamTiepToiKetLuan(ma1);
         assertThat(soBuocDat(ma1)).isEqualTo(5);
-        assertJson(nopBai(ma1), """
-            {"ketQua":"DAT","mucHieu":[]}""");
+        assertJson(nopBai(ma1), NOP_DAT_LEN_THONG_HIEU);
         assertJson(get("/api/hs/bai", an), "[%s, %s]".formatted(dongDanhSach(ma2, null, "CHUA_LAM", 0, null),
             dongDanhSach(ma1, "\"2026-10-13T08:00:00Z\"", "DA_NOP", 5, "\"DAT\"")));
 
@@ -174,6 +178,24 @@ class HocSinhBaiApiTest {
         nopBuoc(ma1, dong("B.DH.TXD", "D = R", null));
         assertJson(get("/api/hs/bai", an), "[%s, %s]".formatted(dongDanhSach(ma2, null, "CHUA_LAM", 0, null),
             dongDanhSach(ma1, "\"2026-10-13T08:00:00Z\"", "DANG_LAM", 1, null)));
+    }
+
+    @Test
+    void nopBaiDoiMucHieuMotLanVaTrangHocThayMucMoi() {
+        assertJson(get("/api/hs/trang-hoc", an), TRANG_HOC_TRONG);
+        nopBuoc(ma1, dong("B.DH.TXD", "D = R", null));
+        nopBuoc(ma1, dong("B.DH.DAOHAM", "y' = 3x^2 - 6x", null));
+        lamTiepToiKetLuan(ma1);
+        assertJson(nopBai(ma1), NOP_DAT_LEN_THONG_HIEU);
+        assertJson(nopBai(ma1), NOP_DAT_LEN_THONG_HIEU);
+        assertThat(jdbc.sql("select attempts || ' ' || level4 || ' ' || mastery from mastery_states where student_id = ?").params(an)
+            .query(String.class).list()).as("gửi lại không tính lần hai").containsExactly("1 THONG_HIEU 0.6995122");
+        assertJson(get("/api/hs/trang-hoc", an), """
+            {"ten":"Người thử","soKyNang":[{"kyNang":"T12.DH.02","tenKyNang":"Tính đạo hàm","muc4":"THONG_HIEU","ket":false}],
+             "hoanThanh":{"kyNang":[],"chuDe":[]}}""");
+        assertJson(get("/api/hs/trang-hoc", binh), TRANG_HOC_TRONG);
+        UUID gv = nguoiMoi(Role.TEACHER);
+        assertThat(get("/api/hs/trang-hoc", gv).status()).isEqualTo(403);
     }
 
     @Test
@@ -293,7 +315,7 @@ class HocSinhBaiApiTest {
         daThay.add(get("/api/hs/bai/" + ma1, an));
         Phan nop = nopBai(ma1);
         daThay.add(nop);
-        assertJson(nop, "{\"ketQua\":\"DAT\",\"mucHieu\":[]}");
+        assertJson(nop, NOP_DAT_LEN_THONG_HIEU);
         daThay.add(get("/api/hs/bai/" + ma1, an));
         daThay.add(get("/api/hs/bai", an));
         assertThat(daThay).allSatisfy(p -> assertThat(p.status()).isEqualTo(200));
