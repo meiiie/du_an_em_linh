@@ -1,6 +1,7 @@
 import { afterRenderEffect, Component, computed, DestroyRef, effect, ElementRef, inject, signal, viewChild } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { BrandMark } from '../../shared/ui/brand-mark';
+import { Button } from '../../shared/ui/button';
 import { DoiGiaoDien } from '../../shared/ui/doi-giao-dien';
 import { CanhLamViec } from './canh-lam-viec';
 import { ChanTrang } from './chan-trang';
@@ -22,7 +23,7 @@ const NHIP_MS = 1200;
  */
 @Component({
   selector: 'app-trang-chu',
-  imports: [RouterLink, BrandMark, DoiGiaoDien, CanhLamViec, ChanTrang, ChonVai, DaiBang, PhanBatDau],
+  imports: [RouterLink, BrandMark, Button, DoiGiaoDien, CanhLamViec, ChanTrang, ChonVai, DaiBang, PhanBatDau],
   templateUrl: './trang-chu.html',
   styleUrl: './trang-chu.css',
 })

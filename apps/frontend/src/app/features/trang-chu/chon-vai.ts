@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { Button } from '../../shared/ui/button';
 
 /**
  * «Chọn cách bắt đầu» theo trang Wiii (meiiie-design-kit, examples/wiii): hai thẻ kem cho học sinh và giáo viên, ảnh minh
@@ -8,7 +9,7 @@ import { RouterLink } from '@angular/router';
  */
 @Component({
   selector: 'app-chon-vai',
-  imports: [RouterLink],
+  imports: [RouterLink, Button],
   template: `
     <section id="chon" class="chon">
       <h2>Chọn cách bắt đầu.</h2>
@@ -33,7 +34,7 @@ import { RouterLink } from '@angular/router';
             <li>Mức hiểu theo từng kỹ năng</li>
             <li>Lịch học trong tuần</li>
           </ul>
-          <a class="vien vien-dam" routerLink="/dang-nhap">Vào học</a>
+          <a appButton variant="vien-dam" routerLink="/dang-nhap">Vào học</a>
         </article>
         <article>
           <img
@@ -55,7 +56,7 @@ import { RouterLink } from '@angular/router';
             <li>Hàng duyệt cho phần máy không kiểm được</li>
             <li>Mức của từng học sinh</li>
           </ul>
-          <a class="vien vien-vien" routerLink="/dang-nhap">Vào lớp</a>
+          <a appButton variant="vien-vien" routerLink="/dang-nhap">Vào lớp</a>
         </article>
       </div>
       <div id="truoc-khi-dung" class="truoc">

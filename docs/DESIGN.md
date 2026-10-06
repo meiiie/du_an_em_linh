@@ -122,7 +122,7 @@ Một lưới **8 px** — cùng hệ Apple HIG, Material 3, IBM Carbon. Bậc: 
 
 ## Giải phẫu nút
 
-Không lấy viên thuốc Material Expressive. Chữ nhật bo nhẹ như Wiii: bán kính **8 px** cho nút, **12 px** cho thẻ. Ngoại lệ: trang công khai `/` dùng nút viên và thẻ bo 16 px như trang Wiii (`.vien*` trong `styles.css`); trong ứng dụng vẫn là `appButton`.
+Không lấy viên thuốc Material Expressive. Chữ nhật bo nhẹ như Wiii: bán kính **8 px** cho nút, **12 px** cho thẻ. Ngoại lệ: trang công khai `/` dùng nút viên và thẻ bo 16 px như trang Wiii, vẫn qua `appButton` (`variant="vien-dam" | "vien-kem" | "vien-vien"`, kiểu ở `.vien*` trong `styles.css`).
 
 | Trục | Giá trị | Nguồn |
 | --- | --- | --- |

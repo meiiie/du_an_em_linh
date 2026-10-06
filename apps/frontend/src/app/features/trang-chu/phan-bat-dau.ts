@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { Button } from '../../shared/ui/button';
 
 /** Năm bước của phiếu, tên như v0 (`apps/web/lib/de-hoc-sinh.ts` TEN_TRANG), kèm việc của từng bước. */
 const NAM_BUOC = [
@@ -15,7 +16,7 @@ const NAM_BUOC = [
  */
 @Component({
   selector: 'app-phan-bat-dau',
-  imports: [RouterLink],
+  imports: [RouterLink, Button],
   template: `
     <section id="nam-buoc" class="bat-dau">
       <div>
@@ -25,8 +26,8 @@ const NAM_BUOC = [
           Viết từng bước như trên giấy. Máy kiểm tra mỗi bước và chỉ ra chỗ sai. Đồ thị của bài chỉ mở sau kết luận.
         </p>
         <div class="nut">
-          <a class="vien vien-dam" routerLink="/dang-nhap">Vào học</a>
-          <a class="vien vien-kem" href="#xem">Xem cách học</a>
+          <a appButton variant="vien-dam" routerLink="/dang-nhap">Vào học</a>
+          <a appButton variant="vien-kem" href="#xem">Xem cách học</a>
         </div>
       </div>
       <div class="cua-so">

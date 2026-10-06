@@ -18,7 +18,8 @@ svg {
   width: 100%;
   height: auto;
   margin-top: var(--space-2);
-  touch-action: none;
+  /* Kéo ngang thì đổi x; vuốt dọc vẫn cuộn trang (Codex #147). */
+  touch-action: pan-y;
   cursor: grab;
 }
 
