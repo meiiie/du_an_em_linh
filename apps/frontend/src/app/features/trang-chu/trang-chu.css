@@ -32,10 +32,12 @@
   padding-inline: max(var(--space-4), env(safe-area-inset-left)) max(var(--space-4), env(safe-area-inset-right));
 }
 
+/* Vùng an toàn trên (tai thỏ, chế độ cài như ứng dụng với viewport-fit=cover): thanh dời xuống dưới thanh trạng thái. */
 .dau {
   position: sticky;
   top: 0;
   z-index: 30;
+  padding-top: env(safe-area-inset-top);
   border-bottom: 1px solid var(--line);
   background: color-mix(in srgb, var(--tc-page) 90%, transparent);
   backdrop-filter: blur(12px);
@@ -88,7 +90,7 @@ main {
 .nen-mo-dau::before {
   content: '';
   position: absolute;
-  inset: -65px 0 0;
+  inset: calc(-65px - env(safe-area-inset-top)) 0 0;
   z-index: -1;
   background: var(--tc-nen-mo-dau) center top / cover no-repeat;
   mask-image: linear-gradient(to bottom, #000 70%, transparent);
