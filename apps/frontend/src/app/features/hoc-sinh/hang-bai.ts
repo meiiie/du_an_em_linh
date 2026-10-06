@@ -6,6 +6,12 @@ import { Katex } from '../../shared/toan/katex';
 const NGAY = new Intl.DateTimeFormat('vi-VN', { weekday: 'short', day: '2-digit', month: '2-digit', timeZone: 'Asia/Ho_Chi_Minh' });
 
 /** Chữ trạng thái của một bài, theo dữ liệu core trả (không tự suy đúng / sai). */
+/** Công thức của đề để hiện: thêm «y =» khi đề chỉ ghi biểu thức (như `hamLatex` của v0, `apps/web/lib/de-hoc-sinh.ts`). */
+export function hamLatex(latex: string): string {
+  const tho = latex.trim();
+  return !tho || tho.includes('=') ? tho : `y = ${tho}`;
+}
+
 export function chuTrangThai(b: BaiCuaHocSinh): string {
   if (b.trangThai === 'DANG_LAM') return `Đang làm ${b.soBuocDat}/${b.soBuoc}`;
   if (b.trangThai === 'CHUA_LAM') return 'Chưa làm';
@@ -48,7 +54,7 @@ export class HangBai {
   protected readonly chu = computed(() => chuTrangThai(this.bai()));
   protected readonly han = computed(() => (this.bai().han ? NGAY.format(new Date(this.bai().han!)) : null));
   /** Trong hàng chỉ hàm số; phần «, y′ = …» của đề hiện đủ trên bảng ở phiếu làm bài. */
-  protected readonly hamHang = computed(() => this.bai().deBaiLatex.split(String.raw`,\quad`)[0]);
+  protected readonly hamHang = computed(() => hamLatex(this.bai().deBaiLatex.split(String.raw`,\quad`)[0]));
   protected readonly loaiVong = computed(() => {
     const b = this.bai();
     if (b.trangThai === 'DA_NOP') return b.ketQua === 'DAT' ? 'dat' : b.ketQua === 'SAI' ? 'sai' : 'cho';

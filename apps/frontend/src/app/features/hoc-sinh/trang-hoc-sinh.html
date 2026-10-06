@@ -24,7 +24,7 @@
         </div>
         <a appButton size="lg" [routerLink]="['/hs/luyen', ke.maBai]" data-testid="lam-buoc-tiep">Làm bước tiếp</a>
       </div>
-      <app-katex class="ke-bang" bang [latex]="ke.deBaiLatex" />
+      <app-katex class="ke-bang" bang [latex]="hamLatex(ke.deBaiLatex)" />
     </section>
   }
 

@@ -1,5 +1,5 @@
-// Kiểu cho API học sinh theo `specs/001-lat-cat-doc/contracts/api-core.md` (T021, PR core «API học sinh»). Đổi DTO bên
-// core thì sửa ở đây. Không trường nào cho lời giải hay đáp án (FR-006).
+// Kiểu cho API học sinh theo `specs/001-lat-cat-doc/contracts/api-core.md` §Làm bài (T021, #148). Đổi DTO bên core thì
+// sửa ở đây. Không trường nào cho lời giải hay đáp án (FR-006).
 
 /** Kết quả chấm một bước. `KHONG_CHAM_DUOC`: dịch vụ toán lỗi, không bao giờ coi là đạt. */
 export type KetQuaCham = 'DAT' | 'SAI' | 'KHONG_KIEM_DUOC' | 'KHONG_CHAM_DUOC';
@@ -45,6 +45,8 @@ export interface ViTriSai {
 export interface DongBaiLam {
   readonly dong: number;
   readonly latex: string;
+  /** Nhãn em đã gửi (`NGHIEM`, `KHONG_XD`, `DONG_BIEN`…), vắng khi không có. */
+  readonly loai?: string;
 }
 
 export interface OBang {

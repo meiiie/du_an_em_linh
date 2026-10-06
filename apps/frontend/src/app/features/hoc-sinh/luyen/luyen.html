@@ -14,7 +14,7 @@
     }
   </div>
 } @else if (bai.value(); as b) {
-  @if (b.dangTraLoi !== 'TU_LUAN_5_BUOC') {
+  @if (b.dangTraLoi !== 'TU_LUAN_5_BUOC' || !b.cacBuoc.length) {
     <div class="trong">
       <p>Dạng câu này (không theo khung 5 bước) chưa có khung làm bài trên ứng dụng. Em làm ra giấy và nộp thầy cô.</p>
     </div>
@@ -29,7 +29,7 @@
       <header class="de">
         <p class="nhan-muc">{{ b.tenKyNang }} · {{ tenMuc[b.muc4] }}</p>
         <p class="cau-hoi">{{ b.de.text }}</p>
-        <app-katex bang [latex]="b.de.latex" />
+        <app-katex bang [latex]="hamLatex(b.de.latex)" />
         @if (deChoSan()) {
           <p class="phu" data-testid="de-cho-san">
             Đề đã cho sẵn: {{ deChoSan() }}. Em bắt đầu từ bước {{ b.cacBuoc[buoc()]?.ten?.toLowerCase() }}.

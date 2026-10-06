@@ -48,7 +48,7 @@ export interface NhapPhieu {
   kl: Record<string, string>;
 }
 
-/** v0 gửi điểm y′ không xác định bằng câu này (kèm `loai`); core trả lại dòng không kèm `loai`, nên đọc lại theo tiền tố. */
+/** v0 gửi điểm y′ không xác định bằng câu này, kèm `loai: KHONG_XD`. */
 const TIEN_TO_KHONG_XD = "y' không xác định tại ";
 
 /** Dựng nháp từ bài làm đã lưu ở core (vào lại bài mở đúng chỗ đã làm). */
@@ -58,16 +58,16 @@ export function nhapTuBaiLam(bai: ChiTietBai): NhapPhieu {
   const bang = buoc(XET_DAU)?.bang ?? [];
   const khai = oKetLuan(bai.khaiBaoKetLuan);
   const kl: Record<string, string> = {};
-  dong(KET_LUAN).forEach((d, i) => {
-    const o = khai[i];
+  for (const d of dong(KET_LUAN)) {
+    const o = khai.find((x) => x.loai === d.loai);
     if (o) kl[o.ma] = d.latex === o.trongThi ? '' : d.latex;
-  });
+  }
   const dh = dong(DAO_HAM).map((d) => d.latex);
   const nghiem = dong(NGHIEM)
     .filter((d) => d.latex !== 'không có nghiệm')
     .map((d) =>
-      d.latex.startsWith(TIEN_TO_KHONG_XD)
-        ? { latex: d.latex.slice(TIEN_TO_KHONG_XD.length), loai: 'KHONG_XD' as const }
+      d.loai === 'KHONG_XD'
+        ? { latex: d.latex.startsWith(TIEN_TO_KHONG_XD) ? d.latex.slice(TIEN_TO_KHONG_XD.length) : d.latex, loai: 'KHONG_XD' as const }
         : { latex: d.latex, loai: 'NGHIEM' as const },
     );
   const cua = (hang: string) => bang.filter((o) => o.hang === hang);

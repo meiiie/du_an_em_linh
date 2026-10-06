@@ -18,6 +18,7 @@ import { API_HS, ChiTietBai, KetQuaBuoc, KetQuaCham, KetQuaNop, NopBuoc, TEN_MUC
 import { Katex } from '../../../shared/toan/katex';
 import { OCongThuc } from '../../../shared/toan/o-cong-thuc';
 import { Button } from '../../../shared/ui/button';
+import { hamLatex } from '../hang-bai';
 import { BangXetDau, SuKienO } from './bang-xet-dau';
 import { DAO_HAM, KET_LUAN, Mui, NGHIEM, NhapPhieu, nhapTuBaiLam, oKetLuan, TXD, XET_DAU, yeuCauNop } from './phieu';
 
@@ -60,6 +61,7 @@ export class Luyen {
 
   protected readonly bai = httpResource<ChiTietBai>(() => API_HS.chiTietBai(this.maBai()));
   protected readonly tenMuc = TEN_MUC;
+  protected readonly hamLatex = hamLatex;
   protected readonly ma = { TXD, DAO_HAM, NGHIEM, XET_DAU, KET_LUAN };
 
   protected readonly khongTimThay = computed(() => (this.bai.error() as HttpErrorResponse | undefined)?.status === 404);

@@ -1,4 +1,4 @@
-import { ChiTietBai } from '../../../api/hoc-sinh';
+import { ChiTietBai, DongBaiLam } from '../../../api/hoc-sinh';
 import { NhapPhieu, nhapTuBaiLam, oKetLuan, yeuCauNop } from './phieu';
 
 const KHAI_BAO = ['dong_bien', 'nghich_bien', 'cuc_dai', 'cuc_tieu'];
@@ -79,7 +79,7 @@ describe('nhapTuBaiLam', () => {
       coTheMoLoiGiai: false,
     };
   }
-  const buoc = (maBuoc: string, dong: { dong: number; latex: string }[] = [], bang: ChiTietBai['baiLam']['cacBuoc'][number]['bang'] = []) => ({
+  const buoc = (maBuoc: string, dong: DongBaiLam[] = [], bang: ChiTietBai['baiLam']['cacBuoc'][number]['bang'] = []) => ({
     maBuoc,
     dong,
     bang,
@@ -100,24 +100,24 @@ describe('nhapTuBaiLam', () => {
     });
   });
 
-  it('vào lại bài: dựng lại đúng những gì đã gửi, kể cả điểm không xác định và ô «không có» để trống', () => {
+  it('vào lại bài: dựng lại theo `loai` đã lưu, kể cả điểm không xác định và ô «không có» để trống', () => {
     const daGui = bai([
       buoc('B.DH.TXD', [{ dong: 0, latex: '\\mathbb{R}\\setminus\\{-3\\}' }]),
       buoc('B.DH.DAOHAM', [
         { dong: 1, latex: '=\\frac{3}{(x+3)^2}' },
         { dong: 0, latex: '\\frac{(x+3)-x}{(x+3)^2}' },
       ]),
-      buoc('B.DH.NGHIEM', [{ dong: 0, latex: "y' không xác định tại -3" }]),
+      buoc('B.DH.NGHIEM', [{ dong: 0, latex: "y' không xác định tại -3", loai: 'KHONG_XD' }]),
       buoc('B.DH.XETDAU', [], [
         { hang: 'BIEN_THIEN', k: 2, giaTri: 'TANG' },
         { hang: 'X', k: 0, giaTri: '-3' },
         { hang: 'DAU_YPHAY', k: 1, giaTri: '||' },
       ]),
       buoc('B.DH.KETLUAN', [
-        { dong: 0, latex: '(-\\infty;-3)' },
-        { dong: 1, latex: '' },
-        { dong: 2, latex: 'không có cực đại' },
-        { dong: 3, latex: 'x = 0' },
+        { dong: 0, latex: '(-\\infty;-3)', loai: 'DONG_BIEN' },
+        { dong: 1, latex: '', loai: 'NGHICH_BIEN' },
+        { dong: 2, latex: 'không có cực đại', loai: 'CUC_DAI' },
+        { dong: 3, latex: 'x = 0', loai: 'CUC_TIEU' },
       ]),
     ]);
     expect(nhapTuBaiLam(daGui)).toEqual({
@@ -133,8 +133,8 @@ describe('nhapTuBaiLam', () => {
 
   it('gửi rồi đọc lại cho cùng thân yêu cầu (kết luận và nghiệm đi trọn một vòng)', () => {
     const daGui = bai([
-      buoc('B.DH.NGHIEM', yeuCauNop('B.DH.NGHIEM', NHAP, KHAI_BAO).dong!.map(({ dong, latex }) => ({ dong, latex }))),
-      buoc('B.DH.KETLUAN', yeuCauNop('B.DH.KETLUAN', NHAP, KHAI_BAO).dong!.map(({ dong, latex }) => ({ dong, latex }))),
+      buoc('B.DH.NGHIEM', [...yeuCauNop('B.DH.NGHIEM', NHAP, KHAI_BAO).dong!]),
+      buoc('B.DH.KETLUAN', [...yeuCauNop('B.DH.KETLUAN', NHAP, KHAI_BAO).dong!]),
     ]);
     const n = nhapTuBaiLam(daGui);
     expect(yeuCauNop('B.DH.NGHIEM', n, KHAI_BAO)).toEqual(yeuCauNop('B.DH.NGHIEM', NHAP, KHAI_BAO));
