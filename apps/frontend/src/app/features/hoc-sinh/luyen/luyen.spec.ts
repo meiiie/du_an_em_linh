@@ -255,6 +255,51 @@ describe('Luyen', () => {
     expect(t.chu('[data-testid=loi-giai-sau-nop] p:last-child')).toBe('Hàm số đồng biến trên (−∞; 0) và (4; +∞).');
   });
 
+  it('phát lại bài đã nộp hỏng (500): vẫn báo đã nộp theo kết luận đã lưu, trang không kẹt, xem lại được từng bước', async () => {
+    const t = await mo(chiTiet({ trangThai: 'DA_NOP', cacBuoc: CAC_BUOC.map((s) => daDat(s.maBuoc)) }), false);
+    TestBed.tick();
+    t.http.expectOne({ method: 'POST', url: API_HS.nopBai(MA) }).flush(null, { status: 500, statusText: 'Lỗi' });
+    await t.xong();
+    expect(t.chu('[data-testid=da-nop] h2')).toBe('Đã nộp. Bài đạt.');
+    await t.bam('[data-testid="step-B.DH.TXD"]');
+    expect(t.chu('.tieu-de')).toBe('Bước 1/5 Tập xác định');
+    expect(t.$('[data-testid="step-B.DH.TXD"]')!.getAttribute('aria-current')).toBe('step');
+  });
+
+  it('kết luận đã chấm mà một bước chưa gửi lần nào: chặn nộp, nói bước đó chưa kiểm tra (không nói «vừa sửa»)', async () => {
+    const t = await mo(
+      chiTiet({ cacBuoc: [...CAC_BUOC.slice(1, 4).map((s) => daDat(s.maBuoc)), { ...daDat('B.DH.KETLUAN'), ketQua: 'SAI' as const }] }),
+    );
+    expect(t.$('[data-testid=nop-bai]')).toBeNull();
+    expect(t.chu('.canh-bao')).toBe('Bước Tập xác định chưa kiểm tra. Bấm «Kiểm tra» ở bước đó rồi hãy nộp.');
+  });
+
+  it('xóa mốc sau khi nạp lại: ô khoảng core lưu rỗng không sinh sự kiện', async () => {
+    const xetDau = {
+      ...daDat('B.DH.XETDAU'),
+      dong: [],
+      bang: [
+        { hang: 'X', k: 0, giaTri: '0' },
+        { hang: 'DAU_YPHAY', k: 0, giaTri: '' },
+        { hang: 'DAU_YPHAY', k: 2, giaTri: '+' },
+      ],
+      ketQua: 'SAI' as const,
+    };
+    const t = await mo(chiTiet({ cacBuoc: [...CAC_BUOC.slice(0, 3).map((s) => daDat(s.maBuoc)), xetDau] }));
+    await t.bam('[aria-label="Xóa mốc 0"]');
+    await t.go('moc-nhap', '4');
+    await t.bam('[data-testid=moc-them]');
+    await t.bam('[data-testid=nop-buoc]');
+    const yc = t.http.expectOne(API_HS.nopBuoc(MA));
+    expect(
+      yc.request.body.suKien.map((e: { hang: string; k: number; giaTriCu?: string; giaTriMoi: string }) => [e.hang, e.k, e.giaTriCu ?? null, e.giaTriMoi]),
+    ).toEqual([
+      ['X', 0, '0', ''],
+      ['DAU_YPHAY', 2, '+', ''],
+      ['X', 0, null, '4'],
+    ]);
+  });
+
   it('xóa mốc ghi sự kiện cho mốc và từng ô bị xóa theo (core đếm khi nghi đoán mò)', async () => {
     const t = await mo(chiTiet({ cacBuoc: CAC_BUOC.slice(0, 3).map((s) => daDat(s.maBuoc)) }));
     await t.go('moc-nhap', '0');

@@ -189,8 +189,9 @@ export class BangXetDau {
    */
   protected xoaMoc(i: number): void {
     this.suKien.emit({ hang: HANG_X, k: i, giaTriCu: this.moc()[i], giaTriMoi: '' });
-    for (const [k, v] of Object.entries(this.dau())) this.suKien.emit({ hang: HANG_DAU, k: Number(k), giaTriCu: v, giaTriMoi: '' });
-    for (const [k, v] of Object.entries(this.mui())) this.suKien.emit({ hang: HANG_MUI, k: Number(k), giaTriCu: v, giaTriMoi: '' });
+    // Ô vốn trống (core lưu ô khoảng chưa chọn là chuỗi rỗng) không đổi gì: không ghi, kẻo đếm thừa lần sửa.
+    for (const [k, v] of Object.entries(this.dau())) if (v) this.suKien.emit({ hang: HANG_DAU, k: Number(k), giaTriCu: v, giaTriMoi: '' });
+    for (const [k, v] of Object.entries(this.mui())) if (v) this.suKien.emit({ hang: HANG_MUI, k: Number(k), giaTriCu: v, giaTriMoi: '' });
     this.moc.update((m) => m.filter((_, j) => j !== i));
     this.dau.set({});
     this.mui.set({});

@@ -170,10 +170,11 @@ export class Luyen {
   /** Nộp được khi bước kết luận có phán quyết và không bước nào sửa mà chưa kiểm (core trả 409 nếu thiếu bước). */
   protected readonly nopDuoc = computed(() => this.ketLuanCoPhanQuyet() && !this.daSua().size);
 
-  /** Tên bước em sửa sau khi đã có kết luận, để nhắc kiểm tra lại trước khi nộp. */
+  /** Bước chặn «Nộp bài» khi kết luận đã có phán quyết: em sửa mà chưa kiểm lại, hay chưa kiểm lần nào. */
   protected readonly buocCanKiemLai = computed(() => {
     if (!this.ketLuanCoPhanQuyet()) return null;
-    return this.bai.value()?.cacBuoc.find((s) => this.daSua().has(s.maBuoc))?.ten ?? null;
+    const s = this.bai.value()?.cacBuoc.find((x) => this.daSua().has(x.maBuoc));
+    return s ? { ten: s.ten, daCham: !!this.ketQua()[s.maBuoc] } : null;
   });
 
   /** Tên bước vừa đạt, để bước kế báo «Bước … đạt» (v0) cho tới khi em chấm bước này hay đổi bước. */
@@ -186,7 +187,8 @@ export class Luyen {
     return b?.baiLam.trangThai === 'DA_NOP' ? { url: API_HS.nopBai(b.maBai), method: 'POST', body: {} } : undefined;
   });
   protected readonly ketQuaNop = linkedSignal<KetQuaNop | undefined, KetQuaNop | null>({
-    source: () => this.nopTruoc.value(),
+    // value() ném lỗi khi lần phát lại hỏng (mạng, 5xx, 409): khi đó chỉ không có thẻ kết quả, trang vẫn xem được.
+    source: () => (this.nopTruoc.hasValue() ? this.nopTruoc.value() : undefined),
     computation: (k) => k ?? null,
   });
   protected readonly daNop = computed(() => !!this.ketQuaNop() || this.bai.value()?.baiLam.trangThai === 'DA_NOP');
