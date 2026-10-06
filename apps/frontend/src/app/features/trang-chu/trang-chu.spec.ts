@@ -24,36 +24,37 @@ describe('TrangChu', () => {
       fixture,
       el,
       tuDangHien: () => el.querySelector('.xoay .hien .gach')!.textContent!.trim(),
-      nutDung: () => [...el.querySelectorAll('button')].find((b) => /chuyển động/.test(b.textContent!))!,
+      buoc: async (ms: number) => {
+        vi.advanceTimersByTime(ms);
+        await fixture.whenStable();
+      },
     };
   }
 
-  it('tiêu đề đọc một câu cố định; một nút vao-hoc dẫn tới /dang-nhap', async () => {
+  it('tiêu đề đọc một câu cố định; một nút vao-hoc dẫn tới /dang-nhap; không nút tạm dừng', async () => {
     const t = await mo();
     expect(chuDoc(t.el.querySelector('h1')!)).toBe('Học toán theo từng bước. Tự mình hiểu ra.');
     const vaoHoc = t.el.querySelectorAll('[data-testid=vao-hoc]');
     expect(vaoHoc.length).toBe(1);
     expect(vaoHoc[0].getAttribute('href')).toBe('/dang-nhap');
+    expect([...t.el.querySelectorAll('button')].some((b) => /chuyển động/.test(b.textContent!))).toBe(false);
   });
 
-  it('từ gạch chân đổi sau mỗi nhịp; tạm dừng thì đứng yên và dải bảng dừng', async () => {
+  it('từ gạch chân chạy đúng một vòng (4,8 s) rồi dừng ở «hiểu ra»', async () => {
     vi.useFakeTimers({ toFake: ['setInterval', 'clearInterval'] });
     const t = await mo();
     expect(t.tuDangHien()).toBe('hiểu ra');
-    vi.advanceTimersByTime(2800);
-    await t.fixture.whenStable();
+    await t.buoc(1200);
     expect(t.tuDangHien()).toBe('làm được');
-
-    t.nutDung().click();
-    await t.fixture.whenStable();
-    expect(t.nutDung().textContent!.trim()).toBe('Tiếp tục chuyển động');
-    expect(t.el.querySelector('app-dai-bang')!.classList).toContain('dung');
-    vi.advanceTimersByTime(2800 * 3);
-    await t.fixture.whenStable();
-    expect(t.tuDangHien()).toBe('làm được');
+    await t.buoc(1200);
+    expect(t.tuDangHien()).toBe('sửa sai');
+    await t.buoc(2400);
+    expect(t.tuDangHien()).toBe('hiểu ra');
+    await t.buoc(1200 * 5);
+    expect(t.tuDangHien()).toBe('hiểu ra');
   });
 
-  it('máy đặt giảm chuyển động: từ đứng yên từ đầu, dải bảng dừng', async () => {
+  it('máy đặt giảm chuyển động: từ đứng yên từ đầu', async () => {
     vi.stubGlobal('matchMedia', (q: string) => ({
       matches: q.includes('prefers-reduced-motion'),
       addEventListener: () => undefined,
@@ -61,9 +62,17 @@ describe('TrangChu', () => {
     }));
     vi.useFakeTimers({ toFake: ['setInterval', 'clearInterval'] });
     const t = await mo();
-    vi.advanceTimersByTime(2800 * 2);
-    await t.fixture.whenStable();
+    await t.buoc(1200 * 2);
     expect(t.tuDangHien()).toBe('hiểu ra');
-    expect(t.el.querySelector('app-dai-bang')!.classList).toContain('dung');
+  });
+
+  it('ảnh minh họa có chữ thay thế, kích thước khai sẵn (không xô bố cục) và tải lười', async () => {
+    const t = await mo();
+    const anh = [...t.el.querySelectorAll<HTMLImageElement>('img.minh-hoa')];
+    expect(anh.map((a) => a.getAttribute('src'))).toEqual(['/anh/hoc-sinh-800.webp', '/anh/giao-vien-800.webp']);
+    for (const a of anh) {
+      expect(a.alt.startsWith('Minh họa:')).toBe(true);
+      expect([a.getAttribute('width'), a.getAttribute('height'), a.getAttribute('loading')]).toEqual(['1200', '900', 'lazy']);
+    }
   });
 });

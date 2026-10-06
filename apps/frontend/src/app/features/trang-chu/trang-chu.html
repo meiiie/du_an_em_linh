@@ -2,7 +2,7 @@
 
 <header class="dau">
   <div class="khung dau-trong">
-    <a class="thuong-hieu" routerLink="/"><app-brand-mark /></a>
+    <a class="thuong-hieu" routerLink="/"><img src="/icon.svg" width="32" height="32" alt="" /><app-brand-mark /></a>
     <nav class="lien-ket" aria-label="Trang chủ">
       <a href="#xem">Cách học</a>
       <a href="#nam-buoc">Năm bước</a>
@@ -14,6 +14,7 @@
 </header>
 
 <main id="noi-dung" tabindex="-1">
+  <div class="nen-mo-dau">
   <section class="khung mo-dau">
     <a class="huy-hieu" href="#nam-buoc"
       ><span class="so">Toán 12</span>Đơn điệu và cực trị<span class="mui" aria-hidden="true">↓</span></a
@@ -36,46 +37,20 @@
     </div>
     <p class="ghi-chu">Bản thử nghiệm · Một chủ đề · <a href="#truoc-khi-dung">Trước khi dùng</a></p>
   </section>
+  </div>
 
+  <!-- Thẻ cảnh kéo theo KaTeX (~70 kB nén): tải khi sắp cuộn tới, tải trước lúc rảnh; màn đầu không chờ. -->
   <section id="xem" class="khung xem">
-    <app-canh-lam-viec />
+    @defer (on viewport; prefetch on idle) {
+      <app-canh-lam-viec />
+    } @placeholder {
+      <div class="giu-cho-xem"></div>
+    }
   </section>
 
   <div class="khung"><app-phan-bat-dau /></div>
+  <app-dai-bang />
+  <div class="khung"><app-chon-vai /></div>
 </main>
 
-<app-dai-bang [chay]="chay()" />
-
-<footer class="chan">
-  <div class="khung chan-tren">
-    <div class="chan-hieu">
-      <app-brand-mark size="md" />
-      <p>Học toán từng bước, với gia sư không đưa đáp án.</p>
-      <app-doi-giao-dien />
-    </div>
-    <nav class="cot" aria-label="Chân trang">
-      <div>
-        <p>Học</p>
-        <a href="#xem">Cách học</a>
-        <a href="#nam-buoc">Năm bước</a>
-        <a routerLink="/dang-nhap">Vào học</a>
-      </div>
-      <div>
-        <p>Giáo viên</p>
-        <a href="#chon">Chuẩn bị lớp</a>
-        <a routerLink="/dang-nhap">Vào lớp</a>
-      </div>
-      <div>
-        <p>Dự án</p>
-        <a href="https://github.com/meiiie/du_an_em_linh">GitHub</a>
-        <a href="https://github.com/meiiie/du_an_em_linh/blob/main/LICENSE">Giấy phép MIT</a>
-      </div>
-    </nav>
-  </div>
-  <div class="khung chan-duoi">
-    <p>Các hình trên trang minh họa cách học, không phải bài làm của học sinh.</p>
-    <button type="button" class="vien vien-vien" (click)="tamDung.set(!tamDung())">
-      {{ tamDung() ? 'Tiếp tục chuyển động' : 'Tạm dừng chuyển động' }}
-    </button>
-  </div>
-</footer>
+<app-chan-trang />

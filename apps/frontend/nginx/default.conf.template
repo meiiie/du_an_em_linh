@@ -1,4 +1,4 @@
-# Ảnh nginx thay ${CORE_URL} lúc khởi động. envsubst chỉ thay biến môi trường đã khai báo, nên $host, $uri… giữ nguyên.
+# Ảnh nginx thay ${CORE_URL}, ${SITE_URL} lúc khởi động. envsubst chỉ thay biến môi trường đã khai báo, nên $host, $uri… giữ nguyên.
 server {
     listen 8080;
     server_name _;
@@ -8,7 +8,7 @@ server {
 
     gzip on;
     gzip_min_length 1024;
-    gzip_types text/css application/javascript application/json image/svg+xml;
+    gzip_types text/css application/javascript application/json image/svg+xml text/xml text/plain application/manifest+json;
 
     # add_header trong location thay hết add_header của server, nên location nào cũng ghi lại đủ bộ.
     add_header X-Content-Type-Options nosniff always;
@@ -33,9 +33,24 @@ server {
         try_files $uri =404;
     }
 
+    # mime.types của nginx không có .webmanifest; thiếu kiểu thì trình duyệt có thể bỏ manifest.
+    location = /manifest.webmanifest {
+        types { }
+        default_type application/manifest+json;
+        add_header Cache-Control "no-cache" always;
+        add_header X-Content-Type-Options nosniff always;
+        add_header X-Frame-Options DENY always;
+        add_header Referrer-Policy strict-origin-when-cross-origin always;
+    }
+
     # Còn lại (index.html, favicon): hỏi lại mỗi lần để bản mới tới ngay. Đường không phải tệp trả index.html
     # cho định tuyến phía client.
+    # index.html, robots.txt, sitemap.xml ghi __SITE_URL__ cho canonical, Open Graph, sitemap (cần URL tuyệt đối):
+    # thay bằng SITE_URL của nơi triển khai, không cứng hóa tên miền trong bản build.
     location / {
+        sub_filter '__SITE_URL__' '${SITE_URL}';
+        sub_filter_once off;
+        sub_filter_types text/xml text/plain application/xml;
         add_header Cache-Control "no-cache" always;
         add_header X-Content-Type-Options nosniff always;
         add_header X-Frame-Options DENY always;

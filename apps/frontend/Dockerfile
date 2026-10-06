@@ -15,6 +15,8 @@ RUN pnpm --filter frontend build
 
 FROM nginxinc/nginx-unprivileged:1.30-alpine
 ENV CORE_URL=http://core:8080
+# URL công khai của trang (canonical, Open Graph, sitemap); đặt lại khi triển khai.
+ENV SITE_URL=http://localhost:4200
 COPY apps/frontend/nginx/default.conf.template /etc/nginx/templates/default.conf.template
 COPY --from=build /src/apps/frontend/dist/frontend/browser/ /usr/share/nginx/html/
 EXPOSE 8080

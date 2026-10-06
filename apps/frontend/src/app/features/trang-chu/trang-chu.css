@@ -3,6 +3,7 @@
   --tc-page: var(--raise);
   --tc-the: var(--canvas);
   --tc-kem: var(--wash);
+  --tc-nen-mo-dau: url('/anh/hero-nen-sang-1280.webp');
   display: block;
   min-height: 100dvh;
   background: var(--tc-page);
@@ -12,6 +13,17 @@
   --tc-page: var(--canvas);
   --tc-the: var(--wash);
   --tc-kem: var(--raise);
+  --tc-nen-mo-dau: url('/anh/hero-nen-toi-1280.webp');
+}
+
+@media (min-width: 64rem) {
+  :host {
+    --tc-nen-mo-dau: url('/anh/hero-nen-sang-2560.webp');
+  }
+
+  :host-context([data-theme='dark']) {
+    --tc-nen-mo-dau: url('/anh/hero-nen-toi-2560.webp');
+  }
 }
 
 .khung {
@@ -39,6 +51,7 @@
 .thuong-hieu {
   display: inline-flex;
   align-items: center;
+  gap: 10px;
   min-height: var(--target);
   margin-right: auto;
   text-decoration: none;
@@ -51,20 +64,34 @@
   font-size: 14px;
 }
 
-.lien-ket a,
-.cot a {
+.lien-ket a {
   color: var(--ink-2);
   text-decoration: none;
 }
 
-.lien-ket a:hover,
-.cot a:hover {
+.lien-ket a:hover {
   color: var(--ink);
   text-decoration: underline;
 }
 
 main {
   outline: none;
+}
+
+/* Nền phần mở đầu: ảnh vẽ riêng (labs/design/prototypes/2026-10-06-trang-chu-anh), giữa để trống cho chữ, mép dưới mờ
+   dần vào màu trang. */
+.nen-mo-dau {
+  position: relative;
+  isolation: isolate;
+}
+
+.nen-mo-dau::before {
+  content: '';
+  position: absolute;
+  inset: -65px 0 0;
+  z-index: -1;
+  background: var(--tc-nen-mo-dau) center top / cover no-repeat;
+  mask-image: linear-gradient(to bottom, #000 70%, transparent);
 }
 
 .mo-dau {
@@ -77,7 +104,7 @@ main {
   align-items: center;
   gap: 10px;
   min-height: var(--target);
-  padding: 4px 6px 4px 6px;
+  padding: 4px 6px;
   border: 1px solid var(--line);
   border-radius: 999px;
   color: var(--ink-2);
@@ -175,63 +202,15 @@ h1 {
   padding-block: 56px 0;
 }
 
-.chan {
-  border-top: 1px solid var(--line);
-  background: var(--tc-page);
+/* Cao gần bằng lưới thẻ cảnh, để lúc lưới hiện bố cục không xô. */
+.giu-cho-xem {
+  min-height: 1400px;
 }
 
-.chan-tren {
-  display: grid;
-  gap: 40px;
-  padding-block: 48px 40px;
-}
-
-.chan-hieu p {
-  max-width: 18rem;
-  margin: 16px 0 20px;
-  color: var(--muted);
-  font-size: 15px;
-}
-
-.cot {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
-  gap: 24px;
-  font-size: 14px;
-}
-
-.cot div {
-  display: grid;
-  align-content: start;
-  gap: 4px;
-}
-
-.cot p {
-  margin: 0 0 8px;
-  font-weight: 600;
-}
-
-.cot a {
-  display: inline-flex;
-  align-items: center;
-  min-height: var(--target);
-}
-
-.chan-duoi {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  padding-block: 20px calc(24px + env(safe-area-inset-bottom));
-  border-top: 1px solid var(--line);
-  color: var(--muted);
-  font-size: 13px;
-}
-
-.chan-duoi p {
-  max-width: 36rem;
-  margin: 0;
+@media (min-width: 48rem) {
+  .giu-cho-xem {
+    min-height: 1080px;
+  }
 }
 
 @media (min-width: 40rem) {
@@ -247,9 +226,5 @@ h1 {
 @media (min-width: 64rem) {
   .lien-ket {
     display: flex;
-  }
-
-  .chan-tren {
-    grid-template-columns: 18rem 1fr;
   }
 }

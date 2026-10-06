@@ -2,11 +2,33 @@
 <html lang="vi">
   <head>
     <meta charset="utf-8" />
-    <title>MathL+</title>
+    <title>Học toán theo từng bước · MathL+</title>
     <base href="/" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="description" content="Học toán theo từng bước với MathL+: phiếu năm bước, máy kiểm từng bước, gia sư AI chỉ ra chỗ sai mà không đưa đáp án. Bản thử: Toán 12, đơn điệu và cực trị." />
+    <!-- URL tuyệt đối bên dưới là chuỗi giữ chỗ; nginx thay bằng biến môi trường SITE_URL lúc phục vụ (nginx/default.conf.template). -->
+    <link rel="canonical" href="__SITE_URL__/" />
+    <meta name="theme-color" content="#FFFFFF" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#1E1D1B" media="(prefers-color-scheme: dark)" />
     <link rel="icon" href="favicon.ico" sizes="any" />
     <link rel="icon" href="icon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="apple-touch-icon.png" />
+    <link rel="manifest" href="manifest.webmanifest" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="MathL+" />
+    <meta property="og:locale" content="vi_VN" />
+    <meta property="og:title" content="Học toán theo từng bước · MathL+" />
+    <meta property="og:description" content="Học toán theo từng bước với MathL+: phiếu năm bước, máy kiểm từng bước, gia sư AI chỉ ra chỗ sai mà không đưa đáp án. Bản thử: Toán 12, đơn điệu và cực trị." />
+    <meta property="og:url" content="__SITE_URL__/" />
+    <meta property="og:image" content="__SITE_URL__/og.jpg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="MathL+: tiêu đề «Học toán theo từng bước» bên cạnh đồ thị y = 2x/(x² + 1) và tiếp tuyến trên bảng tối" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Học toán theo từng bước · MathL+" />
+    <meta name="twitter:description" content="Học toán theo từng bước với MathL+: phiếu năm bước, máy kiểm từng bước, gia sư AI chỉ ra chỗ sai mà không đưa đáp án. Bản thử: Toán 12, đơn điệu và cực trị." />
+    <meta name="twitter:image" content="__SITE_URL__/og.jpg" />
+    <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"Organization","@id":"__SITE_URL__/#to-chuc","name":"MathL+","url":"__SITE_URL__/","logo":{"@type":"ImageObject","url":"__SITE_URL__/icon-512.png","width":512,"height":512},"sameAs":["https://github.com/meiiie/du_an_em_linh"]},{"@type":"WebSite","@id":"__SITE_URL__/#website","name":"MathL+","url":"__SITE_URL__/","inLanguage":"vi","description":"Học toán theo từng bước với MathL+: phiếu năm bước, máy kiểm từng bước, gia sư AI chỉ ra chỗ sai mà không đưa đáp án. Bản thử: Toán 12, đơn điệu và cực trị.","publisher":{"@id":"__SITE_URL__/#to-chuc"}},{"@type":"WebApplication","@id":"__SITE_URL__/#app","name":"MathL+","url":"__SITE_URL__/","applicationCategory":"EducationalApplication","operatingSystem":"Web","inLanguage":"vi","description":"Học toán theo từng bước với MathL+: phiếu năm bước, máy kiểm từng bước, gia sư AI chỉ ra chỗ sai mà không đưa đáp án. Bản thử: Toán 12, đơn điệu và cực trị.","image":"__SITE_URL__/og.jpg","publisher":{"@id":"__SITE_URL__/#to-chuc"}}]}</script>
     <!-- Đặt chế độ sáng / tối trước lần vẽ đầu để trang không chớp; cùng khóa và cùng luật với GiaoDien (src/app/core/giao-dien.ts).
          CSS toàn cục chặn vẽ (angular.json: inlineCritical false): CSS chậm thì trang chưa vẽ gì cho tới khi CSS về, và khung
          đầu đã đúng chế độ. Nếu bật lại CSS trọng yếu nội tuyến, chế độ tối sẽ chớp sáng vì phần nội tuyến chỉ có token sáng. -->

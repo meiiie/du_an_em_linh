@@ -1,0 +1,99 @@
+:host {
+  display: block;
+}
+
+h2 {
+  margin: 0;
+  font-weight: 400;
+  letter-spacing: -0.02em;
+}
+
+.chon {
+  padding-block: 32px 96px;
+}
+
+.chon h2 {
+  margin-bottom: 40px;
+  font-size: clamp(1.75rem, 1.4rem + 1.2vw, 2.25rem);
+  text-align: center;
+}
+
+.hai-the {
+  display: grid;
+  gap: 24px;
+}
+
+article {
+  display: flex;
+  flex-direction: column;
+  padding: 40px;
+  overflow: hidden;
+  border-radius: 16px;
+  background: var(--tc-kem);
+}
+
+.minh-hoa {
+  display: block;
+  width: calc(100% + 80px);
+  max-width: none;
+  height: auto;
+  aspect-ratio: 4 / 3;
+  margin: -40px -40px 32px;
+  object-fit: cover;
+}
+
+h3 {
+  margin: 0;
+  font-size: 26px;
+  font-weight: 400;
+}
+
+article > p {
+  margin: 12px 0 0;
+  padding-bottom: 28px;
+  border-bottom: 1px solid var(--line);
+  font-size: 16px;
+}
+
+ul {
+  flex: 1;
+  margin: 24px 0 40px;
+  padding: 0;
+  list-style: none;
+}
+
+ul li {
+  padding: 6px 0 6px 22px;
+  border: 0;
+  background: no-repeat left 0.55em / 12px url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M2 6.5l2.5 2.5L10 3' fill='none' stroke='%23888888' stroke-width='1.5'/%3E%3C/svg%3E");
+  font-size: 15px;
+}
+
+article .vien {
+  width: 100%;
+}
+
+.truoc {
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 1px solid var(--line);
+}
+
+.truoc h3 {
+  font-size: 17px;
+  font-weight: 600;
+}
+
+.truoc p {
+  max-width: 42rem;
+  margin: 8px 0 0;
+  color: var(--muted);
+  font-size: 15px;
+  line-height: 24px;
+}
+
+@media (min-width: 64rem) {
+  .hai-the {
+    grid-template-columns: 1fr 1fr;
+  }
+}

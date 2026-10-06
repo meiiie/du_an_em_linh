@@ -63,6 +63,11 @@ export const routes: Routes = [
       cho('ket-noi-ai', 'Gia sư', 'Gia sư', 'Gia sư lớp đang dùng sẽ hiện ở đây.'),
     ],
   },
-  { path: '', pathMatch: 'full', loadComponent: () => import('./features/trang-chu/trang-chu').then((m) => m.TrangChu) },
+  {
+    path: '',
+    pathMatch: 'full',
+    title: 'Học toán theo từng bước',
+    loadComponent: () => import('./features/trang-chu/trang-chu').then((m) => m.TrangChu),
+  },
   { path: '**', redirectTo: 'dang-nhap' },
 ];
