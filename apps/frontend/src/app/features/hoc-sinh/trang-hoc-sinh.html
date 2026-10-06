@@ -1,0 +1,45 @@
+<header class="dau-trang">
+  <h1>Chào {{ ten() }}</h1>
+</header>
+
+@if (ds.isLoading() && !ds.hasValue()) {
+  <div class="dang-tai" aria-busy="true"><span class="sr-only">Đang tải bài được giao</span></div>
+} @else if (ds.error()) {
+  <div class="trong" role="alert">
+    <p>Chưa tải được bài. Kiểm tra kết nối rồi thử lại.</p>
+    <button appButton variant="secondary" type="button" (click)="ds.reload()">Thử lại</button>
+  </div>
+} @else {
+  @if (ke(); as ke) {
+    <section class="ke-tiep" aria-labelledby="tieu-de-ke-tiep">
+      <div class="ke-chu">
+        <h2 id="tieu-de-ke-tiep" class="nhan-muc">Bài tiếp theo</h2>
+        <p class="ky-nang">{{ ke.tenKyNang }}</p>
+        <p class="cau-hoi">{{ thanDe(ke.deBai) }}</p>
+        <div class="tien-do" role="img" [attr.aria-label]="'Đã đạt ' + ke.soBuocDat + ' trên ' + ke.soBuoc + ' bước'">
+          @for (dat of vach(ke); track $index) {
+            <i [class.dat]="dat"></i>
+          }
+          <span>{{ ke.soBuocDat }}/{{ ke.soBuoc }} bước · {{ tenMuc[ke.muc4] }}</span>
+        </div>
+        <a appButton size="lg" [routerLink]="['/hs/luyen', ke.maBai]" data-testid="lam-buoc-tiep">Làm bước tiếp</a>
+      </div>
+      <app-katex class="ke-bang" bang [latex]="deBang(ke.deBaiLatex)" />
+    </section>
+  }
+
+  <section aria-labelledby="tieu-de-bai-giao">
+    <h2 id="tieu-de-bai-giao" class="nhan-muc">Bài được giao</h2>
+    @if (ds.value()?.length) {
+      <ul class="danh-sach">
+        @for (b of ds.value(); track b.maBai; let i = $index) {
+          <li><app-hang-bai [bai]="b" [so]="i + 1" /></li>
+        }
+      </ul>
+    } @else {
+      <div class="trong">
+        <p>Chưa có bài. Bài thầy cô giao sẽ hiện ở đây.</p>
+      </div>
+    }
+  </section>
+}

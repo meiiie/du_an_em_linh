@@ -1,6 +1,23 @@
+/* Màn rộng: form trái, tấm bảng minh họa phải (MinhHoaDangNhap); màn hẹp chỉ có form. */
 .trang {
   position: relative;
+  display: grid;
   min-height: 100dvh;
+  background: var(--raise);
+}
+
+.ben-phai {
+  display: none;
+}
+
+@media (min-width: 64rem) {
+  .trang {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+
+  .ben-phai {
+    display: grid;
+  }
 }
 
 .goc {
@@ -62,6 +79,8 @@
 
 .ve-trang-chu {
   display: inline-flex;
+  align-items: center;
+  gap: 14px;
   padding: var(--space-1);
   border-radius: var(--radius);
   color: inherit;

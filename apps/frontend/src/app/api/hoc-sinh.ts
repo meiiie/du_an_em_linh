@@ -1,71 +1,114 @@
-// Kiểu cho API học sinh theo `specs/001-lat-cat-doc/contracts/api-core.md` (P2). Core chưa có các endpoint này: khi DTO
-// bên core thành hình thì đối chiếu lại ở đây. Trường hợp đồng chưa định nghĩa hình dạng để `unknown`, không đoán.
+// Kiểu cho API học sinh theo `specs/001-lat-cat-doc/contracts/api-core.md` §Làm bài (T021, #148). Đổi DTO bên core thì
+// sửa ở đây. Không trường nào cho lời giải hay đáp án (FR-006).
 
 /** Kết quả chấm một bước. `KHONG_CHAM_DUOC`: dịch vụ toán lỗi, không bao giờ coi là đạt. */
-export type KetQuaCham = 'DAT' | 'SAI' | 'KHONG_CHAM_DUOC';
+export type KetQuaCham = 'DAT' | 'SAI' | 'KHONG_KIEM_DUOC' | 'KHONG_CHAM_DUOC';
 
 /** Bốn mức cho học sinh (ADR v0, «Không mở lại»). */
-export type Muc4 = string;
+export type Muc4 = 'NHAN_BIET' | 'THONG_HIEU' | 'VAN_DUNG' | 'VAN_DUNG_CAO';
+
+export const TEN_MUC: Record<Muc4, string> = {
+  NHAN_BIET: 'Nhận biết',
+  THONG_HIEU: 'Thông hiểu',
+  VAN_DUNG: 'Vận dụng',
+  VAN_DUNG_CAO: 'Vận dụng cao',
+};
+
+export type TrangThaiBai = 'CHUA_LAM' | 'DANG_LAM' | 'DA_NOP';
 
 export type LyDoBaiKe = 'CHUA_LOI' | 'CUNG_CO' | 'NANG_1_NAC' | 'DE_HON' | 'THAY_CO_GIAO';
 
-/** `GET /api/hs/trang-hoc`. */
-export interface TrangHoc {
-  readonly ten: string;
-  readonly viecHomNay: readonly unknown[];
-  readonly baiKe: { readonly maBai: string; readonly tieuDe: string; readonly lyDo: LyDoBaiKe; readonly kyNang: string; readonly muc: Muc4 };
-  readonly soBaiGiao: readonly unknown[];
-  /** Hợp đồng ghi «kẹt»; tên trường JSON là `ket`. */
-  readonly soKyNang: readonly { readonly kyNang: string; readonly muc4: Muc4; readonly ket: boolean }[];
-  readonly hoanThanh: { readonly kyNang: readonly string[]; readonly chuDe: unknown };
-}
-
-/** Một dòng của `GET /api/hs/bai`: bài được giao hoặc đã phát hành cho lớp. */
+/** Một dòng của `GET /api/hs/bai`: bài được giao cho em, đang phát hành ở lớp. */
 export interface BaiCuaHocSinh {
   readonly maBai: string;
-  readonly tieuDe: string;
+  readonly deBai: string;
+  readonly deBaiLatex: string;
+  /** Mã kỹ năng (vd `T12.DH.03`); màn hiện `tenKyNang`. */
+  readonly kyNang: string;
+  readonly tenKyNang: string;
   readonly muc4: Muc4;
   readonly han: string | null;
-  readonly trangThai: string;
+  readonly trangThai: TrangThaiBai;
+  readonly soBuocDat: number;
+  readonly soBuoc: number;
+  /** Chỉ khi đã nộp. */
+  readonly ketQua: Exclude<KetQuaCham, 'KHONG_CHAM_DUOC'> | null;
 }
 
-/** `GET /api/hs/bai/{maBai}`. Không có lời giải, dữ kiện bảo vệ hay đáp án cuối khi bài đang làm (FR-006). */
+export interface ViTriSai {
+  readonly maBuoc: string;
+  readonly dong?: number;
+  readonly hang?: string;
+  readonly k?: number;
+}
+
+export interface DongBaiLam {
+  readonly dong: number;
+  readonly latex: string;
+  /** Nhãn em đã gửi (`NGHIEM`, `KHONG_XD`, `DONG_BIEN`…), vắng khi không có. */
+  readonly loai?: string;
+}
+
+export interface OBang {
+  readonly hang: string;
+  readonly k: number;
+  readonly giaTri: string;
+}
+
+/** `GET /api/hs/bai/{maBai}`. */
 export interface ChiTietBai {
+  readonly maBai: string;
   readonly de: { readonly text: string; readonly latex: string };
-  readonly cacBuoc: readonly { readonly maBuoc: string; readonly moTa: string; readonly dangNhap: string }[];
+  readonly kyNang: string;
+  readonly tenKyNang: string;
+  readonly muc4: Muc4;
+  readonly dangTraLoi: string;
+  readonly buocBatDau: string | null;
+  /** Các ô của bước kết luận em phải khai (core suy từ đề như v0 SP-03), vd `dong_bien`, `cuc_dai`. Không chứa đáp án. */
+  readonly khaiBaoKetLuan: readonly string[];
+  readonly cacBuoc: readonly { readonly maBuoc: string; readonly ten: string; readonly viec: string }[];
   readonly baiLam: {
+    readonly trangThai: TrangThaiBai;
     readonly cacBuoc: readonly {
       readonly maBuoc: string;
-      readonly dong: readonly string[];
-      readonly latex: string;
-      readonly ketQua: KetQuaCham;
-      readonly thongBao: string;
-      readonly oSai: readonly unknown[];
+      readonly dong: readonly DongBaiLam[];
+      readonly bang: readonly OBang[];
+      /** Lần chấm mới nhất cho nội dung hiện tại của bước; sửa bước sau lần chấm thì null. */
+      readonly ketQua: KetQuaCham | null;
+      readonly thongBao: string | null;
+      readonly oSai: readonly ViTriSai[];
     }[];
-    readonly trangThai: string;
   };
   readonly coTheMoLoiGiai: boolean;
 }
 
-/** Thân `POST /api/hs/bai/{maBai}/buoc`. */
+/** Thân `POST /api/hs/bai/{maBai}/buoc`. `suKien`: sự kiện nhập mới kể từ lần nộp trước, tối đa 500. */
 export interface NopBuoc {
   readonly maBuoc: string;
-  readonly dong: readonly string[];
-  readonly bang?: readonly { readonly hang: number; readonly k: number; readonly giaTri: string }[];
+  readonly dong?: readonly { readonly dong: number; readonly latex: string; readonly loai?: string }[];
+  readonly bang?: readonly OBang[];
+  readonly suKien?: readonly {
+    readonly maBuoc: string;
+    readonly hang?: string;
+    readonly k?: number;
+    readonly giaTriCu?: string;
+    readonly giaTriMoi: string;
+    readonly luc: string;
+  }[];
 }
 
 /** Phản hồi chấm một bước: không có giá trị đúng. */
 export interface KetQuaBuoc {
   readonly ketQua: KetQuaCham;
   readonly thongBao: string;
-  readonly oSai: readonly unknown[];
+  readonly oSai: readonly ViTriSai[];
   readonly maLoi?: string;
   readonly buocKe?: string;
 }
 
 /** `POST /api/hs/bai/{maBai}/nop`. `loiGiai` chỉ có khi lớp bật cờ mở lời giải sau khi nộp. */
 export interface KetQuaNop {
-  readonly ketQua: KetQuaCham;
+  readonly ketQua: Exclude<KetQuaCham, 'KHONG_CHAM_DUOC'>;
   readonly mucHieu: readonly { readonly kyNang: string; readonly muc4Truoc: Muc4; readonly muc4Sau: Muc4 }[];
   readonly loiGiai?: unknown;
 }

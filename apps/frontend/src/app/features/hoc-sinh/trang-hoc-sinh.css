@@ -1,0 +1,103 @@
+:host {
+  display: grid;
+  gap: var(--space-6);
+}
+
+.dau-trang h1 {
+  margin: 0;
+}
+
+.ke-tiep {
+  display: grid;
+  gap: var(--space-5);
+  padding: var(--space-5);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  background: var(--raise);
+  box-shadow: var(--shadow-sm);
+}
+
+.ke-chu .nhan-muc {
+  margin-bottom: var(--space-2);
+}
+
+.ky-nang {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 600;
+  line-height: 30px;
+}
+
+.cau-hoi {
+  margin: var(--space-1) 0 0;
+  color: var(--ink-2);
+  font-size: 15px;
+}
+
+.tien-do {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin: var(--space-4) 0 var(--space-5);
+}
+
+.tien-do i {
+  width: 32px;
+  height: 4px;
+  border-radius: 999px;
+  background: var(--line);
+}
+
+.tien-do i.dat {
+  background: var(--pass);
+}
+
+.tien-do span {
+  margin-left: var(--space-2);
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.dang-tai {
+  height: 220px;
+  border-radius: var(--radius-card);
+  background: linear-gradient(90deg, var(--wash), var(--raise), var(--wash)) 0 0 / 200% 100%;
+  animation: tai 1.2s linear infinite;
+}
+
+@keyframes tai {
+  to {
+    background-position: -200% 0;
+  }
+}
+
+.trong .btn {
+  margin-top: var(--space-3);
+}
+
+.ke-bang {
+  align-self: center;
+}
+
+.danh-sach {
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  list-style: none;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  background: var(--raise);
+}
+
+.danh-sach li + li {
+  border-top: 1px solid var(--line);
+}
+
+@media (min-width: 48rem) {
+  .ke-tiep {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    align-items: center;
+    padding: var(--space-6);
+  }
+}

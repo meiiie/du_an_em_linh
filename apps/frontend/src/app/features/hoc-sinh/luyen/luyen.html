@@ -1,0 +1,254 @@
+<h1 class="sr-only">Luyện bài</h1>
+<a class="ve" routerLink="/hs">← Bài được giao</a>
+
+@if (bai.isLoading() && !bai.hasValue()) {
+  <div class="dang-tai" aria-busy="true"><span class="sr-only">Đang tải bài</span></div>
+} @else if (bai.error()) {
+  <div class="trong" role="alert">
+    @if (khongTimThay()) {
+      <p>Bài này không còn mở cho lớp em.</p>
+      <a appButton variant="secondary" routerLink="/hs">Về bài được giao</a>
+    } @else {
+      <p>Chưa tải được bài. Kiểm tra kết nối rồi thử lại.</p>
+      <button appButton variant="secondary" type="button" (click)="bai.reload()">Thử lại</button>
+    }
+  </div>
+} @else if (bai.value(); as b) {
+  @if (b.dangTraLoi !== 'TU_LUAN_5_BUOC' || !b.cacBuoc.length) {
+    <div class="trong">
+      <p>Dạng câu này (không theo khung 5 bước) chưa có khung làm bài trên ứng dụng. Em làm ra giấy và nộp thầy cô.</p>
+    </div>
+  } @else {
+    <section
+      class="phieu"
+      data-testid="solve-screen"
+      [attr.data-ky-nang]="b.kyNang"
+      [attr.data-da-nop]="daNop()"
+      [attr.data-buoc-bat-dau]="b.buocBatDau ?? b.cacBuoc[0]?.maBuoc"
+    >
+      <header class="de">
+        <p class="nhan-muc">{{ tenMuc[b.muc4] }}</p>
+        <p class="ky-nang">{{ b.tenKyNang }}</p>
+        <p class="cau-hoi">{{ thanDe(b.de.text) }}</p>
+        <app-katex bang [latex]="deBang(b.de.latex)" />
+        @if (deChoSan()) {
+          <p class="phu" data-testid="de-cho-san">
+            Đề đã cho sẵn: {{ deChoSan() }}. Em bắt đầu từ bước {{ tenBuocDau() }}.
+          </p>
+        }
+      </header>
+
+      <div class="lam">
+        <nav aria-label="Các bước">
+          <ol class="cac-buoc">
+            @for (s of b.cacBuoc; track s.maBuoc; let i = $index) {
+              <li>
+                <button
+                  type="button"
+                  class="buoc"
+                  [attr.data-tt]="trangThai(i)"
+                  [attr.data-testid]="'step-' + s.maBuoc"
+                  [attr.aria-current]="i === buoc() ? 'step' : null"
+                  [disabled]="trangThai(i) === 'de-cho'"
+                  (click)="moBuoc(i)"
+                >
+                  <span class="so" aria-hidden="true">{{ trangThai(i) === 'dat' ? '✓' : i + 1 }}</span>
+                  <span class="ten">{{ s.ten }}<span class="sr-only">, {{ tenTrangThai(i) }}</span></span>
+                </button>
+              </li>
+            }
+          </ol>
+        </nav>
+
+        @if (buocHien(); as s) {
+          @if (nhap(); as n) {
+            <h2 #tieuDe class="tieu-de" tabindex="-1">
+              <span class="so-buoc">Bước {{ buoc() + 1 }}/{{ b.cacBuoc.length }}</span>
+              {{ s.ten }}
+            </h2>
+            <p class="viec">{{ s.viec }}</p>
+
+            <fieldset class="nhap" [disabled]="khoa()" [class.sai]="caBuocSai(s.maBuoc)">
+              <legend class="sr-only">Bài làm bước {{ s.ten }}</legend>
+              @switch (s.maBuoc) {
+                @case (ma.TXD) {
+                  <div class="dong" [class.sai]="dongSai(ma.TXD, 0)">
+                    <app-o-cong-thuc
+                      nhan="D"
+                      testId="latex-txd"
+                      goiY="Gõ tập xác định bằng bàn phím"
+                      moTaBoi="phan-hoi"
+                      [disabled]="khoa()"
+                      [value]="n.txd"
+                      (valueChange)="datTxd($event)"
+                    />
+                  </div>
+                }
+                @case (ma.DAO_HAM) {
+                  @for (d of n.dh; track $index; let i = $index) {
+                    <div class="dong" [class.sai]="dongSai(ma.DAO_HAM, i)">
+                      <app-o-cong-thuc
+                        [nhan]="i === 0 ? 'y′' : 'Dòng ' + (i + 1)"
+                        [testId]="i === 0 ? 'latex-dh' : 'latex-dh-' + i"
+                        goiY="Gõ đạo hàm bằng bàn phím"
+                        moTaBoi="phan-hoi"
+                        [disabled]="khoa()"
+                        [value]="d"
+                        (valueChange)="datDh(i, $event)"
+                      />
+                    </div>
+                  }
+                  <button appButton variant="secondary" type="button" class="them-dong" (click)="themDongDh()">+ Thêm dòng</button>
+                }
+                @case (ma.NGHIEM) {
+                  <div data-testid="nghiem-block" class="khoi-dong">
+                    @for (r of n.nghiem; track $index; let i = $index) {
+                      <div class="dong nghiem" [class.sai]="nghiemSai(n, i)" [attr.data-testid]="'dong-nghiem-' + i">
+                        <app-o-cong-thuc
+                          [nhan]="r.loai === 'KHONG_XD' ? 'Điểm y′ không xác định' : 'Nghiệm y′ = 0'"
+                          [testId]="i === 0 ? 'latex-nghiem' : 'latex-nghiem-' + i"
+                          goiY="Gõ một giá trị x, ví dụ -1"
+                          moTaBoi="phan-hoi"
+                          [disabled]="khoa()"
+                          [value]="r.latex"
+                          (valueChange)="datNghiem(i, $event)"
+                        />
+                        <button
+                          appButton
+                          variant="secondary"
+                          type="button"
+                          class="doi-loai"
+                          [attr.aria-label]="r.loai === 'NGHIEM' ? 'Đổi thành điểm không xác định' : 'Đổi thành nghiệm'"
+                          (click)="doiLoaiNghiem(i)"
+                        >
+                          {{ r.loai === 'NGHIEM' ? 'Không xác định' : 'Nghiệm' }}
+                        </button>
+                      </div>
+                    }
+                    <button appButton variant="secondary" type="button" class="them-dong" data-testid="them-nghiem" (click)="themNghiem()">
+                      + Thêm nghiệm
+                    </button>
+                    <p class="phu">Không có nghiệm thì để trống.</p>
+                  </div>
+                }
+                @case (ma.XET_DAU) {
+                  <app-bang-xet-dau
+                    [moc]="n.moc"
+                    (mocChange)="datMoc($event)"
+                    [dau]="n.dau"
+                    (dauChange)="datDau($event)"
+                    [mui]="n.mui"
+                    (muiChange)="datMui($event)"
+                    [oSai]="oSaiCua(ma.XET_DAU)"
+                    (suKien)="ghiSuKien($event)"
+                  />
+                }
+                @case (ma.KET_LUAN) {
+                  @for (o of cacOKetLuan(); track o.ma; let i = $index) {
+                    <div class="dong" [class.sai]="dongSai(ma.KET_LUAN, i)" [attr.data-testid]="'o-kl-' + o.testId.slice(6)">
+                      @if (o.congThuc) {
+                        <app-o-cong-thuc
+                          [nhan]="o.nhan"
+                          [testId]="o.testId"
+                          [xemTruoc]="false"
+                          goiY="x = …, y = …, hoặc: không có"
+                          moTaBoi="phan-hoi"
+                          [disabled]="khoa()"
+                          [value]="n.kl[o.ma] ?? ''"
+                          (valueChange)="datKl(o.ma, $event)"
+                        />
+                      } @else {
+                        <label class="o-chu">
+                          <span class="nhan">{{ o.nhan }}</span>
+                          <input
+                            [attr.data-testid]="o.testId"
+                            placeholder="(…; …) và (…; …), hoặc: không có"
+                            aria-describedby="phan-hoi"
+                            autocomplete="off"
+                            [value]="n.kl[o.ma] ?? ''"
+                            (input)="datKl(o.ma, $any($event.target).value)"
+                          />
+                        </label>
+                      }
+                    </div>
+                  }
+                }
+              }
+            </fieldset>
+
+            <div #vungPhanHoi class="phan-hoi-vung" aria-live="polite">
+              @if (ketQuaHien(); as kq) {
+                <p id="phan-hoi" class="phan-hoi" [attr.data-kq]="kq.ketQua" data-testid="cham-thong-bao">{{ kq.thongBao }}</p>
+              } @else if (vuaDat(); as ten) {
+                <p id="phan-hoi" class="phan-hoi" data-kq="DAT" data-testid="cham-thong-bao">
+                  Bước {{ ten }} đạt. Em làm tiếp bước này.
+                </p>
+              }
+              @if (loiGui(); as loi) {
+                <p class="phan-hoi" data-kq="LOI" role="alert">{{ loi }}</p>
+              }
+            </div>
+
+            @if (buocQuayLai(); as q) {
+              <button
+                appButton
+                variant="secondary"
+                type="button"
+                data-testid="quay-lai-buoc"
+                [attr.data-buoc]="q.maBuoc"
+                (click)="moBuoc(q.i)"
+              >
+                Quay lại bước {{ q.ten }}
+              </button>
+            }
+          }
+        }
+
+        @if (daNop()) {
+          <section class="da-nop" data-testid="da-nop" aria-labelledby="tieu-de-nop">
+            <h2 id="tieu-de-nop">{{ chuDaNop() }}</h2>
+            @if (loiPhatLai()) {
+              <p class="phu" role="alert">Chưa tải được kết quả và lời giải của lần nộp.</p>
+              <button appButton variant="secondary" type="button" data-testid="tai-lai-ket-qua" (click)="taiLaiKetQuaNop()">Thử lại</button>
+            }
+            @for (m of ketQuaNop()?.mucHieu ?? []; track m.kyNang) {
+              <p class="phu">
+                Mức hiểu {{ m.kyNang === b.kyNang ? b.tenKyNang : m.kyNang }}: {{ tenMuc[m.muc4Truoc] }} → {{ tenMuc[m.muc4Sau] }}
+              </p>
+            }
+            @if (loiGiai(); as lg) {
+              <div class="loi-giai" data-testid="loi-giai-sau-nop">
+                <p class="nhan-muc">Lời giải</p>
+                <p>{{ lg }}</p>
+              </div>
+            }
+            <a appButton routerLink="/hs">Về bài được giao</a>
+          </section>
+        } @else {
+          @if (buocCanKiemLai(); as c) {
+            <p class="phu canh-bao">
+              {{ c.daCham ? 'Em vừa sửa bước ' + c.ten + '.' : 'Bước ' + c.ten + ' chưa kiểm tra.' }} Bấm «Kiểm tra» ở bước đó rồi hãy nộp.
+            </p>
+          } @else if (nopDuoc() && !datHet()) {
+            <p class="phu canh-bao">Còn bước chưa đạt. Nộp bây giờ thì thầy cô thấy bài như hiện tại.</p>
+          }
+          <div class="thanh-nop" data-testid="thanh-nop">
+            <button
+              appButton
+              type="button"
+              data-testid="nop-buoc"
+              [variant]="nopDuoc() ? 'secondary' : 'primary'"
+              [disabled]="dangGui()"
+              (click)="kiemTra()"
+            >
+              {{ dangGui() ? 'Đang kiểm…' : ketQuaHien() ? 'Kiểm tra lại' : 'Kiểm tra' }}
+            </button>
+            @if (nopDuoc()) {
+              <button appButton type="button" data-testid="nop-bai" [disabled]="dangGui()" (click)="nopBai()">Nộp bài</button>
+            }
+          </div>
+        }
+      </div>
+    </section>
+  }
+}

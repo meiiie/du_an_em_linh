@@ -9,6 +9,7 @@ import { BieuTuong } from '../../shared/ui/bieu-tuong';
 import { BrandMark } from '../../shared/ui/brand-mark';
 import { Button } from '../../shared/ui/button';
 import { DoiGiaoDien } from '../../shared/ui/doi-giao-dien';
+import { MinhHoaDangNhap } from './minh-hoa-dang-nhap';
 
 type Buoc = 'email' | 'mat-khau';
 type LoiDangNhap = 'sai' | 'khoa' | 'may-chu';
@@ -22,7 +23,7 @@ const TAI_KHOAN_THU = [
 /** Đăng nhập hai bước như v0 (apps/web/components/login-form.tsx): email → mật khẩu. */
 @Component({
   selector: 'app-dang-nhap',
-  imports: [FormField, RouterLink, BieuTuong, BrandMark, Button, DoiGiaoDien],
+  imports: [FormField, RouterLink, BieuTuong, BrandMark, Button, DoiGiaoDien, MinhHoaDangNhap],
   templateUrl: './dang-nhap.html',
   styleUrl: './dang-nhap.css',
 })
