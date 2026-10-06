@@ -33,7 +33,7 @@
         <app-katex bang [latex]="deBang(b.de.latex)" />
         @if (deChoSan()) {
           <p class="phu" data-testid="de-cho-san">
-            Đề đã cho sẵn: {{ deChoSan() }}. Em bắt đầu từ bước {{ b.cacBuoc[buoc()]?.ten?.toLowerCase() }}.
+            Đề đã cho sẵn: {{ deChoSan() }}. Em bắt đầu từ bước {{ tenBuocDau() }}.
           </p>
         }
       </header>
@@ -103,7 +103,7 @@
                 @case (ma.NGHIEM) {
                   <div data-testid="nghiem-block" class="khoi-dong">
                     @for (r of n.nghiem; track $index; let i = $index) {
-                      <div class="dong nghiem" [class.sai]="dongSai(ma.NGHIEM, i)" [attr.data-testid]="'dong-nghiem-' + i">
+                      <div class="dong nghiem" [class.sai]="nghiemSai(n, i)" [attr.data-testid]="'dong-nghiem-' + i">
                         <app-o-cong-thuc
                           [nhan]="r.loai === 'KHONG_XD' ? 'Điểm y′ không xác định' : 'Nghiệm y′ = 0'"
                           [testId]="i === 0 ? 'latex-nghiem' : 'latex-nghiem-' + i"

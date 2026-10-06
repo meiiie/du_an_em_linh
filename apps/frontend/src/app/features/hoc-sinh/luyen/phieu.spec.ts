@@ -1,5 +1,5 @@
 import { ChiTietBai, DongBaiLam } from '../../../api/hoc-sinh';
-import { NhapPhieu, nhapTuBaiLam, oKetLuan, yeuCauNop } from './phieu';
+import { dongNghiem, NhapPhieu, nhapTuBaiLam, oKetLuan, yeuCauNop } from './phieu';
 
 const KHAI_BAO = ['dong_bien', 'nghich_bien', 'cuc_dai', 'cuc_tieu'];
 
@@ -139,6 +139,14 @@ describe('nhapTuBaiLam', () => {
     const n = nhapTuBaiLam(daGui);
     expect(yeuCauNop('B.DH.NGHIEM', n, KHAI_BAO)).toEqual(yeuCauNop('B.DH.NGHIEM', NHAP, KHAI_BAO));
     expect(yeuCauNop('B.DH.KETLUAN', n, KHAI_BAO)).toEqual(yeuCauNop('B.DH.KETLUAN', NHAP, KHAI_BAO));
+  });
+});
+
+describe('dongNghiem', () => {
+  it('hàng trống không gửi nên không có số dòng; các hàng sau đánh số như thân yêu cầu', () => {
+    const n: NhapPhieu = { ...NHAP, nghiem: [{ latex: ' ', loai: 'NGHIEM' }, { latex: '2', loai: 'NGHIEM' }, { latex: '-1', loai: 'KHONG_XD' }] };
+    expect([0, 1, 2].map((i) => dongNghiem(n, i))).toEqual([undefined, 0, 1]);
+    expect(yeuCauNop('B.DH.NGHIEM', n, KHAI_BAO).dong!.map((d) => d.dong)).toEqual([0, 1]);
   });
 });
 

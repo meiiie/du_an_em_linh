@@ -35,6 +35,7 @@ const MUI: { gia: Mui; chu: string; ten: string }[] = [
         data-testid="moc-nhap"
         aria-label="Mốc x"
         placeholder="mốc x…"
+        maxlength="60"
         [value]="nhapMoc()"
         (input)="nhapMoc.set($any($event.target).value)"
         (keydown.enter)="themMoc()"

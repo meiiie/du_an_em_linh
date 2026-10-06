@@ -149,11 +149,74 @@ describe('Luyen', () => {
     expect(t.$('[data-testid=solve-screen]')!.getAttribute('data-da-nop')).toBe('true');
   });
 
-  it('đề cho sẵn bước đầu: bước đó khóa, nói rõ em bắt đầu từ đâu', async () => {
-    const t = await mo(chiTiet({}, { buocBatDau: 'B.DH.NGHIEM' }));
+  it('đề cho sẵn bước đầu: bước đó khóa, nói rõ em bắt đầu từ đâu, kể cả khi vào lại ở bước sau', async () => {
+    const t = await mo(chiTiet({ cacBuoc: [daDat('B.DH.NGHIEM')] }, { buocBatDau: 'B.DH.NGHIEM' }));
     expect(t.chu('[data-testid=de-cho-san]')).toBe('Đề đã cho sẵn: tập xác định, đạo hàm. Em bắt đầu từ bước nghiệm.');
     expect(t.$<HTMLButtonElement>('[data-testid="step-B.DH.TXD"]')!.disabled).toBe(true);
+    expect(t.chu('.tieu-de')).toBe('Bước 4/5 Xét dấu');
+  });
+
+  it('sửa một bước đã đạt rồi kiểm lại: dấu đạt của các bước sau mất (core không còn coi là của bài), không cho nộp', async () => {
+    const t = await mo(chiTiet({ cacBuoc: CAC_BUOC.map((s) => daDat(s.maBuoc)) }));
+    expect(t.$('[data-testid=nop-bai]')).not.toBeNull();
+    await t.bam('[data-testid="step-B.DH.TXD"]');
+    await t.go('latex-txd', '\\mathbb{R}\\setminus\\{0\\}');
+    await t.bam('[data-testid=nop-buoc]');
+    t.http.expectOne(API_HS.nopBuoc(MA)).flush({ ketQua: 'SAI', thongBao: 'Xem lại tập xác định.', oSai: [{ maBuoc: 'B.DH.TXD', dong: 0 }] });
+    await t.xong();
+    expect(CAC_BUOC.map((s) => t.$(`[data-testid="step-${s.maBuoc}"]`)!.getAttribute('data-tt'))).toEqual([
+      'sai',
+      'chua-lam',
+      'chua-lam',
+      'chua-lam',
+      'chua-lam',
+    ]);
+    expect(t.$('[data-testid=nop-bai]')).toBeNull();
+  });
+
+  it('kiểm lại một bước không sửa gì: các bước sau giữ dấu đạt', async () => {
+    const t = await mo(chiTiet({ cacBuoc: CAC_BUOC.map((s) => daDat(s.maBuoc)) }));
+    await t.bam('[data-testid="step-B.DH.TXD"]');
+    await t.bam('[data-testid=nop-buoc]');
+    const yc = t.http.expectOne(API_HS.nopBuoc(MA));
+    expect(yc.request.body).toEqual({ maBuoc: 'B.DH.TXD', dong: [{ dong: 0, latex: '\\mathbb{R}' }] });
+    yc.flush({ ketQua: 'DAT', thongBao: 'Đúng.', oSai: [] });
+    await t.xong();
+    expect(CAC_BUOC.map((s) => t.$(`[data-testid="step-${s.maBuoc}"]`)!.getAttribute('data-tt'))).toEqual(['dat', 'dat', 'dat', 'dat', 'dat']);
+    expect(t.$('[data-testid=nop-bai]')).not.toBeNull();
+  });
+
+  it('em bấm sang bước khác trong lúc chờ chấm: đạt thì không kéo em sang bước kế, không bỏ qua bước nào', async () => {
+    const t = await mo(chiTiet());
+    await t.go('latex-txd', '\\mathbb{R}');
+    await t.bam('[data-testid=nop-buoc]');
+    const yc = t.http.expectOne(API_HS.nopBuoc(MA));
+    await t.bam('[data-testid="step-B.DH.NGHIEM"]');
+    yc.flush({ ketQua: 'DAT', thongBao: 'Đúng.', oSai: [], buocKe: 'B.DH.DAOHAM' });
+    await t.xong();
     expect(t.chu('.tieu-de')).toBe('Bước 3/5 Nghiệm');
+    expect(t.$('[data-testid="step-B.DH.TXD"]')!.getAttribute('data-tt')).toBe('dat');
+    expect(t.$('[data-testid="step-B.DH.DAOHAM"]')!.getAttribute('data-tt')).toBe('chua-lam');
+  });
+
+  it('sự kiện bảng xét dấu nhập trong lúc chờ chấm được gửi ở lần kiểm sau, không mất', async () => {
+    const t = await mo(chiTiet({ cacBuoc: CAC_BUOC.slice(0, 3).map((s) => daDat(s.maBuoc)) }));
+    await t.go('moc-nhap', '0');
+    await t.bam('[data-testid=moc-them]');
+    await t.bam('[data-testid=nop-buoc]');
+    const lan1 = t.http.expectOne(API_HS.nopBuoc(MA));
+    expect(lan1.request.body.suKien.map((e: { hang: string; k: number; giaTriMoi: string }) => [e.hang, e.k, e.giaTriMoi])).toEqual([
+      ['X', 0, '0'],
+    ]);
+    await t.bam('[data-testid="dau-0-+"]');
+    lan1.flush({ ketQua: 'SAI', thongBao: 'Bảng chưa đủ dấu.', oSai: [] });
+    await t.xong();
+
+    await t.bam('[data-testid=nop-buoc]');
+    const lan2 = t.http.expectOne(API_HS.nopBuoc(MA));
+    expect(lan2.request.body.suKien.map((e: { hang: string; k: number; giaTriMoi: string }) => [e.hang, e.k, e.giaTriMoi])).toEqual([
+      ['DAU_YPHAY', 0, '+'],
+    ]);
   });
 
   it('bài không còn mở (404): nói rõ và dẫn về danh sách', async () => {

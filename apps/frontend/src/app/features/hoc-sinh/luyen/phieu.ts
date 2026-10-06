@@ -84,6 +84,12 @@ export function nhapTuBaiLam(bai: ChiTietBai): NhapPhieu {
   };
 }
 
+/** Số dòng đã gửi của hàng nghiệm thứ `i` trên màn: hàng trống không gửi, các hàng sau đánh số lại (như v0). */
+export function dongNghiem(n: NhapPhieu, i: number): number | undefined {
+  if (!n.nghiem[i]?.latex.trim()) return undefined;
+  return n.nghiem.slice(0, i).filter((r) => r.latex.trim()).length;
+}
+
 /** Thân `POST /api/hs/bai/{maBai}/buoc` cho một bước, như payload của v0 (`apps/web/components/solve-client.tsx`). */
 export function yeuCauNop(maBuoc: string, n: NhapPhieu, khaiBao: readonly string[]): NopBuoc {
   switch (maBuoc) {

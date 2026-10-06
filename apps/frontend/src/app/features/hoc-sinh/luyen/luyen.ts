@@ -20,7 +20,7 @@ import { OCongThuc } from '../../../shared/toan/o-cong-thuc';
 import { Button } from '../../../shared/ui/button';
 import { deBang, thanDe } from '../hang-bai';
 import { BangXetDau, SuKienO } from './bang-xet-dau';
-import { DAO_HAM, KET_LUAN, Mui, NGHIEM, NhapPhieu, nhapTuBaiLam, oKetLuan, TXD, XET_DAU, yeuCauNop } from './phieu';
+import { DAO_HAM, dongNghiem, KET_LUAN, Mui, NGHIEM, NhapPhieu, nhapTuBaiLam, oKetLuan, TXD, XET_DAU, yeuCauNop } from './phieu';
 
 interface KetQuaHien {
   readonly ketQua: KetQuaCham;
@@ -85,6 +85,19 @@ export class Luyen {
       ),
   });
 
+  /**
+   * Thân yêu cầu (không kèm sự kiện) core đang lưu cho từng bước. Lần chấm của một bước chỉ còn là của bước khi mọi bước
+   * từ bước bắt đầu tới nó giữ nguyên nội dung (core so băm), nên gửi nội dung mới cho một bước thì bỏ kết quả các bước sau.
+   */
+  private readonly daLuu = linkedSignal<ChiTietBai | undefined, Record<string, string>>({
+    source: () => this.bai.value(),
+    computation: (b) => {
+      if (!b) return {};
+      const n = nhapTuBaiLam(b);
+      return Object.fromEntries(b.baiLam.cacBuoc.map((s) => [s.maBuoc, JSON.stringify(yeuCauNop(s.maBuoc, n, b.khaiBaoKetLuan))]));
+    },
+  });
+
   private readonly batDau = computed(() => {
     const b = this.bai.value();
     return b?.buocBatDau ? Math.max(0, b.cacBuoc.findIndex((s) => s.maBuoc === b.buocBatDau)) : 0;
@@ -113,6 +126,7 @@ export class Luyen {
   protected readonly deChoSan = computed(() =>
     (this.bai.value()?.cacBuoc.slice(0, this.batDau()) ?? []).map((s) => s.ten.toLowerCase()).join(', '),
   );
+  protected readonly tenBuocDau = computed(() => this.bai.value()?.cacBuoc[this.batDau()]?.ten.toLowerCase() ?? '');
 
   /** Lỗi gốc nằm ở một bước trước bước đang mở (vd thiếu nghiệm khi đang xét dấu): nút quay lại bước đó (v0 UXT-04-d). */
   protected readonly buocQuayLai = computed(() => {
@@ -228,6 +242,12 @@ export class Luyen {
     return !!this.ketQua()[maBuoc]?.oSai.some((o) => o.maBuoc === maBuoc && o.dong === dong);
   }
 
+  /** Hàng nghiệm thứ `i` trên màn ứng với dòng nào đã gửi (hàng trống không gửi). */
+  protected nghiemSai(n: NhapPhieu, i: number): boolean {
+    const dong = dongNghiem(n, i);
+    return dong != null && this.dongSai(NGHIEM, dong);
+  }
+
   /** Bước sai mà máy chủ không chỉ dòng hay ô nào: viền cả khối. */
   protected caBuocSai(maBuoc: string): boolean {
     const kq = this.ketQua()[maBuoc];
@@ -252,23 +272,36 @@ export class Luyen {
     const n = this.nhap();
     const buoc = this.buocHien();
     if (!b || !n || !buoc || this.dangGui()) return;
-    const suKien = buoc.maBuoc === XET_DAU ? this.suKien : [];
-    const than: NopBuoc = { ...yeuCauNop(buoc.maBuoc, n, b.khaiBaoKetLuan), ...(suKien.length ? { suKien } : {}) };
+    const i = this.buoc();
+    const noiDung = yeuCauNop(buoc.maBuoc, n, b.khaiBaoKetLuan);
+    // Chép, không giữ tham chiếu: sự kiện nhập trong lúc chờ phải ở lại cho lần gửi sau.
+    const suKien = buoc.maBuoc === XET_DAU ? [...this.suKien] : [];
     this.dangGui.set(true);
     this.loiGui.set(null);
     try {
-      const kq = await firstValueFrom(this.http.post<KetQuaBuoc>(API_HS.nopBuoc(b.maBai), than));
-      if (suKien.length) this.suKien = this.suKien.slice(suKien.length);
-      this.ketQua.update((m) => ({ ...m, [buoc.maBuoc]: { ketQua: kq.ketQua, thongBao: kq.thongBao, oSai: kq.oSai } }));
+      const kq = await firstValueFrom(
+        this.http.post<KetQuaBuoc>(API_HS.nopBuoc(b.maBai), suKien.length ? { ...noiDung, suKien } : noiDung),
+      );
+      this.suKien.splice(0, suKien.length);
+      const moi = JSON.stringify(noiDung);
+      const doi = this.daLuu()[buoc.maBuoc] !== moi;
+      this.daLuu.update((m) => ({ ...m, [buoc.maBuoc]: moi }));
+      this.ketQua.update((m) => {
+        const giu = doi ? Object.fromEntries(Object.entries(m).filter(([ma]) => b.cacBuoc.findIndex((s) => s.maBuoc === ma) < i)) : m;
+        return { ...giu, [buoc.maBuoc]: { ketQua: kq.ketQua, thongBao: kq.thongBao, oSai: kq.oSai } };
+      });
       this.vuaDat.set(null);
-      if (kq.ketQua === 'DAT' && this.buoc() < b.cacBuoc.length - 1) {
+      // Em đã bấm sang bước khác trong lúc chờ thì để em ở đó.
+      if (kq.ketQua === 'DAT' && this.buoc() === i && i < b.cacBuoc.length - 1) {
         this.vuaDat.set(buoc.ten);
-        this.buoc.update((i) => i + 1);
+        this.buoc.set(i + 1);
         this.duaTieuDiem();
       } else {
         this.hienPhanHoi();
       }
     } catch (e) {
+      // 400 là thân không hợp lệ: bỏ sự kiện đã gửi, kẻo mọi lần kiểm sau mang lại đúng sự kiện hỏng đó.
+      if (e instanceof HttpErrorResponse && e.status === 400) this.suKien.splice(0, suKien.length);
       this.loiGui.set(loiDeDoc(e, 'Chưa gửi được bài làm. Kiểm tra kết nối rồi bấm «Kiểm tra» lại.'));
       this.hienPhanHoi();
     } finally {
