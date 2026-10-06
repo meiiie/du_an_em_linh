@@ -180,6 +180,10 @@ export class Luyen {
   /** Tên bước vừa đạt, để bước kế báo «Bước … đạt» (v0) cho tới khi em chấm bước này hay đổi bước. */
   protected readonly vuaDat = signal<string | null>(null);
   protected readonly dangGui = signal(false);
+  private readonly dangNop = signal(false);
+  /** Phiếu khóa khi đã nộp, hay đang nộp (sửa lúc đó sẽ không vào bài đã nộp). */
+  protected readonly khoa = computed(() => this.daNop() || this.dangNop());
+  protected readonly loiPhatLai = computed(() => !!this.nopTruoc.error());
   protected readonly loiGui = signal<string | null>(null);
   /** Bài đã nộp từ trước: gửi lại `POST …/nop`, core phát lại lần nộp (kết quả, mức hiểu, lời giải nếu lớp mở). */
   private readonly nopTruoc = httpResource<KetQuaNop>(() => {
@@ -278,8 +282,16 @@ export class Luyen {
     this.sua((n) => ({ ...n, kl: { ...n.kl, [ma]: v } }));
   }
 
+  /**
+   * Chỗ sai thuộc bước `maBuoc` trong mọi kết quả còn giữ: chấm một bước sau có thể chỉ dòng của bước trước (xét dấu chỉ
+   * hàng nghiệm). Sửa và kiểm lại bước trước thì kết quả các bước sau bị bỏ (`boKetQuaTu`), nên không còn viền cũ.
+   */
+  protected oSaiCua(maBuoc: string): ViTriSai[] {
+    return Object.values(this.ketQua()).flatMap((k) => k.oSai.filter((o) => o.maBuoc === maBuoc));
+  }
+
   protected dongSai(maBuoc: string, dong: number): boolean {
-    return !!this.ketQua()[maBuoc]?.oSai.some((o) => o.maBuoc === maBuoc && o.dong === dong);
+    return this.oSaiCua(maBuoc).some((o) => o.dong === dong);
   }
 
   /** Hàng nghiệm thứ `i` trên màn ứng với dòng nào đã gửi (hàng trống không gửi). */
@@ -356,6 +368,7 @@ export class Luyen {
     const b = this.bai.value();
     if (!b || this.dangGui()) return;
     this.dangGui.set(true);
+    this.dangNop.set(true);
     this.loiGui.set(null);
     try {
       this.ketQuaNop.set(await firstValueFrom(this.http.post<KetQuaNop>(API_HS.nopBai(b.maBai), {})));
@@ -364,6 +377,7 @@ export class Luyen {
       this.hienPhanHoi();
     } finally {
       this.dangGui.set(false);
+      this.dangNop.set(false);
     }
   }
 
@@ -371,6 +385,10 @@ export class Luyen {
   private boKetQuaTu(i: number): void {
     const cacBuoc = this.bai.value()?.cacBuoc ?? [];
     this.ketQua.update((m) => Object.fromEntries(Object.entries(m).filter(([ma]) => cacBuoc.findIndex((s) => s.maBuoc === ma) < i)));
+  }
+
+  protected taiLaiKetQuaNop(): void {
+    this.nopTruoc.reload();
   }
 
   private sua(f: (n: NhapPhieu) => NhapPhieu): void {

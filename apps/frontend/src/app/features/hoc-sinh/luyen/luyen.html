@@ -68,7 +68,7 @@
             </h2>
             <p class="viec">{{ s.viec }}</p>
 
-            <fieldset class="nhap" [disabled]="daNop()" [class.sai]="caBuocSai(s.maBuoc)">
+            <fieldset class="nhap" [disabled]="khoa()" [class.sai]="caBuocSai(s.maBuoc)">
               <legend class="sr-only">Bài làm bước {{ s.ten }}</legend>
               @switch (s.maBuoc) {
                 @case (ma.TXD) {
@@ -78,7 +78,7 @@
                       testId="latex-txd"
                       goiY="Gõ tập xác định bằng bàn phím"
                       moTaBoi="phan-hoi"
-                      [disabled]="daNop()"
+                      [disabled]="khoa()"
                       [value]="n.txd"
                       (valueChange)="datTxd($event)"
                     />
@@ -92,13 +92,13 @@
                         [testId]="i === 0 ? 'latex-dh' : 'latex-dh-' + i"
                         goiY="Gõ đạo hàm bằng bàn phím"
                         moTaBoi="phan-hoi"
-                        [disabled]="daNop()"
+                        [disabled]="khoa()"
                         [value]="d"
                         (valueChange)="datDh(i, $event)"
                       />
                     </div>
                   }
-                  <button type="button" class="nut-chu" (click)="themDongDh()">+ Thêm dòng</button>
+                  <button appButton variant="secondary" type="button" class="them-dong" (click)="themDongDh()">+ Thêm dòng</button>
                 }
                 @case (ma.NGHIEM) {
                   <div data-testid="nghiem-block" class="khoi-dong">
@@ -109,13 +109,15 @@
                           [testId]="i === 0 ? 'latex-nghiem' : 'latex-nghiem-' + i"
                           goiY="Gõ một giá trị x, ví dụ -1"
                           moTaBoi="phan-hoi"
-                          [disabled]="daNop()"
+                          [disabled]="khoa()"
                           [value]="r.latex"
                           (valueChange)="datNghiem(i, $event)"
                         />
                         <button
+                          appButton
+                          variant="secondary"
                           type="button"
-                          class="nut-chu doi-loai"
+                          class="doi-loai"
                           [attr.aria-label]="r.loai === 'NGHIEM' ? 'Đổi thành điểm không xác định' : 'Đổi thành nghiệm'"
                           (click)="doiLoaiNghiem(i)"
                         >
@@ -123,7 +125,9 @@
                         </button>
                       </div>
                     }
-                    <button type="button" class="nut-chu" data-testid="them-nghiem" (click)="themNghiem()">+ Thêm nghiệm</button>
+                    <button appButton variant="secondary" type="button" class="them-dong" data-testid="them-nghiem" (click)="themNghiem()">
+                      + Thêm nghiệm
+                    </button>
                     <p class="phu">Không có nghiệm thì để trống.</p>
                   </div>
                 }
@@ -135,7 +139,7 @@
                     (dauChange)="datDau($event)"
                     [mui]="n.mui"
                     (muiChange)="datMui($event)"
-                    [oSai]="ketQuaHien()?.oSai ?? []"
+                    [oSai]="oSaiCua(ma.XET_DAU)"
                     (suKien)="ghiSuKien($event)"
                   />
                 }
@@ -149,7 +153,7 @@
                           [xemTruoc]="false"
                           goiY="x = …, y = …, hoặc: không có"
                           moTaBoi="phan-hoi"
-                          [disabled]="daNop()"
+                          [disabled]="khoa()"
                           [value]="n.kl[o.ma] ?? ''"
                           (valueChange)="datKl(o.ma, $event)"
                         />
@@ -203,6 +207,10 @@
         @if (daNop()) {
           <section class="da-nop" data-testid="da-nop" aria-labelledby="tieu-de-nop">
             <h2 id="tieu-de-nop">{{ chuDaNop() }}</h2>
+            @if (loiPhatLai()) {
+              <p class="phu" role="alert">Chưa tải được kết quả và lời giải của lần nộp.</p>
+              <button appButton variant="secondary" type="button" data-testid="tai-lai-ket-qua" (click)="taiLaiKetQuaNop()">Thử lại</button>
+            }
             @for (m of ketQuaNop()?.mucHieu ?? []; track m.kyNang) {
               <p class="phu">
                 Mức hiểu {{ m.kyNang === b.kyNang ? b.tenKyNang : m.kyNang }}: {{ tenMuc[m.muc4Truoc] }} → {{ tenMuc[m.muc4Sau] }}

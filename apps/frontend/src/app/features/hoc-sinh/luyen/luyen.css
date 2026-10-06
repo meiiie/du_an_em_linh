@@ -177,23 +177,8 @@
   outline: 2px solid var(--mark);
 }
 
-.nut-chu {
+.them-dong {
   justify-self: start;
-  min-height: var(--target);
-  padding: 0;
-  border: 0;
-  background: none;
-  color: var(--ink);
-  font: inherit;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.doi-loai {
-  padding: 0 var(--space-2);
-  color: var(--ink-2);
-  font-weight: 500;
 }
 
 .o-chu {

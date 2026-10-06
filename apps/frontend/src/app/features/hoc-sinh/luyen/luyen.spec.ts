@@ -266,6 +266,45 @@ describe('Luyen', () => {
     expect(t.$('[data-testid="step-B.DH.TXD"]')!.getAttribute('aria-current')).toBe('step');
   });
 
+  it('phát lại hỏng thì báo và «Thử lại» gọi lại, có kết quả thì hiện mức hiểu', async () => {
+    const t = await mo(chiTiet({ trangThai: 'DA_NOP', cacBuoc: CAC_BUOC.map((s) => daDat(s.maBuoc)) }), false);
+    TestBed.tick();
+    t.http.expectOne(API_HS.nopBai(MA)).flush(null, { status: 503, statusText: 'Lỗi' });
+    await t.xong();
+    expect(t.chu('[data-testid=da-nop] [role=alert]')).toBe('Chưa tải được kết quả và lời giải của lần nộp.');
+    t.$<HTMLButtonElement>('[data-testid=tai-lai-ket-qua]')!.click();
+    TestBed.tick();
+    t.http.expectOne(API_HS.nopBai(MA)).flush({ ketQua: 'DAT', mucHieu: [{ kyNang: 'T12.DH.03', muc4Truoc: 'VAN_DUNG', muc4Sau: 'VAN_DUNG_CAO' }] });
+    await t.xong();
+    expect(t.$('[data-testid=da-nop] [role=alert]')).toBeNull();
+    expect(t.chu('[data-testid=da-nop] .phu')).toBe('Mức hiểu Tính đơn điệu của hàm số: Vận dụng → Vận dụng cao');
+  });
+
+  it('chấm xét dấu chỉ ra hàng nghiệm sai: quay lại bước nghiệm thì hàng đó được viền', async () => {
+    const nghiem = { ...daDat('B.DH.NGHIEM'), dong: [{ dong: 0, latex: '0' }, { dong: 1, latex: '3' }] };
+    const t = await mo(chiTiet({ cacBuoc: [daDat('B.DH.TXD'), daDat('B.DH.DAOHAM'), nghiem] }));
+    await t.bam('[data-testid=nop-buoc]');
+    t.http
+      .expectOne(API_HS.nopBuoc(MA))
+      .flush({ ketQua: 'SAI', thongBao: 'Mốc 3 không phải nghiệm của y′.', oSai: [{ maBuoc: 'B.DH.NGHIEM', dong: 1 }] });
+    await t.xong();
+    await t.bam('[data-testid=quay-lai-buoc]');
+    expect(t.chu('.tieu-de')).toBe('Bước 3/5 Nghiệm');
+    expect(t.$('[data-testid=dong-nghiem-1]')!.classList).toContain('sai');
+    expect(t.$('[data-testid=dong-nghiem-0]')!.classList).not.toContain('sai');
+  });
+
+  it('đang nộp bài thì phiếu khóa, sửa lúc đó không lọt vào bài đã nộp', async () => {
+    const t = await mo(chiTiet({ cacBuoc: CAC_BUOC.map((s) => daDat(s.maBuoc)) }));
+    await t.bam('[data-testid=nop-bai]');
+    const yc = t.http.expectOne({ method: 'POST', url: API_HS.nopBai(MA) });
+    expect(t.$('input[data-testid=latex-db]')!.matches(':disabled')).toBe(true);
+    yc.flush({ ketQua: 'DAT', mucHieu: [] });
+    await t.xong();
+    expect(t.$('input[data-testid=latex-db]')!.matches(':disabled')).toBe(true);
+    expect(t.chu('[data-testid=da-nop] h2')).toBe('Đã nộp. Bài đạt.');
+  });
+
   it('kết luận đã chấm mà một bước chưa gửi lần nào: chặn nộp, nói bước đó chưa kiểm tra (không nói «vừa sửa»)', async () => {
     const t = await mo(
       chiTiet({ cacBuoc: [...CAC_BUOC.slice(1, 4).map((s) => daDat(s.maBuoc)), { ...daDat('B.DH.KETLUAN'), ketQua: 'SAI' as const }] }),
