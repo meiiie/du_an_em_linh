@@ -409,7 +409,8 @@ def _bo_ngoac_thua(t):
 
 def _dang_viet(s):
     """Chuẩn hóa cách viết của biểu thức một biến x (KD-0005, ADR 013 mục 1): khoảng trắng, ^ ≡ **, nhân ẩn ≡ *, ngoặc
-    nhọn của số mũ, \\frac{a}{b} ≡ (a)/(b), bỏ «y =» đứng đầu. None khi không phải biểu thức đa thức hay phân thức của x."""
+    nhọn của số mũ, \\frac{a}{b} ≡ (a)/(b), bỏ «y =» hay «f(x) =» đứng đầu. None khi không phải biểu thức đa thức hay
+    phân thức của x."""
     t = unicodedata.normalize("NFC", str(s)).translate(_DOI_KY_TU)
     t = re.sub(r"[⁰¹²³⁴⁵⁶⁷⁸⁹]+", lambda m: "^" + m.group(0).translate(_MU_THUONG), t)
     t = dct._BO_NGOAC.sub("", t).replace("\\cdot", "*").replace("\\times", "*")
@@ -419,7 +420,7 @@ def _dang_viet(s):
     if t is None:
         return None
     t = re.sub(r"\s+", "", t.replace("**", "^").replace("{", "(").replace("}", ")"))
-    t = re.sub(r"^y=", "", t)
+    t = re.sub(r"^(?:y|f\(x\))=", "", t)
     if not re.fullmatch(r"[0-9x+\-*/^().]+", t):
         return None
     t = re.sub(r"(?<=[0-9x)])(?=[x(])", "*", t)
@@ -640,6 +641,31 @@ def _xep_doan(ctx, inner, dong_dung, khung_hs):
     return _pq(KET_QUA, KKD, ly_do="Kết quả tính cụ thể: không trùng nguyên văn đề hay dòng bài làm được dẫn là lời của học sinh.")
 
 
+# Ký hiệu chung đứng riêng: y', f'(x) là thuật ngữ «đạo hàm»; x₀, y(x₀) là ký hiệu điểm. Chúng không mang giá trị nào,
+# nên câu chứa chúng được xét từ vựng như khi viết bằng lời, không phải như toán không phân loại được.
+_DAO_HAM_RIENG = re.compile(r"[yf]'(?:\(x\))?")
+_DIEM_RIENG = re.compile(r"x_0|[yf]\(x_0\)")
+
+
+def _ky_hieu_chung(s):
+    """Chữ thay cho `s` khi xét từ vựng: «đạo hàm» với y', f'(x); "" với x₀, y(x₀); None khi `s` không phải ký hiệu
+    chung đứng riêng."""
+    t = dct._BO_NGOAC.sub("", unicodedata.normalize("NFC", s).translate(_DOI_KY_TU))
+    t = re.sub(r"[\s{}]+", "", re.sub(r"\^\s*\{?\s*\\prime\s*\}?", "'", t).replace("₀", "_0"))
+    if _DAO_HAM_RIENG.fullmatch(t):
+        return "đạo hàm"
+    return "" if _DIEM_RIENG.fullmatch(t) else None
+
+
+def _doc_ten(s, ten):
+    """Chữ của câu để xét từ vựng và nội dung: mỗi ký hiệu chung đứng riêng thay bằng chữ của nó."""
+    out, k = [], 0
+    for x0, x1, thay in sorted(ten):
+        out += [s[k:x0], " %s " % thay]
+        k = x1
+    return "".join(out) + s[k:]
+
+
 def _bo_phan_cach(cau):
     t = _DAN.sub(" ", cau)
     for d in ("$$", "$", "\\(", "\\)", "\\[", "\\]"):
@@ -648,22 +674,32 @@ def _bo_phan_cach(cau):
 
 
 def _xet_cau(ctx, t, v, a, b, doan):
-    """(giữ câu?, phán quyết các biểu thức của câu)."""
-    pq, ke, trich_truoc = [], a, False
+    """(giữ câu?, phán quyết các biểu thức của câu, chữ của câu để xét từ vựng và nội dung)."""
+    pq, ke, trich_truoc, ten = [], a, False, []
     for d0, d1, r0, r1, dung in doan:
-        truoc = t[ke:d0]
-        khung = bool(_KHUNG_HS.search(truoc.lower())) or (trich_truoc and bool(_NOI_TRICH.fullmatch(truoc.lower())))
-        p = dict({"doan": t[r0:r1].strip()}, **_xep_doan(ctx, t[r0:r1], dung, khung))
-        trich_truoc = p["loai"] == TRICH_BAI_LAM
-        pq.append((d0, p))
+        thay = _ky_hieu_chung(t[r0:r1]) if dung else None
+        if thay is not None:
+            ten.append((d0 - a, d1 - a, thay))
+            trich_truoc = False
+        else:
+            truoc = t[ke:d0]
+            khung = bool(_KHUNG_HS.search(truoc.lower())) or (trich_truoc and bool(_NOI_TRICH.fullmatch(truoc.lower())))
+            p = dict({"doan": t[r0:r1].strip()}, **_xep_doan(ctx, t[r0:r1], dung, khung))
+            trich_truoc = p["loai"] == TRICH_BAI_LAM
+            pq.append((d0, p))
         ke = d1
     for x0, x1 in _toan_tran(v[a:b]):
+        thay = _ky_hieu_chung(v[a + x0:a + x1])
+        if thay is not None:
+            ten.append((x0, x1, thay))
+            continue
         pq.append((a + x0, dict({"doan": t[a + x0:a + x1]}, **_pq(KHONG_PHAN_TICH, KKD,
                                                                   ly_do="Toán viết trần ngoài $…$, không phân loại được."))))
     pq = [p for _, p in sorted(pq, key=lambda z: z[0])]
-    ung_vien = _la_ung_vien(v[a:b])
+    chu = _doc_ten(v[a:b], ten)
+    ung_vien = _la_ung_vien(chu)
     if not ung_vien and all(p["trang_thai"] == DAT for p in pq):
-        return True, pq
+        return True, pq, chu
     cau = t[a:b]
     doan_cau = re.sub(r"[.;?!\s]+$", "", cau)
     dong = ctx.khop_cau(cau)
@@ -673,18 +709,18 @@ def _xet_cau(ctx, t, v, a, b, doan):
     if dong:
         q = dict({"doan": doan_cau}, **ctx.phan_quyet_dong(dong, QUY_TAC))
         if q["trang_thai"] == DAT:
-            return True, [q]
-        return False, [q] + pq
+            return True, [q], chu
+        return False, [q] + pq, chu
     if ung_vien:
         pq.insert(0, dict({"doan": doan_cau}, **_ngoai_bang(ctx, QUY_TAC, None, menh if not khong_doc else [], [])))
-    return False, pq
+    return False, pq, chu
 
 
-def _co_noi_dung(v_cau, pq):
+def _co_noi_dung(chu, pq):
     """Câu giữ lại còn mệnh đề: có đoạn toán DAT, hoặc có từ ngoài danh sách từ nối và trợ từ."""
     if any(p["trang_thai"] == DAT for p in pq):
         return True
-    return any(w not in TU_NOI for w in re.findall(r"[^\W\d_]+", v_cau.lower()))
+    return any(w not in TU_NOI for w in re.findall(r"[^\W\d_]+", chu.lower()))
 
 
 def _loi_dau_vao(payload):
@@ -712,12 +748,12 @@ def _kiem(payload):
     cac = _tach_cau(v)
     bieu_thuc, cac_cau, giu, noi_dung = [], [], [], False
     for i, (a, b) in enumerate(cac):
-        ok, pq = _xet_cau(ctx, t, v, a, b, [d for d in doan if a <= d[0] < b])
+        ok, pq, chu = _xet_cau(ctx, t, v, a, b, [d for d in doan if a <= d[0] < b])
         bieu_thuc.extend(dict(p, cau=i) for p in pq)
         cac_cau.append({"cau": t[a:b], "giu": ok})
         if ok:
             giu.append(i)
-            noi_dung = noi_dung or _co_noi_dung(v[a:b], pq)
+            noi_dung = noi_dung or _co_noi_dung(chu, pq)
     cau_sach = "".join(t[cac[i][0]:cac[i + 1][0] if i + 1 < len(cac) else len(t)] for i in giu).strip()
     return {"cau_sach": cau_sach if noi_dung else "", "thay_bang_goi_y": not noi_dung, "bieu_thuc": bieu_thuc,
             "cac_cau": cac_cau}

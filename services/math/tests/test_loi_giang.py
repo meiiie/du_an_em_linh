@@ -128,13 +128,14 @@ def test_trich_hai_dong_noi_bang_va():
 
 @pytest.mark.parametrize("cau,doan,ham", [
     ("Mình bắt đầu từ $y = x^3 - 3x^2 + 2$ nhé.", "y = x^3 - 3x^2 + 2", HAM),
+    ("Em xem $f(x) = x^3 - 3x^2 + 2$ nhé.", "f(x) = x^3 - 3x^2 + 2", HAM),
     ("Đề cho $x^{3} - 3x^{2} + 2$.", "x^{3} - 3x^{2} + 2", HAM),
     ("Em nhập $x**3 - 3*x**2 + 2$ vào máy.", "x**3 - 3*x**2 + 2", HAM),
     ("Đề cho $x³ − 3x² + 2$.", "x³ − 3x² + 2", HAM),
     ("Đề bài cho $y = \\frac{x^2 + 3}{x - 1}$.", "y = \\frac{x^2 + 3}{x - 1}", HAM_HUU_TI),
     ("Em xét riêng $x^2 + 3$ trước nhé.", "x^2 + 3", HAM_HUU_TI),
     ("Còn $x - 1$ thì em xét sau.", "x - 1", HAM_HUU_TI),
-], ids=["co-y", "ngoac-nhon", "sympy", "unicode", "phan-thuc", "tu", "mau"])
+], ids=["co-y", "co-f-x", "ngoac-nhon", "sympy", "unicode", "phan-thuc", "tu", "mau"])
 def test_trich_de_sau_chuan_hoa_cach_viet_duoc_giu(cau, doan, ham):
     kq = _chay(cau, ham=ham)
     assert _pq(kq) == [(doan, TDB, DAT, None)]
@@ -146,6 +147,7 @@ def test_trich_de_sau_chuan_hoa_cach_viet_duoc_giu(cau, doan, ham):
     ("Viết lại $x^3 - 3x^2 + 2 = (x - 1)(x^2 - 2x - 2)$.", "x^3 - 3x^2 + 2 = (x - 1)(x^2 - 2x - 2)"),
     ("Hàm là $y = x^2(x - 3) + 2$ của đề.", "y = x^2(x - 3) + 2"),                       # phân tích
     ("Ta có $y' = x^3 - 3x^2 + 2$.", "y' = x^3 - 3x^2 + 2"),                             # vế trái khác y
+    ("Ta có $f(x) = x^3 - 3x^2$.", "f(x) = x^3 - 3x^2"),                                 # thiếu hạng tử
 ])
 def test_dang_bien_doi_cua_de_khong_phai_trich(cau, doan):
     assert [(d, t) for d, l, t, _ in _pq(_chay(cau)) if l != QT] == [(doan, KKD)]
@@ -247,7 +249,43 @@ def test_trich_dan_chi_co_khoang_trang_khong_phai_trich_dan():
 
 
 def test_ky_hieu_dung_rieng_khong_thuoc_loai_nao():
-    assert _pq(_chay("Em kiểm tra lại dòng $y'$ đầu tiên nhé.")) == [("y'", KPT, KKD, None)]
+    assert _pq(_chay("Em kiểm tra lại $x$ ở dòng đầu nhé.")) == [("x", KPT, KKD, None)]
+
+
+@pytest.mark.parametrize("cau", [
+    "Em xét dấu của $y'$ trên từng khoảng nhé.",
+    "Em xét dấu của y′ trên từng khoảng nhé.",
+    "Em lập bảng xét dấu cho $f'(x)$ nhé.",
+    "Em tìm nghiệm của f'(x) trước nhé.",
+    "Em kiểm tra lại dòng $y^{\\prime}$ đầu tiên nhé.",
+    "Em gọi hoành độ điểm đó là x₀ nhé.",
+    "Em tính $y(x_0)$ ở bước sau nhé.",
+    "Em tính y(x₀) ở bước sau nhé.",
+], ids=["y-phay", "y-phay-tran", "f-phay-x", "f-phay-x-tran", "prime", "x0-tran", "y-x0", "y-x0-tran"])
+def test_ky_hieu_chung_dung_rieng_doc_nhu_loi(cau):
+    """y', f'(x) đọc như thuật ngữ «đạo hàm»; x₀, y(x₀) là ký hiệu điểm: không mang giá trị nào."""
+    kq = _chay(cau)
+    assert (kq["cau_sach"], kq["bieu_thuc"], kq["thay_bang_goi_y"]) == (cau, [], False)
+
+
+@pytest.mark.parametrize("cau,pq", [
+    ("y' âm giữa 0 và 2.", [("y' âm giữa 0 và 2", QT, KKD, None)]),
+    ("$y'$ âm giữa 0 và 2.", [("$y'$ âm giữa 0 và 2", QT, KKD, None)]),
+    ("f'(x) dương trên (2; +∞).", [("f'(x) dương trên (2; +∞)", QT, KKD, None), ("(2; +∞)", KPT, KKD, None)]),
+    ("Em tính $y'(0)$ nhé.", [("y'(0)", KPT, KKD, None)]),
+    ("Em tính y'(0) nhé.", [("y'(0)", KPT, KKD, None)]),
+    ("Ta có $x_0 = 0$.", [("x_0 = 0", KQ, KKD, None)]),
+    ("Ta có x₀ = 0.", [("x₀ = 0", KPT, KKD, None)]),
+], ids=["quy-tac-tran", "quy-tac", "quy-tac-khoang", "gia-tri", "gia-tri-tran", "x0-bang", "x0-bang-tran"])
+def test_ky_hieu_chung_trong_quy_tac_hay_gia_tri_van_bi_bo(cau, pq):
+    kq = _chay(cau)
+    assert _pq(kq) == pq
+    assert (kq["cau_sach"], kq["thay_bang_goi_y"]) == ("", True)
+
+
+def test_ky_hieu_diem_khong_tinh_la_noi_dung():
+    kq = _chay("Vậy là $x_0$.")
+    assert (kq["cau_sach"], kq["bieu_thuc"], kq["thay_bang_goi_y"]) == ("", [], True)
 
 
 @pytest.mark.parametrize("cau", [
