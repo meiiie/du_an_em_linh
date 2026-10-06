@@ -234,7 +234,7 @@ def test_khoang_nguoc_khong_bi_tach_cau_o_dau_cham_phay():
     kq = _chay("Khoảng ]0; 2[ là chỗ nó đi xuống. Em xem lại nhé.")
     assert kq["cac_cau"] == [{"cau": "Khoảng ]0; 2[ là chỗ nó đi xuống.", "giu": False},
                              {"cau": "Em xem lại nhé.", "giu": True}]
-    assert _pq(kq) == [("]0; 2[", KPT, KKD, None)]
+    assert _pq(kq) == [("Khoảng ]0; 2[ là chỗ nó đi xuống", QT, KKD, None), ("]0; 2[", KPT, KKD, None)]
     assert kq["cau_sach"] == "Em xem lại nhé."
 
 
@@ -257,10 +257,25 @@ def test_ky_hieu_dung_rieng_khong_thuoc_loai_nao():
     "Em đặt nhân tử chung ra nhé.",
     "Em lập bảng biến thiên nhé.",
     "Em ghi dấu + vào ô đó nhé.",
+    "Bước 2 em làm lại nhé.",
+    "Em làm tốt lắm — giờ sang bước 3 nhé.",
+    "Em xem lại “bảng biến thiên” nhé…",
 ])
 def test_cau_khong_co_toan_giu_nguyen(cau):
     kq = _chay(cau)
     assert (kq["cau_sach"], kq["bieu_thuc"], kq["thay_bang_goi_y"]) == (cau, [], False)
+
+
+@pytest.mark.parametrize("cau,doan", [
+    ("Em làm bước 2 y như bước 1 nhé.", "2 y"),
+    ("Em làm tốt lắm 😊", "😊"),
+], ids=["so-cach-chu-don", "emoji"])
+def test_danh_sach_trang_chon_bo_thua(cau, doan):
+    """Đã chọn: chữ số cách một chữ cái ASCII đứng riêng là nhân viết cách, mọi ký tự ngoài danh sách trắng là dấu hiệu
+    toán. Câu lời thường như vậy bị bỏ; đổi lại không có dấu nhìn giống toán nào lọt."""
+    kq = _chay(cau)
+    assert _pq(kq) == [(doan, KPT, KKD, None)]
+    assert kq["cau_sach"] == ""
 
 
 # ------------------------------------------------------------------ quy tắc bằng lời

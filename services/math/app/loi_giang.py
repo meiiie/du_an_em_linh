@@ -142,8 +142,8 @@ def _la_ung_vien(chu):
 
 # ------------------------------------------------------------------ đoạn toán, câu, toán viết trần
 _MO = (("$$", ("$$", "$")), ("\\(", ("\\)",)), ("\\[", ("\\]",)), ("$", ("$",)))
-_DOI_KY_TU = str.maketrans({"′": "'", "’": "'", "‘": "'", "ʹ": "'", "−": "-", "–": "-", "⩾": "≥", "⩽": "≤", "·": "*",
-                            "×": "*"})
+_DOI_KY_TU = str.maketrans({"′": "'", "’": "'", "‘": "'", "ʹ": "'", "−": "-", "‐": "-", "‑": "-", "‒": "-", "–": "-",
+                            "—": "-", "―": "-", "⩾": "≥", "⩽": "≤", "·": "*", "×": "*"})
 _CHE, _CHE_DAN = "\ue000", "\ue001"
 _DAN = re.compile(r"\[\d{1,3}\]")
 
@@ -186,13 +186,32 @@ def _nhin(t, doan):
     return _DAN.sub(lambda m: _CHE_DAN * len(m.group(0)), "".join(v))
 
 
+_RUOT_KHOANG = re.compile(r"\s*[-+]?\s*[\w∞]+(?:[.,]\d+)?\s*[;,]\s*[-+]?\s*[\w∞]+(?:[.,]\d+)?\s*")
+
+
+def _khoang(s):
+    """Các khoảng (đầu, cuối) dạng (a; b): mở bằng một dấu mở ngoặc Unicode hay «]», đóng bằng dấu đóng ngoặc hay «[»
+    (cách viết ]a; b[), hai đầu mút cách nhau bởi ; hay ,."""
+    out = []
+    for i, ch in enumerate(s):
+        if ch == "]" or unicodedata.category(ch) == "Ps":
+            m = _RUOT_KHOANG.match(s, i + 1)
+            if m and m.end() < len(s) and (s[m.end()] == "[" or unicodedata.category(s[m.end()]) == "Pe"):
+                out.append((i, m.end() + 1))
+    return out
+
+
 def _tach_cau(v):
-    """Luật 1: tách tại . ; ? ! và xuống dòng, trừ trong ngoặc, trong đoạn toán (đã che) hay dấu chấm giữa hai chữ số."""
+    """Luật 1: tách tại . ; ? ! và xuống dòng, trừ trong ngoặc (mọi dấu ngoặc Unicode), trong khoảng (a; b) hay ]a; b[,
+    trong đoạn toán (đã che) hay dấu chấm giữa hai chữ số."""
+    trong = {i for a, b in _khoang(v) for i in range(a, b)}
     moc, dau, sau = [], 0, 0
     for i, ch in enumerate(v):
-        if ch in "([{":
+        if i in trong:
+            continue
+        if unicodedata.category(ch) == "Ps":
             sau += 1
-        elif ch in ")]}":
+        elif unicodedata.category(ch) == "Pe":
             sau = max(0, sau - 1)
         elif ch in ".;?!\n" and sau == 0 and not (ch == "." and 0 < i < len(v) - 1 and v[i - 1].isdigit() and v[i + 1].isdigit()):
             moc.append((dau, i + 1))
@@ -217,17 +236,30 @@ def _cac_cau_chu(text):
 _SO_MU = frozenset("⁰¹²³⁴⁵⁶⁷⁸⁹ⁿ⁻⁺₀₁₂₃₄₅₆₇₈₉")
 _KY_TOAN = frozenset("=≠≤≥<>⇒⇔→←↔'^_+-*/÷±√∞∈∉⊂∪∩ℝΔ∆()[]{}|") | _SO_MU
 _TEN_HAM = frozenset({"sin", "cos", "tan", "cot", "ln", "log", "exp", "sqrt", "lim"})
-# Dấu hiệu toán viết trần (ADR 013 mục 2): quan hệ, mũi tên, dấu phẩy trên, ^, chỉ số _, lệnh \…, phép toán giữa hai
-# toán hạng, chữ biến kề chữ số, hàm áp lên đối số, khoảng (a; b).
+# Danh sách trắng của chữ ngoài $…$ (ADR 013 mục 2, đóng mặc định): chữ Latin (cả tiếng Việt), chữ số ASCII, khoảng
+# trắng, dấu câu của lời văn và các dấu tùy chỗ. Mọi ký tự khác (dấu giống dấu bằng, ngoặc ⟨ ⟩, [ ], emoji, ký tự điều
+# khiển…) là dấu hiệu toán. Các dấu gạch đã quy về «-» trong _DOI_KY_TU.
+_CAU_VAN = frozenset(",.;:!?«»\"“”…")
+_TUY_CHO = frozenset("()+-*/'")
+# Dấu tùy chỗ là toán khi: phẩy trên dính sau chữ (lọc khi gom), phép toán giữa hai toán hạng, dấu trước chữ số, chữ
+# số kề chữ biến (cả nhân viết cách «3 x»), hàm áp lên đối số, khoảng (a; b).
 _DAU_HIEU_TRAN = re.compile(
-    r"[=≠≤≥<>⇒⇔→←↔'^_√∞∈∉⊂∪∩ℝΔ∆±÷|⁰¹²³⁴⁵⁶⁷⁸⁹ⁿ⁻⁺₀₁₂₃₄₅₆₇₈₉]|\\"
-    r"|[A-Za-z0-9)\]}]\s*[-+*/]\s*[A-Za-z0-9(\[{]|\d[A-Za-z]|[A-Za-z]\d|(?<![A-Za-z])[A-Za-z]\s*\("
-    r"|[(\[]\s*[-+]?\s*[\w∞]+\s*[;,]\s*[-+]?\s*[\w∞]+\s*[)\]]")
+    r"'|[A-Za-z0-9)]\s*[-+*/]\s*[A-Za-z0-9(]|[-+]\s*\d|\d[A-Za-z]|\d\s+[A-Za-z]\b|[A-Za-z]\d"
+    r"|(?<![A-Za-z])[A-Za-z]\s*\(|\(" + _RUOT_KHOANG.pattern + r"\)")
+
+
+def _chu_latin(c):
+    return unicodedata.category(c) in ("Lu", "Ll", "Lt") and unicodedata.name(c, "").startswith("LATIN ")
+
+
+def _dau_toan(c):
+    return not (c in "0123456789" or c.isspace() or c in _CAU_VAN or c in _TUY_CHO or c in (_CHE, _CHE_DAN)
+                or _chu_latin(c))
 
 
 def _tu_to(s):
-    """Từ tố của chữ ngoài $…$: (loại, đầu, cuối). 'ky' ký hiệu toán, 'so', 'lenh' (\\…), 'chu' (từ ASCII), 'cham'
-    (, ; .), 'cach', 'ngat' (chữ có dấu, dấu câu khác, đoạn đã che)."""
+    """Từ tố của chữ ngoài $…$: (loại, đầu, cuối). 'so', 'lenh' (\\…), 'chu' (từ ASCII), 'cham' (, ; .), 'cach', 'ngat'
+    (từ có dấu, dấu câu khác, đoạn đã che), 'ky' (dấu tùy chỗ và mọi dấu hiệu toán)."""
     out, i = [], 0
     while i < len(s):
         ch = s[i]
@@ -245,26 +277,25 @@ def _tu_to(s):
         elif ch in "0123456789":
             j = i + re.match(r"\d+(?:[.,]\d+)?", s[i:]).end()
             out.append(("so", i, j))
-        elif ch in _KY_TOAN or unicodedata.category(ch) in ("Sm", "No"):
-            j = i + 1
-            out.append(("ky", i, j))
-        elif ch.isalpha():
+        elif _chu_latin(ch):
             j = i
-            while j < len(s) and s[j].isalpha() and s[j] not in _KY_TOAN:
+            while j < len(s) and _chu_latin(s[j]):
                 j += 1
             out.append(("chu" if s[i:j].isascii() else "ngat", i, j))
         else:
             j = i + 1
-            out.append(("cham" if ch in ",;." else "ngat", i, j))
+            out.append(("cham" if ch in ",;." else "ngat" if ch in _CAU_VAN or ch in (_CHE, _CHE_DAN) else "ky", i, j))
         i = j
     return out
 
 
 def _toan_tran(s):
     """Các đoạn toán viết trần trong chữ đã che `s`: [(đầu, cuối)]. Một đoạn là dãy từ tố toán, cách nhau tối đa bởi
-    khoảng trắng, có ít nhất một dấu hiệu toán. Từ ASCII là toán khi chỉ một chữ cái, là tên hàm, hay dính vào ký hiệu
-    toán; dấu phẩy trên chỉ là toán khi dính sau chữ, ngoặc đóng hay dấu phẩy trên khác."""
+    khoảng trắng, có một ký tự ngoài danh sách trắng hay một dấu tùy chỗ đứng ở chỗ toán. Từ ASCII là toán khi chỉ một
+    chữ cái, là tên hàm, hay dính vào ký hiệu toán; dấu phẩy trên chỉ là toán khi dính sau chữ, ngoặc đóng hay dấu phẩy
+    trên khác; dấu , ; là toán trong ngoặc hay trong khoảng."""
     to = _tu_to(s)
+    trong_khoang = {i for a, b in _khoang(s) for i in range(a, b)}
 
     def dinh(k, l):
         return 0 <= l < len(to) and to[l][0] in ("ky", "so", "lenh") and (to[l][2] == to[k][1] or to[k][2] == to[l][1])
@@ -273,7 +304,7 @@ def _toan_tran(s):
 
     def dong():
         doan = s[cur[0]:cur[1]] if cur else ""
-        if doan and (_DAU_HIEU_TRAN.search(doan) or any(unicodedata.category(c) in ("Sm", "No") and c not in "+-" for c in doan)):
+        if doan and (any(_dau_toan(c) for c in doan) or _DAU_HIEU_TRAN.search(doan)):
             out.append(tuple(cur))
 
     for k, (loai, a, b) in enumerate(to):
@@ -285,7 +316,7 @@ def _toan_tran(s):
         elif loai == "chu":
             toan = len(w) == 1 or w in _TEN_HAM or dinh(k, k - 1) or dinh(k, k + 1)
         elif loai == "cham":
-            toan = sau > 0
+            toan = sau > 0 or a in trong_khoang
         else:
             toan = loai in ("ky", "so", "lenh")
         if not toan:
@@ -293,7 +324,7 @@ def _toan_tran(s):
             cur, sau = [], 0
             continue
         cur = [cur[0] if cur else a, b]
-        sau += w.count("(") + w.count("[") + w.count("{") - w.count(")") - w.count("]") - w.count("}")
+        sau += sum({"Ps": 1, "Pe": -1}.get(unicodedata.category(c), 0) for c in w)
     dong()
     return out
 
@@ -472,7 +503,8 @@ class _Dong:
         self.latex, self.phat_bieu = str(d.get("latex") or ""), str(d.get("phat_bieu") or "")
         self.tieu_de = str(d.get("tieu_de") or "")
         td = d.get("trich_dan")
-        self.co_trich_dan = isinstance(td, dict) and bool(td.get("tai_lieu"))
+        tai_lieu = td.get("tai_lieu") if isinstance(td, dict) else None
+        self.co_trich_dan = isinstance(tai_lieu, str) and bool(tai_lieu.strip())
         self.qua_dai = len(self.latex) > dct.DO_DAI_LATEX_TOI_DA or len(self.phat_bieu) > dct.DO_DAI_LOI_TOI_DA
         self.khoa = dct._khoa_cong_thuc(self.latex) if self.latex and not self.qua_dai else None
         self.dang_thuc = dct._tach_dang_thuc(self.latex) if self.khoa else None
