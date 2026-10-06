@@ -76,6 +76,12 @@ class TepVangDoiChieuTest {
     }
 
     @Test
+    void moiNguonCuaBktV0DeuKhopCheckout() {
+        kiemNguon("bkt-v0.json (node " + DOI_CHIEU + "bkt-v0.ts)", phang(doc(DOI_CHIEU + "bkt-v0.json")),
+            khoa -> khoa.startsWith("git.") ? khoa.substring("git.".length()) : null, Map.of());
+    }
+
+    @Test
     void moiNguonCuaLoiGiaiV0DeuKhopCheckout() {
         Map<String, Object> nguon = phang(doc(LOI_GIAI_V0));
         kiemNguon(LOI_GIAI_V0 + " (node " + DOI_CHIEU + "loi-giai-v0.ts)", nguon, khoa -> switch (khoa) {
@@ -102,7 +108,8 @@ class TepVangDoiChieuTest {
             }
         }
         assertThat(coNguon).as("tệp vàng có «nguon» so với tệp vàng có test kiểm nguồn")
-            .containsExactlyInAnyOrder(DOI_CHIEU + "v0-bai.json", DOI_CHIEU + "khoa-bang-v0.json", DOI_CHIEU + "cham-v0.json", LOI_GIAI_V0);
+            .containsExactlyInAnyOrder(DOI_CHIEU + "v0-bai.json", DOI_CHIEU + "khoa-bang-v0.json", DOI_CHIEU + "cham-v0.json",
+                DOI_CHIEU + "bkt-v0.json", LOI_GIAI_V0);
     }
 
     @Test
