@@ -3,6 +3,7 @@ package vn.hoctapcanman.core.practice.application.dto;
 import java.time.Instant;
 import java.util.UUID;
 import org.jspecify.annotations.Nullable;
+import vn.hoctapcanman.core.practice.application.dto.hocsinh.ViTriSai;
 
 /**
  * Bài làm vừa nộp, cho module mức hiểu (cổng {@code CapNhatMucHieu}): những gì {@code applyMastery} của v0 nhận mà chỉ

@@ -32,7 +32,7 @@ Harness (Anthropic 2026): tệp này là mục lục để agent biết chỗ m�
 | `data/supham/` | Ngân hàng sư phạm (JSON); `tai-lieu/`: tài liệu tự soạn của lab (bản vá `sp-tai-lieu-*`) |
 | `data/v0/` | Hằng nội dung của v0 (khung 5 bước, BKT, 3 tài liệu, bảng công thức) chép nguyên văn từ `apps/web/scripts/seed.ts` cho importer v2; nguồn và cách sinh: `data/v0/NGUON.md` |
 | `docker-compose.yml` | web :3000, math :8000, Postgres :5432 |
-| `compose.v2.yaml` | v2: PostgreSQL 18 (chỉ trong mạng compose), core :8080 (profile `dev`), math :8000, frontend :4200 (nginx, `/api/` → core); chờ health từng dịch vụ |
+| `compose.v2.yaml` | v2: PostgreSQL 18 (chỉ trong mạng compose), core :8080 (profile `dev`: tài khoản thử, lớp «12A1 thử», nội dung, giao bài thử bằng SQL), math :8000, frontend :4200 (nginx, `/api/` → core); chờ health từng dịch vụ |
 | `apps/frontend/Dockerfile` + `nginx/default.conf.template` | Build Angular trên Node 24 → nginx không root; header bảo mật, cache dài cho tệp có hash, định tuyến phía client |
 | `Dockerfile` / `render.yaml` | Deploy free một container trên Render |
 | `CONTRIBUTING.md` | GitHub Flow: `main` + nhánh ngắn, không chồng PR |

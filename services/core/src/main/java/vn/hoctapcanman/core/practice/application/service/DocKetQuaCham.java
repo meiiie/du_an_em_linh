@@ -16,8 +16,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.json.JsonMapper;
-import vn.hoctapcanman.core.practice.application.dto.KetQuaNopBuoc;
-import vn.hoctapcanman.core.practice.application.dto.ViTriSai;
+import vn.hoctapcanman.core.practice.application.dto.hocsinh.KetQuaNopBuoc;
+import vn.hoctapcanman.core.practice.application.dto.hocsinh.ViTriSai;
 import vn.hoctapcanman.core.practice.domain.model.GradeStatus;
 import vn.hoctapcanman.core.practice.domain.model.GradingResult;
 

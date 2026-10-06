@@ -89,14 +89,18 @@ public final class DuLieuPractice {
     /** Bài vừa ghi: id và mã trong CSDL. */
     public record BaiDaGhi(UUID id, String ma) {}
 
-    /** Lượt kiểm DAT mới cho bài ở lớp, rồi phát hành theo lượt đó. */
+    /**
+     * Lượt kiểm DAT mới cho bài ở lớp, kiểm với bảng công thức đang dùng của lớp (V6; không có bảng thì trống), rồi phát hành
+     * theo lượt đó.
+     */
     public static void phatHanh(JdbcClient jdbc, UUID lop, UUID bai) {
         UUID luot = UUID.randomUUID();
         jdbc.sql("""
                 insert into verification_runs (id, class_id, subject_kind, subject_id, content_hash, overall_status,
-                    publish_status, content_version, created_at)
-                values (?, ?, 'PROBLEM', ?, ?, 'DAT', 'DA_PHAT_HANH', (select content_version from problems where id = ?), clock_timestamp())""")
-            .params(luot, lop, bai, BAM, bai).update();
+                    publish_status, content_version, formula_sheet_id, created_at)
+                values (?, ?, 'PROBLEM', ?, ?, 'DAT', 'DA_PHAT_HANH', (select content_version from problems where id = ?), bang_dang_dung(?),
+                    clock_timestamp())""")
+            .params(luot, lop, bai, BAM, bai, lop).update();
         jdbc.sql("""
                 insert into problem_releases (class_id, problem_id, status, run_id, updated_at) values (?, ?, 'DA_PHAT_HANH', ?, now())
                 on conflict (class_id, problem_id) do update set status = excluded.status, run_id = excluded.run_id""")

@@ -56,7 +56,7 @@ import vn.hoctapcanman.core.practice.domain.repository.SubmissionRepository;
  *   <li>Cuối giao dịch: mọi {@link CapNhatMucHieu} (idempotent theo bài làm, nên phát lại trả đúng lần đầu).</li>
  *   <li>Sau commit: lời giải qua {@link MoLoiGiai} (đọc trong một ảnh chụp, giao dịch riêng).</li>
  * </ol>
- * Không gọi dịch vụ toán. Chưa làm ở đây: giới hạn tần suất (web, T021).
+ * Không gọi dịch vụ toán. Chưa làm ở đây: giới hạn tần suất (web, T021b).
  */
 @Service
 public class NopBaiUseCase {

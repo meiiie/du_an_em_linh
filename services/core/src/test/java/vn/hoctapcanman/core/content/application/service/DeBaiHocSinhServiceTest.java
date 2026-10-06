@@ -105,6 +105,11 @@ class DeBaiHocSinhServiceTest {
             return findReleasedInClass(classId, code).map(p -> new ReleasedProblem(p, 1, "DH12"));
         }
 
+        @Override
+        public List<ReleasedProblem> findReleasedForWork(UUID classId) {
+            return findReleasedInClass(classId).stream().map(p -> new ReleasedProblem(p, 1, "DH12")).toList();
+        }
+
         private boolean dangPhatHanh(UUID classId, Problem p) {
             return phatHanh.stream().anyMatch(r -> r.classId().equals(classId) && r.problemId().equals(p.id()) && r.visibleToStudents());
         }
