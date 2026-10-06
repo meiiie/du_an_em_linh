@@ -104,9 +104,9 @@ description: "Danh sách việc của epic P2 — lát cắt dọc một chủ �
 
 ### Issue — Job `kiem_loi_giang` (services/math), áp nguyên văn KD-0005
 
-- [ ] T028 [US2] `services/math/app/loi_giang.py` + `routers.py` `POST /v1/kiem-loi-giang` theo `contracts/math-v1.md`; toán ngoài dấu phân cách không phân loại được → `KHONG_PHAN_TICH_DUOC`, bị bỏ; câu có thuật ngữ toán + từ quan hệ (từ vựng KD-0005) không khớp phát biểu dòng bảng → `QUY_TAC_BANG_LOI` không đạt, bỏ cả câu
+- [x] T028 [US2] `services/math/app/loi_giang.py` + `routers.py` `POST /v1/kiem-loi-giang` theo `contracts/math-v1.md`; toán ngoài dấu phân cách không phân loại được → `KHONG_PHAN_TICH_DUOC`, bị bỏ; câu có thuật ngữ toán + từ quan hệ (từ vựng KD-0005; tạm dùng bản 2 của #116 tới T029b) không khớp phát biểu dòng bảng → `QUY_TAC_BANG_LOI` không đạt, bỏ cả câu
 - [ ] T029b [US2] Áp **nguyên văn** bản vá KD-0005 vào `services/math/kiemdinh/loi-giang/` (ghi SHA-256 trong PR và `NHAT-KY.md`); pytest chạy bộ ca trong cổng merge
-- [ ] T030 [P] [US2] pytest: thế giới đóng (ADR 013): khớp bảng + trích dẫn → giữ; ngoài bảng → bỏ; sai → `SAI`; trích bài làm → giữ; kết quả cụ thể → bỏ; LaTeX hỏng → bỏ; quy tắc bằng lời ngoài bảng hay sai → bỏ cả câu; phát biểu trùng dòng bảng → giữ
+- [x] T030 [P] [US2] pytest (`services/math/tests/test_loi_giang.py`): thế giới đóng (ADR 013): khớp bảng + trích dẫn → giữ; ngoài bảng → bỏ; sai → `SAI`; trích bài làm → giữ; kết quả cụ thể → bỏ; LaTeX hỏng → bỏ; quy tắc bằng lời ngoài bảng hay sai → bỏ cả câu; phát biểu trùng dòng bảng → giữ
 
 ### Issue — Module `tutor` (core)
 

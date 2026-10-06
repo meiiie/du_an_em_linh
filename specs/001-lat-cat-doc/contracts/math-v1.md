@@ -16,48 +16,80 @@ Giữ nguyên `/v1` của v0 (`services/math/app/routers.py`). Mọi job chạy 
 
 ## Job mới: `POST /v1/kiem-loi-giang` (ADR 013)
 
-Thuần hàm, không đọc CSDL. Chạy **sau** `/v1/filter`.
+Thuần hàm, không đọc CSDL. Chạy **sau** `/v1/filter`. Mã: `services/math/app/loi_giang.py` (T028).
 
 **Vào:**
 
 ```json
 {
-  "cau": "câu gia sư đã qua bộ lọc lộ đáp án",
+  "cau": "Em viết $3x^2-6x$, giờ em tìm nghiệm của nó nhé. Đạo hàm của tổng bằng tổng các đạo hàm [2]. Theo [3]: $(u/v)' = \\frac{u'v - uv'}{v^2}$. Ta có $y' = 3x^2 - 6x$. Nhớ là (uv)' = u'v'.",
   "bang_cong_thuc": [
-    {"id": "f-07", "latex": "\\left(\\frac{u}{v}\\right)' = \\frac{u'v-uv'}{v^2}", "phat_bieu": "đạo hàm của thương", "trich_dan": {"tai_lieu": "…", "trang": 12, "doan": "…"}}
+    {"id": "d-2", "tieu_de": "Đạo hàm tổng", "latex": "(u+v)' = u' + v'", "phat_bieu": "Đạo hàm của tổng bằng tổng các đạo hàm.", "trich_dan": {"tai_lieu": "sp-tai-lieu-0001", "doan": "p-2"}},
+    {"id": "d-3", "tieu_de": "Đạo hàm thương", "latex": "(u/v)' = (u'v - uv') / v^2", "phat_bieu": "Với thương, tử là u'v trừ uv', mẫu là v bình.", "trich_dan": {"tai_lieu": "sp-tai-lieu-0001", "doan": "p-3"}}
   ],
-  "bai_lam_hoc_sinh": ["3x^{2}-12x"],
-  "du_kien_bao_ve": ["…dữ kiện bảo vệ của bài, chỉ dùng để chặn…"],
-  "ham": "x**3 - 6*x**2 + 9*x + 2",
+  "bai_lam_hoc_sinh": ["3x^2-6x"],
+  "du_kien_bao_ve": [],
+  "ham": "x**3 - 3*x**2 + 2",
   "timeout_s": 12
 }
 ```
 
-**Ra:**
+**Ra** (kết quả thật của job với đầu vào trên):
 
 ```json
 {
-  "cau_sach": "câu sau khi bỏ biểu thức không qua cổng",
+  "cau_sach": "Em viết $3x^2-6x$, giờ em tìm nghiệm của nó nhé. Đạo hàm của tổng bằng tổng các đạo hàm [2]. Theo [3]: $(u/v)' = \\frac{u'v - uv'}{v^2}$.",
   "thay_bang_goi_y": false,
   "bieu_thuc": [
-    {"doan": "\\frac{u'v-uv'}{v^2}", "loai": "CONG_THUC_TONG_QUAT", "trang_thai": "DAT", "dong_bang": "f-07", "tang": {"1": "DAT", "2": "DAT", "3": "DAT"}},
-    {"doan": "3x^{2}-12x", "loai": "TRICH_BAI_LAM", "trang_thai": "DAT"},
-    {"doan": "x^3 - 6x^2 + 9x + 2", "loai": "TRICH_DE_BAI", "trang_thai": "DAT"},
-    {"doan": "đạo hàm của tích bằng đạo hàm u nhân v trừ u nhân đạo hàm v", "loai": "QUY_TAC_BANG_LOI", "trang_thai": "KHONG_KIEM_DUOC", "ly_do": "không khớp phát biểu dòng bảng nào; bỏ cả câu"},
-    {"doan": "y' = 3x^2 - 12x + 9", "loai": "KET_QUA_CU_THE", "trang_thai": "KHONG_KIEM_DUOC", "ly_do": "kết quả tính cụ thể của bài"}
+    {"doan": "3x^2-6x", "loai": "TRICH_BAI_LAM", "trang_thai": "DAT", "cau": 0},
+    {"doan": "Đạo hàm của tổng bằng tổng các đạo hàm [2]", "loai": "QUY_TAC_BANG_LOI", "trang_thai": "DAT", "dong_bang": "d-2", "tang": {"1": "DAT", "2": "DAT", "3": "DAT"}, "cau": 1},
+    {"doan": "(u/v)' = \\frac{u'v - uv'}{v^2}", "loai": "CONG_THUC_TONG_QUAT", "trang_thai": "DAT", "dong_bang": "d-3", "tang": {"1": "DAT", "2": "DAT", "3": "DAT"}, "cau": 2},
+    {"doan": "y' = 3x^2 - 6x", "loai": "KET_QUA_CU_THE", "trang_thai": "KHONG_KIEM_DUOC", "ly_do": "Kết quả tính cụ thể: …", "cau": 3},
+    {"doan": "(uv)' = u'v'", "loai": "KHONG_PHAN_TICH_DUOC", "trang_thai": "KHONG_KIEM_DUOC", "ly_do": "Toán viết trần ngoài $…$, không phân loại được.", "cau": 4}
+  ],
+  "cac_cau": [
+    {"cau": "Em viết $3x^2-6x$, giờ em tìm nghiệm của nó nhé.", "giu": true},
+    {"cau": "Đạo hàm của tổng bằng tổng các đạo hàm [2].", "giu": true},
+    {"cau": "Theo [3]: $(u/v)' = \\frac{u'v - uv'}{v^2}$.", "giu": true},
+    {"cau": "Ta có $y' = 3x^2 - 6x$.", "giu": false},
+    {"cau": "Nhớ là (uv)' = u'v'.", "giu": false}
   ]
 }
 ```
 
-- `loai` ∈ `CONG_THUC_TONG_QUAT`, `QUY_TAC_BANG_LOI`, `TRICH_BAI_LAM`, `TRICH_DE_BAI`, `KET_QUA_CU_THE`, `KHONG_PHAN_TICH_DUOC`.
-- `QUY_TAC_BANG_LOI`: câu có thuật ngữ toán đi cùng từ quan hệ hay phép toán (từ vựng của lab, KD-0005). `DAT` chỉ khi khớp phát biểu một dòng bảng (`dong_bang`) hoặc bộ nhận dạng tầng 2 ứng với một dòng bảng; ngược lại `KHONG_KIEM_DUOC` và bỏ cả câu (ADR 013 mục 2).
-- `TRICH_DE_BAI`: so với `ham` sau chuẩn hóa cách viết, không rút gọn (ADR 013 mục 1).
-- `trang_thai` ∈ `DAT`, `SAI`, `KHONG_KIEM_DUOC`. Chỉ biểu thức `DAT` còn lại trong `cau_sach`.
-- `thay_bang_goi_y = true` khi câu còn lại mất nghĩa: core thay cả câu bằng gợi ý đã kiểm trước của bước (ADR 013 mục 6).
+**Đầu vào.**
+
+- `bang_cong_thuc`: các dòng của bảng đã khóa. `tieu_de` nên gửi như lúc khóa: thiếu nó thì dòng ký hiệu của điểm tới hạn (`y'=0 \text{ hoặc } y' \text{ không xác định}`) không đọc lại được, nên không dùng được.
+- `bai_lam_hoc_sinh`: các dòng học sinh đã nộp ở bài này, nguyên văn.
+- `ham`: hàm của đề, cú pháp SymPy như `/v1/grade`.
+- `du_kien_bao_ve`: tùy chọn, job không đọc. Lọc lộ đáp án là việc của `/v1/filter` chạy trước. Mọi biểu thức `DAT` của job là dòng bảng, chuỗi của đề hay dòng học sinh tự viết, nên không mang dữ kiện mà học sinh chưa thấy.
+
+**Đơn vị giữ hay bỏ là câu.** Câu tách tại `.` `;` `?` `!` và xuống dòng, trừ dấu nằm trong ngoặc (mọi dấu ngoặc Unicode), trong khoảng `(a; b)` hay `]a; b[`, trong đoạn toán hay dấu chấm giữa hai chữ số (luật 1 của KD-0005). Một câu còn trong `cau_sach` khi mọi biểu thức của nó `DAT` và nó không là ứng viên quy tắc bằng lời, hoặc khi cả câu khớp một dòng bảng (`QUY_TAC_BANG_LOI` `DAT`). Câu có một biểu thức không `DAT` bị bỏ cả câu. Chặt hơn ADR 013 mục 4 (rút riêng đoạn khỏi câu): rút một đoạn giữa câu có thể làm phần còn lại đổi nghĩa, ví dụ «Hàm số đồng biến khi $x > 1$.» còn lại «Hàm số đồng biến khi.».
+
+**Loại biểu thức.**
+
+| `loai` | `DAT` khi | Không `DAT` |
+| --- | --- | --- |
+| `CONG_THUC_TONG_QUAT` | Khớp một dòng dùng được: trùng LaTeX sau khi bỏ khoảng trắng; cùng `(E)' = R` theo SymPy với `u(x)`, `v(x)` ký hiệu; trùng vế phải của dòng; hoặc là mệnh đề định lí mà bộ đọc của `dong_cong_thuc.py` đọc trọn ra các mục cùng có ở một dòng. Dòng dùng được khi `trich_dan.tai_lieu` là chuỗi còn chữ sau khi bỏ khoảng trắng và tầng 1 tính lại ra `DAT` như lúc khóa. Kèm `dong_bang` và `tang`. | `SAI` khi máy có phản ví dụ (kèm `phan_vi_du`), còn lại `KHONG_KIEM_DUOC` |
+| `QUY_TAC_BANG_LOI` | Câu (bỏ `[n]`) trùng nguyên một câu của `phat_bieu` của dòng dùng được sau chuẩn hóa luật 8 của KD-0005, hoặc bộ đọc định lí đọc trọn câu ra các mục cùng có ở một dòng. Khoảng cụ thể như `(0; 2)` không khớp khoảng tổng quát của dòng. | `SAI` khi bộ đọc đọc trọn và có phản ví dụ, còn lại `KHONG_KIEM_DUOC`; bỏ cả câu |
+| `TRICH_DE_BAI` | Trùng `ham`, hoặc tử hay mẫu khi `ham` là phân thức, sau chuẩn hóa cách viết của KD-0005: khoảng trắng, `^` ≡ `**`, nhân ẩn, ngoặc nhọn của số mũ, `\frac{a}{b}` ≡ `(a)/(b)`, bỏ `y =` hay `f(x) =` đứng đầu. Không đổi thứ tự hạng tử, không rút gọn. Chỉ biểu thức có `x`. | dạng đã biến đổi là `KET_QUA_CU_THE` |
+| `TRICH_BAI_LAM` | Trùng nguyên cả một dòng của `bai_lam_hoc_sinh` sau khi bỏ khoảng trắng, và chữ đứng ngay trước đoạn là lời của học sinh: «em / bạn (đã / vừa / có) viết / ghi / nộp / chép / ra / tính ra / tìm ra / tính được / tìm được (là / rằng / được)», «dòng em viết», «dòng của em». Đoạn nối ngay sau một đoạn trích bằng «,» «và» «hoặc» «rồi» cũng là trích. | `KET_QUA_CU_THE` |
+| `KET_QUA_CU_THE` | không bao giờ | `KHONG_KIEM_DUOC` |
+| `KHONG_PHAN_TICH_DUOC` | không bao giờ | `KHONG_KIEM_DUOC`: LaTeX hỏng (ngoặc không cân, `\left` / `\right` lẻ, lệnh lạ, `\frac` thiếu nhóm, biểu thức cụt); dấu phân cách không đóng (đoạn chạy tới hết câu trả lời) hay `$$` đóng bằng `$`; toán viết trần ngoài `$…$`, `$$…$$`, `\(…\)`, `\[…\]`; ký hiệu đứng riêng như `$x$`, `$y'(0)$` |
+
+- Đoạn có dạng quy tắc (vế trái `(…)'`, chữ trong `\text{…}` hay mũi tên suy ra, ký hiệu chung ngoài `x`, `y`, `f`, `D`) chỉ `DAT` qua bảng, không bao giờ là trích, kể cả khi trùng dòng học sinh: job không trích lại một quy tắc sai học sinh đã viết để rồi câu xác nhận nó.
+- Toán viết trần nhận theo danh sách trắng. Ngoài dấu phân cách, chỉ chữ Latin (cả tiếng Việt), chữ số, khoảng trắng, dấu câu của lời văn (`,` `.` `;` `:` `!` `?` `«` `»` `"` `“` `”` `…`) và các dấu tùy chỗ `(` `)` `+` `-` `*` `/` `'` là lời. Mọi ký tự khác là dấu hiệu toán: dấu quan hệ, mũi tên, `^`, `_`, `[ ]`, `{ }`, ngoặc Unicode như `⟨ ⟩`, dấu giống dấu bằng như `꞊` `゠` `⹀`, chữ không phải Latin, emoji, ký tự điều khiển. Dấu gạch Unicode (`‐` `‒` `–` `—` `−`…) quy về `-`. Dấu tùy chỗ là toán khi: phẩy trên dính sau chữ hay ngoặc, phép toán giữa hai toán hạng, `-` hay `+` trước chữ số (`−2`), chữ số kề chữ biến dính hay cách (`3x`, `3 x`), hàm áp lên đối số, khoảng `(a; b)`. Ký tự toàn khổ (`＝`, `２`) quy về dạng thường trước khi nhận. Câu có toán viết trần cũng được thử đường `QUY_TAC_BANG_LOI` trước khi bỏ, vì một dòng định lí của bảng có thể viết trần.
+- Danh sách trắng chọn bỏ thừa: «bước 2 y như bước 1» (chữ số cách một chữ cái) và câu có emoji bị bỏ.
+- Ký hiệu chung đứng riêng, viết trần hay trong `$…$`, không là biểu thức và không có phán quyết: `y'`, `f'(x)` đọc như thuật ngữ «đạo hàm» khi xét ứng viên quy tắc bằng lời (`y' âm giữa 0 và 2` là ứng viên, bị bỏ); `x_0`, `y(x_0)` là ký hiệu điểm, không tính là nội dung. `y'(0)`, `x_0 = 0` vẫn là biểu thức.
+- Ứng viên quy tắc bằng lời theo luật 2–6 của KD-0005: câu có một cụm thuật ngữ và một cụm quan hệ khác nhau (khớp dài nhất, lượt không dấu, dấu hai chấm giữa hai thuật ngữ). Trước khi so, job bỏ ký tự định dạng (ZWSP, gạch mềm) và đổi dấu thanh kiểu mới của vần mở («luỹ», «hoà») về kiểu của từ vựng. Từ vựng tạm là KD-0005 bản 2 (#116) cho tới khi T029b áp bản vá.
+- `doan`: ruột đoạn toán (không kèm dấu phân cách), đoạn viết trần, hay cả câu với `QUY_TAC_BANG_LOI` (bỏ dấu câu cuối). `cau`: chỉ số câu trong `cac_cau`.
+- `trang_thai` ∈ `DAT`, `SAI`, `KHONG_KIEM_DUOC`. Chỉ biểu thức `DAT` còn lại trong `cau_sach`. Biểu thức `DAT` nằm trong câu bị bỏ vẫn được liệt kê, với `cac_cau[cau].giu = false`.
+- `thay_bang_goi_y = true` khi không câu nào được giữ còn nội dung (chỉ còn từ nối, trợ từ, dấu dẫn `[n]`); khi đó `cau_sach = ""`. Core thay cả câu bằng gợi ý đã kiểm trước của bước (ADR 013 mục 6).
+- Đóng mặc định: đầu vào sai kiểu (`loi = DAU_VAO_KHONG_HOP_LE`), quá giới hạn (`QUA_GIOI_HAN`: `cau` trên 4000 ký tự, trên 40 đoạn toán, trên 60 dòng bảng, trên 80 dòng bài làm hay dòng trên 400 ký tự, `ham` trên 200 ký tự), lỗi bên trong (`LOI_KIEM_TRA`): `cau_sach = ""`, `thay_bang_goi_y = true`, `bieu_thuc = []`.
+- Core chỉ hiện `cau_sach` khi phản hồi có `cau_sach` là chuỗi, không có `loi` và `thay_bang_goi_y` là `false`. Hết giờ, sandbox lỗi hay JSON hỏng trả phong bì của sandbox, không có `cau_sach`: coi như lỗi.
 - Core ghi mỗi biểu thức `SAI` hoặc `KHONG_KIEM_DUOC` thành một `verification_run` (`subject_kind = TUTOR_FORMULA`) vào hàng đợi duyệt.
 - Lỗi, hết giờ, JSON hỏng → core không hiện câu; câu thay thế chỉ lấy từ gợi ý **đã qua job này từ trước** với phiên bản bảng hiện tại (ADR 013 mục 6), không có thì câu cố định không chứa toán.
-- Biểu thức trông như toán nằm ngoài `$…$`, `\(…\)`, `\[…\]` mà không phân loại được → `KHONG_PHAN_TICH_DUOC`, bị bỏ (đóng mặc định).
-- Cùng job chạy **trước** cho mọi câu gợi ý (thang của bài, thang mẫu) khi khóa bảng hoặc nhập bài; core lưu phán quyết theo (câu gợi ý, phiên bản bảng).
+- Cùng job chạy **trước** cho mọi câu gợi ý (thang của bài, thang mẫu) khi khóa bảng hoặc nhập bài; core lưu phán quyết theo (câu gợi ý, phiên bản bảng). Thang mẫu điền `{ham}`, `{tu}`, `{mau}` trong `$…$` thì mới là trích đề; điền trần là toán viết trần.
 
 ## Job mới: `POST /v1/kiem-dong-cong-thuc` (ADR 013, khóa bảng)
 

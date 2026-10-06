@@ -23,6 +23,7 @@ Hoặc từ gốc: `pnpm test:math`, `pnpm dev:math`.
 | `app/grader.py` | Chấm 5 bước (`k` từ 0) |
 | `app/verify.py` | Cổng 3 tầng |
 | `app/dong_cong_thuc.py` | Kiểm dòng bảng công thức khi khóa (ADR 013): tầng 1 máy kiểm, tầng 2 tài liệu được phép |
+| `app/loi_giang.py` | Cổng công thức cho câu gia sư (ADR 013), sau `/v1/filter`: giữ câu chỉ khi mọi biểu thức khớp bảng đã khóa hoặc trích nguyên văn đề, bài làm |
 | `app/leakfilter.py` | Lọc lộ đáp án |
 | `app/generator.py` | Sinh biến thể |
 | `app/normalizer.py` | LaTeX / biểu thức |

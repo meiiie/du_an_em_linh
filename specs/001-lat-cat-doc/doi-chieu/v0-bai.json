@@ -12,10 +12,10 @@
       "specs/001-lat-cat-doc/doi-chieu/chung.ts": "88fefe051fe63d20b562fe536cae5a2ade5c57c5"
     },
     "dich_vu_toan": {
-      "cay_git": "2d833dd78bfe594eefc309ffffde19bc6d4cc332",
+      "cay_git": "4636f33b14a1190910d231ef2ea00b34ea45597d",
       "anh_goc": {
         "ten": "python:3.12-slim",
-        "digest": "python@sha256:02108f5d322dd89f1c9e552442c25acb0543dfdbc455693a5599624f20d9155d"
+        "digest": "python@sha256:ddb0207ae1f0356c2b724d740769b0c5f5f51cc54a0525178f721825f78fe74c"
       },
       "python": "Python 3.12.15",
       "goi_python": [
