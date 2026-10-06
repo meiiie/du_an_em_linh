@@ -11,10 +11,11 @@ import { PhanBatDau } from './phan-bat-dau';
 
 /**
  * Từ gạch chân đổi lần lượt trong tiêu đề «Tự mình …» (như động từ xoay của trang Wiii), một vòng rồi dừng lại ở từ đầu:
- * 4 × 1,2 s = 4,8 s, dưới 5 s nên không cần nút tạm dừng (WCAG 2.2.2). Trình đọc màn hình chỉ nghe từ đầu.
+ * lần đổi cuối ở 4 × 1 s = 4 s, chuyển tiếp (160 ms trễ + 400 ms, trang-chu.css) xong ở 4,56 s, dưới 5 s nên không cần nút
+ * tạm dừng (WCAG 2.2.2). Trình đọc màn hình chỉ nghe từ đầu.
  */
 const DONG_TU = ['hiểu ra', 'làm được', 'sửa sai', 'kiểm tra'];
-const NHIP_MS = 1200;
+const NHIP_MS = 1000;
 
 /**
  * Trang công khai `/`, dựng theo trang Wiii trong meiiie-design-kit (examples/wiii): mở đầu căn giữa với từ xoay, lưới thẻ

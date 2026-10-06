@@ -40,17 +40,17 @@ describe('TrangChu', () => {
     expect([...t.el.querySelectorAll('button')].some((b) => /chuyển động/.test(b.textContent!))).toBe(false);
   });
 
-  it('từ gạch chân chạy đúng một vòng (4,8 s) rồi dừng ở «hiểu ra»', async () => {
+  it('từ gạch chân chạy đúng một vòng (đổi lần cuối ở 4 s) rồi dừng ở «hiểu ra»', async () => {
     vi.useFakeTimers({ toFake: ['setInterval', 'clearInterval'] });
     const t = await mo();
     expect(t.tuDangHien()).toBe('hiểu ra');
-    await t.buoc(1200);
+    await t.buoc(1000);
     expect(t.tuDangHien()).toBe('làm được');
-    await t.buoc(1200);
+    await t.buoc(1000);
     expect(t.tuDangHien()).toBe('sửa sai');
-    await t.buoc(2400);
+    await t.buoc(2000);
     expect(t.tuDangHien()).toBe('hiểu ra');
-    await t.buoc(1200 * 5);
+    await t.buoc(1000 * 5);
     expect(t.tuDangHien()).toBe('hiểu ra');
   });
 
@@ -62,7 +62,7 @@ describe('TrangChu', () => {
     }));
     vi.useFakeTimers({ toFake: ['setInterval', 'clearInterval'] });
     const t = await mo();
-    await t.buoc(1200 * 2);
+    await t.buoc(1000 * 2);
     expect(t.tuDangHien()).toBe('hiểu ra');
   });
 
