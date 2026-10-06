@@ -258,12 +258,9 @@ def test_ky_hieu_dung_rieng_khong_thuoc_loai_nao():
     "Em lập bảng xét dấu cho $f'(x)$ nhé.",
     "Em tìm nghiệm của f'(x) trước nhé.",
     "Em kiểm tra lại dòng $y^{\\prime}$ đầu tiên nhé.",
-    "Em gọi hoành độ điểm đó là x₀ nhé.",
-    "Em tính $y(x_0)$ ở bước sau nhé.",
-    "Em tính y(x₀) ở bước sau nhé.",
-], ids=["y-phay", "y-phay-tran", "f-phay-x", "f-phay-x-tran", "prime", "x0-tran", "y-x0", "y-x0-tran"])
+], ids=["y-phay", "y-phay-tran", "f-phay-x", "f-phay-x-tran", "prime"])
 def test_ky_hieu_chung_dung_rieng_doc_nhu_loi(cau):
-    """y', f'(x) đọc như thuật ngữ «đạo hàm»; x₀, y(x₀) là ký hiệu điểm: không mang giá trị nào."""
+    """y', f'(x) đọc như thuật ngữ «đạo hàm»: không mang giá trị nào."""
     kq = _chay(cau)
     assert (kq["cau_sach"], kq["bieu_thuc"], kq["thay_bang_goi_y"]) == (cau, [], False)
 
@@ -283,9 +280,38 @@ def test_ky_hieu_chung_trong_quy_tac_hay_gia_tri_van_bi_bo(cau, pq):
     assert (kq["cau_sach"], kq["thay_bang_goi_y"]) == ("", True)
 
 
-def test_ky_hieu_diem_khong_tinh_la_noi_dung():
-    kq = _chay("Vậy là $x_0$.")
-    assert (kq["cau_sach"], kq["bieu_thuc"], kq["thay_bang_goi_y"]) == ("", [], True)
+@pytest.mark.parametrize("cau", [
+    "Ta có y(x₀) bằng 2 khi x₀ bằng 0.",
+    "Điểm x₀ bằng 0, giá trị y(x₀) bằng 2.",
+    "Em gọi hoành độ điểm đó là x₀ nhé.",
+    "Vậy là $x_0$.",
+    "$y'$(0) ra 0, $y'$(2) cũng ra 0.",
+    "\\(y'\\)(0) ra 0.",
+    "$y'$ (0) ra 0.",
+], ids=["y-x0-bang", "x0-va-y-x0", "x0-ten", "x0-rieng", "y-phay-ngoac-so", "y-phay-ngoac-so-tron", "y-phay-cach-ngoac"])
+def test_ky_hieu_diem_va_gia_tri_ghep_qua_dau_phan_cach_bi_bo(cau):
+    """x₀, y(x₀) không được đọc như lời (thay chúng bằng chữ thì «y(x₀) bằng 2» lọt từ vựng); $y'$ ghép với (0) ngoài
+    dấu phân cách là giá trị y'(0). Rà #151 lần hai."""
+    kq = _chay(cau)
+    assert (kq["cau_sach"], kq["thay_bang_goi_y"]) == ("", True)
+
+
+@pytest.mark.parametrize("cau", [
+    "Em xét (không; 2) nhé.",
+    "Đồ thị lên trên (2; +vô cùng).",
+    "(-ꝏ; 0) và (2; +ꝏ)",
+    "y bằng 3xx trừ 6x.",
+    "(0;2)",
+    "y bằng 3ẋẋ trừ 6ẋ.",
+    "(0; Ƨ)",
+    "y bằng x**3",
+], ids=["khoang-dau-mut-chu", "khoang-vo-cung-chu", "khoang-vo-cung-gia", "ky-tu-che-gia", "ky-tu-che-khoang",
+        "chu-giong-x", "chu-giong-so", "luy-thua-sao"])
+def test_lo_hong_co_san_bi_bo(cau):
+    """Lỗ hổng có từ trước, rà #151 lần hai: khoảng có đầu mút là chữ, ký tự che giả mạo, chữ Latin mang dấu không phải
+    dấu Việt, ** ngoài $…$."""
+    kq = _chay(cau)
+    assert (kq["cau_sach"], kq["thay_bang_goi_y"]) == ("", True)
 
 
 @pytest.mark.parametrize("cau", [

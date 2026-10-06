@@ -180,7 +180,8 @@ def _mot_ky_tu(c):
 def _nhin(t, doan):
     """Bản nhìn cùng độ dài của câu trả lời: đoạn toán và dấu dẫn [n] bị che, ký tự tương thích, dấu phẩy trên và dấu trừ
     Unicode quy về ASCII."""
-    v = list("".join(_mot_ky_tu(c) for c in t).translate(_DOI_KY_TU))
+    # Ký tự che có sẵn trong câu trả lời là giả mạo đoạn đã che: coi như dấu toán.
+    v = list("".join("=" if c in (_CHE, _CHE_DAN) else _mot_ky_tu(c) for c in t).translate(_DOI_KY_TU))
     for d in doan:
         v[d[0]:d[1]] = _CHE * (d[1] - d[0])
     return _DAN.sub(lambda m: _CHE_DAN * len(m.group(0)), "".join(v))
@@ -245,11 +246,20 @@ _TUY_CHO = frozenset("()+-*/'")
 # số kề chữ biến (cả nhân viết cách «3 x»), hàm áp lên đối số, khoảng (a; b).
 _DAU_HIEU_TRAN = re.compile(
     r"'|[A-Za-z0-9)]\s*[-+*/]\s*[A-Za-z0-9(]|[-+]\s*\d|\d[A-Za-z]|\d\s+[A-Za-z]\b|[A-Za-z]\d"
-    r"|(?<![A-Za-z])[A-Za-z]\s*\(|\(" + _RUOT_KHOANG.pattern + r"\)")
+    r"|(?<![A-Za-z])[A-Za-z]\s*\(|\(" + _RUOT_KHOANG.pattern + r"\)|\(\s*[-+]?\s*\d|\*\*")
+
+# Dấu phụ của chữ Việt: huyền, sắc, ngã, hỏi, nặng, mũ, trăng, móc. Chữ Latin mang dấu khác (ẋ, Ƨ…) không phải chữ
+# của lời văn mà là dấu hiệu toán, kẻo dùng chữ trông giống x để viết đa thức.
+_DAU_VIET = frozenset("̛̣̀́̃̉̂̆")
 
 
 def _chu_latin(c):
-    return unicodedata.category(c) in ("Lu", "Ll", "Lt") and unicodedata.name(c, "").startswith("LATIN ")
+    if c.isascii():
+        return c.isalpha()
+    if c in "đĐ":
+        return True
+    t = unicodedata.normalize("NFD", c)
+    return t[0] in "aeiouyAEIOUY" and all(m in _DAU_VIET for m in t[1:])
 
 
 def _dau_toan(c):
@@ -326,7 +336,11 @@ def _toan_tran(s):
         cur = [cur[0] if cur else a, b]
         sau += sum({"Ps": 1, "Pe": -1}.get(unicodedata.category(c), 0) for c in w)
     dong()
-    return out
+    # Khoảng (a; b) luôn là toán, kể cả khi đầu mút là chữ («(không; 2)») hay ký tự giống ∞ cắt đoạn ở trên.
+    for a, b in _khoang(s):
+        if not any(x <= a and b <= y for x, y in out):
+            out.append((a, b))
+    return sorted(out)
 
 
 # ------------------------------------------------------------------ LaTeX hỏng
@@ -641,20 +655,17 @@ def _xep_doan(ctx, inner, dong_dung, khung_hs):
     return _pq(KET_QUA, KKD, ly_do="Kết quả tính cụ thể: không trùng nguyên văn đề hay dòng bài làm được dẫn là lời của học sinh.")
 
 
-# Ký hiệu chung đứng riêng: y', f'(x) là thuật ngữ «đạo hàm»; x₀, y(x₀) là ký hiệu điểm. Chúng không mang giá trị nào,
-# nên câu chứa chúng được xét từ vựng như khi viết bằng lời, không phải như toán không phân loại được.
+# Ký hiệu chung đứng riêng: y', f'(x) là thuật ngữ «đạo hàm», không mang giá trị nào, nên câu chứa chúng được xét từ
+# vựng như khi viết bằng lời. x₀, y(x₀) vẫn là toán không phân loại được: thay chúng bằng chữ để lọt từ vựng thì câu
+# «y(x₀) bằng 2 khi x₀ bằng 0» lộ giá trị (rà #151).
 _DAO_HAM_RIENG = re.compile(r"[yf]'(?:\(x\))?")
-_DIEM_RIENG = re.compile(r"x_0|[yf]\(x_0\)")
 
 
 def _ky_hieu_chung(s):
-    """Chữ thay cho `s` khi xét từ vựng: «đạo hàm» với y', f'(x); "" với x₀, y(x₀); None khi `s` không phải ký hiệu
-    chung đứng riêng."""
+    """Chữ thay cho `s` khi xét từ vựng: «đạo hàm» với y', f'(x); None khi `s` không phải ký hiệu chung đứng riêng."""
     t = dct._BO_NGOAC.sub("", unicodedata.normalize("NFC", s).translate(_DOI_KY_TU))
-    t = re.sub(r"[\s{}]+", "", re.sub(r"\^\s*\{?\s*\\prime\s*\}?", "'", t).replace("₀", "_0"))
-    if _DAO_HAM_RIENG.fullmatch(t):
-        return "đạo hàm"
-    return "" if _DIEM_RIENG.fullmatch(t) else None
+    t = re.sub(r"[\s{}]+", "", re.sub(r"\^\s*\{?\s*\\prime\s*\}?", "'", t))
+    return "đạo hàm" if _DAO_HAM_RIENG.fullmatch(t) else None
 
 
 def _doc_ten(s, ten):
