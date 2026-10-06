@@ -6,15 +6,15 @@
       "apps/web/lib/math.ts": "c97673742e1836dd4193a78cef8493dbbbfd6217",
       "apps/web/lib/levels.ts": "31cfbc728e0e2609fdd4ceb50525b0e58daf8fbc",
       "apps/web/app/hs/luyen/[id]/page.tsx": "f884d6d6b1df135ab69dbacd1fa47d4cc73f5dff",
-      "specs/001-lat-cat-doc/doi-chieu/v0-bai.json": "5207de7be976fc3283247a8d472df7bc663c8820",
+      "specs/001-lat-cat-doc/doi-chieu/v0-bai.json": "66c02473d3d1de5ecf40cb1bb5ff4f965fb6412a",
       "specs/001-lat-cat-doc/doi-chieu/cham-v0.ts": "8ce6215d3612cd684b39600f08ad7ebe292feffd",
       "specs/001-lat-cat-doc/doi-chieu/chung.ts": "88fefe051fe63d20b562fe536cae5a2ade5c57c5",
-      "services/math": "2d833dd78bfe594eefc309ffffde19bc6d4cc332"
+      "services/math": "0e4798ae8936e6379ee7ebf1521bc5db7ad1fa01"
     },
     "dich_vu_toan": {
       "anh_goc": {
         "ten": "python:3.12-slim",
-        "digest": "python@sha256:02108f5d322dd89f1c9e552442c25acb0543dfdbc455693a5599624f20d9155d"
+        "digest": "python@sha256:ddb0207ae1f0356c2b724d740769b0c5f5f51cc54a0525178f721825f78fe74c"
       },
       "python": "Python 3.12.15",
       "goi_python": [
