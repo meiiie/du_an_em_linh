@@ -10,7 +10,7 @@
   </parent>
   <groupId>vn.hoctapcanman</groupId>
   <artifactId>core</artifactId>
-  <version>0.1.0</version> <!-- x-release-please-version -->
+  <version>0.2.0</version> <!-- x-release-please-version -->
   <name>core</name>
   <description>Dịch vụ nghiệp vụ v2 của Phần mềm học toán với AI (ADR 011)</description>
 
