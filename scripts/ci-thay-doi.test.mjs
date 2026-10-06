@@ -35,6 +35,7 @@ const docNguon = (ten) => JSON.parse(readFileSync(new URL('../' + DOI_CHIEU + te
 const v0 = docNguon('v0-bai.json');
 const khoaBang = docNguon('khoa-bang-v0.json');
 const cham = docNguon('cham-v0.json');
+const bkt = docNguon('bkt-v0.json');
 const loiGiai = JSON.parse(readFileSync(new URL('../services/core/src/test/resources/content/loi-giai-v0.json', import.meta.url),
   'utf8')).nguon;
 const nguon = [
@@ -43,6 +44,7 @@ const nguon = [
   DOI_CHIEU + 'loi-giai-v0.ts',
   ...Object.keys(v0.du_lieu),
   ...Object.keys(cham.git),
+  ...Object.keys(bkt.git),
   'services/math',
   ...Object.keys(khoaBang).map((k) => ({ services_math: 'services/math', data_v0: 'data/v0', data_supham: 'data/supham',
     script: DOI_CHIEU + 'khoa-bang-v0.py' })[k] ?? assert.fail('khóa nguon chưa ánh xạ trong test: ' + k)),

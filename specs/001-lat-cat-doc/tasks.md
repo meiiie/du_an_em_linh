@@ -153,10 +153,10 @@ description: "Danh sách việc của epic P2 — lát cắt dọc một chủ �
 
 ### Issue — Module `mastery` (core)
 
-- [ ] T049 [US5] `V<n>__mastery.sql`: `mastery_config`, `mastery_states`, `mastery_events`, `mastery_overrides`, `next_problem_overrides`
-- [ ] T050 [US5] `core/mastery/`: BKT chép `apps/web/lib/learning.ts` đúng tham số (research R7); ngưỡng 4 mức; mức Bloom lưu kèm; kẹt (ghi `KET` qua `CanhBaoGiaoVien`); hoàn thành kỹ năng / chủ đề
+- [x] T049 [US5] `V<n>__mastery.sql`: `mastery_config`, `mastery_states`, `mastery_events`, `mastery_overrides`, `next_problem_overrides`
+- [x] T050 [US5] `core/mastery/`: BKT chép `apps/web/lib/learning.ts` đúng tham số (research R7); ngưỡng 4 mức; mức Bloom lưu kèm; kẹt (ghi `KET` qua `CanhBaoGiaoVien`); hoàn thành kỹ năng / chủ đề
 - [ ] T051 [US5] `core/mastery/`: bài kế (chép `de-hoc-sinh.ts`) với lý do; bất biến «không quá 1 nấc»; bổ sung `baiKe`, `soKyNang`, `hoanThanh` vào `GET /api/hs/trang-hoc`
-- [ ] T052 [P] [US5] Script `specs/001-lat-cat-doc/doi-chieu/bkt-v0.ts` xuất tệp vàng; `core-test/mastery/DoiChieuBktV0Test.java` so từng bước
+- [x] T052 [P] [US5] Script `specs/001-lat-cat-doc/doi-chieu/bkt-v0.ts` xuất tệp vàng; `core-test/mastery/DoiChieuBktV0Test.java` so từng bước
 - [ ] T053 [P] [US5] `fe/features/hoc-sinh/trang-hoc/`: sổ «Kỹ năng» 4 mức bằng lời, lý do bài kế, báo hoàn thành
 - [ ] T054 [P] [US5] e2e `apps/frontend/e2e/toi-vdc.spec.ts` (SC-010)
 

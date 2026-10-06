@@ -10,7 +10,7 @@
 
 | Phương thức | Đường dẫn | Vào | Ra | FR |
 | --- | --- | --- | --- | --- |
-| GET | `/api/hs/trang-hoc` | — | `{ten, viecHomNay[], baiKe: {maBai, tieuDe, lyDo: CHUA_LOI\|CUNG_CO\|NANG_1_NAC\|DE_HON\|THAY_CO_GIAO, kyNang, muc}, soBaiGiao[], soKyNang[{kyNang, muc4, kẹt}], hoanThanh: {kyNang[], chuDe}}` | 23–28 |
+| GET | `/api/hs/trang-hoc` | — | `{ten, soKyNang: [{kyNang, tenKyNang, muc4, ket}], hoanThanh: {kyNang[], chuDe[]}}`, xem [Trang Học](#trang-học-t050). Sau này thêm `baiKe?: {maBai, tieuDe, lyDo: CHUA_LOI\|CUNG_CO\|NANG_1_NAC\|DE_HON\|THAY_CO_GIAO, kyNang, muc}` (T051) và `viecHomNay?` (T055); bài được giao ở `GET /api/hs/bai` | 23–28 |
 | GET | `/api/hs/bai` | — | bài được giao cho em mà đang phát hành ở lớp: `[{maBai, deBai, deBaiLatex, kyNang, tenKyNang, muc4, han, trangThai, soBuocDat, soBuoc, ketQua}]`, xem [Làm bài](#làm-bài-t021) | 31 |
 | GET | `/api/hs/bai/{maBai}` | — | `{maBai, de: {text, latex}, kyNang, tenKyNang, muc4, dangTraLoi, buocBatDau, khaiBaoKetLuan[], cacBuoc: [{maBuoc, ten, viec}], baiLam: {trangThai, cacBuoc: [{maBuoc, dong: [{dong, latex, loai?}], bang: [{hang, k, giaTri}], ketQua, thongBao, oSai[]}]}, coTheMoLoiGiai}`, xem [Làm bài](#làm-bài-t021) | 6–10 |
 | POST | `/api/hs/bai/{maBai}/buoc` | `{maBuoc, dong?: [{dong, latex, loai?}], bang?: [{hang, k, giaTri}], suKien?: [{maBuoc, hang?, k?, giaTriCu?, giaTriMoi, luc}]}` (`suKien`: sự kiện nhập mới kể từ lần nộp trước, tối đa 500) | `{ketQua: DAT\|SAI\|KHONG_KIEM_DUOC\|KHONG_CHAM_DUOC, thongBao, oSai: [{maBuoc, dong?, hang?, k?}], maLoi?, buocKe?}` — không có giá trị đúng; yêu cầu chấm dựng từ các bước đã lưu, không từ máy học sinh. 400 khi thân sai (xem [Làm bài](#làm-bài-t021)), 404 như bài không có | 8–10 |
@@ -78,7 +78,13 @@ Có trong core từ T021 (`practice/infrastructure/web/HocSinhBaiController`). Q
 
 - 400 (`title` «Bài làm không hợp lệ»): thân không đọc được; thiếu `maBuoc`; `dong[].latex` thiếu hay dài quá 2000; `dong[].dong` âm; quá 50 dòng, 200 ô, 500 sự kiện; `bang[].giaTri` dài quá 200; bước ngoài khung của bài hay trước bước bắt đầu; bước không có dòng hay ô nào (kể cả `bang: []`); ô kết luận đề không hỏi; sự kiện nhập của bước ngoài khung hay `k` quá 32767. `detail` nói trường hay lỗi nào. Không ghi gì.
 
-`POST /api/hs/bai/{maBai}/nop` (không thân) → 200 `{"ketQua": "DAT", "mucHieu": []}`, thêm `"loiGiai": "…"` khi lớp mở. 409 (`title` «Chưa nộp được bài») kèm `lyDo`:
+`POST /api/hs/bai/{maBai}/nop` (không thân) → 200 `{"ketQua": "DAT", "mucHieu": [{"kyNang": "T12.DH.02", "muc4Truoc": "NHAN_BIET", "muc4Sau": "THONG_HIEU"}]}`, thêm `"loiGiai": "…"` khi lớp mở.
+
+- `mucHieu` (T050): kỹ năng mà bài nộp được tính vào, nhiều nhất một phần tử, tính như `applyMastery` của v0 (BKT, tham số `mastery_config`). Kỹ năng là của bài; bài `SAI` có mã lỗi tin cậy từ 0,65 thì là kỹ năng của mã lỗi, không thì có bước sai thì là kỹ năng của bước, nên `kyNang` có thể khác kỹ năng của bài. `muc4Truoc` là mức trước bài này (`NHAN_BIET` khi em chưa có bài nào được tính ở kỹ năng đó), `muc4Sau` mức sau; lên hay xuống tối đa một nấc, có thể bằng nhau. Bài bị nghi đoán mò vẫn có phần tử, mức không đổi.
+- `mucHieu` là `[]` khi bài không được tính: `ketQua` là `KHONG_KIEM_DUOC` (chờ giáo viên), hoặc `SAI` vì lỗi trình bày dấu U (`ERR.DH.07`, toán đúng).
+- Mỗi bài làm được tính một lần: gửi lại trả đúng `mucHieu` lần đầu. Làm lại bài rồi nộp là bài làm mới, được tính tiếp.
+
+409 (`title` «Chưa nộp được bài») kèm `lyDo`:
 
 | `lyDo` | `detail` |
 | --- | --- |
@@ -87,6 +93,24 @@ Có trong core từ T021 (`practice/infrastructure/web/HocSinhBaiController`). Q
 | `DE_DA_DOI` | Đề bài vừa được cập nhật. Em làm lại theo đề mới nhé. |
 
 Dữ liệu thử (profile `dev`, compose v2): `du-lieu-thu/giao-bai.sql` giao mọi bài đang phát hành ở «12A1 thử» cho An, Bình, Chi, hạn 7 ngày. Đăng nhập `hs.an@demo.local` / `hocsinh123` là có danh sách bài thật.
+
+### Trang Học (T050)
+
+Có trong core từ T050 (`mastery/infrastructure/web/TrangHocController`). Người gọi lấy từ access token. Mức hiểu là của học sinh, không theo lớp: em chưa ghi danh lớp nào vẫn nhận 200. Vai trò khác `STUDENT` nhận 403.
+
+`GET /api/hs/trang-hoc` → 200:
+
+```json
+{"ten": "An",
+ "soKyNang": [{"kyNang": "T12.DH.05", "tenKyNang": "Tìm cực trị của hàm số cho bởi công thức (dấu hiệu đổi dấu của f')", "muc4": "NHAN_BIET", "ket": true},
+              {"kyNang": "T12.DH.03", "tenKyNang": "Xét dấu y', lập bảng biến thiên, kết luận khoảng đơn điệu", "muc4": "VAN_DUNG_CAO", "ket": false}],
+ "hoanThanh": {"kyNang": ["T12.DH.03"], "chuDe": []}}
+```
+
+- `ten`: tên hiển thị của tài khoản, để chào «Chào An».
+- `soKyNang`: mỗi kỹ năng em đã có ít nhất một bài được tính; chưa có thì `[]`. Thứ tự như sổ «Kỹ năng» của v0: kỹ năng yếu (xác suất thành thạo thấp) trước, cùng mức thì kẹt nhiều trước, rồi theo mã. Không có xác suất, không có Bloom (FR-023). `tenKyNang` là tên ở bảng `skills`; kỹ năng không có trong danh mục thì là mã. `ket`: sai liền từ `so_luot_ket` (3) bài trở lên; bài đúng đưa về 0.
+- `hoanThanh.kyNang`: kỹ năng đang ở `VAN_DUNG_CAO` (FR-026), theo mã. Tụt khỏi Vận dụng cao thì không còn. `hoanThanh.chuDe`: mã chủ đề có mọi kỹ năng cốt lõi (`is_core`) ở Vận dụng cao, theo mã.
+- Mọi trường luôn có mặt. Chưa có: `baiKe` (T051), `viecHomNay` (T055); khi có sẽ là trường mới, frontend coi vắng mặt là chưa có.
 
 ### SSE `POST /api/hs/gia-su` (ADR 010, research R4)
 

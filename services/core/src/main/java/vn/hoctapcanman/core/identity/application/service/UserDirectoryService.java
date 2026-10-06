@@ -37,6 +37,11 @@ public class UserDirectoryService implements UserDirectory {
         return users.findById(new UserId(id)).map(UserDirectoryService::tomTat);
     }
 
+    @Override
+    public Optional<String> tenHienThi(UUID id) {
+        return users.findById(new UserId(id)).map(User::displayName);
+    }
+
     private static UserSummary tomTat(User user) {
         return new UserSummary(user.id().value(), user.role().name(), user.synthetic());
     }

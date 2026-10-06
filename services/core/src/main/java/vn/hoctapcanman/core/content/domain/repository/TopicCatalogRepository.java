@@ -1,5 +1,6 @@
 package vn.hoctapcanman.core.content.domain.repository;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import vn.hoctapcanman.core.content.domain.model.ErrorType;
@@ -35,4 +36,11 @@ public interface TopicCatalogRepository {
     List<StepTemplate> findStepTemplates(String topicCode);
 
     List<ErrorType> findErrorTypes(String skillCode);
+
+    Optional<ErrorType> findErrorType(String code);
+
+    Optional<StepTemplate> findStepTemplate(String stepCode);
+
+    /** Mọi kỹ năng của các chủ đề chứa ít nhất một kỹ năng trong {@code skillCodes}, theo chủ đề rồi mã. */
+    List<Skill> findSkillsInTopicsOf(Collection<String> skillCodes);
 }

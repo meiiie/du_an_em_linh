@@ -1,5 +1,8 @@
 package vn.hoctapcanman.core.content.infrastructure.persistence;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.jdbc.core.simple.JdbcClient;
@@ -95,8 +98,7 @@ public class TopicCatalogRepositoryAdapter implements TopicCatalogRepository {
     public List<Skill> findSkills(String topicCode) {
         return jdbc.sql("select code, topic_code, name, description, grade, is_core from skills where topic_code = :topic order by code")
             .param("topic", topicCode)
-            .query((rs, n) -> new Skill(Cot.chu(rs, "code"), Cot.chu(rs, "topic_code"), Cot.chu(rs, "name"),
-                rs.getString("description"), Cot.soNeuCo(rs, "grade"), rs.getBoolean("is_core")))
+            .query(TopicCatalogRepositoryAdapter::kyNang)
             .list();
     }
 
@@ -116,8 +118,7 @@ public class TopicCatalogRepositoryAdapter implements TopicCatalogRepository {
                 select step_code, topic_code, ordinal, input_kind, skill_code, description from step_templates
                 where topic_code = :topic order by ordinal""")
             .param("topic", topicCode)
-            .query((rs, n) -> new StepTemplate(Cot.chu(rs, "step_code"), Cot.chu(rs, "topic_code"), rs.getInt("ordinal"),
-                InputKind.valueOf(Cot.chu(rs, "input_kind")), rs.getString("skill_code"), Cot.chu(rs, "description")))
+            .query(TopicCatalogRepositoryAdapter::buoc)
             .list();
     }
 
@@ -127,8 +128,45 @@ public class TopicCatalogRepositoryAdapter implements TopicCatalogRepository {
                 select code, skill_code, step_code, name, fix_hint, result_types from error_types
                 where skill_code = :skill order by code""")
             .param("skill", skillCode)
-            .query((rs, n) -> new ErrorType(Cot.chu(rs, "code"), rs.getString("skill_code"), rs.getString("step_code"),
-                Cot.chu(rs, "name"), rs.getString("fix_hint"), Cot.mang(rs, "result_types")))
+            .query(TopicCatalogRepositoryAdapter::loi)
             .list();
+    }
+
+    @Override
+    public Optional<ErrorType> findErrorType(String code) {
+        return jdbc.sql("select code, skill_code, step_code, name, fix_hint, result_types from error_types where code = :code")
+            .param("code", code).query(TopicCatalogRepositoryAdapter::loi).optional();
+    }
+
+    @Override
+    public Optional<StepTemplate> findStepTemplate(String stepCode) {
+        return jdbc.sql("select step_code, topic_code, ordinal, input_kind, skill_code, description from step_templates where step_code = :code")
+            .param("code", stepCode).query(TopicCatalogRepositoryAdapter::buoc).optional();
+    }
+
+    @Override
+    public List<Skill> findSkillsInTopicsOf(Collection<String> skillCodes) {
+        if (skillCodes.isEmpty()) {
+            return List.of();
+        }
+        return jdbc.sql("""
+                select code, topic_code, name, description, grade, is_core from skills
+                where topic_code in (select topic_code from skills where code in (:codes)) order by topic_code, code""")
+            .param("codes", skillCodes).query(TopicCatalogRepositoryAdapter::kyNang).list();
+    }
+
+    private static Skill kyNang(ResultSet rs, int n) throws SQLException {
+        return new Skill(Cot.chu(rs, "code"), Cot.chu(rs, "topic_code"), Cot.chu(rs, "name"), rs.getString("description"),
+            Cot.soNeuCo(rs, "grade"), rs.getBoolean("is_core"));
+    }
+
+    private static StepTemplate buoc(ResultSet rs, int n) throws SQLException {
+        return new StepTemplate(Cot.chu(rs, "step_code"), Cot.chu(rs, "topic_code"), rs.getInt("ordinal"),
+            InputKind.valueOf(Cot.chu(rs, "input_kind")), rs.getString("skill_code"), Cot.chu(rs, "description"));
+    }
+
+    private static ErrorType loi(ResultSet rs, int n) throws SQLException {
+        return new ErrorType(Cot.chu(rs, "code"), rs.getString("skill_code"), rs.getString("step_code"), Cot.chu(rs, "name"),
+            rs.getString("fix_hint"), Cot.mang(rs, "result_types"));
     }
 }
