@@ -142,6 +142,32 @@ describe('nhapTuBaiLam', () => {
   });
 });
 
+describe('đạo hàm có hàng trống', () => {
+  it('nạp lại đặt từng dòng về đúng hàng đã gửi, gửi lại ra đúng thân cũ', () => {
+    const gui = yeuCauNop('B.DH.DAOHAM', { ...NHAP, dh: ['', 'y = 3x^2', '', '= 3x(x-2)'] }, KHAI_BAO);
+    expect(gui.dong).toEqual([
+      { dong: 1, latex: 'y = 3x^2' },
+      { dong: 3, latex: '= 3x(x-2)' },
+    ]);
+    const bai: ChiTietBai = {
+      maBai: 'GEN-bac_ba-11',
+      de: { text: '', latex: 'x^{3}' },
+      kyNang: 'T12.DH.03',
+      tenKyNang: '',
+      muc4: 'VAN_DUNG',
+      dangTraLoi: 'TU_LUAN_5_BUOC',
+      buocBatDau: null,
+      khaiBaoKetLuan: KHAI_BAO,
+      cacBuoc: [],
+      baiLam: { trangThai: 'DANG_LAM', cacBuoc: [{ maBuoc: 'B.DH.DAOHAM', dong: [...gui.dong!], bang: [], ketQua: null, thongBao: null, oSai: [] }] },
+      coTheMoLoiGiai: false,
+    };
+    const n = nhapTuBaiLam(bai);
+    expect(n.dh).toEqual(['', 'y = 3x^2', '', '= 3x(x-2)']);
+    expect(yeuCauNop('B.DH.DAOHAM', n, KHAI_BAO)).toEqual(gui);
+  });
+});
+
 describe('dongNghiem', () => {
   it('hàng trống không gửi nên không có số dòng; các hàng sau đánh số như thân yêu cầu', () => {
     const n: NhapPhieu = { ...NHAP, nghiem: [{ latex: ' ', loai: 'NGHIEM' }, { latex: '2', loai: 'NGHIEM' }, { latex: '-1', loai: 'KHONG_XD' }] };

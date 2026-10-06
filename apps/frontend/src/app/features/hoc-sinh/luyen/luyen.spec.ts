@@ -186,6 +186,38 @@ describe('Luyen', () => {
     expect(t.$('[data-testid=nop-bai]')).not.toBeNull();
   });
 
+  it('vào lại bài có hàng đạo hàm trống: gửi lại đúng số dòng core đã lưu, nên các bước sau vẫn giữ dấu đạt', async () => {
+    const dh = { ...daDat('B.DH.DAOHAM'), dong: [{ dong: 1, latex: '3x^2-12x' }] };
+    const t = await mo(chiTiet({ cacBuoc: CAC_BUOC.map((s) => (s.maBuoc === 'B.DH.DAOHAM' ? dh : daDat(s.maBuoc))) }));
+    await t.bam('[data-testid="step-B.DH.DAOHAM"]');
+    expect(t.$<HTMLInputElement>('input[data-testid=latex-dh]')!.value).toBe('');
+    expect(t.$<HTMLInputElement>('input[data-testid=latex-dh-1]')!.value).toBe('3x^2-12x');
+    await t.bam('[data-testid=nop-buoc]');
+    const yc = t.http.expectOne(API_HS.nopBuoc(MA));
+    expect(yc.request.body).toEqual({ maBuoc: 'B.DH.DAOHAM', dong: [{ dong: 1, latex: '3x^2-12x' }] });
+    yc.flush({ ketQua: 'DAT', thongBao: 'Đúng.', oSai: [] });
+    await t.xong();
+    expect(CAC_BUOC.map((s) => t.$(`[data-testid="step-${s.maBuoc}"]`)!.getAttribute('data-tt'))).toEqual(['dat', 'dat', 'dat', 'dat', 'dat']);
+  });
+
+  it('mất phản hồi sau khi gửi nội dung mới: không giữ dấu đạt của các bước sau (core có thể đã lưu)', async () => {
+    const t = await mo(chiTiet({ cacBuoc: CAC_BUOC.map((s) => daDat(s.maBuoc)) }));
+    await t.bam('[data-testid="step-B.DH.TXD"]');
+    await t.go('latex-txd', '\\mathbb{R}\\setminus\\{0\\}');
+    await t.bam('[data-testid=nop-buoc]');
+    t.http.expectOne(API_HS.nopBuoc(MA)).flush(null, { status: 502, statusText: 'Bad Gateway' });
+    await t.xong();
+    expect(t.chu('[role=alert]')).toBe('Chưa gửi được bài làm. Kiểm tra kết nối rồi bấm «Kiểm tra» lại.');
+    expect(CAC_BUOC.map((s) => t.$(`[data-testid="step-${s.maBuoc}"]`)!.getAttribute('data-tt'))).toEqual([
+      'dang-lam',
+      'chua-lam',
+      'chua-lam',
+      'chua-lam',
+      'chua-lam',
+    ]);
+    expect(t.$('[data-testid=nop-bai]')).toBeNull();
+  });
+
   it('em bấm sang bước khác trong lúc chờ chấm: đạt thì không kéo em sang bước kế, không bỏ qua bước nào', async () => {
     const t = await mo(chiTiet());
     await t.go('latex-txd', '\\mathbb{R}');

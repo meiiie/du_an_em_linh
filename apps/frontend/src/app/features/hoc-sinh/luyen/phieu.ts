@@ -62,7 +62,13 @@ export function nhapTuBaiLam(bai: ChiTietBai): NhapPhieu {
     const o = khai.find((x) => x.loai === d.loai);
     if (o) kl[o.ma] = d.latex === o.trongThi ? '' : d.latex;
   }
-  const dh = dong(DAO_HAM).map((d) => d.latex);
+  // Dòng đạo hàm về đúng hàng đã gửi (hàng trống để trống): gửi lại không đổi số dòng, nên không đổi băm của core.
+  const hang: string[] = [];
+  for (const d of dong(DAO_HAM)) {
+    if (d.dong < 50) hang[d.dong] = d.latex;
+    else hang.push(d.latex);
+  }
+  const dh = Array.from(hang, (x) => x ?? '');
   const nghiem = dong(NGHIEM)
     .filter((d) => d.latex !== 'không có nghiệm')
     .map((d) =>

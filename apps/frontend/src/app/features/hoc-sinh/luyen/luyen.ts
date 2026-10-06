@@ -284,12 +284,9 @@ export class Luyen {
       );
       this.suKien.splice(0, suKien.length);
       const moi = JSON.stringify(noiDung);
-      const doi = this.daLuu()[buoc.maBuoc] !== moi;
+      if (this.daLuu()[buoc.maBuoc] !== moi) this.boKetQuaTu(i);
       this.daLuu.update((m) => ({ ...m, [buoc.maBuoc]: moi }));
-      this.ketQua.update((m) => {
-        const giu = doi ? Object.fromEntries(Object.entries(m).filter(([ma]) => b.cacBuoc.findIndex((s) => s.maBuoc === ma) < i)) : m;
-        return { ...giu, [buoc.maBuoc]: { ketQua: kq.ketQua, thongBao: kq.thongBao, oSai: kq.oSai } };
-      });
+      this.ketQua.update((m) => ({ ...m, [buoc.maBuoc]: { ketQua: kq.ketQua, thongBao: kq.thongBao, oSai: kq.oSai } }));
       this.vuaDat.set(null);
       // Em đã bấm sang bước khác trong lúc chờ thì để em ở đó.
       if (kq.ketQua === 'DAT' && this.buoc() === i && i < b.cacBuoc.length - 1) {
@@ -301,7 +298,13 @@ export class Luyen {
       }
     } catch (e) {
       // 400 là thân không hợp lệ: bỏ sự kiện đã gửi, kẻo mọi lần kiểm sau mang lại đúng sự kiện hỏng đó.
-      if (e instanceof HttpErrorResponse && e.status === 400) this.suKien.splice(0, suKien.length);
+      if (e instanceof HttpErrorResponse && e.status === 400) {
+        this.suKien.splice(0, suKien.length);
+      } else if (this.daLuu()[buoc.maBuoc] !== JSON.stringify(noiDung)) {
+        // Mất phản hồi: core có thể đã lưu nội dung mới. Coi như đã đổi để không giữ dấu đạt core không còn công nhận.
+        this.daLuu.update((m) => Object.fromEntries(Object.entries(m).filter(([ma]) => ma !== buoc.maBuoc)));
+        this.boKetQuaTu(i);
+      }
       this.loiGui.set(loiDeDoc(e, 'Chưa gửi được bài làm. Kiểm tra kết nối rồi bấm «Kiểm tra» lại.'));
       this.hienPhanHoi();
     } finally {
@@ -322,6 +325,12 @@ export class Luyen {
     } finally {
       this.dangGui.set(false);
     }
+  }
+
+  /** Bỏ kết quả chấm từ bước `i` trở đi: core chỉ giữ lần chấm khi nội dung mọi bước trước nó không đổi. */
+  private boKetQuaTu(i: number): void {
+    const cacBuoc = this.bai.value()?.cacBuoc ?? [];
+    this.ketQua.update((m) => Object.fromEntries(Object.entries(m).filter(([ma]) => cacBuoc.findIndex((s) => s.maBuoc === ma) < i)));
   }
 
   private sua(f: (n: NhapPhieu) => NhapPhieu): void {
