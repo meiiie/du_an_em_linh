@@ -42,4 +42,11 @@
       </div>
     }
   </section>
+
+  @if (th.hasValue()) {
+    <section aria-labelledby="tieu-de-ky-nang" data-testid="so-ky-nang">
+      <h2 id="tieu-de-ky-nang" class="nhan-muc">Kỹ năng</h2>
+      <app-so-ky-nang [kyNang]="th.value().soKyNang" />
+    </section>
+  }
 }
