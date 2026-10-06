@@ -1,0 +1,51 @@
+<header class="dau-trang">
+  <h1>Chào {{ ten() }}</h1>
+  @if (du.laMau) {
+    <p class="mau" data-testid="bai-mau">Bài mẫu để xem trước. Bài của lớp sẽ hiện khi thầy cô giao.</p>
+  }
+</header>
+
+@if (ke; as ke) {
+  <section class="ke-tiep" aria-labelledby="tieu-de-ke-tiep">
+    <div class="ke-chu">
+      <h2 id="tieu-de-ke-tiep" class="nhan-muc">Bài tiếp theo</h2>
+      <p class="ky-nang">{{ ke.kyNang }}</p>
+      <p class="cau-hoi">{{ ke.cauHoi }}</p>
+      <ol class="buoc" aria-label="Năm bước">
+        @for (b of namBuoc; track b; let i = $index) {
+          <li [class.dat]="i < buocDat" [class.dang]="i === buocDat">
+            <span class="so">{{ i + 1 }}</span><span class="ten-buoc">{{ b }}</span>
+          </li>
+        }
+      </ol>
+      <a appButton size="lg" [routerLink]="['/hs/luyen', ke.ma]" data-testid="lam-buoc-tiep">Làm bước tiếp</a>
+    </div>
+    <app-katex class="ke-bang" bang [latex]="ke.ham" />
+  </section>
+}
+
+<section aria-labelledby="tieu-de-bai-giao">
+  <h2 id="tieu-de-bai-giao" class="nhan-muc">Bài được giao</h2>
+  <ul class="danh-sach">
+    @for (b of du.bai; track b.ma; let i = $index) {
+      <li><app-hang-bai [bai]="b" [so]="i + 1" /></li>
+    }
+  </ul>
+</section>
+
+<section aria-labelledby="tieu-de-muc">
+  <h2 id="tieu-de-muc" class="nhan-muc">Mức hiểu</h2>
+  <ul class="muc">
+    @for (k of du.mucKyNang; track k.ten) {
+      <li>
+        <span class="ten-ky-nang">{{ k.ten }}</span>
+        <span class="thang" aria-hidden="true">
+          @for (n of [1, 2, 3, 4]; track n) {
+            <i [class.co]="n <= mucSo[k.muc]"></i>
+          }
+        </span>
+        <span class="chu-muc">{{ tenMuc[k.muc] }}</span>
+      </li>
+    }
+  </ul>
+</section>

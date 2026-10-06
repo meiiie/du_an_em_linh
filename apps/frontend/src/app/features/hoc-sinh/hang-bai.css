@@ -1,0 +1,107 @@
+:host {
+  display: block;
+}
+
+.hang {
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr) auto 20px;
+  grid-template-areas:
+    'vong ten tt mui'
+    'vong muc muc mui';
+  align-items: center;
+  gap: 2px var(--space-4);
+  min-height: 64px;
+  padding: var(--space-3) var(--space-4);
+  color: var(--ink);
+  text-decoration: none;
+  transition: background-color 150ms var(--ease);
+}
+
+.hang:hover {
+  background: color-mix(in srgb, var(--ink) 4%, transparent);
+}
+
+.vong {
+  grid-area: vong;
+  width: 24px;
+  height: 24px;
+  fill: none;
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+
+.vong .nen {
+  stroke: var(--line-strong);
+}
+
+.vong .tien {
+  stroke: var(--label);
+  transform: rotate(-90deg);
+  transform-origin: center;
+}
+
+.vong .day {
+  fill: var(--pass);
+  stroke: var(--pass);
+}
+
+.vong path {
+  stroke: var(--raise);
+}
+
+.ten {
+  grid-area: ten;
+  display: grid;
+  min-width: 0;
+  gap: 2px;
+}
+
+.ten strong {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.ham {
+  overflow: hidden;
+  color: var(--ink-2);
+  font-size: 14px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.muc {
+  grid-area: muc;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.tt {
+  grid-area: tt;
+  color: var(--muted);
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+.tt.dang-lam {
+  color: var(--label);
+}
+
+.tt.dat {
+  color: var(--pass);
+}
+
+.mui {
+  grid-area: mui;
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: var(--muted);
+  stroke-width: 2;
+}
+
+@media (min-width: 48rem) {
+  .hang {
+    grid-template-columns: 24px minmax(0, 1fr) 7.5rem 8rem 20px;
+    grid-template-areas: 'vong ten muc tt mui';
+  }
+}

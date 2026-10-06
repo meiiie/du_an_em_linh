@@ -8,6 +8,7 @@
       <section class="khoi" aria-labelledby="tieu-de-dang-nhap">
         <p class="sr-only" aria-live="polite">Bước {{ buoc() === 'email' ? 1 : 2 }} / 2</p>
         <a routerLink="/" class="ve-trang-chu" [attr.aria-label]="'Về trang chủ ' + tenSanPham">
+          <img src="/icon.svg" width="52" height="52" alt="" />
           <app-brand-mark size="lg" />
         </a>
         <h1 id="tieu-de-dang-nhap">Đăng nhập</h1>
@@ -136,4 +137,5 @@
       <span>Tài khoản thử — không có học sinh thật</span>
     </footer>
   </div>
+  <app-minh-hoa-dang-nhap class="ben-phai" />
 </main>

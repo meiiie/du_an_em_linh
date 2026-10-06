@@ -1,0 +1,155 @@
+:host {
+  display: grid;
+  gap: var(--space-6);
+}
+
+.dau-trang h1 {
+  margin: 0;
+}
+
+.mau {
+  margin: var(--space-2) 0 0;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.ke-tiep {
+  display: grid;
+  gap: var(--space-5);
+  padding: var(--space-5);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  background: var(--raise);
+  box-shadow: var(--shadow-sm);
+}
+
+.ke-chu .nhan-muc {
+  margin-bottom: var(--space-2);
+}
+
+.ky-nang {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 600;
+  line-height: 30px;
+}
+
+.cau-hoi {
+  margin: var(--space-1) 0 0;
+  color: var(--ink-2);
+  font-size: 15px;
+}
+
+.buoc {
+  display: flex;
+  gap: 6px;
+  margin: var(--space-4) 0 var(--space-5);
+  padding: 0;
+  list-style: none;
+}
+
+.buoc li {
+  display: grid;
+  flex: 1;
+  gap: 6px;
+  min-width: 0;
+  font-size: 12px;
+}
+
+.buoc li::before {
+  content: '';
+  height: 4px;
+  border-radius: 999px;
+  background: var(--line);
+}
+
+.buoc li.dat::before {
+  background: var(--pass);
+}
+
+.buoc li.dang::before {
+  background: var(--accent);
+}
+
+.buoc .so {
+  display: none;
+}
+
+.ten-buoc {
+  overflow: hidden;
+  color: var(--muted);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.buoc li.dang .ten-buoc {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.ke-bang {
+  align-self: center;
+}
+
+.danh-sach,
+.muc {
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  list-style: none;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  background: var(--raise);
+}
+
+.danh-sach li + li,
+.muc li + li {
+  border-top: 1px solid var(--line);
+}
+
+.muc li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto 6.5rem;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: 52px;
+  padding: 0 var(--space-4);
+  font-size: 15px;
+}
+
+.thang {
+  display: flex;
+  gap: 4px;
+}
+
+.thang i {
+  width: 18px;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--line);
+}
+
+.thang i.co {
+  background: var(--label);
+}
+
+.chu-muc {
+  color: var(--muted);
+  font-size: 14px;
+}
+
+@media (min-width: 48rem) {
+  .ke-tiep {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    align-items: center;
+    padding: var(--space-6);
+  }
+
+  .buoc .so {
+    display: none;
+  }
+
+  .thang i {
+    width: 28px;
+  }
+}

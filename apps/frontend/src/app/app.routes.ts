@@ -34,7 +34,7 @@ export const routes: Routes = [
         title: 'Học',
         loadComponent: () => import('./features/hoc-sinh/trang-hoc-sinh').then((m) => m.TrangHocSinh),
       },
-      cho('bai', 'Đề bài', 'Đề bài', 'Bài thầy cô giao và bài đã mở cho lớp sẽ hiện ở đây.'),
+      { path: 'bai', title: 'Đề bài', loadComponent: () => import('./features/hoc-sinh/de-bai').then((m) => m.DeBai) },
       cho('luyen/:maBai', 'Luyện', 'Luyện bài', 'Bài làm theo từng bước sẽ hiện ở đây.'),
       cho('lich', 'Lịch', 'Lịch học', 'Lịch học trong tuần và việc hôm nay sẽ hiện ở đây.'),
       cho('kho', 'Công thức', 'Công thức và tài liệu', 'Bảng công thức và tài liệu của lớp sẽ hiện ở đây.'),
