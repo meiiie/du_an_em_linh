@@ -61,12 +61,13 @@
   font-weight: 600;
 }
 
+/* Công thức dài hơn hàng thì mờ dần ở mép phải, không cắt kiểu «…» (KaTeX không chịu text-overflow). */
 .ham {
   overflow: hidden;
   color: var(--ink-2);
   font-size: 14px;
-  text-overflow: ellipsis;
   white-space: nowrap;
+  mask-image: linear-gradient(to right, #000 85%, transparent);
 }
 
 .muc {

@@ -20,7 +20,7 @@ import { BaiGiao, NAM_BUOC, TEN_MUC } from './bai-mau';
       </svg>
       <span class="ten">
         <strong>Bài {{ so() }} · {{ bai().kyNang }}</strong>
-        <span class="ham"><app-katex [latex]="bai().ham" /></span>
+        <span class="ham"><app-katex [latex]="hamHang()" /></span>
       </span>
       <span class="muc">{{ tenMuc() }}</span>
       <span class="tt" [class]="'tt ' + bai().trangThai.loai">{{ chuTrangThai() }}</span>
@@ -34,6 +34,8 @@ export class HangBai {
   readonly so = input.required<number>();
 
   protected readonly tenMuc = computed(() => TEN_MUC[this.bai().muc]);
+  /** Trong hàng chỉ hàm số; phần «, y′ = …» của đề hiện đủ trên bảng ở phiếu làm bài. */
+  protected readonly hamHang = computed(() => this.bai().ham.split(String.raw`,\quad`)[0]);
   protected readonly phanDat = computed(() => {
     const t = this.bai().trangThai;
     return t.loai === 'dang-lam' ? t.buocDat / NAM_BUOC.length : 0;
