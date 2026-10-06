@@ -145,19 +145,18 @@ article .vien {
   width: 100%;
 }
 
-details {
+.truoc {
   margin-top: 32px;
   padding-top: 24px;
   border-top: 1px solid var(--line);
 }
 
-summary {
-  min-height: var(--target);
+.truoc h3 {
   font-size: 17px;
-  cursor: pointer;
+  font-weight: 600;
 }
 
-details p {
+.truoc p {
   max-width: 42rem;
   margin: 8px 0 0;
   color: var(--muted);

@@ -22,7 +22,7 @@
       <span class="dong">Học toán theo từng bước. </span>
       <span class="dong"
         >Tự mình <span class="sr-only">{{ dongTu[0] }}.</span
-        ><span class="xoay" aria-hidden="true">
+        ><span #xoay class="xoay" aria-hidden="true" [style.width.px]="rongTu()">
           @for (t of dongTu; track t; let i = $index) {
             <span [class.hien]="i === viTri()"><span class="gach">{{ t }}</span>.</span>
           }

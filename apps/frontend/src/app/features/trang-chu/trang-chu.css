@@ -114,10 +114,11 @@ h1 {
   text-wrap: balance;
 }
 
-/* Mọi từ (kèm dấu chấm) chồng trong một ô lưới, bám trái: bề ngang là của từ dài nhất nên đổi từ không làm dòng
-   nhảy; vạch màu Manim chỉ nằm dưới chữ của từ đang hiện. */
+/* Mọi từ (kèm dấu chấm) chồng trong một ô lưới, bám trái. Bề ngang ô đặt bằng từ đang hiện (đo ở TrangChu) và co
+   giãn mượt như trang Wiii, nên dòng luôn căn giữa. Từ cũ mờ đi trước, từ mới hiện sau, không chồng nhau. */
 .xoay {
   display: inline-grid;
+  transition: width 400ms var(--ease);
 }
 
 .xoay > span {
@@ -125,14 +126,17 @@ h1 {
   justify-self: start;
   opacity: 0;
   transform: translateY(0.3em);
+  white-space: nowrap;
   transition:
-    opacity 400ms var(--ease),
-    transform 400ms var(--ease);
+    opacity 180ms var(--ease),
+    transform 180ms var(--ease);
 }
 
 .xoay > span.hien {
   opacity: 1;
   transform: none;
+  transition-duration: 400ms;
+  transition-delay: 160ms;
 }
 
 .gach {
@@ -143,6 +147,7 @@ h1 {
 .mo-ta {
   max-width: 34rem;
   margin: 24px auto 0;
+  text-wrap: balance;
   color: var(--ink-2);
   font-size: 18px;
   line-height: 29px;
@@ -209,7 +214,7 @@ h1 {
 .cot a {
   display: inline-flex;
   align-items: center;
-  min-height: 32px;
+  min-height: var(--target);
 }
 
 .chan-duoi {

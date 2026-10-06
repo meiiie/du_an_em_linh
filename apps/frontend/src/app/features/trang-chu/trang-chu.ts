@@ -1,4 +1,4 @@
-import { Component, computed, DestroyRef, effect, inject, signal } from '@angular/core';
+import { afterRenderEffect, Component, computed, DestroyRef, effect, ElementRef, inject, signal, viewChild } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { BrandMark } from '../../shared/ui/brand-mark';
 import { DoiGiaoDien } from '../../shared/ui/doi-giao-dien';
@@ -29,6 +29,10 @@ export class TrangChu {
     typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches,
   );
   protected readonly chay = computed(() => !this.tamDung() && !this.giamChuyenDong());
+  /** Bề ngang ô từ xoay = bề ngang từ đang hiện, để dòng luôn căn giữa; null trước lần đo đầu (ô rộng bằng từ dài nhất). */
+  protected readonly rongTu = signal<number | null>(null);
+  private readonly xoay = viewChild.required<ElementRef<HTMLElement>>('xoay');
+  private readonly coChu = signal(0);
 
   constructor() {
     if (typeof matchMedia === 'function') {
@@ -36,6 +40,17 @@ export class TrangChu {
       const nghe = (e: MediaQueryListEvent) => this.giamChuyenDong.set(e.matches);
       mq.addEventListener('change', nghe);
       inject(DestroyRef).onDestroy(() => mq.removeEventListener('change', nghe));
+    }
+    afterRenderEffect(() => {
+      this.coChu();
+      const tu = this.xoay().nativeElement.querySelectorAll<HTMLElement>(':scope > span')[this.viTri()];
+      if (tu?.scrollWidth) this.rongTu.set(tu.scrollWidth);
+    });
+    // Cỡ chữ tiêu đề theo bề ngang màn (clamp): màn đổi cỡ thì đo lại. jsdom (test) không có ResizeObserver.
+    if (typeof ResizeObserver === 'function') {
+      const quanSat = new ResizeObserver(() => this.coChu.update((n) => n + 1));
+      afterRenderEffect(() => quanSat.observe(this.xoay().nativeElement.parentElement!));
+      inject(DestroyRef).onDestroy(() => quanSat.disconnect());
     }
     effect((onCleanup) => {
       if (!this.chay()) return;

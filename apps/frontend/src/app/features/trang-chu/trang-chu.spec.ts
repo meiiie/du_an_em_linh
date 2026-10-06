@@ -10,7 +10,10 @@ function chuDoc(el: Element): string {
 }
 
 describe('TrangChu', () => {
-  afterEach(() => vi.useRealTimers());
+  afterEach(() => {
+    vi.useRealTimers();
+    vi.unstubAllGlobals();
+  });
 
   async function mo() {
     TestBed.configureTestingModule({ providers: [provideRouter([])] });
@@ -48,5 +51,19 @@ describe('TrangChu', () => {
     vi.advanceTimersByTime(2800 * 3);
     await t.fixture.whenStable();
     expect(t.tuDangHien()).toBe('làm được');
+  });
+
+  it('máy đặt giảm chuyển động: từ đứng yên từ đầu, dải bảng dừng', async () => {
+    vi.stubGlobal('matchMedia', (q: string) => ({
+      matches: q.includes('prefers-reduced-motion'),
+      addEventListener: () => undefined,
+      removeEventListener: () => undefined,
+    }));
+    vi.useFakeTimers({ toFake: ['setInterval', 'clearInterval'] });
+    const t = await mo();
+    vi.advanceTimersByTime(2800 * 2);
+    await t.fixture.whenStable();
+    expect(t.tuDangHien()).toBe('hiểu ra');
+    expect(t.el.querySelector('app-dai-bang')!.classList).toContain('dung');
   });
 });

@@ -12,7 +12,7 @@ const NAM_BUOC = [
 
 /**
  * Nửa dưới trang công khai theo trang Wiii (meiiie-design-kit, examples/wiii): «Bắt đầu» (chữ trái, thẻ năm bước phải),
- * «Chọn cách bắt đầu» (hai thẻ kem cho học sinh và giáo viên), «Trước khi dùng» (giới hạn của bản thử).
+ * «Chọn cách bắt đầu» (hai thẻ kem cho học sinh và giáo viên), «Trước khi dùng» (giới hạn của bản thử, hiện sẵn để liên kết ở đầu trang dẫn tới đúng chỗ).
  */
 @Component({
   selector: 'app-phan-bat-dau',
@@ -69,13 +69,13 @@ const NAM_BUOC = [
           <a class="vien vien-vien" routerLink="/dang-nhap">Vào lớp</a>
         </article>
       </div>
-      <details id="truoc-khi-dung">
-        <summary>Trước khi dùng</summary>
+      <div id="truoc-khi-dung" class="truoc">
+        <h3>Trước khi dùng</h3>
         <p>
-          MathL+ đang ở bản thử nghiệm. Hiện có một chủ đề: đơn điệu và cực trị, Toán 12. Tài khoản do thầy cô cấp cho
-          lớp. Các hình trên trang minh họa cách học, không phải bài làm của học sinh.
+          MathL+ đang ở bản thử nghiệm. Hiện có một chủ đề: đơn điệu và cực trị, Toán 12. Chưa tự đăng ký được; tài
+          khoản thử do nhóm phát triển cấp. Các hình trên trang minh họa cách học, không phải bài làm của học sinh.
         </p>
-      </details>
+      </div>
     </section>
   `,
   styleUrl: './phan-bat-dau.css',
