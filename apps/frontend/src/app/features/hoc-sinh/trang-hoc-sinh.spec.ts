@@ -2,7 +2,7 @@ import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
-import { API_HS, BaiCuaHocSinh } from '../../api/hoc-sinh';
+import { API_HS, BaiCuaHocSinh, TrangHoc } from '../../api/hoc-sinh';
 import { TrangHocSinh } from './trang-hoc-sinh';
 
 const BAI: BaiCuaHocSinh[] = [
@@ -48,11 +48,15 @@ const BAI: BaiCuaHocSinh[] = [
 ];
 
 describe('TrangHocSinh', () => {
-  async function mo() {
+  /** `trangHoc`: thân trả cho `GET /api/hs/trang-hoc` (null: lỗi 500); mặc định chưa có kỹ năng nào. */
+  async function mo(trangHoc: TrangHoc | null = { ten: 'An', soKyNang: [], hoanThanh: { kyNang: [], chuDe: [] } }) {
     TestBed.configureTestingModule({ providers: [provideHttpClient(), provideHttpClientTesting(), provideRouter([])] });
     const fixture = TestBed.createComponent(TrangHocSinh);
     fixture.detectChanges();
     const http = TestBed.inject(HttpTestingController);
+    const th = http.expectOne(API_HS.trangHoc);
+    if (trangHoc) th.flush(trangHoc);
+    else th.flush(null, { status: 500, statusText: 'Lỗi' });
     const el = fixture.nativeElement as HTMLElement;
     return { fixture, http, el, chu: (s: string) => el.querySelector(s)?.textContent?.replace(/\s+/g, ' ').trim() };
   }
@@ -79,6 +83,40 @@ describe('TrangHocSinh', () => {
     t.http.expectOne(API_HS.bai).flush([BAI[0]]);
     await t.fixture.whenStable();
     expect(t.el.querySelector('.ke-tiep')).toBeNull();
+  });
+
+  it('sổ «Kỹ năng» từ GET /api/hs/trang-hoc: mức bằng lời, ô tô tới mức, nhãn kẹt kèm lời nhắc', async () => {
+    const t = await mo({
+      ten: 'An',
+      soKyNang: [
+        { kyNang: 'T12.DH.05', tenKyNang: 'Tìm cực trị của hàm số', muc4: 'NHAN_BIET', ket: true },
+        { kyNang: 'T12.DH.03', tenKyNang: 'Tính đơn điệu của hàm số', muc4: 'VAN_DUNG', ket: false },
+      ],
+      hoanThanh: { kyNang: [], chuDe: [] },
+    });
+    t.http.expectOne(API_HS.bai).flush(BAI);
+    await t.fixture.whenStable();
+    expect(t.chu('[data-testid="ky-nang-T12.DH.05"] .muc')).toBe('kẹt Nhận biết');
+    expect(t.chu('[data-testid="ky-nang-T12.DH.05"] .nhac')).toBe(
+      'Em sai liên tiếp ở kỹ năng này. Thầy cô đã nhận được báo; em xem lại bảng công thức rồi làm lại nhé.',
+    );
+    expect(t.el.querySelectorAll('[data-testid="ky-nang-T12.DH.03"] .bac i.dat').length).toBe(3);
+    expect(t.el.querySelector('[data-testid="ky-nang-T12.DH.03"] .nhac')).toBeNull();
+  });
+
+  it('chưa có kỹ năng nào: nói em làm một bài để hiện kỹ năng', async () => {
+    const t = await mo();
+    t.http.expectOne(API_HS.bai).flush(BAI);
+    await t.fixture.whenStable();
+    expect(t.chu('[data-testid=so-ky-nang] .trong p')).toBe('Chưa làm bài — làm một bài để hiện kỹ năng.');
+  });
+
+  it('trang-hoc lỗi: chỉ ẩn sổ kỹ năng, danh sách bài vẫn hiện', async () => {
+    const t = await mo(null);
+    t.http.expectOne(API_HS.bai).flush(BAI);
+    await t.fixture.whenStable();
+    expect(t.el.querySelector('[data-testid=so-ky-nang]')).toBeNull();
+    expect(t.el.querySelectorAll('app-hang-bai').length).toBe(3);
   });
 
   it('danh sách rỗng: nói rõ đang chờ thầy cô giao bài', async () => {

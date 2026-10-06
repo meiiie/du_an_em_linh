@@ -18,6 +18,21 @@ export type TrangThaiBai = 'CHUA_LAM' | 'DANG_LAM' | 'DA_NOP';
 
 export type LyDoBaiKe = 'CHUA_LOI' | 'CUNG_CO' | 'NANG_1_NAC' | 'DE_HON' | 'THAY_CO_GIAO';
 
+/** Một kỹ năng của em trên trang Học (mastery, T050): mức 4 bậc, `ket` khi sai liên tiếp từ 3 lần. */
+export interface KyNangCuaEm {
+  readonly kyNang: string;
+  readonly tenKyNang: string;
+  readonly muc4: Muc4;
+  readonly ket: boolean;
+}
+
+/** `GET /api/hs/trang-hoc`. `soKyNang` theo v0: mức thấp trước, kẹt trước, rồi mã. */
+export interface TrangHoc {
+  readonly ten: string;
+  readonly soKyNang: readonly KyNangCuaEm[];
+  readonly hoanThanh: { readonly kyNang: readonly string[]; readonly chuDe: readonly string[] };
+}
+
 /** Một dòng của `GET /api/hs/bai`: bài được giao cho em, đang phát hành ở lớp. */
 export interface BaiCuaHocSinh {
   readonly maBai: string;
