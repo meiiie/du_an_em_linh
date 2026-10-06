@@ -1,0 +1,294 @@
+:host {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.ve {
+  justify-self: start;
+  color: var(--ink-2);
+  font-size: 14px;
+  text-decoration: none;
+}
+
+.phieu,
+.lam {
+  display: grid;
+  gap: var(--space-5);
+  min-width: 0;
+}
+
+/* Điện thoại: thanh «Kiểm tra» dính đáy, chừa chỗ để không che ô cuối. */
+.phieu {
+  padding-bottom: calc(5.5rem + env(safe-area-inset-bottom));
+}
+
+.de {
+  display: grid;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.de .nhan-muc,
+.cau-hoi {
+  margin: 0;
+}
+
+.cau-hoi {
+  color: var(--ink-2);
+  font-size: 15px;
+}
+
+.phu {
+  margin: 0;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.cac-buoc {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.buoc {
+  display: grid;
+  justify-items: center;
+  gap: var(--space-1);
+  width: 100%;
+  min-height: var(--target);
+  padding: var(--space-1) 2px;
+  border: 0;
+  border-radius: var(--radius);
+  background: none;
+  color: var(--muted);
+  font: inherit;
+  font-size: 12px;
+  line-height: 1.25;
+  text-align: center;
+  cursor: pointer;
+}
+
+.so {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border: 1.5px solid var(--line-strong);
+  border-radius: 50%;
+  background: var(--raise);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.buoc[aria-current] {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.buoc[aria-current] .so {
+  border-color: var(--ink);
+  background: var(--ink);
+  color: var(--raise);
+}
+
+.buoc[data-tt='dat'] .so {
+  border-color: var(--pass);
+  color: var(--pass);
+}
+
+.buoc[data-tt='sai'] .so {
+  border-color: var(--mark);
+  color: var(--mark);
+}
+
+.buoc[data-tt='de-cho'] {
+  cursor: default;
+}
+
+.buoc[data-tt='de-cho'] .so {
+  border-style: dashed;
+  background: var(--wash);
+}
+
+.tieu-de {
+  margin: 0;
+  font-size: 22px;
+  line-height: 30px;
+}
+
+.tieu-de:focus {
+  outline: none;
+}
+
+.so-buoc {
+  display: block;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.viec {
+  margin: calc(-1 * var(--space-3)) 0 0;
+  color: var(--ink-2);
+}
+
+.nhap {
+  display: grid;
+  gap: var(--space-4);
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.khoi-dong {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.nghiem {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: var(--space-2);
+}
+
+/* Bút đỏ của máy chấm: viền dòng hay khối sai, không tô nền. */
+.sai {
+  padding: var(--space-2);
+  border-radius: var(--radius);
+  outline: 2px solid var(--mark);
+}
+
+.nut-chu {
+  justify-self: start;
+  min-height: var(--target);
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--ink);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.doi-loai {
+  padding: 0 var(--space-2);
+  color: var(--ink-2);
+  font-weight: 500;
+}
+
+.o-chu {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.o-chu .nhan {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.o-chu input {
+  min-height: var(--target);
+  padding: 0 var(--space-3);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+  background: var(--raise);
+  color: var(--ink);
+  font: inherit;
+  font-size: 16px;
+}
+
+.phan-hoi-vung:empty {
+  display: none;
+}
+
+.phan-hoi {
+  margin: 0;
+  padding-left: var(--space-3);
+  border-left: 3px solid var(--mark);
+  font-size: 15px;
+}
+
+.phan-hoi[data-kq='DAT'] {
+  border-color: var(--pass);
+}
+
+.phan-hoi[data-kq='KHONG_KIEM_DUOC'] {
+  border-color: var(--wait);
+}
+
+.da-nop {
+  display: grid;
+  justify-items: start;
+  gap: var(--space-3);
+  padding: var(--space-5);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  background: var(--raise);
+}
+
+.da-nop h2,
+.loi-giai p {
+  margin: 0;
+}
+
+.thanh-nop {
+  position: fixed;
+  inset-inline: 0;
+  bottom: 0;
+  z-index: 20;
+  display: flex;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4) max(var(--space-3), env(safe-area-inset-bottom));
+  border-top: 1px solid var(--line);
+  background: var(--canvas);
+}
+
+.thanh-nop .btn {
+  flex: 1;
+}
+
+.dang-tai {
+  height: 320px;
+  border-radius: var(--radius-card);
+  background: var(--wash);
+}
+
+@media (min-width: 48rem) {
+  .phieu {
+    padding-bottom: 0;
+  }
+
+  .buoc {
+    font-size: 13px;
+  }
+
+  .thanh-nop {
+    position: static;
+    padding: 0;
+    border: 0;
+    background: none;
+  }
+
+  .thanh-nop .btn {
+    flex: none;
+  }
+}
+
+/* Màn rộng: đề đứng yên bên trái, phiếu bên phải. */
+@media (min-width: 64rem) {
+  .phieu {
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    align-items: start;
+    gap: var(--space-8);
+  }
+
+  .de {
+    position: sticky;
+    top: var(--space-6);
+  }
+}
