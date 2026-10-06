@@ -4,7 +4,10 @@
 }
 
 .ve {
+  display: inline-flex;
+  align-items: center;
   justify-self: start;
+  min-height: var(--target);
   color: var(--ink-2);
   font-size: 14px;
   text-decoration: none;
