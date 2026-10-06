@@ -23,10 +23,15 @@ describe('định tuyến và tiêu đề tab', () => {
     return { url: TestBed.inject(Router).url, el: harness.routeNativeElement };
   }
 
-  it('/ chuyển về /dang-nhap', async () => {
+  it('/ là trang công khai: tab «Học toán theo từng bước · MathL+», lập chỉ mục được, một nút vao-hoc dẫn tới /dang-nhap', async () => {
     const { url, el } = await den('/');
-    expect(url).toBe('/dang-nhap');
-    expect(el?.querySelector('h1')?.textContent).toBe('Đăng nhập');
+    expect(url).toBe('/');
+    expect(el?.querySelector('h1')).not.toBeNull();
+    expect(TestBed.inject(Title).getTitle()).toBe('Học toán theo từng bước · MathL+');
+    expect(TestBed.inject(Meta).getTag("name='robots'")).toBeNull();
+    const vaoHoc = el?.querySelectorAll('[data-testid=vao-hoc]');
+    expect(vaoHoc?.length).toBe(1);
+    expect(vaoHoc?.[0].getAttribute('href')).toBe('/dang-nhap');
   });
 
   it('tab theo mẫu «<trang> · MathL+»', async () => {

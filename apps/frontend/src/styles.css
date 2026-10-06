@@ -100,6 +100,11 @@ html.co-thanh-tren {
   scroll-padding-top: calc(48px + env(safe-area-inset-top) + var(--space-2));
 }
 
+/* Trang công khai: thanh trên dính cao 64 px; liên kết trong trang (#xem, #nam-buoc…) đáp xuống dưới thanh. */
+html:has(app-trang-chu) {
+  scroll-padding-top: calc(64px + env(safe-area-inset-top) + var(--space-4));
+}
+
 html.khoa-cuon {
   overflow: hidden;
 }
@@ -220,6 +225,49 @@ body {
 
 .btn-secondary:hover:not(:disabled) {
   background: var(--wash);
+}
+
+/* Nút viên của trang công khai, theo trang Wiii (meiiie-design-kit, examples/wiii): chính màu mực, phụ màu kem. */
+.vien {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--target);
+  padding: 0 20px;
+  border: 0;
+  border-radius: 999px;
+  background: none;
+  color: inherit;
+  font: inherit;
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 20px;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: background-color 150ms var(--ease);
+}
+
+.vien-dam {
+  background: var(--ink);
+  color: var(--raise);
+}
+
+.vien-dam:hover {
+  background: color-mix(in srgb, var(--ink) 86%, var(--raise));
+}
+
+.vien-kem {
+  background: var(--wash);
+  color: var(--ink);
+}
+
+.vien-kem:hover {
+  background: color-mix(in srgb, var(--wash) 80%, var(--line-strong));
+}
+
+.vien-vien {
+  box-shadow: inset 0 0 0 1px var(--line-strong);
+  color: var(--ink);
 }
 
 /* Nút chỉ có biểu tượng (menu, đóng, đổi giao diện): vuông bằng mục tiêu chạm 44, hình 20, luôn có `aria-label`. */

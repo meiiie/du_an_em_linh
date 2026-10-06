@@ -1,0 +1,56 @@
+<a class="skip-link" href="#noi-dung">Bỏ qua đến nội dung</a>
+
+<header class="dau">
+  <div class="khung dau-trong">
+    <a class="thuong-hieu" routerLink="/"><img src="/icon.svg" width="32" height="32" alt="" /><app-brand-mark /></a>
+    <nav class="lien-ket" aria-label="Trang chủ">
+      <a href="#xem">Cách học</a>
+      <a href="#nam-buoc">Năm bước</a>
+      <a href="#chon">Giáo viên</a>
+    </nav>
+    <app-doi-giao-dien />
+    <a appButton variant="vien-dam" routerLink="/dang-nhap" data-testid="vao-hoc">Vào học</a>
+  </div>
+</header>
+
+<main id="noi-dung" tabindex="-1">
+  <div class="nen-mo-dau">
+  <section class="khung mo-dau">
+    <a class="huy-hieu" href="#nam-buoc"
+      ><span class="so">Toán 12</span>Đơn điệu và cực trị<span class="mui" aria-hidden="true">↓</span></a
+    >
+    <h1>
+      <span class="dong">Học toán theo từng bước. </span>
+      <span class="dong"
+        >Tự mình <span class="sr-only">{{ dongTu[0] }}.</span
+        ><span #xoay class="xoay" aria-hidden="true" [style.width.px]="rongTu()">
+          @for (t of dongTu; track t; let i = $index) {
+            <span [class.hien]="i === viTri()"><span class="gach">{{ t }}</span>.</span>
+          }
+        </span></span
+      >
+    </h1>
+    <p class="mo-ta">Phiếu năm bước cho Toán 12. Gia sư AI chỉ ra chỗ sai, không đưa đáp án.</p>
+    <div class="nut">
+      <a appButton variant="vien-dam" routerLink="/dang-nhap">Vào học</a>
+      <a appButton variant="vien-kem" href="#xem">Xem cách học</a>
+    </div>
+    <p class="ghi-chu">Bản thử nghiệm · Một chủ đề · <a href="#truoc-khi-dung">Trước khi dùng</a></p>
+  </section>
+  </div>
+
+  <!-- Thẻ cảnh kéo theo KaTeX (~70 kB nén): tải khi sắp cuộn tới, tải trước lúc rảnh; màn đầu không chờ. -->
+  <section id="xem" class="khung xem">
+    @defer (on viewport; prefetch on idle) {
+      <app-canh-lam-viec />
+    } @placeholder {
+      <div class="giu-cho-xem"></div>
+    }
+  </section>
+
+  <div class="khung"><app-phan-bat-dau /></div>
+  <app-dai-bang />
+  <div class="khung"><app-chon-vai /></div>
+</main>
+
+<app-chan-trang />

@@ -1,0 +1,264 @@
+:host {
+  display: block;
+}
+
+.tieu-de {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-4);
+  margin-bottom: var(--space-4);
+  font-size: 15px;
+}
+
+.tieu-de h2 {
+  margin: 0;
+  font-size: inherit;
+  font-weight: 400;
+}
+
+.tieu-de span {
+  color: var(--muted);
+}
+
+.luoi {
+  display: grid;
+  gap: 12px;
+}
+
+.the {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  margin: 0;
+  overflow: hidden;
+  border-radius: 16px;
+  background: var(--tc-the);
+  color: var(--ink);
+}
+
+.the.toi {
+  background: var(--board);
+  color: var(--board-ink);
+  color-scheme: dark;
+}
+
+.dau {
+  margin: 0;
+  padding: 14px 24px;
+  border-bottom: 1px solid color-mix(in srgb, currentColor 10%, transparent);
+  font-size: 13px;
+  opacity: 0.8;
+}
+
+.than {
+  flex: 1;
+  margin: 0;
+  padding: 20px 24px;
+}
+
+.chan {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin: 0;
+  padding: 16px 24px 20px;
+  font-size: 15px;
+}
+
+.chan strong {
+  font-weight: 500;
+}
+
+.chan span {
+  opacity: 0.7;
+  text-align: right;
+}
+
+.phieu {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 24px;
+  font-size: 14px;
+}
+
+.muc-luc {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.muc-luc li {
+  padding: 6px 0 6px 10px;
+  border-left: 2px solid transparent;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.muc-luc span {
+  margin-right: 8px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+
+.muc-luc .dang {
+  border-color: var(--accent);
+  color: var(--ink);
+}
+
+.trang p {
+  margin: 0 0 10px;
+}
+
+.buoc {
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+
+.trang app-katex {
+  display: block;
+  margin: 4px 0 12px;
+  font-size: 1.1rem;
+}
+
+.dat {
+  padding-left: 10px;
+  border-left: 2px solid var(--pass);
+}
+
+.gia-su p {
+  margin: 0 0 14px;
+  font-size: 15px;
+  line-height: 23px;
+}
+
+.gia-su .hoi {
+  width: fit-content;
+  margin-left: auto;
+  padding: 8px 14px;
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--board-ink) 12%, var(--board));
+}
+
+.the-nho {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.the-nho span {
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--m-teal) 18%, var(--board));
+  color: var(--m-teal);
+  font-size: 13px;
+}
+
+.cong-thuc {
+  list-style: none;
+}
+
+.cong-thuc li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  min-height: 48px;
+  border-bottom: 1px solid var(--line);
+  font-size: 14px;
+}
+
+.cong-thuc .dat,
+.cong-thuc .cho {
+  flex: none;
+  padding: 0;
+  border: 0;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.cong-thuc .dat {
+  color: var(--pass);
+}
+
+.cong-thuc .cho {
+  color: var(--wait);
+}
+
+.muc ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.muc li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto 6.5rem;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: 40px;
+  font-size: 15px;
+}
+
+.thang {
+  display: flex;
+  gap: 4px;
+}
+
+.thang i {
+  width: 18px;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--line);
+}
+
+.thang i.co {
+  background: var(--label);
+}
+
+.chu-muc {
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.ke {
+  margin: var(--space-4) 0 0;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.ke strong {
+  color: var(--ink);
+  font-weight: 500;
+}
+
+/* Thẻ bảng toán cao gấp đôi: chiếm hai hàng bên trái, giáo viên và mức hiểu chồng bên phải. */
+@media (min-width: 48rem) {
+  .luoi {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-areas:
+      'phieu gia-su'
+      'bang gv'
+      'bang muc';
+  }
+
+  .phieu-the {
+    grid-area: phieu;
+  }
+
+  .gia-su-the {
+    grid-area: gia-su;
+  }
+
+  .bang-the {
+    grid-area: bang;
+  }
+
+  .gv-the {
+    grid-area: gv;
+  }
+
+  .muc-the {
+    grid-area: muc;
+  }
+}

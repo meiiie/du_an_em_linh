@@ -1,0 +1,35 @@
+{
+  "name": "MathL+ · Học toán theo từng bước",
+  "short_name": "MathL+",
+  "description": "Học toán theo từng bước với MathL+: phiếu năm bước, máy kiểm từng bước, gia sư AI chỉ ra chỗ sai mà không đưa đáp án. Bản thử: Toán 12, đơn điệu và cực trị.",
+  "lang": "vi",
+  "dir": "ltr",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#FFFFFF",
+  "theme_color": "#1C1C1C",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}

@@ -1,0 +1,99 @@
+:host {
+  display: block;
+}
+
+h2 {
+  margin: 0;
+  font-weight: 400;
+  letter-spacing: -0.02em;
+}
+
+.dong {
+  display: block;
+}
+
+.bat-dau {
+  display: grid;
+  gap: 48px;
+  align-items: center;
+  padding-block: 96px;
+}
+
+.nho {
+  margin: 0 0 16px;
+  color: var(--muted);
+  font-size: 15px;
+}
+
+.bat-dau h2 {
+  font-size: clamp(2.25rem, 1.6rem + 2.2vw, 3rem);
+  line-height: 1.12;
+}
+
+.mo-ta {
+  max-width: 34rem;
+  margin: 24px 0 0;
+  font-size: 17px;
+  line-height: 27px;
+}
+
+.nut {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 32px;
+}
+
+.cua-so {
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--tc-the);
+}
+
+.cua-so-dau {
+  display: flex;
+  justify-content: space-between;
+  margin: 0;
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 13px;
+}
+
+ol {
+  margin: 0;
+  padding: 8px 20px 12px;
+  list-style: none;
+}
+
+li {
+  display: flex;
+  gap: 16px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--line);
+  font-size: 15px;
+  line-height: 22px;
+}
+
+li:last-child {
+  border-bottom: 0;
+}
+
+.so {
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 13px;
+}
+
+li strong {
+  display: block;
+  font-weight: 600;
+}
+
+@media (min-width: 64rem) {
+  .bat-dau {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 64px;
+  }
+}

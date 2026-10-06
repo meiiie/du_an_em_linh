@@ -3,7 +3,7 @@ import { chiVaiTro, chuaDangNhap } from './core/auth/vai-tro.guard';
 
 // Đường dẫn, tiêu đề tab và heading theo bảng phụ lục của `specs/001-lat-cat-doc/spec.md` (đối chiếu v0
 // `apps/web/lib/nav.ts`) để e2e đối chiếu được. Tab ngắn như docs/DESIGN.md: `Học` / `Đề bài` / `Lịch` / `Công thức`…
-// `/` là trang công khai ở v0; v2 chưa có nên tạm chuyển về đăng nhập (đã đăng nhập thì guard chuyển tiếp về trang chủ).
+// `/` là trang công khai như v0, lập chỉ mục được (không `robots`).
 const KHONG_LAP_CHI_MUC = { robots: 'noindex, nofollow' };
 
 const trangCho = () => import('./shared/layout/trang-cho').then((m) => m.TrangCho);
@@ -63,6 +63,11 @@ export const routes: Routes = [
       cho('ket-noi-ai', 'Gia sư', 'Gia sư', 'Gia sư lớp đang dùng sẽ hiện ở đây.'),
     ],
   },
-  { path: '', pathMatch: 'full', redirectTo: 'dang-nhap' },
+  {
+    path: '',
+    pathMatch: 'full',
+    title: 'Học toán theo từng bước',
+    loadComponent: () => import('./features/trang-chu/trang-chu').then((m) => m.TrangChu),
+  },
   { path: '**', redirectTo: 'dang-nhap' },
 ];

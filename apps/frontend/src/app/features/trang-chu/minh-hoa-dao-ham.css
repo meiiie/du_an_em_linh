@@ -1,0 +1,104 @@
+:host {
+  display: block;
+  min-width: 0;
+}
+
+figure {
+  margin: 0;
+  color: var(--board-ink);
+  color-scheme: dark;
+}
+
+.cong-thuc {
+  font-size: 1.375rem;
+}
+
+svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  margin-top: var(--space-2);
+  /* Kéo ngang thì đổi x; vuốt dọc vẫn cuộn trang (Codex #147). */
+  touch-action: pan-y;
+  cursor: grab;
+}
+
+svg:active {
+  cursor: grabbing;
+}
+
+line {
+  stroke-linecap: round;
+}
+
+.luoi {
+  stroke: var(--board-line);
+  stroke-width: 1;
+}
+
+.truc {
+  stroke: var(--board-rule);
+  stroke-width: 1.25;
+}
+
+/* «Vẽ dần» như 3b1b; giảm chuyển động thì styles.css tắt animation. */
+.duong {
+  fill: none;
+  stroke: var(--m-blue);
+  stroke-width: 3;
+  stroke-linejoin: round;
+  stroke-dasharray: 1;
+  animation: ve 1.4s var(--ease) both;
+}
+
+@keyframes ve {
+  from {
+    stroke-dashoffset: 1;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.tiep-tuyen {
+  stroke: var(--m-yellow);
+  stroke-width: 3;
+}
+
+.diem {
+  fill: var(--board-ink);
+  stroke: var(--board);
+  stroke-width: 2;
+  transition: r 150ms var(--ease);
+}
+
+.diem.dang-keo {
+  r: 8;
+}
+
+.so-do {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-6);
+  margin-top: var(--space-3);
+  font-family: var(--font-mono);
+  font-size: 15px;
+  font-variant-numeric: tabular-nums;
+}
+
+.mo {
+  color: color-mix(in srgb, var(--board-ink) 65%, var(--board));
+}
+
+.vang {
+  color: var(--m-yellow);
+}
+
+input {
+  display: block;
+  width: 100%;
+  min-height: var(--target);
+  margin: var(--space-2) 0 0;
+  accent-color: var(--m-yellow);
+  cursor: pointer;
+}
