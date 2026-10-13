@@ -2,11 +2,13 @@ package vn.hoctapcanman.core.identity.infrastructure.seed;
 
 import java.time.Clock;
 import java.time.Instant;
-import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.annotation.Profile;
 import org.springframework.core.annotation.Order;
+import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import vn.hoctapcanman.core.identity.application.port.PasswordHasher;
@@ -14,42 +16,40 @@ import vn.hoctapcanman.core.identity.domain.model.Email;
 import vn.hoctapcanman.core.identity.domain.model.Role;
 import vn.hoctapcanman.core.identity.domain.model.User;
 import vn.hoctapcanman.core.identity.domain.repository.UserRepository;
+import vn.hoctapcanman.core.shared.infrastructure.seed.TruongNguyenTrai;
 
-/**
- * Tài khoản tổng hợp cho dev / demo (AGENTS.md «Tài khoản thử», ADR 006): chỉ chạy với profile {@code dev}, tạo khi
- * chưa có, đánh dấu {@code synthetic}. Không có dữ liệu học sinh thật.
- */
+/** Tạo tài khoản trường hư cấu, chỉ dev; không cập nhật tài khoản trùng hoặc lưu mật khẩu trong repo. */
 @Component
 @Profile("dev")
-@Order(1) // trước LopThuSeeder: lớp thử cần tài khoản có sẵn
-public class TaiKhoanThuSeeder implements ApplicationRunner {
-
-    private record TaiKhoan(String email, String ten, Role vaiTro, String matKhau) {}
-
-    private static final List<TaiKhoan> TAI_KHOAN = List.of(
-            new TaiKhoan("hs.an@demo.local", "An", Role.STUDENT, "hocsinh123"),
-            new TaiKhoan("hs.binh@demo.local", "Bình", Role.STUDENT, "hocsinh123"),
-            new TaiKhoan("hs.chi@demo.local", "Chi", Role.STUDENT, "hocsinh123"),
-            new TaiKhoan("gv@demo.local", "Giáo viên thử", Role.TEACHER, "giaovien123"));
+@Order(1)
+public class TaiKhoanNguyenTraiSeeder implements ApplicationRunner {
+    private static final Logger LOG = LoggerFactory.getLogger(TaiKhoanNguyenTraiSeeder.class);
+    private final Environment environment;
 
     private final UserRepository users;
     private final PasswordHasher hasher;
     private final Clock clock;
 
-    public TaiKhoanThuSeeder(UserRepository users, PasswordHasher hasher, Clock clock) {
+    public TaiKhoanNguyenTraiSeeder(UserRepository users, PasswordHasher hasher, Clock clock, Environment environment) {
         this.users = users;
         this.hasher = hasher;
         this.clock = clock;
+        this.environment = environment;
     }
 
     @Override
     @Transactional
     public void run(ApplicationArguments args) {
+        String password = environment.getProperty("MATHL_DEV_SEED_PASSWORD");
+        if (password == null || password.isBlank()) {
+            LOG.warn("Bỏ qua tạo tài khoản trường hư cấu: chưa đặt MATHL_DEV_SEED_PASSWORD.");
+            return;
+        }
         Instant now = clock.instant();
-        for (TaiKhoan tk : TAI_KHOAN) {
+        for (TruongNguyenTrai.TaiKhoan tk : TruongNguyenTrai.taiKhoan()) {
             Email email = new Email(tk.email());
             if (users.findByEmail(email).isEmpty()) {
-                users.save(User.create(email, hasher.hash(tk.matKhau()), tk.ten(), tk.vaiTro(), true, now));
+                users.save(User.create(email, hasher.hash(password), tk.ten(), Role.valueOf(tk.vaiTro()), true, now));
             }
         }
     }

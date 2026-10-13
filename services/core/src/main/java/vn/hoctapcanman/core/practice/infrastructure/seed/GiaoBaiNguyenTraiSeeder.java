@@ -12,23 +12,21 @@ import org.springframework.core.annotation.Order;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Component;
+import vn.hoctapcanman.core.shared.infrastructure.seed.TruongNguyenTrai;
+import vn.hoctapcanman.core.shared.infrastructure.seed.LopSeedAnToan;
 
-/**
- * Giao bài thử cho dev / demo (T021): chạy {@code du-lieu-thu/giao-bai.sql} sau khi nhập nội dung theo lớp (Order 3), chỉ với
- * profile {@code dev}. Dữ liệu thử bằng SQL theo yêu cầu chủ repo (2026-10-06), không qua mã giả. Câu lệnh idempotent: chạy
- * lại không thêm, không đổi dòng nào. Nhập nội dung lỗi thì lớp không có bài phát hành và câu lệnh không giao gì.
- */
+/** Giao bài cho lớp hư cấu, chỉ các bài đã qua cổng; giữ hạn và mode khi chạy lại. */
 @Component
 @Profile("dev")
 @Order(4)
-public class GiaoBaiThuSeeder implements ApplicationRunner {
+public class GiaoBaiNguyenTraiSeeder implements ApplicationRunner {
 
-    static final String TEP = "du-lieu-thu/giao-bai.sql";
-    private static final Logger LOG = LoggerFactory.getLogger(GiaoBaiThuSeeder.class);
+    static final String TEP = "seed-nguyen-trai/giao-bai.sql";
+    private static final Logger LOG = LoggerFactory.getLogger(GiaoBaiNguyenTraiSeeder.class);
 
     private final JdbcClient jdbc;
 
-    public GiaoBaiThuSeeder(JdbcClient jdbc) {
+    public GiaoBaiNguyenTraiSeeder(JdbcClient jdbc) {
         this.jdbc = jdbc;
     }
 
@@ -40,7 +38,10 @@ public class GiaoBaiThuSeeder implements ApplicationRunner {
         } catch (IOException e) {
             throw new UncheckedIOException("Không đọc được " + TEP, e);
         }
-        int moi = jdbc.sql(sql).update();
-        LOG.info("Giao bài thử: {} lượt giao mới", moi);
+        int moi = 0;
+        for (String ten : TruongNguyenTrai.LOP) {
+            if (LopSeedAnToan.kiem(jdbc, ten)) moi += jdbc.sql(sql).param("lop", TruongNguyenTrai.id("lop:" + ten)).update();
+        }
+        LOG.info("Giao bài trường hư cấu: {} lượt giao mới", moi);
     }
 }

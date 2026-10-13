@@ -19,12 +19,7 @@ pnpm dev:web                    # tiến trình 2 → http://127.0.0.1:3000
 
 ## 2. Tài khoản thử
 
-| Vai trò | Email | Mật khẩu |
-| --- | --- | --- |
-| Giáo viên | `gv@demo.local` | `giaovien123` |
-| Học sinh An | `hs.an@demo.local` | `hocsinh123` |
-| Học sinh Bình | `hs.binh@demo.local` | `hocsinh123` |
-| Học sinh Chi | `hs.chi@demo.local` | `hocsinh123` |
+Tài khoản dev: xem [SEED.md](SEED.md); mật khẩu đặt qua `MATHL_DEV_SEED_PASSWORD`, không ghi trong repo.
 
 Chỉ khi `APP_ENV=test` (máy cục bộ, không bao giờ trên Render), `pnpm seed` tạo thêm tài khoản cho bộ kiểm thử:
 

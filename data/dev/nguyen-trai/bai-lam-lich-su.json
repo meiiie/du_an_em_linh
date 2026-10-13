@@ -1,0 +1,3083 @@
+[
+  {
+    "ma": "NT-DH12-NB-01",
+    "loai": "DUNG",
+    "payload": {
+      "ham": "x**2+4*x+1",
+      "nop_toi": "B.DH.KETLUAN",
+      "cac_buoc": [
+        {
+          "ma_buoc": "B.DH.TXD",
+          "cac_dong": [
+            {
+              "dong": 0,
+              "latex": "R"
+            }
+          ]
+        },
+        {
+          "ma_buoc": "B.DH.DAOHAM",
+          "cac_dong": [
+            {
+              "dong": 0,
+              "latex": "2*x + 4"
+            }
+          ]
+        },
+        {
+          "ma_buoc": "B.DH.NGHIEM",
+          "cac_dong": [
+            {
+              "dong": 0,
+              "latex": "x = -2",
+              "loai": "NGHIEM"
+            }
+          ]
+        },
+        {
+          "ma_buoc": "B.DH.XETDAU",
+          "bang": {
+            "loai_bang": "XET_DAU",
+            "cac_o": [
+              {
+                "hang": "X",
+                "k": 0,
+                "gia_tri": "-2"
+              },
+              {
+                "hang": "DAU_YPHAY",
+                "k": 0,
+                "gia_tri": "-"
+              },
+              {
+                "hang": "DAU_YPHAY",
+                "k": 2,
+                "gia_tri": "+"
+              },
+              {
+                "hang": "DAU_YPHAY",
+                "k": 1,
+                "gia_tri": "0"
+              },
+              {
+                "hang": "BIEN_THIEN",
+                "k": 0,
+                "gia_tri": "GIAM"
+              },
+              {
+                "hang": "BIEN_THIEN",
+                "k": 2,
+                "gia_tri": "TANG"
+              }
+            ]
+          }
+        },
+        {
+          "ma_buoc": "B.DH.KETLUAN",
+          "khai_bao": [
+            "dong_bien",
+            "nghich_bien",
+            "cuc_dai",
+            "cuc_tieu"
+          ],
+          "cac_dong": [
+            {
+              "dong": 0,
+              "latex": "đồng biến trên (-2; +oo)"
+            },
+            {
+              "dong": 1,
+              "latex": "nghịch biến trên (-oo; -2)"
+            },
+            {
+              "dong": 2,
+              "latex": "không có cực đại"
+            },
+            {
+              "dong": 3,
+              "latex": "cực tiểu tại x = -2, y = -3"
+            }
+          ]
+        }
+      ]
+    },
+    "ket_qua": "DAT"
+  },
+  {
+    "ma": "NT-DH12-NB-01",
+    "loai": "SAI",
+    "payload": {
+      "ham": "x**2+4*x+1",
+      "nop_toi": "B.DH.KETLUAN",
+      "cac_buoc": [
+        {
+          "ma_buoc": "B.DH.TXD",
+          "cac_dong": [
+            {
+              "dong": 0,
+              "latex": "R"
+            }
+          ]
+        },
+        {
+          "ma_buoc": "B.DH.DAOHAM",
+          "cac_dong": [
+            {
+              "dong": 0,
+              "latex": "(2*x + 4)+1"
+            }
+          ]
+        },
+        {
+          "ma_buoc": "B.DH.NGHIEM",
+          "cac_dong": [
+            {
+              "dong": 0,
+              "latex": "x = -2",
+              "loai": "NGHIEM"
+            }
+          ]
+        },
+        {
+          "ma_buoc": "B.DH.XETDAU",
+          "bang": {
+            "loai_bang": "XET_DAU",
+            "cac_o": [
+              {
+                "hang": "X",
+                "k": 0,
+                "gia_tri": "-2"
+              },
+              {
+                "hang": "DAU_YPHAY",
+                "k": 0,
+                "gia_tri": "-"
+              },
+              {
+                "hang": "DAU_YPHAY",
+                "k": 2,
+                "gia_tri": "+"
+              },
+              {
+                "hang": "DAU_YPHAY",
+                "k": 1,
+                "gia_tri": "0"
+              },
+              {
+                "hang": "BIEN_THIEN",
+                "k": 0,
+                "gia_tri": "GIAM"
+              },
+              {
+                "hang": "BIEN_THIEN",
+                "k": 2,
+                "gia_tri": "TANG"
+              }
+            ]
+          }
+        },
+        {
+          "ma_buoc": "B.DH.KETLUAN",
+          "khai_bao": [
+            "dong_bien",
+            "nghich_bien",
+            "cuc_dai",
+            "cuc_tieu"
+          ],
+          "cac_dong": [
+            {
+              "dong": 0,
+              "latex": "đồng biến trên (-2; +oo)"
+            },
+            {
+              "dong": 1,
+              "latex": "nghịch biến trên (-oo; -2)"
+            },
+            {
+              "dong": 2,
+              "latex": "không có cực đại"
+            },
+            {
+              "dong": 3,
+              "latex": "cực tiểu tại x = -2, y = -3"
+            }
+          ]
+        }
+      ]
+    },
+    "ket_qua": "SAI"
+  },
+  {
+    "ma": "NT-DH12-NB-01",
+    "loai": "CAN_DUYET",
+    "payload": {
+      "ham": "x**2+4*x+1",
+      "nop_toi": "B.DH.KETLUAN",
+      "cac_buoc": [
+        {
+          "ma_buoc": "B.DH.TXD",
+          "cac_dong": [
+            {
+              "dong": 0,
+              "latex": "R"
+            }
+          ]
+        },
+        {
+          "ma_buoc": "B.DH.DAOHAM",
+          "cac_dong": [
+            {
+              "dong": 0,
+              "latex": "?"
+            }
+          ]
+        },
+        {
+          "ma_buoc": "B.DH.NGHIEM",
+          "cac_dong": [
+            {
+              "dong": 0,
+              "latex": "x = -2",
+              "loai": "NGHIEM"
+            }
+          ]
+        },
+        {
+          "ma_buoc": "B.DH.XETDAU",
+          "bang": {
+            "loai_bang": "XET_DAU",
+            "cac_o": [
+              {
+                "hang": "X",
+                "k": 0,
+                "gia_tri": "-2"
+              },
+              {
+                "hang": "DAU_YPHAY",
+                "k": 0,
+                "gia_tri": "-"
+              },
+              {
+                "hang": "DAU_YPHAY",
+                "k": 2,
+                "gia_tri": "+"
+              },
+              {
+                "hang": "DAU_YPHAY",
+                "k": 1,
+                "gia_tri": "0"
+              },
+              {
+                "hang": "BIEN_THIEN",
+                "k": 0,
+                "gia_tri": "GIAM"
+              },
+              {
+                "hang": "BIEN_THIEN",
+                "k": 2,
+                "gia_tri": "TANG"
+              }
+            ]
+          }
+        },
+        {
+          "ma_buoc": "B.DH.KETLUAN",
+          "khai_bao": [
+            "dong_bien",
+            "nghich_bien",
+            "cuc_dai",
+            "cuc_tieu"
+          ],
+          "cac_dong": [
+            {
+              "dong": 0,
+              "latex": "đồng biến trên (-2; +oo)"
+            },
+            {
+              "dong": 1,
+              "latex": "nghịch biến trên (-oo; -2)"
+            },
+            {
+              "dong": 2,
+              "latex": "không có cực đại"
+            },
+            {
+              "dong": 3,
+              "latex": "cực tiểu tại x = -2, y = -3"
+            }
+          ]
+        }
+      ]
+    },
+    "ket_qua": "KHONG_KIEM_DUOC"
+  },
+  {
+    "ma": "NT-DH12-NB-02",
+    "loai": "DUNG",
+    "payload": {
+      "ham": "-x**2+6*x-2",
+      "nop_toi": "B.DH.KETLUAN",
+      "cac_buoc": [
+        {
+          "ma_buoc": "B.DH.TXD",
+          "cac_dong": [
+            {
+              "dong": 0,
+              "latex": "R"
+            }
+          ]
+        },
+        {
+          "ma_buoc": "B.DH.DAOHAM",
+          "cac_dong": [
+            {
+              "dong": 0,
+              "latex": "6 - 2*x"
+            }
+          ]
+        },
+        {
+          "ma_buoc": "B.DH.NGHIEM",
+          "cac_dong": [
+            {
+              "dong": 0,
+              "latex": "x = 3",
+              "loai": "NGHIEM"
+            }
+          ]
+        },
+        {
+          "ma_buoc": "B.DH.XETDAU",
+          "bang": {
+            "loai_bang": "XET_DAU",
+            "cac_o": [
+              {
+                "hang": "X",
+                "k": 0,
+                "gia_tri": "3"
+              },
+              {
+                "hang": "DAU_YPHAY",
+                "k": 0,
+                "gia_tri": "+"
+              },
+              {
+                "hang": "DAU_YPHAY",
+                "k": 2,
+                "gia_tri": "-"
+              },
+              {
+                "hang": "DAU_YPHAY",
+                "k": 1,
+                "gia_tri": "0"
+              },
+              {
+                "hang": "BIEN_THIEN",
+                "k": 0,
+                "gia_tri": "TANG"
+              },
+              {
+                "hang": "BIEN_THIEN",
+                "k": 2,
+                "gia_tri": "GIAM"
+              }
+            ]
+          }
+        },
+        {
+          "ma_buoc": "B.DH.KETLUAN",
+          "khai_bao": [
+            "dong_bien",
+            "nghich_bien",
+            "cuc_dai",
+            "cuc_tieu"
+          ],
+          "cac_dong": [
+            {
+              "dong": 0,
+              "latex": "đồng biến trên (-oo; 3)"
+            },
+            {
+              "dong": 1,
+              "latex": "nghịch biến trên (3; +oo)"
+            },
+            {
+              "dong": 2,
+              "latex": "cực đại tại x = 3, y = 7"
+            },
+            {
+              "dong": 3,
+              "latex": "không có cực tiểu"
+            }
+          ]
+        }
+      ]
+    },
+    "ket_qua": "DAT"
+  },
+  {
+    "ma": "NT-DH12-NB-02",
+    "loai": "SAI",
+    "payload": {
+      "ham": "-x**2+6*x-2",
+      "nop_toi": "B.DH.KETLUAN",
+      "cac_buoc": [
+        {
+          "ma_buoc": "B.DH.TXD",
+          "cac_dong": [
+            {
+              "dong": 0,
+              "latex": "R"
+            }
+          ]
+        },
+        {
+          "ma_buoc": "B.DH.DAOHAM",
+          "cac_dong": [
+            {
+              "dong": 0,
+              "latex": "(6 - 2*x)+1"
+            }
+          ]
+        },
+        {
+          "ma_buoc": "B.DH.NGHIEM",
+          "cac_dong": [
+            {
+              "dong": 0,
+              "latex": "x = 3",
+              "loai": "NGHIEM"
+            }
+          ]
+        },
+        {
+          "ma_buoc": "B.DH.XETDAU",
+          "bang": {
+            "loai_bang": "XET_DAU",
+            "cac_o": [
+              {
+                "hang": "X",
+                "k": 0,
+                "gia_tri": "3"
+              },
+              {
+                "hang": "DAU_YPHAY",
+                "k": 0,
+                "gia_tri": "+"
+              },
+              {
+                "hang": "DAU_YPHAY",
+                "k": 2,
+                "gia_tri": "-"
+              },
+              {
+                "hang": "DAU_YPHAY",
+                "k": 1,
+                "gia_tri": "0"
+              },
+              {
+                "hang": "BIEN_THIEN",
+                "k": 0,
+                "gia_tri": "TANG"
+              },
+              {
+                "hang": "BIEN_THIEN",
+                "k": 2,
+                "gia_tri": "GIAM"
+              }
+            ]
+          }
+        },
+        {
+          "ma_buoc": "B.DH.KETLUAN",
+          "khai_bao": [
+            "dong_bien",
+            "nghich_bien",
+            "cuc_dai",
+            "cuc_tieu"
+          ],
+          "cac_dong": [
+            {
+              "dong": 0,
+              "latex": "đồng biến trên (-oo; 3)"
+            },
+            {
+              "dong": 1,
+              "latex": "nghịch biến trên (3; +oo)"
+            },
+            {
+              "dong": 2,
+              "latex": "cực đại tại x = 3, y = 7"
+            },
+            {
+              "dong": 3,
+              "latex": "không có cực tiểu"
+            }
+          ]
+        }
+      ]
+    },
+    "ket_qua": "SAI"
+  },
+  {
+    "ma": "NT-DH12-NB-02",
+    "loai": "CAN_DUYET",
+    "payload": {
+      "ham": "-x**2+6*x-2",
+      "nop_toi": "B.DH.KETLUAN",
+      "cac_buoc": [
+        {
+          "ma_buoc": "B.DH.TXD",
+          "cac_dong": [
+            {
+              "dong": 0,
+              "latex": "R"
+            }
+          ]
+        },
+        {
+          "ma_buoc": "B.DH.DAOHAM",
+          "cac_dong": [
+            {
+              "dong": 0,
+              "latex": "?"
+            }
+          ]
+        },
+        {
+          "ma_buoc": "B.DH.NGHIEM",
+          "cac_dong": [
+            {
+              "dong": 0,
+              "latex": "x = 3",
+              "loai": "NGHIEM"
+            }
+          ]
+        },
+        {
+          "ma_buoc": "B.DH.XETDAU",
+          "bang": {
+            "loai_bang": "XET_DAU",
+            "cac_o": [
+              {
+                "hang": "X",
+                "k": 0,
+                "gia_tri": "3"
+              },
+              {
+                "hang": "DAU_YPHAY",
+                "k": 0,
+                "gia_tri": "+"
+              },
+              {
+                "hang": "DAU_YPHAY",
+                "k": 2,
+                "gia_tri": "-"
+              },
+              {
+                "hang": "DAU_YPHAY",
+                "k": 1,
+                "gia_tri": "0"
+              },
+              {
+                "hang": "BIEN_THIEN",
+                "k": 0,
+                "gia_tri": "TANG"
+              },
+              {
+                "hang": "BIEN_THIEN",
+                "k": 2,
+                "gia_tri": "GIAM"
+              }
+            ]
+          }
+        },
+        {
+          "ma_buoc": "B.DH.KETLUAN",
+          "khai_bao": [
+            "dong_bien",
+            "nghich_bien",
+            "cuc_dai",
+            "cuc_tieu"
+          ],
+          "cac_dong": [
+            {
+              "dong": 0,
+              "latex": "đồng biến trên (-oo; 3)"
+            },
+            {
+              "dong": 1,
+              "latex": "nghịch biến trên (3; +oo)"
+            },
+            {
+              "dong": 2,
+              "latex": "cực đại tại x = 3, y = 7"
+            },
+            {
+              "dong": 3,
+              "latex": "không có cực tiểu"
+            }
+          ]
+        }
+      ]
+    },
+    "ket_qua": "KHONG_KIEM_DUOC"
+  },
+  {
+    "ma": "NT-DH12-TH-03",
+    "loai": "DUNG",
+    "payload": {
+      "ham": "x**3-12*x+5",
+      "nop_toi": "B.DH.KETLUAN",
+      "cac_buoc": [
+        {
+          "ma_buoc": "B.DH.TXD",
+          "cac_dong": [
+            {
+              "dong": 0,
+              "latex": "R"
+            }
+          ]
+        },
+        {
+          "ma_buoc": "B.DH.DAOHAM",
+          "cac_dong": [
+            {
+              "dong": 0,
+              "latex": "3*x**2 - 12"
+            }
+          ]
+        },
+        {
+          "ma_buoc": "B.DH.NGHIEM",
+          "cac_dong": [
+            {
+              "dong": 0,
+              "latex": "x = -2",
+              "loai": "NGHIEM"
+            },
+            {
+              "dong": 1,
+              "latex": "x = 2",
+              "loai": "NGHIEM"
+            }
+          ]
+        },
+        {
+          "ma_buoc": "B.DH.XETDAU",
+          "bang": {
+            "loai_bang": "XET_DAU",
+            "cac_o": [
+              {
+                "hang": "X",
+                "k": 0,
+                "gia_tri": "-2"
+              },
+              {
+                "hang": "X",
+                "k": 1,
+                "gia_tri": "2"
+              },
+              {
+                "hang": "DAU_YPHAY",
+                "k": 0,
+                "gia_tri": "+"
+              },
+              {
+                "hang": "DAU_YPHAY",
+                "k": 2,
+                "gia_tri": "-"
+              },
+              {
+                "hang": "DAU_YPHAY",
+                "k": 4,
+                "gia_tri": "+"
+              },
+              {
+                "hang": "DAU_YPHAY",
+                "k": 1,
+                "gia_tri": "0"
+              },
+              {
+                "hang": "DAU_YPHAY",
+                "k": 3,
+                "gia_tri": "0"
+              },
+              {
+                "hang": "BIEN_THIEN",
+                "k": 0,
+                "gia_tri": "TANG"
+              },
+              {
+                "hang": "BIEN_THIEN",
+                "k": 2,
+                "gia_tri": "GIAM"
+              },
+              {
+                "hang": "BIEN_THIEN",
+                "k": 4,
+                "gia_tri": "TANG"
+              }
+            ]
+          }
+        },
+        {
+          "ma_buoc": "B.DH.KETLUAN",
+          "khai_bao": [
+            "dong_bien",
+            "nghich_bien",
+            "cuc_dai",
+            "cuc_tieu"
+          ],
+          "cac_dong": [
+            {
+              "dong": 0,
+              "latex": "đồng biến trên (-oo; -2) và (2; +oo)"
+            },
+            {
+              "dong": 1,
+              "latex": "nghịch biến trên (-2; 2)"
+            },
+            {
+              "dong": 2,
+              "latex": "cực đại tại x = -2, y = 21"
+            },
+            {
+              "dong": 3,
+              "latex": "cực tiểu tại x = 2, y = -11"
+            }
+          ]
+        }
+      ]
+    },
+    "ket_qua": "DAT"
+  },
+  {
+    "ma": "NT-DH12-TH-03",
+    "loai": "SAI",
+    "payload": {
+      "ham": "x**3-12*x+5",
+      "nop_toi": "B.DH.KETLUAN",
+      "cac_buoc": [
+        {
+          "ma_buoc": "B.DH.TXD",
+          "cac_dong": [
+            {
+              "dong": 0,
+              "latex": "R"
+            }
+          ]
+        },
+        {
+          "ma_buoc": "B.DH.DAOHAM",
+          "cac_dong": [
+            {
+              "dong": 0,
+              "latex": "(3*x**2 - 12)+1"
+            }
+          ]
+        },
+        {
+          "ma_buoc": "B.DH.NGHIEM",
+          "cac_dong": [
+            {
+              "dong": 0,
+              "latex": "x = -2",
+              "loai": "NGHIEM"
+            },
+            {
+              "dong": 1,
+              "latex": "x = 2",
+              "loai": "NGHIEM"
+            }
+          ]
+        },
+        {
+          "ma_buoc": "B.DH.XETDAU",
+          "bang": {
+            "loai_bang": "XET_DAU",
+            "cac_o": [
+              {
+                "hang": "X",
+                "k": 0,
+                "gia_tri": "-2"
+              },
+              {
+                "hang": "X",
+                "k": 1,
+                "gia_tri": "2"
+              },
+              {
+                "hang": "DAU_YPHAY",
+                "k": 0,
+                "gia_tri": "+"
+              },
+              {
+                "hang": "DAU_YPHAY",
+                "k": 2,
+                "gia_tri": "-"
+              },
+              {
+                "hang": "DAU_YPHAY",
+                "k": 4,
+                "gia_tri": "+"
+              },
+              {
+                "hang": "DAU_YPHAY",
+                "k": 1,
+                "gia_tri": "0"
+              },
+              {
+                "hang": "DAU_YPHAY",
+                "k": 3,
+                "gia_tri": "0"
+              },
+              {
+                "hang": "BIEN_THIEN",
+                "k": 0,
+                "gia_tri": "TANG"
+              },
+              {
+                "hang": "BIEN_THIEN",
+                "k": 2,
+                "gia_tri": "GIAM"
+              },
+              {
+                "hang": "BIEN_THIEN",
+                "k": 4,
+                "gia_tri": "TANG"
+              }
+            ]
+          }
+        },
+        {
+          "ma_buoc": "B.DH.KETLUAN",
+          "khai_bao": [
+            "dong_bien",
+            "nghich_bien",
+            "cuc_dai",
+            "cuc_tieu"
+          ],
+          "cac_dong": [
+            {
+              "dong": 0,
+              "latex": "đồng biến trên (-oo; -2) và (2; +oo)"
+            },
+            {
+              "dong": 1,
+              "latex": "nghịch biến trên (-2; 2)"
+            },
+            {
+              "dong": 2,
+              "latex": "cực đại tại x = -2, y = 21"
+            },
+            {
+              "dong": 3,
+              "latex": "cực tiểu tại x = 2, y = -11"
+            }
+          ]
+        }
+      ]
+    },
+    "ket_qua": "SAI"
+  },
+  {
+    "ma": "NT-DH12-TH-03",
+    "loai": "CAN_DUYET",
+    "payload": {
+      "ham": "x**3-12*x+5",
+      "nop_toi": "B.DH.KETLUAN",
+      "cac_buoc": [
+        {
+          "ma_buoc": "B.DH.TXD",
+          "cac_dong": [
+            {
+              "dong": 0,
+              "latex": "R"
+            }
+          ]
+        },
+        {
+          "ma_buoc": "B.DH.DAOHAM",
+          "cac_dong": [
+            {
+              "dong": 0,
+              "latex": "?"
+            }
+          ]
+        },
+        {
+          "ma_buoc": "B.DH.NGHIEM",
+          "cac_dong": [
+            {
+              "dong": 0,
+              "latex": "x = -2",
+              "loai": "NGHIEM"
+            },
+            {
+              "dong": 1,
+              "latex": "x = 2",
+              "loai": "NGHIEM"
+            }
+          ]
+        },
+        {
+          "ma_buoc": "B.DH.XETDAU",
+          "bang": {
+            "loai_bang": "XET_DAU",
+            "cac_o": [
+              {
+                "hang": "X",
+                "k": 0,
+                "gia_tri": "-2"
+              },
+              {
+                "hang": "X",
+                "k": 1,
+                "gia_tri": "2"
+              },
+              {
+                "hang": "DAU_YPHAY",
+                "k": 0,
+                "gia_tri": "+"
+              },
+              {
+                "hang": "DAU_YPHAY",
+                "k": 2,
+                "gia_tri": "-"
+              },
+              {
+                "hang": "DAU_YPHAY",
+                "k": 4,
+                "gia_tri": "+"
+              },
+              {
+                "hang": "DAU_YPHAY",
+                "k": 1,
+                "gia_tri": "0"
+              },
+              {
+                "hang": "DAU_YPHAY",
+                "k": 3,
+                "gia_tri": "0"
+              },
+              {
+                "hang": "BIEN_THIEN",
+                "k": 0,
+                "gia_tri": "TANG"
+              },
+              {
+                "hang": "BIEN_THIEN",
+                "k": 2,
+                "gia_tri": "GIAM"
+              },
+              {
+                "hang": "BIEN_THIEN",
+                "k": 4,
+                "gia_tri": "TANG"
+              }
+            ]
+          }
+        },
+        {
+          "ma_buoc": "B.DH.KETLUAN",
+          "khai_bao": [
+            "dong_bien",
+            "nghich_bien",
+            "cuc_dai",
+            "cuc_tieu"
+          ],
+          "cac_dong": [
+            {
+              "dong": 0,
+              "latex": "đồng biến trên (-oo; -2) và (2; +oo)"
+            },
+            {
+              "dong": 1,
+              "latex": "nghịch biến trên (-2; 2)"
+            },
+            {
+              "dong": 2,
+              "latex": "cực đại tại x = -2, y = 21"
+            },
+            {
+              "dong": 3,
+              "latex": "cực tiểu tại x = 2, y = -11"
+            }
+          ]
+        }
+      ]
+    },
+    "ket_qua": "KHONG_KIEM_DUOC"
+  },
+  {
+    "ma": "NT-DH12-TH-04",
+    "loai": "DUNG",
+    "payload": {
+      "ham": "(2*x+5)/(x-3)",
+      "nop_toi": "B.DH.KETLUAN",
+      "cac_buoc": [
+        {
+          "ma_buoc": "B.DH.TXD",
+          "cac_dong": [
+            {
+              "dong": 0,
+              "latex": "R \\ {3}"
+            }
+          ]
+        },
+        {
+          "ma_buoc": "B.DH.DAOHAM",
+          "cac_dong": [
+            {
+              "dong": 0,
+              "latex": "-11/(x - 3)**2"
+            }
+          ]
+        },
+        {
+          "ma_buoc": "B.DH.NGHIEM",
+          "cac_dong": [
+            {
+              "dong": 0,
+              "latex": "không có nghiệm",
+              "loai": "NGHIEM"
+            }
+          ]
+        },
+        {
+          "ma_buoc": "B.DH.XETDAU",
+          "bang": {
+            "loai_bang": "XET_DAU",
+            "cac_o": [
+              {
+                "hang": "X",
+                "k": 0,
+                "gia_tri": "3"
+              },
+              {
+                "hang": "DAU_YPHAY",
+                "k": 0,
+                "gia_tri": "-"
+              },
+              {
+                "hang": "DAU_YPHAY",
+                "k": 2,
+                "gia_tri": "-"
+              },
+              {
+                "hang": "DAU_YPHAY",
+                "k": 1,
+                "gia_tri": "||"
+              },
+              {
+                "hang": "BIEN_THIEN",
+                "k": 0,
+                "gia_tri": "GIAM"
+              },
+              {
+                "hang": "BIEN_THIEN",
+                "k": 2,
+                "gia_tri": "GIAM"
+              }
+            ]
+          }
+        },
+        {
+          "ma_buoc": "B.DH.KETLUAN",
+          "khai_bao": [
+            "dong_bien",
+            "nghich_bien",
+            "cuc_dai",
+            "cuc_tieu"
+          ],
+          "cac_dong": [
+            {
+              "dong": 0,
+              "latex": "không đồng biến trên khoảng nào"
+            },
+            {
+              "dong": 1,
+              "latex": "nghịch biến trên (-oo; 3) và (3; +oo)"
+            },
+            {
+              "dong": 2,
+              "latex": "không có cực đại"
+            },
+            {
+              "dong": 3,
+              "latex": "không có cực tiểu"
+            }
+          ]
+        }
+      ]
+    },
+    "ket_qua": "DAT"
+  },
+  {
+    "ma": "NT-DH12-TH-04",
+    "loai": "SAI",
+    "payload": {
+      "ham": "(2*x+5)/(x-3)",
+      "nop_toi": "B.DH.KETLUAN",
+      "cac_buoc": [
+        {
+          "ma_buoc": "B.DH.TXD",
+          "cac_dong": [
+            {
+              "dong": 0,
+              "latex": "R \\ {3}"
+            }
+          ]
+        },
+        {
+          "ma_buoc": "B.DH.DAOHAM",
+          "cac_dong": [
+            {
+              "dong": 0,
+              "latex": "(-11/(x - 3)**2)+1"
+            }
+          ]
+        },
+        {
+          "ma_buoc": "B.DH.NGHIEM",
+          "cac_dong": [
+            {
+              "dong": 0,
+              "latex": "không có nghiệm",
+              "loai": "NGHIEM"
+            }
+          ]
+        },
+        {
+          "ma_buoc": "B.DH.XETDAU",
+          "bang": {
+            "loai_bang": "XET_DAU",
+            "cac_o": [
+              {
+                "hang": "X",
+                "k": 0,
+                "gia_tri": "3"
+              },
+              {
+                "hang": "DAU_YPHAY",
+                "k": 0,
+                "gia_tri": "-"
+              },
+              {
+                "hang": "DAU_YPHAY",
+                "k": 2,
+                "gia_tri": "-"
+              },
+              {
+                "hang": "DAU_YPHAY",
+                "k": 1,
+                "gia_tri": "||"
+              },
+              {
+                "hang": "BIEN_THIEN",
+                "k": 0,
+                "gia_tri": "GIAM"
+              },
+              {
+                "hang": "BIEN_THIEN",
+                "k": 2,
+                "gia_tri": "GIAM"
+              }
+            ]
+          }
+        },
+        {
+          "ma_buoc": "B.DH.KETLUAN",
+          "khai_bao": [
+            "dong_bien",
+            "nghich_bien",
+            "cuc_dai",
+            "cuc_tieu"
+          ],
+          "cac_dong": [
+            {
+              "dong": 0,
+              "latex": "không đồng biến trên khoảng nào"
+            },
+            {
+              "dong": 1,
+              "latex": "nghịch biến trên (-oo; 3) và (3; +oo)"
+            },
+            {
+              "dong": 2,
+              "latex": "không có cực đại"
+            },
+            {
+              "dong": 3,
+              "latex": "không có cực tiểu"
+            }
+          ]
+        }
+      ]
+    },
+    "ket_qua": "SAI"
+  },
+  {
+    "ma": "NT-DH12-TH-04",
+    "loai": "CAN_DUYET",
+    "payload": {
+      "ham": "(2*x+5)/(x-3)",
+      "nop_toi": "B.DH.KETLUAN",
+      "cac_buoc": [
+        {
+          "ma_buoc": "B.DH.TXD",
+          "cac_dong": [
+            {
+              "dong": 0,
+              "latex": "R \\ {3}"
+            }
+          ]
+        },
+        {
+          "ma_buoc": "B.DH.DAOHAM",
+          "cac_dong": [
+            {
+              "dong": 0,
+              "latex": "?"
+            }
+          ]
+        },
+        {
+          "ma_buoc": "B.DH.NGHIEM",
+          "cac_dong": [
+            {
+              "dong": 0,
+              "latex": "không có nghiệm",
+              "loai": "NGHIEM"
+            }
+          ]
+        },
+        {
+          "ma_buoc": "B.DH.XETDAU",
+          "bang": {
+            "loai_bang": "XET_DAU",
+            "cac_o": [
+              {
+                "hang": "X",
+                "k": 0,
+                "gia_tri": "3"
+              },
+              {
+                "hang": "DAU_YPHAY",
+                "k": 0,
+                "gia_tri": "-"
+              },
+              {
+                "hang": "DAU_YPHAY",
+                "k": 2,
+                "gia_tri": "-"
+              },
+              {
+                "hang": "DAU_YPHAY",
+                "k": 1,
+                "gia_tri": "||"
+              },
+              {
+                "hang": "BIEN_THIEN",
+                "k": 0,
+                "gia_tri": "GIAM"
+              },
+              {
+                "hang": "BIEN_THIEN",
+                "k": 2,
+                "gia_tri": "GIAM"
+              }
+            ]
+          }
+        },
+        {
+          "ma_buoc": "B.DH.KETLUAN",
+          "khai_bao": [
+            "dong_bien",
+            "nghich_bien",
+            "cuc_dai",
+            "cuc_tieu"
+          ],
+          "cac_dong": [
+            {
+              "dong": 0,
+              "latex": "không đồng biến trên khoảng nào"
+            },
+            {
+              "dong": 1,
+              "latex": "nghịch biến trên (-oo; 3) và (3; +oo)"
+            },
+            {
+              "dong": 2,
+              "latex": "không có cực đại"
+            },
+            {
+              "dong": 3,
+              "latex": "không có cực tiểu"
+            }
+          ]
+        }
+      ]
+    },
+    "ket_qua": "KHONG_KIEM_DUOC"
+  },
+  {
+    "ma": "NT-DH12-VD-05",
+    "loai": "DUNG",
+    "payload": {
+      "ham": "x**4-8*x**2+7",
+      "nop_toi": "B.DH.KETLUAN",
+      "cac_buoc": [
+        {
+          "ma_buoc": "B.DH.TXD",
+          "cac_dong": [
+            {
+              "dong": 0,
+              "latex": "R"
+            }
+          ]
+        },
+        {
+          "ma_buoc": "B.DH.DAOHAM",
+          "cac_dong": [
+            {
+              "dong": 0,
+              "latex": "4*x*(x**2 - 4)"
+            }
+          ]
+        },
+        {
+          "ma_buoc": "B.DH.NGHIEM",
+          "cac_dong": [
+            {
+              "dong": 0,
+              "latex": "x = -2",
+              "loai": "NGHIEM"
+            },
+            {
+              "dong": 1,
+              "latex": "x = 0",
+              "loai": "NGHIEM"
+            },
+            {
+              "dong": 2,
+              "latex": "x = 2",
+              "loai": "NGHIEM"
+            }
+          ]
+        },
+        {
+          "ma_buoc": "B.DH.XETDAU",
+          "bang": {
+            "loai_bang": "XET_DAU",
+            "cac_o": [
+              {
+                "hang": "X",
+                "k": 0,
+                "gia_tri": "-2"
+              },
+              {
+                "hang": "X",
+                "k": 1,
+                "gia_tri": "0"
+              },
+              {
+                "hang": "X",
+                "k": 2,
+                "gia_tri": "2"
+              },
+              {
+                "hang": "DAU_YPHAY",
+                "k": 0,
+                "gia_tri": "-"
+              },
+              {
+                "hang": "DAU_YPHAY",
+                "k": 2,
+                "gia_tri": "+"
+              },
+              {
+                "hang": "DAU_YPHAY",
+                "k": 4,
+                "gia_tri": "-"
+              },
+              {
+                "hang": "DAU_YPHAY",
+                "k": 6,
+                "gia_tri": "+"
+              },
+              {
+                "hang": "DAU_YPHAY",
+                "k": 1,
+                "gia_tri": "0"
+              },
+              {
+                "hang": "DAU_YPHAY",
+                "k": 3,
+                "gia_tri": "0"
+              },
+              {
+                "hang": "DAU_YPHAY",
+                "k": 5,
+                "gia_tri": "0"
+              },
+              {
+                "hang": "BIEN_THIEN",
+                "k": 0,
+                "gia_tri": "GIAM"
+              },
+              {
+                "hang": "BIEN_THIEN",
+                "k": 2,
+                "gia_tri": "TANG"
+              },
+              {
+                "hang": "BIEN_THIEN",
+                "k": 4,
+                "gia_tri": "GIAM"
+              },
+              {
+                "hang": "BIEN_THIEN",
+                "k": 6,
+                "gia_tri": "TANG"
+              }
+            ]
+          }
+        },
+        {
+          "ma_buoc": "B.DH.KETLUAN",
+          "khai_bao": [
+            "dong_bien",
+            "nghich_bien",
+            "cuc_dai",
+            "cuc_tieu"
+          ],
+          "cac_dong": [
+            {
+              "dong": 0,
+              "latex": "đồng biến trên (-2; 0) và (2; +oo)"
+            },
+            {
+              "dong": 1,
+              "latex": "nghịch biến trên (-oo; -2) và (0; 2)"
+            },
+            {
+              "dong": 2,
+              "latex": "cực đại tại x = 0, y = 7"
+            },
+            {
+              "dong": 3,
+              "latex": "cực tiểu tại x = -2, y = -9; x = 2, y = -9"
+            }
+          ]
+        }
+      ]
+    },
+    "ket_qua": "DAT"
+  },
+  {
+    "ma": "NT-DH12-VD-05",
+    "loai": "SAI",
+    "payload": {
+      "ham": "x**4-8*x**2+7",
+      "nop_toi": "B.DH.KETLUAN",
+      "cac_buoc": [
+        {
+          "ma_buoc": "B.DH.TXD",
+          "cac_dong": [
+            {
+              "dong": 0,
+              "latex": "R"
+            }
+          ]
+        },
+        {
+          "ma_buoc": "B.DH.DAOHAM",
+          "cac_dong": [
+            {
+              "dong": 0,
+              "latex": "(4*x*(x**2 - 4))+1"
+            }
+          ]
+        },
+        {
+          "ma_buoc": "B.DH.NGHIEM",
+          "cac_dong": [
+            {
+              "dong": 0,
+              "latex": "x = -2",
+              "loai": "NGHIEM"
+            },
+            {
+              "dong": 1,
+              "latex": "x = 0",
+              "loai": "NGHIEM"
+            },
+            {
+              "dong": 2,
+              "latex": "x = 2",
+              "loai": "NGHIEM"
+            }
+          ]
+        },
+        {
+          "ma_buoc": "B.DH.XETDAU",
+          "bang": {
+            "loai_bang": "XET_DAU",
+            "cac_o": [
+              {
+                "hang": "X",
+                "k": 0,
+                "gia_tri": "-2"
+              },
+              {
+                "hang": "X",
+                "k": 1,
+                "gia_tri": "0"
+              },
+              {
+                "hang": "X",
+                "k": 2,
+                "gia_tri": "2"
+              },
+              {
+                "hang": "DAU_YPHAY",
+                "k": 0,
+                "gia_tri": "-"
+              },
+              {
+                "hang": "DAU_YPHAY",
+                "k": 2,
+                "gia_tri": "+"
+              },
+              {
+                "hang": "DAU_YPHAY",
+                "k": 4,
+                "gia_tri": "-"
+              },
+              {
+                "hang": "DAU_YPHAY",
+                "k": 6,
+                "gia_tri": "+"
+              },
+              {
+                "hang": "DAU_YPHAY",
+                "k": 1,
+                "gia_tri": "0"
+              },
+              {
+                "hang": "DAU_YPHAY",
+                "k": 3,
+                "gia_tri": "0"
+              },
+              {
+                "hang": "DAU_YPHAY",
+                "k": 5,
+                "gia_tri": "0"
+              },
+              {
+                "hang": "BIEN_THIEN",
+                "k": 0,
+                "gia_tri": "GIAM"
+              },
+              {
+                "hang": "BIEN_THIEN",
+                "k": 2,
+                "gia_tri": "TANG"
+              },
+              {
+                "hang": "BIEN_THIEN",
+                "k": 4,
+                "gia_tri": "GIAM"
+              },
+              {
+                "hang": "BIEN_THIEN",
+                "k": 6,
+                "gia_tri": "TANG"
+              }
+            ]
+          }
+        },
+        {
+          "ma_buoc": "B.DH.KETLUAN",
+          "khai_bao": [
+            "dong_bien",
+            "nghich_bien",
+            "cuc_dai",
+            "cuc_tieu"
+          ],
+          "cac_dong": [
+            {
+              "dong": 0,
+              "latex": "đồng biến trên (-2; 0) và (2; +oo)"
+            },
+            {
+              "dong": 1,
+              "latex": "nghịch biến trên (-oo; -2) và (0; 2)"
+            },
+            {
+              "dong": 2,
+              "latex": "cực đại tại x = 0, y = 7"
+            },
+            {
+              "dong": 3,
+              "latex": "cực tiểu tại x = -2, y = -9; x = 2, y = -9"
+            }
+          ]
+        }
+      ]
+    },
+    "ket_qua": "SAI"
+  },
+  {
+    "ma": "NT-DH12-VD-05",
+    "loai": "CAN_DUYET",
+    "payload": {
+      "ham": "x**4-8*x**2+7",
+      "nop_toi": "B.DH.KETLUAN",
+      "cac_buoc": [
+        {
+          "ma_buoc": "B.DH.TXD",
+          "cac_dong": [
+            {
+              "dong": 0,
+              "latex": "R"
+            }
+          ]
+        },
+        {
+          "ma_buoc": "B.DH.DAOHAM",
+          "cac_dong": [
+            {
+              "dong": 0,
+              "latex": "?"
+            }
+          ]
+        },
+        {
+          "ma_buoc": "B.DH.NGHIEM",
+          "cac_dong": [
+            {
+              "dong": 0,
+              "latex": "x = -2",
+              "loai": "NGHIEM"
+            },
+            {
+              "dong": 1,
+              "latex": "x = 0",
+              "loai": "NGHIEM"
+            },
+            {
+              "dong": 2,
+              "latex": "x = 2",
+              "loai": "NGHIEM"
+            }
+          ]
+        },
+        {
+          "ma_buoc": "B.DH.XETDAU",
+          "bang": {
+            "loai_bang": "XET_DAU",
+            "cac_o": [
+              {
+                "hang": "X",
+                "k": 0,
+                "gia_tri": "-2"
+              },
+              {
+                "hang": "X",
+                "k": 1,
+                "gia_tri": "0"
+              },
+              {
+                "hang": "X",
+                "k": 2,
+                "gia_tri": "2"
+              },
+              {
+                "hang": "DAU_YPHAY",
+                "k": 0,
+                "gia_tri": "-"
+              },
+              {
+                "hang": "DAU_YPHAY",
+                "k": 2,
+                "gia_tri": "+"
+              },
+              {
+                "hang": "DAU_YPHAY",
+                "k": 4,
+                "gia_tri": "-"
+              },
+              {
+                "hang": "DAU_YPHAY",
+                "k": 6,
+                "gia_tri": "+"
+              },
+              {
+                "hang": "DAU_YPHAY",
+                "k": 1,
+                "gia_tri": "0"
+              },
+              {
+                "hang": "DAU_YPHAY",
+                "k": 3,
+                "gia_tri": "0"
+              },
+              {
+                "hang": "DAU_YPHAY",
+                "k": 5,
+                "gia_tri": "0"
+              },
+              {
+                "hang": "BIEN_THIEN",
+                "k": 0,
+                "gia_tri": "GIAM"
+              },
+              {
+                "hang": "BIEN_THIEN",
+                "k": 2,
+                "gia_tri": "TANG"
+              },
+              {
+                "hang": "BIEN_THIEN",
+                "k": 4,
+                "gia_tri": "GIAM"
+              },
+              {
+                "hang": "BIEN_THIEN",
+                "k": 6,
+                "gia_tri": "TANG"
+              }
+            ]
+          }
+        },
+        {
+          "ma_buoc": "B.DH.KETLUAN",
+          "khai_bao": [
+            "dong_bien",
+            "nghich_bien",
+            "cuc_dai",
+            "cuc_tieu"
+          ],
+          "cac_dong": [
+            {
+              "dong": 0,
+              "latex": "đồng biến trên (-2; 0) và (2; +oo)"
+            },
+            {
+              "dong": 1,
+              "latex": "nghịch biến trên (-oo; -2) và (0; 2)"
+            },
+            {
+              "dong": 2,
+              "latex": "cực đại tại x = 0, y = 7"
+            },
+            {
+              "dong": 3,
+              "latex": "cực tiểu tại x = -2, y = -9; x = 2, y = -9"
+            }
+          ]
+        }
+      ]
+    },
+    "ket_qua": "KHONG_KIEM_DUOC"
+  },
+  {
+    "ma": "NT-DH12-VD-06",
+    "loai": "DUNG",
+    "payload": {
+      "ham": "x+9/x",
+      "nop_toi": "B.DH.KETLUAN",
+      "cac_buoc": [
+        {
+          "ma_buoc": "B.DH.TXD",
+          "cac_dong": [
+            {
+              "dong": 0,
+              "latex": "R \\ {0}"
+            }
+          ]
+        },
+        {
+          "ma_buoc": "B.DH.DAOHAM",
+          "cac_dong": [
+            {
+              "dong": 0,
+              "latex": "1 - 9/x**2"
+            }
+          ]
+        },
+        {
+          "ma_buoc": "B.DH.NGHIEM",
+          "cac_dong": [
+            {
+              "dong": 0,
+              "latex": "x = -3",
+              "loai": "NGHIEM"
+            },
+            {
+              "dong": 1,
+              "latex": "x = 3",
+              "loai": "NGHIEM"
+            }
+          ]
+        },
+        {
+          "ma_buoc": "B.DH.XETDAU",
+          "bang": {
+            "loai_bang": "XET_DAU",
+            "cac_o": [
+              {
+                "hang": "X",
+                "k": 0,
+                "gia_tri": "-3"
+              },
+              {
+                "hang": "X",
+                "k": 1,
+                "gia_tri": "0"
+              },
+              {
+                "hang": "X",
+                "k": 2,
+                "gia_tri": "3"
+              },
+              {
+                "hang": "DAU_YPHAY",
+                "k": 0,
+                "gia_tri": "+"
+              },
+              {
+                "hang": "DAU_YPHAY",
+                "k": 2,
+                "gia_tri": "-"
+              },
+              {
+                "hang": "DAU_YPHAY",
+                "k": 4,
+                "gia_tri": "-"
+              },
+              {
+                "hang": "DAU_YPHAY",
+                "k": 6,
+                "gia_tri": "+"
+              },
+              {
+                "hang": "DAU_YPHAY",
+                "k": 1,
+                "gia_tri": "0"
+              },
+              {
+                "hang": "DAU_YPHAY",
+                "k": 3,
+                "gia_tri": "||"
+              },
+              {
+                "hang": "DAU_YPHAY",
+                "k": 5,
+                "gia_tri": "0"
+              },
+              {
+                "hang": "BIEN_THIEN",
+                "k": 0,
+                "gia_tri": "TANG"
+              },
+              {
+                "hang": "BIEN_THIEN",
+                "k": 2,
+                "gia_tri": "GIAM"
+              },
+              {
+                "hang": "BIEN_THIEN",
+                "k": 4,
+                "gia_tri": "GIAM"
+              },
+              {
+                "hang": "BIEN_THIEN",
+                "k": 6,
+                "gia_tri": "TANG"
+              }
+            ]
+          }
+        },
+        {
+          "ma_buoc": "B.DH.KETLUAN",
+          "khai_bao": [
+            "dong_bien",
+            "nghich_bien",
+            "cuc_dai",
+            "cuc_tieu"
+          ],
+          "cac_dong": [
+            {
+              "dong": 0,
+              "latex": "đồng biến trên (-oo; -3) và (3; +oo)"
+            },
+            {
+              "dong": 1,
+              "latex": "nghịch biến trên (-3; 0) và (0; 3)"
+            },
+            {
+              "dong": 2,
+              "latex": "cực đại tại x = -3, y = -6"
+            },
+            {
+              "dong": 3,
+              "latex": "cực tiểu tại x = 3, y = 6"
+            }
+          ]
+        }
+      ]
+    },
+    "ket_qua": "DAT"
+  },
+  {
+    "ma": "NT-DH12-VD-06",
+    "loai": "SAI",
+    "payload": {
+      "ham": "x+9/x",
+      "nop_toi": "B.DH.KETLUAN",
+      "cac_buoc": [
+        {
+          "ma_buoc": "B.DH.TXD",
+          "cac_dong": [
+            {
+              "dong": 0,
+              "latex": "R \\ {0}"
+            }
+          ]
+        },
+        {
+          "ma_buoc": "B.DH.DAOHAM",
+          "cac_dong": [
+            {
+              "dong": 0,
+              "latex": "(1 - 9/x**2)+1"
+            }
+          ]
+        },
+        {
+          "ma_buoc": "B.DH.NGHIEM",
+          "cac_dong": [
+            {
+              "dong": 0,
+              "latex": "x = -3",
+              "loai": "NGHIEM"
+            },
+            {
+              "dong": 1,
+              "latex": "x = 3",
+              "loai": "NGHIEM"
+            }
+          ]
+        },
+        {
+          "ma_buoc": "B.DH.XETDAU",
+          "bang": {
+            "loai_bang": "XET_DAU",
+            "cac_o": [
+              {
+                "hang": "X",
+                "k": 0,
+                "gia_tri": "-3"
+              },
+              {
+                "hang": "X",
+                "k": 1,
+                "gia_tri": "0"
+              },
+              {
+                "hang": "X",
+                "k": 2,
+                "gia_tri": "3"
+              },
+              {
+                "hang": "DAU_YPHAY",
+                "k": 0,
+                "gia_tri": "+"
+              },
+              {
+                "hang": "DAU_YPHAY",
+                "k": 2,
+                "gia_tri": "-"
+              },
+              {
+                "hang": "DAU_YPHAY",
+                "k": 4,
+                "gia_tri": "-"
+              },
+              {
+                "hang": "DAU_YPHAY",
+                "k": 6,
+                "gia_tri": "+"
+              },
+              {
+                "hang": "DAU_YPHAY",
+                "k": 1,
+                "gia_tri": "0"
+              },
+              {
+                "hang": "DAU_YPHAY",
+                "k": 3,
+                "gia_tri": "||"
+              },
+              {
+                "hang": "DAU_YPHAY",
+                "k": 5,
+                "gia_tri": "0"
+              },
+              {
+                "hang": "BIEN_THIEN",
+                "k": 0,
+                "gia_tri": "TANG"
+              },
+              {
+                "hang": "BIEN_THIEN",
+                "k": 2,
+                "gia_tri": "GIAM"
+              },
+              {
+                "hang": "BIEN_THIEN",
+                "k": 4,
+                "gia_tri": "GIAM"
+              },
+              {
+                "hang": "BIEN_THIEN",
+                "k": 6,
+                "gia_tri": "TANG"
+              }
+            ]
+          }
+        },
+        {
+          "ma_buoc": "B.DH.KETLUAN",
+          "khai_bao": [
+            "dong_bien",
+            "nghich_bien",
+            "cuc_dai",
+            "cuc_tieu"
+          ],
+          "cac_dong": [
+            {
+              "dong": 0,
+              "latex": "đồng biến trên (-oo; -3) và (3; +oo)"
+            },
+            {
+              "dong": 1,
+              "latex": "nghịch biến trên (-3; 0) và (0; 3)"
+            },
+            {
+              "dong": 2,
+              "latex": "cực đại tại x = -3, y = -6"
+            },
+            {
+              "dong": 3,
+              "latex": "cực tiểu tại x = 3, y = 6"
+            }
+          ]
+        }
+      ]
+    },
+    "ket_qua": "SAI"
+  },
+  {
+    "ma": "NT-DH12-VD-06",
+    "loai": "CAN_DUYET",
+    "payload": {
+      "ham": "x+9/x",
+      "nop_toi": "B.DH.KETLUAN",
+      "cac_buoc": [
+        {
+          "ma_buoc": "B.DH.TXD",
+          "cac_dong": [
+            {
+              "dong": 0,
+              "latex": "R \\ {0}"
+            }
+          ]
+        },
+        {
+          "ma_buoc": "B.DH.DAOHAM",
+          "cac_dong": [
+            {
+              "dong": 0,
+              "latex": "?"
+            }
+          ]
+        },
+        {
+          "ma_buoc": "B.DH.NGHIEM",
+          "cac_dong": [
+            {
+              "dong": 0,
+              "latex": "x = -3",
+              "loai": "NGHIEM"
+            },
+            {
+              "dong": 1,
+              "latex": "x = 3",
+              "loai": "NGHIEM"
+            }
+          ]
+        },
+        {
+          "ma_buoc": "B.DH.XETDAU",
+          "bang": {
+            "loai_bang": "XET_DAU",
+            "cac_o": [
+              {
+                "hang": "X",
+                "k": 0,
+                "gia_tri": "-3"
+              },
+              {
+                "hang": "X",
+                "k": 1,
+                "gia_tri": "0"
+              },
+              {
+                "hang": "X",
+                "k": 2,
+                "gia_tri": "3"
+              },
+              {
+                "hang": "DAU_YPHAY",
+                "k": 0,
+                "gia_tri": "+"
+              },
+              {
+                "hang": "DAU_YPHAY",
+                "k": 2,
+                "gia_tri": "-"
+              },
+              {
+                "hang": "DAU_YPHAY",
+                "k": 4,
+                "gia_tri": "-"
+              },
+              {
+                "hang": "DAU_YPHAY",
+                "k": 6,
+                "gia_tri": "+"
+              },
+              {
+                "hang": "DAU_YPHAY",
+                "k": 1,
+                "gia_tri": "0"
+              },
+              {
+                "hang": "DAU_YPHAY",
+                "k": 3,
+                "gia_tri": "||"
+              },
+              {
+                "hang": "DAU_YPHAY",
+                "k": 5,
+                "gia_tri": "0"
+              },
+              {
+                "hang": "BIEN_THIEN",
+                "k": 0,
+                "gia_tri": "TANG"
+              },
+              {
+                "hang": "BIEN_THIEN",
+                "k": 2,
+                "gia_tri": "GIAM"
+              },
+              {
+                "hang": "BIEN_THIEN",
+                "k": 4,
+                "gia_tri": "GIAM"
+              },
+              {
+                "hang": "BIEN_THIEN",
+                "k": 6,
+                "gia_tri": "TANG"
+              }
+            ]
+          }
+        },
+        {
+          "ma_buoc": "B.DH.KETLUAN",
+          "khai_bao": [
+            "dong_bien",
+            "nghich_bien",
+            "cuc_dai",
+            "cuc_tieu"
+          ],
+          "cac_dong": [
+            {
+              "dong": 0,
+              "latex": "đồng biến trên (-oo; -3) và (3; +oo)"
+            },
+            {
+              "dong": 1,
+              "latex": "nghịch biến trên (-3; 0) và (0; 3)"
+            },
+            {
+              "dong": 2,
+              "latex": "cực đại tại x = -3, y = -6"
+            },
+            {
+              "dong": 3,
+              "latex": "cực tiểu tại x = 3, y = 6"
+            }
+          ]
+        }
+      ]
+    },
+    "ket_qua": "KHONG_KIEM_DUOC"
+  },
+  {
+    "ma": "NT-DH12-VDC-07",
+    "loai": "DUNG",
+    "payload": {
+      "ham": "2*x**3-15*x**2+36*x-24",
+      "nop_toi": "B.DH.KETLUAN",
+      "cac_buoc": [
+        {
+          "ma_buoc": "B.DH.TXD",
+          "cac_dong": [
+            {
+              "dong": 0,
+              "latex": "R"
+            }
+          ]
+        },
+        {
+          "ma_buoc": "B.DH.DAOHAM",
+          "cac_dong": [
+            {
+              "dong": 0,
+              "latex": "6*x**2 - 30*x + 36"
+            }
+          ]
+        },
+        {
+          "ma_buoc": "B.DH.NGHIEM",
+          "cac_dong": [
+            {
+              "dong": 0,
+              "latex": "x = 2",
+              "loai": "NGHIEM"
+            },
+            {
+              "dong": 1,
+              "latex": "x = 3",
+              "loai": "NGHIEM"
+            }
+          ]
+        },
+        {
+          "ma_buoc": "B.DH.XETDAU",
+          "bang": {
+            "loai_bang": "XET_DAU",
+            "cac_o": [
+              {
+                "hang": "X",
+                "k": 0,
+                "gia_tri": "2"
+              },
+              {
+                "hang": "X",
+                "k": 1,
+                "gia_tri": "3"
+              },
+              {
+                "hang": "DAU_YPHAY",
+                "k": 0,
+                "gia_tri": "+"
+              },
+              {
+                "hang": "DAU_YPHAY",
+                "k": 2,
+                "gia_tri": "-"
+              },
+              {
+                "hang": "DAU_YPHAY",
+                "k": 4,
+                "gia_tri": "+"
+              },
+              {
+                "hang": "DAU_YPHAY",
+                "k": 1,
+                "gia_tri": "0"
+              },
+              {
+                "hang": "DAU_YPHAY",
+                "k": 3,
+                "gia_tri": "0"
+              },
+              {
+                "hang": "BIEN_THIEN",
+                "k": 0,
+                "gia_tri": "TANG"
+              },
+              {
+                "hang": "BIEN_THIEN",
+                "k": 2,
+                "gia_tri": "GIAM"
+              },
+              {
+                "hang": "BIEN_THIEN",
+                "k": 4,
+                "gia_tri": "TANG"
+              }
+            ]
+          }
+        },
+        {
+          "ma_buoc": "B.DH.KETLUAN",
+          "khai_bao": [
+            "dong_bien",
+            "nghich_bien",
+            "cuc_dai",
+            "cuc_tieu"
+          ],
+          "cac_dong": [
+            {
+              "dong": 0,
+              "latex": "đồng biến trên (-oo; 2) và (3; +oo)"
+            },
+            {
+              "dong": 1,
+              "latex": "nghịch biến trên (2; 3)"
+            },
+            {
+              "dong": 2,
+              "latex": "cực đại tại x = 2, y = 4"
+            },
+            {
+              "dong": 3,
+              "latex": "cực tiểu tại x = 3, y = 3"
+            }
+          ]
+        }
+      ]
+    },
+    "ket_qua": "DAT"
+  },
+  {
+    "ma": "NT-DH12-VDC-07",
+    "loai": "SAI",
+    "payload": {
+      "ham": "2*x**3-15*x**2+36*x-24",
+      "nop_toi": "B.DH.KETLUAN",
+      "cac_buoc": [
+        {
+          "ma_buoc": "B.DH.TXD",
+          "cac_dong": [
+            {
+              "dong": 0,
+              "latex": "R"
+            }
+          ]
+        },
+        {
+          "ma_buoc": "B.DH.DAOHAM",
+          "cac_dong": [
+            {
+              "dong": 0,
+              "latex": "(6*x**2 - 30*x + 36)+1"
+            }
+          ]
+        },
+        {
+          "ma_buoc": "B.DH.NGHIEM",
+          "cac_dong": [
+            {
+              "dong": 0,
+              "latex": "x = 2",
+              "loai": "NGHIEM"
+            },
+            {
+              "dong": 1,
+              "latex": "x = 3",
+              "loai": "NGHIEM"
+            }
+          ]
+        },
+        {
+          "ma_buoc": "B.DH.XETDAU",
+          "bang": {
+            "loai_bang": "XET_DAU",
+            "cac_o": [
+              {
+                "hang": "X",
+                "k": 0,
+                "gia_tri": "2"
+              },
+              {
+                "hang": "X",
+                "k": 1,
+                "gia_tri": "3"
+              },
+              {
+                "hang": "DAU_YPHAY",
+                "k": 0,
+                "gia_tri": "+"
+              },
+              {
+                "hang": "DAU_YPHAY",
+                "k": 2,
+                "gia_tri": "-"
+              },
+              {
+                "hang": "DAU_YPHAY",
+                "k": 4,
+                "gia_tri": "+"
+              },
+              {
+                "hang": "DAU_YPHAY",
+                "k": 1,
+                "gia_tri": "0"
+              },
+              {
+                "hang": "DAU_YPHAY",
+                "k": 3,
+                "gia_tri": "0"
+              },
+              {
+                "hang": "BIEN_THIEN",
+                "k": 0,
+                "gia_tri": "TANG"
+              },
+              {
+                "hang": "BIEN_THIEN",
+                "k": 2,
+                "gia_tri": "GIAM"
+              },
+              {
+                "hang": "BIEN_THIEN",
+                "k": 4,
+                "gia_tri": "TANG"
+              }
+            ]
+          }
+        },
+        {
+          "ma_buoc": "B.DH.KETLUAN",
+          "khai_bao": [
+            "dong_bien",
+            "nghich_bien",
+            "cuc_dai",
+            "cuc_tieu"
+          ],
+          "cac_dong": [
+            {
+              "dong": 0,
+              "latex": "đồng biến trên (-oo; 2) và (3; +oo)"
+            },
+            {
+              "dong": 1,
+              "latex": "nghịch biến trên (2; 3)"
+            },
+            {
+              "dong": 2,
+              "latex": "cực đại tại x = 2, y = 4"
+            },
+            {
+              "dong": 3,
+              "latex": "cực tiểu tại x = 3, y = 3"
+            }
+          ]
+        }
+      ]
+    },
+    "ket_qua": "SAI"
+  },
+  {
+    "ma": "NT-DH12-VDC-07",
+    "loai": "CAN_DUYET",
+    "payload": {
+      "ham": "2*x**3-15*x**2+36*x-24",
+      "nop_toi": "B.DH.KETLUAN",
+      "cac_buoc": [
+        {
+          "ma_buoc": "B.DH.TXD",
+          "cac_dong": [
+            {
+              "dong": 0,
+              "latex": "R"
+            }
+          ]
+        },
+        {
+          "ma_buoc": "B.DH.DAOHAM",
+          "cac_dong": [
+            {
+              "dong": 0,
+              "latex": "?"
+            }
+          ]
+        },
+        {
+          "ma_buoc": "B.DH.NGHIEM",
+          "cac_dong": [
+            {
+              "dong": 0,
+              "latex": "x = 2",
+              "loai": "NGHIEM"
+            },
+            {
+              "dong": 1,
+              "latex": "x = 3",
+              "loai": "NGHIEM"
+            }
+          ]
+        },
+        {
+          "ma_buoc": "B.DH.XETDAU",
+          "bang": {
+            "loai_bang": "XET_DAU",
+            "cac_o": [
+              {
+                "hang": "X",
+                "k": 0,
+                "gia_tri": "2"
+              },
+              {
+                "hang": "X",
+                "k": 1,
+                "gia_tri": "3"
+              },
+              {
+                "hang": "DAU_YPHAY",
+                "k": 0,
+                "gia_tri": "+"
+              },
+              {
+                "hang": "DAU_YPHAY",
+                "k": 2,
+                "gia_tri": "-"
+              },
+              {
+                "hang": "DAU_YPHAY",
+                "k": 4,
+                "gia_tri": "+"
+              },
+              {
+                "hang": "DAU_YPHAY",
+                "k": 1,
+                "gia_tri": "0"
+              },
+              {
+                "hang": "DAU_YPHAY",
+                "k": 3,
+                "gia_tri": "0"
+              },
+              {
+                "hang": "BIEN_THIEN",
+                "k": 0,
+                "gia_tri": "TANG"
+              },
+              {
+                "hang": "BIEN_THIEN",
+                "k": 2,
+                "gia_tri": "GIAM"
+              },
+              {
+                "hang": "BIEN_THIEN",
+                "k": 4,
+                "gia_tri": "TANG"
+              }
+            ]
+          }
+        },
+        {
+          "ma_buoc": "B.DH.KETLUAN",
+          "khai_bao": [
+            "dong_bien",
+            "nghich_bien",
+            "cuc_dai",
+            "cuc_tieu"
+          ],
+          "cac_dong": [
+            {
+              "dong": 0,
+              "latex": "đồng biến trên (-oo; 2) và (3; +oo)"
+            },
+            {
+              "dong": 1,
+              "latex": "nghịch biến trên (2; 3)"
+            },
+            {
+              "dong": 2,
+              "latex": "cực đại tại x = 2, y = 4"
+            },
+            {
+              "dong": 3,
+              "latex": "cực tiểu tại x = 3, y = 3"
+            }
+          ]
+        }
+      ]
+    },
+    "ket_qua": "KHONG_KIEM_DUOC"
+  },
+  {
+    "ma": "NT-DH12-VDC-08",
+    "loai": "DUNG",
+    "payload": {
+      "ham": "-x**4+18*x**2-24",
+      "nop_toi": "B.DH.KETLUAN",
+      "cac_buoc": [
+        {
+          "ma_buoc": "B.DH.TXD",
+          "cac_dong": [
+            {
+              "dong": 0,
+              "latex": "R"
+            }
+          ]
+        },
+        {
+          "ma_buoc": "B.DH.DAOHAM",
+          "cac_dong": [
+            {
+              "dong": 0,
+              "latex": "4*x*(9 - x**2)"
+            }
+          ]
+        },
+        {
+          "ma_buoc": "B.DH.NGHIEM",
+          "cac_dong": [
+            {
+              "dong": 0,
+              "latex": "x = -3",
+              "loai": "NGHIEM"
+            },
+            {
+              "dong": 1,
+              "latex": "x = 0",
+              "loai": "NGHIEM"
+            },
+            {
+              "dong": 2,
+              "latex": "x = 3",
+              "loai": "NGHIEM"
+            }
+          ]
+        },
+        {
+          "ma_buoc": "B.DH.XETDAU",
+          "bang": {
+            "loai_bang": "XET_DAU",
+            "cac_o": [
+              {
+                "hang": "X",
+                "k": 0,
+                "gia_tri": "-3"
+              },
+              {
+                "hang": "X",
+                "k": 1,
+                "gia_tri": "0"
+              },
+              {
+                "hang": "X",
+                "k": 2,
+                "gia_tri": "3"
+              },
+              {
+                "hang": "DAU_YPHAY",
+                "k": 0,
+                "gia_tri": "+"
+              },
+              {
+                "hang": "DAU_YPHAY",
+                "k": 2,
+                "gia_tri": "-"
+              },
+              {
+                "hang": "DAU_YPHAY",
+                "k": 4,
+                "gia_tri": "+"
+              },
+              {
+                "hang": "DAU_YPHAY",
+                "k": 6,
+                "gia_tri": "-"
+              },
+              {
+                "hang": "DAU_YPHAY",
+                "k": 1,
+                "gia_tri": "0"
+              },
+              {
+                "hang": "DAU_YPHAY",
+                "k": 3,
+                "gia_tri": "0"
+              },
+              {
+                "hang": "DAU_YPHAY",
+                "k": 5,
+                "gia_tri": "0"
+              },
+              {
+                "hang": "BIEN_THIEN",
+                "k": 0,
+                "gia_tri": "TANG"
+              },
+              {
+                "hang": "BIEN_THIEN",
+                "k": 2,
+                "gia_tri": "GIAM"
+              },
+              {
+                "hang": "BIEN_THIEN",
+                "k": 4,
+                "gia_tri": "TANG"
+              },
+              {
+                "hang": "BIEN_THIEN",
+                "k": 6,
+                "gia_tri": "GIAM"
+              }
+            ]
+          }
+        },
+        {
+          "ma_buoc": "B.DH.KETLUAN",
+          "khai_bao": [
+            "dong_bien",
+            "nghich_bien",
+            "cuc_dai",
+            "cuc_tieu"
+          ],
+          "cac_dong": [
+            {
+              "dong": 0,
+              "latex": "đồng biến trên (-oo; -3) và (0; 3)"
+            },
+            {
+              "dong": 1,
+              "latex": "nghịch biến trên (-3; 0) và (3; +oo)"
+            },
+            {
+              "dong": 2,
+              "latex": "cực đại tại x = -3, y = 57; x = 3, y = 57"
+            },
+            {
+              "dong": 3,
+              "latex": "cực tiểu tại x = 0, y = -24"
+            }
+          ]
+        }
+      ]
+    },
+    "ket_qua": "DAT"
+  },
+  {
+    "ma": "NT-DH12-VDC-08",
+    "loai": "SAI",
+    "payload": {
+      "ham": "-x**4+18*x**2-24",
+      "nop_toi": "B.DH.KETLUAN",
+      "cac_buoc": [
+        {
+          "ma_buoc": "B.DH.TXD",
+          "cac_dong": [
+            {
+              "dong": 0,
+              "latex": "R"
+            }
+          ]
+        },
+        {
+          "ma_buoc": "B.DH.DAOHAM",
+          "cac_dong": [
+            {
+              "dong": 0,
+              "latex": "(4*x*(9 - x**2))+1"
+            }
+          ]
+        },
+        {
+          "ma_buoc": "B.DH.NGHIEM",
+          "cac_dong": [
+            {
+              "dong": 0,
+              "latex": "x = -3",
+              "loai": "NGHIEM"
+            },
+            {
+              "dong": 1,
+              "latex": "x = 0",
+              "loai": "NGHIEM"
+            },
+            {
+              "dong": 2,
+              "latex": "x = 3",
+              "loai": "NGHIEM"
+            }
+          ]
+        },
+        {
+          "ma_buoc": "B.DH.XETDAU",
+          "bang": {
+            "loai_bang": "XET_DAU",
+            "cac_o": [
+              {
+                "hang": "X",
+                "k": 0,
+                "gia_tri": "-3"
+              },
+              {
+                "hang": "X",
+                "k": 1,
+                "gia_tri": "0"
+              },
+              {
+                "hang": "X",
+                "k": 2,
+                "gia_tri": "3"
+              },
+              {
+                "hang": "DAU_YPHAY",
+                "k": 0,
+                "gia_tri": "+"
+              },
+              {
+                "hang": "DAU_YPHAY",
+                "k": 2,
+                "gia_tri": "-"
+              },
+              {
+                "hang": "DAU_YPHAY",
+                "k": 4,
+                "gia_tri": "+"
+              },
+              {
+                "hang": "DAU_YPHAY",
+                "k": 6,
+                "gia_tri": "-"
+              },
+              {
+                "hang": "DAU_YPHAY",
+                "k": 1,
+                "gia_tri": "0"
+              },
+              {
+                "hang": "DAU_YPHAY",
+                "k": 3,
+                "gia_tri": "0"
+              },
+              {
+                "hang": "DAU_YPHAY",
+                "k": 5,
+                "gia_tri": "0"
+              },
+              {
+                "hang": "BIEN_THIEN",
+                "k": 0,
+                "gia_tri": "TANG"
+              },
+              {
+                "hang": "BIEN_THIEN",
+                "k": 2,
+                "gia_tri": "GIAM"
+              },
+              {
+                "hang": "BIEN_THIEN",
+                "k": 4,
+                "gia_tri": "TANG"
+              },
+              {
+                "hang": "BIEN_THIEN",
+                "k": 6,
+                "gia_tri": "GIAM"
+              }
+            ]
+          }
+        },
+        {
+          "ma_buoc": "B.DH.KETLUAN",
+          "khai_bao": [
+            "dong_bien",
+            "nghich_bien",
+            "cuc_dai",
+            "cuc_tieu"
+          ],
+          "cac_dong": [
+            {
+              "dong": 0,
+              "latex": "đồng biến trên (-oo; -3) và (0; 3)"
+            },
+            {
+              "dong": 1,
+              "latex": "nghịch biến trên (-3; 0) và (3; +oo)"
+            },
+            {
+              "dong": 2,
+              "latex": "cực đại tại x = -3, y = 57; x = 3, y = 57"
+            },
+            {
+              "dong": 3,
+              "latex": "cực tiểu tại x = 0, y = -24"
+            }
+          ]
+        }
+      ]
+    },
+    "ket_qua": "SAI"
+  },
+  {
+    "ma": "NT-DH12-VDC-08",
+    "loai": "CAN_DUYET",
+    "payload": {
+      "ham": "-x**4+18*x**2-24",
+      "nop_toi": "B.DH.KETLUAN",
+      "cac_buoc": [
+        {
+          "ma_buoc": "B.DH.TXD",
+          "cac_dong": [
+            {
+              "dong": 0,
+              "latex": "R"
+            }
+          ]
+        },
+        {
+          "ma_buoc": "B.DH.DAOHAM",
+          "cac_dong": [
+            {
+              "dong": 0,
+              "latex": "?"
+            }
+          ]
+        },
+        {
+          "ma_buoc": "B.DH.NGHIEM",
+          "cac_dong": [
+            {
+              "dong": 0,
+              "latex": "x = -3",
+              "loai": "NGHIEM"
+            },
+            {
+              "dong": 1,
+              "latex": "x = 0",
+              "loai": "NGHIEM"
+            },
+            {
+              "dong": 2,
+              "latex": "x = 3",
+              "loai": "NGHIEM"
+            }
+          ]
+        },
+        {
+          "ma_buoc": "B.DH.XETDAU",
+          "bang": {
+            "loai_bang": "XET_DAU",
+            "cac_o": [
+              {
+                "hang": "X",
+                "k": 0,
+                "gia_tri": "-3"
+              },
+              {
+                "hang": "X",
+                "k": 1,
+                "gia_tri": "0"
+              },
+              {
+                "hang": "X",
+                "k": 2,
+                "gia_tri": "3"
+              },
+              {
+                "hang": "DAU_YPHAY",
+                "k": 0,
+                "gia_tri": "+"
+              },
+              {
+                "hang": "DAU_YPHAY",
+                "k": 2,
+                "gia_tri": "-"
+              },
+              {
+                "hang": "DAU_YPHAY",
+                "k": 4,
+                "gia_tri": "+"
+              },
+              {
+                "hang": "DAU_YPHAY",
+                "k": 6,
+                "gia_tri": "-"
+              },
+              {
+                "hang": "DAU_YPHAY",
+                "k": 1,
+                "gia_tri": "0"
+              },
+              {
+                "hang": "DAU_YPHAY",
+                "k": 3,
+                "gia_tri": "0"
+              },
+              {
+                "hang": "DAU_YPHAY",
+                "k": 5,
+                "gia_tri": "0"
+              },
+              {
+                "hang": "BIEN_THIEN",
+                "k": 0,
+                "gia_tri": "TANG"
+              },
+              {
+                "hang": "BIEN_THIEN",
+                "k": 2,
+                "gia_tri": "GIAM"
+              },
+              {
+                "hang": "BIEN_THIEN",
+                "k": 4,
+                "gia_tri": "TANG"
+              },
+              {
+                "hang": "BIEN_THIEN",
+                "k": 6,
+                "gia_tri": "GIAM"
+              }
+            ]
+          }
+        },
+        {
+          "ma_buoc": "B.DH.KETLUAN",
+          "khai_bao": [
+            "dong_bien",
+            "nghich_bien",
+            "cuc_dai",
+            "cuc_tieu"
+          ],
+          "cac_dong": [
+            {
+              "dong": 0,
+              "latex": "đồng biến trên (-oo; -3) và (0; 3)"
+            },
+            {
+              "dong": 1,
+              "latex": "nghịch biến trên (-3; 0) và (3; +oo)"
+            },
+            {
+              "dong": 2,
+              "latex": "cực đại tại x = -3, y = 57; x = 3, y = 57"
+            },
+            {
+              "dong": 3,
+              "latex": "cực tiểu tại x = 0, y = -24"
+            }
+          ]
+        }
+      ]
+    },
+    "ket_qua": "KHONG_KIEM_DUOC"
+  }
+]

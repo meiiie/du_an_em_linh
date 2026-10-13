@@ -1,0 +1,282 @@
+[
+  {
+    "email": "tung.nguyen.thanh@thpt-nguyentrai.edu.vn",
+    "ten": "Nguyễn Thanh Tùng",
+    "vaiTro": "ADMIN",
+    "lop": []
+  },
+  {
+    "email": "huong.tran.thu@thpt-nguyentrai.edu.vn",
+    "ten": "Trần Thu Hương",
+    "vaiTro": "TEACHER",
+    "lop": [
+      "10A1"
+    ]
+  },
+  {
+    "email": "duy.le.van@thpt-nguyentrai.edu.vn",
+    "ten": "Lê Văn Duy",
+    "vaiTro": "TEACHER",
+    "lop": [
+      "11A2"
+    ]
+  },
+  {
+    "email": "lan.pham.ngoc@thpt-nguyentrai.edu.vn",
+    "ten": "Phạm Ngọc Lan",
+    "vaiTro": "TEACHER",
+    "lop": [
+      "12A3"
+    ]
+  },
+  {
+    "email": "duc.hoang.minh@thpt-nguyentrai.edu.vn",
+    "ten": "Hoàng Minh Đức",
+    "vaiTro": "TEACHER",
+    "lop": [
+      "10A1",
+      "11A2",
+      "12A3"
+    ]
+  },
+  {
+    "email": "an.nguyen.minh@thpt-nguyentrai.edu.vn",
+    "ten": "Nguyễn Minh An",
+    "vaiTro": "STUDENT",
+    "lop": [
+      "10A1"
+    ]
+  },
+  {
+    "email": "bao.tran.gia@thpt-nguyentrai.edu.vn",
+    "ten": "Trần Gia Bảo",
+    "vaiTro": "STUDENT",
+    "lop": [
+      "10A1"
+    ]
+  },
+  {
+    "email": "chau.le.ngoc@thpt-nguyentrai.edu.vn",
+    "ten": "Lê Ngọc Châu",
+    "vaiTro": "STUDENT",
+    "lop": [
+      "10A1"
+    ]
+  },
+  {
+    "email": "dung.pham.anh@thpt-nguyentrai.edu.vn",
+    "ten": "Phạm Anh Dũng",
+    "vaiTro": "STUDENT",
+    "lop": [
+      "10A1"
+    ]
+  },
+  {
+    "email": "giang.hoang.ha@thpt-nguyentrai.edu.vn",
+    "ten": "Hoàng Hà Giang",
+    "vaiTro": "STUDENT",
+    "lop": [
+      "10A1"
+    ]
+  },
+  {
+    "email": "hoa.dang.quynh@thpt-nguyentrai.edu.vn",
+    "ten": "Đặng Quỳnh Hoa",
+    "vaiTro": "STUDENT",
+    "lop": [
+      "10A1"
+    ]
+  },
+  {
+    "email": "huy.vu.duc@thpt-nguyentrai.edu.vn",
+    "ten": "Vũ Đức Huy",
+    "vaiTro": "STUDENT",
+    "lop": [
+      "10A1"
+    ]
+  },
+  {
+    "email": "linh.bui.khanh@thpt-nguyentrai.edu.vn",
+    "ten": "Bùi Khánh Linh",
+    "vaiTro": "STUDENT",
+    "lop": [
+      "10A1"
+    ]
+  },
+  {
+    "email": "minh.do.tuan@thpt-nguyentrai.edu.vn",
+    "ten": "Đỗ Tuấn Minh",
+    "vaiTro": "STUDENT",
+    "lop": [
+      "10A1"
+    ]
+  },
+  {
+    "email": "ngoc.ngo.bao@thpt-nguyentrai.edu.vn",
+    "ten": "Ngô Bảo Ngọc",
+    "vaiTro": "STUDENT",
+    "lop": [
+      "10A1"
+    ]
+  },
+  {
+    "email": "anh.nguyen.hai@thpt-nguyentrai.edu.vn",
+    "ten": "Nguyễn Hải Anh",
+    "vaiTro": "STUDENT",
+    "lop": [
+      "11A2"
+    ]
+  },
+  {
+    "email": "binh.tran.minh@thpt-nguyentrai.edu.vn",
+    "ten": "Trần Minh Bình",
+    "vaiTro": "STUDENT",
+    "lop": [
+      "11A2"
+    ]
+  },
+  {
+    "email": "chi.le.phuong@thpt-nguyentrai.edu.vn",
+    "ten": "Lê Phương Chi",
+    "vaiTro": "STUDENT",
+    "lop": [
+      "11A2"
+    ]
+  },
+  {
+    "email": "dat.pham.quang@thpt-nguyentrai.edu.vn",
+    "ten": "Phạm Quang Đạt",
+    "vaiTro": "STUDENT",
+    "lop": [
+      "11A2"
+    ]
+  },
+  {
+    "email": "ha.hoang.thu@thpt-nguyentrai.edu.vn",
+    "ten": "Hoàng Thu Hà",
+    "vaiTro": "STUDENT",
+    "lop": [
+      "11A2"
+    ]
+  },
+  {
+    "email": "han.dang.gia@thpt-nguyentrai.edu.vn",
+    "ten": "Đặng Gia Hân",
+    "vaiTro": "STUDENT",
+    "lop": [
+      "11A2"
+    ]
+  },
+  {
+    "email": "khang.vu.thanh@thpt-nguyentrai.edu.vn",
+    "ten": "Vũ Thành Khang",
+    "vaiTro": "STUDENT",
+    "lop": [
+      "11A2"
+    ]
+  },
+  {
+    "email": "my.bui.thao@thpt-nguyentrai.edu.vn",
+    "ten": "Bùi Thảo My",
+    "vaiTro": "STUDENT",
+    "lop": [
+      "11A2"
+    ]
+  },
+  {
+    "email": "quan.do.minh@thpt-nguyentrai.edu.vn",
+    "ten": "Đỗ Minh Quân",
+    "vaiTro": "STUDENT",
+    "lop": [
+      "11A2"
+    ]
+  },
+  {
+    "email": "vy.ngo.nhat@thpt-nguyentrai.edu.vn",
+    "ten": "Ngô Nhật Vy",
+    "vaiTro": "STUDENT",
+    "lop": [
+      "11A2"
+    ]
+  },
+  {
+    "email": "nam.nguyen.hoai@thpt-nguyentrai.edu.vn",
+    "ten": "Nguyễn Hoài Nam",
+    "vaiTro": "STUDENT",
+    "lop": [
+      "12A3"
+    ]
+  },
+  {
+    "email": "nhi.tran.bao@thpt-nguyentrai.edu.vn",
+    "ten": "Trần Bảo Nhi",
+    "vaiTro": "STUDENT",
+    "lop": [
+      "12A3"
+    ]
+  },
+  {
+    "email": "phuc.le.hong@thpt-nguyentrai.edu.vn",
+    "ten": "Lê Hồng Phúc",
+    "vaiTro": "STUDENT",
+    "lop": [
+      "12A3"
+    ]
+  },
+  {
+    "email": "son.pham.khanh@thpt-nguyentrai.edu.vn",
+    "ten": "Phạm Khánh Sơn",
+    "vaiTro": "STUDENT",
+    "lop": [
+      "12A3"
+    ]
+  },
+  {
+    "email": "tam.hoang.minh@thpt-nguyentrai.edu.vn",
+    "ten": "Hoàng Minh Tâm",
+    "vaiTro": "STUDENT",
+    "lop": [
+      "12A3"
+    ]
+  },
+  {
+    "email": "thao.dang.ngoc@thpt-nguyentrai.edu.vn",
+    "ten": "Đặng Ngọc Thảo",
+    "vaiTro": "STUDENT",
+    "lop": [
+      "12A3"
+    ]
+  },
+  {
+    "email": "thu.vu.anh@thpt-nguyentrai.edu.vn",
+    "ten": "Vũ Anh Thư",
+    "vaiTro": "STUDENT",
+    "lop": [
+      "12A3"
+    ]
+  },
+  {
+    "email": "viet.bui.quoc@thpt-nguyentrai.edu.vn",
+    "ten": "Bùi Quốc Việt",
+    "vaiTro": "STUDENT",
+    "lop": [
+      "12A3"
+    ]
+  },
+  {
+    "email": "yen.do.hai@thpt-nguyentrai.edu.vn",
+    "ten": "Đỗ Hải Yến",
+    "vaiTro": "STUDENT",
+    "lop": [
+      "12A3"
+    ]
+  },
+  {
+    "email": "vu.ngo.tuan@thpt-nguyentrai.edu.vn",
+    "ten": "Ngô Tuấn Vũ",
+    "vaiTro": "STUDENT",
+    "lop": [
+      "12A3"
+    ]
+  }
+]

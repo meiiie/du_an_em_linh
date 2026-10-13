@@ -2,7 +2,7 @@ package vn.hoctapcanman.core.classroom.infrastructure.seed;
 
 import java.time.Clock;
 import java.time.Instant;
-import java.util.List;
+import vn.hoctapcanman.core.shared.infrastructure.seed.TruongNguyenTrai;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Stream;
@@ -22,22 +22,12 @@ import vn.hoctapcanman.core.classroom.domain.repository.EnrollmentRepository;
 import vn.hoctapcanman.core.classroom.domain.repository.SchoolClassRepository;
 import vn.hoctapcanman.core.identity.application.port.UserDirectory;
 
-/**
- * Lớp «12A1 thử» của v0 cho dev / demo (spec P2, ADR 006): giáo viên thử dạy An, Bình, Chi; cài lớp mặc định. Chạy sau
- * {@code TaiKhoanThuSeeder} (tài khoản phải có trước), chỉ với profile {@code dev}, tạo phần còn thiếu, chạy lại không
- * nhân bản. Chỉ ghi danh tài khoản tổng hợp ({@code synthetic}); lớp trùng tên mà đã có thành viên thật thì không đụng
- * tới, để tài khoản thử có mật khẩu công khai không thành giáo viên của một lớp thật. Học sinh đã thuộc lớp khác thì bỏ
- * qua (mỗi học sinh một lớp).
- */
+/** Lớp hư cấu dev, định danh ổn định; không chạm lớp trùng tên hoặc có thành viên thật. */
 @Component
 @Profile("dev")
 @Order(2)
-public class LopThuSeeder implements ApplicationRunner {
-
-    static final String TEN_LOP = "12A1 thử";
-    static final String NAM_HOC = "2026-2027";
-    static final String GIAO_VIEN = "gv@demo.local";
-    static final List<String> HOC_SINH = List.of("hs.an@demo.local", "hs.binh@demo.local", "hs.chi@demo.local");
+public class LopNguyenTraiSeeder implements ApplicationRunner {
+    private static final org.slf4j.Logger LOG = org.slf4j.LoggerFactory.getLogger(LopNguyenTraiSeeder.class);
 
     private final SchoolClassRepository classes;
     private final EnrollmentRepository enrollments;
@@ -46,7 +36,7 @@ public class LopThuSeeder implements ApplicationRunner {
     private final UserDirectory users;
     private final Clock clock;
 
-    public LopThuSeeder(SchoolClassRepository classes, EnrollmentRepository enrollments, ClassSettingsRepository settings,
+    public LopNguyenTraiSeeder(SchoolClassRepository classes, EnrollmentRepository enrollments, ClassSettingsRepository settings,
             UserDirectory users, Clock clock) {
         this.classes = classes;
         this.enrollments = enrollments;
@@ -59,15 +49,22 @@ public class LopThuSeeder implements ApplicationRunner {
     @Transactional
     public void run(ApplicationArguments args) {
         Instant now = clock.instant();
-        Optional<SchoolClass> daCo = classes.findByNameAndSchoolYear(TEN_LOP, NAM_HOC);
-        if (daCo.isPresent() && coThanhVienThat(daCo.get().id())) {
-            return;
-        }
-        SchoolClass lop = daCo.orElseGet(() -> classes.save(SchoolClass.create(TEN_LOP, 12, NAM_HOC, now)));
-        ghiDanh(lop.id(), GIAO_VIEN, ClassRole.TEACHER, now);
-        HOC_SINH.forEach(email -> ghiDanh(lop.id(), email, ClassRole.STUDENT, now));
-        if (settings.findByClassId(lop.id()).isEmpty()) {
-            settings.save(ClassSettings.macDinh(lop.id(), now));
+        for (String ten : TruongNguyenTrai.LOP) {
+            ClassId expected = new ClassId(TruongNguyenTrai.id("lop:" + ten));
+            Optional<SchoolClass> daCo = classes.findByNameAndSchoolYear(ten, TruongNguyenTrai.NAM_HOC);
+            if (daCo.isPresent() && (!daCo.get().id().equals(expected) || coThanhVienThat(expected))) {
+                LOG.warn("Bỏ qua lớp trùng tên hoặc không còn là lớp tổng hợp.");
+                continue;
+            }
+            boolean coGiaoVien = TruongNguyenTrai.taiKhoan().stream()
+                .filter(tk -> tk.lop().contains(ten) && tk.vaiTro().equals("TEACHER"))
+                .anyMatch(tk -> users.findByEmail(tk.email()).filter(u -> u.synthetic() && u.role().equals("TEACHER")).isPresent());
+            if (!coGiaoVien) continue;
+            SchoolClass lop = daCo.orElseGet(() -> classes.save(new SchoolClass(expected, ten,
+                Integer.parseInt(ten.substring(0, 2)), TruongNguyenTrai.NAM_HOC, now)));
+            TruongNguyenTrai.taiKhoan().stream().filter(tk -> tk.lop().contains(ten))
+                .forEach(tk -> ghiDanh(lop.id(), tk.email(), ClassRole.valueOf(tk.vaiTro()), now));
+            if (settings.findByClassId(lop.id()).isEmpty()) settings.save(ClassSettings.macDinh(lop.id(), now));
         }
     }
 
@@ -78,7 +75,7 @@ public class LopThuSeeder implements ApplicationRunner {
     }
 
     private void ghiDanh(ClassId lop, String email, ClassRole role, Instant now) {
-        users.findByEmail(email).filter(UserDirectory.UserSummary::synthetic).ifPresent(user -> {
+        users.findByEmail(email).filter(u -> u.synthetic() && u.role().equals(role.name())).ifPresent(user -> {
             UUID id = user.id();
             boolean daGhiDanh = enrollments.find(lop, id).isPresent();
             boolean daHocLopKhac = role == ClassRole.STUDENT
