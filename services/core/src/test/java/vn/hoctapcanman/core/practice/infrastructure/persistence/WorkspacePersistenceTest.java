@@ -120,7 +120,7 @@ class WorkspacePersistenceTest {
         var membership = mock(ClassMembership.class);
         when(membership.lopHoc(student)).thenReturn(java.util.Optional.of(cl));
         var gate = mock(ContentWorkflow.class);
-        var mvc = MockMvcBuilders.standaloneSetup(new OfflineTutorController(new OfflineTutorService(store,membership,gate)))
+        var mvc = MockMvcBuilders.standaloneSetup(new OfflineTutorController(new OfflineTutorService(store,membership,gate,new vn.hoctapcanman.core.tutor.infrastructure.ai.OfflineHintModelAdapter(),new vn.hoctapcanman.core.tutor.application.service.TutorRateLimiter(java.time.Clock.systemUTC(),12,java.time.Duration.ofMinutes(10)))))
             .setControllerAdvice(new WorkspaceExceptionHandler())
             .setCustomArgumentResolvers(new AuthenticationPrincipalArgumentResolver()).build();
         var jwt = Jwt.withTokenValue("synthetic-token").header("alg","none").subject(student.toString()).build();

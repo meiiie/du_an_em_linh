@@ -6,6 +6,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 import vn.hoctapcanman.core.workspace.application.dto.WorkspaceDto.*;
 import vn.hoctapcanman.core.workspace.application.port.WorkspaceStore;
 import vn.hoctapcanman.core.workspace.application.exception.WorkspaceException;
@@ -301,14 +302,35 @@ import vn.hoctapcanman.core.workspace.application.exception.WorkspaceException;
             """).param("student",student).param("cl",cl).param("code",code).query(Integer.class).single()>0;
     }
 
+    @Transactional
     public Optional<TutorContext> tutorContext(UUID student,UUID cl,TutorRequest request) {
-        return db.sql("""
- SELECT p.id,p.code,p.statement_text,p.function_sympy,h.text FROM assignments a
+        Optional<TutorContext> context=db.sql("""
+ SELECT p.id,p.code,p.statement_text,p.function_sympy,h.text,t.description step_name FROM assignments a
  JOIN problems p ON p.id=a.problem_id JOIN problem_releases pr ON pr.problem_id=p.id AND pr.class_id=a.class_id
  JOIN hint_levels h ON h.problem_id=p.id AND h.step_code=:step AND h.level=:level
+ JOIN step_templates t ON t.step_code=h.step_code
  WHERE a.student_id=:student AND a.class_id=:cl AND p.code=:code AND a.status='DA_GIAO' AND a.mode='ON_TAP' AND pr.status='DA_PHAT_HANH'
  AND (a.due_at IS NULL OR a.due_at>now())
  LIMIT 1 FOR SHARE OF a
- """).param("student",student).param("cl",cl).param("code",request.maBai()).param("step",request.maBuoc()).param("level",request.cap()).query((r,n)->new TutorContext(UUID.fromString(r.getString("id")),r.getString("code"),r.getString("statement_text"),str(r,"function_sympy"),request.maBuoc(),r.getString("text"))).optional();
+ """).param("student",student).param("cl",cl).param("code",request.maBai()).param("step",request.maBuoc()).param("level",Math.clamp(request.cap(),1,3)).query((r,n)->new TutorContext(UUID.fromString(r.getString("id")),r.getString("code"),r.getString("statement_text"),str(r,"function_sympy"),request.maBuoc(),r.getString("text"),r.getString("step_name"),List.of(),List.of())).optional();
+        // Không đọc bảng solutions: chỉ đề, bảng đã khóa và bài làm của chính em, đúng phiên bản đề.
+        return context.map(c -> {
+            List<TutorFormula> formulas=db.sql("""
+                SELECT f.ordinal,f.code,f.title,f.latex,f.statement FROM formulas f
+                JOIN formula_sheets s ON s.id=f.formula_sheet_id
+                WHERE s.class_id=:cl AND s.status='KHOA'
+                AND s.version=(SELECT max(version) FROM formula_sheets WHERE class_id=:cl AND status='KHOA')
+                ORDER BY f.ordinal
+                """).param("cl",cl).query((r,n)->new TutorFormula(r.getInt("ordinal"),r.getString("code"),r.getString("title"),r.getString("latex"),r.getString("statement"))).list();
+            List<String> lines=db.sql("""
+                SELECT w.latex FROM submission_steps w WHERE w.submission_id=(
+                    SELECT s.id FROM submissions s JOIN problems p ON p.id=s.problem_id
+                    WHERE s.student_id=:student AND s.class_id=:cl AND s.problem_id=:problem
+                    AND s.content_version=p.content_version
+                    ORDER BY (s.status='DANG_LAM') DESC,s.started_at DESC,s.id LIMIT 1)
+                ORDER BY w.step_code,w.line_no
+                """).param("student",student).param("cl",cl).param("problem",c.problemId()).query(String.class).list();
+            return new TutorContext(c.problemId(),c.code(),c.statement(),c.function(),c.step(),c.hint(),c.stepName(),formulas,lines);
+        });
     }
 }

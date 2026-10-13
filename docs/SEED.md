@@ -181,3 +181,32 @@ SHA nền: `b3e678a30f4c494d00915bee8710dd31e0a1f800` (diff chưa commit).
 - Core không dùng socket: **262 tests passed** trong 48 lớp, 0 failure/error/skipped, exit 0. Dùng lệnh SEED3 ở trên với thêm `BankGradeTest`, cùng JDK, Maven offline và Mockito javaagent. Unit lọc ngân hàng loại bài khối 10/11 khỏi lớp 12; importer nhập lại không ghi lại bài. Unit lịch sử phát lại 390 lượt ôn: **227/95/68**, 322 lượt BKT, 160 trạng thái có lịch sử; bài kiểm tra được loại khỏi lịch sử.
 - Không chạy PostgreSQL/CAS HTTP: các số lượng CSDL và idempotency trên PostgreSQL chưa được xác minh trong phiên này. Test tích hợp opt-in đã cập nhật số lượng, bộ kiểm tra, tên kỹ năng/khối và giữ snapshot chạy lại.
 - Chỉ sửa phạm vi SEED4; không commit.
+
+## Gia sư AI (GLM)
+
+`POST /api/hs/gia-su` dùng GLM khi core nhận `GLM_API_KEY` không rỗng; không có khóa hoặc khóa chỉ có khoảng trắng thì giữ thang gợi ý `offline`. Chỉ dùng khóa **Z.ai Coding Plan trong môi trường dev và với dữ liệu tổng hợp**. Không dùng khóa này cho học sinh thật hoặc triển khai production. Cấp khóa từ môi trường chạy, không ghi vào repo, frontend, image hay log.
+
+Cấu hình trong `application.yaml` dưới `mathl.gia-su.*`:
+
+| Biến môi trường | Mặc định | Ý nghĩa |
+| --- | --- | --- |
+| `GLM_API_KEY` | Rỗng | Khóa Bearer phía core; rỗng là offline |
+| `GLM_BASE_URL` | `https://api.z.ai/api/coding/paas/v4` | URL gốc; core thêm `/chat/completions`; rỗng dùng mặc định |
+| `GLM_MODEL` | `glm-5.3` | Rỗng dùng mặc định |
+| `GLM_TIMEOUT` | `20s` | Ngân sách toàn lời gọi GLM, kể cả chờ gửi lại |
+| `GLM_MAX_TOKENS` | `350` | Trần đầu ra, cho phép giảm xuống 1–350 |
+| `GLM_RATE_LIMIT_REQUESTS` | `12` | Lượt tối đa mỗi học sinh trong cửa sổ trượt |
+| `GLM_RATE_LIMIT_WINDOW` | `10m` | Độ dài cửa sổ, ví dụ `10m` hoặc `PT10M` |
+
+Compose truyền khóa, URL, model, timeout và giới hạn từ môi trường host. Sau khi thay cấu hình, tạo lại core. Giới hạn dùng bộ nhớ của một tiến trình, đặt lại khi core khởi động; mỗi replica có bộ đếm riêng. Vượt giới hạn trả HTTP 429 bằng tiếng Việt **trước SSE**. Kiểm tra quyền/bài kiểm tra/hết hạn trước khi tiêu thụ lượt.
+
+Mô hình nhận đề, bước, cấp 1–3, câu hỏi, dòng em đã nộp, bảng công thức đã khóa và gợi ý thang; không nhận lời giải chuẩn hoặc dữ kiện bảo vệ. Tắt thinking và không stream token. Bản nháp đi qua `/v1/filter` rồi cổng `kiem_loi_giang`. Lỗi nhà, hết giờ hoặc bản nháp bị chặn thì lấy thang dự phòng qua cùng cổng; cổng vẫn lỗi thì chỉ hiện câu cố định không chứa toán. Xin đáp án hoặc đổi vai được từ chối bằng luật, không gọi mô hình. Chỉ gửi lại tối đa một lần với 429/500/502/503/504, tôn trọng `Retry-After`; không đổi nhà.
+
+Eval cần Node 22, core/CAS đang chạy và học sinh tổng hợp có bài ôn đạo hàm lẫn bài kiểm tra còn hạn. Cấp `CORE_URL`, `MATHL_EVAL_EMAIL`, `MATHL_EVAL_PASSWORD`, `GLM_API_KEY` từ môi trường, rồi chạy:
+
+```bash
+node scripts/eval-gia-su.mjs --out /tmp/mathl-gia-su-glm.json
+node --test scripts/eval-gia-su.test.mjs
+```
+
+Không có khóa: in `bỏ qua: thiếu GLM_API_KEY`, thoát 0. Bộ 24 ca kiểm HTTP, thứ tự SSE, lời kết thúc, lộ đáp án theo dữ liệu seed/heuristic và độ trễ; JSON chỉ chứa tên ca và số đo, không chứa chat/tài khoản/khóa. Giãn mặc định 51 giây/lượt để không chạm 12 lượt/10 phút, mất khoảng 20 phút; script gia hạn phiên đăng nhập. Dùng tài khoản riêng, không đồng thời hỏi trên UI. Muốn chạy nhanh trong dev, nâng `GLM_RATE_LIMIT_REQUESTS` hoặc giảm `GLM_RATE_LIMIT_WINDOW` **giống nhau ở core và script**, rồi khởi động lại core. Thiếu bài phù hợp hoặc SSE `loi` làm ca trượt; kiểm lộ là phép dò cơ học, không thay eval sư phạm hay CAS. Chưa có số đo GLM thật trong sandbox của phiên hiện thực này.

@@ -75,6 +75,18 @@ public final class WorkspaceDto {
     public record TutorEvent(String status,String message) {
     }
 
-    public record TutorContext(UUID problemId,String code,String statement,String function,String step,String hint) {
+    public record TutorFormula(int number,String code,String title,String latex,String statement) {
+    }
+
+    public record TutorContext(UUID problemId,String code,String statement,String function,String step,String hint,
+        String stepName,List<TutorFormula> formulas,List<String> submittedLines) {
+        public TutorContext {
+            formulas=List.copyOf(formulas);
+            submittedLines=List.copyOf(submittedLines);
+        }
+        public TutorContext(UUID problemId,String code,String statement,String function,String step,String hint) {
+            this(problemId,code,statement,function,step,hint,step,List.of(),List.of());
+        }
+        @Override public String toString() { return "TutorContext[đã ẩn nội dung]"; }
     }
 }

@@ -62,3 +62,14 @@ app:
     login-failure-cleanup-cron: "0 27 3 * * *" # dọn lần đăng nhập sai quá một ngày (F-10)
   practice:
     nguong-doan-mo: 4 # một ô bị đổi từ chừng này lần thì nghi đoán mò (v0: nguong_doan_mo_so_lan_doi_o, data/v0/bkt.json)
+
+mathl:
+  gia-su:
+    api-key: ${GLM_API_KEY:} # Trống hoặc chỉ khoảng trắng: dùng thang offline qua cổng toán.
+    base-url: ${GLM_BASE_URL:https://api.z.ai/api/coding/paas/v4}
+    model: ${GLM_MODEL:glm-5.3}
+    timeout: ${GLM_TIMEOUT:20s}
+    max-tokens: ${GLM_MAX_TOKENS:350}
+    rate-limit:
+      requests: ${GLM_RATE_LIMIT_REQUESTS:12}
+      window: ${GLM_RATE_LIMIT_WINDOW:10m}

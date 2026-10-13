@@ -48,6 +48,12 @@ services:
       # Trống: core dùng khóa tạm, token mất hiệu lực mỗi lần khởi động lại (đủ cho chạy thử).
       APP_IDENTITY_JWT_SECRET: ${APP_IDENTITY_JWT_SECRET:-}
       APP_MATH_BASE_URL: http://math:8000
+      GLM_API_KEY: ${GLM_API_KEY:-}
+      GLM_BASE_URL: ${GLM_BASE_URL:-}
+      GLM_MODEL: ${GLM_MODEL:-}
+      GLM_TIMEOUT: ${GLM_TIMEOUT:-20s}
+      GLM_RATE_LIMIT_REQUESTS: ${GLM_RATE_LIMIT_REQUESTS:-12}
+      GLM_RATE_LIMIT_WINDOW: ${GLM_RATE_LIMIT_WINDOW:-10m}
       # Gia sư mặc định offline; bí mật không nằm trong frontend hoặc image.
       LLM_BASE_URL: ${LLM_BASE_URL:-https://api.openai.com/v1}
       LLM_API_KEY: ${LLM_API_KEY:-}

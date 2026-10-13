@@ -194,22 +194,32 @@ import vn.hoctapcanman.core.shared.infrastructure.math.*;
     }
 
     public boolean filter(UUID classId,UUID problemId,String draft,String question) {
+        return filter(classId,problemId,draft,question,List.of());
+    }
+
+    public boolean filter(UUID classId,UUID problemId,String draft,String question,List<String> submittedLines) {
+        return sanitize(classId,problemId,draft,question,submittedLines).filter(draft::equals).isPresent();
+    }
+
+    /** ADR 013 §4: câu bị cổng bỏ được rút khỏi lời gia sư (và vào hàng duyệt); phần còn lại đã kiểm mới được trả. */
+    public Optional<String> sanitize(UUID classId,UUID problemId,String draft,String question,List<String> submittedLines) {
         try {
             var solution=solutions.findByProblemId(problemId);
-            if(solution.isEmpty())return false;
+            if(solution.isEmpty())return Optional.empty();
             Object facts=JSON.readValue(solution.get().protectedFactsJson(),Object.class);
-            if(!(facts instanceof List<?> protectedFacts)||protectedFacts.isEmpty())return false;
+            if(!(facts instanceof List<?> protectedFacts)||protectedFacts.isEmpty())return Optional.empty();
             var result=math.call(MathJob.FILTER,Map.of("ban_nhap",draft,"su_kien",facts,"cau_hs",question));
-            if(!(result instanceof MathResult.Ok ok)||!Boolean.TRUE.equals(ok.body().get("cho_phep"))||!Boolean.FALSE.equals(ok.body().get("loi")))return false;
+            if(!(result instanceof MathResult.Ok ok)||!Boolean.TRUE.equals(ok.body().get("cho_phep"))||!Boolean.FALSE.equals(ok.body().get("loi")))return Optional.empty();
             List<Map<String,Object>> formulas=sheets.findCurrent(classId).map(s->s.rows().stream().map(f->Map.<String,Object>of("id",f.code(),"latex",f.latex(),"phat_bieu",f.statement(),"trich_dan",Map.of("tai_lieu",Objects.toString(f.citationPassageId(),"")))).toList()).orElse(List.of());
             String function=problems.findById(problemId).map(p->Objects.requireNonNullElse(p.functionSympy(),"")).orElse("");
-            var gate=math.call(MathJob.KIEM_LOI_GIANG,Map.of("cau",draft,"bang_cong_thuc",formulas,"ham",function,"bai_lam_hoc_sinh",List.of()));
-            boolean permitted=gate instanceof MathResult.Ok clean&&draft.equals(clean.body().get("cau_sach"))&&Boolean.FALSE.equals(clean.body().get("thay_bang_goi_y"));
-            if(!permitted)db.sql("INSERT INTO tutor_review_queue(id,class_id,problem_id,draft,reason,created_at) VALUES(:id,:cl,:problem,:draft,:reason,:now) ON CONFLICT(class_id,problem_id,draft) DO NOTHING").param("id",UUID.randomUUID()).param("cl",classId).param("problem",problemId).param("draft",draft).param("reason","Cổng công thức chưa xác minh được lời gợi ý; câu này chưa gửi cho học sinh.").param("now",java.sql.Timestamp.from(clock.instant())).update();
-            return permitted;
+            var gate=math.call(MathJob.KIEM_LOI_GIANG,Map.of("cau",draft,"bang_cong_thuc",formulas,"ham",function,"bai_lam_hoc_sinh",submittedLines));
+            String sach=gate instanceof MathResult.Ok clean&&Boolean.FALSE.equals(clean.body().get("thay_bang_goi_y"))&&clean.body().get("cau_sach") instanceof String c?c.strip():"";
+            if(!draft.equals(sach))db.sql("INSERT INTO tutor_review_queue(id,class_id,problem_id,draft,reason,created_at) VALUES(:id,:cl,:problem,:draft,:reason,:now) ON CONFLICT(class_id,problem_id,draft) DO NOTHING").param("id",UUID.randomUUID()).param("cl",classId).param("problem",problemId).param("draft",draft).param("reason","Cổng công thức chưa xác minh được lời gợi ý; câu này chưa gửi cho học sinh.").param("now",java.sql.Timestamp.from(clock.instant())).update();
+            if(sach.isBlank())return Optional.empty();
+            return Optional.of(Character.toUpperCase(sach.charAt(0))+sach.substring(1));
         }
         catch(RuntimeException ex) {
-            return false;
+            return Optional.empty();
         }
     }
 
