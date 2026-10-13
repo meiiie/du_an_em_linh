@@ -1,40 +1,46 @@
+import { DinhDangSo, ngayViet } from '../../shared/ui/dinh-dang';
+import { ApiLopHoc } from '../../api/lop-hoc';
 import { httpResource } from '@angular/common/http';
-import { Component, computed } from '@angular/core';
-import { API_HS, BaiCuaHocSinh, Muc4, TEN_MUC } from '../../api/hoc-sinh';
+import { Component, computed, inject, signal } from '@angular/core';
+import { API_HS, BaiCuaHocSinh } from '../../api/hoc-sinh';
+import { KhungCho, LoiTai, TrangRong } from '../../shared/ui/trang-thai';
 import { Button } from '../../shared/ui/button';
 import { HangBai } from './hang-bai';
+import { nhomBai, locTrangThai } from './nhom-bai';
 
-const THU_TU: readonly Muc4[] = ['NHAN_BIET', 'THONG_HIEU', 'VAN_DUNG', 'VAN_DUNG_CAO'];
-
-/** `/hs/bai`: mọi bài được giao (`GET /api/hs/bai`), nhóm theo bốn mức; mỗi hàng dẫn tới phiếu làm bài. */
+/** `/hs/bai`: mọi bài được giao (`GET /api/hs/bai`), nhóm theo bộ bài/chủ đề; mỗi hàng dẫn tới phiếu làm bài. */
 @Component({
   selector: 'app-de-bai',
-  imports: [Button, HangBai],
+  imports: [KhungCho, LoiTai, TrangRong, Button, HangBai, DinhDangSo],
   template: `
-    <header class="dau-trang"><h1>Đề bài</h1></header>
+    <header class="dau-trang"><h1>Đề bài</h1><p class="muted">Tìm bài được giao và lọc theo trạng thái để luyện tập.</p></header><div class="toolbar"><label>Tìm đề bài<input type="search" [value]="tim()" (input)="tim.set($any($event.target).value)" placeholder="Kỹ năng, mã bài, đề bài" /></label></div>
+    <div class="toolbar" role="group" aria-label="Lọc bài">@for(m of locs;track m.id){<button appButton variant="secondary" type="button" [attr.aria-pressed]="loc()===m.id" (click)="loc.set(m.id)">{{m.ten}}</button>}</div>
+    <div class="toolbar" role="group" aria-label="Lọc trạng thái">@for(m of trangThais;track m.id){<button appButton variant="secondary" type="button" [attr.aria-pressed]="trangThai()===m.id" (click)="trangThai.set(m.id)">{{m.ten}}</button>}</div>
+    @if(cheDo.error() && loc()!=='giao'){<app-loi-tai [loi]="cheDo.error()" (thuLai)="cheDo.reload()" />}
     @if (ds.isLoading() && !ds.hasValue()) {
-      <div class="dang-tai" aria-busy="true"><span class="sr-only">Đang tải đề bài</span></div>
+      <app-khung-cho nhan="Đang tải đề bài" />
     } @else if (ds.error()) {
-      <div class="trong" role="alert">
-        <p>Chưa tải được đề bài. Kiểm tra kết nối rồi thử lại.</p>
-        <button appButton variant="secondary" type="button" (click)="ds.reload()">Thử lại</button>
-      </div>
+      <app-loi-tai [loi]="ds.error()" (thuLai)="ds.reload()" />
     } @else if (!nhom().length) {
-      <div class="trong"><p>Chưa có bài. Bài thầy cô giao sẽ hiện ở đây.</p></div>
+      <app-trang-rong tieuDe="Chưa có bài phù hợp" moTa="Đổi từ khóa hoặc bộ lọc để tìm lại. Bài mới thầy cô giao sẽ hiện ở đây." />
     } @else {
-      @for (n of nhom(); track n.muc) {
-        <section [attr.aria-labelledby]="'muc-' + n.muc">
-          <h2 [id]="'muc-' + n.muc" class="nhan-muc">{{ n.ten }}</h2>
+      @for (n of nhom(); track n.id; let dau = $first) {
+        <details class="nhom-chu-de" [open]="dau">
+          <summary><span>{{ n.ten }}</span><span class="list-summary">{{n.hang.length | soViet}} bài · {{n.daNop | soViet}}/{{n.tong | soViet}} đã nộp · Hạn: {{ngay(n.han)}}</span></summary>
           <ul class="danh-sach">
             @for (h of n.hang; track h.bai.maBai) {
-              <li><app-hang-bai [bai]="h.bai" [so]="h.so" /></li>
+              <li><app-hang-bai [bai]="h.bai" [so]="h.so" [kiemTra]="laKiemTra(h.bai.maBai)" /></li>
             }
           </ul>
-        </section>
+        </details>
       }
     }
   `,
   styles: `
+    summary { min-height: 44px; padding: 8px 0; cursor: pointer; font-weight: 600; }
+    summary .list-summary { margin-inline-start: 16px; font-weight: 400; }
+    .nhom-chu-de { min-width: 0; }
+
     :host {
       display: grid;
       gap: var(--space-6);
@@ -65,13 +71,26 @@ const THU_TU: readonly Muc4[] = ['NHAN_BIET', 'THONG_HIEU', 'VAN_DUNG', 'VAN_DUN
   `,
 })
 export class DeBai {
+ private readonly api=inject(ApiLopHoc);
+
+  protected readonly ngay = ngayViet;
   protected readonly ds = httpResource<BaiCuaHocSinh[]>(() => API_HS.bai);
+  protected readonly cheDo=this.api.cheDo();
+  protected readonly laKiemTra = (ma: string) => this.cheDo.hasValue() && this.cheDo.value().find(m => m.id === ma)?.status === 'KIEM_TRA';
+  protected readonly loc=signal('giao');
+  protected readonly tim=signal('');
+  protected readonly trangThai=signal('tat-ca');
+  protected readonly trangThais=[{id:'tat-ca',ten:'Tất cả'},{id:'chua-lam',ten:'Chưa làm'},{id:'chua-dat',ten:'Chưa đạt'},{id:'dat',ten:'Đạt'}];
+  protected readonly locs=[{id:'giao',ten:'Được giao'},{id:'on',ten:'Ôn tập'},{id:'kiem',ten:'Kiểm tra'}];
   protected readonly nhom = computed(() => {
-    const bai = this.ds.value() ?? [];
-    return THU_TU.map((muc) => ({
-      muc,
-      ten: TEN_MUC[muc],
-      hang: bai.flatMap((b, i) => (b.muc4 === muc ? [{ bai: b, so: i + 1 }] : [])),
-    })).filter((n) => n.hang.length > 0);
+    const modes=this.cheDo.hasValue()?this.cheDo.value():[];
+    const q=this.tim().trim().toLocaleLowerCase('vi');
+    return nhomBai(this.ds.value() ?? []).map(n => ({
+      ...n, tong: n.hang.length,
+      hang: n.hang.filter(({bai:b}) =>
+        (b.maBai+' '+b.tenKyNang+' '+b.deBai+' '+n.ten).toLocaleLowerCase('vi').includes(q)
+        && locTrangThai(b,this.trangThai())
+        && (this.loc()==='giao'||(this.loc()==='kiem'?modes.find(m=>m.id===b.maBai)?.status==='KIEM_TRA':modes.find(m=>m.id===b.maBai)?.status==='ON_TAP'))),
+    })).filter(n => n.hang.length);
   });
 }

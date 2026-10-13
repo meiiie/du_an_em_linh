@@ -42,7 +42,8 @@ const daDat = (maBuoc: string, dong = [{ dong: 0, latex: '\\mathbb{R}' }]) => ({
 });
 
 describe('Luyen', () => {
-  async function mo(bai: ChiTietBai | { loi: number }, choOn = true) {
+  beforeEach(() => localStorage.clear());
+  async function mo(bai: ChiTietBai | { loi: number }, choOn = true, mode = 'ON_TAP') {
     TestBed.configureTestingModule({
       providers: [
         provideHttpClient(),
@@ -55,6 +56,7 @@ describe('Luyen', () => {
     fixture.componentRef.setInput('maBai', MA);
     fixture.detectChanges();
     const http = TestBed.inject(HttpTestingController);
+    http.expectOne('/api/hs/che-do').flush([{id:MA,title:MA,subtitle:'',status:mode,details:{dueAt:'2026-10-20T12:00:00Z'}}]);
     const yc = http.expectOne({ method: 'GET', url: API_HS.chiTietBai(MA) });
     if ('loi' in bai) yc.flush({ detail: 'x' }, { status: bai.loi, statusText: 'Lỗi' });
     else yc.flush(bai);
@@ -75,10 +77,56 @@ describe('Luyen', () => {
     /** `kiemTra` / `nopBai` tự `await` ngoài Angular: chờ thêm một vòng macrotask (AGENTS.md của frontend). */
     const xong = async () => {
       await new Promise((r) => setTimeout(r, 0));
+      TestBed.tick();
+      http.match('/api/hs/goi-bai').forEach(r=>r.flush([]));
       await fixture.whenStable();
     };
     return { fixture, http, el, $, chu, go, bam, xong };
   }
+
+  it('bài ôn không có bước vẫn mở gia sư', async () => {
+    const t = await mo(chiTiet({}, { cacBuoc: [], dangTraLoi: 'TU_LUAN' }));
+    expect(t.$('[data-testid="mo-gia-su"]')).not.toBeNull();
+    await t.bam('[data-testid="mo-gia-su"]');
+    expect(t.$('.tutor-panel')).not.toBeNull();
+  });
+
+  it('bài luyện trên giấy cho chọn bước gợi mở bằng tên tiếng Việt', async () => {
+    const t = await mo(chiTiet({}, { dangTraLoi: 'TU_LUAN', cacBuoc: [
+      {maBuoc:'B.L10.PHANTICH',ten:'B.L10.PHANTICH',viec:''},
+      {maBuoc:'B.L10.LAPLUAN',ten:'B.L10.LAPLUAN',viec:''},
+    ] }));
+    expect(t.chu('[aria-label="Các bước gợi mở"]')).toContain('Phân tích đề');
+    await t.bam('[aria-label="Các bước gợi mở"] button:nth-child(2)');
+    expect(t.$('[aria-label="Các bước gợi mở"] button:nth-child(2)')?.getAttribute('aria-pressed')).toBe('true');
+    expect(t.$('[data-testid="mo-gia-su"]')).not.toBeNull();
+  });
+
+  it('bài kiểm tra hiện banner và hạn kể cả khi không có bước', async () => {
+    const t = await mo(chiTiet({}, { cacBuoc: [] }), true, 'KIEM_TRA');
+    expect(t.chu('[data-testid="bang-kiem-tra"]')).toContain('Đang kiểm tra — gia sư tạm tắt');
+    expect(t.chu('[data-testid="bang-kiem-tra"]')).toContain('20/10');
+    expect(t.$<HTMLButtonElement>('[data-testid="mo-gia-su"]')?.disabled).toBe(true);
+  });
+
+  it('bài đã nộp không mở gia sư khi chưa có thao tác làm lại', async () => {
+    const t = await mo(chiTiet({ trangThai: 'DA_NOP' }), false);
+    TestBed.tick();
+    t.http.expectOne({ method: 'POST', url: API_HS.nopBai(MA) }).flush({ ketQua: 'DAT', mucHieu: [] });
+    t.http.match('/api/hs/goi-bai').forEach(r => r.flush([]));
+    await t.fixture.whenStable();
+    expect(t.$('[data-testid="mo-gia-su"]')).toBeNull();
+  });
+
+  it('nút gợi ý nằm trong đầu phiếu và mở cột gia sư trên desktop', async () => {
+    const t = await mo(chiTiet());
+    expect(t.$('[data-testid="mo-gia-su"]')?.closest('.de')).not.toBeNull();
+    await t.bam('[data-testid="mo-gia-su"]');
+    expect(t.$('.practice-grid')?.classList).toContain('co-gia-su');
+    expect(t.$('.tutor-panel')).not.toBeNull();
+    await t.bam('[aria-label="Đóng gia sư"]');
+    expect(t.$('.practice-grid')?.classList).not.toContain('co-gia-su');
+  });
 
   it('vào lại bài mở bước đầu chưa đạt; «Kiểm tra» gửi đúng bước, đạt thì sang bước kế và báo bước vừa đạt', async () => {
     const t = await mo(chiTiet({ cacBuoc: [daDat('B.DH.TXD')] }));
@@ -143,7 +191,7 @@ describe('Luyen', () => {
     await t.bam('[data-testid=nop-bai]');
     t.http.expectOne(API_HS.nopBai(MA)).flush({ ketQua: 'SAI', mucHieu: [{ kyNang: 'T12.DH.03', muc4Truoc: 'VAN_DUNG', muc4Sau: 'THONG_HIEU' }] });
     await t.xong();
-    expect(t.chu('[data-testid=da-nop] h2')).toBe('Đã nộp. Thầy cô sẽ xem các bước chưa đạt.');
+    expect(t.chu('[data-testid=da-nop] h3')).toBe('Đã nộp. Thầy cô sẽ xem các bước chưa đạt.');
     expect(t.chu('[data-testid=da-nop] .phu')).toBe('Mức hiểu Tính đơn điệu của hàm số: Vận dụng → Thông hiểu');
     expect(t.$('[data-testid=thanh-nop]')).toBeNull();
     expect(t.$('[data-testid=solve-screen]')!.getAttribute('data-da-nop')).toBe('true');
@@ -250,7 +298,7 @@ describe('Luyen', () => {
       loiGiai: 'Hàm số đồng biến trên (−∞; 0) và (4; +∞).',
     });
     await t.xong();
-    expect(t.chu('[data-testid=da-nop] h2')).toBe('Đã nộp. Bài đạt.');
+    expect(t.chu('[data-testid=da-nop] h3')).toBe('Đã nộp. Bài đạt.');
     expect(t.chu('[data-testid=da-nop] .phu')).toBe('Mức hiểu Tính đơn điệu của hàm số: Thông hiểu → Vận dụng');
     expect(t.chu('[data-testid=loi-giai-sau-nop] p:last-child')).toBe('Hàm số đồng biến trên (−∞; 0) và (4; +∞).');
   });
@@ -260,7 +308,7 @@ describe('Luyen', () => {
     TestBed.tick();
     t.http.expectOne({ method: 'POST', url: API_HS.nopBai(MA) }).flush(null, { status: 500, statusText: 'Lỗi' });
     await t.xong();
-    expect(t.chu('[data-testid=da-nop] h2')).toBe('Đã nộp. Bài đạt.');
+    expect(t.chu('[data-testid=da-nop] h3')).toBe('Đã nộp. Bài đạt.');
     await t.bam('[data-testid="step-B.DH.TXD"]');
     expect(t.chu('.tieu-de')).toBe('Bước 1/5 Tập xác định');
     expect(t.$('[data-testid="step-B.DH.TXD"]')!.getAttribute('aria-current')).toBe('step');
@@ -302,7 +350,7 @@ describe('Luyen', () => {
     yc.flush({ ketQua: 'DAT', mucHieu: [] });
     await t.xong();
     expect(t.$('input[data-testid=latex-db]')!.matches(':disabled')).toBe(true);
-    expect(t.chu('[data-testid=da-nop] h2')).toBe('Đã nộp. Bài đạt.');
+    expect(t.chu('[data-testid=da-nop] h3')).toBe('Đã nộp. Bài đạt.');
   });
 
   it('kết luận đã chấm mà một bước chưa gửi lần nào: chặn nộp, nói bước đó chưa kiểm tra (không nói «vừa sửa»)', async () => {

@@ -109,6 +109,6 @@ describe('Phien', () => {
   it('trang chủ theo vai trò', () => {
     expect(trangChuCua('STUDENT')).toBe('/hs');
     expect(trangChuCua('TEACHER')).toBe('/gv');
-    expect(trangChuCua('SCHOOL_ADMIN')).toBe('/gv');
+    expect(trangChuCua('SCHOOL_ADMIN')).toBe('/qt');
   });
 });

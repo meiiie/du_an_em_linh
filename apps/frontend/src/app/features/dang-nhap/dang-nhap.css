@@ -132,7 +132,7 @@ h1 {
   line-height: 24px;
   transition:
     border-color 150ms var(--ease),
-    box-shadow 150ms var(--ease);
+    border-color 150ms var(--ease);
 }
 
 .o-nhap:hover {
@@ -159,10 +159,6 @@ h1 {
   color: var(--mark);
   font-size: 14px;
   line-height: 20px;
-}
-
-.loi-dang-nhap .mono {
-  font-family: var(--font-mono);
 }
 
 .loi-truong {
@@ -219,26 +215,6 @@ h1 {
   gap: var(--space-3);
 }
 
-/* Hai tài khoản thử cạnh nhau như ảnh mô phỏng A / B. */
-.tai-khoan-thu {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--space-3);
-  width: 100%;
-  margin: var(--space-4) 0 0;
-  padding: 0;
-  list-style: none;
-}
-
-.tai-khoan-thu button {
-  font-weight: 500;
-}
-
-.tai-khoan-thu app-bieu-tuong {
-  inline-size: 18px;
-  block-size: 18px;
-}
-
 .chan {
   display: flex;
   flex-wrap: wrap;
@@ -250,3 +226,5 @@ h1 {
   line-height: 18px;
   text-align: center;
 }
+
+.huong-dan { margin: 8px 0 0; color: var(--muted); font-size: 14px; line-height: 24px; }

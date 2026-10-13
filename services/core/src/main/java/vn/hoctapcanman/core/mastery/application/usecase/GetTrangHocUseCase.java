@@ -39,21 +39,24 @@ public class GetTrangHocUseCase {
     public TrangHoc execute(UUID hocSinhId) {
         String ten = users.tenHienThi(hocSinhId).orElseThrow(() -> new IllegalStateException("Tài khoản của access token không còn"));
         BktConfig cfg = repo.config();
-        List<MasteryState> cuaEm = repo.statesOf(List.of(hocSinhId)).stream()
+        Map<String,Level4> overrides = repo.overridesOf(hocSinhId);
+        List<MasteryState> raw = new java.util.ArrayList<>(repo.statesOf(List.of(hocSinhId)));
+        for(String skill:overrides.keySet())if(raw.stream().noneMatch(s->s.skillCode().equals(skill)))raw.add(MasteryState.initial(hocSinhId,skill,cfg,java.time.Instant.EPOCH));
+        List<MasteryState> cuaEm = raw.stream()
             .sorted(Comparator.comparingDouble(MasteryState::mastery)
                 .thenComparing(Comparator.comparingInt(MasteryState::stuckCounter).reversed())
                 .thenComparing(MasteryState::skillCode))
             .toList();
         List<KyNang> danhMucCuaEm = danhMuc.cungChuDe(cuaEm.stream().map(MasteryState::skillCode).toList());
         Map<String, String> tenKyNang = danhMucCuaEm.stream().collect(Collectors.toMap(KyNang::ma, KyNang::ten));
-        Set<String> vdc = cuaEm.stream().filter(s -> s.level() == Level4.VAN_DUNG_CAO).map(MasteryState::skillCode)
+        Set<String> vdc = cuaEm.stream().filter(s -> overrides.getOrDefault(s.skillCode(),s.level()) == Level4.VAN_DUNG_CAO).map(MasteryState::skillCode)
             .collect(Collectors.toSet());
         List<String> chuDeXong = danhMucCuaEm.stream().filter(KyNang::cotLoi)
             .collect(Collectors.groupingBy(KyNang::chuDe, Collectors.mapping(KyNang::ma, Collectors.toSet())))
             .entrySet().stream().filter(e -> vdc.containsAll(e.getValue())).map(Map.Entry::getKey).sorted().toList();
         return new TrangHoc(ten,
             cuaEm.stream().map(s -> new TrangHoc.KyNangCuaEm(s.skillCode(), tenKyNang.getOrDefault(s.skillCode(), s.skillCode()),
-                s.level().name(), s.stuck(cfg))).toList(),
+                overrides.getOrDefault(s.skillCode(),s.level()).name(), s.stuck(cfg))).toList(),
             new TrangHoc.HoanThanh(vdc.stream().sorted().toList(), chuDeXong));
     }
 }

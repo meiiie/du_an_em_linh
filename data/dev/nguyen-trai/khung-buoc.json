@@ -1,0 +1,90 @@
+[
+  {
+    "maBuoc": "B.L10.PHANTICH",
+    "topicCode": "XS10",
+    "thuTu": 1,
+    "dangNhap": "DONG",
+    "skillCode": "T10.NT.XS.L",
+    "moTa": "Phân tích đề"
+  },
+  {
+    "maBuoc": "B.L10.LAPLUAN",
+    "topicCode": "XS10",
+    "thuTu": 2,
+    "dangNhap": "DONG",
+    "skillCode": "T10.NT.XS.L",
+    "moTa": "Lập luận"
+  },
+  {
+    "maBuoc": "B.L10.KETLUAN",
+    "topicCode": "XS10",
+    "thuTu": 3,
+    "dangNhap": "DONG",
+    "skillCode": "T10.NT.XS.L",
+    "moTa": "Kết luận"
+  },
+  {
+    "maBuoc": "B.L11.PHANTICH",
+    "topicCode": "LG11",
+    "thuTu": 1,
+    "dangNhap": "DONG",
+    "skillCode": "T11.NT.LG.L",
+    "moTa": "Phân tích đề"
+  },
+  {
+    "maBuoc": "B.L11.LAPLUAN",
+    "topicCode": "LG11",
+    "thuTu": 2,
+    "dangNhap": "DONG",
+    "skillCode": "T11.NT.LG.L",
+    "moTa": "Lập luận"
+  },
+  {
+    "maBuoc": "B.L11.KETLUAN",
+    "topicCode": "LG11",
+    "thuTu": 3,
+    "dangNhap": "DONG",
+    "skillCode": "T11.NT.LG.L",
+    "moTa": "Kết luận"
+  },
+  {
+    "maBuoc": "B.DH.TXD",
+    "topicCode": "DH12",
+    "thuTu": 1,
+    "dangNhap": "DONG",
+    "skillCode": "T12.NT.HS",
+    "moTa": "Tập xác định"
+  },
+  {
+    "maBuoc": "B.DH.DAOHAM",
+    "topicCode": "DH12",
+    "thuTu": 2,
+    "dangNhap": "DONG",
+    "skillCode": "T12.NT.HS",
+    "moTa": "Tính đạo hàm"
+  },
+  {
+    "maBuoc": "B.DH.NGHIEM",
+    "topicCode": "DH12",
+    "thuTu": 3,
+    "dangNhap": "DONG",
+    "skillCode": "T12.NT.HS",
+    "moTa": "Nghiệm y′ = 0 và điểm y′ không xác định"
+  },
+  {
+    "maBuoc": "B.DH.XETDAU",
+    "topicCode": "DH12",
+    "thuTu": 4,
+    "dangNhap": "BANG",
+    "skillCode": "T12.NT.HS",
+    "moTa": "Bảng xét dấu"
+  },
+  {
+    "maBuoc": "B.DH.KETLUAN",
+    "topicCode": "DH12",
+    "thuTu": 5,
+    "dangNhap": "DONG",
+    "skillCode": "T12.NT.HS",
+    "moTa": "Kết luận đơn điệu và cực trị"
+  }
+]

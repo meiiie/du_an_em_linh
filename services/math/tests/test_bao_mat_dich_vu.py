@@ -37,7 +37,7 @@ def test_khong_eval_exec(rel):
             assert not re.search(r"(?<![\w.])parse_expr\(", ma), f
 
 
-@pytest.mark.parametrize("rel", ["Dockerfile", "services/math/Dockerfile"])
+@pytest.mark.parametrize("rel", ["services/math/Dockerfile", "services/core/Dockerfile"])
 def test_container_khong_root(rel):
     dong = [d.strip() for d in open(os.path.join(REPO, rel), encoding="utf-8") if d.strip() and not d.strip().startswith("#")]
     users = [i for i, d in enumerate(dong) if d.upper().startswith("USER ")]

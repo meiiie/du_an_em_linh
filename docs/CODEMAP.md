@@ -24,66 +24,35 @@ Harness (Anthropic 2026): tệp này là mục lục để agent biết chỗ m�
 | `.coderabbit.yaml` | Review tự động theo vùng, bám hiến chương |
 | `.github/labels.json` + `scripts/github/sync-labels.mjs` | Bộ nhãn ưu tiên / trạng thái / vùng / lab |
 | `.github/rulesets/main-protection.json` | Ruleset bảo vệ `main` (ranh giới phía máy chủ) — áp dụng theo `docs/GITHUB.md` |
+| `specs/002-hoan-thien-v2/` | Epic tiếp nối: U0–U15, API và nghiệm thu, task T100+; không là báo cáo đã hoàn thành |
+| `docs/ASSUMPTIONS.md` | Mặc định phạm vi, giới hạn và việc chưa được yêu cầu |
+| `scripts/check-flat.mjs` + `.test.mjs` | Cổng FLAT, quét source frontend và báo tệp/dòng |
 | `docs/DESIGN.md` | Token, lưới, nút, tâm quang học (46% / 3:2) |
 | `docs/doi-chieu-thiet-ke.md` | Khớp / cố ý chưa làm |
 | `docs/adr/` | Quyết định đã khóa |
 | `docs/AI-HARNESS.md` | Nhà AI, loopback, không fallback; khóa OpenRouter / Z.AI |
 | `docs/chi-so-o-bang.md` | `k` 0-based vs YAML 1-based |
 | `data/supham/` | Ngân hàng sư phạm (JSON); `tai-lieu/`: tài liệu tự soạn của lab (bản vá `sp-tai-lieu-*`) |
-| `data/v0/` | Hằng nội dung của v0 (khung 5 bước, BKT, 3 tài liệu, bảng công thức) chép nguyên văn từ `apps/web/scripts/seed.ts` cho importer v2; nguồn và cách sinh: `data/v0/NGUON.md` |
-| `docker-compose.yml` | web :3000, math :8000, Postgres :5432 |
+| `data/v0/` | Hằng nội dung của v0 (khung 5 bước, BKT, 3 tài liệu, bảng công thức) snapshot nguyên văn từ seed v0 đã gỡ, giữ cho importer core; nguồn và cách sinh: `data/v0/NGUON.md` |
+| `docker-compose.yml` | Điểm vào mặc định, include `compose.v2.yaml`: frontend / core / math / PostgreSQL |
 | `compose.v2.yaml` | v2: PostgreSQL 18 (chỉ trong mạng compose), core :8080 (profile `dev`: tài khoản thử, lớp «12A1 thử», nội dung, giao bài thử bằng SQL), math :8000, frontend :4200 (nginx, `/api/` → core); chờ health từng dịch vụ |
 | `apps/frontend/Dockerfile` + `nginx/default.conf.template` | Build Angular trên Node 24 → nginx không root; header bảo mật, cache dài cho tệp có hash, định tuyến phía client |
-| `Dockerfile` / `render.yaml` | Deploy free một container trên Render |
+| `render.yaml` | Blueprint frontend / core / math riêng biệt và PostgreSQL; chưa triển khai production trong phiên này |
 | `CONTRIBUTING.md` | GitHub Flow: `main` + nhánh ngắn, không chồng PR |
 | `CHANGELOG.md` / `docs/PHIEN-BAN.md` | SemVer + Keep a Changelog + release-please |
 | `CODE_OF_CONDUCT.md` / `SUPPORT.md` | Community health (GitHub Insights) |
-| `release-please-config.json` | Một sản phẩm, extra-files web + math + CITATION |
-| `docs/TRIEN-KHAI.md` | Render, Neon, giữ thức |
+| `release-please-config.json` | Một sản phẩm, extra-files frontend + math + CITATION |
+| `docs/TRIEN-KHAI.md` | Compose demo, Blueprint v2, giới hạn triển khai |
 | `docs/KIEM-THU.md` | Số liệu lần dựng nguyên mẫu |
-| `.github/workflows/ci.yml` | job «Phân loại thay đổi» (`scripts/ci-thay-doi.mjs`, quét khóa, số phiên bản) chọn job theo đường dẫn: harness, core (Maven + image), frontend (build + Vitest), compose v2 (dựng cả hệ + `scripts/khoi-v2.sh` khi đổi core / frontend / v0), v0 (pytest, typecheck/lint/unit, Playwright e2e) |
+| `.github/workflows/ci.yml` | job «Phân loại thay đổi» (`scripts/ci-thay-doi.mjs`, quét khóa, số phiên bản) chọn job theo đường dẫn: harness, core (Maven + image), frontend (build + Vitest), compose v2 (dựng cả hệ + `scripts/khoi-v2.sh` khi đổi core / frontend / dữ liệu snapshot), math (pytest) |
 | `.github/workflows/phat-hanh.yml` | release-please trên `main` |
-| `.github/workflows/cd.yml` | Sau CI xanh → hook Render + ping trang chủ |
-| `.github/workflows/giu-thuc.yml` | Cron 10 phút ping `/api/suc-khoe` (chỉ chạy trên `main`) |
+| `.github/workflows/cd.yml` | CD khi chủ repo cấu hình hook frontend/core/math; xem giới hạn trong `docs/TRIEN-KHAI.md` |
+| `.github/workflows/giu-thuc.yml` | Cron ping URL health được cấu hình (chỉ chạy trên `main`) |
 | `.github/ISSUE_TEMPLATE/` / `PULL_REQUEST_TEMPLATE.md` | Mẫu issue / PR |
 | `.github/dependabot.yml` | npm, pip, GitHub Actions |
 | `.github/release.yml` | Nhóm ghi chú Release trên GitHub UI |
-| `scripts/kiem-phien-ban.mjs` | Một SemVer trên root / web / math / CITATION |
+| `scripts/kiem-phien-ban.mjs` | Một SemVer trên root / frontend / math / core / CITATION |
 | `docs/GITHUB.md` | Checklist Settings (mô tả, topic, bảo vệ `main`) |
-
-## apps/web
-
-Next.js 15. Server action nói chuyện với Postgres và `MATH_SERVICE_URL`.
-
-| Đường | Việc |
-| --- | --- |
-| `app/page.tsx` | Trang chủ công khai (SEO, JSON-LD, không DB) |
-| `app/not-found.tsx` | 404 noindex |
-| `public/favicon.ico` + `icon.svg` + PNG | Logo tab ổn định (không đặt ICO trong `app/` — xung đột Next) |
-| `public/llms.txt` / `public/.well-known/security.txt` | Máy AI / security.txt |
-| `lib/site.ts` | URL / tên / mô tả chuẩn hóa |
-| `app/sitemap.ts` / `robots.ts` / `manifest.ts` | SEO máy tìm kiếm |
-| `app/dang-nhap/page.tsx` + `components/login-form.tsx` | Đăng nhập 2 bước (noindex), tham chiếu Neko Đoàn |
-| `app/api/suc-khoe/route.ts` | GET JSON giữ thức Render — không đụng DB |
-| `app/hs/` | Học (phiếu + sổ), đề bài, lịch, phiếu 5 bước |
-| `app/gv/` | Lớp, duyệt, đề bài, tạo đề, tài liệu, công thức, gia sư, mức, cài lớp |
-| `app/hs/kho` | Kho kiến thức lớp (cùng nguồn gia sư đọc) |
-| `components/app-shell.tsx` | Ray mực 220 px / ngăn kéo |
-| `components/phieu-viec-tiep.tsx` / `so-nav.tsx` | Bài tiếp theo + tab sổ `/hs` |
-| `lib/de-hoc-sinh.ts` | KaTeX đề, tên kỹ năng ngắn, lời gợi |
-| `components/solve-client.tsx` | Phiếu 5 bước |
-| `components/tutor-panel.tsx` | Composer gia sư (44 px, Enter, nhà, liên kết kho) |
-| `components/kho-theo-buoc.tsx` | Bản đồ gia sư đọc theo 5 bước |
-| `components/ui/` | Nút, ô, tiêu đề, hàng việc |
-| `lib/actions/` | `hs`, `gv`, `auth` |
-| `lib/ai-catalog.ts` / `lib/ai-harness.ts` | Chọn nhà + một lần HTTP |
-| `lib/kien-thuc.ts` / `lib/kho-lop.ts` | Truy hồi kho lớp, số [n], nhớ id lượt trước, không lời giải |
-| `lib/openai-oauth.ts` | PKCE Sign in with ChatGPT (khi có client_id) |
-| `lib/db/schema.ts` | Drizzle |
-| `lib/tutor.ts` | Thang gợi ý; không đọc lời giải |
-| `lib/learning.ts` | BKT + gợi bài |
-| `scripts/migrate.ts`, `scripts/seed.ts` | Schema + dữ liệu thử |
-| `tests/e2e/luong-hoc-sinh.spec.ts` | 3 ca Playwright |
 
 ## services/math
 
@@ -91,7 +60,7 @@ Xem `services/math/AGENTS.md`. HTTP mỏng; CAS trong sandbox.
 
 ## apps/frontend
 
-Xem `apps/frontend/AGENTS.md`. Angular 22 zoneless; tính năng ở `src/app/features/`, nguyên thủy UI ở `src/app/shared/ui/`. Có `/dang-nhap` gọi `services/core`, khung `/hs`, `/gv` có guard vai trò; phiên ở `src/app/core/auth/` (#57).
+Xem `apps/frontend/AGENTS.md`. Angular 22 zoneless; tính năng ở `src/app/features/`, nguyên thủy UI ở `src/app/shared/ui/`. Có `/dang-nhap` gọi `services/core`, khung theo vai trò với guard; hợp đồng UX mới ở `docs/API_UX.md`; phiên ở `src/app/core/auth/` (#57).
 
 ## services/core
 
@@ -103,11 +72,11 @@ Xem `services/core/AGENTS.md`. Gói gốc `vn.hoctapcanman.core`; module nghiệ
 GV nạp tài liệu / công thức / bài
         → cổng 3 tầng (verify.py)
         → DA_PHAT_HANH | CHO_GIAO_VIEN_DUYET | BI_CHAN
-HS làm 5 bước (solve-client → grader)
-        → BKT (learning.ts)
-        → gia sư (tutor + harness + leakfilter)
+HS làm 5 bước (Angular → core practice → CAS)
+        → BKT (core mastery)
+        → gia sư (core tutor → lọc CAS)
 ```
 
 ## Cổng hợp đồng
 
-`POST` dịch vụ toán (xem `app/routers.py`): chấm bước, kiểm định, lọc, sinh biến thể, máy giải. Web không gọi SymPy trực tiếp.
+`POST` dịch vụ toán (xem `app/routers.py`): chấm bước, kiểm định, lọc, sinh biến thể, máy giải. Frontend không gọi SymPy trực tiếp; core dùng client dịch vụ toán.

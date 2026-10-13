@@ -1,5 +1,6 @@
 import { afterRenderEffect, booleanAttribute, Component, DestroyRef, ElementRef, inject, input, signal } from '@angular/core';
 import katex from 'katex';
+import { latexHienThi } from './bieu-thuc';
 
 /**
  * Công thức LaTeX vẽ bằng KaTeX (CSS nạp ở angular.json).
@@ -9,7 +10,7 @@ import katex from 'katex';
  *   gia sư.
  * - `khoi` là công thức riêng một dòng, căn trái (styles.css). Dòng dài thì cuộn ngang trong chính nó, không đẩy trang;
  *   khi đang cuộn, khung nhận Tab và có nhãn để cuộn được bằng bàn phím (WCAG 2.1.1).
- * - `bang` vẽ công thức khối trên tấm bảng tối kiểu 3b1b (`--board`, chữ `--board-ink`), như nhau ở cả hai chế độ;
+ * - `bang` vẽ công thức khối trên nền nhẹ (`--wash`, chữ `--ink`);
  *   cuộn ngang như `khoi`. Mặc định (không `bang`) vẫn là công thức trong dòng chữ.
  */
 @Component({
@@ -35,16 +36,13 @@ import katex from 'katex';
       overflow-y: hidden;
     }
 
-    /* Bảng luôn tối: chữ lỗi (--muted) và thanh cuộn lấy màu của bảng, không của trang sáng. */
     :host(.bang) {
-      --muted: color-mix(in srgb, var(--board-ink) 65%, var(--board));
-      padding: var(--space-4) var(--space-5);
-      border: 1px solid var(--board-line);
-      border-radius: var(--radius-card);
-      background: var(--board);
-      color: var(--board-ink);
-      font-size: 1.25rem;
-      color-scheme: dark;
+      padding: var(--space-3) var(--space-4);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--wash);
+      color: var(--ink);
+      font-size: 1.125rem;
     }
   `,
 })
@@ -60,7 +58,7 @@ export class Katex {
 
   constructor() {
     afterRenderEffect(() => {
-      katex.render(this.latex(), this.el.nativeElement, {
+      katex.render(latexHienThi(this.latex()), this.el.nativeElement, {
         throwOnError: false,
         errorColor: 'var(--muted)',
         displayMode: this.khoi() || this.bang(),

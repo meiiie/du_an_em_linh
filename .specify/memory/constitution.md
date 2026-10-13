@@ -20,7 +20,7 @@ Mỗi `plan.md` phải trả lời **CÓ** cho mọi dòng áp dụng; dòng kh�
 | III | Người học là trẻ vị thành niên | Không dữ liệu thật trong repo và test; xóa định danh trước khi gửi nhà cung cấp AI; học sinh biết đang học cùng AI; giáo viên ghi đè được phân loại; khóa chỉ ở biến môi trường? |
 | IV | Bằng chứng | Mỗi tiêu chí nghiệm thu có cách đo (lệnh, bộ ca, eval); quyết định khó đảo ngược có ADR? |
 | V | Tiếng Việt đúng lứa tuổi | Chữ giao diện tiếng Việt có dấu, đúng giọng người dùng, mỗi chữ một việc? |
-| VI | Ranh giới kiến trúc | Đúng dịch vụ và migration chỉ thêm? Theo vùng chạm tới — v0: `apps/web` không gọi SymPy trực tiếp, mọi việc CAS qua `services/math` (sandbox, ADR 002); v2 (ADR 011): `apps/frontend` không logic nghiệp vụ, `services/core` giữ trạng thái và quyền (ArchUnit xanh), Angular signal-first; mọi bản: `services/math` thuần hàm. Vùng không chạm ghi «Không áp dụng». |
+| VI | Ranh giới kiến trúc | Đúng dịch vụ và migration chỉ thêm? V2 hiện hành (ADR 011/016): `apps/frontend` không logic nghiệp vụ, `services/core` giữ trạng thái và quyền (ArchUnit xanh), Angular signal-first; mọi bản: `services/math` thuần hàm. Vùng không chạm ghi «Không áp dụng». |
 | VII | Thay đổi nhỏ | Chia thành nhiều PR một ý; không trừu tượng hóa suy đoán; giữ `data-testid` đã khóa? |
 | VIII | Truy cập được | WCAG 2.2 AA; mục tiêu chạm 44 px; kiểm ở 390 px và 1280 px? |
 
@@ -34,3 +34,9 @@ Vi phạm có chủ đích ghi vào mục «Complexity Tracking» của `plan.md
 - Tự commit của phần mở rộng git đang tắt (`.specify/extensions/git/git-config.yml`). Commit tay theo Conventional Commits, có trailer `Co-Authored-By`.
 
 **Version**: 1.0.0 | **Ratified**: khi PR khởi tạo Spec Kit được merge | **Last Amended**: 2026-10-01
+
+## Epic tiếp nối ngày 2026-10-13
+
+`specs/002-hoan-thien-v2/` tiếp nối 001 cho U0–U15; task T100+. FLAT theo ADR 014 thay mọi chỉ dẫn bóng/vạch trái trước đây; v0 đã gỡ theo ADR 016, snapshot giữ để import. V1–V10 bất biến, epic chỉ thêm V12+ còn trống và không dùng V11. Cổng hiện hành lấy từ `docs/HIEN-CHUONG.md` (cập nhật chỉ mục ngày 2026-10-13); không dùng lệnh web v0 trong hồ sơ cũ làm cổng v2.
+
+Codex được viết mã trong phạm vi được giao, lead review theo `docs/QUY-TRINH.md`. Phiên DOCS chỉ tài liệu, không commit/push, không đổi workflow hay bí mật; không sửa dữ liệu sư phạm/kiểm định nếu thiếu bản vá nguyên văn có mã.

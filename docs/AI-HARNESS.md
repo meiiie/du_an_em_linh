@@ -1,87 +1,43 @@
-# Harness gia sư AI
+# Gia sư AI — hợp đồng an toàn v2
 
-Quyết định: `docs/adr/007-ai-providers.md`. Sư phạm: `docs/adr/003-gia-su-khong-doc-loi-giai.md`.
+**Hiện hành từ 2026-10-13:** điều phối trong `services/core`, giao diện `apps/frontend`, lọc CAS trong `services/math`. Ứng dụng v0 đã gỡ theo [ADR 016](adr/016-go-v0.md). Hợp đồng REST/SSE ở [API_UX](API_UX.md); mặc định khách ở [ASSUMPTIONS](ASSUMPTIONS.md), nghiệm thu U7–U9 ở [spec 002](../specs/002-hoan-thien-v2/spec.md). Tài liệu này nêu hành vi phải đạt, không chứng nhận adapter trực tuyến hoặc cổng đã chạy.
 
-## Thứ tự vẫn khóa
+## Một lượt gia sư
 
-1. Luật xin đáp án / gợi ý / sai chỗ (`lib/tutor.ts`).
-2. Thang 3 cấp đã kiểm — không bottom-out (VanLehn, Aleven).
-3. Nhà đã **chọn tường minh** — không đoán.
-4. Lọc SymPy (`POST /v1/filter`) trên **cả câu**. Vì thế **không stream token**. Lớp chính M3 (số phải dính ngữ cảnh đáp án), lớp phụ M1 (chuỗi LaTeX). Không dùng M2 giá trị trần — tránh chặn «giảm số mũ đi 1».
-5. **SSE trạng thái** (`POST /api/hs/gia-su`): event `trang_thai` (`kho` → `goi` → `loc`) rồi `xong` với câu đã lọc. Nhịp Wiii / Open WebUI (event rồi câu đủ) — không copy mã AGPL. Cùng hàm `chayHoiGiaSu` với server action (không lệch lọc). Dừng = AbortController, không gửi lại.
+1. Core xác thực và kiểm thành viên, giao bài/mode/hạn từ server. Kiểm tra từ chối HTTP 403 trước mở SSE/truy hồi/gọi nhà; xem [ADR 017](adr/017-che-do-kiem-tra-phia-server.md).
+2. Luật xin đáp án chạy trước; thang ba cấp gợi mở, không bottom-out, không làm hộ bước. Không nhận lời giải chuẩn hoặc `protected_facts` vào ngữ cảnh gia sư (ADR 003).
+3. Truy hồi tài liệu/công thức được phép của lớp, bảng đã khóa và phiên bản hiện tại. Số nguồn `[n]` nhất quán trong ngữ cảnh, lời và đường mở tài liệu.
+4. Nhà đã chọn xử lý: mặc định offline bằng thang gợi ý hiện có. Nhà trả phí chỉ bật sau tích hợp/duyệt ngân sách và dữ liệu; không coi nút chọn nhà là adapter đã hoạt động.
+5. Lọc lộ đáp án `/v1/filter`, rồi cổng công thức/lời giảng theo ADR 013 trong dịch vụ toán. Không gửi token thô. CAS lỗi/hết giờ không cho câu chưa kiểm tới học sinh; chỉ dùng gợi ý đã kiểm với phiên bản hiện hành hoặc câu cố định không chứa toán.
+6. Kiểm lại quyền mode/hạn trước phát câu. Đổi sang kiểm tra trong lúc xử lý hủy phát kết quả. Không tự gửi lại sau ngắt SSE/đổi tab/hết phiên.
 
-Demo mặc định `offline`. Không khóa API vẫn làm bài được.
+`POST /api/hs/gia-su` nhận `{maBai,maBuoc,cap:1|2|3,cauHoi}`; event `kho`, `goi`, `loc`, `xong`/`loi` với `{status,message}`. Chỉ `xong` có câu hoàn chỉnh sau lọc. Đây là hợp đồng v2, thay event `trang_thai` và server action của nguyên mẫu.
 
-## Nhà
+## Nhà AI và khóa
 
-| id | Việc | Địa chỉ | Khóa |
-| --- | --- | --- | --- |
-| `offline` | Câu mẫu + thang gợi ý | không gọi mạng | không |
-| `cloud` | OpenAI-compatible chính thức | `LLM_BASE_URL` (https, hoặc http loopback) | `LLM_API_KEY` hoặc khóa lớp |
-| `openrouter` | Khóa lập trình OpenRouter | `https://openrouter.ai/api/v1` (cứng) | `OPENROUTER_API_KEY` hoặc khóa lớp |
-| `zai` | Khóa coding Z.AI | `https://api.z.ai/api/coding/paas/v4` (cứng, không `/api/paas/v4`) | `ZAI_API_KEY` hoặc khóa lớp |
-| `ollama` | Máy này | `127.0.0.1:11434/v1` | dummy `ollama` |
-| `lmstudio` | Máy này | `127.0.0.1:1234/v1` | dummy `lm-studio` |
+Demo không khóa vẫn học được bằng `offline`. Các lựa chọn nhà chính thức theo ADR 007–009 là hướng tích hợp: ChatGPT, OpenRouter lập trình, Z.AI coding. Không device-OAuth Codex, không mượn cookie/tài khoản, không nhập URL nhà từ form. Việc tích hợp adapter cần xác minh endpoint/model/điều khoản tại lúc triển khai, không chép mặc định model của v0 làm phiên bản hiện hành.
 
-Học sinh được chọn offline luôn; Ollama/LM Studio nếu lớp bật `ai_allow_local`; nhà khóa (ChatGPT / OpenRouter / Z.AI) chỉ khi lớp chọn đúng nhà đó.
+Khóa chính thức do người quản lý lớp được ủy quyền cấp cho máy chủ, không vào frontend, log, prompt, repo hay response. Không đọc/ghi file bí mật trong phiên agent. Không gửi khóa một nhà sang nhà khác. Không tự fallback nhà, thử lại POST chat hoặc phát lại khi SSE lỗi. Người dùng chủ động gửi lại sau thông báo lỗi có hành động rõ.
 
-## Luật an toàn (học từ PR nội bộ + phần mềm mở)
+Pilot dữ liệu thật phải đáp ứng hiến chương III và ADR 012; xóa định danh trước khi gửi ngoài. Ngân sách/bên thanh toán theo A03, không mặc định nhà phát triển hay học sinh chịu phí.
 
-Tham chiếu: [meiiie/lms-ibm-bob-hackathon#3](https://github.com/meiiie/lms-ibm-bob-hackathon/pull/3) (ChatGPT tùy chọn + Ollama/LM Studio), [Ollama OpenAI compat](https://github.com/ollama/ollama/blob/main/docs/openai.md), [LM Studio local server](https://lmstudio.ai/docs/app/api), [Open WebUI](https://github.com/open-webui/open-webui), [Continue](https://github.com/continuedev/continue), [LiteLLM](https://github.com/BerriAI/litellm).
+## Composer và lời gia sư
 
-- **Không fallback thầm.** Lỗi cloud/local trả lời bằng chữ «không chuyển nhà / không gửi lại». Không lấy `offlineText` thay cho mô hình.
-- **Không phát lại** cùng một HTTP. Timeout 30 s (chat) / 8 s (probe). `max_tokens` 1600. Z.AI GLM-5.3 / Flash **không tắt thinking** (docs 2026-09): `thinking.enabled` + `reasoning_effort: low` — câu vào `content`, không đọc `reasoning_content`. `disabled` trên coding plan vẫn nghĩ rồi trả rỗng. Không queue, không backoff. SSE lỗi / hết phiên: báo lỗi, **không** gọi lại `hoiGiaSu`.
-- **Khóa lớp theo đúng nhà.** `docKhoaNha` chỉ dùng khóa dán khi lớp đang chọn nhà đó (hoặc khi đang dán/probe nhà đang nối). Khóa Z.AI không gửi sang OpenAI/OpenRouter; cờ `cloudReady` / `openrouterReady` / `zaiReady` tách theo nhà.
-- **Local = loopback.** `10.x`, `192.168.x`, metadata `169.254.169.254` bị từ chối. Không quét LAN, không mượn cookie LMS.
-- **Không device-OAuth ChatGPT.** PR #3 dùng `client_id` nội bộ (`app_EMoamEEZ73f0CkXaXp7hrann`) — ToS, vỡ im lặng, khóa máy. Ở đây chỉ khóa API chính thức.
-- **Lỗi nhà không đăng xuất**, không xóa phiếu, không gửi lại câu hỏi.
-- **Probe** chỉ `GET /models`. Không POST chat giả.
-- **Khóa** không vào log, không vào prompt học sinh, không trả đủ về trình duyệt (chỉ `••••` + 4 ký tự).
-- **Cloud URL** không nhập từ form (chống SSRF). Chỉ env.
+Mở khi học sinh hỏi «Cần gợi ý?». Cột phải desktop, bottom sheet ≤640 px, thích ứng ở giữa; FLAT theo ADR 014. Không mở gia sư ở bài kiểm tra. Textarea tối thiểu 44 px, Gửi/Dừng 44×44; Enter gửi, Shift+Enter xuống dòng, bỏ qua IME; Escape dừng/đóng và trả focus. Hủy bằng AbortController, bỏ kết quả cũ. Ô nhập không mất nháp khi lỗi.
 
-## Composer (ChatGPT / Claude / Open WebUI, phiếu)
+SSE trạng thái qua aria-live, chỉ báo câu đủ đã kiểm, không đọc lặp token. Cuộn theo đáy khi đang ở đáy; kéo lên giữ chỗ và có «Xuống». «Hỏi lại» đưa câu vào ô, người dùng tự gửi. Motion/reduced-motion theo DESIGN, không bóng/viền nhấn/3D.
 
-- `textarea` cao tối thiểu 44, Enter gửi, Shift+Enter xuống dòng, Escape Dừng, bỏ qua IME. Ô không khóa lúc đang nghĩ.
-- Nút Gửi **44×44**. Khi đang nghĩ → Dừng (tăng `requestId`, bỏ qua kết quả cũ).
-- Nháp `sessionStorage`. Không phát luồng — hiện «Đang nghĩ…» rồi cả câu sau lọc. Cuộn chỉ khi đang ở đáy; «Xuống» khi An đọc phía trên.
-- Chip gợi ý / sai chỗ / gửi thầy cô. Lỗi: «Hỏi lại» (đổ câu, An tự gửi). Trích dẫn bấm về `/hs/kho`.
-- `xinDapAn`: «đừng / không nêu đáp án» không kích luật từ chối.
+Lời dùng Markdown + KaTeX, không HTML thô; đoạn ngắn/công thức cuộn ngang, lỗi KaTeX báo gọn. Nguồn bấm xem đúng đoạn trên phiếu, «Mở công thức»/«Mở tài liệu» mới chuyển về kho lớp. Không đổ toàn bộ tài liệu hoặc dữ liệu lớp khác vào lời.
 
-## Mã
+## Vị trí và kiểm chứng
 
-| Đường | Việc |
+| Vùng | Trách nhiệm |
 | --- | --- |
-| `apps/web/lib/ai-catalog.ts` | Nhãn, loopback, chọn nhà — an toàn cho client |
-| `apps/web/lib/ai-harness.ts` | `completeChat` / `probeProvider` — một lần HTTP |
-| `apps/web/lib/gia-su-luot.ts` | Một lượt gia sư (kho → gọi → lọc) — action và SSE dùng chung |
-| `apps/web/lib/sse.ts` | Gói / đọc event; `docJsonSse` bỏ event hỏng |
-| `apps/web/app/api/hs/gia-su/route.ts` | SSE: `trang_thai` rồi `xong` |
-| `apps/web/lib/llm.ts` | Xóa PII + ghi `llm_calls` |
-| `apps/web/components/tutor-panel.tsx` | Cột phải, composer đáy |
-| `apps/web/components/loi-gia-su.tsx` | Markdown + KaTeX flush trái — `\[ \]`, align, hàng rào latex |
-| `apps/web/app/gv/cai-dat/page.tsx` | Chọn nhà, khóa lớp, thử kết nối |
+| `services/core/.../tutor/` | Policy/gợi ý/kho/nhà/SSE, không lời giải chuẩn |
+| `services/core/.../practice/`, `classroom/` | Giao bài, mode/hạn, quyền lớp |
+| `services/math/app/` | Lọc lộ đáp án, kiểm công thức/lời, CAS sandbox |
+| `apps/frontend/src/app/features/hoc-sinh/` | Composer, phiếu, KaTeX, nguồn và trạng thái |
 
-## Kết nối ChatGPT (người không chuyên)
+Đường module core viết tắt từ `src/main/java/vn/hoctapcanman/core/`; rà file thật trước sửa. Không còn lệnh `pnpm --filter web` hoặc đường mã Next.js làm hướng dẫn hiện hành. Tham chiếu lịch sử nằm trong Git/ADR và bộ đối chiếu `specs/001-lat-cat-doc/doi-chieu/`.
 
-Giáo viên vào `/gv/ket-noi-ai` (cũng từ tổng quan). Hai bước cho từng nhà khóa: mở trang khóa chính thức → dán một lần. ChatGPT / OpenRouter / Z.AI. Học sinh thấy «… của lớp», không thấy khóa. OpenRouter mặc định `qwen/qwen3-coder`; Z.AI mặc định `glm-5.3-flashx` trên endpoint coding. Không nhập URL.
-
-«Sign in with ChatGPT» chính thức (help.openai.com, 2026) chỉ là định danh cho đối tác có `client_id`. Không cấp quyền gọi mô hình. Codex CLI «sign in with ChatGPT» dùng endpoint nội bộ — không sao chép.
-
-## Kho kiến thức — đọc và trích dẫn
-
-`lib/kien-thuc.ts` + `lib/kho-lop.ts`. Mỗi lượt: truy hồi cụm từ (câu hỏi + bước, không dấu) → đánh số `[n]` **cùng một tập** cho prompt, lời, chip. Tối đa 2 công thức + 1 tài liệu. Lượt sau cộng điểm mục vừa mở (`nhoId`). Mặt An: badge số trong lời (bấm không rời phiếu) + **Đã đọc** chip + một đoạn «…» + **Mở công thức/tài liệu** về `#ct-` / `#tl-`. Lưu `tutor_messages.citation`. Xin đáp án / lỗi nhà: không gắn nguồn.
-
-Đo: `pnpm --filter web exec tsx --test lib/sota-gia-su.test.ts` — 12 tiêu chí (cùng số, trần 3, có tài liệu, lọc `[n]`, nhớ id, neo kho, một đoạn, nút Mở…). Bắt buộc đủ điểm.
-
-| Cách | Việc | Quyết định |
-| --- | --- | --- |
-| pgvector / embedding | RAG vector | Không — ADR 008 |
-| Mem0 / Zep | bộ nhớ hội thoại ngoài | Không — không phải sản phẩm chat |
-| Tóm tắt 4 tin | nhớ chủ đề | Không — không chỉ được đoạn lớp |
-| Chỉ hiện mục model nhắc tên | dễ sót khi FlashX quên «» | Không làm một mình |
-| Đổ hết tập truy hồi | 5–6 đoạn che lời | Không |
-| **Cùng `[n]` + lọc lời + chip gọn + nhớ id lượt trước** | An thấy đúng đoạn đã mở, bấm về kho | **Chọn** |
-
-```bash
-pnpm --filter web test:unit
-```
+Cổng: core `./mvnw verify`, frontend build/test/e2e; math và bộ eval khi chạm bộ lọc/prompt. Ca bắt buộc: xin đáp án, không làm hộ bước, công thức ngoài bảng/stale, CAS lỗi, hai lớp, direct tutor API ở kiểm tra/hết hạn/tab cũ, SSE ngắt không replay. Ghi lệnh/SHA/ngày/số ca thật; không dùng số đo v0 để khẳng định v2 đạt.

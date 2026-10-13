@@ -1,5 +1,7 @@
 # MathL+ landing page images
 
+> **Cập nhật bảng màu 2026-10-13:** [ADR 018](../../../../docs/adr/018-bang-mau-xanh-trang.md) thay bảng màu ấm bằng xanh–trắng (sáng) / navy–xanh (tối). Token thực thi chỉ nằm trong `apps/frontend/src/styles.css`; `docs/DESIGN.md` là bản đối chiếu. Màu, prompt, ảnh và số đo bên dưới là hồ sơ lịch sử ngày 2026-10-06, không phải nghiệm thu bảng màu hiện hành. Khi tạo ảnh mới, dùng token hiện hành; điều hướng chọn nền xanh nhạt, nút chính xanh, bốn mức xanh / teal / amber / indigo, luôn FLAT.
+
 Generated with the built-in imagegen tool. Each image was generated independently with `transparent_background: false`; no reference images were supplied.
 
 Imagegen returned smaller native images, so the saved PNGs were resized with high-quality bicubic resampling to the exact requested pixel sizes. The automatically cached source files were moved here and no generated source copies were retained outside this folder.

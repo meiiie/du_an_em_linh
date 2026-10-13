@@ -3,7 +3,9 @@ package vn.hoctapcanman.core.practice.infrastructure.web;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -77,6 +79,7 @@ class HocSinhBaiApiTest {
     @Autowired
     private MayChamThu mayCham;
 
+    private Instant han;
     private UUID lop;
     private UUID lopKhac;
     private UUID an;
@@ -95,6 +98,8 @@ class HocSinhBaiApiTest {
     @BeforeEach
     void duLieu() {
         mayCham.yeuCau.clear();
+        // Trigger CSDL dùng clock_timestamp(): hạn phải còn mở vào ngày CI thực sự chạy.
+        han = Instant.now().plus(Duration.ofDays(1)).truncatedTo(ChronoUnit.SECONDS);
         DuLieuPractice.danhMuc(jdbc);
         lop = DuLieuPractice.lop(jdbc);
         lopKhac = DuLieuPractice.lop(jdbc);
@@ -132,7 +137,7 @@ class HocSinhBaiApiTest {
         DuLieuPractice.phatHanh(jdbc, lop, pRut);
         maRut = ma(pRut);
 
-        giao(lop, p1, an, "2026-10-06T08:00:00Z", "2026-10-13T08:00:00Z");
+        giao(lop, p1, an, "2026-10-06T08:00:00Z", han.toString());
         giao(lop, p2, an, "2026-10-05T08:00:00Z", null);
         giao(lop, pRut, an, "2026-10-04T08:00:00Z", null);
         giao(lop, p1, binh, "2026-10-06T08:00:00Z", null);
@@ -151,7 +156,7 @@ class HocSinhBaiApiTest {
     @Test
     void danhSachChiCoBaiDuocGiaoChoEmMaDangPhatHanhTheoLucGiao() {
         assertJson(get("/api/hs/bai", an), """
-            [%s, %s]""".formatted(dongDanhSach(ma2, null, "CHUA_LAM", 0, null), dongDanhSach(ma1, "\"2026-10-13T08:00:00Z\"", "CHUA_LAM", 0, null)));
+            [%s, %s]""".formatted(dongDanhSach(ma2, null, "CHUA_LAM", 0, null), dongDanhSach(ma1, JSON.writeValueAsString(han.toString()), "CHUA_LAM", 0, null)));
         assertJson(get("/api/hs/bai", binh), "[%s]".formatted(dongDanhSach(ma1, null, "CHUA_LAM", 0, null)));
         UUID chuaGhiDanh = nguoiMoi(Role.STUDENT);
         assertJson(get("/api/hs/bai", chuaGhiDanh), "[]");
@@ -164,7 +169,7 @@ class HocSinhBaiApiTest {
         assertJson(nopBuoc(ma1, dong("B.DH.DAOHAM", "y' = SAI_O_DAY", null)), """
             {"ketQua":"SAI","thongBao":"Chưa đúng ở dòng này.","oSai":[{"maBuoc":"B.DH.DAOHAM","dong":0}],"maLoi":"ERR.DH.01"}""");
         assertJson(get("/api/hs/bai", an), "[%s, %s]".formatted(dongDanhSach(ma2, null, "CHUA_LAM", 0, null),
-            dongDanhSach(ma1, "\"2026-10-13T08:00:00Z\"", "DANG_LAM", 1, null)));
+            dongDanhSach(ma1, JSON.writeValueAsString(han.toString()), "DANG_LAM", 1, null)));
 
         assertJson(nopBuoc(ma1, dong("B.DH.DAOHAM", "y' = 3x^2 - 6x", null)), """
             {"ketQua":"DAT","thongBao":"Đúng rồi.","oSai":[],"buocKe":"B.DH.NGHIEM"}""");
@@ -172,12 +177,12 @@ class HocSinhBaiApiTest {
         assertThat(soBuocDat(ma1)).isEqualTo(5);
         assertJson(nopBai(ma1), NOP_DAT_LEN_THONG_HIEU);
         assertJson(get("/api/hs/bai", an), "[%s, %s]".formatted(dongDanhSach(ma2, null, "CHUA_LAM", 0, null),
-            dongDanhSach(ma1, "\"2026-10-13T08:00:00Z\"", "DA_NOP", 5, "\"DAT\"")));
+            dongDanhSach(ma1, JSON.writeValueAsString(han.toString()), "DA_NOP", 5, "\"DAT\"")));
 
         // Làm lại sau khi nộp: nộp một bước mở bài làm mới, đang làm, chưa có kết quả.
         nopBuoc(ma1, dong("B.DH.TXD", "D = R", null));
         assertJson(get("/api/hs/bai", an), "[%s, %s]".formatted(dongDanhSach(ma2, null, "CHUA_LAM", 0, null),
-            dongDanhSach(ma1, "\"2026-10-13T08:00:00Z\"", "DANG_LAM", 1, null)));
+            dongDanhSach(ma1, JSON.writeValueAsString(han.toString()), "DANG_LAM", 1, null)));
     }
 
     @Test
@@ -294,13 +299,35 @@ class HocSinhBaiApiTest {
 
     @Test
     void nopKhiChuaLamDuBuocThi409NoiEmPhaiLamGi() {
-        nopBuoc(ma1, dong("B.DH.TXD", "D = R", null));
+        assertThat(nopBuoc(ma1, dong("B.DH.TXD", "D = R", null)).status()).isEqualTo(200);
         Phan p = nopBai(ma1);
         assertThat(p.status()).isEqualTo(409);
         assertThat(p.json().path("detail").asString()).isEqualTo("Em làm đủ các bước, tới bước kết luận, rồi hãy nộp bài.");
         assertThat(p.json().path("lyDo").asString()).isEqualTo("CHUA_LAM_DU_BUOC");
         assertThat(jdbc.sql("select status from submissions where student_id = ?").params(an).query(String.class).list())
             .containsExactly("DANG_LAM");
+    }
+
+    @Test
+    void hetHanChanGhiBuocVaNopNhungVanDocDuocBaiLam() {
+        assertThat(nopBuoc(ma1, dong("B.DH.TXD", "D = R", null)).status()).isEqualTo(200);
+        assertThat(nopBuoc(ma1, dong("B.DH.DAOHAM", "y' = 3x^2 - 6x", null)).status()).isEqualTo(200);
+        assertThat(lamTiepToiKetLuan(ma1)).allSatisfy(p -> assertThat(p.status()).as(p.than()).isEqualTo(200));
+        JsonNode truoc = get("/api/hs/bai/" + ma1, an).json();
+        int daCham = mayCham.yeuCau.size();
+        jdbc.sql("update assignments set due_at = clock_timestamp() - interval '1 second' where class_id = ? and problem_id = ? and student_id = ?")
+            .params(lop, p1, an).update();
+
+        for (Phan p : List.of(nopBuoc(ma1, dong("B.DH.TXD", "D = ℝ", null)), nopBai(ma1))) {
+            assertThat(p.status()).as(p.than()).isEqualTo(403);
+            assertThat(p.json().path("lyDo").asString()).isEqualTo("HET_HAN");
+            assertThat(p.than()).doesNotContain("workspace_assignment_deadline", "P0403");
+        }
+        Phan sau = get("/api/hs/bai/" + ma1, an);
+        assertThat(sau.status()).isEqualTo(200);
+        assertThat(sau.json()).isEqualTo(truoc);
+        assertThat(mayCham.yeuCau).hasSize(daCham);
+        assertThat(jdbc.sql("select count(*) from mastery_events where student_id = ?").params(an).query(Integer.class).single()).isZero();
     }
 
     @Test
@@ -342,19 +369,21 @@ class HocSinhBaiApiTest {
     private static String dongDanhSach(String ma, @Nullable String han, String trangThai, int soBuocDat, @Nullable String ketQua) {
         return """
             {"maBai":"%s","deBai":"%s","deBaiLatex":"y = x^3 - 3x^2 + 2","kyNang":"T12.DH.02","tenKyNang":"Tính đạo hàm",
-             "muc4":"THONG_HIEU","han":%s,"trangThai":"%s","soBuocDat":%d,"soBuoc":5,"ketQua":%s}"""
+             "muc4":"THONG_HIEU","han":%s,"trangThai":"%s","soBuocDat":%d,"soBuoc":5,"ketQua":%s,"tenBo":"Đơn điệu và cực trị"}"""
             .formatted(ma, DE, han, trangThai, soBuocDat, ketQua);
     }
 
     /** Nộp bước nghiệm, xét dấu, kết luận đúng (bước trước đã đạt). */
     private List<Phan> lamTiepToiKetLuan(String ma) {
-        return List.of(
+        List<Phan> phan = List.of(
             nopBuoc(ma, dong("B.DH.NGHIEM", "x = 0, x = 2", "NGHIEM")),
             nopBuoc(ma, """
                 {"maBuoc":"B.DH.XETDAU","bang":[{"hang":"X","k":0,"giaTri":"0"},{"hang":"DAU_YPHAY","k":2,"giaTri":"+"}]}"""),
             nopBuoc(ma, """
                 {"maBuoc":"B.DH.KETLUAN","dong":[{"dong":0,"latex":"(-\\\\infty; 0), (2; +\\\\infty)","loai":"DONG_BIEN"},
                  {"dong":1,"latex":"(0; 2)","loai":"NGHICH_BIEN"}]}"""));
+        assertThat(phan).allSatisfy(p -> assertThat(p.status()).as(p.than()).isEqualTo(200));
+        return phan;
     }
 
     private int soBuocDat(String ma) {

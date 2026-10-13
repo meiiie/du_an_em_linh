@@ -1,5 +1,8 @@
 # MathL+ — Nghiên cứu giao diện Wiii × 3b1b
 
+> **Cập nhật bảng màu 2026-10-13:** [ADR 018](../../../../docs/adr/018-bang-mau-xanh-trang.md) thay bảng màu ấm bằng xanh–trắng (sáng) / navy–xanh (tối). Token thực thi chỉ nằm trong `apps/frontend/src/styles.css`; `docs/DESIGN.md` là bản đối chiếu. Màu, prompt, ảnh và số đo bên dưới là hồ sơ lịch sử ngày 2026-10-06, không phải nghiệm thu bảng màu hiện hành. Khi tạo ảnh mới, dùng token hiện hành; điều hướng chọn nền xanh nhạt, nút chính xanh, bốn mức xanh / teal / amber / indigo, luôn FLAT.
+
+> **FLAT, chủ repo 2026-10-13:** ảnh là tư liệu lịch sử, không là mẫu bóng/vạch trái để hiện thực. Quy tắc hiện hành: không bóng, inset, viền nhấn trái hay dải màu mép; nền/chữ/viền đều 1 px. Lời nhắc dưới đây đã bỏ chỉ dẫn bóng.
 Tạo bằng công cụ imagegen tích hợp. Phạm vi: 12 ảnh mô phỏng. Nội dung tương ứng giữ nhất quán giữa ba phương án.
 
 Brief: [2026-10-06-wiii-3b1b.md](../../studies/2026-10-06-wiii-3b1b.md). Danh sách màn theo yêu cầu trực tiếp: Luyện bài 1280 × 800, Luyện bài 390 × 844, Học 1280 × 800, Đăng nhập 390 × 844 cho A, B, C.
@@ -30,7 +33,7 @@ Design constraints: consistent 8 px spacing grid, generous whitespace, precise a
 Include a small sun/moon theme-toggle icon with a 44 px target. Preserve the same geometry and the exact same content as the other color options for this screen.
 
 Option A — “Phòng Wiii sáng, bảng phấn 3b1b”.
-Warm light app chrome: page #FAF9F5, sidebar and secondary panels #F0EEE6, hairlines #D8D5CD, main ink #141413, secondary ink #3D3D3A, muted text #73726C. Primary button #C75B39. Very soft multi-layer shadows.
+Warm light app chrome: page #FAF9F5, sidebar and secondary panels #F0EEE6, hairlines #D8D5CD, main ink #141413, secondary ink #3D3D3A, muted text #73726C. Primary button #C75B39. Flat surfaces, no shadows, no colored edge stripes.
 EVERY math area, including formula, sign table and cubic plot, is on its own dark chalkboard panel #1C1C1C, with white/cream Computer Modern serif math. Manim colors: curve blue #58C4DD, critical-point dots yellow #F4D345, positive signs and rising arrows teal #5CD0B3, negative signs and falling arrows red #FC6255. Precise smooth rounded curve strokes, subdued graph grid. Keep the rest of the UI light.
 
 Canvas: exactly 1280 × 800 px, desktop viewport.
@@ -74,7 +77,7 @@ Design constraints: consistent 8 px spacing grid, generous whitespace, precise a
 Include a small sun/moon theme-toggle icon with a 44 px target. Preserve the same geometry and the exact same content as the other color options for this screen.
 
 Option A — “Phòng Wiii sáng, bảng phấn 3b1b”.
-Warm light app chrome: page #FAF9F5, sidebar and secondary panels #F0EEE6, hairlines #D8D5CD, main ink #141413, secondary ink #3D3D3A, muted text #73726C. Primary button #C75B39. Very soft multi-layer shadows.
+Warm light app chrome: page #FAF9F5, sidebar and secondary panels #F0EEE6, hairlines #D8D5CD, main ink #141413, secondary ink #3D3D3A, muted text #73726C. Primary button #C75B39. Flat surfaces, no shadows, no colored edge stripes.
 EVERY math area, including formula, sign table and cubic plot, is on its own dark chalkboard panel #1C1C1C, with white/cream Computer Modern serif math. Manim colors: curve blue #58C4DD, critical-point dots yellow #F4D345, positive signs and rising arrows teal #5CD0B3, negative signs and falling arrows red #FC6255. Precise smooth rounded curve strokes, subdued graph grid. Keep the rest of the UI light.
 
 Canvas: exactly 390 × 844 px, mobile viewport, no phone hardware or browser frame.
@@ -105,7 +108,7 @@ Design constraints: consistent 8 px spacing grid, generous whitespace, precise a
 Include a small sun/moon theme-toggle icon with a 44 px target. Preserve the same geometry and the exact same content as the other color options for this screen.
 
 Option A — “Phòng Wiii sáng, bảng phấn 3b1b”.
-Warm light app chrome: page #FAF9F5, sidebar and secondary panels #F0EEE6, hairlines #D8D5CD, main ink #141413, secondary ink #3D3D3A, muted text #73726C. Primary button #C75B39. Very soft multi-layer shadows.
+Warm light app chrome: page #FAF9F5, sidebar and secondary panels #F0EEE6, hairlines #D8D5CD, main ink #141413, secondary ink #3D3D3A, muted text #73726C. Primary button #C75B39. Flat surfaces, no shadows, no colored edge stripes.
 EVERY math area, including formula, sign table and cubic plot, is on its own dark chalkboard panel #1C1C1C, with white/cream Computer Modern serif math. Manim colors: curve blue #58C4DD, critical-point dots yellow #F4D345, positive signs and rising arrows teal #5CD0B3, negative signs and falling arrows red #FC6255. Precise smooth rounded curve strokes, subdued graph grid. Keep the rest of the UI light.
 
 Canvas: exactly 1280 × 800 px, desktop student home.
@@ -139,7 +142,7 @@ Design constraints: consistent 8 px spacing grid, generous whitespace, precise a
 Include a small sun/moon theme-toggle icon with a 44 px target. Preserve the same geometry and the exact same content as the other color options for this screen.
 
 Option A — “Phòng Wiii sáng, bảng phấn 3b1b”.
-Warm light app chrome: page #FAF9F5, sidebar and secondary panels #F0EEE6, hairlines #D8D5CD, main ink #141413, secondary ink #3D3D3A, muted text #73726C. Primary button #C75B39. Very soft multi-layer shadows.
+Warm light app chrome: page #FAF9F5, sidebar and secondary panels #F0EEE6, hairlines #D8D5CD, main ink #141413, secondary ink #3D3D3A, muted text #73726C. Primary button #C75B39. Flat surfaces, no shadows, no colored edge stripes.
 EVERY math area, including formula, sign table and cubic plot, is on its own dark chalkboard panel #1C1C1C, with white/cream Computer Modern serif math. Manim colors: curve blue #58C4DD, critical-point dots yellow #F4D345, positive signs and rising arrows teal #5CD0B3, negative signs and falling arrows red #FC6255. Precise smooth rounded curve strokes, subdued graph grid. Keep the rest of the UI light.
 
 Canvas: exactly 390 × 844 px, mobile login viewport. Edge-to-edge flat screen, no device frame.
@@ -169,7 +172,7 @@ Design constraints: consistent 8 px spacing grid, generous whitespace, precise a
 Include a small sun/moon theme-toggle icon with a 44 px target. Preserve the same geometry and the exact same content as the other color options for this screen.
 
 Option B — “Wiii tối toàn phần”.
-Whole application is warm charcoal: page #1E1D1B, sidebar/cards #282724, raised surfaces #353330, thin hairlines #3A3935, text #E8E8E4, secondary text #A8A7A2. A very faint fine grid texture appears in the page background, as in a restrained warm charcoal brand card. Small section labels are letter-spaced Vietnamese uppercase in light blue #58C4DD. Primary button #C75B39. Restrained layered shadows and softly rounded panels with thin borders.
+Whole application is warm charcoal: page #1E1D1B, sidebar/cards #282724, raised surfaces #353330, thin hairlines #3A3935, text #E8E8E4, secondary text #A8A7A2. A very faint fine grid texture appears in the page background, as in a restrained warm charcoal brand card. Small section labels are letter-spaced Vietnamese uppercase in light blue #58C4DD. Primary button #C75B39. Flat softly rounded panels with uniform thin borders; no shadows or colored edge stripes.
 Math is cream Computer Modern serif. Manim colors only on mathematical strokes and status accents: curve #58C4DD, critical-point dots #F4D345, positive signs/rising arrows #5CD0B3, negative signs/falling arrows #FC6255. Plot grid faint; curve smooth and rounded.
 
 Canvas: exactly 1280 × 800 px, desktop viewport.
@@ -213,7 +216,7 @@ Design constraints: consistent 8 px spacing grid, generous whitespace, precise a
 Include a small sun/moon theme-toggle icon with a 44 px target. Preserve the same geometry and the exact same content as the other color options for this screen.
 
 Option B — “Wiii tối toàn phần”.
-Whole application is warm charcoal: page #1E1D1B, sidebar/cards #282724, raised surfaces #353330, thin hairlines #3A3935, text #E8E8E4, secondary text #A8A7A2. A very faint fine grid texture appears in the page background, as in a restrained warm charcoal brand card. Small section labels are letter-spaced Vietnamese uppercase in light blue #58C4DD. Primary button #C75B39. Restrained layered shadows and softly rounded panels with thin borders.
+Whole application is warm charcoal: page #1E1D1B, sidebar/cards #282724, raised surfaces #353330, thin hairlines #3A3935, text #E8E8E4, secondary text #A8A7A2. A very faint fine grid texture appears in the page background, as in a restrained warm charcoal brand card. Small section labels are letter-spaced Vietnamese uppercase in light blue #58C4DD. Primary button #C75B39. Flat softly rounded panels with uniform thin borders; no shadows or colored edge stripes.
 Math is cream Computer Modern serif. Manim colors only on mathematical strokes and status accents: curve #58C4DD, critical-point dots #F4D345, positive signs/rising arrows #5CD0B3, negative signs/falling arrows #FC6255. Plot grid faint; curve smooth and rounded.
 
 Canvas: exactly 390 × 844 px, mobile viewport, no phone hardware or browser frame.
@@ -254,7 +257,7 @@ Design constraints: consistent 8 px spacing grid, generous whitespace, precise a
 Include a small sun/moon theme-toggle icon with a 44 px target. Preserve the same geometry and the exact same content as the other color options for this screen.
 
 Option B — “Wiii tối toàn phần”.
-Whole application is warm charcoal: page #1E1D1B, sidebar/cards #282724, raised surfaces #353330, thin hairlines #3A3935, text #E8E8E4, secondary text #A8A7A2. A very faint fine grid texture appears in the page background, as in a restrained warm charcoal brand card. Small section labels are letter-spaced Vietnamese uppercase in light blue #58C4DD. Primary button #C75B39. Restrained layered shadows and softly rounded panels with thin borders.
+Whole application is warm charcoal: page #1E1D1B, sidebar/cards #282724, raised surfaces #353330, thin hairlines #3A3935, text #E8E8E4, secondary text #A8A7A2. A very faint fine grid texture appears in the page background, as in a restrained warm charcoal brand card. Small section labels are letter-spaced Vietnamese uppercase in light blue #58C4DD. Primary button #C75B39. Flat softly rounded panels with uniform thin borders; no shadows or colored edge stripes.
 Math is cream Computer Modern serif. Manim colors only on mathematical strokes and status accents: curve #58C4DD, critical-point dots #F4D345, positive signs/rising arrows #5CD0B3, negative signs/falling arrows #FC6255. Plot grid faint; curve smooth and rounded.
 
 Canvas: exactly 1280 × 800 px, desktop student home.
@@ -288,7 +291,7 @@ Design constraints: consistent 8 px spacing grid, generous whitespace, precise a
 Include a small sun/moon theme-toggle icon with a 44 px target. Preserve the same geometry and the exact same content as the other color options for this screen.
 
 Option B — “Wiii tối toàn phần”.
-Whole application is warm charcoal: page #1E1D1B, sidebar/cards #282724, raised surfaces #353330, thin hairlines #3A3935, text #E8E8E4, secondary text #A8A7A2. A very faint fine grid texture appears in the page background, as in a restrained warm charcoal brand card. Small section labels are letter-spaced Vietnamese uppercase in light blue #58C4DD. Primary button #C75B39. Restrained layered shadows and softly rounded panels with thin borders.
+Whole application is warm charcoal: page #1E1D1B, sidebar/cards #282724, raised surfaces #353330, thin hairlines #3A3935, text #E8E8E4, secondary text #A8A7A2. A very faint fine grid texture appears in the page background, as in a restrained warm charcoal brand card. Small section labels are letter-spaced Vietnamese uppercase in light blue #58C4DD. Primary button #C75B39. Flat softly rounded panels with uniform thin borders; no shadows or colored edge stripes.
 Math is cream Computer Modern serif. Manim colors only on mathematical strokes and status accents: curve #58C4DD, critical-point dots #F4D345, positive signs/rising arrows #5CD0B3, negative signs/falling arrows #FC6255. Plot grid faint; curve smooth and rounded.
 
 Canvas: exactly 390 × 844 px, mobile login viewport. Edge-to-edge flat screen, no device frame.
@@ -318,7 +321,7 @@ Design constraints: consistent 8 px spacing grid, generous whitespace, precise a
 Include a small sun/moon theme-toggle icon with a 44 px target. Preserve the same geometry and the exact same content as the other color options for this screen.
 
 Option C — “Wiii sáng, toán sáng”.
-Light everywhere: page #FAF9F5, main cards and ALL math panels #FFFFFF, sidebar #F0EEE6, hairlines #D8D5CD, ink #141413, secondary ink #3D3D3A, muted #73726C. Primary button #C75B39. Very soft multi-layer shadows.
+Light everywhere: page #FAF9F5, main cards and ALL math panels #FFFFFF, sidebar #F0EEE6, hairlines #D8D5CD, ink #141413, secondary ink #3D3D3A, muted #73726C. Primary button #C75B39. Flat surfaces, no shadows, no colored edge stripes.
 All mathematics uses ink Computer Modern serif on light surfaces. Darkened Manim hues: curve #1C758A, critical-point markers #C78D46, positive signs and rising arrows #49A88F, negative signs and falling arrows #CF5044. Use dark ink for point labels and thin dark edging on colored mathematical symbols or markers wherever needed to retain accessible contrast. Plot grid very faint. No dark chalkboard panels.
 
 Canvas: exactly 1280 × 800 px, desktop viewport.
@@ -362,7 +365,7 @@ Design constraints: consistent 8 px spacing grid, generous whitespace, precise a
 Include a small sun/moon theme-toggle icon with a 44 px target. Preserve the same geometry and the exact same content as the other color options for this screen.
 
 Option C — “Wiii sáng, toán sáng”.
-Light everywhere: page #FAF9F5, main cards and ALL math panels #FFFFFF, sidebar #F0EEE6, hairlines #D8D5CD, ink #141413, secondary ink #3D3D3A, muted #73726C. Primary button #C75B39. Very soft multi-layer shadows.
+Light everywhere: page #FAF9F5, main cards and ALL math panels #FFFFFF, sidebar #F0EEE6, hairlines #D8D5CD, ink #141413, secondary ink #3D3D3A, muted #73726C. Primary button #C75B39. Flat surfaces, no shadows, no colored edge stripes.
 All mathematics uses ink Computer Modern serif on light surfaces. Darkened Manim hues: curve #1C758A, critical-point markers #C78D46, positive signs and rising arrows #49A88F, negative signs and falling arrows #CF5044. Use dark ink for point labels and thin dark edging on colored mathematical symbols or markers wherever needed to retain accessible contrast. Plot grid very faint. No dark chalkboard panels.
 
 Canvas: exactly 390 × 844 px, mobile viewport, no phone hardware or browser frame.
@@ -393,7 +396,7 @@ Design constraints: consistent 8 px spacing grid, generous whitespace, precise a
 Include a small sun/moon theme-toggle icon with a 44 px target. Preserve the same geometry and the exact same content as the other color options for this screen.
 
 Option C — “Wiii sáng, toán sáng”.
-Light everywhere: page #FAF9F5, main cards and ALL math panels #FFFFFF, sidebar #F0EEE6, hairlines #D8D5CD, ink #141413, secondary ink #3D3D3A, muted #73726C. Primary button #C75B39. Very soft multi-layer shadows.
+Light everywhere: page #FAF9F5, main cards and ALL math panels #FFFFFF, sidebar #F0EEE6, hairlines #D8D5CD, ink #141413, secondary ink #3D3D3A, muted #73726C. Primary button #C75B39. Flat surfaces, no shadows, no colored edge stripes.
 All mathematics uses ink Computer Modern serif on light surfaces. Darkened Manim hues: curve #1C758A, critical-point markers #C78D46, positive signs and rising arrows #49A88F, negative signs and falling arrows #CF5044. Use dark ink for point labels and thin dark edging on colored mathematical symbols or markers wherever needed to retain accessible contrast. Plot grid very faint. No dark chalkboard panels.
 
 Canvas: exactly 1280 × 800 px, desktop student home.
@@ -427,7 +430,7 @@ Design constraints: consistent 8 px spacing grid, generous whitespace, precise a
 Include a small sun/moon theme-toggle icon with a 44 px target. Preserve the same geometry and the exact same content as the other color options for this screen.
 
 Option C — “Wiii sáng, toán sáng”.
-Light everywhere: page #FAF9F5, main cards and ALL math panels #FFFFFF, sidebar #F0EEE6, hairlines #D8D5CD, ink #141413, secondary ink #3D3D3A, muted #73726C. Primary button #C75B39. Very soft multi-layer shadows.
+Light everywhere: page #FAF9F5, main cards and ALL math panels #FFFFFF, sidebar #F0EEE6, hairlines #D8D5CD, ink #141413, secondary ink #3D3D3A, muted #73726C. Primary button #C75B39. Flat surfaces, no shadows, no colored edge stripes.
 All mathematics uses ink Computer Modern serif on light surfaces. Darkened Manim hues: curve #1C758A, critical-point markers #C78D46, positive signs and rising arrows #49A88F, negative signs and falling arrows #CF5044. Use dark ink for point labels and thin dark edging on colored mathematical symbols or markers wherever needed to retain accessible contrast. Plot grid very faint. No dark chalkboard panels.
 
 Canvas: exactly 390 × 844 px, mobile login viewport. Edge-to-edge flat screen, no device frame.

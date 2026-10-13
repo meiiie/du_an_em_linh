@@ -2,23 +2,40 @@
 <a class="ve" routerLink="/hs">← Bài được giao</a>
 
 @if (bai.isLoading() && !bai.hasValue()) {
-  <div class="dang-tai" aria-busy="true"><span class="sr-only">Đang tải bài</span></div>
+  <app-khung-cho nhan="Đang tải bài" />
 } @else if (bai.error()) {
   <div class="trong" role="alert">
     @if (khongTimThay()) {
       <p>Bài này không còn mở cho lớp em.</p>
       <a appButton variant="secondary" routerLink="/hs">Về bài được giao</a>
     } @else {
-      <p>Chưa tải được bài. Kiểm tra kết nối rồi thử lại.</p>
-      <button appButton variant="secondary" type="button" (click)="bai.reload()">Thử lại</button>
+      <app-loi-tai [loi]="bai.error()" (thuLai)="bai.reload()" />
     }
   </div>
 } @else if (bai.value(); as b) {
+  @if (mode()?.status === 'KIEM_TRA') {
+    <section class="surface" data-testid="bang-kiem-tra" aria-label="Chế độ kiểm tra" id="gia-su-tam-tat">
+      <strong>Đang kiểm tra — gia sư tạm tắt</strong>
+      <p class="muted">Hạn nộp: {{ han() || 'Chưa đặt hạn' }}</p>
+    </section>
+  }
+  @if(cheDo.error()){<app-loi-tai [loi]="cheDo.error()" moTa="Chưa tải được chế độ bài. Thử lại để mở gia sư cho bài ôn." (thuLai)="cheDo.reload()" />}
+    <div class="practice-grid" [class.co-gia-su]="coGiaSu() && giaSuMo() && giaSuDesktop()" [style.grid-template-columns]="coGiaSu() && giaSuMo() && giaSuDesktop() ? 'minmax(0, 1fr) ' + giaSuRong() + 'px' : 'minmax(0, 1fr)'">
   @if (b.dangTraLoi !== 'TU_LUAN_5_BUOC' || !b.cacBuoc.length) {
     <div class="trong">
+@if (coGiaSu() || mode()?.status === 'KIEM_TRA') {<div class="tutor-trigger"><button appButton variant="secondary" type="button" data-testid="mo-gia-su" aria-label="Gia sư AI" aria-keyshortcuts="Control+/ Meta+/" [attr.aria-expanded]="giaSuMo()" [disabled]="!coGiaSu()" [title]="coGiaSu() ? 'Gia sư AI (Ctrl/Cmd+/)' : 'Đang kiểm tra — gia sư tạm tắt'" [attr.aria-describedby]="mode()?.status === 'KIEM_TRA' ? 'gia-su-tam-tat' : null" (click)="giaSu()?.moGiaSu()"><span class="fab-icon" aria-hidden="true">✦</span><span class="trigger-text">Gia sư AI</span></button></div>}
+      <p><app-van-ban-toan [text]="b.de.text" /></p>
+      @if (b.cacBuoc.length) {
+        <nav class="toolbar" aria-label="Các bước gợi mở">
+          @for (s of b.cacBuoc; track s.maBuoc; let i = $index) {
+            <button appButton variant="secondary" type="button" [attr.aria-pressed]="buoc() === i" (click)="moBuoc(i)">{{ i + 1 }}. {{ tenBuocGiay(s.maBuoc) }}</button>
+          }
+        </nav>
+      }
       <p>Dạng câu này (không theo khung 5 bước) chưa có khung làm bài trên ứng dụng. Em làm ra giấy và nộp thầy cô.</p>
     </div>
   } @else {
+
     <section
       class="phieu"
       data-testid="solve-screen"
@@ -27,9 +44,12 @@
       [attr.data-buoc-bat-dau]="b.buocBatDau ?? b.cacBuoc[0]?.maBuoc"
     >
       <header class="de">
+@if (coGiaSu() || mode()?.status === 'KIEM_TRA') {<div class="tutor-trigger"><button appButton variant="secondary" type="button" data-testid="mo-gia-su" aria-label="Gia sư AI" aria-keyshortcuts="Control+/ Meta+/" [attr.aria-expanded]="giaSuMo()" [disabled]="!coGiaSu()" [title]="coGiaSu() ? 'Gia sư AI (Ctrl/Cmd+/)' : 'Đang kiểm tra — gia sư tạm tắt'" [attr.aria-describedby]="mode()?.status === 'KIEM_TRA' ? 'gia-su-tam-tat' : null" (click)="giaSu()?.moGiaSu()"><span class="fab-icon" aria-hidden="true">✦</span><span class="trigger-text">Gia sư AI</span></button></div>}
+        @if (mode()?.status === 'KIEM_TRA') { <p class="badge" data-testid="che-do-kiem-tra">Kiểm tra · Không chat</p> }
+        @if (han() && mode()?.status !== 'KIEM_TRA') { <p class="phu">Hạn nộp: {{han()}}</p> }
         <p class="nhan-muc">{{ tenMuc[b.muc4] }}</p>
         <p class="ky-nang">{{ b.tenKyNang }}</p>
-        <p class="cau-hoi">{{ thanDe(b.de.text) }}</p>
+        <p class="cau-hoi"><app-van-ban-toan [text]="thanDe(b.de.text)" /></p>
         <app-katex bang [latex]="deBang(b.de.latex)" />
         @if (deChoSan()) {
           <p class="phu" data-testid="de-cho-san">
@@ -206,7 +226,7 @@
 
         @if (daNop()) {
           <section class="da-nop" data-testid="da-nop" aria-labelledby="tieu-de-nop">
-            <h2 id="tieu-de-nop">{{ chuDaNop() }}</h2>
+            <h3 id="tieu-de-nop">{{ chuDaNop() }}</h3>
             @if (loiPhatLai()) {
               <p class="phu" role="alert">Chưa tải được kết quả và lời giải của lần nộp.</p>
               <button appButton variant="secondary" type="button" data-testid="tai-lai-ket-qua" (click)="taiLaiKetQuaNop()">Thử lại</button>
@@ -222,7 +242,10 @@
                 <p>{{ lg }}</p>
               </div>
             }
-            <a appButton routerLink="/hs">Về bài được giao</a>
+            @if (goiBai.hasValue() && goiBai.value().length) {
+              <p class="phu">{{goiBai.value()[0].subtitle}}</p>
+              <a appButton [routerLink]="['/hs/luyen',goiBai.value()[0].id]" data-testid="bai-ke-ket-qua">Bài tiếp theo</a>
+            } @else { <a appButton routerLink="/hs">Về bài được giao</a> }
           </section>
         } @else {
           @if (buocCanKiemLai(); as c) {
@@ -251,4 +274,6 @@
       </div>
     </section>
   }
+    @if (coGiaSu()) { <app-gia-su [anNut]="true" (moChange)="giaSuMo.set($event)" (rongChange)="giaSuDesktop.set($event)" (rongGiaSu)="giaSuRong.set($event)" [maBai]="b.maBai" [maBuoc]="buocHien()?.maBuoc ?? ''" [tenBuoc]="buocHien()?.ten ?? ''" /> }
+    </div>
 }

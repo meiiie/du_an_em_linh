@@ -22,3 +22,12 @@ describe('công thức và câu đề', () => {
     expect(thanDe(giuaCau)).toBe(giuaCau);
   });
 });
+
+describe('hamLatex với đề dạng chữ', () => {
+  it('không thêm «y =» trước mô tả hình học', () => {
+    expect(hamLatex(String.raw`\text{Chóp đáy tam giác vuông}`)).toBe(String.raw`\text{Chóp đáy tam giác vuông}`);
+  });
+  it('vẫn thêm «y =» trước biểu thức', () => {
+    expect(hamLatex('x^2+1').startsWith('y = ')).toBe(true);
+  });
+});

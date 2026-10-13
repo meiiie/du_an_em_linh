@@ -28,6 +28,17 @@ describe('Katex', () => {
     expect(t.el.querySelector('annotation')?.textContent).toBe('x^2');
   });
 
+  it('chuyển SymPy thành toán đọc được trước khi vẽ', async () => {
+    const t = await mo();
+    await t.dat('x**12 + 4*x + sqrt(x + sin(2*x))');
+    const latex = t.el.querySelector('annotation')?.textContent;
+    expect(latex).toContain('x^{12}');
+    expect(latex).toContain('4 x');
+    expect(latex).toContain(String.raw`\sqrt{x + \sin(2 x)}`);
+    expect(latex).not.toContain('*');
+    expect(t.el.querySelector('.katex-error')).toBeNull();
+  });
+
   it('LaTeX hỏng không làm vỡ trang (throwOnError: false), chữ màu --muted chứ không đỏ', async () => {
     const t = await mo();
     await t.dat('\\frac{1}{');
@@ -49,7 +60,7 @@ describe('Katex', () => {
     expect(t.el.querySelector('.katex-display')).not.toBeNull();
   });
 
-  it('bang: tấm bảng tối, công thức khối; rộng hơn bảng → bảng nhận Tab như khối; mặc định vẫn trong dòng', async () => {
+  it('bang: nền nhẹ, công thức khối; rộng hơn bảng → bảng nhận Tab như khối; mặc định vẫn trong dòng', async () => {
     const t = await mo();
     expect(t.host().classList).not.toContain('bang');
     expect(t.el.querySelector('.katex-display')).toBeNull();

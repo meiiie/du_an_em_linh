@@ -11,7 +11,7 @@
           <img src="/icon.svg" width="52" height="52" alt="" />
           <app-brand-mark size="lg" />
         </a>
-        <h1 id="tieu-de-dang-nhap">Đăng nhập</h1>
+        <h1 id="tieu-de-dang-nhap">Đăng nhập</h1><p class="huong-dan">Tiếp tục học với tài khoản nhà trường đã cấp.</p>
 
         @if (buoc() === 'email') {
           <form id="form-dang-nhap" class="form" (submit)="sangMatKhau($event)">
@@ -26,7 +26,7 @@
                 spellcheck="false"
                 autocapitalize="none"
                 autocorrect="off"
-                placeholder="hs.an@demo.local"
+                placeholder="Nhập email của bạn"
                 data-testid="email"
                 [attr.aria-invalid]="hienLoiEmail() || null"
                 [attr.aria-describedby]="hienLoiEmail() ? 'loi-email' : null"
@@ -96,11 +96,7 @@
             </label>
             @if (loi() === 'sai') {
               <p id="loi-dang-nhap" class="loi-dang-nhap" data-testid="loi-dang-nhap" role="alert">
-                @if (laTaiKhoanThu()) {
-                  Chưa vào được. Học sinh <span class="mono">hocsinh123</span> · giáo viên <span class="mono">giaovien123</span>.
-                } @else {
-                  Chưa vào được. Kiểm tra lại email và mật khẩu.
-                }
+                Chưa vào được. Kiểm tra lại email và mật khẩu.
               </p>
             } @else if (loi() === 'khoa') {
               <p id="loi-dang-nhap" class="loi-dang-nhap" data-testid="khoa-dang-nhap" role="alert">
@@ -112,29 +108,19 @@
               </p>
             }
             <div class="nhom-nut">
-              <button appButton size="lg" block type="submit" [disabled]="dangGui()" [attr.aria-busy]="dangGui() || null">Vào học</button>
+              <button appButton size="lg" block type="submit" [disabled]="dangGui()" [attr.aria-busy]="dangGui() || null">Vào học</button>@if(dangGui()){<p class="huong-dan" role="status">Đang đăng nhập…</p>}
               <button appButton variant="secondary" size="lg" block type="button" [disabled]="dangGui()" (click)="quayLai()">Quay lại</button>
             </div>
           </form>
         }
 
-        <ul class="tai-khoan-thu" aria-label="Tài khoản thử">
-          @for (tk of taiKhoanThu; track tk.email) {
-            <li>
-              <button appButton variant="secondary" size="lg" block type="button" [disabled]="dangGui()" (click)="chonEmail(tk.email)">
-                <app-bieu-tuong [ten]="tk.bieuTuong" />
-                {{ tk.nhan }}
-              </button>
-            </li>
-          }
-        </ul>
       </section>
       <div class="du du-duoi" aria-hidden="true"></div>
     </div>
     <footer class="chan">
       <span>Toán 12 · đơn điệu và cực trị</span>
       <span aria-hidden="true">·</span>
-      <span>Tài khoản thử — không có học sinh thật</span>
+      <span>Tài khoản do nhà trường cung cấp</span>
     </footer>
   </div>
   <app-minh-hoa-dang-nhap class="ben-phai" />

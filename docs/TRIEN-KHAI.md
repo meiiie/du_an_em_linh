@@ -1,41 +1,23 @@
 # Triển khai
 
-## Render (free, không thẻ)
+**Hiện hành từ 2026-10-13:** frontend Angular, core Spring Boot, dịch vụ toán và PostgreSQL. `apps/web`, Dockerfile một-container v0 và `scripts/start-free.sh` đã gỡ. Các ghi chú Render v0 trong lịch sử Git không là hướng dẫn cho kiến trúc này. Phiên hoàn thiện không triển khai production.
 
-Chỗ free còn nhận Docker + Postgres. Hugging Face Docker Spaces (2026) đòi PRO.
+## Demo bằng Docker
 
-Một service web: Next.js + FastAPI/SymPy trong cùng container — tránh hai service free ăn hết 750 giờ/tháng.
+```bash
+docker compose up --build --wait
+bash scripts/khoi-v2.sh
+pnpm --filter frontend e2e
+```
 
-1. Bấm Deploy to Render trên README (cần tài khoản GitHub, không thẻ).
-2. Blueprint `render.yaml` tạo web `hoc-toan-ai` + Postgres `hoc-toan-pg`.
-3. Đợi URL `*.onrender.com`. Tài khoản thử trong README.
+Compose mặc định include `compose.v2.yaml`: frontend :4200, core :8080, math :8000. PostgreSQL 18 chỉ trong mạng nội bộ. Nginx chuyển `/api/` tới core; trình duyệt không gọi CAS trực tiếp. Profile `dev` nạp tài khoản và nội dung tổng hợp. Dừng bằng `docker compose down`; `down -v` xóa dữ liệu.
 
-Bản đang chạy: https://hoc-toan-ai.onrender.com
+## Blueprint Render
 
-**Nhánh deploy phải là `main`.** Service cũ nếu còn trỏ nhánh `cursor/*` đã xóa sẽ build hỏng hoặc treo — Dashboard → `hoc-toan-ai` → Settings → Branch = `main` → Manual Deploy.
+`render.yaml` định nghĩa ba dịch vụ Docker riêng và CSDL `hoc_toan_core`. Các image build từ `apps/frontend/Dockerfile`, `services/core/Dockerfile`, `services/math/Dockerfile`; build context là gốc repo. Core gọi math bằng địa chỉ nội bộ; nginx gọi core bằng địa chỉ nội bộ.
 
-CD: `.github/workflows/cd.yml` chạy sau khi CI **Kiểm thử** xanh trên `main`. Bắt buộc secret `RENDER_DEPLOY_HOOK` (Render → `hoc-toan-ai` → Deploy Hook). Workflow POST hook rồi đợi `GET /api/suc-khoe` có `ban` trùng 7 ký tự commit. Không có hook, hoặc trang cũ còn 200, thì job fail.
+Chủ repo cần kiểm tra cấu hình Blueprint, domain/`SITE_URL`, hạn mức và chi phí của tài khoản Render trước khi triển khai. Tài khoản demo/profile `dev` chỉ phục vụ nghiệm thu dữ liệu tổng hợp. Đưa hệ thống cho người dùng thật cần cấu hình profile và xác thực phù hợp, lưu trữ bền vững, backup và giám sát. Phiên này chỉ chuẩn bị cấu hình, không chứng minh production đã chạy.
 
-`/` là trang chủ tĩnh (SEO), không đọc database. `/dang-nhap` mới vào lớp thử.
+Health của core là `/actuator/health`; math là `/health`; frontend phục vụ trang `/`. Không dùng endpoint v0 `/api/suc-khoe`. CD cần hook từng dịch vụ do chủ repo cấu hình; health HTTP 200 không thay thế kiểm luồng đăng nhập, giao bài và chấm bước. Xem [Render Blueprint specification](https://render.com/docs/blueprint-spec) để đối chiếu trường cấu hình hiện hành.
 
-Logo tab: `/favicon.ico` (ICO 16/32/48) + `/icon-48.png` (Google Search, ≥48px, không dùng SVG cho SERP) + `/icon.svg` (tab trình duyệt). PWA: `/icon-192.png`, `/icon-512.png`, `/icon-maskable.png`. iOS: `/apple-touch-icon.png`.
-
-## Postgres 30 ngày
-
-Postgres free của Render hết hạn 30 ngày. Trước hạn: tạo [Neon](https://neon.tech) (free lâu, không thẻ) rồi dán `DATABASE_URL` vào service.
-
-## Giữ thức
-
-Render free tắt web sau ~15 phút không có HTTP. Ping mỗi 5–10 phút. Thức cả tháng ≈ 720/750 giờ free. Cron job của Render là gói trả phí.
-
-- Chắc, làm ngay: [UptimeRobot](https://uptimerobot.com) HTTP(s) 5 phút → `https://hoc-toan-ai.onrender.com/api/suc-khoe` (hoặc `/dang-nhap`)
-- Cron HTTP: [cron-job.org](https://cron-job.org)
-- Trong repo: `.github/workflows/giu-thuc.yml` mỗi 10 phút — **chỉ tự chạy trên `main`**. Đổi URL: biến repo `KEEP_AWAKE_URL`.
-
-`GET /api/suc-khoe` trả JSON `{ ok, service, phien, ban }`, không đụng database. `phien` = SemVer web; `ban` = 7 ký tự `RENDER_GIT_COMMIT` khi chạy trên Render. Ray HS/GV có `v{phien}` đáy sidebar.
-
-**Không** dán `ZAI_API_KEY` / `OPENROUTER_API_KEY` vào `render.yaml`, commit, secret repo, log, hay artifact. Khóa lớp nằm ở DB sau khi giáo viên dán trên `/gv/ket-noi-ai` — không đưa lên git. `GET /api/suc-khoe` không trả khóa. CI `scripts/kiem-khoa.mjs` từ chối file/chuỗi khóa.
-
-## File
-
-`render.yaml`, `Dockerfile`, `scripts/start-free.sh`.
+Không dán khóa AI vào Blueprint, git, log hoặc artifact. Gia sư mặc định `offline`; triển khai nhà chính thức chỉ sau khi có adapter, bảo quản khóa và cổng lọc được kiểm chứng. Các giới hạn phạm vi: [`ASSUMPTIONS.md`](ASSUMPTIONS.md).

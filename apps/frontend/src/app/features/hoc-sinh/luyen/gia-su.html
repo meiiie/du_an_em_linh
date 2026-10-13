@@ -1,0 +1,25 @@
+@if (!anNut()) {<button appButton variant="secondary" data-testid="mo-gia-su" [attr.aria-expanded]="mo()" (click)="moGiaSu()">Gia sư AI</button>}
+@if (mo() && rong()) {
+  <aside class="tutor-panel" aria-label="Gia sư AI" data-testid="gia-su-panel">
+    <div class="resize" role="separator" tabindex="0" aria-label="Độ rộng gia sư" aria-orientation="vertical" aria-valuemin="360" aria-valuemax="480" [attr.aria-valuenow]="chieuRong()" (pointerdown)="keo($event)" (keydown)="phimRong($event)">⋮</div>
+    <ng-container [ngTemplateOutlet]="chat" />
+  </aside>
+}
+@if (mo() && !rong()) {
+  <dialog #hop class="tutor-sheet" aria-label="Gia sư AI" data-testid="gia-su-panel" (cancel)="$event.preventDefault(); dong()" (keydown)="giuFocus($event)"><ng-container [ngTemplateOutlet]="chat" /></dialog>
+}
+<ng-template #chat>
+  <header><div><h2>Gia sư AI</h2><p class="muted">{{tenBuoc()}}</p></div><button type="button" class="nut-icon" aria-label="Đóng gia sư" (click)="dong()">×</button></header>
+  <div #thread class="tutor-messages" role="log" aria-label="Cuộc trò chuyện với gia sư" aria-live="polite" aria-atomic="false">
+    @if (!luot().length) {<div class="empty"><strong>Em đang vướng ở đâu?</strong><p>Gia sư chỉ gợi ý cách làm, không đưa đáp án</p><p class="muted">Chọn một gợi ý hoặc viết câu hỏi về bước đang làm.</p></div>}
+    @for(m of luot();track $index){<article [class.cau-cua-em]="m.vai==='em'"><span class="sr-only">{{m.vai==='em'?'Em hỏi':'Gia sư trả lời'}}</span>@for(p of tach(m.text);track $index){@if(p.math){<app-katex [latex]="p.text" />}@else{<span class="tutor-text">{{p.text}}</span>}}</article>}
+    @if(dangHoi()){<p class="typing"><span aria-hidden="true">•••</span> {{trangThai()}}</p>}
+  </div>
+  <div class="chips">@for(q of ['Gợi ý bước tiếp','Giải thích công thức','Em sai ở đâu?'];track q){<button appButton variant="secondary" type="button" data-testid="gia-su-chip" [disabled]="dangHoi()" (click)="goChip(q)">{{q}}</button>}</div>
+  <form (submit)="gui($event)">
+    <label for="gia-su-cau-hoi">Em muốn hỏi gì?</label>
+    <textarea #soan id="gia-su-cau-hoi" data-testid="gia-su-composer" [formField]="f.cauHoi" placeholder="Em đang vướng ở đâu?" rows="1" (input)="gianO()" (keydown)="goPhim($event)"></textarea>
+    @if(loi()){<p role="alert" class="field-error">{{loi()}}</p>}
+    <div class="actions"><span class="muted">Enter để gửi · Shift+Enter xuống dòng</span>@if(dangHoi()){<button appButton variant="secondary" type="button" (click)="dung()">Dừng</button>}@else{ @if(loi()){<button appButton variant="secondary" type="button" (click)="hoiLai()">Hỏi lại</button>}<button appButton type="submit" [disabled]="!model().cauHoi.trim() || model().cauHoi.length>1000">Gửi câu hỏi</button>}</div>
+  </form>
+</ng-template>

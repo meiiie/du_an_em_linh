@@ -1,14 +1,17 @@
 import { Component, computed, input } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { BaiCuaHocSinh, TEN_MUC } from '../../api/hoc-sinh';
+import { latexHienThi } from '../../shared/toan/bieu-thuc';
 import { Katex } from '../../shared/toan/katex';
 
-const NGAY = new Intl.DateTimeFormat('vi-VN', { weekday: 'short', day: '2-digit', month: '2-digit', timeZone: 'Asia/Ho_Chi_Minh' });
+import { DinhDangSo, ngayViet } from '../../shared/ui/dinh-dang';
 
 /** Chữ trạng thái của một bài, theo dữ liệu core trả (không tự suy đúng / sai). */
 /** Công thức của đề để hiện: thêm «y =» khi đề chỉ ghi biểu thức (như `hamLatex` của v0, `apps/web/lib/de-hoc-sinh.ts`). */
 export function hamLatex(latex: string): string {
-  const tho = latex.trim();
+  const tho = latexHienThi(latex).trim();
+  if (tho.startsWith(String.raw`\text{`)) return tho;
+  if (laVanBan(tho)) return String.raw`\text{${tho.replace(/[{}\\]/g, '')}}`;
   return !tho || tho.includes('=') ? tho : `y = ${tho}`;
 }
 
@@ -38,7 +41,7 @@ export function chuTrangThai(b: BaiCuaHocSinh): string {
 /** Một hàng bài: vòng trạng thái, tên kỹ năng và hàm số, mức, hạn, trạng thái; cả hàng dẫn tới phiếu làm bài. */
 @Component({
   selector: 'app-hang-bai',
-  imports: [Katex, RouterLink],
+  imports: [Katex, RouterLink, DinhDangSo],
   template: `
     <a class="hang" [routerLink]="['/hs/luyen', bai().maBai]" [attr.data-testid]="'bai-' + bai().maBai">
       <svg [class]="'vong ' + loaiVong()" viewBox="0 0 24 24" aria-hidden="true">
@@ -51,7 +54,7 @@ export function chuTrangThai(b: BaiCuaHocSinh): string {
         }
       </svg>
       <span class="ten">
-        <strong>Bài {{ so() }} · {{ bai().tenKyNang }}</strong>
+        <span class="tieu-de"><strong>Bài {{ so() | soViet }} · {{ bai().tenKyNang }}</strong>@if (kiemTra()) { <span class="badge">Kiểm tra</span> }</span>
         <span class="ham"><app-katex [latex]="hamHang()" /></span>
       </span>
       <span class="muc">{{ tenMuc() }}@if (han(); as h) { · Hạn {{ h }}}</span>
@@ -63,11 +66,12 @@ export function chuTrangThai(b: BaiCuaHocSinh): string {
 })
 export class HangBai {
   readonly bai = input.required<BaiCuaHocSinh>();
+  readonly kiemTra = input(false);
   readonly so = input.required<number>();
 
   protected readonly tenMuc = computed(() => TEN_MUC[this.bai().muc4]);
   protected readonly chu = computed(() => chuTrangThai(this.bai()));
-  protected readonly han = computed(() => (this.bai().han ? NGAY.format(new Date(this.bai().han!)) : null));
+  protected readonly han = computed(() => (this.bai().han ? ngayViet(this.bai().han!) : null));
   /** Trong hàng chỉ hàm số; phần «, y′ = …» của đề hiện đủ trên bảng ở phiếu làm bài. */
   protected readonly hamHang = computed(() => hamLatex(this.bai().deBaiLatex.split(String.raw`,\quad`)[0]));
   protected readonly loaiVong = computed(() => {
@@ -76,4 +80,9 @@ export class HangBai {
     return b.trangThai === 'DANG_LAM' ? 'dang-lam' : 'chua-lam';
   });
   protected readonly phanDat = computed(() => (this.bai().soBuoc ? this.bai().soBuocDat / this.bai().soBuoc : 0));
+}
+
+/** Xem trước là câu chữ (đề hình học, xác suất) chứ không phải biểu thức: không thêm «y =», hiện dạng chữ thường. */
+export function laVanBan(s: string): boolean {
+  return !s.includes('\\') && (/[À-ỹĐđ]/.test(s) || /[A-Za-z]{3,}\s+[A-Za-z]{2,}/.test(s));
 }

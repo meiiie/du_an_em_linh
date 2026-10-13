@@ -7,7 +7,7 @@
 | Ai | Làm | Không làm |
 | --- | --- | --- |
 | Chủ repo (`@meiiie`) | Định hướng, duyệt ADR / spec / thiết kế, **merge** | — |
-| Codex | Rà soát mã theo luồng, viết issue có tiêu chí nghiệm thu, dẫn nguồn; **tự review mọi PR** qua connector GitHub (nhãn P1 / P2) | Viết mã, merge |
+| Codex | Rà soát, hiện thực yêu cầu đã được giao, chạy cổng và chuẩn bị diff/PR có bằng chứng; lead đọc diff và review trước commit/PR | Tự merge, đẩy `main`, tự mở phạm vi ngoài yêu cầu |
 | Claude Code | Hiện thực issue thành PR, chạy cổng, trả lời review; điều phối lab khi được giao | Tự mở việc ngoài issue, merge, đẩy `main` |
 | CodeRabbit | Review theo `.coderabbit.yaml`. Repo OSS đang ở chế độ thủ công: gõ `@coderabbitai review` trên PR; review tăng dần, push giữa chừng làm nó dừng | Duyệt thay người |
 | Lab | Sản xuất tri thức, đặc tả, bộ ca; bàn giao qua issue + tệp trong `labs/` | Sửa mã sản phẩm trực tiếp |
@@ -123,3 +123,5 @@ yêu cầu ─► (lab nếu cần) ─► issue có tiêu chí ─► nhánh �
 ## Nhật ký thay đổi quy trình
 
 - **2026-10-01** — Thiết lập: kế thừa pipeline Codex → Claude → CodeRabbit → chủ repo của LMS; thêm 5 lab; chuyển guardrail từ chữ sang hook; thay `.claudeignore` (không phải tính năng của Claude Code) bằng `permissions.deny`.
+
+- **2026-10-13 — chủ repo cho phép Codex viết mã:** Codex được viết mã và test trong phạm vi được giao; lead đọc diff, review và duyệt kết quả cổng trước commit/PR. Lane DOCS chỉ sửa tài liệu, không mở rộng sang mã. Phiên hoàn thiện MathL+ được phép thực hiện liên tục trong working tree, không commit/push và không triển khai production. FLAT ưu tiên hơn chỉ dẫn giao diện trước đây.

@@ -58,7 +58,7 @@ public class NhapNoiDungChung {
     static final String CHU_DE = "DH12";
 
     /** Nguồn bài ({@code problems.origin}) do importer này tạo: chỉ các bài này mới bị importer rút phát hành khi rời nguồn. */
-    static final Set<String> NGUON_NHAP = Set.of("SUPHAM", "MAY_GIAI", "THAM_SO_HOA", "SUPHAM_KHUNG_NGAN", "VI_DU_CONG");
+    static final Set<String> NGUON_NHAP = Set.of("SUPHAM", "MAY_GIAI", "THAM_SO_HOA", "SUPHAM_KHUNG_NGAN", "VI_DU_CONG", "GIAO_VIEN_NGUYEN_TRAI");
 
     private static final Logger LOG = LoggerFactory.getLogger(NhapNoiDungChung.class);
 
@@ -130,6 +130,46 @@ public class NhapNoiDungChung {
             su.publishEvent(new BaiDaNhap(p.id(), b.ma(), problems.findContentVersion(p.id()).orElseThrow()));
         }
         return new DaNhap(kq, bai);
+    }
+
+    /** Nguồn tự soạn riêng của trường hư cấu, gọi duy nhất từ runner profile dev. */
+    DaNhap nhapTruong() {
+        List<Map<String, @Nullable Object>> chuDe = nguon.danhSach("dev/nguyen-trai/danh-muc.json");
+        List<Map<String, @Nullable Object>> tap = nguon.danhSach("dev/nguyen-trai/bai-tap.json");
+        List<Map<String, @Nullable Object>> kyNang = nguon.danhSach("dev/nguyen-trai/ky-nang.json");
+        List<BaiNhap> bai = tap.stream().map(ex -> {
+            Map<String, @Nullable Object> de = doiTuong(ex.get("de_bai"));
+            String muc = chu(ex.get("muc_do_4"));
+            Object loiGiai = ex.get("bai_lam") != null ? ex.get("bai_lam") : ex.get("loi_giai");
+            return new BaiNhap(chu(ex.get("id")), chu(ex.get("ky_nang_chinh")), List.of(), muc4(muc),
+                muc3(chu(ex.get("muc_do_bo_3")), muc), bloom(chu(ex.get("muc_bloom"))), chu(de.get("van_ban")),
+                chu(de.get("latex")), chuNeuCo(de.get("ham_so_sympy")), chu(ex.get("dang_cau")), null,
+                "GIAO_VIEN_NGUYEN_TRAI", loiGiai, ex.get("su_kien"), danhSach(ex.get("thang_goi_y")));
+        }).toList();
+        giaoDich.executeWithoutResult(t -> {
+            for (Map<String, @Nullable Object> cd : chuDe) {
+                String ma = chu(cd.get("ma"));
+                int lop = ((Number) Objects.requireNonNull(cd.get("lop"))).intValue();
+                catalog.saveTopic(new Topic(ma, chu(cd.get("ten")), lop));
+            }
+            for (Map<String, @Nullable Object> skill : kyNang) {
+                catalog.saveSkill(new Skill(chu(skill.get("ma")), chu(skill.get("chu_de")), chu(skill.get("ten")),
+                    "Nội dung tự soạn của trường hư cấu", ((Number) Objects.requireNonNull(skill.get("lop"))).intValue(), true));
+            }
+            for (Map<String, @Nullable Object> buoc : nguon.danhSach("v0/khung-buoc.json")) {
+                Map<String, @Nullable Object> moi = new LinkedHashMap<>(buoc);
+                moi.put("skillCode", "T12.NT.HS");
+                ghiKhungBuoc(List.of(moi));
+            }
+            ghiKhungBuoc(nguon.danhSach("dev/nguyen-trai/khung-buoc.json"));
+            Instant luc = clock.instant();
+            for (int i = 0; i < bai.size(); i++) {
+                BaiNhap b = bai.get(i);
+                Object answer = doiTuong(tap.get(i).get("loi_giai")).get("dap_an");
+                ghiBai(b, luc, JsonKieuJs.stringify(answer));
+            }
+        });
+        return new DaNhap(new KetQua(kyNang.size(), 0, 5, bai.stream().map(BaiNhap::ma).toList()), bai);
     }
 
     // ---- Dựng bài (gọi dịch vụ toán) ---------------------------------------------------------------------------
@@ -299,6 +339,10 @@ public class NhapNoiDungChung {
     }
 
     private void ghiBai(BaiNhap b, Instant luc) {
+        ghiBai(b, luc, null);
+    }
+
+    private void ghiBai(BaiNhap b, Instant luc, @Nullable String answer) {
         Optional<Problem> daCo = problems.findByCode(b.ma());
         UUID id = daCo.map(Problem::id).orElseGet(UUID::randomUUID);
         Instant taoLuc = daCo.map(Problem::createdAt).orElse(luc);
@@ -311,7 +355,7 @@ public class NhapNoiDungChung {
                 moi.origin(), moi.contentHash(), moi.createdBy(), taoLuc, luc));
         }
         solutions.save(new Solution(id, b.baiLam() == null ? null : JsonKieuJs.stringify(b.baiLam()), JsonKieuJs.stringify(b.suKien()),
-            null));
+            answer));
         List<HintLevel> cap = new ArrayList<>();
         for (Map<String, @Nullable Object> khoi : b.thangGoiY()) {
             String buoc = chu(khoi.get("ma_buoc"));

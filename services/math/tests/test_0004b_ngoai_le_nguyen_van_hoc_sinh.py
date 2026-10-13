@@ -160,13 +160,7 @@ def test_job_filter_truyen_dong_hoc_sinh():
     assert _run("filter", dict(p, dong_hoc_sinh=["3(x-1)(x-3)=0"]))["cho_phep"] is False
 
 
-def test_web_gia_su_gui_dong_bai_nop_cho_bo_loc():
-    p = os.path.join(ROOT, "apps", "web", "lib", "gia-su-luot.ts")
-    if not os.path.exists(p):
-        pytest.skip("không có apps/web")
-    t = open(p, encoding="utf-8").read()
-    assert "submissionSteps.latex" in t and "eq(submissionSteps.submissionId, latestSub[0].id)" in t
-    assert t.count("dong_hoc_sinh: dongHocSinh") == 2
+# Việc chuyển bài nộp tới bộ lọc thuộc tutor core; luồng Next.js đã gỡ.
 
 
 # ------------------------------------------------------------------ chuẩn hóa ký hiệu (không đại số)

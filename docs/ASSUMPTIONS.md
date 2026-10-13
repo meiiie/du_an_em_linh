@@ -1,0 +1,27 @@
+# MathL+ — mặc định cho câu hỏi khách còn mở
+
+**Ngày:** 2026-10-13. Đây là mặc định làm việc để triển khai và nghiệm thu, không phải xác nhận khách đã trả lời. Chủ repo đã chốt gỡ v0, FLAT và cho Codex hiện thực trong phạm vi được giao, lead review. Phiên DOCS không commit/push/deploy. Hành vi cần kiểm theo [spec 002](../specs/002-hoan-thien-v2/spec.md), DTO theo [API_UX](API_UX.md); tài liệu không thay bằng chứng cổng.
+
+| Mã | Câu hỏi | Mặc định | Khi cần đổi |
+| --- | --- | --- | --- |
+| A01 | Nghiệm thu gì? | Một vòng lõi thật cho một chủ đề Toán 12: đơn điệu và cực trị; Angular/core/math, giữ snapshot `data/v0` để import. | Khách chốt chủ đề/tính năng bổ sung; dữ liệu qua lab và bản vá nguyên văn. |
+| A02 | Chatbot giải bài? | Gia sư chỉ gợi ý ba cấp, không đáp án cuối/lời giải trọn/làm hộ bước, không đọc lời giải chuẩn; hai cổng CAS fail-closed. Kiểm tra cấm gia sư phía server. Cờ lời giải sau nộp mặc định tắt. | Thay chính sách cần ADR và không nới hiến chương khi học sinh đang làm. |
+| A03 | Ai trả phí API AI? | Demo `offline`, không phát sinh token. Khi có tích hợp trả phí được duyệt, đơn vị lớp/trường đặt dịch vụ chịu phí và cấp khóa chính thức qua người quản lý được ủy quyền; không mặc định nhà phát triển hoặc học sinh trả. Chưa có hạn mức/ngân sách, không tự bật tính phí. | Chủ repo/khách chốt bên thanh toán, hạn mức, điều khoản dữ liệu và adapter trước bật. |
+| A04 | Bloom hay 4 mức? | Lưu/hiện NB/TH/VD/VDC cho học sinh; Bloom chỉ metadata, không tạo thang sáu mức hay quy đổi một-một khi chưa có căn cứ. Ba mức CV 7991 chỉ khi giáo viên xem, không thay dữ liệu bốn mức. | Lab sư phạm xác nhận cách ánh xạ nếu khách yêu cầu. |
+| A05 | Nhắc qua đâu? | Chỉ trong ứng dụng khi mở app: lịch và hạn sắp tới, không email, web push, Zalo/SMS. Giờ hiển thị Asia/Ho_Chi_Minh, API lưu thời điểm có timezone. | Kênh ngoài cần hạ tầng, đồng ý, chi phí và đặc tả riêng. |
+| A06 | SGK/sách tham khảo? | Chỉ tài liệu giáo viên tự soạn cho kho lớp; không sao chép/tải nguyên SGK hay sách có bản quyền, không kho public. `licenseStatus=tu_soan` là khai báo, không chứng nhận quyền của một sách. | Khách cung cấp quyền sử dụng và quy trình rà trước nhập nội dung khác. |
+| A07 | Chat chung/bạn bè? | Không social chat học sinh. Giữ học với gia sư hint-only và trao đổi học tập với giáo viên theo quyền; không xây mạng xã hội. | Cần đặc tả quyền riêng tư/kiểm duyệt và vận hành trước xem xét; không coi Nghị định 13 là lệnh cấm tuyệt đối chat. |
+| A08 | Flashcard/Quizlet? | Thẻ từ công thức lớp đã khóa; đổi mặt 2D dùng bàn phím. Không có API ghi Quizlet được phê duyệt trong tích hợp MathL+; xuất CSV UTF-8 hai cột an toàn để mở bảng tính, sao chép rồi nhập thủ công. Không đồng bộ, không giả lập API private; chưa Word/PDF. | Chỉ đổi khi có hợp đồng tích hợp chính thức được xác minh; không suy diễn từ công cụ bên thứ ba. |
+| A09 | Đề thi/ma trận? | Bộ bài kiểm tra không gia sư có hạn, chưa engine thi/ma trận/giám sát. Một giao hiệu lực mỗi bài/em; hạn server chặn ghi, không tự mở lời giải. | Đề chuẩn, nhiều lượt thi, auto-submit cần đặc tả riêng. |
+| A10 | Nội dung mở rộng? | Không OCR, sơ đồ tư duy, kho public hay khóa học online; không tự sửa `data/supham` hoặc fixture kiểm định. PDF chữ hỗ trợ theo hợp đồng; scan không suy diễn có OCR. | Qua issue/lab đúng vùng. |
+| A11 | Quản trị? | ADMIN tạo người dùng/lớp; SCHOOL_ADMIN chỉ phạm vi phân công; giáo viên lớp mình; ghi đè/duyệt/bulk có lý do/quyền/nhật ký. | Quyền mới cần test và hợp đồng phạm vi. |
+| A12 | Dữ liệu/hạ tầng? | Dữ liệu hoàn toàn tổng hợp trong repo, prompt, log, ảnh. Không pilot thật hoặc production trong phiên này; không giả định JDK/Docker/cổng đã có. | Pilot thật theo hiến chương và ADR 012; ghi môi trường/kết quả đo thật. |
+| A13 | Thiết kế và migration? | FLAT ưu tiên tuyệt đối, focus outline; V1–V10 bất biến, không dùng V11, chỉ thêm V12+ còn trống. | Không có ngoại lệ FLAT từ nguyên mẫu; schema mới theo lane core. |
+
+## Nguồn và giới hạn xác minh
+
+Báo cáo yêu cầu/UX chỉ đọc ở `/workspace/du_an_em_linh-notes` dùng «Nghị định 13» làm căn cứ quan ngại dữ liệu học sinh. Giữ quyết định sản phẩm không social chat, nhưng không dùng tên văn bản cũ để tuyên bố hệ thống đã tuân thủ pháp luật. [Luật 91/2025/QH15](https://congbao.chinhphu.vn/van-ban/luat-so-91-2025-qh15-45578.htm) có hiệu lực 01/01/2026. [Nghị định 356/2025/NĐ-CP](https://vbpl.vn/TW/Pages/vbpq-toanvan.aspx?ItemID=187276) quy định Nghị định 13/2023/NĐ-CP hết hiệu lực khi nghị định mới có hiệu lực; ADR 012 là hồ sơ thiết kế quyền riêng tư. Tra cứu ngày 2026-10-13: nguồn luật chính thức, độ tin cao; trang nghị định trả 403 khi mở trực tiếp, điều khoản tìm được qua chỉ mục nguồn chính thức, cần đối chiếu toàn văn khi chuẩn bị pilot.
+
+[Hướng dẫn nhập nội dung của Quizlet](https://help.quizlet.com/hc/en-us/articles/360029977151-Creating-sets-by-importing-content) mô tả nhập văn bản qua website, dùng dấu phẩy/tab giữa thuật ngữ và định nghĩa. Truy cập 2026-10-13, độ tin cao cho thao tác nhập thủ công. Nguồn này không chứng minh mọi API ghi đều không tồn tại; A08 là mặc định tích hợp không API write, không tuyên bố tuyệt đối về toàn bộ sản phẩm Quizlet. CSV có nháy/xuống dòng nên mở bằng bảng tính rồi sao chép hai cột khi nhập, không hứa Quizlet đọc trực tiếp tệp CSV tùy ý.
+
+Mọi thay đổi mặc định phải ghi tác động vào spec/API/ADR và tiêu chí nghiệm thu, không tự thêm phạm vi theo báo cáo tham chiếu. Không có ngân sách hoặc mốc triển khai đã được khách xác nhận trong tài liệu này.

@@ -21,7 +21,7 @@ import { Component } from '@angular/core';
       place-items: center;
       min-height: 100dvh;
       padding: var(--space-8);
-      background: var(--board) url('/anh/hero-nen-toi-1280.webp') center / cover no-repeat;
+      background: linear-gradient(145deg, var(--board), color-mix(in srgb, var(--m-blue) 24%, var(--board)));
       color: var(--board-ink);
       color-scheme: dark;
     }
@@ -33,7 +33,6 @@ import { Component } from '@angular/core';
       width: 100%;
       height: auto;
       border-radius: 16px;
-      box-shadow: 0 24px 60px rgb(0 0 0 / 0.45);
     }
     .cau {
       margin: var(--space-6) 0 0;

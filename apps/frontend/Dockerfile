@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
 # apps/frontend: build Angular bằng pnpm trên Node 24, phục vụ bằng nginx không root.
 # Ngữ cảnh build là gốc repo (cần lockfile của workspace); Dockerfile.dockerignore cạnh file này lọc ngữ cảnh.
-# /api/ chuyển tới services/core (CORE_URL) để trình duyệt gọi cùng gốc, không cần CORS.
+# /api/ chuyển tới services/core (CORE_HOSTPORT) để trình duyệt gọi cùng gốc, không cần CORS.
 
 FROM node:24-alpine AS build
 WORKDIR /src
@@ -11,10 +11,13 @@ COPY apps/frontend/package.json apps/frontend/package.json
 RUN --mount=type=cache,id=pnpm-store,target=/root/.local/share/pnpm/store \
     pnpm install --frozen-lockfile --filter frontend
 COPY apps/frontend/ apps/frontend/
+ARG GIT_SHA=development
+ARG RENDER_GIT_COMMIT
 RUN pnpm --filter frontend build
+RUN node -e "const fs=require('fs');fs.writeFileSync('apps/frontend/dist/frontend/browser/version.json',JSON.stringify({revision:process.env.GIT_SHA==='development'?(process.env.RENDER_GIT_COMMIT||'development'):process.env.GIT_SHA}));"
 
 FROM nginxinc/nginx-unprivileged:1.30-alpine
-ENV CORE_URL=http://core:8080
+ENV CORE_HOSTPORT=core:8080
 # URL công khai của trang (canonical, Open Graph, sitemap); đặt lại khi triển khai.
 ENV SITE_URL=http://localhost:4200
 COPY apps/frontend/nginx/default.conf.template /etc/nginx/templates/default.conf.template

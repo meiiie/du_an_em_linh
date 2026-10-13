@@ -26,7 +26,7 @@ public class EnrollmentRepositoryAdapter implements EnrollmentRepository {
 
     @Override
     public Optional<Enrollment> find(ClassId classId, UUID userId) {
-        return jpa.findById(new EnrollmentJpaEntity.Key(classId.value(), userId)).map(EnrollmentJpaEntity::toDomain);
+        return jpa.findActive(classId.value(), userId).map(EnrollmentJpaEntity::toDomain);
     }
 
     @Override

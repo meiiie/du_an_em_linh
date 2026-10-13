@@ -1,45 +1,71 @@
 <header class="dau-trang">
+  <p class="nhan-muc">Toán 12 · Đơn điệu và cực trị</p>
   <h1>Chào {{ ten() }}</h1>
 </header>
 
 @if (ds.isLoading() && !ds.hasValue()) {
-  <div class="dang-tai" aria-busy="true"><span class="sr-only">Đang tải bài được giao</span></div>
+  <app-khung-cho nhan="Đang tải bài được giao" />
 } @else if (ds.error()) {
-  <div class="trong" role="alert">
-    <p>Chưa tải được bài. Kiểm tra kết nối rồi thử lại.</p>
-    <button appButton variant="secondary" type="button" (click)="ds.reload()">Thử lại</button>
-  </div>
+  <app-loi-tai [loi]="ds.error()" (thuLai)="ds.reload()" />
 } @else {
+  @if (cheDo.error()) { <app-loi-tai [loi]="cheDo.error()" moTa="Chưa tải được chế độ bài." (thuLai)="cheDo.reload()" /> }
+  <div class="hoc-grid">
+  <div class="hoc-chinh">
   @if (ke(); as ke) {
     <section class="ke-tiep" aria-labelledby="tieu-de-ke-tiep">
       <div class="ke-chu">
-        <h2 id="tieu-de-ke-tiep" class="nhan-muc">Bài tiếp theo</h2>
+        <h2 id="tieu-de-ke-tiep" class="nhan-muc">Tiếp theo</h2>
+        @if(!kiemTraKe() && goiBai.hasValue() && goiBai.value()[0]?.id === ke.maBai){<p class="phu">{{goiBai.value()[0].subtitle}}</p>}
+        @if (kiemTraKe(); as kt) {
+          <p class="ky-nang">{{ kt.ten }}</p>
+          <p class="phu">{{ kt.soCau | soViet }} câu · Hạn: {{ gio(kt.han || '') }}</p>
+          <p class="phu">Gia sư tạm tắt khi kiểm tra</p>
+        }
         <p class="ky-nang">{{ ke.tenKyNang }}</p>
-        <p class="cau-hoi">{{ thanDe(ke.deBai) }}</p>
+        <p class="cau-hoi"><app-van-ban-toan [text]="thanDe(ke.deBai)" /></p>
         <div class="tien-do" role="img" [attr.aria-label]="'Đã đạt ' + ke.soBuocDat + ' trên ' + ke.soBuoc + ' bước'">
           @for (dat of vach(ke); track $index) {
             <i [class.dat]="dat"></i>
           }
-          <span>{{ ke.soBuocDat }}/{{ ke.soBuoc }} bước · {{ tenMuc[ke.muc4] }}</span>
+          <span>{{ ke.soBuocDat | soViet }}/{{ ke.soBuoc | soViet }} bước · {{ tenMuc[ke.muc4] }}</span>
         </div>
-        <a appButton size="lg" [routerLink]="['/hs/luyen', ke.maBai]" data-testid="lam-buoc-tiep">Làm bước tiếp</a>
+        <a appButton size="lg" [routerLink]="['/hs/luyen', ke.maBai]" data-testid="lam-buoc-tiep">{{ kiemTraKe() ? 'Bắt đầu kiểm tra' : 'Làm bước tiếp' }}</a>
       </div>
       <app-katex class="ke-bang" bang [latex]="deBang(ke.deBaiLatex)" />
     </section>
   }
 
   <section aria-labelledby="tieu-de-bai-giao">
-    <h2 id="tieu-de-bai-giao" class="nhan-muc">Bài được giao</h2>
+    <div class="section-heading"><h2 id="tieu-de-bai-giao" class="nhan-muc">Bài được giao</h2><span class="list-summary">{{ (ds.value()?.length ?? 0) | soViet }} bài</span></div>
     @if (ds.value()?.length) {
-      <ul class="danh-sach">
-        @for (b of ds.value(); track b.maBai; let i = $index) {
-          <li><app-hang-bai [bai]="b" [so]="i + 1" /></li>
-        }
-      </ul>
+      @for (n of sapToi(); track n.id) {
+        <div class="nhom-sap-toi">
+          <div class="section-heading"><h3>{{n.ten}}</h3><span class="list-summary">{{n.daNop | soViet}}/{{n.tong | soViet}} đã nộp · Hạn: {{ngay(n.han)}}</span></div>
+          <ul class="danh-sach">
+            @for (h of n.hang; track h.bai.maBai) {
+              <li><app-hang-bai [bai]="h.bai" [so]="h.so" [kiemTra]="laKiemTra(h.bai.maBai)" /></li>
+            }
+          </ul>
+        </div>
+      } @empty {<p class="muted">Không còn bài sắp tới. Em có thể xem lại các bài đã làm.</p>}
+      <a class="xem-tat-ca" routerLink="/hs/bai">Xem tất cả bài được giao →</a>
     } @else {
-      <div class="trong">
-        <p>Chưa có bài. Bài thầy cô giao sẽ hiện ở đây.</p>
-      </div>
+<app-trang-rong tieuDe="Chưa có bài" moTa="Chưa có bài. Bài thầy cô giao sẽ hiện ở đây."><a appButton variant="secondary" routerLink="/hs/kho">Ôn công thức</a></app-trang-rong>
     }
   </section>
+
+  </div>
+  <aside class="hoc-so" aria-label="Sổ học tập">
+  @if(nhac.isLoading()){<app-khung-cho nhan="Đang tải lịch nhắc học" />}
+  @if(nhac.hasValue() && nhacSapToi().length){<section class="surface nhac-hoc"><h2 class="nhan-muc">Hôm nay và hạn sắp tới</h2><ul class="row-list" aria-label="Lịch nhắc học và hạn nộp">@for(n of nhacSapToi();track n.id){<li><strong>{{nhacTen(n)}}</strong><p class="muted">{{nhacNgay(n)}}</p></li>}</ul><a routerLink="/hs/lich">Xem lịch học →</a></section>}
+  @if(nhac.error()){<app-loi-tai [loi]="nhac.error()" moTa="Chưa tải được lịch nhắc học." (thuLai)="nhac.reload()" />}
+  @if(th.isLoading()){<app-khung-cho nhan="Đang tải mức hiểu" />}@else if(th.error()){<app-loi-tai [loi]="th.error()" moTa="Chưa tải được mức hiểu. Bài được giao vẫn làm được." (thuLai)="th.reload()" />}
+  @if (th.hasValue()) {
+    <section aria-labelledby="tieu-de-ky-nang" data-testid="so-ky-nang">
+      <h2 id="tieu-de-ky-nang" class="nhan-muc">Kỹ năng</h2>
+      <app-so-ky-nang [kyNang]="th.value().soKyNang" />
+    </section>
+  }
+  </aside>
+  </div>
 }

@@ -20,6 +20,7 @@ import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
 import tools.jackson.databind.json.JsonMapper;
 import vn.hoctapcanman.core.content.domain.event.BangCongThucDaKhoa;
+import vn.hoctapcanman.core.shared.infrastructure.seed.TruongNguyenTrai;
 import vn.hoctapcanman.core.content.domain.model.CheckStatus;
 import vn.hoctapcanman.core.content.domain.model.Document;
 import vn.hoctapcanman.core.content.domain.model.DocumentKind;
@@ -64,7 +65,7 @@ public class NhapTheoLop {
     private static final Logger LOG = LoggerFactory.getLogger(NhapTheoLop.class);
     private static final JsonMapper JSON = JsonMapper.builder().build();
     private static final List<String> TAI_LIEU_LAB = List.of("supham/tai-lieu/sp-tai-lieu-0001.json", "supham/tai-lieu/sp-tai-lieu-0002.json");
-    private static final String GHI_CHU_BANG = "Bảng của v0 (v0/bang-cong-thuc.json), khóa qua kiem-dong-cong-thuc";
+    private static final String GHI_CHU_BANG = "Bảng importer MathL+, khóa qua kiem-dong-cong-thuc";
 
     private final NguonNoiDung nguon;
     private final KiemToan toan;
@@ -99,6 +100,33 @@ public class NhapTheoLop {
     record TaiLieuLop(Document taiLieu, List<DocumentPassage> doan) {}
 
     KetQua nhap(UUID lop, List<NhapNoiDungChung.BaiNhap> bai) {
+        return nhap(lop, bai, false);
+    }
+
+    KetQua nhapTruong(UUID lop, List<NhapNoiDungChung.BaiNhap> bai) {
+        return nhap(lop, bai, true);
+    }
+
+    /** Chỉ runner dev gọi; ghi quyết định thật qua domain, không đổi các tầng CAS. */
+    void duyetTruong(UUID lop, UUID giaoVien, List<NhapNoiDungChung.BaiNhap> bai) {
+        var codes = bai.stream().map(NhapNoiDungChung.BaiNhap::ma).collect(java.util.stream.Collectors.toSet());
+        for (var ex : nguon.danhSach("dev/nguyen-trai/bai-tap.json")) {
+            if (!codes.contains(chu(ex.get("id")))) continue;
+            var review = doiTuong(ex.get("duyet_seed"));
+            if (!"DA_DUYET".equals(review.get("trang_thai"))) continue;
+            Problem p = problems.findByCode(chu(ex.get("id"))).orElseThrow();
+            giaoDich.executeWithoutResult(t -> {
+                var run = runs.findLatest(lop, SubjectKind.PROBLEM, p.id()).orElseThrow();
+                UUID sheet = sheets.findCurrent(lop).map(FormulaSheet::id).orElse(null);
+                if (run.approvalRefusal(true, p.contentHash(), sheet).isEmpty()) {
+                    runs.saveApproval(run.approve(giaoVien, chu(review.get("ghi_chu")), true,
+                        p.contentHash(), sheet, clock.instant()));
+                }
+            });
+        }
+    }
+
+    private KetQua nhap(UUID lop, List<NhapNoiDungChung.BaiNhap> bai, boolean truong) {
         // Trước mọi lệnh gọi dịch vụ toán (có thể lỗi): bài rời nguồn thôi phát hành dù phần sau của lần nhập hỏng.
         rutBaiRoiNguon(lop, bai.stream().map(NhapNoiDungChung.BaiNhap::ma).collect(java.util.stream.Collectors.toSet()));
         Optional<FormulaSheet> dangDung = sheets.findCurrent(lop);
@@ -108,11 +136,11 @@ public class NhapTheoLop {
             LOG.info("Lớp {}: bảng đang dùng phiên bản {} do giáo viên sửa, bỏ qua nhập theo lớp", lop, dangDung.get().version());
             return new KetQua(lop, 0, dangDung.get().id(), dangDung.get().version(), phatHanhCua(lop, bai), 0);
         }
-        Map<String, TaiLieuLop> kho = napTaiLieu(lop);
-        FormulaSheet bang = khoaBang(lop, kho);
+        Map<String, TaiLieuLop> kho = napTaiLieu(lop, truong);
+        FormulaSheet bang = khoaBang(lop, kho, truong);
         int daKiem = 0;
         for (NhapNoiDungChung.BaiNhap b : bai) {
-            if (kiemBai(lop, b, kho, bang)) {
+            if (kiemBai(lop, b, kho, bang, truong)) {
                 daKiem++;
             }
         }
@@ -121,6 +149,17 @@ public class NhapTheoLop {
         LOG.info("Nhập nội dung cho lớp {}: {} tài liệu, bảng phiên bản {}, kiểm {} bài, phát hành {}", lop, kq.taiLieu(),
             kq.phienBanBang(), daKiem, demTheoTrangThai(phatHanh));
         return kq;
+    }
+
+    /** Bảng chương chưa được CAS hỗ trợ giữ NHAP; không tự đặt trạng thái DAT. */
+    void napBangChuong(UUID lop) {
+        if (sheets.findDraft(lop).isPresent()) return;
+        int version = sheets.findCurrent(lop).map(b -> b.version() + 1).orElse(1);
+        UUID id = TruongNguyenTrai.id("bang-chuong:" + lop + ":" + version);
+        List<Formula> rows = dongBang("dev/nguyen-trai/bang-chuong.json");
+        FormulaSheet bang = new FormulaSheet(id, lop, version, SheetStatus.NHAP, ghiChuBangChuong(rows, id),
+            null, null, null, clock.instant(), rows);
+        giaoDich.executeWithoutResult(t -> sheets.save(bang));
     }
 
     private Map<String, ReleaseStatus> phatHanhCua(UUID lop, List<NhapNoiDungChung.BaiNhap> bai) {
@@ -165,9 +204,9 @@ public class NhapTheoLop {
      * từ chối, và căn cứ phải bất biến); bản cũ giữ nguyên làm căn cứ, chỉ đổi mã thành {@code mã.cu-<8 ký tự đầu của id>} để
      * nhường mã, rồi nạp bản mới với mã gốc. Kho của lớp gửi dịch vụ toán chỉ gồm các bản mang mã gốc.
      */
-    private Map<String, TaiLieuLop> napTaiLieu(UUID lop) {
-        List<Map<String, @Nullable Object>> nguonTaiLieu = new ArrayList<>(nguon.danhSach("v0/tai-lieu.json"));
-        TAI_LIEU_LAB.forEach(duong -> nguonTaiLieu.add(nguon.doiTuong(duong)));
+    private Map<String, TaiLieuLop> napTaiLieu(UUID lop, boolean truong) {
+        List<Map<String, @Nullable Object>> nguonTaiLieu = new ArrayList<>(nguon.danhSach(truong ? "dev/nguyen-trai/tai-lieu.json" : "v0/tai-lieu.json"));
+        if (!truong) TAI_LIEU_LAB.forEach(duong -> nguonTaiLieu.add(nguon.doiTuong(duong)));
         Map<String, TaiLieuLop> kho = new LinkedHashMap<>();
         giaoDich.executeWithoutResult(t -> {
             for (Map<String, @Nullable Object> d : nguonTaiLieu) {
@@ -229,23 +268,24 @@ public class NhapTheoLop {
      * thành cũ, phát hành giữ «cần kiểm lại» tới khi kiểm lại (ADR 005). Importer không bao giờ để lại bảng nháp (bảng nháp
      * của nó được ghi và khóa trong một giao dịch, khóa lỗi thì không ghi gì), nên bảng nháp nào đang có cũng là của giáo
      * viên, kể cả bảng nháp chép từ bảng đã nhập ({@code newDraft} giữ ghi chú): cần khóa bảng mới mà lớp có bảng nháp thì
-     * dừng, không ghi đè. Bảng đang dùng của giáo viên ({@link #laCuaImporter} sai) không tới đây: {@link #nhap} bỏ qua lớp.
+     * dừng, không ghi đè. Ngoại lệ dev: nháp chương của seed có đúng UUID và dấu vân tay chưa sửa được dùng lại để khóa
+     * phiên bản đạo hàm mới, sau đó tạo nháp chương phiên bản kế. Bảng đang dùng của giáo viên ({@link #laCuaImporter} sai) không tới đây: {@link #nhap} bỏ qua lớp.
      */
-    private FormulaSheet khoaBang(UUID lop, Map<String, TaiLieuLop> kho) {
-        List<Formula> dong = dongBangV0();
+    private FormulaSheet khoaBang(UUID lop, Map<String, TaiLieuLop> kho, boolean truong) {
+        List<Formula> dong = dongBang(truong ? "dev/nguyen-trai/bang-dao-ham.json" : "v0/bang-cong-thuc.json");
         Optional<FormulaSheet> dangDung = sheets.findCurrent(lop);
         if (dangDung.isPresent() && ghiChuBang(kho, dangDung.get().id()).equals(dangDung.get().note())
                 && dauVanTay(dangDung.get().rows()).equals(dauVanTay(dong))) {
             return dangDung.get();
         }
         Optional<FormulaSheet> banNhap = sheets.findDraft(lop);
-        if (banNhap.isPresent()) {
+        if (banNhap.isPresent() && !(truong && laBangChuongSeed(banNhap.get()))) {
             throw new IllegalStateException("Lớp " + lop + " có bảng nháp đang soạn (" + banNhap.get().id()
                 + "): không ghi đè, không khóa bảng của v0");
         }
-        int phienBan = dangDung.map(b -> b.version() + 1).orElse(1);
+        int phienBan = banNhap.map(FormulaSheet::version).orElseGet(() -> dangDung.map(b -> b.version() + 1).orElse(1));
         Instant luc = clock.instant();
-        UUID bangId = UUID.randomUUID();
+        UUID bangId = banNhap.map(FormulaSheet::id).orElseGet(UUID::randomUUID);
         FormulaSheet nhap = new FormulaSheet(bangId, lop, phienBan, SheetStatus.NHAP, ghiChuBang(kho, bangId), null, null, null, luc,
             dong);
 
@@ -313,8 +353,8 @@ public class NhapTheoLop {
         return khoa;
     }
 
-    private List<Formula> dongBangV0() {
-        List<Map<String, @Nullable Object>> dong = danhSach(nguon.doiTuong("v0/bang-cong-thuc.json").get("formulas"));
+    private List<Formula> dongBang(String tep) {
+        List<Map<String, @Nullable Object>> dong = danhSach(nguon.doiTuong(tep).get("formulas"));
         List<Formula> kq = new ArrayList<>();
         for (int i = 0; i < dong.size(); i++) {
             Map<String, @Nullable Object> f = dong.get(i);
@@ -322,6 +362,16 @@ public class NhapTheoLop {
                 chu(f.get("noiDung"))));
         }
         return kq;
+    }
+
+    static String ghiChuBangChuong(List<Formula> rows, UUID id) {
+        return "Bảng chương seed Nguyễn Trãi · dòng " + NhapNoiDungChung.sha256(String.join("\n", dauVanTay(rows)))
+            + " · bảng " + id;
+    }
+
+    static boolean laBangChuongSeed(FormulaSheet bang) {
+        return bang.id().equals(TruongNguyenTrai.id("bang-chuong:" + bang.classId() + ":" + bang.version()))
+            && ghiChuBangChuong(bang.rows(), bang.id()).equals(bang.note());
     }
 
     private static List<String> dauVanTay(List<Formula> dong) {
@@ -352,7 +402,7 @@ public class NhapTheoLop {
     // ---- Kiểm và phát hành từng bài -------------------------------------------------------------------------------
 
     /** Kiểm một bài cho lớp nếu chưa có lượt còn mới; luôn bảo đảm phát hành theo lượt mới nhất. Trả true nếu đã kiểm. */
-    private boolean kiemBai(UUID lop, NhapNoiDungChung.BaiNhap b, Map<String, TaiLieuLop> kho, FormulaSheet bang) {
+    private boolean kiemBai(UUID lop, NhapNoiDungChung.BaiNhap b, Map<String, TaiLieuLop> kho, FormulaSheet bang, boolean truong) {
         Problem p = problems.findByCode(b.ma()).orElseThrow(() -> new IllegalStateException("Chưa có bài " + b.ma()));
         int phienBan = problems.findContentVersion(p.id()).orElseThrow();
         Optional<VerificationRun> moiNhat = runs.findLatest(lop, SubjectKind.PROBLEM, p.id());
@@ -371,7 +421,8 @@ public class NhapTheoLop {
 
         Map<String, @Nullable Object> yeuCau = new LinkedHashMap<>();
         yeuCau.put("ham", b.ham());
-        yeuCau.put("bai_lam", b.baiLam());
+        // v0 gửi nguyên bài làm ở mọi dạng câu; chỉ nguồn trường mới có lời giải ngoài schema năm bước.
+        yeuCau.put("bai_lam", truong && !Problem.TU_LUAN_5_BUOC.equals(b.dangTraLoi()) ? null : b.baiLam());
         yeuCau.put("thang_goi_y", b.thangGoiY());
         if (b.buocBatDau() != null) {
             yeuCau.put("buoc_bat_dau", b.buocBatDau());

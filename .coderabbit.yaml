@@ -21,7 +21,6 @@ reviews:
 
   path_filters:
     - "!**/node_modules/**"
-    - "!**/.next/**"
     - "!**/.venv/**"
     - "!pnpm-lock.yaml"
     - "!**/*.tsbuildinfo"
@@ -53,23 +52,6 @@ reviews:
         Dữ liệu của lab Sư phạm. YCCĐ phải trích nguyên văn CT GDPT 2018 kèm trang. Mỗi mã lỗi cần dấu hiệu nhận biết
         kiểm được bằng CAS. Chỉ sửa qua bản vá có mã. Không dữ liệu học sinh thật.
 
-    - path: "apps/web/lib/{tutor,gia-su-luot,ai-harness,ai-catalog,llm,kien-thuc,kho-lop,citations,loi-gia-su}*.ts"
-      instructions: |
-        Luồng gia sư (ADR 003, 007, 010; docs/AI-HARNESS.md):
-        - Prompt không chứa lời giải chuẩn, protected_facts, đáp án nội bộ.
-        - Thứ tự: luật xin đáp án → thang 3 cấp (không bottom-out) → kho lớp → nhà đã chọn → bộ lọc CAS.
-        - Không fallback thầm, không retry gọi lại mô hình, không stream token tới học sinh.
-        - Xóa định danh trước khi gửi ra ngoài; khóa không vào log, prompt, trình duyệt.
-        - PR đổi vùng này phải có bảng kết quả bộ ca dụ đáp án (skill tutor-safety).
-
-    - path: "apps/web/**/*.{tsx,css}"
-      instructions: |
-        Giao diện (docs/DESIGN.md, hiến chương V, VIII):
-        - Chữ tiếng Việt có dấu, giọng lớp 12 / phòng giáo viên; không thuật ngữ kỹ thuật, không câu giải thích UI thừa.
-        - Lưới 8 px; nút cao 40, chạm 44 với pointer coarse, bán kính 6; dùng Button / buttonClasses.
-        - Giữ data-testid và heading e2e đã khóa (AGENTS.md).
-        - WCAG 2.2 AA: focus thấy được, nhãn cho điều khiển, aria-live khi chấm, prefers-reduced-motion.
-
     - path: "services/core/**/*.java"
       instructions: |
         Backend v2 (ADR 011, skill spring-core, rule spring-core):
@@ -93,10 +75,6 @@ reviews:
       instructions: |
         Flyway chỉ thêm (V<n>__<viec>.sql), không sửa migration đã gộp.
 
-    - path: "apps/web/drizzle/**"
-      instructions: |
-        Migration chỉ thêm, không sửa migration đã gộp. Bảng dữ liệu học sinh: RLS hoặc kiểm vai trò như ADR 006.
-
     - path: ".claude/**"
       instructions: |
         Harness Claude Code. Hook phải có ca kiểm thử trong .claude/hooks/*.test.mjs và fail-open khi lỗi nội bộ.
@@ -109,7 +87,7 @@ reviews:
 
     - path: ".github/workflows/*.yml"
       instructions: |
-        Không bỏ job kiểm thử (harness, toan, web, e2e). Quyền workflow tối thiểu (contents: read trừ khi cần).
+        Giữ job kiểm thử của hệ hiện hành (harness, toán, core, frontend, compose/e2e). Quyền workflow tối thiểu (contents: read trừ khi cần).
 
   tools:
     languagetool:

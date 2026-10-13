@@ -9,16 +9,10 @@ const GOI_GOC = [/^package\.json$/, /^pnpm-lock\.yaml$/, /^pnpm-workspace\.yaml$
 
 export const NHOM = {
   harness: [/^\.claude\//],
-  // data/supham, data/v0 được đóng gói vào ảnh core (T003b): job Core kiểm chúng có trong ảnh.
-  // services/math và các tệp v0 mà script đối chiếu chạy (seed.ts, loi-giai.ts; solve-client.tsx, hs.ts, math.ts, levels.ts, trang
-  // hs/luyen/[id] cho chấm từng bước, T023; learning.ts cho mức hiểu, T052): tệp vàng đối chiếu v0 của core ghi nguồn đã sinh ra nó
-  // (T014); đổi nguồn thì test core phải chạy để bắt tệp vàng cũ (TepVangDoiChieuTest). ci-thay-doi.test.mjs đòi mọi nguồn ghi trong
-  // tệp vàng đều bật core.
-  core: [/^services\/core\//, /^data\/(supham|v0)\//, /^services\/math\//, /^apps\/web\/scripts\/seed\.ts$/,
-    /^apps\/web\/lib\/(loi-giai|math|levels|learning)\.ts$/, /^apps\/web\/lib\/actions\/hs\.ts$/, /^apps\/web\/components\/solve-client\.tsx$/,
-    /^apps\/web\/app\/hs\/luyen\/\[id\]\/page\.tsx$/],
-  frontend: [/^apps\/frontend\//, ...GOI_GOC],
-  v0: [/^apps\/web\//, /^services\/math\//, /^data\//, /^scripts\/(migrate|seed)/, ...GOI_GOC],
+  core: [/^services\/core\//, /^data\/(supham|v0)\//, /^services\/math\//,
+    /^specs\/001-lat-cat-doc\/doi-chieu\//],
+  frontend: [/^apps\/frontend\//, ...GOI_GOC, /^scripts\/(check-flat|tuong-phan-token)/],
+  math: [/^services\/math\//, /^data\/(supham|v0)\//],
 };
 
 // Chỉ đọc, không vào bản dựng nào: đổi riêng các file này thì không cần job nào.

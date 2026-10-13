@@ -1,0 +1,5690 @@
+[
+  {
+    "id": "NT-DH12-NB-01",
+    "chu_de": "DH12",
+    "ky_nang_chinh": "T12.NT.HS",
+    "ky_nang_phu": [],
+    "muc_do_4": "NB",
+    "muc_do_bo_3": "BIET",
+    "muc_bloom": "NHO",
+    "dang_cau": "TU_LUAN_5_BUOC",
+    "de_bai": {
+      "van_ban": "Cho hàm số $y = x^{2} + 4 x + 1$. Dựa vào dấu đạo hàm, xác định các khoảng đồng biến, nghịch biến và các cực trị.",
+      "latex": "y = x^{2} + 4 x + 1",
+      "ham_so_sympy": "x**2+4*x+1"
+    },
+    "thang_goi_y": [],
+    "loi_giai": {
+      "cac_buoc": [
+        {
+          "van_ban": "Tập xác định: R."
+        },
+        {
+          "van_ban": "Áp quy tắc đạo hàm, rút gọn.",
+          "bieu_thuc_sympy": "Derivative(x**2 + 4*x + 1, x)",
+          "ket_qua_sympy": "2*x + 4",
+          "latex": "\\dfrac{d}{d x} \\left(x^{2} + 4 x + 1\\right) = 2 x + 4"
+        },
+        {
+          "van_ban": "Giải y′=0 được: -2. Điểm y′ không xác định trong miền: không có điểm thuộc miền làm đạo hàm không xác định."
+        },
+        {
+          "van_ban": "Trên các khoảng (−∞; -2), (-2; +∞), dấu y′ lần lượt là -, +. Giữ riêng các khoảng hai bên điểm loại khỏi tập xác định."
+        },
+        {
+          "van_ban": "Đồng biến trên (-2; +∞). Nghịch biến trên (−∞; -2). Cực đại: không có. Cực tiểu: x=-2, y=-3."
+        }
+      ],
+      "dap_an": {
+        "dong_bien": [
+          "(-2; +oo)"
+        ],
+        "nghich_bien": [
+          "(-oo; -2)"
+        ],
+        "cuc_dai_x": [],
+        "cuc_tieu_x": [
+          "-2"
+        ],
+        "gia_tri_cuc_dai": [],
+        "gia_tri_cuc_tieu": [
+          "-3"
+        ]
+      }
+    },
+    "kiem_dinh": {
+      "loai": "ham_so",
+      "du_kien": {
+        "ham": "x**2+4*x+1"
+      }
+    },
+    "bai_lam": {
+      "ham": "x**2+4*x+1",
+      "TXD": "R",
+      "dao_ham": "2*x + 4",
+      "y_phay_bang_0": [
+        "-2"
+      ],
+      "y_phay_khong_xd": [],
+      "bang": {
+        "moc": [
+          "-oo",
+          "-2",
+          "+oo"
+        ],
+        "dau": [
+          "-",
+          "+"
+        ],
+        "dau_tai_diem": [
+          "0"
+        ],
+        "chieu": [
+          "giam",
+          "tang"
+        ]
+      },
+      "ket_luan": {
+        "dong_bien": [
+          "(-2; +oo)"
+        ],
+        "nghich_bien": [
+          "(-oo; -2)"
+        ],
+        "cuc_dai_x": [],
+        "cuc_tieu_x": [
+          "-2"
+        ],
+        "gia_tri_cuc_dai": [],
+        "gia_tri_cuc_tieu": [
+          "-3"
+        ]
+      }
+    },
+    "su_kien": [
+      [
+        "DB",
+        "(-2;oo)"
+      ],
+      [
+        "NB",
+        "(-oo;-2)"
+      ],
+      [
+        "DCT",
+        "-2"
+      ],
+      [
+        "GTCT",
+        "-3"
+      ],
+      [
+        "NGHIEM",
+        "-2"
+      ],
+      [
+        "KHONG_CUC_DAI",
+        ""
+      ],
+      [
+        "YPHAY",
+        "2*x+4"
+      ]
+    ],
+    "nguon": "Tổ Toán Trường THPT Nguyễn Trãi (hư cấu), tự soạn cho MathL+, không chép SGK",
+    "duyet_seed": {
+      "trang_thai": "DA_DUYET",
+      "can_cu": "test_teacher_solution",
+      "ghi_chu": "Giáo viên hư cấu duyệt lời giải đã được pytest kiểm độc lập."
+    },
+    "kiem_tra_seed": true
+  },
+  {
+    "id": "NT-DH12-NB-02",
+    "chu_de": "DH12",
+    "ky_nang_chinh": "T12.NT.HS",
+    "ky_nang_phu": [],
+    "muc_do_4": "NB",
+    "muc_do_bo_3": "BIET",
+    "muc_bloom": "NHO",
+    "dang_cau": "TU_LUAN_5_BUOC",
+    "de_bai": {
+      "van_ban": "Cho hàm số $y = - x^{2} + 6 x - 2$. Dựa vào dấu đạo hàm, xác định các khoảng đồng biến, nghịch biến và các cực trị.",
+      "latex": "y = - x^{2} + 6 x - 2",
+      "ham_so_sympy": "-x**2+6*x-2"
+    },
+    "thang_goi_y": [],
+    "loi_giai": {
+      "cac_buoc": [
+        {
+          "van_ban": "Tập xác định: R."
+        },
+        {
+          "van_ban": "Áp quy tắc đạo hàm, rút gọn.",
+          "bieu_thuc_sympy": "Derivative(-x**2 + 6*x - 2, x)",
+          "ket_qua_sympy": "6 - 2*x",
+          "latex": "\\dfrac{d}{d x} \\left(- x^{2} + 6 x - 2\\right) = 6 - 2 x"
+        },
+        {
+          "van_ban": "Giải y′=0 được: 3. Điểm y′ không xác định trong miền: không có điểm thuộc miền làm đạo hàm không xác định."
+        },
+        {
+          "van_ban": "Trên các khoảng (−∞; 3), (3; +∞), dấu y′ lần lượt là +, -. Giữ riêng các khoảng hai bên điểm loại khỏi tập xác định."
+        },
+        {
+          "van_ban": "Đồng biến trên (−∞; 3). Nghịch biến trên (3; +∞). Cực đại: x=3, y=7. Cực tiểu: không có."
+        }
+      ],
+      "dap_an": {
+        "dong_bien": [
+          "(-oo; 3)"
+        ],
+        "nghich_bien": [
+          "(3; +oo)"
+        ],
+        "cuc_dai_x": [
+          "3"
+        ],
+        "cuc_tieu_x": [],
+        "gia_tri_cuc_dai": [
+          "7"
+        ],
+        "gia_tri_cuc_tieu": []
+      }
+    },
+    "kiem_dinh": {
+      "loai": "ham_so",
+      "du_kien": {
+        "ham": "-x**2+6*x-2"
+      }
+    },
+    "bai_lam": {
+      "ham": "-x**2+6*x-2",
+      "TXD": "R",
+      "dao_ham": "6 - 2*x",
+      "y_phay_bang_0": [
+        "3"
+      ],
+      "y_phay_khong_xd": [],
+      "bang": {
+        "moc": [
+          "-oo",
+          "3",
+          "+oo"
+        ],
+        "dau": [
+          "+",
+          "-"
+        ],
+        "dau_tai_diem": [
+          "0"
+        ],
+        "chieu": [
+          "tang",
+          "giam"
+        ]
+      },
+      "ket_luan": {
+        "dong_bien": [
+          "(-oo; 3)"
+        ],
+        "nghich_bien": [
+          "(3; +oo)"
+        ],
+        "cuc_dai_x": [
+          "3"
+        ],
+        "cuc_tieu_x": [],
+        "gia_tri_cuc_dai": [
+          "7"
+        ],
+        "gia_tri_cuc_tieu": []
+      }
+    },
+    "su_kien": [
+      [
+        "DB",
+        "(-oo;3)"
+      ],
+      [
+        "NB",
+        "(3;oo)"
+      ],
+      [
+        "DCD",
+        "3"
+      ],
+      [
+        "GTCD",
+        "7"
+      ],
+      [
+        "NGHIEM",
+        "3"
+      ],
+      [
+        "KHONG_CUC_TIEU",
+        ""
+      ],
+      [
+        "YPHAY",
+        "6-2*x"
+      ]
+    ],
+    "nguon": "Tổ Toán Trường THPT Nguyễn Trãi (hư cấu), tự soạn cho MathL+, không chép SGK",
+    "duyet_seed": {
+      "trang_thai": "DA_DUYET",
+      "can_cu": "test_teacher_solution",
+      "ghi_chu": "Giáo viên hư cấu duyệt lời giải đã được pytest kiểm độc lập."
+    },
+    "kiem_tra_seed": true
+  },
+  {
+    "id": "NT-DH12-TH-03",
+    "chu_de": "DH12",
+    "ky_nang_chinh": "T12.NT.HS.2",
+    "ky_nang_phu": [],
+    "muc_do_4": "TH",
+    "muc_do_bo_3": "HIEU",
+    "muc_bloom": "HIEU",
+    "dang_cau": "TU_LUAN_5_BUOC",
+    "de_bai": {
+      "van_ban": "Cho hàm số $y = x^{3} - 12 x + 5$. Dựa vào dấu đạo hàm, xác định các khoảng đồng biến, nghịch biến và các cực trị.",
+      "latex": "y = x^{3} - 12 x + 5",
+      "ham_so_sympy": "x**3-12*x+5"
+    },
+    "thang_goi_y": [],
+    "loi_giai": {
+      "cac_buoc": [
+        {
+          "van_ban": "Tập xác định: R."
+        },
+        {
+          "van_ban": "Áp quy tắc đạo hàm, rút gọn.",
+          "bieu_thuc_sympy": "Derivative(x**3 - 12*x + 5, x)",
+          "ket_qua_sympy": "3*x**2 - 12",
+          "latex": "\\dfrac{d}{d x} \\left(x^{3} - 12 x + 5\\right) = 3 x^{2} - 12"
+        },
+        {
+          "van_ban": "Giải y′=0 được: -2; 2. Điểm y′ không xác định trong miền: không có điểm thuộc miền làm đạo hàm không xác định."
+        },
+        {
+          "van_ban": "Trên các khoảng (−∞; -2), (-2; 2), (2; +∞), dấu y′ lần lượt là +, -, +. Giữ riêng các khoảng hai bên điểm loại khỏi tập xác định."
+        },
+        {
+          "van_ban": "Đồng biến trên (−∞; -2) và (2; +∞). Nghịch biến trên (-2; 2). Cực đại: x=-2, y=21. Cực tiểu: x=2, y=-11."
+        }
+      ],
+      "dap_an": {
+        "dong_bien": [
+          "(-oo; -2)",
+          "(2; +oo)"
+        ],
+        "nghich_bien": [
+          "(-2; 2)"
+        ],
+        "cuc_dai_x": [
+          "-2"
+        ],
+        "cuc_tieu_x": [
+          "2"
+        ],
+        "gia_tri_cuc_dai": [
+          "21"
+        ],
+        "gia_tri_cuc_tieu": [
+          "-11"
+        ]
+      }
+    },
+    "kiem_dinh": {
+      "loai": "ham_so",
+      "du_kien": {
+        "ham": "x**3-12*x+5"
+      }
+    },
+    "bai_lam": {
+      "ham": "x**3-12*x+5",
+      "TXD": "R",
+      "dao_ham": "3*x**2 - 12",
+      "y_phay_bang_0": [
+        "-2",
+        "2"
+      ],
+      "y_phay_khong_xd": [],
+      "bang": {
+        "moc": [
+          "-oo",
+          "-2",
+          "2",
+          "+oo"
+        ],
+        "dau": [
+          "+",
+          "-",
+          "+"
+        ],
+        "dau_tai_diem": [
+          "0",
+          "0"
+        ],
+        "chieu": [
+          "tang",
+          "giam",
+          "tang"
+        ]
+      },
+      "ket_luan": {
+        "dong_bien": [
+          "(-oo; -2)",
+          "(2; +oo)"
+        ],
+        "nghich_bien": [
+          "(-2; 2)"
+        ],
+        "cuc_dai_x": [
+          "-2"
+        ],
+        "cuc_tieu_x": [
+          "2"
+        ],
+        "gia_tri_cuc_dai": [
+          "21"
+        ],
+        "gia_tri_cuc_tieu": [
+          "-11"
+        ]
+      }
+    },
+    "su_kien": [
+      [
+        "DB",
+        "(-oo;-2)"
+      ],
+      [
+        "DB",
+        "(2;oo)"
+      ],
+      [
+        "NB",
+        "(-2;2)"
+      ],
+      [
+        "DCD",
+        "-2"
+      ],
+      [
+        "DCT",
+        "2"
+      ],
+      [
+        "GTCD",
+        "21"
+      ],
+      [
+        "GTCT",
+        "-11"
+      ],
+      [
+        "NGHIEM",
+        "-2"
+      ],
+      [
+        "NGHIEM",
+        "2"
+      ],
+      [
+        "YPHAY",
+        "3*x**2-12"
+      ]
+    ],
+    "nguon": "Tổ Toán Trường THPT Nguyễn Trãi (hư cấu), tự soạn cho MathL+, không chép SGK",
+    "duyet_seed": {
+      "trang_thai": "DA_DUYET",
+      "can_cu": "test_teacher_solution",
+      "ghi_chu": "Giáo viên hư cấu duyệt lời giải đã được pytest kiểm độc lập."
+    },
+    "kiem_tra_seed": true
+  },
+  {
+    "id": "NT-DH12-TH-04",
+    "chu_de": "DH12",
+    "ky_nang_chinh": "T12.NT.HS.4",
+    "ky_nang_phu": [],
+    "muc_do_4": "TH",
+    "muc_do_bo_3": "HIEU",
+    "muc_bloom": "HIEU",
+    "dang_cau": "TU_LUAN_5_BUOC",
+    "de_bai": {
+      "van_ban": "Cho hàm số $y = \\dfrac{2 x + 5}{x - 3}$. Dựa vào dấu đạo hàm, xác định các khoảng đồng biến, nghịch biến và các cực trị.",
+      "latex": "y = \\dfrac{2 x + 5}{x - 3}",
+      "ham_so_sympy": "(2*x+5)/(x-3)"
+    },
+    "thang_goi_y": [],
+    "loi_giai": {
+      "cac_buoc": [
+        {
+          "van_ban": "Tập xác định: R \\ {3}."
+        },
+        {
+          "van_ban": "Áp quy tắc đạo hàm, rút gọn.",
+          "bieu_thuc_sympy": "Derivative((2*x + 5)/(x - 3), x)",
+          "ket_qua_sympy": "2/(x - 3) - (2*x + 5)/(x - 3)**2",
+          "latex": "\\dfrac{d}{d x} \\dfrac{2 x + 5}{x - 3} = \\dfrac{2}{x - 3} - \\dfrac{2 x + 5}{\\left(x - 3\\right)^{2}}"
+        },
+        {
+          "van_ban": "Giải y′=0 được: không có nghiệm. Điểm y′ không xác định trong miền: không có điểm thuộc miền làm đạo hàm không xác định."
+        },
+        {
+          "van_ban": "Trên các khoảng (−∞; 3), (3; +∞), dấu y′ lần lượt là -, -. Giữ riêng các khoảng hai bên điểm loại khỏi tập xác định."
+        },
+        {
+          "van_ban": "Đồng biến trên không có khoảng nào. Nghịch biến trên (−∞; 3) và (3; +∞). Cực đại: không có. Cực tiểu: không có."
+        }
+      ],
+      "dap_an": {
+        "dong_bien": [],
+        "nghich_bien": [
+          "(-oo; 3)",
+          "(3; +oo)"
+        ],
+        "cuc_dai_x": [],
+        "cuc_tieu_x": [],
+        "gia_tri_cuc_dai": [],
+        "gia_tri_cuc_tieu": []
+      }
+    },
+    "kiem_dinh": {
+      "loai": "ham_so",
+      "du_kien": {
+        "ham": "(2*x+5)/(x-3)"
+      }
+    },
+    "bai_lam": {
+      "ham": "(2*x+5)/(x-3)",
+      "TXD": "R \\ {3}",
+      "dao_ham": "-11/(x - 3)**2",
+      "y_phay_bang_0": [],
+      "y_phay_khong_xd": [],
+      "bang": {
+        "moc": [
+          "-oo",
+          "3",
+          "+oo"
+        ],
+        "dau": [
+          "-",
+          "-"
+        ],
+        "dau_tai_diem": [
+          "||"
+        ],
+        "chieu": [
+          "giam",
+          "giam"
+        ]
+      },
+      "ket_luan": {
+        "dong_bien": [],
+        "nghich_bien": [
+          "(-oo; 3)",
+          "(3; +oo)"
+        ],
+        "cuc_dai_x": [],
+        "cuc_tieu_x": [],
+        "gia_tri_cuc_dai": [],
+        "gia_tri_cuc_tieu": []
+      }
+    },
+    "su_kien": [
+      [
+        "NB",
+        "(-oo;3)"
+      ],
+      [
+        "NB",
+        "(3;oo)"
+      ],
+      [
+        "KHONG_CUC_TRI",
+        ""
+      ],
+      [
+        "KHONG_DONG_BIEN",
+        ""
+      ],
+      [
+        "KHONG_NGHIEM",
+        ""
+      ],
+      [
+        "YPHAY",
+        "-11/(x-3)**2"
+      ]
+    ],
+    "nguon": "Tổ Toán Trường THPT Nguyễn Trãi (hư cấu), tự soạn cho MathL+, không chép SGK",
+    "duyet_seed": {
+      "trang_thai": "DA_DUYET",
+      "can_cu": "test_teacher_solution",
+      "ghi_chu": "Giáo viên hư cấu duyệt lời giải đã được pytest kiểm độc lập."
+    },
+    "kiem_tra_seed": true
+  },
+  {
+    "id": "NT-DH12-VD-05",
+    "chu_de": "DH12",
+    "ky_nang_chinh": "T12.NT.HS.3",
+    "ky_nang_phu": [],
+    "muc_do_4": "VD",
+    "muc_do_bo_3": "VAN_DUNG",
+    "muc_bloom": "VAN_DUNG",
+    "dang_cau": "TU_LUAN_5_BUOC",
+    "de_bai": {
+      "van_ban": "Cho hàm số $y = x^{4} - 8 x^{2} + 7$. Lập bảng biến thiên, giải thích sự đổi chiều và tìm mọi cực trị; phân biệt điểm không xác định với điểm cực trị.",
+      "latex": "y = x^{4} - 8 x^{2} + 7",
+      "ham_so_sympy": "x**4-8*x**2+7"
+    },
+    "thang_goi_y": [],
+    "loi_giai": {
+      "cac_buoc": [
+        {
+          "van_ban": "Tập xác định: R."
+        },
+        {
+          "van_ban": "Áp quy tắc đạo hàm, rút gọn.",
+          "bieu_thuc_sympy": "Derivative(x**4 - 8*x**2 + 7, x)",
+          "ket_qua_sympy": "4*x**3 - 16*x",
+          "latex": "\\dfrac{d}{d x} \\left(x^{4} - 8 x^{2} + 7\\right) = 4 x^{3} - 16 x"
+        },
+        {
+          "van_ban": "Giải y′=0 được: -2; 0; 2. Điểm y′ không xác định trong miền: không có điểm thuộc miền làm đạo hàm không xác định."
+        },
+        {
+          "van_ban": "Trên các khoảng (−∞; -2), (-2; 0), (0; 2), (2; +∞), dấu y′ lần lượt là -, +, -, +. Giữ riêng các khoảng hai bên điểm loại khỏi tập xác định."
+        },
+        {
+          "van_ban": "Đồng biến trên (-2; 0) và (2; +∞). Nghịch biến trên (−∞; -2) và (0; 2). Cực đại: x=0, y=7. Cực tiểu: x=-2, y=-9; x=2, y=-9."
+        }
+      ],
+      "dap_an": {
+        "dong_bien": [
+          "(-2; 0)",
+          "(2; +oo)"
+        ],
+        "nghich_bien": [
+          "(-oo; -2)",
+          "(0; 2)"
+        ],
+        "cuc_dai_x": [
+          "0"
+        ],
+        "cuc_tieu_x": [
+          "-2",
+          "2"
+        ],
+        "gia_tri_cuc_dai": [
+          "7"
+        ],
+        "gia_tri_cuc_tieu": [
+          "-9",
+          "-9"
+        ]
+      }
+    },
+    "kiem_dinh": {
+      "loai": "ham_so",
+      "du_kien": {
+        "ham": "x**4-8*x**2+7"
+      }
+    },
+    "bai_lam": {
+      "ham": "x**4-8*x**2+7",
+      "TXD": "R",
+      "dao_ham": "4*x*(x**2 - 4)",
+      "y_phay_bang_0": [
+        "-2",
+        "0",
+        "2"
+      ],
+      "y_phay_khong_xd": [],
+      "bang": {
+        "moc": [
+          "-oo",
+          "-2",
+          "0",
+          "2",
+          "+oo"
+        ],
+        "dau": [
+          "-",
+          "+",
+          "-",
+          "+"
+        ],
+        "dau_tai_diem": [
+          "0",
+          "0",
+          "0"
+        ],
+        "chieu": [
+          "giam",
+          "tang",
+          "giam",
+          "tang"
+        ]
+      },
+      "ket_luan": {
+        "dong_bien": [
+          "(-2; 0)",
+          "(2; +oo)"
+        ],
+        "nghich_bien": [
+          "(-oo; -2)",
+          "(0; 2)"
+        ],
+        "cuc_dai_x": [
+          "0"
+        ],
+        "cuc_tieu_x": [
+          "-2",
+          "2"
+        ],
+        "gia_tri_cuc_dai": [
+          "7"
+        ],
+        "gia_tri_cuc_tieu": [
+          "-9",
+          "-9"
+        ]
+      }
+    },
+    "su_kien": [
+      [
+        "DB",
+        "(-2;0)"
+      ],
+      [
+        "DB",
+        "(2;oo)"
+      ],
+      [
+        "NB",
+        "(-oo;-2)"
+      ],
+      [
+        "NB",
+        "(0;2)"
+      ],
+      [
+        "DCD",
+        "0"
+      ],
+      [
+        "DCT",
+        "-2"
+      ],
+      [
+        "DCT",
+        "2"
+      ],
+      [
+        "GTCD",
+        "7"
+      ],
+      [
+        "GTCT",
+        "-9"
+      ],
+      [
+        "GTCT",
+        "-9"
+      ],
+      [
+        "NGHIEM",
+        "-2"
+      ],
+      [
+        "NGHIEM",
+        "0"
+      ],
+      [
+        "NGHIEM",
+        "2"
+      ],
+      [
+        "YPHAY",
+        "4*x*(x**2-4)"
+      ]
+    ],
+    "nguon": "Tổ Toán Trường THPT Nguyễn Trãi (hư cấu), tự soạn cho MathL+, không chép SGK",
+    "duyet_seed": {
+      "trang_thai": "DA_DUYET",
+      "can_cu": "test_teacher_solution",
+      "ghi_chu": "Giáo viên hư cấu duyệt lời giải đã được pytest kiểm độc lập."
+    },
+    "kiem_tra_seed": true
+  },
+  {
+    "id": "NT-DH12-VD-06",
+    "chu_de": "DH12",
+    "ky_nang_chinh": "T12.NT.HS.4",
+    "ky_nang_phu": [],
+    "muc_do_4": "VD",
+    "muc_do_bo_3": "VAN_DUNG",
+    "muc_bloom": "VAN_DUNG",
+    "dang_cau": "TU_LUAN_5_BUOC",
+    "de_bai": {
+      "van_ban": "Cho hàm số $y = x + \\dfrac{9}{x}$. Lập bảng biến thiên, giải thích sự đổi chiều và tìm mọi cực trị; phân biệt điểm không xác định với điểm cực trị.",
+      "latex": "y = x + \\dfrac{9}{x}",
+      "ham_so_sympy": "x+9/x"
+    },
+    "thang_goi_y": [],
+    "loi_giai": {
+      "cac_buoc": [
+        {
+          "van_ban": "Tập xác định: R \\ {0}."
+        },
+        {
+          "van_ban": "Áp quy tắc đạo hàm, rút gọn.",
+          "bieu_thuc_sympy": "Derivative(x + 9/x, x)",
+          "ket_qua_sympy": "1 - 9/x**2",
+          "latex": "\\dfrac{d}{d x} \\left(x + \\dfrac{9}{x}\\right) = 1 - \\dfrac{9}{x^{2}}"
+        },
+        {
+          "van_ban": "Giải y′=0 được: -3; 3. Điểm y′ không xác định trong miền: không có điểm thuộc miền làm đạo hàm không xác định."
+        },
+        {
+          "van_ban": "Trên các khoảng (−∞; -3), (-3; 0), (0; 3), (3; +∞), dấu y′ lần lượt là +, -, -, +. Giữ riêng các khoảng hai bên điểm loại khỏi tập xác định."
+        },
+        {
+          "van_ban": "Đồng biến trên (−∞; -3) và (3; +∞). Nghịch biến trên (-3; 0) và (0; 3). Cực đại: x=-3, y=-6. Cực tiểu: x=3, y=6."
+        }
+      ],
+      "dap_an": {
+        "dong_bien": [
+          "(-oo; -3)",
+          "(3; +oo)"
+        ],
+        "nghich_bien": [
+          "(-3; 0)",
+          "(0; 3)"
+        ],
+        "cuc_dai_x": [
+          "-3"
+        ],
+        "cuc_tieu_x": [
+          "3"
+        ],
+        "gia_tri_cuc_dai": [
+          "-6"
+        ],
+        "gia_tri_cuc_tieu": [
+          "6"
+        ]
+      }
+    },
+    "kiem_dinh": {
+      "loai": "ham_so",
+      "du_kien": {
+        "ham": "x+9/x"
+      }
+    },
+    "bai_lam": {
+      "ham": "x+9/x",
+      "TXD": "R \\ {0}",
+      "dao_ham": "1 - 9/x**2",
+      "y_phay_bang_0": [
+        "-3",
+        "3"
+      ],
+      "y_phay_khong_xd": [],
+      "bang": {
+        "moc": [
+          "-oo",
+          "-3",
+          "0",
+          "3",
+          "+oo"
+        ],
+        "dau": [
+          "+",
+          "-",
+          "-",
+          "+"
+        ],
+        "dau_tai_diem": [
+          "0",
+          "||",
+          "0"
+        ],
+        "chieu": [
+          "tang",
+          "giam",
+          "giam",
+          "tang"
+        ]
+      },
+      "ket_luan": {
+        "dong_bien": [
+          "(-oo; -3)",
+          "(3; +oo)"
+        ],
+        "nghich_bien": [
+          "(-3; 0)",
+          "(0; 3)"
+        ],
+        "cuc_dai_x": [
+          "-3"
+        ],
+        "cuc_tieu_x": [
+          "3"
+        ],
+        "gia_tri_cuc_dai": [
+          "-6"
+        ],
+        "gia_tri_cuc_tieu": [
+          "6"
+        ]
+      }
+    },
+    "su_kien": [
+      [
+        "DB",
+        "(-oo;-3)"
+      ],
+      [
+        "DB",
+        "(3;oo)"
+      ],
+      [
+        "NB",
+        "(-3;0)"
+      ],
+      [
+        "NB",
+        "(0;3)"
+      ],
+      [
+        "DCD",
+        "-3"
+      ],
+      [
+        "DCT",
+        "3"
+      ],
+      [
+        "GTCD",
+        "-6"
+      ],
+      [
+        "GTCT",
+        "6"
+      ],
+      [
+        "NGHIEM",
+        "-3"
+      ],
+      [
+        "NGHIEM",
+        "3"
+      ],
+      [
+        "YPHAY",
+        "1-9/x**2"
+      ]
+    ],
+    "nguon": "Tổ Toán Trường THPT Nguyễn Trãi (hư cấu), tự soạn cho MathL+, không chép SGK",
+    "duyet_seed": {
+      "trang_thai": "DA_DUYET",
+      "can_cu": "test_teacher_solution",
+      "ghi_chu": "Giáo viên hư cấu duyệt lời giải đã được pytest kiểm độc lập."
+    },
+    "kiem_tra_seed": true
+  },
+  {
+    "id": "NT-DH12-VDC-07",
+    "chu_de": "DH12",
+    "ky_nang_chinh": "T12.NT.HS.2",
+    "ky_nang_phu": [],
+    "muc_do_4": "VDC",
+    "muc_do_bo_3": "VAN_DUNG",
+    "muc_bloom": "PHAN_TICH",
+    "dang_cau": "TU_LUAN_5_BUOC",
+    "de_bai": {
+      "van_ban": "Cho hàm số $y = 2 x^{3} - 15 x^{2} + 36 x - 24$. Lập bảng biến thiên, giải thích sự đổi chiều và tìm mọi cực trị; phân biệt điểm không xác định với điểm cực trị. Dùng bảng biến thiên để phân loại số nghiệm thực phân biệt của $f(x)=m$ theo m, kể cả khi đường thẳng đi qua cực trị.",
+      "latex": "y = 2 x^{3} - 15 x^{2} + 36 x - 24",
+      "ham_so_sympy": "2*x**3-15*x**2+36*x-24"
+    },
+    "thang_goi_y": [],
+    "loi_giai": {
+      "cac_buoc": [
+        {
+          "van_ban": "Tập xác định: R."
+        },
+        {
+          "van_ban": "Áp quy tắc đạo hàm, rút gọn.",
+          "bieu_thuc_sympy": "Derivative(2*x**3 - 15*x**2 + 36*x - 24, x)",
+          "ket_qua_sympy": "6*x**2 - 30*x + 36",
+          "latex": "\\dfrac{d}{d x} \\left(2 x^{3} - 15 x^{2} + 36 x - 24\\right) = 6 x^{2} - 30 x + 36"
+        },
+        {
+          "van_ban": "Giải y′=0 được: 2; 3. Điểm y′ không xác định trong miền: không có điểm thuộc miền làm đạo hàm không xác định."
+        },
+        {
+          "van_ban": "Trên các khoảng (−∞; 2), (2; 3), (3; +∞), dấu y′ lần lượt là +, -, +. Giữ riêng các khoảng hai bên điểm loại khỏi tập xác định."
+        },
+        {
+          "van_ban": "Đồng biến trên (−∞; 2) và (3; +∞). Nghịch biến trên (2; 3). Cực đại: x=2, y=4. Cực tiểu: x=3, y=3."
+        },
+        {
+          "van_ban": "Hàm bậc ba đi từ −∞ tới cực đại 4, giảm tới cực tiểu 3 rồi tăng tới +∞. Do đó m nằm ngoài [3;4] cho 1 nghiệm; m=3 hoặc m=4 cho 2 nghiệm phân biệt; 3<m<4 cho 3 nghiệm."
+        }
+      ],
+      "dap_an": {
+        "ket_luan": {
+          "dong_bien": [
+            "(-oo; 2)",
+            "(3; +oo)"
+          ],
+          "nghich_bien": [
+            "(2; 3)"
+          ],
+          "cuc_dai_x": [
+            "2"
+          ],
+          "cuc_tieu_x": [
+            "3"
+          ],
+          "gia_tri_cuc_dai": [
+            "4"
+          ],
+          "gia_tri_cuc_tieu": [
+            "3"
+          ]
+        },
+        "so_nghiem_theo_m": {
+          "m<3 hoặc m>4": 1,
+          "m=3 hoặc m=4": 2,
+          "3<m<4": 3
+        }
+      }
+    },
+    "kiem_dinh": {
+      "loai": "ham_so",
+      "du_kien": {
+        "ham": "2*x**3-15*x**2+36*x-24"
+      }
+    },
+    "bai_lam": {
+      "ham": "2*x**3-15*x**2+36*x-24",
+      "TXD": "R",
+      "dao_ham": "6*x**2 - 30*x + 36",
+      "y_phay_bang_0": [
+        "2",
+        "3"
+      ],
+      "y_phay_khong_xd": [],
+      "bang": {
+        "moc": [
+          "-oo",
+          "2",
+          "3",
+          "+oo"
+        ],
+        "dau": [
+          "+",
+          "-",
+          "+"
+        ],
+        "dau_tai_diem": [
+          "0",
+          "0"
+        ],
+        "chieu": [
+          "tang",
+          "giam",
+          "tang"
+        ]
+      },
+      "ket_luan": {
+        "dong_bien": [
+          "(-oo; 2)",
+          "(3; +oo)"
+        ],
+        "nghich_bien": [
+          "(2; 3)"
+        ],
+        "cuc_dai_x": [
+          "2"
+        ],
+        "cuc_tieu_x": [
+          "3"
+        ],
+        "gia_tri_cuc_dai": [
+          "4"
+        ],
+        "gia_tri_cuc_tieu": [
+          "3"
+        ]
+      },
+      "giai_thich_them": "Hàm bậc ba đi từ −∞ tới cực đại 4, giảm tới cực tiểu 3 rồi tăng tới +∞. Do đó m nằm ngoài [3;4] cho 1 nghiệm; m=3 hoặc m=4 cho 2 nghiệm phân biệt; 3<m<4 cho 3 nghiệm."
+    },
+    "su_kien": [
+      [
+        "DB",
+        "(-oo;2)"
+      ],
+      [
+        "DB",
+        "(3;oo)"
+      ],
+      [
+        "NB",
+        "(2;3)"
+      ],
+      [
+        "DCD",
+        "2"
+      ],
+      [
+        "DCT",
+        "3"
+      ],
+      [
+        "GTCD",
+        "4"
+      ],
+      [
+        "GTCT",
+        "3"
+      ],
+      [
+        "NGHIEM",
+        "2"
+      ],
+      [
+        "NGHIEM",
+        "3"
+      ],
+      [
+        "YPHAY",
+        "6*x**2-30*x+36"
+      ]
+    ],
+    "nguon": "Tổ Toán Trường THPT Nguyễn Trãi (hư cấu), tự soạn cho MathL+, không chép SGK",
+    "duyet_seed": {
+      "trang_thai": "DA_DUYET",
+      "can_cu": "test_teacher_solution",
+      "ghi_chu": "Giáo viên hư cấu duyệt lời giải đã được pytest kiểm độc lập."
+    },
+    "kiem_tra_seed": true
+  },
+  {
+    "id": "NT-DH12-VDC-08",
+    "chu_de": "DH12",
+    "ky_nang_chinh": "T12.NT.HS.3",
+    "ky_nang_phu": [],
+    "muc_do_4": "VDC",
+    "muc_do_bo_3": "VAN_DUNG",
+    "muc_bloom": "PHAN_TICH",
+    "dang_cau": "TU_LUAN_5_BUOC",
+    "de_bai": {
+      "van_ban": "Cho hàm số $y = - x^{4} + 18 x^{2} - 24$. Lập bảng biến thiên, giải thích sự đổi chiều và tìm mọi cực trị; phân biệt điểm không xác định với điểm cực trị. Phân loại số giao điểm của đồ thị với $y=m$. Giải thích tại sao hai cực đại cùng độ cao vẫn cho các giao điểm khác nhau.",
+      "latex": "y = - x^{4} + 18 x^{2} - 24",
+      "ham_so_sympy": "-x**4+18*x**2-24"
+    },
+    "thang_goi_y": [],
+    "loi_giai": {
+      "cac_buoc": [
+        {
+          "van_ban": "Tập xác định: R."
+        },
+        {
+          "van_ban": "Áp quy tắc đạo hàm, rút gọn.",
+          "bieu_thuc_sympy": "Derivative(-x**4 + 18*x**2 - 24, x)",
+          "ket_qua_sympy": "-4*x**3 + 36*x",
+          "latex": "\\dfrac{d}{d x} \\left(- x^{4} + 18 x^{2} - 24\\right) = - 4 x^{3} + 36 x"
+        },
+        {
+          "van_ban": "Giải y′=0 được: -3; 0; 3. Điểm y′ không xác định trong miền: không có điểm thuộc miền làm đạo hàm không xác định."
+        },
+        {
+          "van_ban": "Trên các khoảng (−∞; -3), (-3; 0), (0; 3), (3; +∞), dấu y′ lần lượt là +, -, +, -. Giữ riêng các khoảng hai bên điểm loại khỏi tập xác định."
+        },
+        {
+          "van_ban": "Đồng biến trên (−∞; -3) và (0; 3). Nghịch biến trên (-3; 0) và (3; +∞). Cực đại: x=-3, y=57; x=3, y=57. Cực tiểu: x=0, y=-24."
+        },
+        {
+          "van_ban": "Hai đỉnh tại x=−3 và x=3 cùng có y=57; đáy giữa tại x=0 có y=−24; hai nhánh ngoài đi xuống −∞. Vì vậy số giao điểm lần lượt: 0 khi m>57, 2 khi m=57, 4 khi −24<m<57, 3 khi m=−24, 2 khi m<−24."
+        }
+      ],
+      "dap_an": {
+        "ket_luan": {
+          "dong_bien": [
+            "(-oo; -3)",
+            "(0; 3)"
+          ],
+          "nghich_bien": [
+            "(-3; 0)",
+            "(3; +oo)"
+          ],
+          "cuc_dai_x": [
+            "-3",
+            "3"
+          ],
+          "cuc_tieu_x": [
+            "0"
+          ],
+          "gia_tri_cuc_dai": [
+            "57",
+            "57"
+          ],
+          "gia_tri_cuc_tieu": [
+            "-24"
+          ]
+        },
+        "so_nghiem_theo_m": {
+          "m>57": 0,
+          "m=57": 2,
+          "-24<m<57": 4,
+          "m=-24": 3,
+          "m<-24": 2
+        }
+      }
+    },
+    "kiem_dinh": {
+      "loai": "ham_so",
+      "du_kien": {
+        "ham": "-x**4+18*x**2-24"
+      }
+    },
+    "bai_lam": {
+      "ham": "-x**4+18*x**2-24",
+      "TXD": "R",
+      "dao_ham": "4*x*(9 - x**2)",
+      "y_phay_bang_0": [
+        "-3",
+        "0",
+        "3"
+      ],
+      "y_phay_khong_xd": [],
+      "bang": {
+        "moc": [
+          "-oo",
+          "-3",
+          "0",
+          "3",
+          "+oo"
+        ],
+        "dau": [
+          "+",
+          "-",
+          "+",
+          "-"
+        ],
+        "dau_tai_diem": [
+          "0",
+          "0",
+          "0"
+        ],
+        "chieu": [
+          "tang",
+          "giam",
+          "tang",
+          "giam"
+        ]
+      },
+      "ket_luan": {
+        "dong_bien": [
+          "(-oo; -3)",
+          "(0; 3)"
+        ],
+        "nghich_bien": [
+          "(-3; 0)",
+          "(3; +oo)"
+        ],
+        "cuc_dai_x": [
+          "-3",
+          "3"
+        ],
+        "cuc_tieu_x": [
+          "0"
+        ],
+        "gia_tri_cuc_dai": [
+          "57",
+          "57"
+        ],
+        "gia_tri_cuc_tieu": [
+          "-24"
+        ]
+      },
+      "giai_thich_them": "Hai đỉnh tại x=−3 và x=3 cùng có y=57; đáy giữa tại x=0 có y=−24; hai nhánh ngoài đi xuống −∞. Vì vậy số giao điểm lần lượt: 0 khi m>57, 2 khi m=57, 4 khi −24<m<57, 3 khi m=−24, 2 khi m<−24."
+    },
+    "su_kien": [
+      [
+        "DB",
+        "(-oo;-3)"
+      ],
+      [
+        "DB",
+        "(0;3)"
+      ],
+      [
+        "NB",
+        "(-3;0)"
+      ],
+      [
+        "NB",
+        "(3;oo)"
+      ],
+      [
+        "DCD",
+        "-3"
+      ],
+      [
+        "DCD",
+        "3"
+      ],
+      [
+        "DCT",
+        "0"
+      ],
+      [
+        "GTCD",
+        "57"
+      ],
+      [
+        "GTCD",
+        "57"
+      ],
+      [
+        "GTCT",
+        "-24"
+      ],
+      [
+        "NGHIEM",
+        "-3"
+      ],
+      [
+        "NGHIEM",
+        "0"
+      ],
+      [
+        "NGHIEM",
+        "3"
+      ],
+      [
+        "YPHAY",
+        "4*x*(9-x**2)"
+      ]
+    ],
+    "nguon": "Tổ Toán Trường THPT Nguyễn Trãi (hư cấu), tự soạn cho MathL+, không chép SGK",
+    "duyet_seed": {
+      "trang_thai": "DA_DUYET",
+      "can_cu": "test_teacher_solution",
+      "ghi_chu": "Giáo viên hư cấu duyệt lời giải đã được pytest kiểm độc lập."
+    },
+    "kiem_tra_seed": true
+  },
+  {
+    "id": "NT-LG11-NB-01",
+    "chu_de": "LG11",
+    "ky_nang_chinh": "T11.NT.LG",
+    "ky_nang_phu": [],
+    "muc_do_4": "NB",
+    "muc_do_bo_3": "BIET",
+    "muc_bloom": "NHO",
+    "dang_cau": "TU_LUAN",
+    "de_bai": {
+      "van_ban": "Tính chính xác $\\sin{\\left(\\dfrac{\\pi}{6} \\right)}$ bằng góc đặc biệt.",
+      "latex": "\\sin{\\left(\\dfrac{\\pi}{6} \\right)}",
+      "ham_so_sympy": "sin(pi/6)"
+    },
+    "thang_goi_y": [],
+    "loi_giai": {
+      "cac_buoc": [
+        {
+          "van_ban": "Đưa góc về góc chuẩn và áp dấu.",
+          "bieu_thuc_sympy": "sin(pi/6)",
+          "ket_qua_sympy": "1/2",
+          "latex": "\\dfrac{1}{2} = \\dfrac{1}{2}"
+        },
+        {
+          "van_ban": "Rút gọn kết quả.",
+          "bieu_thuc_sympy": "1/2",
+          "ket_qua_sympy": "1/2",
+          "latex": "\\dfrac{1}{2} = \\dfrac{1}{2}"
+        }
+      ],
+      "dap_an": "1/2"
+    },
+    "kiem_dinh": {
+      "loai": "trig_value",
+      "du_kien": {
+        "goc": "pi/6",
+        "ham": "sin"
+      }
+    },
+    "bai_lam": null,
+    "su_kien": [
+      {
+        "loai": "DAP_AN",
+        "gia_tri": "\"1/2\""
+      }
+    ],
+    "nguon": "Tổ Toán Trường THPT Nguyễn Trãi (hư cấu), tự soạn cho MathL+, không chép SGK",
+    "duyet_seed": {
+      "trang_thai": "DA_DUYET",
+      "can_cu": "test_teacher_solution",
+      "ghi_chu": "Giáo viên hư cấu duyệt lời giải đã được pytest kiểm độc lập."
+    },
+    "kiem_tra_seed": true
+  },
+  {
+    "id": "NT-LG11-NB-02",
+    "chu_de": "LG11",
+    "ky_nang_chinh": "T11.NT.LG",
+    "ky_nang_phu": [],
+    "muc_do_4": "NB",
+    "muc_do_bo_3": "BIET",
+    "muc_bloom": "NHO",
+    "dang_cau": "TU_LUAN",
+    "de_bai": {
+      "van_ban": "Tính chính xác $\\cos{\\left(\\dfrac{3 \\pi}{4} \\right)}$ bằng góc đặc biệt.",
+      "latex": "\\cos{\\left(\\dfrac{3 \\pi}{4} \\right)}",
+      "ham_so_sympy": "cos(3*pi/4)"
+    },
+    "thang_goi_y": [],
+    "loi_giai": {
+      "cac_buoc": [
+        {
+          "van_ban": "Đưa góc về góc chuẩn và áp dấu.",
+          "bieu_thuc_sympy": "cos(3*pi/4)",
+          "ket_qua_sympy": "-sqrt(2)/2",
+          "latex": "- \\dfrac{\\sqrt{2}}{2} = - \\dfrac{\\sqrt{2}}{2}"
+        },
+        {
+          "van_ban": "Rút gọn kết quả.",
+          "bieu_thuc_sympy": "-sqrt(2)/2",
+          "ket_qua_sympy": "-sqrt(2)/2",
+          "latex": "- \\dfrac{\\sqrt{2}}{2} = - \\dfrac{\\sqrt{2}}{2}"
+        }
+      ],
+      "dap_an": "-sqrt(2)/2"
+    },
+    "kiem_dinh": {
+      "loai": "trig_value",
+      "du_kien": {
+        "goc": "3*pi/4",
+        "ham": "cos"
+      }
+    },
+    "bai_lam": null,
+    "su_kien": [
+      {
+        "loai": "DAP_AN",
+        "gia_tri": "\"-sqrt(2)/2\""
+      }
+    ],
+    "nguon": "Tổ Toán Trường THPT Nguyễn Trãi (hư cấu), tự soạn cho MathL+, không chép SGK",
+    "duyet_seed": {
+      "trang_thai": "DA_DUYET",
+      "can_cu": "test_teacher_solution",
+      "ghi_chu": "Giáo viên hư cấu duyệt lời giải đã được pytest kiểm độc lập."
+    },
+    "kiem_tra_seed": false
+  },
+  {
+    "id": "NT-LG11-TH-03",
+    "chu_de": "LG11",
+    "ky_nang_chinh": "T11.NT.LG",
+    "ky_nang_phu": [],
+    "muc_do_4": "TH",
+    "muc_do_bo_3": "HIEU",
+    "muc_bloom": "HIEU",
+    "dang_cau": "TU_LUAN",
+    "de_bai": {
+      "van_ban": "Tính chính xác $\\tan{\\left(\\dfrac{7 \\pi}{6} \\right)}$ bằng góc đặc biệt.",
+      "latex": "\\tan{\\left(\\dfrac{7 \\pi}{6} \\right)}",
+      "ham_so_sympy": "tan(7*pi/6)"
+    },
+    "thang_goi_y": [],
+    "loi_giai": {
+      "cac_buoc": [
+        {
+          "van_ban": "Đưa góc về góc chuẩn và áp dấu.",
+          "bieu_thuc_sympy": "tan(7*pi/6)",
+          "ket_qua_sympy": "sqrt(3)/3",
+          "latex": "\\dfrac{\\sqrt{3}}{3} = \\dfrac{\\sqrt{3}}{3}"
+        },
+        {
+          "van_ban": "Rút gọn kết quả.",
+          "bieu_thuc_sympy": "sqrt(3)/3",
+          "ket_qua_sympy": "sqrt(3)/3",
+          "latex": "\\dfrac{\\sqrt{3}}{3} = \\dfrac{\\sqrt{3}}{3}"
+        }
+      ],
+      "dap_an": "sqrt(3)/3"
+    },
+    "kiem_dinh": {
+      "loai": "trig_value",
+      "du_kien": {
+        "goc": "7*pi/6",
+        "ham": "tan"
+      }
+    },
+    "bai_lam": null,
+    "su_kien": [
+      {
+        "loai": "DAP_AN",
+        "gia_tri": "\"sqrt(3)/3\""
+      }
+    ],
+    "nguon": "Tổ Toán Trường THPT Nguyễn Trãi (hư cấu), tự soạn cho MathL+, không chép SGK",
+    "duyet_seed": {
+      "trang_thai": "DA_DUYET",
+      "can_cu": "test_teacher_solution",
+      "ghi_chu": "Giáo viên hư cấu duyệt lời giải đã được pytest kiểm độc lập."
+    },
+    "kiem_tra_seed": true
+  },
+  {
+    "id": "NT-LG11-VD-04",
+    "chu_de": "LG11",
+    "ky_nang_chinh": "T11.NT.LG",
+    "ky_nang_phu": [],
+    "muc_do_4": "VD",
+    "muc_do_bo_3": "VAN_DUNG",
+    "muc_bloom": "VAN_DUNG",
+    "dang_cau": "TU_LUAN",
+    "de_bai": {
+      "van_ban": "Tính chính xác $2 \\sin{\\left(\\dfrac{5 \\pi}{6} \\right)} + 3$ bằng góc đặc biệt.",
+      "latex": "2 \\sin{\\left(\\dfrac{5 \\pi}{6} \\right)} + 3",
+      "ham_so_sympy": "3+2*sin(5*pi/6)"
+    },
+    "thang_goi_y": [],
+    "loi_giai": {
+      "cac_buoc": [
+        {
+          "van_ban": "Thay t=5 vào pha.",
+          "bieu_thuc_sympy": "pi*5/6",
+          "ket_qua_sympy": "5*pi/6",
+          "latex": "\\dfrac{5 \\pi}{6} = \\dfrac{5 \\pi}{6}"
+        },
+        {
+          "van_ban": "Tính giá trị dao động.",
+          "bieu_thuc_sympy": "3+2*sin(5*pi/6)",
+          "ket_qua_sympy": "4",
+          "latex": "4 = 4"
+        }
+      ],
+      "dap_an": "4"
+    },
+    "kiem_dinh": {
+      "loai": "trig_value",
+      "du_kien": {
+        "goc": "5*pi/6",
+        "ham": "sin",
+        "he_so": 2,
+        "hang_so": 3
+      }
+    },
+    "bai_lam": null,
+    "su_kien": [
+      {
+        "loai": "DAP_AN",
+        "gia_tri": "\"4\""
+      }
+    ],
+    "nguon": "Tổ Toán Trường THPT Nguyễn Trãi (hư cấu), tự soạn cho MathL+, không chép SGK",
+    "duyet_seed": {
+      "trang_thai": "DA_DUYET",
+      "can_cu": "test_teacher_solution",
+      "ghi_chu": "Giáo viên hư cấu duyệt lời giải đã được pytest kiểm độc lập."
+    },
+    "kiem_tra_seed": true
+  },
+  {
+    "id": "NT-LG11-VDC-05",
+    "chu_de": "LG11",
+    "ky_nang_chinh": "T11.NT.LG.2",
+    "ky_nang_phu": [],
+    "muc_do_4": "VDC",
+    "muc_do_bo_3": "VAN_DUNG",
+    "muc_bloom": "PHAN_TICH",
+    "dang_cau": "TU_LUAN",
+    "de_bai": {
+      "van_ban": "Tìm mọi $x \\in [0;2\\pi]$ thỏa mãn $2 \\sin^{2}{\\left(x \\right)} - 3 \\sin{\\left(x \\right)} + 1=0$, kiểm tra cả hai đầu mút.",
+      "latex": "2 \\sin^{2}{\\left(x \\right)} - 3 \\sin{\\left(x \\right)} + 1",
+      "ham_so_sympy": "2*sin(x)**2-3*sin(x)+1"
+    },
+    "thang_goi_y": [],
+    "loi_giai": {
+      "cac_buoc": [
+        {
+          "van_ban": "Phân tích đa thức theo sin x.",
+          "bieu_thuc_sympy": "2*sin(x)**2-3*sin(x)+1",
+          "ket_qua_sympy": "(sin(x)-1)*(2*sin(x)-1)",
+          "latex": "2 \\sin^{2}{\\left(x \\right)} - 3 \\sin{\\left(x \\right)} + 1 = \\left(\\sin{\\left(x \\right)} - 1\\right) \\left(2 \\sin{\\left(x \\right)} - 1\\right)"
+        },
+        {
+          "van_ban": "sin x=1 hoặc sin x=1/2; trên một vòng: x=π/2 hoặc π/6,5π/6."
+        }
+      ],
+      "dap_an": [
+        "pi/6",
+        "pi/2",
+        "5*pi/6"
+      ],
+      "latex": "\\left\\{\\dfrac{\\pi}{6}, \\dfrac{\\pi}{2}, \\dfrac{5 \\pi}{6}\\right\\}"
+    },
+    "kiem_dinh": {
+      "loai": "trig_roots",
+      "du_kien": {
+        "ham": "2*sin(x)**2-3*sin(x)+1",
+        "can_duoi": "0",
+        "can_tren": "2*pi"
+      }
+    },
+    "bai_lam": null,
+    "su_kien": [
+      {
+        "loai": "DAP_AN",
+        "gia_tri": "[\"pi/6\", \"pi/2\", \"5*pi/6\"]"
+      }
+    ],
+    "nguon": "Tổ Toán Trường THPT Nguyễn Trãi (hư cấu), tự soạn cho MathL+, không chép SGK",
+    "duyet_seed": {
+      "trang_thai": "DA_DUYET",
+      "can_cu": "test_teacher_solution",
+      "ghi_chu": "Giáo viên hư cấu duyệt lời giải đã được pytest kiểm độc lập."
+    },
+    "kiem_tra_seed": true
+  },
+  {
+    "id": "NT-LG11-VDC-06",
+    "chu_de": "LG11",
+    "ky_nang_chinh": "T11.NT.LG.2",
+    "ky_nang_phu": [],
+    "muc_do_4": "VDC",
+    "muc_do_bo_3": "VAN_DUNG",
+    "muc_bloom": "PHAN_TICH",
+    "dang_cau": "TU_LUAN",
+    "de_bai": {
+      "van_ban": "Tìm mọi $x \\in [0;2\\pi]$ thỏa mãn $- \\sin{\\left(x \\right)} + \\cos{\\left(2 x \\right)}=0$, kiểm tra cả hai đầu mút.",
+      "latex": "- \\sin{\\left(x \\right)} + \\cos{\\left(2 x \\right)}",
+      "ham_so_sympy": "cos(2*x)-sin(x)"
+    },
+    "thang_goi_y": [],
+    "loi_giai": {
+      "cac_buoc": [
+        {
+          "van_ban": "Đưa về phương trình bậc hai theo sin x.",
+          "bieu_thuc_sympy": "cos(2*x)-sin(x)",
+          "ket_qua_sympy": "1-2*sin(x)**2-sin(x)",
+          "latex": "- \\sin{\\left(x \\right)} + \\cos{\\left(2 x \\right)} = - 2 \\sin^{2}{\\left(x \\right)} - \\sin{\\left(x \\right)} + 1"
+        },
+        {
+          "van_ban": "(2sin x−1)(sin x+1)=0 nên sin x=1/2 hoặc −1; x=π/6,5π/6,3π/2."
+        }
+      ],
+      "dap_an": [
+        "pi/6",
+        "5*pi/6",
+        "3*pi/2"
+      ],
+      "latex": "\\left\\{\\dfrac{\\pi}{6}, \\dfrac{5 \\pi}{6}, \\dfrac{3 \\pi}{2}\\right\\}"
+    },
+    "kiem_dinh": {
+      "loai": "trig_roots",
+      "du_kien": {
+        "ham": "cos(2*x)-sin(x)",
+        "can_duoi": "0",
+        "can_tren": "2*pi"
+      }
+    },
+    "bai_lam": null,
+    "su_kien": [
+      {
+        "loai": "DAP_AN",
+        "gia_tri": "[\"pi/6\", \"5*pi/6\", \"3*pi/2\"]"
+      }
+    ],
+    "nguon": "Tổ Toán Trường THPT Nguyễn Trãi (hư cấu), tự soạn cho MathL+, không chép SGK",
+    "duyet_seed": {
+      "trang_thai": "CHO_DUYET",
+      "can_cu": "test_teacher_solution",
+      "ghi_chu": "Lời giải đã kiểm độc lập; đang chờ rà soát lập luận sư phạm."
+    },
+    "kiem_tra_seed": false
+  },
+  {
+    "id": "NT-DS11-NB-01",
+    "chu_de": "DS11",
+    "ky_nang_chinh": "T11.NT.DS",
+    "ky_nang_phu": [],
+    "muc_do_4": "NB",
+    "muc_do_bo_3": "BIET",
+    "muc_bloom": "NHO",
+    "dang_cau": "TU_LUAN",
+    "de_bai": {
+      "van_ban": "Cho cấp số cộng $u_n = 5+(n-1)(3)$. Tính $u_{12}$.",
+      "latex": "u_n = 5+(n-1)(3)",
+      "ham_so_sympy": null
+    },
+    "thang_goi_y": [],
+    "loi_giai": {
+      "cac_buoc": [
+        {
+          "van_ban": "Số lần cộng công sai.",
+          "bieu_thuc_sympy": "11",
+          "ket_qua_sympy": "11",
+          "latex": "11 = 11"
+        },
+        {
+          "van_ban": "Dùng công thức số hạng.",
+          "bieu_thuc_sympy": "5+(12-1)*(3)",
+          "ket_qua_sympy": "38",
+          "latex": "38 = 38"
+        }
+      ],
+      "dap_an": "38",
+      "latex": "38"
+    },
+    "kiem_dinh": {
+      "loai": "ap_term",
+      "du_kien": {
+        "u1": 5,
+        "d": 3,
+        "n": 12
+      }
+    },
+    "bai_lam": null,
+    "su_kien": [
+      {
+        "loai": "DAP_AN",
+        "gia_tri": "\"38\""
+      }
+    ],
+    "nguon": "Tổ Toán Trường THPT Nguyễn Trãi (hư cấu), tự soạn cho MathL+, không chép SGK",
+    "duyet_seed": {
+      "trang_thai": "DA_DUYET",
+      "can_cu": "test_teacher_solution",
+      "ghi_chu": "Giáo viên hư cấu duyệt lời giải đã được pytest kiểm độc lập."
+    },
+    "kiem_tra_seed": false
+  },
+  {
+    "id": "NT-DS11-TH-02",
+    "chu_de": "DS11",
+    "ky_nang_chinh": "T11.NT.DS",
+    "ky_nang_phu": [],
+    "muc_do_4": "TH",
+    "muc_do_bo_3": "HIEU",
+    "muc_bloom": "HIEU",
+    "dang_cau": "TU_LUAN",
+    "de_bai": {
+      "van_ban": "Cho cấp số cộng $u_n = 17+(n-1)(-2)$. Tính $u_{9}$.",
+      "latex": "u_n = 17+(n-1)(-2)",
+      "ham_so_sympy": null
+    },
+    "thang_goi_y": [],
+    "loi_giai": {
+      "cac_buoc": [
+        {
+          "van_ban": "Số lần cộng công sai.",
+          "bieu_thuc_sympy": "8",
+          "ket_qua_sympy": "8",
+          "latex": "8 = 8"
+        },
+        {
+          "van_ban": "Dùng công thức số hạng.",
+          "bieu_thuc_sympy": "17+(9-1)*(-2)",
+          "ket_qua_sympy": "1",
+          "latex": "1 = 1"
+        }
+      ],
+      "dap_an": "1",
+      "latex": "1"
+    },
+    "kiem_dinh": {
+      "loai": "ap_term",
+      "du_kien": {
+        "u1": 17,
+        "d": -2,
+        "n": 9
+      }
+    },
+    "bai_lam": null,
+    "su_kien": [
+      {
+        "loai": "DAP_AN",
+        "gia_tri": "\"1\""
+      }
+    ],
+    "nguon": "Tổ Toán Trường THPT Nguyễn Trãi (hư cấu), tự soạn cho MathL+, không chép SGK",
+    "duyet_seed": {
+      "trang_thai": "DA_DUYET",
+      "can_cu": "test_teacher_solution",
+      "ghi_chu": "Giáo viên hư cấu duyệt lời giải đã được pytest kiểm độc lập."
+    },
+    "kiem_tra_seed": false
+  },
+  {
+    "id": "NT-DS11-TH-03",
+    "chu_de": "DS11",
+    "ky_nang_chinh": "T11.NT.DS.2",
+    "ky_nang_phu": [],
+    "muc_do_4": "TH",
+    "muc_do_bo_3": "HIEU",
+    "muc_bloom": "HIEU",
+    "dang_cau": "TU_LUAN",
+    "de_bai": {
+      "van_ban": "Cho cấp số nhân dương $u_n = 3\\cdot 2^{n-1}$. Tính tổng $8$ số hạng đầu; giải thích các bước tính.",
+      "latex": "u_n = 3\\cdot 2^{n-1}",
+      "ham_so_sympy": null
+    },
+    "thang_goi_y": [],
+    "loi_giai": {
+      "cac_buoc": [
+        {
+          "van_ban": "Tính số hạng cuối.",
+          "bieu_thuc_sympy": "3*2**7",
+          "ket_qua_sympy": "384",
+          "latex": "384 = 384"
+        },
+        {
+          "van_ban": "Tổng cấp số nhân.",
+          "bieu_thuc_sympy": "3*(2**8-1)/(2-1)",
+          "ket_qua_sympy": "765",
+          "latex": "765 = 765"
+        }
+      ],
+      "dap_an": "765",
+      "latex": "765"
+    },
+    "kiem_dinh": {
+      "loai": "gp_sum",
+      "du_kien": {
+        "u1": 3,
+        "q": 2,
+        "n": 8
+      }
+    },
+    "bai_lam": null,
+    "su_kien": [
+      {
+        "loai": "DAP_AN",
+        "gia_tri": "\"765\""
+      }
+    ],
+    "nguon": "Tổ Toán Trường THPT Nguyễn Trãi (hư cấu), tự soạn cho MathL+, không chép SGK",
+    "duyet_seed": {
+      "trang_thai": "DA_DUYET",
+      "can_cu": "test_teacher_solution",
+      "ghi_chu": "Giáo viên hư cấu duyệt lời giải đã được pytest kiểm độc lập."
+    },
+    "kiem_tra_seed": false
+  },
+  {
+    "id": "NT-DS11-VD-04",
+    "chu_de": "DS11",
+    "ky_nang_chinh": "T11.NT.DS",
+    "ky_nang_phu": [],
+    "muc_do_4": "VD",
+    "muc_do_bo_3": "VAN_DUNG",
+    "muc_bloom": "VAN_DUNG",
+    "dang_cau": "TU_LUAN",
+    "de_bai": {
+      "van_ban": "Cho cấp số cộng $u_n = 7+(n-1)(3)$. Tính tổng $14$ số hạng đầu; giải thích các bước tính.",
+      "latex": "u_n = 7+(n-1)(3)",
+      "ham_so_sympy": null
+    },
+    "thang_goi_y": [],
+    "loi_giai": {
+      "cac_buoc": [
+        {
+          "van_ban": "Ngày cuối đọc.",
+          "bieu_thuc_sympy": "7+13*3",
+          "ket_qua_sympy": "46",
+          "latex": "46 = 46"
+        },
+        {
+          "van_ban": "Tổng số trang.",
+          "bieu_thuc_sympy": "14*(7+46)/2",
+          "ket_qua_sympy": "371",
+          "latex": "371 = 371"
+        }
+      ],
+      "dap_an": "371",
+      "latex": "371"
+    },
+    "kiem_dinh": {
+      "loai": "ap_sum",
+      "du_kien": {
+        "u1": 7,
+        "d": 3,
+        "n": 14
+      }
+    },
+    "bai_lam": null,
+    "su_kien": [
+      {
+        "loai": "DAP_AN",
+        "gia_tri": "\"371\""
+      }
+    ],
+    "nguon": "Tổ Toán Trường THPT Nguyễn Trãi (hư cấu), tự soạn cho MathL+, không chép SGK",
+    "duyet_seed": {
+      "trang_thai": "DA_DUYET",
+      "can_cu": "test_teacher_solution",
+      "ghi_chu": "Giáo viên hư cấu duyệt lời giải đã được pytest kiểm độc lập."
+    },
+    "kiem_tra_seed": false
+  },
+  {
+    "id": "NT-DS11-VDC-05",
+    "chu_de": "DS11",
+    "ky_nang_chinh": "T11.NT.DS",
+    "ky_nang_phu": [],
+    "muc_do_4": "VDC",
+    "muc_do_bo_3": "VAN_DUNG",
+    "muc_bloom": "PHAN_TICH",
+    "dang_cau": "TU_LUAN",
+    "de_bai": {
+      "van_ban": "Cho cấp số cộng $u_{4}=23,\\quad u_{9}=43$. Tính tổng $15$ số hạng đầu; giải thích các bước tính.",
+      "latex": "u_{4}=23,\\quad u_{9}=43",
+      "ham_so_sympy": null
+    },
+    "thang_goi_y": [],
+    "loi_giai": {
+      "cac_buoc": [
+        {
+          "van_ban": "Lấy hiệu hai số hạng.",
+          "bieu_thuc_sympy": "(43-23)/(9-4)",
+          "ket_qua_sympy": "4",
+          "latex": "4 = 4"
+        },
+        {
+          "van_ban": "Tìm hàng đầu.",
+          "bieu_thuc_sympy": "23-3*4",
+          "ket_qua_sympy": "11",
+          "latex": "11 = 11"
+        },
+        {
+          "van_ban": "Tổng ghế.",
+          "bieu_thuc_sympy": "15*(2*11+14*4)/2",
+          "ket_qua_sympy": "585",
+          "latex": "585 = 585"
+        }
+      ],
+      "dap_an": "585",
+      "latex": "585"
+    },
+    "kiem_dinh": {
+      "loai": "ap_infer",
+      "du_kien": {
+        "i": 4,
+        "ui": 23,
+        "j": 9,
+        "uj": 43,
+        "n": 15
+      }
+    },
+    "bai_lam": null,
+    "su_kien": [
+      {
+        "loai": "DAP_AN",
+        "gia_tri": "\"585\""
+      }
+    ],
+    "nguon": "Tổ Toán Trường THPT Nguyễn Trãi (hư cấu), tự soạn cho MathL+, không chép SGK",
+    "duyet_seed": {
+      "trang_thai": "DA_DUYET",
+      "can_cu": "test_teacher_solution",
+      "ghi_chu": "Giáo viên hư cấu duyệt lời giải đã được pytest kiểm độc lập."
+    },
+    "kiem_tra_seed": false
+  },
+  {
+    "id": "NT-DS11-VDC-06",
+    "chu_de": "DS11",
+    "ky_nang_chinh": "T11.NT.DS.2",
+    "ky_nang_phu": [],
+    "muc_do_4": "VDC",
+    "muc_do_bo_3": "VAN_DUNG",
+    "muc_bloom": "PHAN_TICH",
+    "dang_cau": "TU_LUAN",
+    "de_bai": {
+      "van_ban": "Cho cấp số nhân dương $u_2=12,\\quad u_5=96$. Tính tổng $6$ số hạng đầu; giải thích các bước tính.",
+      "latex": "u_2=12,\\quad u_5=96",
+      "ham_so_sympy": null
+    },
+    "thang_goi_y": [],
+    "loi_giai": {
+      "cac_buoc": [
+        {
+          "van_ban": "Tỷ số cho q³.",
+          "bieu_thuc_sympy": "96/12",
+          "ket_qua_sympy": "8",
+          "latex": "8 = 8"
+        },
+        {
+          "van_ban": "Vì q dương, q=2.",
+          "bieu_thuc_sympy": "real_root(8,3)",
+          "ket_qua_sympy": "2",
+          "latex": "2 = 2"
+        },
+        {
+          "van_ban": "Tìm u₁.",
+          "bieu_thuc_sympy": "12/2",
+          "ket_qua_sympy": "6",
+          "latex": "6 = 6"
+        },
+        {
+          "van_ban": "Tính tổng.",
+          "bieu_thuc_sympy": "6*(2**6-1)",
+          "ket_qua_sympy": "378",
+          "latex": "378 = 378"
+        }
+      ],
+      "dap_an": "378",
+      "latex": "378"
+    },
+    "kiem_dinh": {
+      "loai": "gp_infer",
+      "du_kien": {
+        "u2": 12,
+        "u5": 96,
+        "n": 6
+      }
+    },
+    "bai_lam": null,
+    "su_kien": [
+      {
+        "loai": "DAP_AN",
+        "gia_tri": "\"378\""
+      }
+    ],
+    "nguon": "Tổ Toán Trường THPT Nguyễn Trãi (hư cấu), tự soạn cho MathL+, không chép SGK",
+    "duyet_seed": {
+      "trang_thai": "CHO_DUYET",
+      "can_cu": "test_teacher_solution",
+      "ghi_chu": "Lời giải đã kiểm độc lập; đang chờ rà soát lập luận sư phạm."
+    },
+    "kiem_tra_seed": false
+  },
+  {
+    "id": "NT-DH11-NB-01",
+    "chu_de": "DH11",
+    "ky_nang_chinh": "T11.NT.DH",
+    "ky_nang_phu": [],
+    "muc_do_4": "NB",
+    "muc_do_bo_3": "BIET",
+    "muc_bloom": "NHO",
+    "dang_cau": "TU_LUAN",
+    "de_bai": {
+      "van_ban": "Cho $f(x) = 4 x^{3} - 5 x + 2$. Tính $f^{\\prime}(1)$, nêu miền xác định trước khi dùng quy tắc đạo hàm.",
+      "latex": "f(x) = 4 x^{3} - 5 x + 2",
+      "ham_so_sympy": "4*x**3-5*x+2"
+    },
+    "thang_goi_y": [],
+    "loi_giai": {
+      "cac_buoc": [
+        {
+          "van_ban": "Tập xác định của f là ℝ. Điểm đề hỏi thuộc tập xác định."
+        },
+        {
+          "van_ban": "Tính đạo hàm.",
+          "bieu_thuc_sympy": "Derivative(4*x**3 - 5*x + 2, x)",
+          "ket_qua_sympy": "12*x**2 - 5",
+          "latex": "\\dfrac{d}{d x} \\left(4 x^{3} - 5 x + 2\\right) = 12 x^{2} - 5"
+        },
+        {
+          "van_ban": "Thay giá trị vào đạo hàm.",
+          "bieu_thuc_sympy": "7",
+          "ket_qua_sympy": "7",
+          "latex": "7 = 7"
+        }
+      ],
+      "dap_an": "7",
+      "latex": "7"
+    },
+    "kiem_dinh": {
+      "loai": "derivative_value",
+      "du_kien": {
+        "ham": "4*x**3-5*x+2",
+        "tai": 1
+      }
+    },
+    "bai_lam": null,
+    "su_kien": [
+      {
+        "loai": "DAP_AN",
+        "gia_tri": "\"7\""
+      }
+    ],
+    "nguon": "Tổ Toán Trường THPT Nguyễn Trãi (hư cấu), tự soạn cho MathL+, không chép SGK",
+    "duyet_seed": {
+      "trang_thai": "DA_DUYET",
+      "can_cu": "test_teacher_solution",
+      "ghi_chu": "Giáo viên hư cấu duyệt lời giải đã được pytest kiểm độc lập."
+    },
+    "kiem_tra_seed": true
+  },
+  {
+    "id": "NT-DH11-TH-02",
+    "chu_de": "DH11",
+    "ky_nang_chinh": "T11.NT.DH",
+    "ky_nang_phu": [],
+    "muc_do_4": "TH",
+    "muc_do_bo_3": "HIEU",
+    "muc_bloom": "HIEU",
+    "dang_cau": "TU_LUAN",
+    "de_bai": {
+      "van_ban": "Cho $f(x) = \\dfrac{x + 4}{x - 2}$. Tính $f^{\\prime}(3)$, nêu miền xác định trước khi dùng quy tắc đạo hàm.",
+      "latex": "f(x) = \\dfrac{x + 4}{x - 2}",
+      "ham_so_sympy": "(x+4)/(x-2)"
+    },
+    "thang_goi_y": [],
+    "loi_giai": {
+      "cac_buoc": [
+        {
+          "van_ban": "Tập xác định của f là ℝ ∖ {2}. Điểm đề hỏi thuộc tập xác định."
+        },
+        {
+          "van_ban": "Tính đạo hàm.",
+          "bieu_thuc_sympy": "Derivative((x + 4)/(x - 2), x)",
+          "ket_qua_sympy": "1/(x - 2) - (x + 4)/(x - 2)**2",
+          "latex": "\\dfrac{d}{d x} \\dfrac{x + 4}{x - 2} = \\dfrac{1}{x - 2} - \\dfrac{x + 4}{\\left(x - 2\\right)^{2}}"
+        },
+        {
+          "van_ban": "Thay giá trị vào đạo hàm.",
+          "bieu_thuc_sympy": "-6",
+          "ket_qua_sympy": "-6",
+          "latex": "-6 = -6"
+        }
+      ],
+      "dap_an": "-6",
+      "latex": "-6"
+    },
+    "kiem_dinh": {
+      "loai": "derivative_value",
+      "du_kien": {
+        "ham": "(x+4)/(x-2)",
+        "tai": 3
+      }
+    },
+    "bai_lam": null,
+    "su_kien": [
+      {
+        "loai": "DAP_AN",
+        "gia_tri": "\"-6\""
+      }
+    ],
+    "nguon": "Tổ Toán Trường THPT Nguyễn Trãi (hư cấu), tự soạn cho MathL+, không chép SGK",
+    "duyet_seed": {
+      "trang_thai": "DA_DUYET",
+      "can_cu": "test_teacher_solution",
+      "ghi_chu": "Giáo viên hư cấu duyệt lời giải đã được pytest kiểm độc lập."
+    },
+    "kiem_tra_seed": true
+  },
+  {
+    "id": "NT-DH11-TH-03",
+    "chu_de": "DH11",
+    "ky_nang_chinh": "T11.NT.DH",
+    "ky_nang_phu": [],
+    "muc_do_4": "TH",
+    "muc_do_bo_3": "HIEU",
+    "muc_bloom": "HIEU",
+    "dang_cau": "TU_LUAN",
+    "de_bai": {
+      "van_ban": "Cho $f(x) = \\sin{\\left(3 x \\right)}$. Tính $f^{\\prime}(0)$, nêu miền xác định trước khi dùng quy tắc đạo hàm.",
+      "latex": "f(x) = \\sin{\\left(3 x \\right)}",
+      "ham_so_sympy": "sin(3*x)"
+    },
+    "thang_goi_y": [],
+    "loi_giai": {
+      "cac_buoc": [
+        {
+          "van_ban": "Tập xác định của f là ℝ. Điểm đề hỏi thuộc tập xác định."
+        },
+        {
+          "van_ban": "Tính đạo hàm.",
+          "bieu_thuc_sympy": "Derivative(sin(3*x), x)",
+          "ket_qua_sympy": "3*cos(3*x)",
+          "latex": "\\dfrac{d}{d x} \\sin{\\left(3 x \\right)} = 3 \\cos{\\left(3 x \\right)}"
+        },
+        {
+          "van_ban": "Thay giá trị vào đạo hàm.",
+          "bieu_thuc_sympy": "3",
+          "ket_qua_sympy": "3",
+          "latex": "3 = 3"
+        }
+      ],
+      "dap_an": "3",
+      "latex": "3"
+    },
+    "kiem_dinh": {
+      "loai": "derivative_value",
+      "du_kien": {
+        "ham": "sin(3*x)",
+        "tai": 0
+      }
+    },
+    "bai_lam": null,
+    "su_kien": [
+      {
+        "loai": "DAP_AN",
+        "gia_tri": "\"3\""
+      }
+    ],
+    "nguon": "Tổ Toán Trường THPT Nguyễn Trãi (hư cấu), tự soạn cho MathL+, không chép SGK",
+    "duyet_seed": {
+      "trang_thai": "DA_DUYET",
+      "can_cu": "test_teacher_solution",
+      "ghi_chu": "Giáo viên hư cấu duyệt lời giải đã được pytest kiểm độc lập."
+    },
+    "kiem_tra_seed": false
+  },
+  {
+    "id": "NT-DH11-VD-04",
+    "chu_de": "DH11",
+    "ky_nang_chinh": "T11.NT.DH",
+    "ky_nang_phu": [],
+    "muc_do_4": "VD",
+    "muc_do_bo_3": "VAN_DUNG",
+    "muc_bloom": "VAN_DUNG",
+    "dang_cau": "TU_LUAN",
+    "de_bai": {
+      "van_ban": "Cho $f(x) = x^{3} - 6 x^{2} + 15 x$. Tính $f^{\\prime}(4)$, nêu miền xác định trước khi dùng quy tắc đạo hàm.",
+      "latex": "f(x) = x^{3} - 6 x^{2} + 15 x",
+      "ham_so_sympy": "x**3-6*x**2+15*x"
+    },
+    "thang_goi_y": [],
+    "loi_giai": {
+      "cac_buoc": [
+        {
+          "van_ban": "Tập xác định của f là ℝ. Điểm đề hỏi thuộc tập xác định."
+        },
+        {
+          "van_ban": "Vận tốc là đạo hàm vị trí.",
+          "bieu_thuc_sympy": "Derivative(x**3-6*x**2+15*x,x)",
+          "ket_qua_sympy": "3*x**2-12*x+15",
+          "latex": "\\dfrac{d}{d x} \\left(x^{3} - 6 x^{2} + 15 x\\right) = 3 x^{2} - 12 x + 15"
+        },
+        {
+          "van_ban": "Tại t=4.",
+          "bieu_thuc_sympy": "3*4**2-12*4+15",
+          "ket_qua_sympy": "15",
+          "latex": "15 = 15"
+        }
+      ],
+      "dap_an": "15",
+      "latex": "15"
+    },
+    "kiem_dinh": {
+      "loai": "derivative_value",
+      "du_kien": {
+        "ham": "x**3-6*x**2+15*x",
+        "tai": 4
+      }
+    },
+    "bai_lam": null,
+    "su_kien": [
+      {
+        "loai": "DAP_AN",
+        "gia_tri": "\"15\""
+      }
+    ],
+    "nguon": "Tổ Toán Trường THPT Nguyễn Trãi (hư cấu), tự soạn cho MathL+, không chép SGK",
+    "duyet_seed": {
+      "trang_thai": "DA_DUYET",
+      "can_cu": "test_teacher_solution",
+      "ghi_chu": "Giáo viên hư cấu duyệt lời giải đã được pytest kiểm độc lập."
+    },
+    "kiem_tra_seed": true
+  },
+  {
+    "id": "NT-DH11-VDC-05",
+    "chu_de": "DH11",
+    "ky_nang_chinh": "T11.NT.DH.2",
+    "ky_nang_phu": [],
+    "muc_do_4": "VDC",
+    "muc_do_bo_3": "VAN_DUNG",
+    "muc_bloom": "PHAN_TICH",
+    "dang_cau": "TU_LUAN",
+    "de_bai": {
+      "van_ban": "Cho $f(x) = x^{3} - 3 x^{2} + 2$. Tìm mọi hoành độ tiếp điểm của tiếp tuyến đi qua $P(0;2)$; kiểm tra cả tiếp tuyến ngang.",
+      "latex": "f(x) = x^{3} - 3 x^{2} + 2",
+      "ham_so_sympy": "x**3-3*x**2+2"
+    },
+    "thang_goi_y": [],
+    "loi_giai": {
+      "cac_buoc": [
+        {
+          "van_ban": "Đạo hàm cho hệ số góc tiếp tuyến.",
+          "bieu_thuc_sympy": "Derivative(x**3-3*x**2+2,x)",
+          "ket_qua_sympy": "3*x**2-6*x",
+          "latex": "\\dfrac{d}{d x} \\left(x^{3} - 3 x^{2} + 2\\right) = 3 x^{2} - 6 x"
+        },
+        {
+          "van_ban": "Điều kiện tiếp tuyến tại t đi qua P: f(t)−t f′(t)=2.",
+          "bieu_thuc_sympy": "x**3-3*x**2+2-x*(3*x**2-6*x)-2",
+          "ket_qua_sympy": "x**2*(3-2*x)",
+          "latex": "x^{3} - 3 x^{2} - x \\left(3 x^{2} - 6 x\\right) = x^{2} \\left(3 - 2 x\\right)"
+        },
+        {
+          "van_ban": "Không chia cho t: t=0 hoặc t=3/2. Trường hợp t=0 cho tiếp tuyến ngang y=2; trường hợp t=3/2 cho y=−9x/4+2."
+        }
+      ],
+      "dap_an": [
+        "0",
+        "3/2"
+      ],
+      "latex": "\\left\\{0, \\dfrac{3}{2}\\right\\}"
+    },
+    "kiem_dinh": {
+      "loai": "tangent_through",
+      "du_kien": {
+        "ham": "x**3-3*x**2+2",
+        "P": [
+          0,
+          2
+        ]
+      }
+    },
+    "bai_lam": null,
+    "su_kien": [
+      {
+        "loai": "DAP_AN",
+        "gia_tri": "[\"0\", \"3/2\"]"
+      }
+    ],
+    "nguon": "Tổ Toán Trường THPT Nguyễn Trãi (hư cấu), tự soạn cho MathL+, không chép SGK",
+    "duyet_seed": {
+      "trang_thai": "CHO_DUYET",
+      "can_cu": "test_teacher_solution",
+      "ghi_chu": "Lời giải đã kiểm độc lập; đang chờ rà soát lập luận sư phạm."
+    },
+    "kiem_tra_seed": false
+  },
+  {
+    "id": "NT-DH11-VDC-06",
+    "chu_de": "DH11",
+    "ky_nang_chinh": "T11.NT.DH.3",
+    "ky_nang_phu": [],
+    "muc_do_4": "VDC",
+    "muc_do_bo_3": "VAN_DUNG",
+    "muc_bloom": "PHAN_TICH",
+    "dang_cau": "TU_LUAN",
+    "de_bai": {
+      "van_ban": "Khu vườn có chu vi $52$ m. Diện tích là $f(x) = x \\left(26 - x\\right)$ với $0<x<26$. Tìm chiều rộng để diện tích lớn nhất và chứng minh cực đại toàn cục.",
+      "latex": "f(x) = x \\left(26 - x\\right)",
+      "ham_so_sympy": "x*(26-x)"
+    },
+    "thang_goi_y": [],
+    "loi_giai": {
+      "cac_buoc": [
+        {
+          "van_ban": "Diện tích theo chiều rộng.",
+          "bieu_thuc_sympy": "x*(26-x)",
+          "ket_qua_sympy": "26*x-x**2",
+          "latex": "x \\left(26 - x\\right) = - x^{2} + 26 x"
+        },
+        {
+          "van_ban": "Đạo hàm diện tích.",
+          "bieu_thuc_sympy": "Derivative(26*x-x**2,x)",
+          "ket_qua_sympy": "26-2*x",
+          "latex": "\\dfrac{d}{d x} \\left(- x^{2} + 26 x\\right) = 26 - 2 x"
+        },
+        {
+          "van_ban": "Nghiệm đạo hàm.",
+          "bieu_thuc_sympy": "26/2",
+          "ket_qua_sympy": "13",
+          "latex": "13 = 13"
+        },
+        {
+          "van_ban": "Đạo hàm cấp hai âm.",
+          "bieu_thuc_sympy": "Derivative(26*x-x**2,(x,2))",
+          "ket_qua_sympy": "-2",
+          "latex": "\\dfrac{d^{2}}{d x^{2}} \\left(- x^{2} + 26 x\\right) = -2"
+        },
+        {
+          "van_ban": "Diện tích lớn nhất.",
+          "bieu_thuc_sympy": "13*(26-13)",
+          "ket_qua_sympy": "169",
+          "latex": "169 = 169"
+        },
+        {
+          "van_ban": "Đánh giá toàn miền: A=169−(x−13)²≤169, đẳng thức chỉ khi x=13.",
+          "bieu_thuc_sympy": "x*(26-x)",
+          "ket_qua_sympy": "169-(x-13)**2",
+          "latex": "x \\left(26 - x\\right) = 169 - \\left(x - 13\\right)^{2}"
+        }
+      ],
+      "dap_an": {
+        "chieu_rong": "13",
+        "dien_tich": "169"
+      },
+      "latex": "\\begin{aligned}\\text{chieu rong} &= 13\\\\\\text{dien tich} &= 169\\end{aligned}"
+    },
+    "kiem_dinh": {
+      "loai": "maximum",
+      "du_kien": {
+        "ham": "x*(26-x)",
+        "can_duoi": 0,
+        "can_tren": 26
+      }
+    },
+    "bai_lam": null,
+    "su_kien": [
+      {
+        "loai": "DAP_AN",
+        "gia_tri": "{\"chieu_rong\": \"13\", \"dien_tich\": \"169\"}"
+      }
+    ],
+    "nguon": "Tổ Toán Trường THPT Nguyễn Trãi (hư cấu), tự soạn cho MathL+, không chép SGK",
+    "duyet_seed": {
+      "trang_thai": "DA_DUYET",
+      "can_cu": "test_teacher_solution",
+      "ghi_chu": "Giáo viên hư cấu duyệt lời giải đã được pytest kiểm độc lập."
+    },
+    "kiem_tra_seed": true
+  },
+  {
+    "id": "NT-TP12-NB-01",
+    "chu_de": "TP12",
+    "ky_nang_chinh": "T12.NT.TP",
+    "ky_nang_phu": [],
+    "muc_do_4": "NB",
+    "muc_do_bo_3": "BIET",
+    "muc_bloom": "NHO",
+    "dang_cau": "TU_LUAN",
+    "de_bai": {
+      "van_ban": "Tính tích phân của $f(x) = 3 x^{2}$ trên $[0;2]$. Giải thích dấu và cận tính toán.",
+      "latex": "f(x) = 3 x^{2}",
+      "ham_so_sympy": "3*x**2"
+    },
+    "thang_goi_y": [],
+    "loi_giai": {
+      "cac_buoc": [
+        {
+          "van_ban": "Tìm nguyên hàm.",
+          "bieu_thuc_sympy": "Integral(3*x**2, x)",
+          "ket_qua_sympy": "x**3",
+          "latex": "\\int 3 x^{2}\\, dx = x^{3}"
+        },
+        {
+          "van_ban": "Lấy hiệu giá trị ở hai cận.",
+          "bieu_thuc_sympy": "8",
+          "ket_qua_sympy": "8",
+          "latex": "8 = 8"
+        }
+      ],
+      "dap_an": "8",
+      "latex": "8"
+    },
+    "kiem_dinh": {
+      "loai": "integral",
+      "du_kien": {
+        "ham": "3*x**2",
+        "can_duoi": 0,
+        "can_tren": 2
+      }
+    },
+    "bai_lam": null,
+    "su_kien": [
+      {
+        "loai": "DAP_AN",
+        "gia_tri": "\"8\""
+      }
+    ],
+    "nguon": "Tổ Toán Trường THPT Nguyễn Trãi (hư cấu), tự soạn cho MathL+, không chép SGK",
+    "duyet_seed": {
+      "trang_thai": "DA_DUYET",
+      "can_cu": "test_teacher_solution",
+      "ghi_chu": "Giáo viên hư cấu duyệt lời giải đã được pytest kiểm độc lập."
+    },
+    "kiem_tra_seed": false
+  },
+  {
+    "id": "NT-TP12-TH-02",
+    "chu_de": "TP12",
+    "ky_nang_chinh": "T12.NT.TP",
+    "ky_nang_phu": [],
+    "muc_do_4": "TH",
+    "muc_do_bo_3": "HIEU",
+    "muc_bloom": "HIEU",
+    "dang_cau": "TU_LUAN",
+    "de_bai": {
+      "van_ban": "Tính tích phân của $f(x) = 2 x + 5$ trên $[1;4]$. Giải thích dấu và cận tính toán.",
+      "latex": "f(x) = 2 x + 5",
+      "ham_so_sympy": "2*x+5"
+    },
+    "thang_goi_y": [],
+    "loi_giai": {
+      "cac_buoc": [
+        {
+          "van_ban": "Tìm nguyên hàm.",
+          "bieu_thuc_sympy": "Integral(2*x + 5, x)",
+          "ket_qua_sympy": "x**2 + 5*x",
+          "latex": "\\int \\left(2 x + 5\\right)\\, dx = x^{2} + 5 x"
+        },
+        {
+          "van_ban": "Lấy hiệu giá trị ở hai cận.",
+          "bieu_thuc_sympy": "30",
+          "ket_qua_sympy": "30",
+          "latex": "30 = 30"
+        }
+      ],
+      "dap_an": "30",
+      "latex": "30"
+    },
+    "kiem_dinh": {
+      "loai": "integral",
+      "du_kien": {
+        "ham": "2*x+5",
+        "can_duoi": 1,
+        "can_tren": 4
+      }
+    },
+    "bai_lam": null,
+    "su_kien": [
+      {
+        "loai": "DAP_AN",
+        "gia_tri": "\"30\""
+      }
+    ],
+    "nguon": "Tổ Toán Trường THPT Nguyễn Trãi (hư cấu), tự soạn cho MathL+, không chép SGK",
+    "duyet_seed": {
+      "trang_thai": "DA_DUYET",
+      "can_cu": "test_teacher_solution",
+      "ghi_chu": "Giáo viên hư cấu duyệt lời giải đã được pytest kiểm độc lập."
+    },
+    "kiem_tra_seed": false
+  },
+  {
+    "id": "NT-TP12-TH-03",
+    "chu_de": "TP12",
+    "ky_nang_chinh": "T12.NT.TP",
+    "ky_nang_phu": [],
+    "muc_do_4": "TH",
+    "muc_do_bo_3": "HIEU",
+    "muc_bloom": "HIEU",
+    "dang_cau": "TU_LUAN",
+    "de_bai": {
+      "van_ban": "Tính tích phân của $f(x) = \\cos{\\left(x \\right)}$ trên $[0;\\dfrac{\\pi}{2}]$. Giải thích dấu và cận tính toán.",
+      "latex": "f(x) = \\cos{\\left(x \\right)}",
+      "ham_so_sympy": "cos(x)"
+    },
+    "thang_goi_y": [],
+    "loi_giai": {
+      "cac_buoc": [
+        {
+          "van_ban": "Tìm nguyên hàm.",
+          "bieu_thuc_sympy": "Integral(cos(x), x)",
+          "ket_qua_sympy": "sin(x)",
+          "latex": "\\int \\cos{\\left(x \\right)}\\, dx = \\sin{\\left(x \\right)}"
+        },
+        {
+          "van_ban": "Lấy hiệu giá trị ở hai cận.",
+          "bieu_thuc_sympy": "1",
+          "ket_qua_sympy": "1",
+          "latex": "1 = 1"
+        }
+      ],
+      "dap_an": "1",
+      "latex": "1"
+    },
+    "kiem_dinh": {
+      "loai": "integral",
+      "du_kien": {
+        "ham": "cos(x)",
+        "can_duoi": 0,
+        "can_tren": "pi/2"
+      }
+    },
+    "bai_lam": null,
+    "su_kien": [
+      {
+        "loai": "DAP_AN",
+        "gia_tri": "\"1\""
+      }
+    ],
+    "nguon": "Tổ Toán Trường THPT Nguyễn Trãi (hư cấu), tự soạn cho MathL+, không chép SGK",
+    "duyet_seed": {
+      "trang_thai": "DA_DUYET",
+      "can_cu": "test_teacher_solution",
+      "ghi_chu": "Giáo viên hư cấu duyệt lời giải đã được pytest kiểm độc lập."
+    },
+    "kiem_tra_seed": false
+  },
+  {
+    "id": "NT-TP12-VD-04",
+    "chu_de": "TP12",
+    "ky_nang_chinh": "T12.NT.TP.2",
+    "ky_nang_phu": [],
+    "muc_do_4": "VD",
+    "muc_do_bo_3": "VAN_DUNG",
+    "muc_bloom": "VAN_DUNG",
+    "dang_cau": "TU_LUAN",
+    "de_bai": {
+      "van_ban": "Tính diện tích giữa đồ thị và trục hoành của $f(x) = x^{2} - 4 x$ trên $[0;4]$. Giải thích dấu và cận tính toán.",
+      "latex": "f(x) = x^{2} - 4 x",
+      "ham_so_sympy": "x**2-4*x"
+    },
+    "thang_goi_y": [],
+    "loi_giai": {
+      "cac_buoc": [
+        {
+          "van_ban": "x(x−4)≤0 trên [0;4], nên lấy đối của tích phân."
+        },
+        {
+          "van_ban": "Tính diện tích.",
+          "bieu_thuc_sympy": "-Integral(x**2-4*x,(x,0,4))",
+          "ket_qua_sympy": "32/3",
+          "latex": "- \\int\\limits_{0}^{4} \\left(x^{2} - 4 x\\right)\\, dx = \\dfrac{32}{3}"
+        }
+      ],
+      "dap_an": "32/3",
+      "latex": "\\dfrac{32}{3}"
+    },
+    "kiem_dinh": {
+      "loai": "area",
+      "du_kien": {
+        "ham": "x**2-4*x",
+        "can_duoi": 0,
+        "can_tren": 4
+      }
+    },
+    "bai_lam": null,
+    "su_kien": [
+      {
+        "loai": "DAP_AN",
+        "gia_tri": "\"32/3\""
+      }
+    ],
+    "nguon": "Tổ Toán Trường THPT Nguyễn Trãi (hư cấu), tự soạn cho MathL+, không chép SGK",
+    "duyet_seed": {
+      "trang_thai": "DA_DUYET",
+      "can_cu": "test_teacher_solution",
+      "ghi_chu": "Giáo viên hư cấu duyệt lời giải đã được pytest kiểm độc lập."
+    },
+    "kiem_tra_seed": false
+  },
+  {
+    "id": "NT-TP12-VDC-05",
+    "chu_de": "TP12",
+    "ky_nang_chinh": "T12.NT.TP.3",
+    "ky_nang_phu": [],
+    "muc_do_4": "VDC",
+    "muc_do_bo_3": "VAN_DUNG",
+    "muc_bloom": "PHAN_TICH",
+    "dang_cau": "TU_LUAN",
+    "de_bai": {
+      "van_ban": "Tìm giá trị nhỏ nhất theo $a$ của diện tích của $f(x) = a x + 3$ trên $[0;2]$. Giải thích dấu và cận tính toán.",
+      "latex": "f(x) = a x + 3",
+      "ham_so_sympy": "a*x+3"
+    },
+    "thang_goi_y": [],
+    "loi_giai": {
+      "cac_buoc": [
+        {
+          "van_ban": "Nếu a≥−3/2, biểu thức không âm trên đoạn, S(a)=2a+6≥3.",
+          "bieu_thuc_sympy": "Integral(a*x+3,(x,0,2))",
+          "ket_qua_sympy": "2*a+6",
+          "latex": "\\int\\limits_{0}^{2} \\left(a x + 3\\right)\\, dx = 2 a + 6"
+        },
+        {
+          "van_ban": "Nếu a<−3/2, nghiệm −3/a nằm trong đoạn; chia tích phân tại đó.",
+          "bieu_thuc_sympy": "2*(a*(-3/a)**2/2+3*(-3/a))-(2*a+6)",
+          "ket_qua_sympy": "-2*a-6-9/a",
+          "latex": "- 2 a - 6 - \\dfrac{9}{a} = - 2 a - 6 - \\dfrac{9}{a}"
+        },
+        {
+          "van_ban": "Đặt t=−a>3/2. S=2t+9/t−6≥2√18−6=6√2−6, đẳng thức khi t=3/√2, thuộc miền. Giá trị này nhỏ hơn 3 nên là cực tiểu toàn cục."
+        },
+        {
+          "van_ban": "Giá trị khi a=−3/√2.",
+          "bieu_thuc_sympy": "-2*(-3/sqrt(2))-6-9/(-3/sqrt(2))",
+          "ket_qua_sympy": "6*sqrt(2)-6",
+          "latex": "-6 + 6 \\sqrt{2} = -6 + 6 \\sqrt{2}"
+        }
+      ],
+      "dap_an": "6*sqrt(2)-6",
+      "latex": "-6 + 6 \\sqrt{2}"
+    },
+    "kiem_dinh": {
+      "loai": "min_abs_area",
+      "du_kien": {
+        "ham": "a*x+3",
+        "can_duoi": 0,
+        "can_tren": 2
+      }
+    },
+    "bai_lam": null,
+    "su_kien": [
+      {
+        "loai": "DAP_AN",
+        "gia_tri": "\"6*sqrt(2)-6\""
+      }
+    ],
+    "nguon": "Tổ Toán Trường THPT Nguyễn Trãi (hư cấu), tự soạn cho MathL+, không chép SGK",
+    "duyet_seed": {
+      "trang_thai": "CHO_DUYET",
+      "can_cu": "test_teacher_solution",
+      "ghi_chu": "Lời giải đã kiểm độc lập; đang chờ rà soát lập luận sư phạm."
+    },
+    "kiem_tra_seed": false
+  },
+  {
+    "id": "NT-TP12-VDC-06",
+    "chu_de": "TP12",
+    "ky_nang_chinh": "T12.NT.TP.4",
+    "ky_nang_phu": [],
+    "muc_do_4": "VDC",
+    "muc_do_bo_3": "VAN_DUNG",
+    "muc_bloom": "PHAN_TICH",
+    "dang_cau": "TU_LUAN",
+    "de_bai": {
+      "van_ban": "Tính diện tích giữa $y = x^{2},\\quad y = 2 x + 3$; tìm cận từ phương trình giao điểm.",
+      "latex": "y = x^{2},\\quad y = 2 x + 3",
+      "ham_so_sympy": null
+    },
+    "thang_goi_y": [],
+    "loi_giai": {
+      "cac_buoc": [
+        {
+          "van_ban": "Phương trình giao điểm.",
+          "bieu_thuc_sympy": "x**2-2*x-3",
+          "ket_qua_sympy": "(x-3)*(x+1)",
+          "latex": "x^{2} - 2 x - 3 = \\left(x - 3\\right) \\left(x + 1\\right)"
+        },
+        {
+          "van_ban": "Giao điểm có hoành độ −1 và 3; đường thẳng nằm trên parabol ở giữa."
+        },
+        {
+          "van_ban": "Tích phân hiệu trên đoạn.",
+          "bieu_thuc_sympy": "Integral(2*x+3-x**2,(x,-1,3))",
+          "ket_qua_sympy": "32/3",
+          "latex": "\\int\\limits_{-1}^{3} \\left(- x^{2} + 2 x + 3\\right)\\, dx = \\dfrac{32}{3}"
+        }
+      ],
+      "dap_an": "32/3",
+      "latex": "\\dfrac{32}{3}"
+    },
+    "kiem_dinh": {
+      "loai": "between_area",
+      "du_kien": {
+        "f": "x**2",
+        "g": "2*x+3"
+      }
+    },
+    "bai_lam": null,
+    "su_kien": [
+      {
+        "loai": "DAP_AN",
+        "gia_tri": "\"32/3\""
+      }
+    ],
+    "nguon": "Tổ Toán Trường THPT Nguyễn Trãi (hư cấu), tự soạn cho MathL+, không chép SGK",
+    "duyet_seed": {
+      "trang_thai": "DA_DUYET",
+      "can_cu": "test_teacher_solution",
+      "ghi_chu": "Giáo viên hư cấu duyệt lời giải đã được pytest kiểm độc lập."
+    },
+    "kiem_tra_seed": false
+  },
+  {
+    "id": "NT-KG12-NB-01",
+    "chu_de": "KG12",
+    "ky_nang_chinh": "T12.NT.KG",
+    "ky_nang_phu": [],
+    "muc_do_4": "NB",
+    "muc_do_bo_3": "BIET",
+    "muc_bloom": "NHO",
+    "dang_cau": "TU_LUAN",
+    "de_bai": {
+      "van_ban": "Hình chóp có đáy tam giác vuông với hai cạnh góc vuông $6$ cm, $8$ cm; chiều cao $9$ cm. Tính thể tích.",
+      "latex": "\\text{Chóp đáy tam giác vuông, hai cạnh }6,8\\text{ cm; cao }9\\text{ cm}",
+      "ham_so_sympy": null
+    },
+    "thang_goi_y": [],
+    "loi_giai": {
+      "cac_buoc": [
+        {
+          "van_ban": "Diện tích đáy.",
+          "bieu_thuc_sympy": "6*8/2",
+          "ket_qua_sympy": "24",
+          "latex": "24 = 24"
+        },
+        {
+          "van_ban": "Một phần ba tích đáy và chiều cao.",
+          "bieu_thuc_sympy": "6*8*9/6",
+          "ket_qua_sympy": "72",
+          "latex": "72 = 72"
+        }
+      ],
+      "dap_an": "72",
+      "latex": "72"
+    },
+    "kiem_dinh": {
+      "loai": "pyramid",
+      "du_kien": {
+        "a": 6,
+        "b": 8,
+        "h": 9
+      }
+    },
+    "bai_lam": null,
+    "su_kien": [
+      {
+        "loai": "DAP_AN",
+        "gia_tri": "\"72\""
+      }
+    ],
+    "nguon": "Tổ Toán Trường THPT Nguyễn Trãi (hư cấu), tự soạn cho MathL+, không chép SGK",
+    "duyet_seed": {
+      "trang_thai": "DA_DUYET",
+      "can_cu": "test_teacher_solution",
+      "ghi_chu": "Giáo viên hư cấu duyệt lời giải đã được pytest kiểm độc lập."
+    },
+    "kiem_tra_seed": false
+  },
+  {
+    "id": "NT-KG12-TH-02",
+    "chu_de": "KG12",
+    "ky_nang_chinh": "T12.NT.KG",
+    "ky_nang_phu": [],
+    "muc_do_4": "TH",
+    "muc_do_bo_3": "HIEU",
+    "muc_bloom": "HIEU",
+    "dang_cau": "TU_LUAN",
+    "de_bai": {
+      "van_ban": "Hình chóp có đáy tam giác vuông với hai cạnh góc vuông $5$ cm, $12$ cm; chiều cao $7$ cm. Tính thể tích.",
+      "latex": "\\text{Chóp đáy tam giác vuông, hai cạnh }5,12\\text{ cm; cao }7\\text{ cm}",
+      "ham_so_sympy": null
+    },
+    "thang_goi_y": [],
+    "loi_giai": {
+      "cac_buoc": [
+        {
+          "van_ban": "Diện tích đáy.",
+          "bieu_thuc_sympy": "5*12/2",
+          "ket_qua_sympy": "30",
+          "latex": "30 = 30"
+        },
+        {
+          "van_ban": "Một phần ba tích đáy và chiều cao.",
+          "bieu_thuc_sympy": "5*12*7/6",
+          "ket_qua_sympy": "70",
+          "latex": "70 = 70"
+        }
+      ],
+      "dap_an": "70",
+      "latex": "70"
+    },
+    "kiem_dinh": {
+      "loai": "pyramid",
+      "du_kien": {
+        "a": 5,
+        "b": 12,
+        "h": 7
+      }
+    },
+    "bai_lam": null,
+    "su_kien": [
+      {
+        "loai": "DAP_AN",
+        "gia_tri": "\"70\""
+      }
+    ],
+    "nguon": "Tổ Toán Trường THPT Nguyễn Trãi (hư cấu), tự soạn cho MathL+, không chép SGK",
+    "duyet_seed": {
+      "trang_thai": "DA_DUYET",
+      "can_cu": "test_teacher_solution",
+      "ghi_chu": "Giáo viên hư cấu duyệt lời giải đã được pytest kiểm độc lập."
+    },
+    "kiem_tra_seed": false
+  },
+  {
+    "id": "NT-KG12-TH-03",
+    "chu_de": "KG12",
+    "ky_nang_chinh": "T12.NT.KG.2",
+    "ky_nang_phu": [],
+    "muc_do_4": "TH",
+    "muc_do_bo_3": "HIEU",
+    "muc_bloom": "HIEU",
+    "dang_cau": "TU_LUAN",
+    "de_bai": {
+      "van_ban": "Cho $A(1;-2;3), B(5;1;3)$ trong không gian tọa độ. Tính độ dài $AB$.",
+      "latex": "\\text{Độ dài đoạn }AB\\text{ với }A(1;-2;3),\\ B(5;1;3)",
+      "ham_so_sympy": null
+    },
+    "thang_goi_y": [],
+    "loi_giai": {
+      "cac_buoc": [
+        {
+          "van_ban": "Bình phương độ dài.",
+          "bieu_thuc_sympy": "(5-1)**2+(1+2)**2+(3-3)**2",
+          "ket_qua_sympy": "25",
+          "latex": "25 = 25"
+        },
+        {
+          "van_ban": "Lấy căn dương.",
+          "bieu_thuc_sympy": "sqrt(25)",
+          "ket_qua_sympy": "5",
+          "latex": "5 = 5"
+        }
+      ],
+      "dap_an": "5",
+      "latex": "5"
+    },
+    "kiem_dinh": {
+      "loai": "distance",
+      "du_kien": {
+        "A": [
+          1,
+          -2,
+          3
+        ],
+        "B": [
+          5,
+          1,
+          3
+        ]
+      }
+    },
+    "bai_lam": null,
+    "su_kien": [
+      {
+        "loai": "DAP_AN",
+        "gia_tri": "\"5\""
+      }
+    ],
+    "nguon": "Tổ Toán Trường THPT Nguyễn Trãi (hư cấu), tự soạn cho MathL+, không chép SGK",
+    "duyet_seed": {
+      "trang_thai": "DA_DUYET",
+      "can_cu": "test_teacher_solution",
+      "ghi_chu": "Giáo viên hư cấu duyệt lời giải đã được pytest kiểm độc lập."
+    },
+    "kiem_tra_seed": false
+  },
+  {
+    "id": "NT-KG12-VD-04",
+    "chu_de": "KG12",
+    "ky_nang_chinh": "T12.NT.KG.3",
+    "ky_nang_phu": [],
+    "muc_do_4": "VD",
+    "muc_do_bo_3": "VAN_DUNG",
+    "muc_bloom": "VAN_DUNG",
+    "dang_cau": "TU_LUAN",
+    "de_bai": {
+      "van_ban": "Hộp chữ nhật có ba cạnh $4$, $7$, $8$ cm. Tính độ dài đường chéo không gian.",
+      "latex": "\\text{Đường chéo hộp chữ nhật, ba cạnh }4,7,8\\text{ cm}",
+      "ham_so_sympy": null
+    },
+    "thang_goi_y": [],
+    "loi_giai": {
+      "cac_buoc": [
+        {
+          "van_ban": "Dùng hai lần định lý Pythagore.",
+          "bieu_thuc_sympy": "4**2+7**2+8**2",
+          "ket_qua_sympy": "129",
+          "latex": "129 = 129"
+        },
+        {
+          "van_ban": "Lấy căn.",
+          "bieu_thuc_sympy": "sqrt(129)",
+          "ket_qua_sympy": "sqrt(129)",
+          "latex": "\\sqrt{129} = \\sqrt{129}"
+        }
+      ],
+      "dap_an": "sqrt(129)",
+      "latex": "\\sqrt{129}"
+    },
+    "kiem_dinh": {
+      "loai": "box_diagonal",
+      "du_kien": {
+        "canh": [
+          4,
+          7,
+          8
+        ]
+      }
+    },
+    "bai_lam": null,
+    "su_kien": [
+      {
+        "loai": "DAP_AN",
+        "gia_tri": "\"sqrt(129)\""
+      }
+    ],
+    "nguon": "Tổ Toán Trường THPT Nguyễn Trãi (hư cấu), tự soạn cho MathL+, không chép SGK",
+    "duyet_seed": {
+      "trang_thai": "DA_DUYET",
+      "can_cu": "test_teacher_solution",
+      "ghi_chu": "Giáo viên hư cấu duyệt lời giải đã được pytest kiểm độc lập."
+    },
+    "kiem_tra_seed": false
+  },
+  {
+    "id": "NT-KG12-VDC-05",
+    "chu_de": "KG12",
+    "ky_nang_chinh": "T12.NT.KG.4",
+    "ky_nang_phu": [],
+    "muc_do_4": "VDC",
+    "muc_do_bo_3": "VAN_DUNG",
+    "muc_bloom": "PHAN_TICH",
+    "dang_cau": "TU_LUAN",
+    "de_bai": {
+      "van_ban": "Cho $M(2;-1;4)$ và mặt phẳng $2x-y+2z-5=0$. Tìm hình chiếu $H$ của $M$ lên mặt phẳng và khoảng cách $MH$; chứng minh điểm gần nhất.",
+      "latex": "\\text{Hình chiếu của }M(2;-1;4)\\text{ lên }2x-y+2z-5=0",
+      "ham_so_sympy": null
+    },
+    "thang_goi_y": [],
+    "loi_giai": {
+      "cac_buoc": [
+        {
+          "van_ban": "Pháp tuyến n=(2;−1;2); bình phương độ dài n.",
+          "bieu_thuc_sympy": "2**2+(-1)**2+2**2",
+          "ket_qua_sympy": "9",
+          "latex": "9 = 9"
+        },
+        {
+          "van_ban": "Viết H=M−λn, thế vào phương trình mặt phẳng: λ=(n·M−5)/(n·n).",
+          "bieu_thuc_sympy": "(2*2-(-1)+2*4-5)/9",
+          "ket_qua_sympy": "8/9",
+          "latex": "\\dfrac{8}{9} = \\dfrac{8}{9}"
+        },
+        {
+          "van_ban": "Suy ra H(2/9;−1/9;20/9). Vectơ MH song song n, nên vuông góc mặt phẳng. Với mọi N trên mặt phẳng, MN²=MH²+HN²≥MH²; đẳng thức chỉ khi N=H."
+        },
+        {
+          "van_ban": "Tính khoảng cách từ phép chiếu.",
+          "bieu_thuc_sympy": "sqrt((2-2/9)**2+(-1+1/9)**2+(4-20/9)**2)",
+          "ket_qua_sympy": "8/3",
+          "latex": "\\dfrac{8}{3} = \\dfrac{8}{3}"
+        }
+      ],
+      "dap_an": {
+        "H": [
+          "2/9",
+          "-1/9",
+          "20/9"
+        ],
+        "khoang_cach": "8/3"
+      },
+      "latex": "\\begin{aligned}\\text{H} &= \\left\\{\\dfrac{2}{9}, - \\dfrac{1}{9}, \\dfrac{20}{9}\\right\\}\\\\\\text{khoang cach} &= \\dfrac{8}{3}\\end{aligned}"
+    },
+    "kiem_dinh": {
+      "loai": "plane_projection",
+      "du_kien": {
+        "M": [
+          2,
+          -1,
+          4
+        ],
+        "normal": [
+          2,
+          -1,
+          2
+        ],
+        "d": -5
+      }
+    },
+    "bai_lam": null,
+    "su_kien": [
+      {
+        "loai": "DAP_AN",
+        "gia_tri": "{\"H\": [\"2/9\", \"-1/9\", \"20/9\"], \"khoang_cach\": \"8/3\"}"
+      }
+    ],
+    "nguon": "Tổ Toán Trường THPT Nguyễn Trãi (hư cấu), tự soạn cho MathL+, không chép SGK",
+    "duyet_seed": {
+      "trang_thai": "CHO_DUYET",
+      "can_cu": "test_teacher_solution",
+      "ghi_chu": "Lời giải đã kiểm độc lập; đang chờ rà soát lập luận sư phạm."
+    },
+    "kiem_tra_seed": false
+  },
+  {
+    "id": "NT-KG12-VDC-06",
+    "chu_de": "KG12",
+    "ky_nang_chinh": "T12.NT.KG.5",
+    "ky_nang_phu": [],
+    "muc_do_4": "VDC",
+    "muc_do_bo_3": "VAN_DUNG",
+    "muc_bloom": "PHAN_TICH",
+    "dang_cau": "TU_LUAN",
+    "de_bai": {
+      "van_ban": "Cho tứ diện $O(0;0;0), A(3;0;0), B(1;4;0), C(2;1;5)$. Tính thể tích bằng tích hỗn tạp và kiểm bằng đáy–chiều cao.",
+      "latex": "\\text{Tứ diện }OABC:\\ O(0;0;0),\\ A(3;0;0),\\ B(1;4;0),\\ C(2;1;5)",
+      "ham_so_sympy": null
+    },
+    "thang_goi_y": [],
+    "loi_giai": {
+      "cac_buoc": [
+        {
+          "van_ban": "Tích hỗn tạp OA·(OB×OC) bằng định thức các vectơ cột.",
+          "bieu_thuc_sympy": "det(Matrix([[3,1,2],[0,4,1],[0,0,5]]))",
+          "ket_qua_sympy": "60",
+          "latex": "60 = 60"
+        },
+        {
+          "van_ban": "Thể tích tứ diện bằng 1/6 trị tuyệt đối tích hỗn tạp.",
+          "bieu_thuc_sympy": "Abs(60)/6",
+          "ket_qua_sympy": "10",
+          "latex": "10 = 10"
+        },
+        {
+          "van_ban": "Diện tích đáy OAB.",
+          "bieu_thuc_sympy": "3*4/2",
+          "ket_qua_sympy": "6",
+          "latex": "6 = 6"
+        },
+        {
+          "van_ban": "Khoảng cách C tới z=0.",
+          "bieu_thuc_sympy": "Abs(5)",
+          "ket_qua_sympy": "5",
+          "latex": "5 = 5"
+        },
+        {
+          "van_ban": "Thể tích.",
+          "bieu_thuc_sympy": "6*5/3",
+          "ket_qua_sympy": "10",
+          "latex": "10 = 10"
+        }
+      ],
+      "dap_an": "10",
+      "latex": "10"
+    },
+    "kiem_dinh": {
+      "loai": "tetrahedron",
+      "du_kien": {
+        "O": [
+          0,
+          0,
+          0
+        ],
+        "A": [
+          3,
+          0,
+          0
+        ],
+        "B": [
+          1,
+          4,
+          0
+        ],
+        "C": [
+          2,
+          1,
+          5
+        ]
+      }
+    },
+    "bai_lam": null,
+    "su_kien": [
+      {
+        "loai": "DAP_AN",
+        "gia_tri": "\"10\""
+      }
+    ],
+    "nguon": "Tổ Toán Trường THPT Nguyễn Trãi (hư cấu), tự soạn cho MathL+, không chép SGK",
+    "duyet_seed": {
+      "trang_thai": "DA_DUYET",
+      "can_cu": "test_teacher_solution",
+      "ghi_chu": "Giáo viên hư cấu duyệt lời giải đã được pytest kiểm độc lập."
+    },
+    "kiem_tra_seed": false
+  },
+  {
+    "id": "NT-XS10-NB-01",
+    "chu_de": "XS10",
+    "ky_nang_chinh": "T10.NT.XS",
+    "ky_nang_phu": [],
+    "muc_do_4": "NB",
+    "muc_do_bo_3": "BIET",
+    "muc_bloom": "NHO",
+    "dang_cau": "TU_LUAN",
+    "de_bai": {
+      "van_ban": "Một hộp có $5$ thẻ xanh và $7$ thẻ vàng, các thẻ cùng kích thước. Rút ngẫu nhiên một thẻ. Tính xác suất thẻ xanh.",
+      "latex": "\\text{Hộp có }5\\text{ thẻ xanh, }7\\text{ thẻ vàng; rút một thẻ}",
+      "ham_so_sympy": null
+    },
+    "thang_goi_y": [],
+    "loi_giai": {
+      "cac_buoc": [
+        {
+          "van_ban": "Số thẻ.",
+          "bieu_thuc_sympy": "5+7",
+          "ket_qua_sympy": "12",
+          "latex": "12 = 12"
+        },
+        {
+          "van_ban": "Tỷ lệ thuận lợi.",
+          "bieu_thuc_sympy": "5/12",
+          "ket_qua_sympy": "5/12",
+          "latex": "\\dfrac{5}{12} = \\dfrac{5}{12}"
+        }
+      ],
+      "dap_an": "5/12",
+      "latex": "\\dfrac{5}{12}"
+    },
+    "kiem_dinh": {
+      "loai": "hypergeom",
+      "du_kien": {
+        "good": 5,
+        "bad": 7,
+        "draw": 1,
+        "want": 1
+      }
+    },
+    "bai_lam": null,
+    "su_kien": [
+      {
+        "loai": "DAP_AN",
+        "gia_tri": "\"5/12\""
+      }
+    ],
+    "nguon": "Tổ Toán Trường THPT Nguyễn Trãi (hư cấu), tự soạn cho MathL+, không chép SGK",
+    "duyet_seed": {
+      "trang_thai": "DA_DUYET",
+      "can_cu": "test_teacher_solution",
+      "ghi_chu": "Giáo viên hư cấu duyệt lời giải đã được pytest kiểm độc lập."
+    },
+    "kiem_tra_seed": false
+  },
+  {
+    "id": "NT-XS10-TH-02",
+    "chu_de": "XS10",
+    "ky_nang_chinh": "T10.NT.XS",
+    "ky_nang_phu": [],
+    "muc_do_4": "TH",
+    "muc_do_bo_3": "HIEU",
+    "muc_bloom": "HIEU",
+    "dang_cau": "TU_LUAN",
+    "de_bai": {
+      "van_ban": "Có $4$ bút đỏ và $6$ bút đen. Chọn ngẫu nhiên $2$ bút khác nhau, không hoàn lại. Tính xác suất cả hai đều đỏ.",
+      "latex": "\\text{Chọn }2\\text{ bút từ }4\\text{ bút đỏ và }6\\text{ bút đen}",
+      "ham_so_sympy": null
+    },
+    "thang_goi_y": [],
+    "loi_giai": {
+      "cac_buoc": [
+        {
+          "van_ban": "Tổng cách chọn.",
+          "bieu_thuc_sympy": "binomial(10,2)",
+          "ket_qua_sympy": "45",
+          "latex": "45 = 45"
+        },
+        {
+          "van_ban": "Số cách thuận lợi.",
+          "bieu_thuc_sympy": "binomial(4,2)",
+          "ket_qua_sympy": "6",
+          "latex": "6 = 6"
+        },
+        {
+          "van_ban": "Xác suất.",
+          "bieu_thuc_sympy": "6/45",
+          "ket_qua_sympy": "2/15",
+          "latex": "\\dfrac{2}{15} = \\dfrac{2}{15}"
+        }
+      ],
+      "dap_an": "2/15",
+      "latex": "\\dfrac{2}{15}"
+    },
+    "kiem_dinh": {
+      "loai": "hypergeom",
+      "du_kien": {
+        "good": 4,
+        "bad": 6,
+        "draw": 2,
+        "want": 2
+      }
+    },
+    "bai_lam": null,
+    "su_kien": [
+      {
+        "loai": "DAP_AN",
+        "gia_tri": "\"2/15\""
+      }
+    ],
+    "nguon": "Tổ Toán Trường THPT Nguyễn Trãi (hư cấu), tự soạn cho MathL+, không chép SGK",
+    "duyet_seed": {
+      "trang_thai": "DA_DUYET",
+      "can_cu": "test_teacher_solution",
+      "ghi_chu": "Giáo viên hư cấu duyệt lời giải đã được pytest kiểm độc lập."
+    },
+    "kiem_tra_seed": false
+  },
+  {
+    "id": "NT-XS10-TH-03",
+    "chu_de": "XS10",
+    "ky_nang_chinh": "T10.NT.XS.2",
+    "ky_nang_phu": [],
+    "muc_do_4": "VD",
+    "muc_do_bo_3": "VAN_DUNG",
+    "muc_bloom": "VAN_DUNG",
+    "dang_cau": "TU_LUAN",
+    "de_bai": {
+      "van_ban": "Tung $2$ đồng xu cân đối độc lập. Tính xác suất có đúng $1$ mặt ngửa.",
+      "latex": "\\text{Tung }2\\text{ đồng xu; xác suất đúng một mặt ngửa}",
+      "ham_so_sympy": null
+    },
+    "thang_goi_y": [],
+    "loi_giai": {
+      "cac_buoc": [
+        {
+          "van_ban": "Có hai vị trí cho mặt ngửa.",
+          "bieu_thuc_sympy": "binomial(2,1)",
+          "ket_qua_sympy": "2",
+          "latex": "2 = 2"
+        },
+        {
+          "van_ban": "Xác suất.",
+          "bieu_thuc_sympy": "2*(1/2)**2",
+          "ket_qua_sympy": "1/2",
+          "latex": "\\dfrac{1}{2} = \\dfrac{1}{2}"
+        }
+      ],
+      "dap_an": "1/2",
+      "latex": "\\dfrac{1}{2}"
+    },
+    "kiem_dinh": {
+      "loai": "binomial",
+      "du_kien": {
+        "n": 2,
+        "k": 1,
+        "p": "1/2"
+      }
+    },
+    "bai_lam": null,
+    "su_kien": [
+      {
+        "loai": "DAP_AN",
+        "gia_tri": "\"1/2\""
+      }
+    ],
+    "nguon": "Tổ Toán Trường THPT Nguyễn Trãi (hư cấu), tự soạn cho MathL+, không chép SGK",
+    "duyet_seed": {
+      "trang_thai": "DA_DUYET",
+      "can_cu": "test_teacher_solution",
+      "ghi_chu": "Giáo viên hư cấu duyệt lời giải đã được pytest kiểm độc lập."
+    },
+    "kiem_tra_seed": false
+  },
+  {
+    "id": "NT-XS10-VD-04",
+    "chu_de": "XS10",
+    "ky_nang_chinh": "T10.NT.XS",
+    "ky_nang_phu": [],
+    "muc_do_4": "VDC",
+    "muc_do_bo_3": "VAN_DUNG",
+    "muc_bloom": "PHAN_TICH",
+    "dang_cau": "TU_LUAN",
+    "de_bai": {
+      "van_ban": "Một túi có $7$ bi xanh và $5$ bi đỏ. Lấy đồng thời $3$ bi. Tính xác suất đúng $2$ bi xanh.",
+      "latex": "\\text{Lấy }3\\text{ bi từ }7\\text{ bi xanh và }5\\text{ bi đỏ}",
+      "ham_so_sympy": null
+    },
+    "thang_goi_y": [],
+    "loi_giai": {
+      "cac_buoc": [
+        {
+          "van_ban": "Tổng tổ hợp.",
+          "bieu_thuc_sympy": "binomial(12,3)",
+          "ket_qua_sympy": "220",
+          "latex": "220 = 220"
+        },
+        {
+          "van_ban": "Tổ hợp thuận lợi.",
+          "bieu_thuc_sympy": "binomial(7,2)*binomial(5,1)",
+          "ket_qua_sympy": "105",
+          "latex": "105 = 105"
+        },
+        {
+          "van_ban": "Xác suất.",
+          "bieu_thuc_sympy": "105/220",
+          "ket_qua_sympy": "21/44",
+          "latex": "\\dfrac{21}{44} = \\dfrac{21}{44}"
+        }
+      ],
+      "dap_an": "21/44",
+      "latex": "\\dfrac{21}{44}"
+    },
+    "kiem_dinh": {
+      "loai": "hypergeom",
+      "du_kien": {
+        "good": 7,
+        "bad": 5,
+        "draw": 3,
+        "want": 2
+      }
+    },
+    "bai_lam": null,
+    "su_kien": [
+      {
+        "loai": "DAP_AN",
+        "gia_tri": "\"21/44\""
+      }
+    ],
+    "nguon": "Tổ Toán Trường THPT Nguyễn Trãi (hư cấu), tự soạn cho MathL+, không chép SGK",
+    "duyet_seed": {
+      "trang_thai": "DA_DUYET",
+      "can_cu": "test_teacher_solution",
+      "ghi_chu": "Giáo viên hư cấu duyệt lời giải đã được pytest kiểm độc lập."
+    },
+    "kiem_tra_seed": false
+  },
+  {
+    "id": "NT-XS12-VDC-07",
+    "chu_de": "XS12",
+    "ky_nang_chinh": "T12.NT.XS",
+    "ky_nang_phu": [],
+    "muc_do_4": "VDC",
+    "muc_do_bo_3": "VAN_DUNG",
+    "muc_bloom": "PHAN_TICH",
+    "dang_cau": "TU_LUAN",
+    "de_bai": {
+      "van_ban": "Một nhóm có $6$ bạn nữ và $4$ bạn nam. Chọn ngẫu nhiên $3$ người; biết nhóm chọn có ít nhất một nữ, tính xác suất cả $3$ đều nữ.",
+      "latex": "\\text{Chọn }3\\text{ người từ nhóm }6\\text{ nữ, }4\\text{ nam; biết có nữ}",
+      "ham_so_sympy": null
+    },
+    "thang_goi_y": [],
+    "loi_giai": {
+      "cac_buoc": [
+        {
+          "van_ban": "Số nhóm có ít nhất một nữ.",
+          "bieu_thuc_sympy": "binomial(10,3)-binomial(4,3)",
+          "ket_qua_sympy": "116",
+          "latex": "116 = 116"
+        },
+        {
+          "van_ban": "Số nhóm toàn nữ.",
+          "bieu_thuc_sympy": "binomial(6,3)",
+          "ket_qua_sympy": "20",
+          "latex": "20 = 20"
+        },
+        {
+          "van_ban": "Xác suất có điều kiện.",
+          "bieu_thuc_sympy": "20/116",
+          "ket_qua_sympy": "5/29",
+          "latex": "\\dfrac{5}{29} = \\dfrac{5}{29}"
+        }
+      ],
+      "dap_an": "5/29",
+      "latex": "\\dfrac{5}{29}"
+    },
+    "kiem_dinh": {
+      "loai": "conditional_group",
+      "du_kien": {
+        "good": 6,
+        "bad": 4,
+        "draw": 3
+      }
+    },
+    "bai_lam": null,
+    "su_kien": [
+      {
+        "loai": "DAP_AN",
+        "gia_tri": "\"5/29\""
+      }
+    ],
+    "nguon": "Tổ Toán Trường THPT Nguyễn Trãi (hư cấu), tự soạn cho MathL+, không chép SGK",
+    "duyet_seed": {
+      "trang_thai": "DA_DUYET",
+      "can_cu": "test_teacher_solution",
+      "ghi_chu": "Giáo viên hư cấu duyệt lời giải đã được pytest kiểm độc lập."
+    },
+    "kiem_tra_seed": false
+  },
+  {
+    "id": "NT-XS12-VDC-08",
+    "chu_de": "XS12",
+    "ky_nang_chinh": "T12.NT.XS.2",
+    "ky_nang_phu": [],
+    "muc_do_4": "VDC",
+    "muc_do_bo_3": "VAN_DUNG",
+    "muc_bloom": "PHAN_TICH",
+    "dang_cau": "TU_LUAN",
+    "de_bai": {
+      "van_ban": "Có hai hộp thẻ: hộp I gồm $3$ xanh, $2$ đỏ; hộp II gồm $2$ xanh, $4$ đỏ. Chọn hộp với xác suất bằng nhau rồi rút một thẻ. Biết thẻ xanh, tính xác suất đã chọn hộp I.",
+      "latex": "\\text{Hai hộp thẻ: I có }3\\text{ xanh, }2\\text{ đỏ; II có }2\\text{ xanh, }4\\text{ đỏ}",
+      "ham_so_sympy": null
+    },
+    "thang_goi_y": [],
+    "loi_giai": {
+      "cac_buoc": [
+        {
+          "van_ban": "Xác suất xanh từ hộp I.",
+          "bieu_thuc_sympy": "(1/2)*(3/5)",
+          "ket_qua_sympy": "3/10",
+          "latex": "\\dfrac{3}{10} = \\dfrac{3}{10}"
+        },
+        {
+          "van_ban": "Xác suất xanh chung.",
+          "bieu_thuc_sympy": "(1/2)*(3/5)+(1/2)*(2/6)",
+          "ket_qua_sympy": "7/15",
+          "latex": "\\dfrac{7}{15} = \\dfrac{7}{15}"
+        },
+        {
+          "van_ban": "Áp xác suất có điều kiện.",
+          "bieu_thuc_sympy": "(3/10)/(7/15)",
+          "ket_qua_sympy": "9/14",
+          "latex": "\\dfrac{9}{14} = \\dfrac{9}{14}"
+        }
+      ],
+      "dap_an": "9/14",
+      "latex": "\\dfrac{9}{14}"
+    },
+    "kiem_dinh": {
+      "loai": "bayes",
+      "du_kien": {
+        "g1": 3,
+        "b1": 2,
+        "g2": 2,
+        "b2": 4,
+        "prior": "1/2"
+      }
+    },
+    "bai_lam": null,
+    "su_kien": [
+      {
+        "loai": "DAP_AN",
+        "gia_tri": "\"9/14\""
+      }
+    ],
+    "nguon": "Tổ Toán Trường THPT Nguyễn Trãi (hư cấu), tự soạn cho MathL+, không chép SGK",
+    "duyet_seed": {
+      "trang_thai": "DA_DUYET",
+      "can_cu": "test_teacher_solution",
+      "ghi_chu": "Giáo viên hư cấu duyệt lời giải đã được pytest kiểm độc lập."
+    },
+    "kiem_tra_seed": false
+  },
+  {
+    "id": "NT-BH10-NB-01",
+    "chu_de": "BH10",
+    "ky_nang_chinh": "T10.NT.BH",
+    "ky_nang_phu": [],
+    "muc_do_4": "NB",
+    "muc_do_bo_3": "BIET",
+    "muc_bloom": "NHO",
+    "dang_cau": "TU_LUAN",
+    "de_bai": {
+      "van_ban": "Tìm giá trị nhỏ nhất của hàm số $y = x^{2} - 4 x + 3$ bằng cách hoàn thành bình phương.",
+      "latex": "y = x^{2} - 4 x + 3",
+      "ham_so_sympy": "x**2 - 4*x + 3"
+    },
+    "thang_goi_y": [],
+    "loi_giai": {
+      "cac_buoc": [
+        {
+          "van_ban": "Áp dụng định nghĩa và tính từ dữ kiện đề bài.",
+          "latex": "-1"
+        }
+      ],
+      "dap_an": -1,
+      "latex": "-1"
+    },
+    "kiem_dinh": {
+      "loai": "quadratic_min",
+      "du_kien": {
+        "ham": "x**2 - 4*x + 3"
+      }
+    },
+    "bai_lam": null,
+    "su_kien": [],
+    "nguon": "Tổ Toán Trường THPT Nguyễn Trãi (hư cấu), tự soạn cho MathL+, không chép SGK",
+    "duyet_seed": {
+      "trang_thai": "DA_DUYET",
+      "can_cu": "test_teacher_solution",
+      "ghi_chu": "Giáo viên hư cấu duyệt lời giải đã được pytest kiểm độc lập."
+    },
+    "kiem_tra_seed": true
+  },
+  {
+    "id": "NT-BH10-TH-02",
+    "chu_de": "BH10",
+    "ky_nang_chinh": "T10.NT.BH",
+    "ky_nang_phu": [],
+    "muc_do_4": "TH",
+    "muc_do_bo_3": "HIEU",
+    "muc_bloom": "HIEU",
+    "dang_cau": "TU_LUAN",
+    "de_bai": {
+      "van_ban": "Tìm giá trị nhỏ nhất của hàm số $y = 2 x^{2} - 8 x + 3$ bằng cách hoàn thành bình phương.",
+      "latex": "y = 2 x^{2} - 8 x + 3",
+      "ham_so_sympy": "2*x**2 - 8*x + 3"
+    },
+    "thang_goi_y": [],
+    "loi_giai": {
+      "cac_buoc": [
+        {
+          "van_ban": "Áp dụng định nghĩa và tính từ dữ kiện đề bài.",
+          "latex": "-5"
+        }
+      ],
+      "dap_an": -5,
+      "latex": "-5"
+    },
+    "kiem_dinh": {
+      "loai": "quadratic_min",
+      "du_kien": {
+        "ham": "2*x**2 - 8*x + 3"
+      }
+    },
+    "bai_lam": null,
+    "su_kien": [],
+    "nguon": "Tổ Toán Trường THPT Nguyễn Trãi (hư cấu), tự soạn cho MathL+, không chép SGK",
+    "duyet_seed": {
+      "trang_thai": "DA_DUYET",
+      "can_cu": "test_teacher_solution",
+      "ghi_chu": "Giáo viên hư cấu duyệt lời giải đã được pytest kiểm độc lập."
+    },
+    "kiem_tra_seed": true
+  },
+  {
+    "id": "NT-BH10-VD-03",
+    "chu_de": "BH10",
+    "ky_nang_chinh": "T10.NT.BH",
+    "ky_nang_phu": [],
+    "muc_do_4": "VD",
+    "muc_do_bo_3": "VAN_DUNG",
+    "muc_bloom": "VAN_DUNG",
+    "dang_cau": "TU_LUAN",
+    "de_bai": {
+      "van_ban": "Tìm giá trị nhỏ nhất của hàm số $y = 3 x^{2} - 12 x + 3$ bằng cách hoàn thành bình phương.",
+      "latex": "y = 3 x^{2} - 12 x + 3",
+      "ham_so_sympy": "3*x**2 - 12*x + 3"
+    },
+    "thang_goi_y": [],
+    "loi_giai": {
+      "cac_buoc": [
+        {
+          "van_ban": "Áp dụng định nghĩa và tính từ dữ kiện đề bài.",
+          "latex": "-9"
+        }
+      ],
+      "dap_an": -9,
+      "latex": "-9"
+    },
+    "kiem_dinh": {
+      "loai": "quadratic_min",
+      "du_kien": {
+        "ham": "3*x**2 - 12*x + 3"
+      }
+    },
+    "bai_lam": null,
+    "su_kien": [],
+    "nguon": "Tổ Toán Trường THPT Nguyễn Trãi (hư cấu), tự soạn cho MathL+, không chép SGK",
+    "duyet_seed": {
+      "trang_thai": "DA_DUYET",
+      "can_cu": "test_teacher_solution",
+      "ghi_chu": "Giáo viên hư cấu duyệt lời giải đã được pytest kiểm độc lập."
+    },
+    "kiem_tra_seed": true
+  },
+  {
+    "id": "NT-BH10-VDC-04",
+    "chu_de": "BH10",
+    "ky_nang_chinh": "T10.NT.BH",
+    "ky_nang_phu": [],
+    "muc_do_4": "VDC",
+    "muc_do_bo_3": "VAN_DUNG",
+    "muc_bloom": "PHAN_TICH",
+    "dang_cau": "TU_LUAN",
+    "de_bai": {
+      "van_ban": "Tìm giá trị nhỏ nhất của hàm số $y = 4 x^{2} - 16 x + 3$ bằng cách hoàn thành bình phương.",
+      "latex": "y = 4 x^{2} - 16 x + 3",
+      "ham_so_sympy": "4*x**2 - 16*x + 3"
+    },
+    "thang_goi_y": [],
+    "loi_giai": {
+      "cac_buoc": [
+        {
+          "van_ban": "Áp dụng định nghĩa và tính từ dữ kiện đề bài.",
+          "latex": "-13"
+        }
+      ],
+      "dap_an": -13,
+      "latex": "-13"
+    },
+    "kiem_dinh": {
+      "loai": "quadratic_min",
+      "du_kien": {
+        "ham": "4*x**2 - 16*x + 3"
+      }
+    },
+    "bai_lam": null,
+    "su_kien": [],
+    "nguon": "Tổ Toán Trường THPT Nguyễn Trãi (hư cấu), tự soạn cho MathL+, không chép SGK",
+    "duyet_seed": {
+      "trang_thai": "DA_DUYET",
+      "can_cu": "test_teacher_solution",
+      "ghi_chu": "Giáo viên hư cấu duyệt lời giải đã được pytest kiểm độc lập."
+    },
+    "kiem_tra_seed": true
+  },
+  {
+    "id": "NT-MT10-NB-01",
+    "chu_de": "MT10",
+    "ky_nang_chinh": "T10.NT.MT",
+    "ky_nang_phu": [],
+    "muc_do_4": "NB",
+    "muc_do_bo_3": "BIET",
+    "muc_bloom": "NHO",
+    "dang_cau": "TU_LUAN",
+    "de_bai": {
+      "van_ban": "Cho $A = \\left\\{1, 2, 3, 4\\right\\},\\quad B = \\left\\{3, 4, 5, 6\\right\\}$. Tìm $A \\cap B$ và giải thích điều kiện thuộc giao.",
+      "latex": "A = \\left\\{1, 2, 3, 4\\right\\},\\quad B = \\left\\{3, 4, 5, 6\\right\\}",
+      "ham_so_sympy": null
+    },
+    "thang_goi_y": [],
+    "loi_giai": {
+      "cac_buoc": [
+        {
+          "van_ban": "Áp dụng định nghĩa và tính từ dữ kiện đề bài.",
+          "latex": "\\left\\{3, 4\\right\\}"
+        }
+      ],
+      "dap_an": [
+        3,
+        4
+      ],
+      "latex": "\\left\\{3, 4\\right\\}"
+    },
+    "kiem_dinh": {
+      "loai": "set_intersection",
+      "du_kien": {
+        "A": [
+          1,
+          2,
+          3,
+          4
+        ],
+        "B": [
+          3,
+          4,
+          5,
+          6
+        ]
+      }
+    },
+    "bai_lam": null,
+    "su_kien": [],
+    "nguon": "Tổ Toán Trường THPT Nguyễn Trãi (hư cấu), tự soạn cho MathL+, không chép SGK",
+    "duyet_seed": {
+      "trang_thai": "DA_DUYET",
+      "can_cu": "test_teacher_solution",
+      "ghi_chu": "Giáo viên hư cấu duyệt lời giải đã được pytest kiểm độc lập."
+    },
+    "kiem_tra_seed": true
+  },
+  {
+    "id": "NT-MT10-TH-02",
+    "chu_de": "MT10",
+    "ky_nang_chinh": "T10.NT.MT",
+    "ky_nang_phu": [],
+    "muc_do_4": "TH",
+    "muc_do_bo_3": "HIEU",
+    "muc_bloom": "HIEU",
+    "dang_cau": "TU_LUAN",
+    "de_bai": {
+      "van_ban": "Cho $A = \\left\\{1, 2, 3, 4, 5\\right\\},\\quad B = \\left\\{3, 4, 5, 6, 7\\right\\}$. Tìm $A \\cap B$ và giải thích điều kiện thuộc giao.",
+      "latex": "A = \\left\\{1, 2, 3, 4, 5\\right\\},\\quad B = \\left\\{3, 4, 5, 6, 7\\right\\}",
+      "ham_so_sympy": null
+    },
+    "thang_goi_y": [],
+    "loi_giai": {
+      "cac_buoc": [
+        {
+          "van_ban": "Áp dụng định nghĩa và tính từ dữ kiện đề bài.",
+          "latex": "\\left\\{3, 4, 5\\right\\}"
+        }
+      ],
+      "dap_an": [
+        3,
+        4,
+        5
+      ],
+      "latex": "\\left\\{3, 4, 5\\right\\}"
+    },
+    "kiem_dinh": {
+      "loai": "set_intersection",
+      "du_kien": {
+        "A": [
+          1,
+          2,
+          3,
+          4,
+          5
+        ],
+        "B": [
+          3,
+          4,
+          5,
+          6,
+          7
+        ]
+      }
+    },
+    "bai_lam": null,
+    "su_kien": [],
+    "nguon": "Tổ Toán Trường THPT Nguyễn Trãi (hư cấu), tự soạn cho MathL+, không chép SGK",
+    "duyet_seed": {
+      "trang_thai": "DA_DUYET",
+      "can_cu": "test_teacher_solution",
+      "ghi_chu": "Giáo viên hư cấu duyệt lời giải đã được pytest kiểm độc lập."
+    },
+    "kiem_tra_seed": true
+  },
+  {
+    "id": "NT-MT10-VD-03",
+    "chu_de": "MT10",
+    "ky_nang_chinh": "T10.NT.MT",
+    "ky_nang_phu": [],
+    "muc_do_4": "VD",
+    "muc_do_bo_3": "VAN_DUNG",
+    "muc_bloom": "VAN_DUNG",
+    "dang_cau": "TU_LUAN",
+    "de_bai": {
+      "van_ban": "Cho $A = \\left\\{1, 2, 3, 4, 5, 6\\right\\},\\quad B = \\left\\{3, 4, 5, 6, 7, 8\\right\\}$. Tìm $A \\cap B$ và giải thích điều kiện thuộc giao.",
+      "latex": "A = \\left\\{1, 2, 3, 4, 5, 6\\right\\},\\quad B = \\left\\{3, 4, 5, 6, 7, 8\\right\\}",
+      "ham_so_sympy": null
+    },
+    "thang_goi_y": [],
+    "loi_giai": {
+      "cac_buoc": [
+        {
+          "van_ban": "Áp dụng định nghĩa và tính từ dữ kiện đề bài.",
+          "latex": "\\left\\{3, 4, 5, 6\\right\\}"
+        }
+      ],
+      "dap_an": [
+        3,
+        4,
+        5,
+        6
+      ],
+      "latex": "\\left\\{3, 4, 5, 6\\right\\}"
+    },
+    "kiem_dinh": {
+      "loai": "set_intersection",
+      "du_kien": {
+        "A": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6
+        ],
+        "B": [
+          3,
+          4,
+          5,
+          6,
+          7,
+          8
+        ]
+      }
+    },
+    "bai_lam": null,
+    "su_kien": [],
+    "nguon": "Tổ Toán Trường THPT Nguyễn Trãi (hư cấu), tự soạn cho MathL+, không chép SGK",
+    "duyet_seed": {
+      "trang_thai": "DA_DUYET",
+      "can_cu": "test_teacher_solution",
+      "ghi_chu": "Giáo viên hư cấu duyệt lời giải đã được pytest kiểm độc lập."
+    },
+    "kiem_tra_seed": true
+  },
+  {
+    "id": "NT-MT10-VDC-04",
+    "chu_de": "MT10",
+    "ky_nang_chinh": "T10.NT.MT",
+    "ky_nang_phu": [],
+    "muc_do_4": "VDC",
+    "muc_do_bo_3": "VAN_DUNG",
+    "muc_bloom": "PHAN_TICH",
+    "dang_cau": "TU_LUAN",
+    "de_bai": {
+      "van_ban": "Cho $A = \\left\\{1, 2, 3, 4, 5, 6, 7\\right\\},\\quad B = \\left\\{3, 4, 5, 6, 7, 8, 9\\right\\}$. Tìm $A \\cap B$ và giải thích điều kiện thuộc giao.",
+      "latex": "A = \\left\\{1, 2, 3, 4, 5, 6, 7\\right\\},\\quad B = \\left\\{3, 4, 5, 6, 7, 8, 9\\right\\}",
+      "ham_so_sympy": null
+    },
+    "thang_goi_y": [],
+    "loi_giai": {
+      "cac_buoc": [
+        {
+          "van_ban": "Áp dụng định nghĩa và tính từ dữ kiện đề bài.",
+          "latex": "\\left\\{3, 4, 5, 6, 7\\right\\}"
+        }
+      ],
+      "dap_an": [
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "latex": "\\left\\{3, 4, 5, 6, 7\\right\\}"
+    },
+    "kiem_dinh": {
+      "loai": "set_intersection",
+      "du_kien": {
+        "A": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7
+        ],
+        "B": [
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9
+        ]
+      }
+    },
+    "bai_lam": null,
+    "su_kien": [],
+    "nguon": "Tổ Toán Trường THPT Nguyễn Trãi (hư cấu), tự soạn cho MathL+, không chép SGK",
+    "duyet_seed": {
+      "trang_thai": "DA_DUYET",
+      "can_cu": "test_teacher_solution",
+      "ghi_chu": "Giáo viên hư cấu duyệt lời giải đã được pytest kiểm độc lập."
+    },
+    "kiem_tra_seed": true
+  },
+  {
+    "id": "NT-TK10-NB-01",
+    "chu_de": "TK10",
+    "ky_nang_chinh": "T10.NT.TK",
+    "ky_nang_phu": [],
+    "muc_do_4": "NB",
+    "muc_do_bo_3": "BIET",
+    "muc_bloom": "NHO",
+    "dang_cau": "TU_LUAN",
+    "de_bai": {
+      "van_ban": "Mẫu số liệu tổng hợp là $4, 5, 7, 8$. Tính số trung bình $\\overline{x}$.",
+      "latex": "\\overline{x} = \\dfrac{4+5+7+8}{4}",
+      "ham_so_sympy": null
+    },
+    "thang_goi_y": [],
+    "loi_giai": {
+      "cac_buoc": [
+        {
+          "van_ban": "Áp dụng định nghĩa và tính từ dữ kiện đề bài.",
+          "latex": "6"
+        }
+      ],
+      "dap_an": "6",
+      "latex": "6"
+    },
+    "kiem_dinh": {
+      "loai": "mean",
+      "du_kien": {
+        "values": [
+          4,
+          5,
+          7,
+          8
+        ]
+      }
+    },
+    "bai_lam": null,
+    "su_kien": [],
+    "nguon": "Tổ Toán Trường THPT Nguyễn Trãi (hư cấu), tự soạn cho MathL+, không chép SGK",
+    "duyet_seed": {
+      "trang_thai": "DA_DUYET",
+      "can_cu": "test_teacher_solution",
+      "ghi_chu": "Giáo viên hư cấu duyệt lời giải đã được pytest kiểm độc lập."
+    },
+    "kiem_tra_seed": false
+  },
+  {
+    "id": "NT-TK10-TH-02",
+    "chu_de": "TK10",
+    "ky_nang_chinh": "T10.NT.TK",
+    "ky_nang_phu": [],
+    "muc_do_4": "TH",
+    "muc_do_bo_3": "HIEU",
+    "muc_bloom": "HIEU",
+    "dang_cau": "TU_LUAN",
+    "de_bai": {
+      "van_ban": "Mẫu số liệu tổng hợp là $5, 6, 8, 9$. Tính số trung bình $\\overline{x}$.",
+      "latex": "\\overline{x} = \\dfrac{5+6+8+9}{4}",
+      "ham_so_sympy": null
+    },
+    "thang_goi_y": [],
+    "loi_giai": {
+      "cac_buoc": [
+        {
+          "van_ban": "Áp dụng định nghĩa và tính từ dữ kiện đề bài.",
+          "latex": "7"
+        }
+      ],
+      "dap_an": "7",
+      "latex": "7"
+    },
+    "kiem_dinh": {
+      "loai": "mean",
+      "du_kien": {
+        "values": [
+          5,
+          6,
+          8,
+          9
+        ]
+      }
+    },
+    "bai_lam": null,
+    "su_kien": [],
+    "nguon": "Tổ Toán Trường THPT Nguyễn Trãi (hư cấu), tự soạn cho MathL+, không chép SGK",
+    "duyet_seed": {
+      "trang_thai": "DA_DUYET",
+      "can_cu": "test_teacher_solution",
+      "ghi_chu": "Giáo viên hư cấu duyệt lời giải đã được pytest kiểm độc lập."
+    },
+    "kiem_tra_seed": false
+  },
+  {
+    "id": "NT-TK10-VD-03",
+    "chu_de": "TK10",
+    "ky_nang_chinh": "T10.NT.TK",
+    "ky_nang_phu": [],
+    "muc_do_4": "VD",
+    "muc_do_bo_3": "VAN_DUNG",
+    "muc_bloom": "VAN_DUNG",
+    "dang_cau": "TU_LUAN",
+    "de_bai": {
+      "van_ban": "Mẫu số liệu tổng hợp là $6, 7, 9, 10$. Tính số trung bình $\\overline{x}$.",
+      "latex": "\\overline{x} = \\dfrac{6+7+9+10}{4}",
+      "ham_so_sympy": null
+    },
+    "thang_goi_y": [],
+    "loi_giai": {
+      "cac_buoc": [
+        {
+          "van_ban": "Áp dụng định nghĩa và tính từ dữ kiện đề bài.",
+          "latex": "8"
+        }
+      ],
+      "dap_an": "8",
+      "latex": "8"
+    },
+    "kiem_dinh": {
+      "loai": "mean",
+      "du_kien": {
+        "values": [
+          6,
+          7,
+          9,
+          10
+        ]
+      }
+    },
+    "bai_lam": null,
+    "su_kien": [],
+    "nguon": "Tổ Toán Trường THPT Nguyễn Trãi (hư cấu), tự soạn cho MathL+, không chép SGK",
+    "duyet_seed": {
+      "trang_thai": "DA_DUYET",
+      "can_cu": "test_teacher_solution",
+      "ghi_chu": "Giáo viên hư cấu duyệt lời giải đã được pytest kiểm độc lập."
+    },
+    "kiem_tra_seed": false
+  },
+  {
+    "id": "NT-TK10-VDC-04",
+    "chu_de": "TK10",
+    "ky_nang_chinh": "T10.NT.TK",
+    "ky_nang_phu": [],
+    "muc_do_4": "VDC",
+    "muc_do_bo_3": "VAN_DUNG",
+    "muc_bloom": "PHAN_TICH",
+    "dang_cau": "TU_LUAN",
+    "de_bai": {
+      "van_ban": "Mẫu số liệu tổng hợp là $7, 8, 10, 11$. Tính số trung bình $\\overline{x}$.",
+      "latex": "\\overline{x} = \\dfrac{7+8+10+11}{4}",
+      "ham_so_sympy": null
+    },
+    "thang_goi_y": [],
+    "loi_giai": {
+      "cac_buoc": [
+        {
+          "van_ban": "Áp dụng định nghĩa và tính từ dữ kiện đề bài.",
+          "latex": "9"
+        }
+      ],
+      "dap_an": "9",
+      "latex": "9"
+    },
+    "kiem_dinh": {
+      "loai": "mean",
+      "du_kien": {
+        "values": [
+          7,
+          8,
+          10,
+          11
+        ]
+      }
+    },
+    "bai_lam": null,
+    "su_kien": [],
+    "nguon": "Tổ Toán Trường THPT Nguyễn Trãi (hư cấu), tự soạn cho MathL+, không chép SGK",
+    "duyet_seed": {
+      "trang_thai": "DA_DUYET",
+      "can_cu": "test_teacher_solution",
+      "ghi_chu": "Giáo viên hư cấu duyệt lời giải đã được pytest kiểm độc lập."
+    },
+    "kiem_tra_seed": false
+  },
+  {
+    "id": "NT-KG11-NB-01",
+    "chu_de": "KG11",
+    "ky_nang_chinh": "T11.NT.KG",
+    "ky_nang_phu": [],
+    "muc_do_4": "NB",
+    "muc_do_bo_3": "BIET",
+    "muc_bloom": "NHO",
+    "dang_cau": "TU_LUAN",
+    "de_bai": {
+      "van_ban": "Hình hộp chữ nhật có các cạnh $a=2, b=3, c=4$ (cm). Tính đường chéo không gian, giải thích hai lần dùng định lý Pythagore.",
+      "latex": "\\text{Đường chéo hình hộp chữ nhật, }a=2, b=3, c=4\\text{ cm}",
+      "ham_so_sympy": null
+    },
+    "thang_goi_y": [],
+    "loi_giai": {
+      "cac_buoc": [
+        {
+          "van_ban": "Áp dụng định nghĩa và tính từ dữ kiện đề bài.",
+          "latex": "\\sqrt{29}"
+        }
+      ],
+      "dap_an": "sqrt(29)",
+      "latex": "\\sqrt{29}"
+    },
+    "kiem_dinh": {
+      "loai": "box_diagonal",
+      "du_kien": {
+        "canh": [
+          2,
+          3,
+          4
+        ]
+      }
+    },
+    "bai_lam": null,
+    "su_kien": [],
+    "nguon": "Tổ Toán Trường THPT Nguyễn Trãi (hư cấu), tự soạn cho MathL+, không chép SGK",
+    "duyet_seed": {
+      "trang_thai": "DA_DUYET",
+      "can_cu": "test_teacher_solution",
+      "ghi_chu": "Giáo viên hư cấu duyệt lời giải đã được pytest kiểm độc lập."
+    },
+    "kiem_tra_seed": false
+  },
+  {
+    "id": "NT-KG11-TH-02",
+    "chu_de": "KG11",
+    "ky_nang_chinh": "T11.NT.KG",
+    "ky_nang_phu": [],
+    "muc_do_4": "TH",
+    "muc_do_bo_3": "HIEU",
+    "muc_bloom": "HIEU",
+    "dang_cau": "TU_LUAN",
+    "de_bai": {
+      "van_ban": "Hình hộp chữ nhật có các cạnh $a=3, b=4, c=5$ (cm). Tính đường chéo không gian, giải thích hai lần dùng định lý Pythagore.",
+      "latex": "\\text{Đường chéo hình hộp chữ nhật, }a=3, b=4, c=5\\text{ cm}",
+      "ham_so_sympy": null
+    },
+    "thang_goi_y": [],
+    "loi_giai": {
+      "cac_buoc": [
+        {
+          "van_ban": "Áp dụng định nghĩa và tính từ dữ kiện đề bài.",
+          "latex": "5 \\sqrt{2}"
+        }
+      ],
+      "dap_an": "5*sqrt(2)",
+      "latex": "5 \\sqrt{2}"
+    },
+    "kiem_dinh": {
+      "loai": "box_diagonal",
+      "du_kien": {
+        "canh": [
+          3,
+          4,
+          5
+        ]
+      }
+    },
+    "bai_lam": null,
+    "su_kien": [],
+    "nguon": "Tổ Toán Trường THPT Nguyễn Trãi (hư cấu), tự soạn cho MathL+, không chép SGK",
+    "duyet_seed": {
+      "trang_thai": "DA_DUYET",
+      "can_cu": "test_teacher_solution",
+      "ghi_chu": "Giáo viên hư cấu duyệt lời giải đã được pytest kiểm độc lập."
+    },
+    "kiem_tra_seed": false
+  },
+  {
+    "id": "NT-KG11-VD-03",
+    "chu_de": "KG11",
+    "ky_nang_chinh": "T11.NT.KG",
+    "ky_nang_phu": [],
+    "muc_do_4": "VD",
+    "muc_do_bo_3": "VAN_DUNG",
+    "muc_bloom": "VAN_DUNG",
+    "dang_cau": "TU_LUAN",
+    "de_bai": {
+      "van_ban": "Hình hộp chữ nhật có các cạnh $a=4, b=5, c=6$ (cm). Tính đường chéo không gian, giải thích hai lần dùng định lý Pythagore.",
+      "latex": "\\text{Đường chéo hình hộp chữ nhật, }a=4, b=5, c=6\\text{ cm}",
+      "ham_so_sympy": null
+    },
+    "thang_goi_y": [],
+    "loi_giai": {
+      "cac_buoc": [
+        {
+          "van_ban": "Áp dụng định nghĩa và tính từ dữ kiện đề bài.",
+          "latex": "\\sqrt{77}"
+        }
+      ],
+      "dap_an": "sqrt(77)",
+      "latex": "\\sqrt{77}"
+    },
+    "kiem_dinh": {
+      "loai": "box_diagonal",
+      "du_kien": {
+        "canh": [
+          4,
+          5,
+          6
+        ]
+      }
+    },
+    "bai_lam": null,
+    "su_kien": [],
+    "nguon": "Tổ Toán Trường THPT Nguyễn Trãi (hư cấu), tự soạn cho MathL+, không chép SGK",
+    "duyet_seed": {
+      "trang_thai": "DA_DUYET",
+      "can_cu": "test_teacher_solution",
+      "ghi_chu": "Giáo viên hư cấu duyệt lời giải đã được pytest kiểm độc lập."
+    },
+    "kiem_tra_seed": false
+  },
+  {
+    "id": "NT-KG11-VDC-04",
+    "chu_de": "KG11",
+    "ky_nang_chinh": "T11.NT.KG",
+    "ky_nang_phu": [],
+    "muc_do_4": "VDC",
+    "muc_do_bo_3": "VAN_DUNG",
+    "muc_bloom": "PHAN_TICH",
+    "dang_cau": "TU_LUAN",
+    "de_bai": {
+      "van_ban": "Hình hộp chữ nhật có các cạnh $a=5, b=6, c=7$ (cm). Tính đường chéo không gian, giải thích hai lần dùng định lý Pythagore.",
+      "latex": "\\text{Đường chéo hình hộp chữ nhật, }a=5, b=6, c=7\\text{ cm}",
+      "ham_so_sympy": null
+    },
+    "thang_goi_y": [],
+    "loi_giai": {
+      "cac_buoc": [
+        {
+          "van_ban": "Áp dụng định nghĩa và tính từ dữ kiện đề bài.",
+          "latex": "\\sqrt{110}"
+        }
+      ],
+      "dap_an": "sqrt(110)",
+      "latex": "\\sqrt{110}"
+    },
+    "kiem_dinh": {
+      "loai": "box_diagonal",
+      "du_kien": {
+        "canh": [
+          5,
+          6,
+          7
+        ]
+      }
+    },
+    "bai_lam": null,
+    "su_kien": [],
+    "nguon": "Tổ Toán Trường THPT Nguyễn Trãi (hư cấu), tự soạn cho MathL+, không chép SGK",
+    "duyet_seed": {
+      "trang_thai": "DA_DUYET",
+      "can_cu": "test_teacher_solution",
+      "ghi_chu": "Giáo viên hư cấu duyệt lời giải đã được pytest kiểm độc lập."
+    },
+    "kiem_tra_seed": false
+  },
+  {
+    "id": "NT-XS11-NB-01",
+    "chu_de": "XS11",
+    "ky_nang_chinh": "T11.NT.XS",
+    "ky_nang_phu": [],
+    "muc_do_4": "NB",
+    "muc_do_bo_3": "BIET",
+    "muc_bloom": "NHO",
+    "dang_cau": "TU_LUAN",
+    "de_bai": {
+      "van_ban": "Có $15$ thẻ giống nhau về kích thước, đánh số từ $1$ đến $15$. Rút ngẫu nhiên một thẻ. Tính xác suất số trên thẻ chia hết cho $3$.",
+      "latex": "\\text{Rút một thẻ trong }1,\\ldots,15\\text{; số chia hết cho }3",
+      "ham_so_sympy": null
+    },
+    "thang_goi_y": [],
+    "loi_giai": {
+      "cac_buoc": [
+        {
+          "van_ban": "Các số thuận lợi là 3, 6, 9, 12, 15; có 15 kết quả đồng khả năng.",
+          "bieu_thuc_sympy": "binomial(5,1)/binomial(15,1)",
+          "ket_qua_sympy": "1/3",
+          "latex": "\\dfrac{5}{15} = \\dfrac{1}{3}"
+        }
+      ],
+      "dap_an": "1/3",
+      "latex": "\\dfrac{1}{3}"
+    },
+    "kiem_dinh": {
+      "loai": "hypergeom",
+      "du_kien": {
+        "good": 5,
+        "bad": 10,
+        "draw": 1,
+        "want": 1
+      }
+    },
+    "bai_lam": null,
+    "su_kien": [
+      {
+        "loai": "DAP_AN",
+        "gia_tri": "\"1/3\""
+      }
+    ],
+    "nguon": "Tổ Toán Trường THPT Nguyễn Trãi (hư cấu), tự soạn cho MathL+, không chép SGK",
+    "duyet_seed": {
+      "trang_thai": "DA_DUYET",
+      "can_cu": "test_teacher_solution",
+      "ghi_chu": "Giáo viên hư cấu duyệt lời giải đã được pytest kiểm độc lập."
+    },
+    "kiem_tra_seed": false
+  },
+  {
+    "id": "NT-XS11-TH-02",
+    "chu_de": "XS11",
+    "ky_nang_chinh": "T11.NT.XS",
+    "ky_nang_phu": [],
+    "muc_do_4": "TH",
+    "muc_do_bo_3": "HIEU",
+    "muc_bloom": "HIEU",
+    "dang_cau": "TU_LUAN",
+    "de_bai": {
+      "van_ban": "Một túi có $6$ bi đỏ và $4$ bi xanh, mỗi viên có cơ hội được chọn như nhau. Lấy đồng thời $2$ viên. Tính xác suất hai viên khác màu và giải thích cách đếm các cặp không có thứ tự.",
+      "latex": "\\text{Túi }6\\text{ bi đỏ, }4\\text{ bi xanh; lấy }2\\text{ viên khác màu}",
+      "ham_so_sympy": null
+    },
+    "thang_goi_y": [],
+    "loi_giai": {
+      "cac_buoc": [
+        {
+          "van_ban": "Đếm mọi cặp hai viên, không phân biệt thứ tự.",
+          "bieu_thuc_sympy": "binomial(10,2)",
+          "ket_qua_sympy": "45",
+          "latex": "45 = 45"
+        },
+        {
+          "van_ban": "Chọn một viên mỗi màu.",
+          "bieu_thuc_sympy": "binomial(6,1)*binomial(4,1)",
+          "ket_qua_sympy": "24",
+          "latex": "6 \\cdot 4 = 24"
+        },
+        {
+          "van_ban": "Lấy số cặp thuận lợi chia cho số cặp có thể.",
+          "bieu_thuc_sympy": "24/45",
+          "ket_qua_sympy": "8/15",
+          "latex": "\\dfrac{24}{45} = \\dfrac{8}{15}"
+        }
+      ],
+      "dap_an": "8/15",
+      "latex": "\\dfrac{8}{15}"
+    },
+    "kiem_dinh": {
+      "loai": "hypergeom",
+      "du_kien": {
+        "good": 6,
+        "bad": 4,
+        "draw": 2,
+        "want": 1
+      }
+    },
+    "bai_lam": null,
+    "su_kien": [
+      {
+        "loai": "DAP_AN",
+        "gia_tri": "\"8/15\""
+      }
+    ],
+    "nguon": "Tổ Toán Trường THPT Nguyễn Trãi (hư cấu), tự soạn cho MathL+, không chép SGK",
+    "duyet_seed": {
+      "trang_thai": "DA_DUYET",
+      "can_cu": "test_teacher_solution",
+      "ghi_chu": "Giáo viên hư cấu duyệt lời giải đã được pytest kiểm độc lập."
+    },
+    "kiem_tra_seed": false
+  },
+  {
+    "id": "NT-XS11-VD-03",
+    "chu_de": "XS11",
+    "ky_nang_chinh": "T11.NT.XS",
+    "ky_nang_phu": [],
+    "muc_do_4": "VD",
+    "muc_do_bo_3": "VAN_DUNG",
+    "muc_bloom": "VAN_DUNG",
+    "dang_cau": "TU_LUAN",
+    "de_bai": {
+      "van_ban": "Một hộp có $5$ thẻ xanh, $4$ thẻ đỏ và $3$ thẻ vàng, các thẻ cùng kích thước. Chọn đồng thời $4$ thẻ ngẫu nhiên. Tính xác suất đủ cả ba màu; giải thích vì sao các trường hợp màu xuất hiện hai lần không chồng lặp.",
+      "latex": "\\text{Chọn }4\\text{ thẻ từ }5\\text{ xanh, }4\\text{ đỏ, }3\\text{ vàng; đủ ba màu}",
+      "ham_so_sympy": null
+    },
+    "thang_goi_y": [],
+    "loi_giai": {
+      "cac_buoc": [
+        {
+          "van_ban": "Mọi tập bốn thẻ có cùng xác suất.",
+          "bieu_thuc_sympy": "binomial(12,4)",
+          "ket_qua_sympy": "495",
+          "latex": "495 = 495"
+        },
+        {
+          "van_ban": "Xanh xuất hiện hai lần, mỗi màu còn lại một lần.",
+          "bieu_thuc_sympy": "binomial(5,2)*4*3",
+          "ket_qua_sympy": "120",
+          "latex": "10 \\cdot 4 \\cdot 3 = 120"
+        },
+        {
+          "van_ban": "Đỏ xuất hiện hai lần, mỗi màu còn lại một lần.",
+          "bieu_thuc_sympy": "5*binomial(4,2)*3",
+          "ket_qua_sympy": "90",
+          "latex": "5 \\cdot 6 \\cdot 3 = 90"
+        },
+        {
+          "van_ban": "Vàng xuất hiện hai lần, mỗi màu còn lại một lần.",
+          "bieu_thuc_sympy": "5*4*binomial(3,2)",
+          "ket_qua_sympy": "60",
+          "latex": "5 \\cdot 4 \\cdot 3 = 60"
+        },
+        {
+          "van_ban": "Ba trường hợp rời nhau vì chỉ một màu có thể xuất hiện hai lần.",
+          "bieu_thuc_sympy": "(120+90+60)/495",
+          "ket_qua_sympy": "6/11",
+          "latex": "\\dfrac{60 + 90 + 120}{495} = \\dfrac{6}{11}"
+        }
+      ],
+      "dap_an": "6/11",
+      "latex": "\\dfrac{6}{11}"
+    },
+    "kiem_dinh": {
+      "loai": "three_colors",
+      "du_kien": {
+        "counts": [
+          5,
+          4,
+          3
+        ],
+        "draw": 4
+      }
+    },
+    "bai_lam": null,
+    "su_kien": [
+      {
+        "loai": "DAP_AN",
+        "gia_tri": "\"6/11\""
+      }
+    ],
+    "nguon": "Tổ Toán Trường THPT Nguyễn Trãi (hư cấu), tự soạn cho MathL+, không chép SGK",
+    "duyet_seed": {
+      "trang_thai": "DA_DUYET",
+      "can_cu": "test_teacher_solution",
+      "ghi_chu": "Giáo viên hư cấu duyệt lời giải đã được pytest kiểm độc lập."
+    },
+    "kiem_tra_seed": false
+  },
+  {
+    "id": "NT-XS11-VDC-04",
+    "chu_de": "XS11",
+    "ky_nang_chinh": "T11.NT.XS",
+    "ky_nang_phu": [],
+    "muc_do_4": "VDC",
+    "muc_do_bo_3": "VAN_DUNG",
+    "muc_bloom": "PHAN_TICH",
+    "dang_cau": "TU_LUAN",
+    "de_bai": {
+      "van_ban": "Một nhóm tổng hợp có $6$ bạn nữ và $5$ bạn nam. Chọn ngẫu nhiên $4$ người, rồi chọn một trưởng nhóm và một thư ký khác nhau trong nhóm đó, mọi cách chọn chức vụ đều đồng khả năng. Tính xác suất nhóm có ít nhất $2$ nữ, trưởng nhóm là nữ và thư ký là nam. Lập luận bằng cách phân loại số nữ và kiểm tra bằng cách chọn chức vụ trước.",
+      "latex": "\\text{Nhóm }6\\text{ nữ, }5\\text{ nam; chọn }4\\text{, trưởng nữ, thư ký nam, ít nhất }2\\text{ nữ}",
+      "ham_so_sympy": null
+    },
+    "thang_goi_y": [],
+    "loi_giai": {
+      "cac_buoc": [
+        {
+          "van_ban": "Chọn nhóm rồi chọn hai chức vụ có thứ tự.",
+          "bieu_thuc_sympy": "binomial(11,4)*4*3",
+          "ket_qua_sympy": "3960",
+          "latex": "330 \\cdot 4 \\cdot 3 = 3960"
+        },
+        {
+          "van_ban": "Nhóm có hai nữ: chọn nhóm rồi có 2 cách chọn trưởng và 2 cách chọn thư ký.",
+          "bieu_thuc_sympy": "binomial(6,2)*binomial(5,2)*2*2",
+          "ket_qua_sympy": "600",
+          "latex": "15 \\cdot 10 \\cdot 2 \\cdot 2 = 600"
+        },
+        {
+          "van_ban": "Nhóm có ba nữ: có 3 cách chọn trưởng và 1 cách chọn thư ký; bốn nữ không có thư ký nam.",
+          "bieu_thuc_sympy": "binomial(6,3)*binomial(5,1)*3",
+          "ket_qua_sympy": "300",
+          "latex": "20 \\cdot 5 \\cdot 3 = 300"
+        },
+        {
+          "van_ban": "Kiểm tra: chọn trưởng nữ và thư ký nam trước, hai người còn lại phải có ít nhất một nữ.",
+          "bieu_thuc_sympy": "6*5*(binomial(9,2)-binomial(4,2))",
+          "ket_qua_sympy": "900",
+          "latex": "6 \\cdot 5 \\left(36 - 6\\right) = 900"
+        },
+        {
+          "van_ban": "Cộng hai trường hợp rời nhau và chia cho số kết quả đồng khả năng.",
+          "bieu_thuc_sympy": "(600+300)/3960",
+          "ket_qua_sympy": "5/22",
+          "latex": "\\dfrac{300 + 600}{3960} = \\dfrac{5}{22}"
+        }
+      ],
+      "dap_an": "5/22",
+      "latex": "\\dfrac{5}{22}"
+    },
+    "kiem_dinh": {
+      "loai": "committee_roles",
+      "du_kien": {
+        "women": 6,
+        "men": 5,
+        "draw": 4,
+        "min_women": 2
+      }
+    },
+    "bai_lam": null,
+    "su_kien": [
+      {
+        "loai": "DAP_AN",
+        "gia_tri": "\"5/22\""
+      }
+    ],
+    "nguon": "Tổ Toán Trường THPT Nguyễn Trãi (hư cấu), tự soạn cho MathL+, không chép SGK",
+    "duyet_seed": {
+      "trang_thai": "DA_DUYET",
+      "can_cu": "test_teacher_solution",
+      "ghi_chu": "Giáo viên hư cấu duyệt lời giải đã được pytest kiểm độc lập."
+    },
+    "kiem_tra_seed": false
+  },
+  {
+    "id": "NT-XS12-NB-01",
+    "chu_de": "XS12",
+    "ky_nang_chinh": "T12.NT.XS.2",
+    "ky_nang_phu": [],
+    "muc_do_4": "NB",
+    "muc_do_bo_3": "BIET",
+    "muc_bloom": "NHO",
+    "dang_cau": "TU_LUAN",
+    "de_bai": {
+      "van_ban": "Một thẻ được lấy từ một trong hai hộp. Gọi $I$ là biến cố chọn hộp I, $X$ là biến cố thẻ xanh. Biết $P(I\\cap X)=\\dfrac{1}{5}$ và $P(X)=\\dfrac{1}{2}$. Áp dụng trực tiếp công thức Bayes $P(I\\mid X)=P(I\\cap X)/P(X)$ để tính xác suất thẻ xanh thuộc hộp I.",
+      "latex": "\\text{Thẻ xanh: }P(I\\cap X)=\\dfrac{1}{5},\\quad P(X)=\\dfrac{1}{2}",
+      "ham_so_sympy": null
+    },
+    "thang_goi_y": [],
+    "loi_giai": {
+      "cac_buoc": [
+        {
+          "van_ban": "Thay xác suất giao và xác suất điều kiện đã cho vào công thức.",
+          "bieu_thuc_sympy": "(1/5)/(1/2)",
+          "ket_qua_sympy": "2/5",
+          "latex": "1 \\cdot \\dfrac{1}{5} \\dfrac{1}{1 \\cdot \\dfrac{1}{2}} = \\dfrac{2}{5}"
+        }
+      ],
+      "dap_an": "2/5",
+      "latex": "\\dfrac{2}{5}"
+    },
+    "kiem_dinh": {
+      "loai": "bayes_given",
+      "du_kien": {
+        "joint": "1/5",
+        "evidence": "1/2"
+      }
+    },
+    "bai_lam": null,
+    "su_kien": [
+      {
+        "loai": "DAP_AN",
+        "gia_tri": "\"2/5\""
+      }
+    ],
+    "nguon": "Tổ Toán Trường THPT Nguyễn Trãi (hư cấu), tự soạn cho MathL+, không chép SGK",
+    "duyet_seed": {
+      "trang_thai": "DA_DUYET",
+      "can_cu": "test_teacher_solution",
+      "ghi_chu": "Giáo viên hư cấu duyệt lời giải đã được pytest kiểm độc lập."
+    },
+    "kiem_tra_seed": false
+  },
+  {
+    "id": "NT-XS12-TH-02",
+    "chu_de": "XS12",
+    "ky_nang_chinh": "T12.NT.XS.2",
+    "ky_nang_phu": [],
+    "muc_do_4": "TH",
+    "muc_do_bo_3": "HIEU",
+    "muc_bloom": "HIEU",
+    "dang_cau": "TU_LUAN",
+    "de_bai": {
+      "van_ban": "Hai hộp thẻ có cùng kích thước thẻ: hộp I có $4$ xanh, $2$ đỏ; hộp II có $1$ xanh, $5$ đỏ. Chọn hộp I với xác suất $\\dfrac{1}{3}$, hộp II với xác suất $\\dfrac{2}{3}$, rồi rút ngẫu nhiên một thẻ. Biết thẻ xanh, tính xác suất đã chọn hộp I; giải thích vai trò của xác suất chọn hộp.",
+      "latex": "\\text{Hai hộp thẻ: I }4\\text{ xanh, }2\\text{ đỏ; II }1\\text{ xanh, }5\\text{ đỏ; }P(I)=\\dfrac{1}{3}",
+      "ham_so_sympy": null
+    },
+    "thang_goi_y": [],
+    "loi_giai": {
+      "cac_buoc": [
+        {
+          "van_ban": "Xác suất đồng thời chọn hộp I và rút thẻ xanh.",
+          "bieu_thuc_sympy": "(1/3)*(4/6)",
+          "ket_qua_sympy": "2/9",
+          "latex": "1 \\cdot \\dfrac{1}{3} \\cdot 4 \\cdot \\dfrac{1}{6} = \\dfrac{2}{9}"
+        },
+        {
+          "van_ban": "Cộng hai nhánh để được xác suất rút thẻ xanh.",
+          "bieu_thuc_sympy": "(1/3)*(4/6)+(2/3)*(1/6)",
+          "ket_qua_sympy": "1/3",
+          "latex": "2 \\cdot \\dfrac{1}{3} \\cdot 1 \\cdot \\dfrac{1}{6} + 1 \\cdot \\dfrac{1}{3} \\cdot 4 \\cdot \\dfrac{1}{6} = \\dfrac{1}{3}"
+        },
+        {
+          "van_ban": "Dùng Bayes; không coi hai hộp được chọn với xác suất bằng nhau.",
+          "bieu_thuc_sympy": "(2/9)/(1/3)",
+          "ket_qua_sympy": "2/3",
+          "latex": "\\dfrac{2}{9 \\cdot 1 \\cdot \\dfrac{1}{3}} = \\dfrac{2}{3}"
+        }
+      ],
+      "dap_an": "2/3",
+      "latex": "\\dfrac{2}{3}"
+    },
+    "kiem_dinh": {
+      "loai": "bayes",
+      "du_kien": {
+        "g1": 4,
+        "b1": 2,
+        "g2": 1,
+        "b2": 5,
+        "prior": "1/3"
+      }
+    },
+    "bai_lam": null,
+    "su_kien": [
+      {
+        "loai": "DAP_AN",
+        "gia_tri": "\"2/3\""
+      }
+    ],
+    "nguon": "Tổ Toán Trường THPT Nguyễn Trãi (hư cấu), tự soạn cho MathL+, không chép SGK",
+    "duyet_seed": {
+      "trang_thai": "DA_DUYET",
+      "can_cu": "test_teacher_solution",
+      "ghi_chu": "Giáo viên hư cấu duyệt lời giải đã được pytest kiểm độc lập."
+    },
+    "kiem_tra_seed": false
+  },
+  {
+    "id": "NT-XS12-VD-03",
+    "chu_de": "XS12",
+    "ky_nang_chinh": "T12.NT.XS.2",
+    "ky_nang_phu": [],
+    "muc_do_4": "VD",
+    "muc_do_bo_3": "VAN_DUNG",
+    "muc_bloom": "VAN_DUNG",
+    "dang_cau": "TU_LUAN",
+    "de_bai": {
+      "van_ban": "Hộp I có $5$ thẻ xanh, $3$ thẻ đỏ; hộp II có $2$ thẻ xanh, $6$ thẻ đỏ. Chọn hộp I với xác suất $\\dfrac{2}{5}$, hộp II với xác suất $\\dfrac{3}{5}$. Từ hộp đã chọn, rút đồng thời $2$ thẻ ngẫu nhiên không hoàn lại. Biết hai thẻ khác màu, tính xác suất đã chọn hộp I. Giải thích vì sao không dùng hai phép thử độc lập.",
+      "latex": "\\text{Hai hộp thẻ: I }5\\text{ xanh, }3\\text{ đỏ; II }2\\text{ xanh, }6\\text{ đỏ; rút }2\\text{ khác màu}",
+      "ham_so_sympy": null
+    },
+    "thang_goi_y": [],
+    "loi_giai": {
+      "cac_buoc": [
+        {
+          "van_ban": "Xác suất hai thẻ khác màu khi chọn hộp I.",
+          "bieu_thuc_sympy": "binomial(5,1)*binomial(3,1)/binomial(8,2)",
+          "ket_qua_sympy": "15/28",
+          "latex": "5 \\cdot 3 \\cdot \\dfrac{1}{28} = \\dfrac{15}{28}"
+        },
+        {
+          "van_ban": "Xác suất hai thẻ khác màu khi chọn hộp II.",
+          "bieu_thuc_sympy": "binomial(2,1)*binomial(6,1)/binomial(8,2)",
+          "ket_qua_sympy": "3/7",
+          "latex": "2 \\cdot 6 \\cdot \\dfrac{1}{28} = \\dfrac{3}{7}"
+        },
+        {
+          "van_ban": "Xác suất của dữ kiện là tổng hai nhánh có trọng số.",
+          "bieu_thuc_sympy": "(2/5)*(15/28)+(3/5)*(12/28)",
+          "ket_qua_sympy": "33/70",
+          "latex": "2 \\cdot \\dfrac{1}{5} \\cdot 15 \\cdot \\dfrac{1}{28} + 3 \\cdot \\dfrac{1}{5} \\cdot 12 \\cdot \\dfrac{1}{28} = \\dfrac{33}{70}"
+        },
+        {
+          "van_ban": "Bayes với biến cố quan sát là hai thẻ khác màu.",
+          "bieu_thuc_sympy": "((2/5)*(15/28))/(33/70)",
+          "ket_qua_sympy": "5/11",
+          "latex": "2 \\cdot \\dfrac{1}{5} \\cdot 15 \\cdot \\dfrac{1}{28} \\dfrac{1}{33 \\cdot \\dfrac{1}{70}} = \\dfrac{5}{11}"
+        }
+      ],
+      "dap_an": "5/11",
+      "latex": "\\dfrac{5}{11}"
+    },
+    "kiem_dinh": {
+      "loai": "bayes_sample",
+      "du_kien": {
+        "g1": 5,
+        "b1": 3,
+        "g2": 2,
+        "b2": 6,
+        "prior": "2/5",
+        "draw": 2,
+        "want": 1
+      }
+    },
+    "bai_lam": null,
+    "su_kien": [
+      {
+        "loai": "DAP_AN",
+        "gia_tri": "\"5/11\""
+      }
+    ],
+    "nguon": "Tổ Toán Trường THPT Nguyễn Trãi (hư cấu), tự soạn cho MathL+, không chép SGK",
+    "duyet_seed": {
+      "trang_thai": "DA_DUYET",
+      "can_cu": "test_teacher_solution",
+      "ghi_chu": "Giáo viên hư cấu duyệt lời giải đã được pytest kiểm độc lập."
+    },
+    "kiem_tra_seed": false
+  },
+  {
+    "id": "NT-XS12-VDC-04",
+    "chu_de": "XS12",
+    "ky_nang_chinh": "T12.NT.XS.2",
+    "ky_nang_phu": [],
+    "muc_do_4": "VDC",
+    "muc_do_bo_3": "VAN_DUNG",
+    "muc_bloom": "PHAN_TICH",
+    "dang_cau": "TU_LUAN",
+    "de_bai": {
+      "van_ban": "Hộp A có $4$ bi xanh và $3$ bi đỏ; hộp B có $2$ bi xanh và $4$ bi đỏ. Chuyển ngẫu nhiên một viên từ A sang B, rồi lấy đồng thời $2$ viên từ B không hoàn lại, mỗi tập hai viên có cơ hội như nhau. Biết cả hai viên lấy ra đều xanh, tính xác suất viên đã chuyển là xanh. Vẽ hai nhánh theo màu viên chuyển, cập nhật thành phần hộp B và dùng Bayes.",
+      "latex": "\\text{Hộp bi A: }4\\text{ xanh, }3\\text{ đỏ; B: }2\\text{ xanh, }4\\text{ đỏ; chuyển }1\\text{, rút }2\\text{ xanh}",
+      "ham_so_sympy": null
+    },
+    "thang_goi_y": [],
+    "loi_giai": {
+      "cac_buoc": [
+        {
+          "van_ban": "Xác suất viên chuyển xanh.",
+          "bieu_thuc_sympy": "4/7",
+          "ket_qua_sympy": "4/7",
+          "latex": "\\dfrac{4}{7} = \\dfrac{4}{7}"
+        },
+        {
+          "van_ban": "Nếu chuyển xanh, B có 3 xanh và 4 đỏ; xác suất lấy hai xanh.",
+          "bieu_thuc_sympy": "binomial(3,2)/binomial(7,2)",
+          "ket_qua_sympy": "1/7",
+          "latex": "\\dfrac{3}{21} = \\dfrac{1}{7}"
+        },
+        {
+          "van_ban": "Nếu chuyển đỏ, B có 2 xanh và 5 đỏ; xác suất lấy hai xanh.",
+          "bieu_thuc_sympy": "binomial(2,2)/binomial(7,2)",
+          "ket_qua_sympy": "1/21",
+          "latex": "1 \\cdot \\dfrac{1}{21} = \\dfrac{1}{21}"
+        },
+        {
+          "van_ban": "Tổng xác suất lấy được hai xanh theo hai màu viên chuyển.",
+          "bieu_thuc_sympy": "(4/7)*(1/7)+(3/7)*(1/21)",
+          "ket_qua_sympy": "5/49",
+          "latex": "3 \\cdot \\dfrac{1}{7} \\cdot 1 \\cdot \\dfrac{1}{21} + 4 \\cdot \\dfrac{1}{7} \\cdot 1 \\cdot \\dfrac{1}{7} = \\dfrac{5}{49}"
+        },
+        {
+          "van_ban": "Bayes suy ra màu viên chuyển từ dữ kiện hai viên lấy ra.",
+          "bieu_thuc_sympy": "((4/7)*(1/7))/(5/49)",
+          "ket_qua_sympy": "4/5",
+          "latex": "4 \\cdot \\dfrac{1}{7} \\cdot 1 \\cdot \\dfrac{1}{7} \\dfrac{1}{5 \\cdot \\dfrac{1}{49}} = \\dfrac{4}{5}"
+        }
+      ],
+      "dap_an": "4/5",
+      "latex": "\\dfrac{4}{5}"
+    },
+    "kiem_dinh": {
+      "loai": "bayes_transfer",
+      "du_kien": {
+        "source_green": 4,
+        "source_red": 3,
+        "target_green": 2,
+        "target_red": 4,
+        "draw": 2
+      }
+    },
+    "bai_lam": null,
+    "su_kien": [
+      {
+        "loai": "DAP_AN",
+        "gia_tri": "\"4/5\""
+      }
+    ],
+    "nguon": "Tổ Toán Trường THPT Nguyễn Trãi (hư cấu), tự soạn cho MathL+, không chép SGK",
+    "duyet_seed": {
+      "trang_thai": "DA_DUYET",
+      "can_cu": "test_teacher_solution",
+      "ghi_chu": "Giáo viên hư cấu duyệt lời giải đã được pytest kiểm độc lập."
+    },
+    "kiem_tra_seed": false
+  },
+  {
+    "id": "NT-LUYEN10-NB-01",
+    "chu_de": "XS10",
+    "ky_nang_chinh": "T10.NT.XS.L",
+    "ky_nang_phu": [],
+    "muc_do_4": "NB",
+    "muc_do_bo_3": "BIET",
+    "muc_bloom": "NHO",
+    "dang_cau": "TU_LUAN",
+    "de_bai": {
+      "van_ban": "Một hộp có $8$ thẻ xanh và $5$ thẻ vàng, các thẻ cùng kích thước. Rút ngẫu nhiên một thẻ. Tính xác suất thẻ xanh.",
+      "latex": "\\text{Hộp có }8\\text{ thẻ xanh, }5\\text{ thẻ vàng; rút một thẻ}",
+      "ham_so_sympy": null
+    },
+    "thang_goi_y": [
+      {
+        "ma_buoc": "B.L10.PHANTICH",
+        "cac_cap": [
+          {
+            "cap": 1,
+            "noi_dung": "Khi rút một thẻ, mỗi thẻ trong hộp tương ứng với một kết quả nào?"
+          },
+          {
+            "cap": 2,
+            "noi_dung": "Hãy đếm tất cả thẻ từ hai nhóm 8 thẻ xanh và 5 thẻ vàng."
+          },
+          {
+            "cap": 3,
+            "noi_dung": "Em hãy trình bày từng phép biến đổi, rồi đối chiếu với điều kiện của đề. Chỗ nào em chưa giải thích được?"
+          }
+        ]
+      },
+      {
+        "ma_buoc": "B.L10.LAPLUAN",
+        "cac_cap": [
+          {
+            "cap": 1,
+            "noi_dung": "Biến cố cần tính là rút được thẻ màu nào?"
+          },
+          {
+            "cap": 2,
+            "noi_dung": "Dùng tỷ số số kết quả thuận lợi trên số kết quả có thể, khi các thẻ có cơ hội được rút như nhau."
+          },
+          {
+            "cap": 3,
+            "noi_dung": "Em hãy trình bày từng phép biến đổi, rồi đối chiếu với điều kiện của đề. Chỗ nào em chưa giải thích được?"
+          }
+        ]
+      },
+      {
+        "ma_buoc": "B.L10.KETLUAN",
+        "cac_cap": [
+          {
+            "cap": 1,
+            "noi_dung": "Xác suất em tìm được có nằm trong đoạn từ 0 đến 1 không?"
+          },
+          {
+            "cap": 2,
+            "noi_dung": "Kiểm tra tử số có đếm thẻ xanh và mẫu số có đếm toàn bộ thẻ hay chưa."
+          },
+          {
+            "cap": 3,
+            "noi_dung": "Em hãy trình bày từng phép biến đổi, rồi đối chiếu với điều kiện của đề. Chỗ nào em chưa giải thích được?"
+          }
+        ]
+      }
+    ],
+    "loi_giai": {
+      "cac_buoc": [
+        {
+          "van_ban": "Số thẻ trong hộp.",
+          "bieu_thuc_sympy": "8+5",
+          "ket_qua_sympy": "13",
+          "latex": "5 + 8 = 13"
+        },
+        {
+          "van_ban": "Tỷ lệ số thẻ xanh trên tổng số thẻ.",
+          "bieu_thuc_sympy": "8/13",
+          "ket_qua_sympy": "8/13",
+          "latex": "\\dfrac{8}{13} = \\dfrac{8}{13}"
+        }
+      ],
+      "dap_an": "8/13",
+      "latex": "\\dfrac{8}{13}"
+    },
+    "kiem_dinh": {
+      "loai": "hypergeom",
+      "du_kien": {
+        "good": 8,
+        "bad": 5,
+        "draw": 1,
+        "want": 1
+      }
+    },
+    "bai_lam": null,
+    "su_kien": [
+      {
+        "loai": "DAP_AN",
+        "gia_tri": "\"8/13\""
+      }
+    ],
+    "nguon": "Tổ Toán Trường THPT Nguyễn Trãi (hư cấu), tự soạn cho MathL+, không chép SGK",
+    "duyet_seed": {
+      "trang_thai": "DA_DUYET",
+      "can_cu": "test_teacher_solution",
+      "ghi_chu": "Giáo viên hư cấu duyệt lời giải đã được pytest kiểm độc lập."
+    },
+    "luyen_hien_tai_seed": true
+  },
+  {
+    "id": "NT-LUYEN10-NB-02",
+    "chu_de": "XS10",
+    "ky_nang_chinh": "T10.NT.XS.L",
+    "ky_nang_phu": [],
+    "muc_do_4": "TH",
+    "muc_do_bo_3": "HIEU",
+    "muc_bloom": "HIEU",
+    "dang_cau": "TU_LUAN",
+    "de_bai": {
+      "van_ban": "Có $5$ bút đỏ và $7$ bút đen. Chọn ngẫu nhiên $2$ bút khác nhau, không hoàn lại. Tính xác suất cả hai đều đỏ.",
+      "latex": "\\text{Chọn }2\\text{ bút từ }5\\text{ bút đỏ và }7\\text{ bút đen}",
+      "ham_so_sympy": null
+    },
+    "thang_goi_y": [
+      {
+        "ma_buoc": "B.L10.PHANTICH",
+        "cac_cap": [
+          {
+            "cap": 1,
+            "noi_dung": "Em chọn hai bút từ hai nhóm 5 bút đỏ và 7 bút đen. Có xét thứ tự chọn không?"
+          },
+          {
+            "cap": 2,
+            "noi_dung": "Hãy đếm các cặp bút khác nhau; không hoàn lại nghĩa là không chọn lại cùng một bút."
+          },
+          {
+            "cap": 3,
+            "noi_dung": "Em hãy trình bày từng phép biến đổi, rồi đối chiếu với điều kiện của đề. Chỗ nào em chưa giải thích được?"
+          }
+        ]
+      },
+      {
+        "ma_buoc": "B.L10.LAPLUAN",
+        "cac_cap": [
+          {
+            "cap": 1,
+            "noi_dung": "Cặp bút thuận lợi cần thỏa điều kiện màu sắc nào?"
+          },
+          {
+            "cap": 2,
+            "noi_dung": "Dùng tổ hợp chọn hai phần tử cho cả tập bút và riêng tập bút đỏ, rồi lập tỷ số."
+          },
+          {
+            "cap": 3,
+            "noi_dung": "Em hãy trình bày từng phép biến đổi, rồi đối chiếu với điều kiện của đề. Chỗ nào em chưa giải thích được?"
+          }
+        ]
+      },
+      {
+        "ma_buoc": "B.L10.KETLUAN",
+        "cac_cap": [
+          {
+            "cap": 1,
+            "noi_dung": "Em đã rút gọn phân số xác suất chưa?"
+          },
+          {
+            "cap": 2,
+            "noi_dung": "Đối chiếu số cặp thuận lợi với tổng số cặp, rồi kiểm tra kết quả thuộc đoạn từ 0 đến 1."
+          },
+          {
+            "cap": 3,
+            "noi_dung": "Em hãy trình bày từng phép biến đổi, rồi đối chiếu với điều kiện của đề. Chỗ nào em chưa giải thích được?"
+          }
+        ]
+      }
+    ],
+    "loi_giai": {
+      "cac_buoc": [
+        {
+          "van_ban": "Tổng cách chọn hai bút.",
+          "bieu_thuc_sympy": "binomial(12,2)",
+          "ket_qua_sympy": "66",
+          "latex": "66 = 66"
+        },
+        {
+          "van_ban": "Số cách chọn hai bút đỏ.",
+          "bieu_thuc_sympy": "binomial(5,2)",
+          "ket_qua_sympy": "10",
+          "latex": "10 = 10"
+        },
+        {
+          "van_ban": "Xác suất cả hai bút đều đỏ.",
+          "bieu_thuc_sympy": "10/66",
+          "ket_qua_sympy": "5/33",
+          "latex": "\\dfrac{10}{66} = \\dfrac{5}{33}"
+        }
+      ],
+      "dap_an": "5/33",
+      "latex": "\\dfrac{5}{33}"
+    },
+    "kiem_dinh": {
+      "loai": "hypergeom",
+      "du_kien": {
+        "good": 5,
+        "bad": 7,
+        "draw": 2,
+        "want": 2
+      }
+    },
+    "bai_lam": null,
+    "su_kien": [
+      {
+        "loai": "DAP_AN",
+        "gia_tri": "\"5/33\""
+      }
+    ],
+    "nguon": "Tổ Toán Trường THPT Nguyễn Trãi (hư cấu), tự soạn cho MathL+, không chép SGK",
+    "duyet_seed": {
+      "trang_thai": "DA_DUYET",
+      "can_cu": "test_teacher_solution",
+      "ghi_chu": "Giáo viên hư cấu duyệt lời giải đã được pytest kiểm độc lập."
+    },
+    "luyen_hien_tai_seed": true
+  },
+  {
+    "id": "NT-LUYEN11-NB-01",
+    "chu_de": "LG11",
+    "ky_nang_chinh": "T11.NT.LG.L",
+    "ky_nang_phu": [],
+    "muc_do_4": "NB",
+    "muc_do_bo_3": "BIET",
+    "muc_bloom": "NHO",
+    "dang_cau": "TU_LUAN",
+    "de_bai": {
+      "van_ban": "Tính chính xác $\\sin{\\left(\\dfrac{5 \\pi}{6} \\right)}$ bằng góc đặc biệt.",
+      "latex": "\\sin{\\left(\\dfrac{5 \\pi}{6} \\right)}",
+      "ham_so_sympy": "sin(5*pi/6)"
+    },
+    "thang_goi_y": [
+      {
+        "ma_buoc": "B.L11.PHANTICH",
+        "cac_cap": [
+          {
+            "cap": 1,
+            "noi_dung": "Góc $\\dfrac{5 \\pi}{6}$ nằm ở góc phần tư nào?"
+          },
+          {
+            "cap": 2,
+            "noi_dung": "Hãy biểu diễn góc đã cho dưới dạng pi trừ một góc đặc biệt."
+          },
+          {
+            "cap": 3,
+            "noi_dung": "Em hãy trình bày từng phép biến đổi, rồi đối chiếu với điều kiện của đề. Chỗ nào em chưa giải thích được?"
+          }
+        ]
+      },
+      {
+        "ma_buoc": "B.L11.LAPLUAN",
+        "cac_cap": [
+          {
+            "cap": 1,
+            "noi_dung": "Giá trị sin ở góc phần tư vừa tìm có dấu gì?"
+          },
+          {
+            "cap": 2,
+            "noi_dung": "Dùng công thức sin của hai góc bù nhau và bảng giá trị góc đặc biệt trong kho lớp."
+          },
+          {
+            "cap": 3,
+            "noi_dung": "Em hãy trình bày từng phép biến đổi, rồi đối chiếu với điều kiện của đề. Chỗ nào em chưa giải thích được?"
+          }
+        ]
+      },
+      {
+        "ma_buoc": "B.L11.KETLUAN",
+        "cac_cap": [
+          {
+            "cap": 1,
+            "noi_dung": "Em đã kết hợp đúng giá trị góc đặc biệt với dấu chưa?"
+          },
+          {
+            "cap": 2,
+            "noi_dung": "Kiểm tra kết quả sin nằm trong đoạn từ −1 đến 1 và phù hợp với góc phần tư."
+          },
+          {
+            "cap": 3,
+            "noi_dung": "Em hãy trình bày từng phép biến đổi, rồi đối chiếu với điều kiện của đề. Chỗ nào em chưa giải thích được?"
+          }
+        ]
+      }
+    ],
+    "loi_giai": {
+      "cac_buoc": [
+        {
+          "van_ban": "Đưa góc về góc chuẩn và áp dấu.",
+          "bieu_thuc_sympy": "sin(5*pi/6)",
+          "ket_qua_sympy": "1/2",
+          "latex": "\\sin{\\left(\\dfrac{5 \\pi}{6} \\right)} = \\dfrac{1}{2}"
+        },
+        {
+          "van_ban": "Rút gọn kết quả.",
+          "bieu_thuc_sympy": "1/2",
+          "ket_qua_sympy": "1/2",
+          "latex": "1 \\cdot \\dfrac{1}{2} = \\dfrac{1}{2}"
+        }
+      ],
+      "dap_an": "1/2"
+    },
+    "kiem_dinh": {
+      "loai": "trig_value",
+      "du_kien": {
+        "goc": "5*pi/6",
+        "ham": "sin"
+      }
+    },
+    "bai_lam": null,
+    "su_kien": [
+      {
+        "loai": "DAP_AN",
+        "gia_tri": "\"1/2\""
+      }
+    ],
+    "nguon": "Tổ Toán Trường THPT Nguyễn Trãi (hư cấu), tự soạn cho MathL+, không chép SGK",
+    "duyet_seed": {
+      "trang_thai": "DA_DUYET",
+      "can_cu": "test_teacher_solution",
+      "ghi_chu": "Giáo viên hư cấu duyệt lời giải đã được pytest kiểm độc lập."
+    },
+    "luyen_hien_tai_seed": true
+  },
+  {
+    "id": "NT-LUYEN11-NB-02",
+    "chu_de": "LG11",
+    "ky_nang_chinh": "T11.NT.LG.L",
+    "ky_nang_phu": [],
+    "muc_do_4": "NB",
+    "muc_do_bo_3": "BIET",
+    "muc_bloom": "NHO",
+    "dang_cau": "TU_LUAN",
+    "de_bai": {
+      "van_ban": "Tính chính xác $\\cos{\\left(\\dfrac{2 \\pi}{3} \\right)}$ bằng góc đặc biệt.",
+      "latex": "\\cos{\\left(\\dfrac{2 \\pi}{3} \\right)}",
+      "ham_so_sympy": "cos(2*pi/3)"
+    },
+    "thang_goi_y": [
+      {
+        "ma_buoc": "B.L11.PHANTICH",
+        "cac_cap": [
+          {
+            "cap": 1,
+            "noi_dung": "Góc $\\dfrac{2 \\pi}{3}$ nằm ở góc phần tư nào?"
+          },
+          {
+            "cap": 2,
+            "noi_dung": "Hãy biểu diễn góc đã cho dưới dạng pi trừ một góc đặc biệt."
+          },
+          {
+            "cap": 3,
+            "noi_dung": "Em hãy trình bày từng phép biến đổi, rồi đối chiếu với điều kiện của đề. Chỗ nào em chưa giải thích được?"
+          }
+        ]
+      },
+      {
+        "ma_buoc": "B.L11.LAPLUAN",
+        "cac_cap": [
+          {
+            "cap": 1,
+            "noi_dung": "Giá trị cos ở góc phần tư vừa tìm có dấu gì?"
+          },
+          {
+            "cap": 2,
+            "noi_dung": "Dùng công thức cos của hai góc bù nhau và bảng giá trị góc đặc biệt trong kho lớp."
+          },
+          {
+            "cap": 3,
+            "noi_dung": "Em hãy trình bày từng phép biến đổi, rồi đối chiếu với điều kiện của đề. Chỗ nào em chưa giải thích được?"
+          }
+        ]
+      },
+      {
+        "ma_buoc": "B.L11.KETLUAN",
+        "cac_cap": [
+          {
+            "cap": 1,
+            "noi_dung": "Em đã kết hợp đúng giá trị góc đặc biệt với dấu chưa?"
+          },
+          {
+            "cap": 2,
+            "noi_dung": "Kiểm tra kết quả cos nằm trong đoạn từ −1 đến 1 và phù hợp với góc phần tư."
+          },
+          {
+            "cap": 3,
+            "noi_dung": "Em hãy trình bày từng phép biến đổi, rồi đối chiếu với điều kiện của đề. Chỗ nào em chưa giải thích được?"
+          }
+        ]
+      }
+    ],
+    "loi_giai": {
+      "cac_buoc": [
+        {
+          "van_ban": "Đưa góc về góc chuẩn và áp dấu.",
+          "bieu_thuc_sympy": "cos(2*pi/3)",
+          "ket_qua_sympy": "-1/2",
+          "latex": "\\cos{\\left(\\dfrac{2 \\pi}{3} \\right)} = - \\dfrac{1}{2}"
+        },
+        {
+          "van_ban": "Rút gọn kết quả.",
+          "bieu_thuc_sympy": "-1/2",
+          "ket_qua_sympy": "-1/2",
+          "latex": "- \\dfrac{1}{2} = - \\dfrac{1}{2}"
+        }
+      ],
+      "dap_an": "-1/2"
+    },
+    "kiem_dinh": {
+      "loai": "trig_value",
+      "du_kien": {
+        "goc": "2*pi/3",
+        "ham": "cos"
+      }
+    },
+    "bai_lam": null,
+    "su_kien": [
+      {
+        "loai": "DAP_AN",
+        "gia_tri": "\"-1/2\""
+      }
+    ],
+    "nguon": "Tổ Toán Trường THPT Nguyễn Trãi (hư cấu), tự soạn cho MathL+, không chép SGK",
+    "duyet_seed": {
+      "trang_thai": "DA_DUYET",
+      "can_cu": "test_teacher_solution",
+      "ghi_chu": "Giáo viên hư cấu duyệt lời giải đã được pytest kiểm độc lập."
+    },
+    "luyen_hien_tai_seed": true
+  },
+  {
+    "id": "NT-LUYEN12-NB-01",
+    "chu_de": "DH12",
+    "ky_nang_chinh": "T12.NT.HS",
+    "ky_nang_phu": [],
+    "muc_do_4": "NB",
+    "muc_do_bo_3": "BIET",
+    "muc_bloom": "NHO",
+    "dang_cau": "TU_LUAN_5_BUOC",
+    "de_bai": {
+      "van_ban": "Cho hàm số $y = x^{2} - 6 x + 4$. Dựa vào dấu đạo hàm, xác định các khoảng đồng biến, nghịch biến và các cực trị.",
+      "latex": "y = x^{2} - 6 x + 4",
+      "ham_so_sympy": "x**2-6*x+4"
+    },
+    "thang_goi_y": [
+      {
+        "ma_buoc": "B.DH.TXD",
+        "cac_cap": [
+          {
+            "cap": 1,
+            "noi_dung": "Hàm đã cho là đa thức. Có giá trị thực nào làm hàm không xác định không?"
+          },
+          {
+            "cap": 2,
+            "noi_dung": "Kiểm tra xem biểu thức có mẫu số, căn thức hay logarit cần đặt điều kiện không."
+          },
+          {
+            "cap": 3,
+            "noi_dung": "Em hãy trình bày từng phép biến đổi, rồi đối chiếu với điều kiện của đề. Chỗ nào em chưa giải thích được?"
+          }
+        ]
+      },
+      {
+        "ma_buoc": "B.DH.DAOHAM",
+        "cac_cap": [
+          {
+            "cap": 1,
+            "noi_dung": "Hãy lấy đạo hàm từng hạng tử của hàm bậc hai đã cho."
+          },
+          {
+            "cap": 2,
+            "noi_dung": "Áp dụng đạo hàm của lũy thừa, của hạng tử bậc nhất và của hằng số; giữ đúng dấu hệ số."
+          },
+          {
+            "cap": 3,
+            "noi_dung": "Em hãy trình bày từng phép biến đổi, rồi đối chiếu với điều kiện của đề. Chỗ nào em chưa giải thích được?"
+          }
+        ]
+      },
+      {
+        "ma_buoc": "B.DH.NGHIEM",
+        "cac_cap": [
+          {
+            "cap": 1,
+            "noi_dung": "Những điểm nào có thể làm dấu đạo hàm thay đổi?"
+          },
+          {
+            "cap": 2,
+            "noi_dung": "Giải phương trình đạo hàm bằng 0 rồi kiểm tra đạo hàm có điểm không xác định trong miền không."
+          },
+          {
+            "cap": 3,
+            "noi_dung": "Em hãy trình bày từng phép biến đổi, rồi đối chiếu với điều kiện của đề. Chỗ nào em chưa giải thích được?"
+          }
+        ]
+      },
+      {
+        "ma_buoc": "B.DH.XETDAU",
+        "cac_cap": [
+          {
+            "cap": 1,
+            "noi_dung": "Nghiệm đạo hàm chia trục số thành những khoảng nào?"
+          },
+          {
+            "cap": 2,
+            "noi_dung": "Chọn một giá trị thử trong mỗi khoảng và thay vào đạo hàm để kiểm tra dấu."
+          },
+          {
+            "cap": 3,
+            "noi_dung": "Em hãy trình bày từng phép biến đổi, rồi đối chiếu với điều kiện của đề. Chỗ nào em chưa giải thích được?"
+          }
+        ]
+      },
+      {
+        "ma_buoc": "B.DH.KETLUAN",
+        "cac_cap": [
+          {
+            "cap": 1,
+            "noi_dung": "Dấu đạo hàm cho biết chiều biến thiên như thế nào?"
+          },
+          {
+            "cap": 2,
+            "noi_dung": "Dựa vào sự đổi dấu qua nghiệm để phân biệt cực đại, cực tiểu; thay hoành độ vào hàm ban đầu để tìm giá trị cực trị."
+          },
+          {
+            "cap": 3,
+            "noi_dung": "Em hãy trình bày từng phép biến đổi, rồi đối chiếu với điều kiện của đề. Chỗ nào em chưa giải thích được?"
+          }
+        ]
+      }
+    ],
+    "loi_giai": {
+      "cac_buoc": [
+        {
+          "van_ban": "Tập xác định: R."
+        },
+        {
+          "van_ban": "Áp quy tắc đạo hàm, rút gọn.",
+          "bieu_thuc_sympy": "Derivative(x**2-6*x+4, x)",
+          "ket_qua_sympy": "2*x - 6",
+          "latex": "\\dfrac{d}{d x} \\left(x^{2} - 6 x + 4\\right) = 2 x - 6"
+        },
+        {
+          "van_ban": "Giải y′=0 được: 3. Không có điểm thuộc tập xác định làm đạo hàm không xác định."
+        },
+        {
+          "van_ban": "Trên các khoảng (−∞; 3), (3; +∞), dấu y′ lần lượt là -, +."
+        },
+        {
+          "van_ban": "Đồng biến trên (3; +∞). Nghịch biến trên (−∞; 3). Cực đại: không có. Cực tiểu: x=3, y=-5."
+        }
+      ],
+      "dap_an": {
+        "dong_bien": [
+          "(3; +oo)"
+        ],
+        "nghich_bien": [
+          "(-oo; 3)"
+        ],
+        "cuc_dai_x": [],
+        "cuc_tieu_x": [
+          "3"
+        ],
+        "gia_tri_cuc_dai": [],
+        "gia_tri_cuc_tieu": [
+          "-5"
+        ]
+      }
+    },
+    "kiem_dinh": {
+      "loai": "ham_so",
+      "du_kien": {
+        "ham": "x**2-6*x+4"
+      }
+    },
+    "bai_lam": {
+      "ham": "x**2-6*x+4",
+      "TXD": "R",
+      "dao_ham": "2*x - 6",
+      "y_phay_bang_0": [
+        "3"
+      ],
+      "y_phay_khong_xd": [],
+      "bang": {
+        "moc": [
+          "-oo",
+          "3",
+          "+oo"
+        ],
+        "dau": [
+          "-",
+          "+"
+        ],
+        "dau_tai_diem": [
+          "0"
+        ],
+        "chieu": [
+          "giam",
+          "tang"
+        ]
+      },
+      "ket_luan": {
+        "dong_bien": [
+          "(3; +oo)"
+        ],
+        "nghich_bien": [
+          "(-oo; 3)"
+        ],
+        "cuc_dai_x": [],
+        "cuc_tieu_x": [
+          "3"
+        ],
+        "gia_tri_cuc_dai": [],
+        "gia_tri_cuc_tieu": [
+          "-5"
+        ]
+      }
+    },
+    "su_kien": [
+      [
+        "DB",
+        "(3;oo)"
+      ],
+      [
+        "NB",
+        "(-oo;3)"
+      ],
+      [
+        "DCT",
+        "3"
+      ],
+      [
+        "GTCT",
+        "-5"
+      ],
+      [
+        "NGHIEM",
+        "3"
+      ],
+      [
+        "KHONG_CUC_DAI",
+        ""
+      ],
+      [
+        "YPHAY",
+        "2*x-6"
+      ]
+    ],
+    "nguon": "Tổ Toán Trường THPT Nguyễn Trãi (hư cấu), tự soạn cho MathL+, không chép SGK",
+    "duyet_seed": {
+      "trang_thai": "DA_DUYET",
+      "can_cu": "test_teacher_solution",
+      "ghi_chu": "Giáo viên hư cấu duyệt lời giải đã được pytest kiểm độc lập."
+    },
+    "luyen_hien_tai_seed": true
+  },
+  {
+    "id": "NT-LUYEN12-NB-02",
+    "chu_de": "DH12",
+    "ky_nang_chinh": "T12.NT.HS",
+    "ky_nang_phu": [],
+    "muc_do_4": "NB",
+    "muc_do_bo_3": "BIET",
+    "muc_bloom": "NHO",
+    "dang_cau": "TU_LUAN_5_BUOC",
+    "de_bai": {
+      "van_ban": "Cho hàm số $y = - x^{2} - 2 x + 5$. Dựa vào dấu đạo hàm, xác định các khoảng đồng biến, nghịch biến và các cực trị.",
+      "latex": "y = - x^{2} - 2 x + 5",
+      "ham_so_sympy": "-x**2-2*x+5"
+    },
+    "thang_goi_y": [
+      {
+        "ma_buoc": "B.DH.TXD",
+        "cac_cap": [
+          {
+            "cap": 1,
+            "noi_dung": "Hàm đã cho là đa thức. Có giá trị thực nào làm hàm không xác định không?"
+          },
+          {
+            "cap": 2,
+            "noi_dung": "Kiểm tra xem biểu thức có mẫu số, căn thức hay logarit cần đặt điều kiện không."
+          },
+          {
+            "cap": 3,
+            "noi_dung": "Em hãy trình bày từng phép biến đổi, rồi đối chiếu với điều kiện của đề. Chỗ nào em chưa giải thích được?"
+          }
+        ]
+      },
+      {
+        "ma_buoc": "B.DH.DAOHAM",
+        "cac_cap": [
+          {
+            "cap": 1,
+            "noi_dung": "Hãy lấy đạo hàm từng hạng tử của hàm bậc hai đã cho."
+          },
+          {
+            "cap": 2,
+            "noi_dung": "Áp dụng đạo hàm của lũy thừa, của hạng tử bậc nhất và của hằng số; giữ đúng dấu hệ số."
+          },
+          {
+            "cap": 3,
+            "noi_dung": "Em hãy trình bày từng phép biến đổi, rồi đối chiếu với điều kiện của đề. Chỗ nào em chưa giải thích được?"
+          }
+        ]
+      },
+      {
+        "ma_buoc": "B.DH.NGHIEM",
+        "cac_cap": [
+          {
+            "cap": 1,
+            "noi_dung": "Những điểm nào có thể làm dấu đạo hàm thay đổi?"
+          },
+          {
+            "cap": 2,
+            "noi_dung": "Giải phương trình đạo hàm bằng 0 rồi kiểm tra đạo hàm có điểm không xác định trong miền không."
+          },
+          {
+            "cap": 3,
+            "noi_dung": "Em hãy trình bày từng phép biến đổi, rồi đối chiếu với điều kiện của đề. Chỗ nào em chưa giải thích được?"
+          }
+        ]
+      },
+      {
+        "ma_buoc": "B.DH.XETDAU",
+        "cac_cap": [
+          {
+            "cap": 1,
+            "noi_dung": "Nghiệm đạo hàm chia trục số thành những khoảng nào?"
+          },
+          {
+            "cap": 2,
+            "noi_dung": "Chọn một giá trị thử trong mỗi khoảng và thay vào đạo hàm để kiểm tra dấu."
+          },
+          {
+            "cap": 3,
+            "noi_dung": "Em hãy trình bày từng phép biến đổi, rồi đối chiếu với điều kiện của đề. Chỗ nào em chưa giải thích được?"
+          }
+        ]
+      },
+      {
+        "ma_buoc": "B.DH.KETLUAN",
+        "cac_cap": [
+          {
+            "cap": 1,
+            "noi_dung": "Dấu đạo hàm cho biết chiều biến thiên như thế nào?"
+          },
+          {
+            "cap": 2,
+            "noi_dung": "Dựa vào sự đổi dấu qua nghiệm để phân biệt cực đại, cực tiểu; thay hoành độ vào hàm ban đầu để tìm giá trị cực trị."
+          },
+          {
+            "cap": 3,
+            "noi_dung": "Em hãy trình bày từng phép biến đổi, rồi đối chiếu với điều kiện của đề. Chỗ nào em chưa giải thích được?"
+          }
+        ]
+      }
+    ],
+    "loi_giai": {
+      "cac_buoc": [
+        {
+          "van_ban": "Tập xác định: R."
+        },
+        {
+          "van_ban": "Áp quy tắc đạo hàm, rút gọn.",
+          "bieu_thuc_sympy": "Derivative(-x**2-2*x+5, x)",
+          "ket_qua_sympy": "-2*x - 2",
+          "latex": "\\dfrac{d}{d x} \\left(- x^{2} - 2 x + 5\\right) = - 2 x - 2"
+        },
+        {
+          "van_ban": "Giải y′=0 được: -1. Không có điểm thuộc tập xác định làm đạo hàm không xác định."
+        },
+        {
+          "van_ban": "Trên các khoảng (−∞; -1), (-1; +∞), dấu y′ lần lượt là +, -."
+        },
+        {
+          "van_ban": "Đồng biến trên (−∞; -1). Nghịch biến trên (-1; +∞). Cực đại: x=-1, y=6. Cực tiểu: không có."
+        }
+      ],
+      "dap_an": {
+        "dong_bien": [
+          "(-oo; -1)"
+        ],
+        "nghich_bien": [
+          "(-1; +oo)"
+        ],
+        "cuc_dai_x": [
+          "-1"
+        ],
+        "cuc_tieu_x": [],
+        "gia_tri_cuc_dai": [
+          "6"
+        ],
+        "gia_tri_cuc_tieu": []
+      }
+    },
+    "kiem_dinh": {
+      "loai": "ham_so",
+      "du_kien": {
+        "ham": "-x**2-2*x+5"
+      }
+    },
+    "bai_lam": {
+      "ham": "-x**2-2*x+5",
+      "TXD": "R",
+      "dao_ham": "-2*x - 2",
+      "y_phay_bang_0": [
+        "-1"
+      ],
+      "y_phay_khong_xd": [],
+      "bang": {
+        "moc": [
+          "-oo",
+          "-1",
+          "+oo"
+        ],
+        "dau": [
+          "+",
+          "-"
+        ],
+        "dau_tai_diem": [
+          "0"
+        ],
+        "chieu": [
+          "tang",
+          "giam"
+        ]
+      },
+      "ket_luan": {
+        "dong_bien": [
+          "(-oo; -1)"
+        ],
+        "nghich_bien": [
+          "(-1; +oo)"
+        ],
+        "cuc_dai_x": [
+          "-1"
+        ],
+        "cuc_tieu_x": [],
+        "gia_tri_cuc_dai": [
+          "6"
+        ],
+        "gia_tri_cuc_tieu": []
+      }
+    },
+    "su_kien": [
+      [
+        "DB",
+        "(-oo;-1)"
+      ],
+      [
+        "NB",
+        "(-1;oo)"
+      ],
+      [
+        "DCD",
+        "-1"
+      ],
+      [
+        "GTCD",
+        "6"
+      ],
+      [
+        "NGHIEM",
+        "-1"
+      ],
+      [
+        "KHONG_CUC_TIEU",
+        ""
+      ],
+      [
+        "YPHAY",
+        "-2*x-2"
+      ]
+    ],
+    "nguon": "Tổ Toán Trường THPT Nguyễn Trãi (hư cấu), tự soạn cho MathL+, không chép SGK",
+    "duyet_seed": {
+      "trang_thai": "DA_DUYET",
+      "can_cu": "test_teacher_solution",
+      "ghi_chu": "Giáo viên hư cấu duyệt lời giải đã được pytest kiểm độc lập."
+    },
+    "luyen_hien_tai_seed": true
+  }
+]

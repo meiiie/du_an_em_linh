@@ -45,7 +45,7 @@
 
 .cau-hoi {
   color: var(--ink-2);
-  font-size: 15px;
+  font-size: 16px;
 }
 
 .phu {
@@ -80,51 +80,17 @@
   cursor: pointer;
 }
 
-.so {
-  display: grid;
-  place-items: center;
-  width: 32px;
-  height: 32px;
-  border: 1.5px solid var(--line-strong);
-  border-radius: 50%;
-  background: var(--raise);
-  font-size: 14px;
-  font-weight: 600;
-}
+.so { display: grid; place-items: center; font-size: 14px; font-weight: 600; }
 
 .buoc[aria-current] {
   color: var(--ink);
   font-weight: 600;
 }
 
-.buoc[aria-current] .so {
-  border-color: var(--ink);
-  background: var(--ink);
-  color: var(--raise);
-}
 
-.buoc[data-tt='dat'] .so {
-  border-color: var(--pass);
-  color: var(--pass);
-}
-
-.buoc[data-tt='sai'] .so {
-  border-color: var(--mark);
-  color: var(--mark);
-}
-
-.buoc[aria-current][data-tt='sai'] .so {
-  background: var(--mark);
-  color: var(--raise);
-}
 
 .buoc[data-tt='de-cho'] {
   cursor: default;
-}
-
-.buoc[data-tt='de-cho'] .so {
-  border-style: dashed;
-  background: var(--wash);
 }
 
 .tieu-de {
@@ -212,9 +178,8 @@
 
 .phan-hoi {
   margin: 0;
-  padding-left: var(--space-3);
-  border-left: 3px solid var(--mark);
-  font-size: 15px;
+  padding: 0;
+  font-size: 16px;
 }
 
 .phan-hoi[data-kq='DAT'] {
@@ -235,7 +200,7 @@
   background: var(--raise);
 }
 
-.da-nop h2,
+.da-nop h3,
 .loi-giai p {
   margin: 0;
 }
@@ -243,7 +208,7 @@
 .thanh-nop {
   position: fixed;
   inset-inline: 0;
-  bottom: 0;
+  bottom: var(--chieu-cao-nav-duoi, 0px);
   z-index: 20;
   display: flex;
   gap: var(--space-3);
@@ -254,12 +219,6 @@
 
 .thanh-nop .btn {
   flex: 1;
-}
-
-.dang-tai {
-  height: 320px;
-  border-radius: var(--radius-card);
-  background: var(--wash);
 }
 
 @media (min-width: 48rem) {
@@ -283,16 +242,24 @@
   }
 }
 
-/* Màn rộng: đề đứng yên bên trái, phiếu bên phải. */
-@media (min-width: 64rem) {
-  .phieu {
-    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
-    align-items: start;
-    gap: var(--space-8);
-  }
+/* Phiếu có một luồng đọc; cột thứ hai dành cho gia sư khi mở. */
+.phieu { padding: 24px; border: 1px solid var(--line); border-radius: 12px; background: var(--raise); }
+.de { padding-bottom: 24px; border-bottom: 1px solid var(--line); }
+.cac-buoc { gap: 4px; }
+.buoc { min-height: 56px; padding: 8px 4px; border-radius: 8px; }
+.so { width: auto; height: auto; border: 0; background: transparent; font-family: var(--font-mono); color: inherit; }
+.buoc[aria-current] { background: var(--wash); }
+.buoc[data-tt='sai'] { color: var(--mark); }
+.buoc[data-tt='dat'] .so { color: var(--pass); }
+.phan-hoi { animation: etat-vao 160ms var(--ease); }
+@media (max-width: 600px) {
+  .phieu { padding: 16px; padding-bottom: 104px; }
+}
 
-  .de {
-    position: sticky;
-    top: var(--space-6);
-  }
+.practice-grid > app-gia-su { display: block; }
+.tutor-trigger { display:flex; justify-content:flex-end; }
+.fab-icon { display:none; }
+@media(max-width:600px) {
+ .tutor-trigger button { position:fixed;right:16px;bottom:calc(var(--chieu-cao-nav-duoi, 64px) + 80px + env(safe-area-inset-bottom));width:48px;height:48px;padding:0;border-radius:50%;z-index:21; }
+ .trigger-text { display:none; }.fab-icon { display:block;font-size:24px; }
 }

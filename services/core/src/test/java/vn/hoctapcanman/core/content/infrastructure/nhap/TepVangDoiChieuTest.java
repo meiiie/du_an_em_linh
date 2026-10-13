@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Stream;
 import org.jspecify.annotations.Nullable;
@@ -35,6 +36,12 @@ class TepVangDoiChieuTest {
     private static final Path GOC = NhapNoiDungChungTest.thuMucData().getParent();
     private static final String DOI_CHIEU = "specs/001-lat-cat-doc/doi-chieu/";
     private static final String LOI_GIAI_V0 = "services/core/src/test/resources/content/loi-giai-v0.json";
+
+    // v0 đã gỡ ngày 2026-10-13. Snapshot vẫn là đối chứng lịch sử, không phải kết quả của engine hiện tại.
+    // Giữ nguyên hash và kiểm đối tượng nằm trong lịch sử Git; không đòi mã v0 còn trong working tree.
+    private static final Set<String> NGUON_LUU_TRU = Set.of(
+        "services/math", "data/v0", DOI_CHIEU + "bkt-v0.ts", DOI_CHIEU + "cham-v0.ts",
+        DOI_CHIEU + "chung.ts", DOI_CHIEU + "loi-giai-v0.ts", DOI_CHIEU + "xuat-v0.ts");
 
     /** Khóa của {@code v0-bai.json} không phải đối tượng git của checkout, và vì sao không cần so. */
     private static final Map<String, String> MIEN_XUAT_V0 = Map.of(
@@ -131,6 +138,22 @@ class TepVangDoiChieuTest {
         for (Map.Entry<String, Object> e : nguon.entrySet()) {
             String duongDan = duongDanCua.apply(e.getKey());
             if (duongDan != null) {
+                if (duongDan.startsWith("apps/web/") || NGUON_LUU_TRU.contains(duongDan)) {
+                    String hash = String.valueOf(e.getValue());
+                    assertThat(hash).as("hash lưu trữ của %s", duongDan).matches("[0-9a-f]{40}");
+                    // Checkout nông (CI fetch-depth 1) không có lịch sử của nguồn v0 đã gỡ (ADR 016): chỉ kiểm định dạng hash.
+                    if (NONG) {
+                        daSo++;
+                        continue;
+                    }
+                    assertThat(git("cat-file", "-t", hash)).as("đối tượng nguồn lưu trữ của %s", tepVang)
+                        .isIn("blob", "tree");
+                    assertThat(git("rev-list", "--all", "--objects", "--", duongDan))
+                        .as("nguồn %s của %s vẫn truy được trong lịch sử Git", duongDan, tepVang)
+                        .contains(hash + " " + duongDan);
+                    daSo++;
+                    continue;
+                }
                 // Đường dẫn so nguyên văn: [id] của Next.js là glob với git, khớp nhầm thư mục i, d.
                 assertThat(git("--literal-pathspecs", "status", "--porcelain", "--", duongDan))
                     .as("%s có thay đổi chưa commit: commit rồi sinh lại %s", duongDan, tepVang).isEmpty();
@@ -158,6 +181,8 @@ class TepVangDoiChieuTest {
         });
         return ra;
     }
+
+    private static final boolean NONG = "true".equals(git("rev-parse", "--is-shallow-repository"));
 
     private static String git(String... lenh) {
         try {

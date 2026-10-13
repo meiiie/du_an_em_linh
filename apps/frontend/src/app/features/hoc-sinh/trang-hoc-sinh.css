@@ -14,7 +14,6 @@
   border: 1px solid var(--line);
   border-radius: var(--radius-card);
   background: var(--raise);
-  box-shadow: var(--shadow-sm);
 }
 
 .ke-chu .nhan-muc {
@@ -31,7 +30,7 @@
 .cau-hoi {
   margin: var(--space-1) 0 0;
   color: var(--ink-2);
-  font-size: 15px;
+  font-size: 16px;
 }
 
 .tien-do {
@@ -101,3 +100,26 @@
     padding: var(--space-6);
   }
 }
+
+.hoc-grid, .hoc-chinh, .hoc-so { display: grid; gap: 32px; min-width: 0; align-content: start; }
+.hoc-so { padding: 24px; background: var(--wash); border: 1px solid var(--line); border-radius: 12px; }
+.hoc-so .surface { padding: 0; border: 0; background: transparent; }
+.hoc-chinh > section > h2 { margin-top: 0; }
+@media (min-width: 75rem) {
+  .hoc-grid { grid-template-columns: minmax(0, 1fr) minmax(280px, 320px); gap: 32px; }
+  .ke-tiep { grid-template-columns: 1fr; }
+}
+
+.dau-trang { margin-bottom: 0; padding-bottom: 24px; border-bottom: 1px solid var(--line); }
+.nhac-hoc { display: grid; gap: 16px; min-width: 0; }
+.nhac-hoc h2 { margin: 0; }
+.nhac-hoc .row-list p { margin-bottom: 0; }
+.nhac-hoc > a { display: inline-flex; align-items: center; min-height: 44px; color: var(--label); }
+@media (max-width: 600px) {
+  .hoc-so { padding: 16px; gap: 24px; }
+  .hoc-grid, .hoc-chinh { gap: 24px; }
+}
+
+.nhom-sap-toi { margin-bottom: 16px; }
+.nhom-sap-toi h3 { margin: 0; font-size: 16px; line-height: 24px; }
+.xem-tat-ca { display: inline-flex; align-items: center; min-height: 44px; color: var(--label); }

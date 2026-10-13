@@ -31,7 +31,6 @@ import { BieuTuong } from './bieu-tuong';
     .nut-icon {
       border: 1px solid var(--line-strong);
       background: var(--raise);
-      box-shadow: var(--shadow-sm);
     }
 
     .nut-icon:hover {

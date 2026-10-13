@@ -89,7 +89,6 @@
 
 .muc-luc li {
   padding: 6px 0 6px 10px;
-  border-left: 2px solid transparent;
   color: var(--muted);
   white-space: nowrap;
 }
@@ -123,7 +122,6 @@
 
 .dat {
   padding-left: 10px;
-  border-left: 2px solid var(--pass);
 }
 
 .gia-su p {

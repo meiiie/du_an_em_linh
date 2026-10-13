@@ -2,6 +2,9 @@
 description: "Danh sách việc của epic P2 — lát cắt dọc một chủ đề"
 ---
 
+> **Hồ sơ lát cắt P2 ngày 2026-10-02:** kế hoạch tiếp nối hiện hành là [002-hoan-thien-v2](../002-hoan-thien-v2/spec.md). Đường mã/lệnh v0 và task tạo migration cũ bên dưới chỉ là lịch sử, không thực hiện lại. Phiên 2026-10-13 gỡ v0, giữ snapshot import, FLAT tuyệt đối; V1–V10 bất biến, không dùng V11, chỉ thêm V12+ còn trống.
+
+
 # Tasks: P2 — Lát cắt dọc một chủ đề
 
 **Input**: `specs/001-lat-cat-doc/` (spec, plan, research, data-model, contracts)

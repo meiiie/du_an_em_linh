@@ -1,0 +1,80 @@
+[
+  {
+    "ma": "DH12",
+    "ten": "Hàm số: đơn điệu và cực trị",
+    "lop": 12,
+    "ky_nang": "T12.NT.HS"
+  },
+  {
+    "ma": "LG11",
+    "ten": "Lượng giác",
+    "lop": 11,
+    "ky_nang": "T11.NT.LG"
+  },
+  {
+    "ma": "DS11",
+    "ten": "Dãy số và cấp số",
+    "lop": 11,
+    "ky_nang": "T11.NT.DS"
+  },
+  {
+    "ma": "DH11",
+    "ten": "Đạo hàm",
+    "lop": 11,
+    "ky_nang": "T11.NT.DH"
+  },
+  {
+    "ma": "TP12",
+    "ten": "Tích phân",
+    "lop": 12,
+    "ky_nang": "T12.NT.TP"
+  },
+  {
+    "ma": "KG12",
+    "ten": "Hình học không gian",
+    "lop": 12,
+    "ky_nang": "T12.NT.KG"
+  },
+  {
+    "ma": "XS10",
+    "ten": "Xác suất",
+    "lop": 10,
+    "ky_nang": "T10.NT.XS"
+  },
+  {
+    "ma": "BH10",
+    "ten": "Hàm số bậc hai",
+    "lop": 10,
+    "ky_nang": "T10.NT.BH"
+  },
+  {
+    "ma": "MT10",
+    "ten": "Mệnh đề và tập hợp",
+    "lop": 10,
+    "ky_nang": "T10.NT.MT"
+  },
+  {
+    "ma": "TK10",
+    "ten": "Thống kê",
+    "lop": 10,
+    "ky_nang": "T10.NT.TK"
+  },
+  {
+    "ma": "KG11",
+    "ten": "Hình học không gian",
+    "lop": 11,
+    "ky_nang": "T11.NT.KG"
+  },
+  {
+    "ma": "XS11",
+    "ten": "Xác suất",
+    "lop": 11,
+    "ky_nang": "T11.NT.XS"
+  },
+  {
+    "ma": "XS12",
+    "ten": "Xác suất có điều kiện",
+    "lop": 12,
+    "ky_nang": "T12.NT.XS"
+  }
+]

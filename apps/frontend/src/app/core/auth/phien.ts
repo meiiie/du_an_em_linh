@@ -5,7 +5,7 @@ import { API_AUTH, HEADER_CHONG_CSRF, NguoiDung, PhienDangNhap, VaiTro } from '.
 
 /** Trang chủ theo vai trò. Quản trị chưa có khu riêng nên dùng khu giáo viên. */
 export function trangChuCua(vaiTro: VaiTro): string {
-  return vaiTro === 'STUDENT' ? '/hs' : '/gv';
+  return vaiTro === 'STUDENT' ? '/hs' : vaiTro === 'TEACHER' ? '/gv' : '/qt';
 }
 
 /**

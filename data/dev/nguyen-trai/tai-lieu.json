@@ -1,0 +1,65 @@
+[
+  {
+    "ma": "nt-dh12",
+    "title": "Ghi chú chương Hàm số: đơn điệu và cực trị",
+    "kind": "tu_soan",
+    "source": "Tổ Toán Trường THPT Nguyễn Trãi (hư cấu)",
+    "licenseStatus": "tu_soan",
+    "version": 1,
+    "textContent": "Với hàm số xác định trên một khoảng: nếu đạo hàm không âm trên khoảng đó và chỉ bằng 0 tại hữu hạn điểm thì hàm đồng biến; nếu đạo hàm không dương và chỉ bằng 0 tại hữu hạn điểm thì hàm nghịch biến. Lập bảng xét dấu của đạo hàm trên từng khoảng xác định bởi nghiệm y' = 0 và điểm y' không xác định. Nếu đạo hàm đổi từ dương sang âm khi đi qua một điểm trong thì đó là cực đại; từ âm sang dương là cực tiểu. Điểm cực trị phải nằm trong một khoảng mở chứa trong tập xác định. Đạo hàm của x mũ n là n nhân x mũ n trừ 1. Hằng số có đạo hàm bằng 0. Đạo hàm của tổng bằng tổng các đạo hàm. Với thương, tử là u'v trừ uv', mẫu là v bình. Điểm tới hạn gồm nghiệm của đạo hàm bằng 0 và điểm thuộc tập xác định mà đạo hàm không xác định. Tài liệu tự soạn dành cho năm học 2026–2027. Khi ôn, hãy tự giải thích mỗi phép biến đổi, luyện truy hồi rồi làm xen kẽ dạng bài; ghi lại bước chưa hiểu để hỏi giáo viên. Đạo hàm lũy thừa: $(x^n)' = n x^{n-1}$. Đạo hàm tổng: $(u+v)' = u' + v'$. Đạo hàm thương: $(u/v)' = (u'v - uv') / v^2$. Đạo hàm bằng 0 mà không đổi dấu thì chưa phải cực trị."
+  },
+  {
+    "ma": "nt-lg11",
+    "title": "Ghi chú chương Lượng giác",
+    "kind": "tu_soan",
+    "source": "Tổ Toán Trường THPT Nguyễn Trãi (hư cấu)",
+    "licenseStatus": "tu_soan",
+    "version": 1,
+    "textContent": "Trên đường tròn đơn vị, hoành độ là cos x, tung độ là sin x, nên tổng hai bình phương bằng 1. Dùng góc chuẩn, sau đó kiểm dấu theo góc phần tư. Phương trình lượng giác phải xét mọi nhánh nghiệm và giới hạn miền trước khi kết luận. Tài liệu tự soạn dành cho năm học 2026–2027. Khi ôn, hãy tự giải thích mỗi phép biến đổi, luyện truy hồi rồi làm xen kẽ dạng bài; ghi lại bước chưa hiểu để hỏi giáo viên."
+  },
+  {
+    "ma": "nt-ds11",
+    "title": "Ghi chú chương Dãy số và cấp số",
+    "kind": "tu_soan",
+    "source": "Tổ Toán Trường THPT Nguyễn Trãi (hư cấu)",
+    "licenseStatus": "tu_soan",
+    "version": 1,
+    "textContent": "Cấp số cộng tăng mỗi lần một công sai d, do đó u_n=u_1+(n−1)d. Ghép số hạng đầu với số hạng cuối cho cùng tổng, suy ra S_n=n(2u_1+(n−1)d)/2. Cấp số nhân tăng theo tỉ số q; với q khác 1, S_n=u_1(q^n−1)/(q−1). Với q=1, tổng là nu_1. Tài liệu tự soạn dành cho năm học 2026–2027. Khi ôn, hãy tự giải thích mỗi phép biến đổi, luyện truy hồi rồi làm xen kẽ dạng bài; ghi lại bước chưa hiểu để hỏi giáo viên."
+  },
+  {
+    "ma": "nt-dh11",
+    "title": "Ghi chú chương Đạo hàm",
+    "kind": "tu_soan",
+    "source": "Tổ Toán Trường THPT Nguyễn Trãi (hư cấu)",
+    "licenseStatus": "tu_soan",
+    "version": 1,
+    "textContent": "Đạo hàm đo tốc độ thay đổi tại điểm. Đạo hàm sin x là cos x khi x tính bằng radian. Đạo hàm tích uv bằng u′v+uv′; hàm hợp cần nhân thêm đạo hàm bên trong. Hệ số góc tiếp tuyến tại x_0 bằng f′(x_0). Luôn kiểm miền trước khi thế điểm. Tài liệu tự soạn dành cho năm học 2026–2027. Khi ôn, hãy tự giải thích mỗi phép biến đổi, luyện truy hồi rồi làm xen kẽ dạng bài; ghi lại bước chưa hiểu để hỏi giáo viên."
+  },
+  {
+    "ma": "nt-tp12",
+    "title": "Ghi chú chương Tích phân",
+    "kind": "tu_soan",
+    "source": "Tổ Toán Trường THPT Nguyễn Trãi (hư cấu)",
+    "licenseStatus": "tu_soan",
+    "version": 1,
+    "textContent": "Một nguyên hàm F của f thỏa mãn F′=f. Nguyên hàm x² là x³/3 cộng hằng số. Nếu f liên tục trên [a;b], tích phân từ a đến b bằng F(b)−F(a). Diện tích dùng tích phân giá trị tuyệt đối hoặc chia miền theo giao điểm; không đồng nhất diện tích với tích phân có dấu. Tài liệu tự soạn dành cho năm học 2026–2027. Khi ôn, hãy tự giải thích mỗi phép biến đổi, luyện truy hồi rồi làm xen kẽ dạng bài; ghi lại bước chưa hiểu để hỏi giáo viên."
+  },
+  {
+    "ma": "nt-kg12",
+    "title": "Ghi chú chương Hình học không gian",
+    "kind": "tu_soan",
+    "source": "Tổ Toán Trường THPT Nguyễn Trãi (hư cấu)",
+    "licenseStatus": "tu_soan",
+    "version": 1,
+    "textContent": "Thể tích hình chóp là một phần ba diện tích đáy nhân chiều cao vuông góc. Chiều cao không tự động bằng cạnh bên. Trong tọa độ vuông góc, khoảng cách bằng căn tổng bình phương các hiệu tọa độ. Khoảng cách đến mặt phẳng bằng giá trị tuyệt đối vế trái chia độ dài vectơ pháp tuyến. Tài liệu tự soạn dành cho năm học 2026–2027. Khi ôn, hãy tự giải thích mỗi phép biến đổi, luyện truy hồi rồi làm xen kẽ dạng bài; ghi lại bước chưa hiểu để hỏi giáo viên."
+  },
+  {
+    "ma": "nt-xs10",
+    "title": "Ghi chú chương Xác suất",
+    "kind": "tu_soan",
+    "source": "Tổ Toán Trường THPT Nguyễn Trãi (hư cấu)",
+    "licenseStatus": "tu_soan",
+    "version": 1,
+    "textContent": "Khi các kết quả đồng khả năng, xác suất bằng số kết quả thuận lợi chia số kết quả của không gian mẫu. Chọn không hoàn lại dùng tổ hợp và thay đổi số phần tử còn lại. Với P(B)>0, P(A|B)=P(A∩B)/P(B). Không thay xác suất có điều kiện bằng xác suất độc lập khi chưa có căn cứ. Tài liệu tự soạn dành cho năm học 2026–2027. Khi ôn, hãy tự giải thích mỗi phép biến đổi, luyện truy hồi rồi làm xen kẽ dạng bài; ghi lại bước chưa hiểu để hỏi giáo viên."
+  }
+]

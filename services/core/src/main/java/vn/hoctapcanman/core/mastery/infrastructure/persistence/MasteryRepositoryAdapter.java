@@ -101,6 +101,14 @@ public class MasteryRepositoryAdapter implements MasteryRepository {
             .query(MasteryRepositoryAdapter::trangThai).list();
     }
 
+    @Override
+    public Map<String,Level4> overridesOf(UUID studentId) {
+        Map<String,Level4> result=new HashMap<>();
+        jdbc.sql("select distinct on (skill_code) skill_code,level4 from mastery_overrides where student_id=:id and removed_at is null order by skill_code,created_at desc,id desc").param("id",studentId)
+            .query((rs,n)->Map.entry(rs.getString("skill_code"),Level4.valueOf(rs.getString("level4")))).list().forEach(e->result.put(e.getKey(),e.getValue()));
+        return Map.copyOf(result);
+    }
+
     private static Map<String, @Nullable Object> thamSo(MasteryState s) {
         Map<String, @Nullable Object> p = new HashMap<>();
         p.put("student", s.studentId());

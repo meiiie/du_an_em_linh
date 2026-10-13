@@ -1,0 +1,188 @@
+[
+  {
+    "ma": "T12.NT.HS",
+    "chu_de": "DH12",
+    "ten": "Đơn điệu và cực trị hàm bậc hai",
+    "lop": 12
+  },
+  {
+    "ma": "T12.NT.HS.2",
+    "chu_de": "DH12",
+    "ten": "Cực trị hàm bậc ba",
+    "lop": 12
+  },
+  {
+    "ma": "T12.NT.HS.3",
+    "chu_de": "DH12",
+    "ten": "Cực trị hàm trùng phương",
+    "lop": 12
+  },
+  {
+    "ma": "T12.NT.HS.4",
+    "chu_de": "DH12",
+    "ten": "Đơn điệu hàm phân thức",
+    "lop": 12
+  },
+  {
+    "ma": "T11.NT.LG",
+    "chu_de": "LG11",
+    "ten": "Giá trị lượng giác",
+    "lop": 11
+  },
+  {
+    "ma": "T11.NT.LG.2",
+    "chu_de": "LG11",
+    "ten": "Phương trình lượng giác cơ bản",
+    "lop": 11
+  },
+  {
+    "ma": "T11.NT.DS",
+    "chu_de": "DS11",
+    "ten": "Cấp số cộng",
+    "lop": 11
+  },
+  {
+    "ma": "T11.NT.DS.2",
+    "chu_de": "DS11",
+    "ten": "Cấp số nhân",
+    "lop": 11
+  },
+  {
+    "ma": "T11.NT.DH",
+    "chu_de": "DH11",
+    "ten": "Tính đạo hàm tại một điểm",
+    "lop": 11
+  },
+  {
+    "ma": "T11.NT.DH.2",
+    "chu_de": "DH11",
+    "ten": "Phương trình tiếp tuyến",
+    "lop": 11
+  },
+  {
+    "ma": "T11.NT.DH.3",
+    "chu_de": "DH11",
+    "ten": "Ứng dụng đạo hàm tìm giá trị lớn nhất",
+    "lop": 11
+  },
+  {
+    "ma": "T12.NT.TP",
+    "chu_de": "TP12",
+    "ten": "Tích phân cơ bản",
+    "lop": 12
+  },
+  {
+    "ma": "T12.NT.TP.2",
+    "chu_de": "TP12",
+    "ten": "Diện tích hình phẳng",
+    "lop": 12
+  },
+  {
+    "ma": "T12.NT.TP.3",
+    "chu_de": "TP12",
+    "ten": "Tối ưu diện tích hình phẳng",
+    "lop": 12
+  },
+  {
+    "ma": "T12.NT.TP.4",
+    "chu_de": "TP12",
+    "ten": "Diện tích giữa hai đồ thị",
+    "lop": 12
+  },
+  {
+    "ma": "T12.NT.KG",
+    "chu_de": "KG12",
+    "ten": "Thể tích khối chóp",
+    "lop": 12
+  },
+  {
+    "ma": "T12.NT.KG.2",
+    "chu_de": "KG12",
+    "ten": "Khoảng cách giữa hai điểm trong không gian",
+    "lop": 12
+  },
+  {
+    "ma": "T12.NT.KG.3",
+    "chu_de": "KG12",
+    "ten": "Đường chéo hình hộp chữ nhật",
+    "lop": 12
+  },
+  {
+    "ma": "T12.NT.KG.4",
+    "chu_de": "KG12",
+    "ten": "Hình chiếu vuông góc lên mặt phẳng",
+    "lop": 12
+  },
+  {
+    "ma": "T12.NT.KG.5",
+    "chu_de": "KG12",
+    "ten": "Thể tích khối tứ diện",
+    "lop": 12
+  },
+  {
+    "ma": "T10.NT.XS",
+    "chu_de": "XS10",
+    "ten": "Xác suất chọn mẫu không hoàn lại",
+    "lop": 10
+  },
+  {
+    "ma": "T10.NT.XS.2",
+    "chu_de": "XS10",
+    "ten": "Xác suất của các phép thử độc lập",
+    "lop": 10
+  },
+  {
+    "ma": "T12.NT.XS",
+    "chu_de": "XS12",
+    "ten": "Xác suất có điều kiện",
+    "lop": 12
+  },
+  {
+    "ma": "T12.NT.XS.2",
+    "chu_de": "XS12",
+    "ten": "Công thức Bayes",
+    "lop": 12
+  },
+  {
+    "ma": "T10.NT.BH",
+    "chu_de": "BH10",
+    "ten": "Giá trị nhỏ nhất của hàm bậc hai",
+    "lop": 10
+  },
+  {
+    "ma": "T10.NT.MT",
+    "chu_de": "MT10",
+    "ten": "Giao của hai tập hợp",
+    "lop": 10
+  },
+  {
+    "ma": "T10.NT.TK",
+    "chu_de": "TK10",
+    "ten": "Số trung bình cộng",
+    "lop": 10
+  },
+  {
+    "ma": "T11.NT.KG",
+    "chu_de": "KG11",
+    "ten": "Đường chéo hình hộp chữ nhật",
+    "lop": 11
+  },
+  {
+    "ma": "T11.NT.XS",
+    "chu_de": "XS11",
+    "ten": "Xác suất chọn mẫu không hoàn lại",
+    "lop": 11
+  },
+  {
+    "ma": "T10.NT.XS.L",
+    "chu_de": "XS10",
+    "ten": "Xác suất chọn mẫu không hoàn lại · luyện tập",
+    "lop": 10
+  },
+  {
+    "ma": "T11.NT.LG.L",
+    "chu_de": "LG11",
+    "ten": "Giá trị lượng giác · luyện tập",
+    "lop": 11
+  }
+]

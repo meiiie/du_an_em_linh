@@ -61,13 +61,19 @@
   font-weight: 600;
 }
 
+.tieu-de .badge {
+  margin-inline-start: 8px;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
 /* Công thức dài hơn hàng thì mờ dần ở mép phải, không cắt kiểu «…» (KaTeX không chịu text-overflow). */
 .ham {
   overflow: hidden;
   color: var(--ink-2);
   font-size: 14px;
   white-space: nowrap;
-  mask-image: linear-gradient(to right, #000 85%, transparent);
+  mask-image: linear-gradient(to right, var(--mask) 85%, transparent);
 }
 
 .muc {
@@ -92,7 +98,7 @@
 }
 
 .tt.sai {
-  color: var(--mark);
+  color: var(--wait);
 }
 
 .tt.cho {
@@ -113,4 +119,15 @@
     grid-template-columns: 24px minmax(0, 1fr) 7.5rem 8rem 20px;
     grid-template-areas: 'vong ten muc tt mui';
   }
+}
+
+.hang { padding-block: 16px; gap: 8px 16px; }
+.ten strong { line-height: 1.5; }
+.muc { line-height: 1.5; }
+@media (max-width: 600px) {
+  .hang {
+    grid-template-columns: 24px minmax(0, 1fr) 16px;
+    grid-template-areas: 'vong ten mui' '. muc .' '. tt .';
+  }
+  .tt { white-space: normal; font-size: 13px; }
 }

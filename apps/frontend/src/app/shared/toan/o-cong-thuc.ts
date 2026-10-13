@@ -212,6 +212,8 @@ export class OCongThuc implements FormValueControl<string> {
       if (!this.coMathLive()) return;
       const o = this.oToan().nativeElement;
       if (o.value !== giaTri) o.value = giaTri;
+      // Nhãn trên host không đặt tên cho textbox bên trong shadow DOM của MathLive.
+      o.shadowRoot?.querySelector('[role="textbox"]')?.setAttribute('aria-label', this.nhan());
     });
   }
 

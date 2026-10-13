@@ -1,8 +1,9 @@
 # Lộ trình v2
 
+> **Chỉ đạo chủ repo 2026-10-13:** gỡ `apps/web` ngay, phát triển trên Angular/core/math; thay điều kiện giữ v0 của kế hoạch trước đây ([ADR 016](../adr/016-go-v0.md)). Bảng pha và số đo giữ nguyên như lịch sử kế hoạch, không tự đánh dấu pha hoàn thành nếu cổng nghiệm thu chưa chạy. Phạm vi phiên hiện hành: `docs/ASSUMPTIONS.md`.
 > Nguồn chuẩn về thứ tự làm. Nâng từ [`labs/decisions/2026-10-01-kien-truc-v2.md`](../../labs/decisions/2026-10-01-kien-truc-v2.md) §7 sau khi ADR 011 được chấp nhận (2026-10-01). Đổi thứ tự hay điều kiện xong → PR sửa file này, chủ repo duyệt.
 
-Nguyên tắc: **strangler theo luồng**. v0 (`apps/web`) vẫn chạy để demo cho tới khi v2 đạt tương đương luồng A và B ([`MUC-TIEU.md`](MUC-TIEU.md) §3). Mỗi pha xong khi điều kiện đo được ở cột cuối đạt, có số đo thật trong PR.
+Nguyên tắc hiện hành: **chỉ phát triển và demo v2**; không giữ ứng dụng v0 để chờ tương đương luồng A/B. Nội dung tổng hợp được giữ qua snapshot `data/v0` cho importer. Mỗi pha xong khi điều kiện đo được ở cột cuối đạt, có số đo thật trong PR. [Spec 002](../../specs/002-hoan-thien-v2/spec.md) chia U0–U15 thành lát nghiệm thu tiếp nối P2; không thay tiêu chí hoàn thành toàn bộ P3–P5.
 
 | Pha | Kết quả | Năng lực | Điều kiện xong |
 | --- | --- | --- | --- |
@@ -12,7 +13,7 @@ Nguyên tắc: **strangler theo luồng**. v0 (`apps/web`) vẫn chạy để de
 | **P3** — mở rộng phía giáo viên | Luồng A + E đầy đủ: nạp tài liệu có OCR công thức; AI soạn bài 4 mức → cổng 3 tầng → GV duyệt (thay «sinh bài» của v0); ngân hàng 4 dạng câu (nhiều lựa chọn, đúng/sai nhiều ý, trả lời ngắn, tự luận theo bước); bộ ôn tập theo hai khuôn: đề định kỳ (CV 7991) và đề TN THPT môn Toán; bảng lớp kỹ năng × mức; giao bộ bài | C1–C5 | e2e phát hành, duyệt, giao bài xanh; đề định kỳ đúng tỉ lệ CV 7991 (40 % Biết, 30 % Hiểu, 30 % Vận dụng); đề ôn TN THPT đúng cấu trúc 3 phần, 22 câu (`docs/product/MUC-TIEU.md` §4) |
 | **P4** — cá nhân hóa xuyên chủ đề | Đồ thị kỹ năng nhiều chủ đề; chọn «dạng đã sai» theo mã lỗi; hiệu chỉnh độ khó bài; tư vấn phương pháp học có căn cứ; nhắc lịch qua kênh ngoài (web push, Zalo) | C6, C8–C10 | Bộ đo cá nhân hóa của lab Kiểm định đạt; nhắc lịch tới được thiết bị thật |
 | **P5** | Mở rộng nội dung Toán 12 theo lab Sư phạm; OCR đề mẫu; bộ ôn tập định dạng thi TN THPT | C1, C3, C4 | Theo từng gói chủ đề (`labs/pedagogy/README.md`) |
-| Gỡ v0 | Xóa `apps/web`, thay ADR 001 | — | v2 làm được mọi màn của v0: P2 và phần soạn bài bằng AI của P3 (v0: `/gv/sinh-bai`); chủ repo đồng ý |
+| Gỡ v0 — chỉ đạo 2026-10-13 | Gỡ ứng dụng Next.js và đường chạy chỉ v0, giữ snapshot import; ADR 016 thay ADR 001 và điều kiện giữ v0 của ADR 011 | — | Không còn phụ thuộc v0 trong runtime; importer và demo v2 được kiểm độc lập, không chờ đủ màn v0 |
 
 **Đổi thứ tự 2026-10-02 (chủ repo duyệt):** P2 thành lát cắt dọc thay vì chỉ luồng học sinh. Sơ đồ là một vòng qua hai phía: tài liệu của giáo viên đi qua cổng 3 tầng vào phần học của học sinh, kết quả học quay lại thành bài nâng 1 nấc. Chạy hết vòng cho một chủ đề trước thì mọi ranh giới giữa các khối được kiểm sớm, và cổng 3 tầng cho lời gia sư có tài liệu, bảng công thức thật để kiểm. Sau đó mới mở rộng ngang (P3–P5).
 
