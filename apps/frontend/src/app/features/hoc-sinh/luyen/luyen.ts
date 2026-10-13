@@ -62,6 +62,8 @@ export class Luyen {
  private readonly api=inject(ApiLopHoc);
 
   protected readonly giaSuMo = signal(false);
+  protected readonly giaSuRong = signal(400);
+  protected readonly giaSuDesktop = signal(false);
   readonly maBai = input.required<string>();
 
   private readonly http = inject(HttpClient);

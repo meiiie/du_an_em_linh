@@ -85,9 +85,8 @@ test('U7/U8 gia sư: desktop column/mobile sheet, ba cấp và từ chối đáp
         const a = await page.getByTestId('solve-screen').boundingBox(), b = await tutor.boundingBox();
         expect(b!.x).toBeGreaterThanOrEqual(a!.x + a!.width);
     }
-    await expect(tutor.getByRole('button', { name: 'Gợi ý 2' })).toBeDisabled();
     for (const cap of [1, 2, 3]) {
-        await tutor.getByRole('button', { name: `Gợi ý ${cap}` }).click();
+        await tutor.getByRole('button', { name: 'Gợi ý bước tiếp' }).click();
         await expect(tutor.locator('.tutor-messages article')).toHaveCount(cap * 2);
         await expect(tutor.locator('[aria-live="polite"]')).toContainText('Hãy xem điều kiện xác định');
     }
@@ -110,7 +109,7 @@ test('U9 Kiểm tra ẩn gia sư và không gọi chat', async ({ page, api }) =
 test('U9 xử lý API 403, không tạo câu trả lời', async ({ page, api }) => {
     api.tutorStatus = 403;
     const tutor = await tutorFor(page);
-    await tutor.getByRole('button', { name: 'Gợi ý 1' }).click();
+    await tutor.getByRole('button', { name: 'Gợi ý bước tiếp' }).click();
     await expect(tutor.getByRole('alert')).toHaveText('Gia sư không mở cho bài kiểm tra này.');
     await expect(tutor.getByRole('button', { name: 'Hỏi lại' })).toBeEnabled();
     await expect(tutor.locator('.tutor-messages article')).toHaveCount(1);
@@ -302,7 +301,7 @@ for (const theme of ['light', 'dark'] as const)
         expect(api.calls.find(c => c.method === 'POST' && c.path === '/api/gv/giao')?.body).toMatchObject({ problemIds: ['E2E-01'], mode: 'ON_TAP' });
         api.role = 'STUDENT';
         const tutor = await tutorFor(page);
-        await tutor.getByRole('button', { name: 'Gợi ý 1' }).click();
+        await tutor.getByRole('button', { name: 'Gợi ý bước tiếp' }).click();
         await expect(tutor.locator('.tutor-messages article')).toHaveCount(2);
         await page.screenshot({ path: info.outputPath(`luyen-${theme}.png`), fullPage: true });
         if (page.viewportSize()!.width === 390)
@@ -394,7 +393,7 @@ test('Học ghi rõ bài kiểm tra tiếp theo và Luyện hiện banner cùng 
     await page.getByRole('link', {name: 'Bắt đầu kiểm tra', exact: true}).click();
     await expect(page.getByTestId('bang-kiem-tra')).toContainText('Đang kiểm tra — gia sư tạm tắt');
     await expect(page.getByTestId('bang-kiem-tra')).toContainText('20/10');
-    await expect(page.getByTestId('mo-gia-su')).toHaveCount(0);
+    await expect(page.getByTestId('mo-gia-su')).toBeDisabled();
     await flat(page);
     await noOverflow(page);
 });

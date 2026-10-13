@@ -14,14 +14,16 @@
   </div>
 } @else if (bai.value(); as b) {
   @if (mode()?.status === 'KIEM_TRA') {
-    <section class="surface" data-testid="bang-kiem-tra" aria-label="Chế độ kiểm tra">
+    <section class="surface" data-testid="bang-kiem-tra" aria-label="Chế độ kiểm tra" id="gia-su-tam-tat">
       <strong>Đang kiểm tra — gia sư tạm tắt</strong>
       <p class="muted">Hạn nộp: {{ han() || 'Chưa đặt hạn' }}</p>
     </section>
   }
   @if(cheDo.error()){<app-loi-tai [loi]="cheDo.error()" moTa="Chưa tải được chế độ bài. Thử lại để mở gia sư cho bài ôn." (thuLai)="cheDo.reload()" />}
+    <div class="practice-grid" [class.co-gia-su]="coGiaSu() && giaSuMo() && giaSuDesktop()" [style.grid-template-columns]="coGiaSu() && giaSuMo() && giaSuDesktop() ? 'minmax(0, 1fr) ' + giaSuRong() + 'px' : 'minmax(0, 1fr)'">
   @if (b.dangTraLoi !== 'TU_LUAN_5_BUOC' || !b.cacBuoc.length) {
     <div class="trong">
+@if (coGiaSu() || mode()?.status === 'KIEM_TRA') {<div class="tutor-trigger"><button appButton variant="secondary" type="button" data-testid="mo-gia-su" aria-label="Gia sư AI" aria-keyshortcuts="Control+/ Meta+/" [attr.aria-expanded]="giaSuMo()" [disabled]="!coGiaSu()" [title]="coGiaSu() ? 'Gia sư AI (Ctrl/Cmd+/)' : 'Đang kiểm tra — gia sư tạm tắt'" [attr.aria-describedby]="mode()?.status === 'KIEM_TRA' ? 'gia-su-tam-tat' : null" (click)="giaSu()?.moGiaSu()"><span class="fab-icon" aria-hidden="true">✦</span><span class="trigger-text">Gia sư AI</span></button></div>}
       <p><app-van-ban-toan [text]="b.de.text" /></p>
       @if (b.cacBuoc.length) {
         <nav class="toolbar" aria-label="Các bước gợi mở">
@@ -30,11 +32,10 @@
           }
         </nav>
       }
-      @if (coGiaSu()) { <app-gia-su [maBai]="b.maBai" [maBuoc]="buocHien()?.maBuoc ?? 'B.DH.TXD'" [tenBuoc]="tenBuocGiay(buocHien()?.maBuoc ?? '')" /> }
       <p>Dạng câu này (không theo khung 5 bước) chưa có khung làm bài trên ứng dụng. Em làm ra giấy và nộp thầy cô.</p>
     </div>
   } @else {
-    <div class="practice-grid" [class.co-gia-su]="coGiaSu() && giaSuMo()">
+
     <section
       class="phieu"
       data-testid="solve-screen"
@@ -43,6 +44,7 @@
       [attr.data-buoc-bat-dau]="b.buocBatDau ?? b.cacBuoc[0]?.maBuoc"
     >
       <header class="de">
+@if (coGiaSu() || mode()?.status === 'KIEM_TRA') {<div class="tutor-trigger"><button appButton variant="secondary" type="button" data-testid="mo-gia-su" aria-label="Gia sư AI" aria-keyshortcuts="Control+/ Meta+/" [attr.aria-expanded]="giaSuMo()" [disabled]="!coGiaSu()" [title]="coGiaSu() ? 'Gia sư AI (Ctrl/Cmd+/)' : 'Đang kiểm tra — gia sư tạm tắt'" [attr.aria-describedby]="mode()?.status === 'KIEM_TRA' ? 'gia-su-tam-tat' : null" (click)="giaSu()?.moGiaSu()"><span class="fab-icon" aria-hidden="true">✦</span><span class="trigger-text">Gia sư AI</span></button></div>}
         @if (mode()?.status === 'KIEM_TRA') { <p class="badge" data-testid="che-do-kiem-tra">Kiểm tra · Không chat</p> }
         @if (han() && mode()?.status !== 'KIEM_TRA') { <p class="phu">Hạn nộp: {{han()}}</p> }
         <p class="nhan-muc">{{ tenMuc[b.muc4] }}</p>
@@ -78,7 +80,6 @@
           </ol>
         </nav>
 
-        @if (coGiaSu()) {<div class="tutor-trigger"><button appButton variant="secondary" type="button" data-testid="mo-gia-su" [attr.aria-expanded]="giaSuMo()" (click)="giaSu()?.moGiaSu()">Cần gợi ý?</button></div>}
         @if (buocHien(); as s) {
           @if (nhap(); as n) {
             <h2 #tieuDe class="tieu-de" tabindex="-1">
@@ -272,7 +273,7 @@
         }
       </div>
     </section>
-    @if (coGiaSu()) { <app-gia-su [anNut]="true" (moChange)="giaSuMo.set($event)" [maBai]="b.maBai" [maBuoc]="buocHien()?.maBuoc ?? ''" [tenBuoc]="buocHien()?.ten ?? ''" /> }
-    </div>
   }
+    @if (coGiaSu()) { <app-gia-su [anNut]="true" (moChange)="giaSuMo.set($event)" (rongChange)="giaSuDesktop.set($event)" (rongGiaSu)="giaSuRong.set($event)" [maBai]="b.maBai" [maBuoc]="buocHien()?.maBuoc ?? ''" [tenBuoc]="buocHien()?.ten ?? ''" /> }
+    </div>
 }

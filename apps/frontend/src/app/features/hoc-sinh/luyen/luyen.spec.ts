@@ -42,6 +42,7 @@ const daDat = (maBuoc: string, dong = [{ dong: 0, latex: '\\mathbb{R}' }]) => ({
 });
 
 describe('Luyen', () => {
+  beforeEach(() => localStorage.clear());
   async function mo(bai: ChiTietBai | { loi: number }, choOn = true, mode = 'ON_TAP') {
     TestBed.configureTestingModule({
       providers: [
@@ -105,7 +106,7 @@ describe('Luyen', () => {
     const t = await mo(chiTiet({}, { cacBuoc: [] }), true, 'KIEM_TRA');
     expect(t.chu('[data-testid="bang-kiem-tra"]')).toContain('Đang kiểm tra — gia sư tạm tắt');
     expect(t.chu('[data-testid="bang-kiem-tra"]')).toContain('20/10');
-    expect(t.$('[data-testid="mo-gia-su"]')).toBeNull();
+    expect(t.$<HTMLButtonElement>('[data-testid="mo-gia-su"]')?.disabled).toBe(true);
   });
 
   it('bài đã nộp không mở gia sư khi chưa có thao tác làm lại', async () => {
@@ -117,9 +118,9 @@ describe('Luyen', () => {
     expect(t.$('[data-testid="mo-gia-su"]')).toBeNull();
   });
 
-  it('nút gợi ý nằm cạnh luồng bước và mở cột gia sư trên desktop', async () => {
+  it('nút gợi ý nằm trong đầu phiếu và mở cột gia sư trên desktop', async () => {
     const t = await mo(chiTiet());
-    expect(t.$('[data-testid="mo-gia-su"]')?.closest('.lam')).not.toBeNull();
+    expect(t.$('[data-testid="mo-gia-su"]')?.closest('.de')).not.toBeNull();
     await t.bam('[data-testid="mo-gia-su"]');
     expect(t.$('.practice-grid')?.classList).toContain('co-gia-su');
     expect(t.$('.tutor-panel')).not.toBeNull();
