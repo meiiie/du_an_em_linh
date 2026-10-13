@@ -15,6 +15,7 @@ export default defineConfig({
   outputDir: process.env['E2E_OUTPUT_DIR'] ?? 'test-results',
   webServer: backend || external ? undefined : {
     command: 'node e2e/serve-built.mjs',
+    timeout: 180_000,
     url: `http://127.0.0.1:${port}/dang-nhap`,
     reuseExistingServer: false,
   },

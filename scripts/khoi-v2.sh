@@ -25,88 +25,62 @@ asset_headers=$(curl -fsSI "$GOC/$asset")
 grep -qi '^cache-control: .*immutable' <<<"$asset_headers"
 dat "$asset cache dài"
 
-body=$(curl -fsS -X POST "$GOC/api/auth/login" -H 'Content-Type: application/json' \
-  -d '{"email":"hs.an@demo.local","password":"hocsinh123"}')
-token=$(sed -n 's/.*"accessToken":"\([^"]*\)".*/\1/p' <<<"$body")
-test -n "$token"
+# Runner seed chạy sau readiness; chờ lịch sử hoàn tất trước khi kiểm dữ liệu.
+COMPOSE=(docker compose -f "$(dirname "$0")/../compose.v2.yaml")
+psql_v2() { "${COMPOSE[@]}" exec -T db psql -U hoc_toan -d hoc_toan_core -tAc "$1"; }
+for _ in $(seq 1 90); do
+  log=$("${COMPOSE[@]}" logs --no-color core 2>&1 || true)
+  grep -q 'Lịch sử trường hư cấu: ' <<<"$log" && break
+  sleep 2
+done
+grep -q 'Lịch sử trường hư cấu: ' <<<"$log" || { echo "Seed Nguyễn Trãi chưa hoàn tất sau 180 s"; exit 1; }
+expected=$(python3 -c 'import json,sys; print(len(json.load(open(sys.argv[1]))))' "$(dirname "$0")/../data/dev/nguyen-trai/bai-tap.json")
+test "$(psql_v2 'select count(*) from problems')" = "$expected"
+test "$(psql_v2 "select string_agg(name, ',' order by name) from classes where name in ('10A1','11A2','12A3')")" = '10A1,11A2,12A3'
+for lop in 10A1 11A2 12A3; do
+  test "$(psql_v2 "select count(*) from assignments a join classes c on c.id=a.class_id where c.name='$lop' and a.status='DA_GIAO'")" -gt 0
+  test "$(psql_v2 "select count(*) from assignments a join classes c on c.id=a.class_id where c.name='$lop' and a.mode='KIEM_TRA'")" = 80
+done
+dat "Nguyễn Trãi: $expected bài, ba lớp 10A1/11A2/12A3 có giao bài và 8 bài kiểm tra mỗi học sinh"
+
+# Không in mật khẩu/token, kể cả khi gọi bash -x. Core ghi tệp 0600 bằng UID 1001.
+set +x
+password=$("${COMPOSE[@]}" exec -T core cat "${MATHL_DEV_SEED_PASSWORD_FILE:-/tmp/mathl-dev-seed-password}")
+test -n "$password"
+dang_nhap() {
+  local payload body
+  payload=$(printf '%s' "$password" | python3 -c 'import json,sys; print(json.dumps({"email":sys.argv[1],"password":sys.stdin.read()}))' "$1")
+  body=$(curl -fsS -X POST "$GOC/api/auth/login" -H 'Content-Type: application/json' --data-binary @- <<<"$payload")
+  python3 -c 'import json,sys; print(json.load(sys.stdin)["accessToken"])' <<<"$body"
+}
+token=$(dang_nhap nam.nguyen.hoai@thpt-nguyentrai.edu.vn)
+unset password
 me=$(curl -fsS "$GOC/api/me" -H "Authorization: Bearer $token")
 grep -q '"role":"STUDENT"' <<<"$me"
-dat "đăng nhập qua /api/ của frontend, /api/me trả đúng người"
+dat "đăng nhập học sinh Nguyễn Hoài Nam qua frontend"
 test "$(curl -s -o /dev/null -w '%{http_code}' "$GOC/api/me")" = 401
-dat "/api/me không token → 401"
 curl -fsS -o /dev/null "$MATH/health"
-dat "math /health"
+dat "/api/me không token → 401; math /health đạt"
 
-# Nội dung chủ đề: core (profile dev) nhập từ /app/noi-dung của ảnh khi khởi động (T012a, T003b). Importer chạy sau khi
-# liveness đã UP, nên chờ dòng log kết quả; nhập lỗi thì core vẫn chạy với CSDL rỗng, nên phải đỏ ở đây, không im lặng.
-COMPOSE=(docker compose -f "$(dirname "$0")/../compose.v2.yaml")
-for _ in $(seq 1 90); do
-  log=$("${COMPOSE[@]}" logs --no-color core 2>&1 || true)
-  grep -q 'Nhập nội dung chung' <<<"$log" && break
-  sleep 2
-done
-if grep -q 'Nhập nội dung chung không xong' <<<"$log" || ! grep -q 'Nhập nội dung chung: ' <<<"$log"; then
-  grep 'Nhập nội dung chung' <<<"$log" || echo "core chưa ghi dòng kết quả nhập nội dung sau 180 s"
-  exit 1
-fi
-bai=$("${COMPOSE[@]}" exec -T db psql -U hoc_toan -d hoc_toan_core -tAc 'select count(*) from problems')
-test "$bai" = 17 || { echo "core nhập $bai bài, cần 17 như v0"; exit 1; }
-dat "core nhập nội dung chung từ ảnh: 17 bài như v0"
+ds=$(curl -fsS "$GOC/api/hs/bai" -H "Authorization: Bearer $token")
+python3 -c 'import json,sys; rows=json.load(sys.stdin); assert len(rows)==25; assert all(r["tenKyNang"] for r in rows)' <<<"$ds"
+modes=$(curl -fsS "$GOC/api/hs/che-do" -H "Authorization: Bearer $token")
+test_code=$(python3 -c 'import json,sys; rows=json.load(sys.stdin); tests=[r for r in rows if r["status"]=="KIEM_TRA"]; assert len(tests)==8; print(tests[0]["id"])' <<<"$modes")
+dat "Nam thấy 25 bài giao; endpoint chế độ trả 8 bài kiểm tra"
 
-# Nội dung theo lớp (T012b): lớp «12A1 thử» của profile dev có 5 tài liệu, bảng 6 dòng đã khóa qua kiem-dong-cong-thuc,
-# và trạng thái phát hành đúng tệp vàng của v0 (specs/001-lat-cat-doc/doi-chieu/v0-bai.json: 14 / 2 / 1).
-for _ in $(seq 1 90); do
-  log=$("${COMPOSE[@]}" logs --no-color core 2>&1 || true)
-  grep -q 'Nhập nội dung cho lớp' <<<"$log" && break
-  sleep 2
-done
-if ! grep -q 'Nhập nội dung cho lớp .*phát hành' <<<"$log"; then
-  grep 'Nhập nội dung cho lớp' <<<"$log" || echo "core chưa ghi dòng kết quả nhập theo lớp sau 180 s"
-  exit 1
-fi
-psql_v2() { "${COMPOSE[@]}" exec -T db psql -U hoc_toan -d hoc_toan_core -tAc "$1"; }
-LOP="(select id from classes where name = '12A1 thử')"
-test "$(psql_v2 "select count(*) from documents where class_id = $LOP")" = 5
-test "$(psql_v2 "select count(*) from formula_sheets where class_id = $LOP and status = 'KHOA'")" = 1
-phat_hanh=$(psql_v2 "select string_agg(status || '=' || n, ',' order by status) from (select status, count(*) n from problem_releases where class_id = $LOP group by status) s")
-test "$phat_hanh" = "BI_CHAN=1,CHO_GIAO_VIEN_DUYET=2,DA_PHAT_HANH=14" || { echo "phát hành của lớp: $phat_hanh"; exit 1; }
-dat "lớp «12A1 thử»: 5 tài liệu, bảng đã khóa, phát hành 14 / 2 / 1 như v0"
+# Gia sư phải chặn bài kiểm tra; bài ôn đáp lại bằng luồng SSE offline.
+request() { printf '{"maBai":"%s","maBuoc":"B.DH.TXD","cap":1,"cauHoi":"Em cần gợi ý bước đầu"}' "$1"; }
+status=$(curl -sS -o /dev/null -w '%{http_code}' -X POST "$GOC/api/hs/gia-su" \
+  -H "Authorization: Bearer $token" -H 'Content-Type: application/json' -d "$(request "$test_code")")
+test "$status" = 403
+on_tap=$(python3 -c 'import json,sys; print(next(r["id"] for r in json.load(sys.stdin) if r["status"]=="ON_TAP" and r["id"].startswith("NT-LUYEN12-")))' <<<"$modes")
+tutor=$(curl -fsS --max-time 30 -X POST "$GOC/api/hs/gia-su" \
+  -H "Authorization: Bearer $token" -H 'Content-Type: application/json' -d "$(request "$on_tap")")
+grep -Eq '^event:(xong|loi)' <<<"$tutor"
+dat "gia sư ôn tập trả SSE; gia sư kiểm tra bị chặn 403"
 
-# Giao bài thử (T021): du-lieu-thu/giao-bai.sql chạy sau nhập theo lớp, giao 14 bài đang phát hành cho An, Bình, Chi.
-for _ in $(seq 1 30); do
-  log=$("${COMPOSE[@]}" logs --no-color core 2>&1 || true)
-  grep -q 'Giao bài thử: ' <<<"$log" && break
-  sleep 2
-done
-grep -q 'Giao bài thử: ' <<<"$log" || { echo "core chưa ghi dòng giao bài thử sau 60 s"; exit 1; }
-giao=$(psql_v2 "select count(*) from assignments where class_id = $LOP and status = 'DA_GIAO'")
-test "$giao" = 42 || { echo "lớp có $giao lượt giao, cần 42 (14 bài x 3 học sinh)"; exit 1; }
-dat "giao bài thử bằng SQL: 42 lượt giao"
-
-dang_nhap() {
-  local body
-  body=$(curl -fsS -X POST "$GOC/api/auth/login" -H 'Content-Type: application/json' -d "{\"email\":\"$1\",\"password\":\"hocsinh123\"}")
-  sed -n 's/.*"accessToken":"\([^"]*\)".*/\1/p' <<<"$body"
-}
-an=$(dang_nhap hs.an@demo.local)
-ds=$(curl -fsS "$GOC/api/hs/bai" -H "Authorization: Bearer $an")
-so=$(grep -o '"maBai"' <<<"$ds" | wc -l)
-test "$so" -eq 14 || { echo "An thấy $so bài, cần 14"; exit 1; }
-grep -q '"tenKyNang":"' <<<"$ds"
-dat "An thấy 14 bài được giao qua /api/hs/bai"
-
-# Đường ghi qua dịch vụ toán thật, bằng Chi để danh sách của An giữ nguyên cho người thử giao diện. Gửi lại thì nhận lại
-# đúng lần chấm đã ghi, nên chạy khói lần hai vẫn đạt.
-chi=$(dang_nhap hs.chi@demo.local)
-de=$(curl -fsS "$GOC/api/hs/bai/DH12-NB-01" -H "Authorization: Bearer $chi")
-grep -q '"khaiBaoKetLuan":\["dong_bien","nghich_bien","cuc_dai","cuc_tieu"\]' <<<"$de"
-grep -q '"ten":"Tập xác định"' <<<"$de"
-buoc=$(curl -fsS -X POST "$GOC/api/hs/bai/DH12-NB-01/buoc" -H "Authorization: Bearer $chi" -H 'Content-Type: application/json' \
-  -d '{"maBuoc":"B.DH.TXD","dong":[{"dong":0,"latex":"\\mathbb{R}"}]}')
-grep -q '"ketQua":"DAT"' <<<"$buoc" || { echo "nộp bước TXD: $buoc"; exit 1; }
-grep -q '"buocKe":"B.DH.DAOHAM"' <<<"$buoc"
-ds_chi=$(curl -fsS "$GOC/api/hs/bai" -H "Authorization: Bearer $chi")
-test "$(grep -o '"trangThai":"DANG_LAM","soBuocDat":1,"soBuoc":5' <<<"$ds_chi" | wc -l)" -eq 1 || { echo "danh sách của Chi: $ds_chi"; exit 1; }
-test "$(curl -s -o /dev/null -w '%{http_code}' "$GOC/api/hs/bai/DH12-01-TH-01" -H "Authorization: Bearer $chi")" = 404
-dat "Chi xem đề, nộp bước TXD qua dịch vụ toán thật (DAT), danh sách đổi sang đang làm; bài chờ duyệt 404"
+csv=$(curl -fsS "$GOC/api/hs/flashcards/export.csv" -H "Authorization: Bearer $token")
+grep -q 'thuật ngữ,định nghĩa' <<<"$csv"
+test "$(wc -l <<<"$csv")" -gt 1
+dat "flashcard CSV có tiêu đề và công thức"
 echo "khói v2: đạt"

@@ -4,7 +4,7 @@
 
 ## Bật seed
 
-Chạy PostgreSQL và `services/math`, rồi khởi động core từ `services/core` với profile `dev`. Cấp mật khẩu qua biến môi trường **`MATHL_DEV_SEED_PASSWORD`** từ môi trường chạy của bạn. Không ghi giá trị vào repo, tệp cấu hình hay log.
+Chạy PostgreSQL và `services/math`, rồi khởi động core từ `services/core` với profile `dev`. Có thể cấp mật khẩu qua biến môi trường **`MATHL_DEV_SEED_PASSWORD`** từ môi trường chạy của bạn; nếu thiếu hoặc chỉ có khoảng trắng, core tự sinh mật khẩu ngẫu nhiên. Không ghi giá trị vào repo, tệp cấu hình hay log.
 
 ```bash
 pnpm dev:math
@@ -13,9 +13,11 @@ cd services/core
 JAVA_HOME=$HOME/.local/jdk/jdk-25.0.4.1+1 ./mvnw spring-boot:run -Dspring-boot.run.profiles=dev
 ```
 
-`application-dev.yaml` bật `app.content.import-on-startup` và đọc `../../data`. Container core đóng gói cả `data/dev`, dùng `APP_CONTENT_SOURCE=/app/noi-dung`. Nếu muốn tắt nhập nội dung lúc khởi động, đặt `APP_CONTENT_IMPORT_ON_STARTUP=false`.
+`application-dev.yaml` bật `app.content.import-on-startup` và đọc `../../data`. Compose gắn `./data/dev` chỉ đọc vào `/app/noi-dung/dev`; image production không chứa seed hư cấu. Container dùng `APP_CONTENT_SOURCE=/app/noi-dung`. Nếu muốn tắt nhập nội dung lúc khởi động, đặt `APP_CONTENT_IMPORT_ON_STARTUP=false`.
 
-Thiếu biến hoặc giá trị chỉ có khoảng trắng: bỏ qua tạo tài khoản, chỉ cảnh báo tên biến. Seed không đổi mật khẩu hoặc nâng quyền của tài khoản đã có. Nếu các tài khoản tổng hợp từ lần chạy trước còn tồn tại, seed có thể bổ sung phần dữ liệu thiếu của các lớp đó.
+Core lưu mật khẩu (tự sinh hoặc được cấp) trong `/tmp/mathl-dev-seed-password`, quyền `0600`, không ghi vào log. Đổi đường dẫn bằng `MATHL_DEV_SEED_PASSWORD_FILE`; thư mục cha phải tồn tại và UID chạy core (1001 trong container) phải ghi được. Không gắn tệp này ra host. Khi không cấp mật khẩu, chạy lại dùng tệp đã có. Tệp mất khi tạo lại container; với CSDL đã có tài khoản, hãy cấp lại mật khẩu đã dùng từ môi trường chạy vì seed không đổi mật khẩu tài khoản cũ. Script `bash scripts/khoi-v2.sh` đọc tệp qua `docker compose exec -T core`, không in bí mật, đăng nhập Nguyễn Hoài Nam (`nam.nguyen.hoai@thpt-nguyentrai.edu.vn`, lớp 12A3).
+
+Thiếu hoặc không đọc được `data/dev`: các runner nội dung, giao bài và lịch sử cảnh báo rồi bỏ qua, core vẫn khởi động; script khói báo lỗi nếu seed không hoàn tất. Seed không đổi mật khẩu hoặc nâng quyền của tài khoản đã có. Nếu các tài khoản tổng hợp từ lần chạy trước còn tồn tại, seed có thể bổ sung phần dữ liệu thiếu của các lớp đó.
 
 Mọi runner mới đều có `@Profile("dev")`. Runner nhập snapshot v0 lúc khởi động đã được thay bằng runner trường hư cấu; importer v0 và snapshot vẫn còn để đối chiếu. Profile production không tự nạp ngân hàng này, kể cả khi bật thuộc tính nhập lúc khởi động. Không sửa migration V1–V12; không có migration seed mới.
 
@@ -23,7 +25,7 @@ Mọi runner mới đều có `@Profile("dev")`. Runner nhập snapshot v0 lúc 
 
 Nguồn ở `data/dev/nguyen-trai/`, dùng các trường của importer hiện có: mã bài, kỹ năng, 4 mức, Bloom, đề, lời giải cấu trúc và sự kiện bảo vệ. `loi_giai` chứa lời giải tự soạn bằng tiếng Việt; `kiem_dinh` chứa dữ kiện để pytest kiểm độc lập. Công thức và tài liệu thuộc nguồn tự soạn của tổ Toán hư cấu, không chép bài SGK.
 
-Có **68 bài, 13 chủ đề**, mỗi chủ đề đủ bốn mức. Khối 10 có hàm số bậc hai, mệnh đề/tập hợp, thống kê và xác suất cơ bản; khối 11 có lượng giác, dãy số/cấp số, đạo hàm, hình học không gian và xác suất; khối 12 có đơn điệu/cực trị, tích phân, hình học không gian/Oxyz và xác suất có điều kiện. Danh mục `ky-nang.json` có 29 kỹ năng cụ thể (ví dụ cực trị hàm bậc ba, cấp số cộng, thể tích khối chóp). Mỗi bài gắn mã kỹ năng thật; ngân hàng và bài giao chỉ thuộc đúng khối lớp. Importer chỉ kiểm/phát hành ngân hàng của khối đó.
+Có **74 bài**: 68 bài gốc thuộc **13 chủ đề**, cộng 6 bài luyện hiện tại `NT-LUYEN` (2 bài mỗi khối, không sinh lịch sử, gia sư mở trong chế độ ôn tập). Các chủ đề gốc đủ bốn mức. Khối 10 có hàm số bậc hai, mệnh đề/tập hợp, thống kê và xác suất cơ bản; khối 11 có lượng giác, dãy số/cấp số, đạo hàm, hình học không gian và xác suất; khối 12 có đơn điệu/cực trị, tích phân, hình học không gian/Oxyz và xác suất có điều kiện. Danh mục `ky-nang.json` có 29 kỹ năng cụ thể (ví dụ cực trị hàm bậc ba, cấp số cộng, thể tích khối chóp). Mỗi bài gắn mã kỹ năng thật; ngân hàng và bài giao chỉ thuộc đúng khối lớp. Importer chỉ kiểm/phát hành ngân hàng của khối đó.
 
 `de_bai.latex` là preview LaTeX ngắn của từng bài, sinh bằng `sympy.latex` khi có biểu thức; hình học/xác suất dùng câu tiếng Việt trong `\text{...}` kèm số liệu, không dùng tên khóa máy như `good`, `g1` hoặc mảng tọa độ; `ham_so_sympy` và `kiem_dinh.du_kien` giữ dạng máy. Đề nhúng toán trong `$...$`. Pytest kiểm đáp án từng bài và đối chiếu bản hiển thị với SymPy, không cần cài `parse_latex`/ANTLR.
 
@@ -31,7 +33,7 @@ CAS hiện có chấm khung đạo hàm 5 bước. **8 bài hàm số** phát h�
 
 Bảng đạo hàm gồm 6 dòng khóa sau kiểm hai tầng có trích dẫn. Bảng bổ sung 12 dòng giữ `NHAP`. Gia sư giữ `offline`, tắt mở lời giải sau nộp. Các dạng ngoài khung đạo hàm chưa được chấm tự động khi học sinh làm bài mới.
 
-Mục tiêu trên CSDL mới khi CAS hoạt động đầy đủ (số lượng CSDL chưa được kiểm trong sandbox):
+Mục tiêu cho 68 bài gốc trên CSDL mới khi CAS hoạt động đầy đủ (số lượng CSDL chưa được kiểm trong sandbox). Sáu bài luyện hiện tại bổ sung 60 lượt giao; script khói đối chiếu tổng ngân hàng với tệp seed thực tế, học sinh lớp 12 thấy 25 bài (23 bài gốc + 2 bài luyện):
 
 | Dữ liệu | Số lượng |
 | --- | ---: |
@@ -139,7 +141,7 @@ Chạy lại giữ id, mật khẩu, hạn, mode, bài đã nộp, lịch hoàn 
 
 Test tích hợp dùng schema `seed_test_<uuid>` riêng do Flyway tạo, kiểm các số lượng trên, snapshot trước/sau chạy lại, và guard khi một thành viên thôi là tài khoản tổng hợp. Test dọn schema đó sau khi chạy. Không sửa dữ liệu schema hiện hành.
 
-Các kiểm tra unit bao phủ thiếu mật khẩu, trùng tài khoản, đủ roster, profile production và nhập lại ngân hàng. Pytest kiểm từng phép biến đổi, đáp án từ dữ kiện gốc, mẫu bài làm lịch sử, cổng khóa bảng và cổng phát hành thực tế.
+Các kiểm tra unit bao phủ sinh/lưu mật khẩu ngẫu nhiên, quyền tệp và dùng lại mật khẩu, trùng tài khoản, đủ roster, profile production và nhập lại ngân hàng. Pytest kiểm từng phép biến đổi, đáp án từ dữ kiện gốc, mẫu bài làm lịch sử, cổng khóa bảng và cổng phát hành thực tế.
 
 ### Bằng chứng phiên SEED2, 2026-10-13
 

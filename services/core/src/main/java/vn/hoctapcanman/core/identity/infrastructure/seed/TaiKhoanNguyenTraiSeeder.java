@@ -1,5 +1,13 @@
 package vn.hoctapcanman.core.identity.infrastructure.seed;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.LinkOption;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
+import java.nio.file.attribute.PosixFilePermissions;
+import java.security.SecureRandom;
+import java.util.Base64;
 import java.time.Clock;
 import java.time.Instant;
 import org.slf4j.Logger;
@@ -40,9 +48,11 @@ public class TaiKhoanNguyenTraiSeeder implements ApplicationRunner {
     @Override
     @Transactional
     public void run(ApplicationArguments args) {
-        String password = environment.getProperty("MATHL_DEV_SEED_PASSWORD");
-        if (password == null || password.isBlank()) {
-            LOG.warn("Bỏ qua tạo tài khoản trường hư cấu: chưa đặt MATHL_DEV_SEED_PASSWORD.");
+        String password;
+        try {
+            password = seedPassword();
+        } catch (IOException e) {
+            LOG.warn("Bỏ qua tạo tài khoản trường hư cấu: không lưu được tệp mật khẩu riêng tư.");
             return;
         }
         Instant now = clock.instant();
@@ -52,5 +62,29 @@ public class TaiKhoanNguyenTraiSeeder implements ApplicationRunner {
                 users.save(User.create(email, hasher.hash(password), tk.ten(), Role.valueOf(tk.vaiTro()), true, now));
             }
         }
+    }
+
+    private String seedPassword() throws IOException {
+        Path file = Path.of(environment.getProperty("MATHL_DEV_SEED_PASSWORD_FILE", "/tmp/mathl-dev-seed-password"));
+        var permissions = PosixFilePermissions.fromString("rw-------");
+        boolean exists = Files.exists(file, LinkOption.NOFOLLOW_LINKS);
+        if (exists && (!Files.isRegularFile(file, LinkOption.NOFOLLOW_LINKS)
+                || !Files.isWritable(file))) {
+            throw new IOException("Tệp mật khẩu không thuộc người chạy core.");
+        }
+        String password = environment.getProperty("MATHL_DEV_SEED_PASSWORD");
+        if (exists) Files.setPosixFilePermissions(file, permissions);
+        if (password == null || password.isBlank()) {
+            password = exists ? Files.readString(file) : "";
+            if (password.isBlank()) {
+                byte[] random = new byte[32];
+                new SecureRandom().nextBytes(random);
+                password = Base64.getUrlEncoder().withoutPadding().encodeToString(random);
+            }
+        }
+        if (!exists) Files.createFile(file, PosixFilePermissions.asFileAttribute(permissions));
+        Files.writeString(file, password, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING,
+                LinkOption.NOFOLLOW_LINKS);
+        return password;
     }
 }

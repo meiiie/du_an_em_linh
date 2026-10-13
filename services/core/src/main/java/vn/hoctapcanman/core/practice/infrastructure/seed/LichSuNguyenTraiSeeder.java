@@ -53,7 +53,13 @@ public class LichSuNguyenTraiSeeder implements ApplicationRunner {
     public void run(ApplicationArguments args) {
         List<String> classes = TruongNguyenTrai.LOP.stream().filter(ten -> LopSeedAnToan.kiem(db, ten)).toList();
         if (classes.isEmpty()) return;
-        List<Map<String, Object>> fixtures = fixtures();
+        List<Map<String, Object>> fixtures;
+        try {
+            fixtures = fixtures();
+        } catch (UncheckedIOException e) {
+            LOG.warn("Bỏ qua lịch sử trường hư cấu: thiếu hoặc không đọc được data/dev.");
+            return;
+        }
         Map<String, Map<String, @Nullable Object>> grades = new HashMap<>();
         int count = 0;
         for (String ten : classes) {

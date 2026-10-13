@@ -1,7 +1,6 @@
 package vn.hoctapcanman.core.practice.infrastructure.seed;
 
 import java.io.IOException;
-import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -53,7 +52,8 @@ public class GiaoBaiNguyenTraiSeeder implements ApplicationRunner {
             sql = new ClassPathResource(TEP).getContentAsString(StandardCharsets.UTF_8);
             testCodes = testCodes(Files.readString(source.resolve("dev/nguyen-trai/bai-tap.json")));
         } catch (IOException e) {
-            throw new UncheckedIOException("Không đọc được " + TEP, e);
+            LOG.warn("Bỏ qua giao bài trường hư cấu: thiếu hoặc không đọc được data/dev hoặc SQL seed.");
+            return;
         }
         int moi = 0;
         for (String ten : TruongNguyenTrai.LOP) {

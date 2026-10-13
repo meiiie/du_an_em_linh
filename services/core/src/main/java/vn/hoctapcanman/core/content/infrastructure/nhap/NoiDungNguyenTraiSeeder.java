@@ -32,7 +32,13 @@ public class NoiDungNguyenTraiSeeder implements ApplicationRunner {
     public void run(ApplicationArguments args) {
         var lop = TruongNguyenTrai.LOP.stream().filter(ten -> LopSeedAnToan.kiem(jdbc, ten)).toList();
         if (lop.isEmpty()) return;
-        NhapNoiDungChung.DaNhap noiDung = chung.nhapTruong();
+        NhapNoiDungChung.DaNhap noiDung;
+        try {
+            noiDung = chung.nhapTruong();
+        } catch (java.io.UncheckedIOException e) {
+            LOG.warn("Bỏ qua nội dung trường hư cấu: thiếu hoặc không đọc được data/dev.");
+            return;
+        }
         for (String ten : lop) {
             UUID id = TruongNguyenTrai.id("lop:" + ten);
             try {
