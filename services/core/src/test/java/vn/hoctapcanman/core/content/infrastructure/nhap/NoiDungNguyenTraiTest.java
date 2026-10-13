@@ -18,6 +18,29 @@ import vn.hoctapcanman.core.content.domain.model.Solution;
 import vn.hoctapcanman.core.content.domain.repository.*;
 
 class NoiDungNguyenTraiTest {
+    @org.junit.jupiter.api.io.TempDir Path temp;
+
+    @Test void thieuDataDevThiCacRunnerBoQuaKhongLamSapCore() {
+        var jdbc = mock(org.springframework.jdbc.core.simple.JdbcClient.class);
+        var chung = mock(NhapNoiDungChung.class);
+        var theoLop = mock(NhapTheoLop.class);
+        var math = mock(vn.hoctapcanman.core.shared.infrastructure.math.MathServiceClient.class);
+        var manager = mock(PlatformTransactionManager.class);
+        when(chung.nhapTruong()).thenThrow(new java.io.UncheckedIOException(
+            new java.nio.file.NoSuchFileException("dev/nguyen-trai/bai-tap.json")));
+        try (var guard = mockStatic(vn.hoctapcanman.core.shared.infrastructure.seed.LopSeedAnToan.class)) {
+            guard.when(() -> vn.hoctapcanman.core.shared.infrastructure.seed.LopSeedAnToan.kiem(any(), anyString()))
+                .thenReturn(true);
+            new NoiDungNguyenTraiSeeder(chung, theoLop, jdbc).run(new org.springframework.boot.DefaultApplicationArguments());
+            new vn.hoctapcanman.core.practice.infrastructure.seed.GiaoBaiNguyenTraiSeeder(jdbc, temp.toString())
+                .run(new org.springframework.boot.DefaultApplicationArguments());
+            new vn.hoctapcanman.core.practice.infrastructure.seed.LichSuNguyenTraiSeeder(
+                jdbc, math, manager, Clock.systemUTC(), temp.toString())
+                .run(new org.springframework.boot.DefaultApplicationArguments());
+        }
+        verifyNoInteractions(jdbc, theoLop, math, manager);
+    }
+
     @Test void nguonTruongKhongDungMaySinhVaGhiLoiGiaiDayDuMotLan() {
         var problems=mock(ProblemRepository.class);var solutions=mock(SolutionRepository.class);
         var catalog=mock(TopicCatalogRepository.class);var hints=mock(HintLevelRepository.class);

@@ -43,6 +43,8 @@ DTO dùng chung `Item`: `{id:string,title:string,subtitle:string,status:string,d
 
 API có sẵn giữ nguyên: GET /api/hs/trang-hoc → `{ten,soKyNang:[{kyNang,tenKyNang,muc4,ket}],hoanThanh:{kyNang,chuDe}}`; GET /api/hs/bai, GET /api/hs/bai/{ma}, POST /buoc, POST /nop.
 
+Danh sách `GET /api/hs/bai` bổ sung `tenBo: string | null` từ `assignments.set_name`, để gom bài theo bộ đã giao; trường luôn có mặt, `null` khi giao cũ không có tên. Các trường còn lại giữ hợp đồng spec 001. Hết hạn khi ghi bước/nộp trả 403 problem+json với `lyDo: "HET_HAN"` (spec 002 U4, ADR 017); đọc bài làm đã lưu vẫn được.
+
 ## Ràng buộc nghiệm thu bổ sung của epic 002
 
 - Mọi yêu cầu tutor và ghi bước/nộp đọc giao đang hiệu lực từ server. `KIEM_TRA` trả 403 trước mở SSE/truy hồi/nhà AI, kể cả mode giả, tab cũ và `dueAt=null`; không có giao hợp lệ thì từ chối. Gia sư kiểm lại quyền ngay trước khi phát câu. Đây là yêu cầu policy theo ADR 017, cần integration test trước khi công bố đạt.

@@ -140,7 +140,7 @@ public class NhapTheoLop {
         FormulaSheet bang = khoaBang(lop, kho, truong);
         int daKiem = 0;
         for (NhapNoiDungChung.BaiNhap b : bai) {
-            if (kiemBai(lop, b, kho, bang)) {
+            if (kiemBai(lop, b, kho, bang, truong)) {
                 daKiem++;
             }
         }
@@ -402,7 +402,7 @@ public class NhapTheoLop {
     // ---- Kiểm và phát hành từng bài -------------------------------------------------------------------------------
 
     /** Kiểm một bài cho lớp nếu chưa có lượt còn mới; luôn bảo đảm phát hành theo lượt mới nhất. Trả true nếu đã kiểm. */
-    private boolean kiemBai(UUID lop, NhapNoiDungChung.BaiNhap b, Map<String, TaiLieuLop> kho, FormulaSheet bang) {
+    private boolean kiemBai(UUID lop, NhapNoiDungChung.BaiNhap b, Map<String, TaiLieuLop> kho, FormulaSheet bang, boolean truong) {
         Problem p = problems.findByCode(b.ma()).orElseThrow(() -> new IllegalStateException("Chưa có bài " + b.ma()));
         int phienBan = problems.findContentVersion(p.id()).orElseThrow();
         Optional<VerificationRun> moiNhat = runs.findLatest(lop, SubjectKind.PROBLEM, p.id());
@@ -421,7 +421,8 @@ public class NhapTheoLop {
 
         Map<String, @Nullable Object> yeuCau = new LinkedHashMap<>();
         yeuCau.put("ham", b.ham());
-        yeuCau.put("bai_lam", Problem.TU_LUAN_5_BUOC.equals(b.dangTraLoi()) ? b.baiLam() : null);
+        // v0 gửi nguyên bài làm ở mọi dạng câu; chỉ nguồn trường mới có lời giải ngoài schema năm bước.
+        yeuCau.put("bai_lam", truong && !Problem.TU_LUAN_5_BUOC.equals(b.dangTraLoi()) ? null : b.baiLam());
         yeuCau.put("thang_goi_y", b.thangGoiY());
         if (b.buocBatDau() != null) {
             yeuCau.put("buoc_bat_dau", b.buocBatDau());

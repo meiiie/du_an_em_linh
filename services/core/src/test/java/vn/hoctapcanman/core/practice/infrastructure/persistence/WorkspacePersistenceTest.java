@@ -162,6 +162,6 @@ class WorkspacePersistenceTest {
         store.assign(teacher, new Assign(cl, List.of(student), List.of(problem), "ON_TAP", now.minusSeconds(3600), "Đã hết hạn"), List.of(student), now);
         assertThatThrownBy(() -> db.sql("INSERT INTO submissions(id,class_id,student_id,problem_id,content_version,status,started_at) VALUES(:id,:cl,:student,:problem,1,'DANG_LAM',now())")
             .param("id", UUID.randomUUID()).param("cl", cl).param("student", student).param("problem", problem).update())
-            .isInstanceOf(DataIntegrityViolationException.class);
+            .isInstanceOf(org.springframework.dao.DataAccessException.class).hasMessageContaining("hết hạn nộp");
     }
 }

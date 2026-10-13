@@ -10,12 +10,14 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.web.servlet.assertj.MockMvcTester;
+import org.springframework.transaction.annotation.Transactional;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import vn.hoctapcanman.core.TestcontainersConfiguration;
 import vn.hoctapcanman.core.identity.application.port.AccessTokenIssuer;
 import vn.hoctapcanman.core.identity.domain.model.Email;
 import vn.hoctapcanman.core.identity.domain.model.Role;
 import vn.hoctapcanman.core.identity.domain.model.User;
+import vn.hoctapcanman.core.identity.domain.repository.UserRepository;
 
 /**
  * Vai trò tài khoản theo đường dẫn (#111): cổng {@code ClassMembership} chỉ xét vai trò trong lớp, nên tầng web chặn
@@ -26,7 +28,12 @@ import vn.hoctapcanman.core.identity.domain.model.User;
 @AutoConfigureMockMvc
 @Import(TestcontainersConfiguration.class)
 @Testcontainers(disabledWithoutDocker = true)
+@Transactional
 class PhanQuyenDuongDanTest {
+
+    // Các route /lop và /lich đã có handler trong spec 002; dùng route không có để chỉ kiểm tầng quyền.
+    private static final String API_GV = "/api/gv/kiem-quyen-khong-co";
+    private static final String API_HS = "/api/hs/kiem-quyen-khong-co";
 
     @Autowired
     private MockMvcTester mvc;
@@ -34,36 +41,65 @@ class PhanQuyenDuongDanTest {
     @Autowired
     private AccessTokenIssuer tokens;
 
+    @Autowired
+    private UserRepository users;
+
     private String bearer(Role role) {
         Instant now = Instant.now();
         String email = "thu." + role.name().toLowerCase(Locale.ROOT).replace('_', '-') + "@demo.local";
         User user = User.create(new Email(email), "khong-dung", "Tài khoản thử", role, true, now);
+        users.save(user); // JWT phải thuộc tài khoản đang hoạt động (FR-114), rollback sau mỗi test.
         return "Bearer " + tokens.issue(user, now).value();
     }
 
     @Test
     void hocSinhKhongVaoDuocApiGiaoVien() {
-        assertThat(mvc.get().uri("/api/gv/lop").header("Authorization", bearer(Role.STUDENT))).hasStatus(403);
+        assertThat(mvc.get().uri(API_GV).header("Authorization", bearer(Role.STUDENT))).hasStatus(403);
     }
 
     @Test
     void giaoVienVaQuanTriKhongVaoDuocApiHocSinh() {
         for (Role role : new Role[] {Role.TEACHER, Role.SCHOOL_ADMIN, Role.ADMIN}) {
-            assertThat(mvc.get().uri("/api/hs/lich").header("Authorization", bearer(role))).as(role.name()).hasStatus(403);
+            assertThat(mvc.get().uri(API_HS).header("Authorization", bearer(role))).as(role.name()).hasStatus(403);
         }
     }
 
     @Test
     void dungVaiTroThiQuaLopQuyen() {
-        assertThat(mvc.get().uri("/api/hs/lich").header("Authorization", bearer(Role.STUDENT))).hasStatus(404);
+        assertThat(mvc.get().uri(API_HS).header("Authorization", bearer(Role.STUDENT))).hasStatus(404);
         for (Role role : new Role[] {Role.TEACHER, Role.SCHOOL_ADMIN, Role.ADMIN}) {
-            assertThat(mvc.get().uri("/api/gv/lop").header("Authorization", bearer(role))).as(role.name()).hasStatus(404);
+            assertThat(mvc.get().uri(API_GV).header("Authorization", bearer(role))).as(role.name()).hasStatus(404);
         }
     }
 
     @Test
     void chuaDangNhapThi401() {
-        assertThat(mvc.get().uri("/api/gv/lop")).hasStatus(401);
-        assertThat(mvc.get().uri("/api/hs/lich")).hasStatus(401);
+        assertThat(mvc.get().uri(API_GV)).hasStatus(401);
+        assertThat(mvc.get().uri(API_HS)).hasStatus(401);
+    }
+
+    @Test
+    void tokenCuaTaiKhoanKhongTonTaiThi401() {
+        Instant now = Instant.now();
+        User user = User.create(new Email("khong-co@demo.local"), "khong-dung", "Tài khoản thử", Role.STUDENT, true, now);
+        assertThat(mvc.get().uri(API_HS).header("Authorization", "Bearer " + tokens.issue(user, now).value())).hasStatus(401);
+    }
+
+    @Test
+    void khoaTaiKhoanThiTokenDaPhatKhongConHopLe() {
+        String token = bearer(Role.STUDENT);
+        User user = users.findByEmail(new Email("thu.student@demo.local")).orElseThrow();
+        users.save(new User(user.id(), user.email(), user.passwordHash(), user.displayName(), user.role(), false,
+            user.synthetic(), user.createdAt(), Instant.now()));
+        assertThat(mvc.get().uri(API_HS).header("Authorization", token)).hasStatus(401);
+    }
+
+    @Test
+    void doiVaiTroThiTokenVaiTroCuKhongConHopLe() {
+        String token = bearer(Role.STUDENT);
+        User user = users.findByEmail(new Email("thu.student@demo.local")).orElseThrow();
+        users.save(new User(user.id(), user.email(), user.passwordHash(), user.displayName(), Role.TEACHER, user.enabled(),
+            user.synthetic(), user.createdAt(), Instant.now()));
+        assertThat(mvc.get().uri(API_HS).header("Authorization", token)).hasStatus(401);
     }
 }
