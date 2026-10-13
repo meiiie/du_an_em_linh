@@ -78,8 +78,18 @@ describe('TrangHocSinh', () => {
     expect(t.chu('.ke-tiep .cau-hoi')).toBe('Tìm các khoảng đồng biến, nghịch biến và cực trị của hàm số');
     expect(t.chu('.tien-do span')).toBe('3/5 bước · Vận dụng');
     expect(t.el.querySelector('[data-testid=lam-buoc-tiep]')!.getAttribute('href')).toBe('/hs/luyen/GEN-bac_ba-11');
-    expect([...t.el.querySelectorAll('.tt')].map((e) => e.textContent!.trim())).toEqual(['Đạt', 'Đang làm 3/5', 'Chưa làm']);
-    expect(t.chu('[data-testid="bai-DH12-03-NB-01"] .muc')).toMatch(/^Nhận biết · Hạn /);
+    expect([...t.el.querySelectorAll('.tt')].map((e) => e.textContent!.trim())).toEqual(['Chưa làm']);
+    expect(t.chu('.nhom-sap-toi .list-summary')).toBe('1/3 đạt');
+    expect(t.el.querySelector('.xem-tat-ca')?.getAttribute('href')).toBe('/hs/bai');
+  });
+
+  it('24 bài chỉ hiện tối đa 5 bài sắp tới, nhóm có tiến độ đầy đủ', async () => {
+    const t = await mo();
+    t.http.expectOne(API_HS.bai).flush(Array.from({length:24},(_,i)=>({...BAI[2],maBai:'b'+i})));
+    await t.fixture.whenStable();
+    expect(t.el.querySelectorAll('app-hang-bai')).toHaveLength(5);
+    expect(t.chu('.nhom-sap-toi .list-summary')).toBe('0/24 đạt');
+    expect(t.el.querySelector('[data-testid=bai-b0]')).toBeNull();
   });
 
   it('không có bài đang làm thì «Bài tiếp theo» là bài chưa làm đầu tiên; hết bài thì không có thẻ', async () => {
@@ -100,18 +110,18 @@ describe('TrangHocSinh', () => {
       ten: 'An',
       soKyNang: [
         { kyNang: 'T12.DH.05', tenKyNang: 'Tìm cực trị của hàm số', muc4: 'NHAN_BIET', ket: true },
-        { kyNang: 'T12.DH.03', tenKyNang: 'Tính đơn điệu của hàm số', muc4: 'VAN_DUNG', ket: false },
+        { kyNang: 'T12.DH.03', tenKyNang: 'Tính đơn điệu của hàm số', muc4: 'VAN_DUNG', ket: true },
       ],
       hoanThanh: { kyNang: [], chuDe: [] },
     });
     t.http.expectOne(API_HS.bai).flush(BAI);
     await t.fixture.whenStable();
     expect(t.chu('[data-testid="ky-nang-T12.DH.05"] .muc')).toBe('kẹt Nhận biết');
-    expect(t.chu('[data-testid="ky-nang-T12.DH.05"] .nhac')).toBe(
-      'Em sai liên tiếp ở kỹ năng này. Thầy cô đã nhận được báo; em xem lại bảng công thức rồi làm lại nhé.',
+    expect(t.chu('[data-testid=so-ky-nang] .nhac')).toBe(
+      'Kỹ năng đang kẹt: em xem lại công thức hoặc hỏi gia sư để luyện tiếp.',
     );
     expect(t.el.querySelectorAll('[data-testid="ky-nang-T12.DH.03"] .bac i.dat').length).toBe(3);
-    expect(t.el.querySelector('[data-testid="ky-nang-T12.DH.03"] .nhac')).toBeNull();
+    expect(t.el.querySelectorAll('[data-testid=so-ky-nang] .nhac')).toHaveLength(1);
   });
 
   it('chưa có kỹ năng nào: nói em làm một bài để hiện kỹ năng', async () => {
@@ -126,7 +136,7 @@ describe('TrangHocSinh', () => {
     t.http.expectOne(API_HS.bai).flush(BAI);
     await t.fixture.whenStable();
     expect(t.el.querySelector('[data-testid=so-ky-nang]')).toBeNull();
-    expect(t.el.querySelectorAll('app-hang-bai').length).toBe(3);
+    expect(t.el.querySelectorAll('app-hang-bai').length).toBe(1);
   });
 
   it('danh sách rỗng: nói rõ đang chờ thầy cô giao bài', async () => {
@@ -145,6 +155,6 @@ describe('TrangHocSinh', () => {
     TestBed.tick();
     t.http.expectOne(API_HS.bai).flush(BAI);
     await t.fixture.whenStable();
-    expect(t.el.querySelectorAll('app-hang-bai').length).toBe(3);
+    expect(t.el.querySelectorAll('app-hang-bai').length).toBe(1);
   });
 });

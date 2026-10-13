@@ -1,3 +1,4 @@
+import { KichThuocTrang } from '../../shared/ui/kich-thuoc-trang';
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
@@ -94,7 +95,43 @@ describe('Giao bài với ngân hàng và lớp đầy đủ', () => {
   });
 });
 
+describe('Danh sách giáo viên trên màn hẹp', () => {
+  for (const trang of ['ngan-hang','tien-do'] as const) {
+    it(trang + ': mỗi trang 10 mục và tìm kiếm đặt lại trang', async () => {
+      const lop={id:signal('lop1'),ds:signal([]),dangTai:signal(false),loi:signal(false),soChoDuyet:signal(0),tai:async()=>{}};
+      TestBed.configureTestingModule({providers:[provideHttpClient(),provideHttpClientTesting(),provideRouter([]),{provide:LopDangChon,useValue:lop}]});
+      TestBed.inject(KichThuocTrang).soMuc.set(10);
+      const f=TestBed.createComponent(PhongGiaoVien);f.componentRef.setInput('trang',trang);f.detectChanges();
+      const http=TestBed.inject(HttpTestingController);
+      http.expectOne('/api/gv/tien-do?lopId=lop1').flush(Array.from({length:21},(_,i)=>({id:'hs'+i,title:'Học sinh '+i,subtitle:'',status:'',details:{skills:[],submitted:0}})));
+      if(trang==='ngan-hang')http.expectOne('/api/gv/ngan-hang?lopId=lop1').flush(Array.from({length:21},(_,i)=>({id:'b'+i,title:'Bài '+i,subtitle:'',status:'DA_PHAT_HANH',details:{code:'CODE'+i,skillCode:'HS',level4:'NHAN_BIET',gate:'DAT',latex:'x'}})));
+      await f.whenStable();
+      const el=f.nativeElement as HTMLElement;
+      expect(el.querySelectorAll('tbody tr')).toHaveLength(10);
+      expect(el.querySelector('.pagination')?.textContent).toContain('Trang 1 / 3');
+      [...el.querySelectorAll<HTMLButtonElement>('button')].find(b=>b.textContent?.trim()==='Trang sau')!.click();await f.whenStable();
+      expect(el.querySelector('tbody tr')?.textContent).toContain(trang==='ngan-hang'?'Bài 10':'Học sinh 10');
+      const search=el.querySelector('[type=search]') as HTMLInputElement;search.value=trang==='ngan-hang'?'Bài 20':'Học sinh 20';search.dispatchEvent(new Event('input'));await f.whenStable();
+      expect(el.querySelectorAll('tbody tr')).toHaveLength(1);
+      http.verify();
+    });
+  }
+});
+
 describe('Tổng quan với hạn theo bài', () => {
+  it('chỉ hiển thị 5 bộ gần nhất và liên kết tới Giao bài', async () => {
+    const lop={id:signal('lop1'),ds:signal([]),dangTai:signal(false),loi:signal(false),soChoDuyet:signal(0),tai:async()=>{}};
+    TestBed.configureTestingModule({providers:[provideHttpClient(),provideHttpClientTesting(),provideRouter([]),{provide:LopDangChon,useValue:lop}]});
+    const f=TestBed.createComponent(PhongGiaoVien);f.detectChanges();const http=TestBed.inject(HttpTestingController);
+    http.expectOne('/api/gv/tong-quan?lopId=lop1').flush({students:1,stuck:0,pending:0,assignments:8,distribution:{},deadlines:[]});
+    http.expectOne('/api/gv/giao?lopId=lop1').flush(Array.from({length:8},(_,i)=>({id:String(i),title:'Ôn tập '+i,subtitle:'',status:'ON_TAP',details:{studentId:'s',problemCode:'CODE'+i,dueAt:'2026-10-'+(20+i)+'T13:00:00Z'}})).reverse());
+    http.expectOne('/api/gv/ngan-hang?lopId=lop1').flush([]);http.expectOne('/api/gv/tien-do?lopId=lop1').flush([{id:'s',title:'Học sinh',subtitle:'',status:'',details:{skills:[],submitted:0}}]);
+    await f.whenStable();const el=f.nativeElement as HTMLElement;
+    expect(el.querySelectorAll('.row-list li')).toHaveLength(5);
+    expect(el.querySelector('.row-list strong')?.textContent).toBe('Ôn tập 0');
+    expect([...el.querySelectorAll('a')].find(a=>a.textContent?.includes('Xem tất cả'))?.getAttribute('href')).toBe('/gv/giao');
+    http.verify();
+  });
   it('dùng giao bài đầy đủ, đếm người đã nộp và hiển thị tên thay mã', async () => {
     const lop={id:signal('lop1'),ds:signal([{id:'lop1',title:'12A1'}]),dangTai:signal(false),loi:signal(false),soChoDuyet:signal(0),tai:async()=>{}};
     TestBed.configureTestingModule({providers:[provideHttpClient(),provideHttpClientTesting(),provideRouter([]),{provide:LopDangChon,useValue:lop}]});
@@ -109,8 +146,8 @@ describe('Tổng quan với hạn theo bài', () => {
     await f.whenStable();
     const el=f.nativeElement as HTMLElement;
     expect(el.querySelectorAll('.row-list li')).toHaveLength(1);
-    expect(el.querySelector('.row-list strong')?.textContent).toBe('Xét tính đơn điệu');
-    expect(el.querySelector('.row-list')?.textContent).toContain('Thứ Ba, 20/10 · 1/2 học sinh đã nộp');
+    expect(el.querySelector('.row-list strong')?.textContent).toBe('Hàm số: đơn điệu và cực trị');
+    expect(el.querySelector('.row-list')?.textContent).toContain('Thứ Ba, 20/10 · 1/2 đã nộp');
     expect(el.querySelector('.distribution-legend')?.textContent).toContain('50%');
     http.expectNone('/api/gv/hoc-sinh/b?lopId=lop1');http.verify();
   });

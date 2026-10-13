@@ -156,7 +156,7 @@ describe('Luyen', () => {
     await t.bam('[data-testid=nop-bai]');
     t.http.expectOne(API_HS.nopBai(MA)).flush({ ketQua: 'SAI', mucHieu: [{ kyNang: 'T12.DH.03', muc4Truoc: 'VAN_DUNG', muc4Sau: 'THONG_HIEU' }] });
     await t.xong();
-    expect(t.chu('[data-testid=da-nop] h2')).toBe('Đã nộp. Thầy cô sẽ xem các bước chưa đạt.');
+    expect(t.chu('[data-testid=da-nop] h3')).toBe('Đã nộp. Thầy cô sẽ xem các bước chưa đạt.');
     expect(t.chu('[data-testid=da-nop] .phu')).toBe('Mức hiểu Tính đơn điệu của hàm số: Vận dụng → Thông hiểu');
     expect(t.$('[data-testid=thanh-nop]')).toBeNull();
     expect(t.$('[data-testid=solve-screen]')!.getAttribute('data-da-nop')).toBe('true');
@@ -263,7 +263,7 @@ describe('Luyen', () => {
       loiGiai: 'Hàm số đồng biến trên (−∞; 0) và (4; +∞).',
     });
     await t.xong();
-    expect(t.chu('[data-testid=da-nop] h2')).toBe('Đã nộp. Bài đạt.');
+    expect(t.chu('[data-testid=da-nop] h3')).toBe('Đã nộp. Bài đạt.');
     expect(t.chu('[data-testid=da-nop] .phu')).toBe('Mức hiểu Tính đơn điệu của hàm số: Thông hiểu → Vận dụng');
     expect(t.chu('[data-testid=loi-giai-sau-nop] p:last-child')).toBe('Hàm số đồng biến trên (−∞; 0) và (4; +∞).');
   });
@@ -273,7 +273,7 @@ describe('Luyen', () => {
     TestBed.tick();
     t.http.expectOne({ method: 'POST', url: API_HS.nopBai(MA) }).flush(null, { status: 500, statusText: 'Lỗi' });
     await t.xong();
-    expect(t.chu('[data-testid=da-nop] h2')).toBe('Đã nộp. Bài đạt.');
+    expect(t.chu('[data-testid=da-nop] h3')).toBe('Đã nộp. Bài đạt.');
     await t.bam('[data-testid="step-B.DH.TXD"]');
     expect(t.chu('.tieu-de')).toBe('Bước 1/5 Tập xác định');
     expect(t.$('[data-testid="step-B.DH.TXD"]')!.getAttribute('aria-current')).toBe('step');
@@ -315,7 +315,7 @@ describe('Luyen', () => {
     yc.flush({ ketQua: 'DAT', mucHieu: [] });
     await t.xong();
     expect(t.$('input[data-testid=latex-db]')!.matches(':disabled')).toBe(true);
-    expect(t.chu('[data-testid=da-nop] h2')).toBe('Đã nộp. Bài đạt.');
+    expect(t.chu('[data-testid=da-nop] h3')).toBe('Đã nộp. Bài đạt.');
   });
 
   it('kết luận đã chấm mà một bước chưa gửi lần nào: chặn nộp, nói bước đó chưa kiểm tra (không nói «vừa sửa»)', async () => {

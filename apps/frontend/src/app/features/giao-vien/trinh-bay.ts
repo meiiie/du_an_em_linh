@@ -20,23 +20,28 @@ export function tenTrangThai(status: string): string {
 export function tenBai(b: Item<BankDetails>): string {
   return b.subtitle || (/^[A-Z0-9][A-Z0-9._-]+$/.test(b.title) ? tenKyNang(b.details.skillCode) : b.title);
 }
-export interface HanBai { id: string; code: string; title: string; dueAt: string; submitted: number; total: number; }
-export function gomHan(assignments: Item[], bank: Item<BankDetails>[], histories: Map<string, StudentProfile>): HanBai[] {
-  const groups = new Map<string, HanBai & { students: Set<string> }>();
+export interface HanBai { id: string; title: string; dueAt: string; submitted: number; total: number; }
+export function gomHan(assignments: Item[], bank: Item<BankDetails>[], histories: Map<string, StudentProfile>, skillNames: ReadonlyMap<string, string> = new Map()): HanBai[] {
+  const groups = new Map<string, HanBai & { entries: Set<string> }>();
   for (const a of assignments) {
     const dueAt = a.details['dueAt'];
     const studentId = a.details['studentId'];
     if (typeof dueAt !== 'string' || !Number.isFinite(new Date(dueAt).getTime()) || typeof studentId !== 'string') continue;
     const code = String(a.details['problemCode'] ?? a.title);
-    const key = `${code}|${dueAt}|${a.status}`;
+    const b = bank.find(b => (b.details.code || b.title) === code);
+    const topTitle = typeof a.details['problemCode'] === 'string' && a.title !== code && a.title !== b?.subtitle && a.title !== b?.title ? a.title : undefined;
+    const setName = [a.details['tenBo'], a.details['setName'], a.details['title'], topTitle].find(v => typeof v === 'string' && v.trim());
+    const title = typeof setName === 'string' ? setName.trim() : tenKyNang(b?.details.skillCode ?? '', String(a.details['topicName'] ?? skillNames.get(b?.details.skillCode ?? '') ?? ''));
+    const setId = a.details['setId'] ?? a.details['maBo'];
+    const key = JSON.stringify([setId ?? title, dueAt, a.status]);
     let group = groups.get(key);
     if (!group) {
-      const b = bank.find(b => (b.details.code || b.title) === code);
-      group = { id: key, code, title: b ? tenBai(b) : 'Bài được giao', dueAt, submitted: 0, total: 0, students: new Set() };
+      group = { id: key, title, dueAt, submitted: 0, total: 0, entries: new Set() };
       groups.set(key, group);
     }
-    if (group.students.has(studentId)) continue;
-    group.students.add(studentId);
+    const entry = JSON.stringify([studentId, code]);
+    if (group.entries.has(entry)) continue;
+    group.entries.add(entry);
     group.total++;
     if (histories.get(studentId)?.history.some(h => h.status === 'DA_NOP' && (h.details['problemCode'] ?? h.title) === code)) group.submitted++;
   }

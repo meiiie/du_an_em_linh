@@ -1,3 +1,4 @@
+import { KichThuocTrang } from '../../shared/ui/kich-thuoc-trang';
 import { PhanTrang } from '../../shared/ui/phan-trang';
 import { gomHan, tenBai, tenKyNang, tenTrangThai } from './trinh-bay';
 import { VanBanToan } from '../../shared/toan/van-ban-toan';
@@ -21,6 +22,7 @@ export type TrangGv='tong-quan'|'tien-do'|'hoc-sinh'|'ngan-hang'|'tai-lieu'|'con
 const TIEU_DE:Record<TrangGv,string>={'tong-quan':'Tổng quan','tien-do':'Mức lớp','hoc-sinh':'Học sinh','ngan-hang':'Đề bài','tai-lieu':'Tài liệu','cong-thuc':'Công thức','duyet':'Duyệt','giao':'Giao bài','cai-dat':'Cài đặt lớp','ket-noi-ai':'Gia sư'};
 @Component({selector:'app-phong-giao-vien',imports:[PhanTrang,VanBanToan,RouterLink,Button,HopThoai,Katex,OCongThuc,FormField,KhungCho,LoiTai,SoDo,TrangRong,DinhDangSo],templateUrl:'./phong-giao-vien.html'})
 export class PhongGiaoVien{
+ protected readonly soMoiTrang = inject(KichThuocTrang).soMuc;
  readonly trang=input<TrangGv>('tong-quan');readonly id=input('');protected readonly lop=inject(LopDangChon);protected readonly tieuDe=computed(()=>this.trang()==='tong-quan'&&this.lop.ds().find(l=>l.id===this.lop.id()) ? 'Lớp '+this.lop.ds().find(l=>l.id===this.lop.id())!.title : TIEU_DE[this.trang()]);protected readonly tenMuc=TEN_MUC;protected readonly cacMuc=Object.keys(TEN_MUC) as Muc4[];protected readonly tim=signal('');protected readonly timBaiGiao=signal('');protected readonly timHsGiao=signal('');protected readonly mucLoc=signal('');protected readonly congLoc=signal('');protected readonly ban=signal(false);protected readonly loi=signal('');protected readonly hop=signal<'duyet'|'muc'|'cong-thuc'|'bai'|'bai-ke'|'tai-lieu'|null>(null);protected readonly mucDangChon=signal<Item|null>(null);protected readonly chapThuan=signal(true);protected readonly lyDo=signal('');protected readonly kyNang=signal('');protected readonly mucMoi=signal<Muc4>('NHAN_BIET');protected readonly chonBai=signal<readonly string[]>([]);protected readonly chonHs=signal<readonly string[]>([]);protected readonly file=signal<File|null>(null);private readonly http=inject(HttpClient);private readonly api=inject(ApiLopHoc);private readonly toast=inject(ThongBaoNhanh);
  private url(path:string){return this.api.duongGv(path,this.lop.id());}
  protected readonly tongQuan=this.api.trangTongQuan(()=>this.trang()==='tong-quan'?this.lop.id():undefined);
@@ -43,7 +45,8 @@ export class PhongGiaoVien{
     if (abortSignal.aborted) throw new Error('Đã hủy');
     await Promise.all(ids.slice(i, i + 4).map(async id => histories.set(id, await get<StudentProfile>('hoc-sinh/' + encodeURIComponent(id)))));
    }
-   return gomHan(assignments, bank, histories);
+   const skillNames = new Map(students.flatMap(s => s.details.skills.map(k => [k.code, k.name] as const)));
+   return gomHan(assignments, bank, histories, skillNames);
   },
  });
  protected readonly ngay = ngayViet;
@@ -80,13 +83,13 @@ export class PhongGiaoVien{
   'ket-noi-ai':'Gợi ý theo bước, giúp học sinh tự tìm cách làm.'
  }[this.trang()]));
  protected readonly hsLoc=computed(()=>(this.tienDo.hasValue()?this.tienDo.value():[]).filter(h=>h.title.toLocaleLowerCase('vi').includes(this.tim().toLocaleLowerCase('vi'))));
- protected readonly trangLichSu=linkedSignal({source:()=>this.hocSinh.value()?.history,computation:()=>1});
- protected readonly trangBai=linkedSignal({source:()=>this.baiLoc(),computation:()=>1});
- protected readonly trangHs=linkedSignal({source:()=>this.hsLoc(),computation:()=>1});
- protected readonly trangNoiDung=linkedSignal({source:()=>this.noiDungLoc(),computation:()=>1});
- protected readonly trangTaiLieu=linkedSignal({source:()=>this.taiLieuLoc(),computation:()=>1});
- protected readonly trangBaiGiao=linkedSignal({source:()=>this.baiGiao(),computation:()=>1});
- protected readonly trangHsGiao=linkedSignal({source:()=>this.hsGiao(),computation:()=>1});
+ protected readonly trangLichSu=linkedSignal({source:()=>({ds:this.hocSinh.value()?.history, size:this.soMoiTrang()}),computation:()=>1});
+ protected readonly trangBai=linkedSignal({source:()=>({ds:this.baiLoc(), size:this.soMoiTrang()}),computation:()=>1});
+ protected readonly trangHs=linkedSignal({source:()=>({ds:this.hsLoc(), size:this.soMoiTrang()}),computation:()=>1});
+ protected readonly trangNoiDung=linkedSignal({source:()=>({ds:this.noiDungLoc(), size:this.soMoiTrang()}),computation:()=>1});
+ protected readonly trangTaiLieu=linkedSignal({source:()=>({ds:this.taiLieuLoc(), size:this.soMoiTrang()}),computation:()=>1});
+ protected readonly trangBaiGiao=linkedSignal({source:()=>({ds:this.baiGiao(), size:this.soMoiTrang()}),computation:()=>1});
+ protected readonly trangHsGiao=linkedSignal({source:()=>({ds:this.hsGiao(), size:this.soMoiTrang()}),computation:()=>1});
  constructor(){effect(()=>{this.trang();this.tim.set('');this.mucLoc.set('');this.congLoc.set('');});void this.lop.tai();effect(()=>{if(this.tongQuan.hasValue())this.lop.soChoDuyet.set(this.tongQuan.value().pending);if(this.trang()==='duyet'&&this.ds.hasValue())this.lop.soChoDuyet.set(this.ds.value().length);});}
  protected suaLatex(latex:string){return (m:{title:string;latex:string;statement:string})=>({...m,latex});}
  protected thayLop(e:Event){this.lop.id.set((e.target as HTMLSelectElement).value);this.chonBai.set([]);this.chonHs.set([]);this.loi.set('');this.tim.set('');this.timBaiGiao.set('');this.timHsGiao.set('');}

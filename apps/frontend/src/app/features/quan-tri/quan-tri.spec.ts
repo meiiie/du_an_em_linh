@@ -1,9 +1,30 @@
+import { KichThuocTrang } from '../../shared/ui/kich-thuoc-trang';
 import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { QuanTri } from './quan-tri';
 
 describe('Danh sách người dùng', () => {
+  it('màn hẹp hiện 10 người, đổi trang không mất lựa chọn và đổi chiều rộng đặt lại trang', async () => {
+    TestBed.configureTestingModule({providers:[provideHttpClient(),provideHttpClientTesting()]});
+    const size=TestBed.inject(KichThuocTrang);size.soMuc.set(10);
+    const f=TestBed.createComponent(QuanTri);f.detectChanges();
+    const http=TestBed.inject(HttpTestingController);
+    http.expectOne('/api/qt/nguoi-dung').flush(Array.from({length:35},(_,i)=>({id:String(i),title:'Người '+i,subtitle:'user'+i+'@example.test',status:'STUDENT',details:{enabled:true}})));
+    await f.whenStable();
+    const el=f.nativeElement as HTMLElement;
+    const next=()=>[...el.querySelectorAll<HTMLButtonElement>('button')].find(b=>b.textContent?.trim()==='Trang sau')!;
+    expect(el.querySelectorAll('tbody tr')).toHaveLength(10);
+    expect(el.querySelector('.pagination')?.textContent).toContain('Trang 1 / 4');
+    (el.querySelector('[type=checkbox]') as HTMLInputElement).click();
+    next().click();await f.whenStable();
+    expect(el.querySelector('tbody tr')?.textContent).toContain('Người 10');
+    size.soMuc.set(20);await f.whenStable();
+    expect(el.querySelectorAll('tbody tr')).toHaveLength(20);
+    expect(el.querySelector('.pagination')?.textContent).toContain('Trang 1 / 2');
+    expect((el.querySelector('[type=checkbox]') as HTMLInputElement).checked).toBe(true);
+    http.verify();
+  });
   it('mỗi trang 20 người, lọc vai trò và tìm tên đặt lại trang, giữ lựa chọn', async () => {
     TestBed.configureTestingModule({providers:[provideHttpClient(),provideHttpClientTesting()]});
     const f=TestBed.createComponent(QuanTri); f.detectChanges();

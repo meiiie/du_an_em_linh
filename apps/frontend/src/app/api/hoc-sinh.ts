@@ -35,6 +35,9 @@ export interface TrangHoc {
 
 /** Một dòng của `GET /api/hs/bai`: bài được giao cho em, đang phát hành ở lớp. */
 export interface BaiCuaHocSinh {
+  readonly tenBo?: string;
+  readonly title?: string;
+  readonly maBo?: string;
   readonly maBai: string;
   readonly deBai: string;
   readonly deBaiLatex: string;

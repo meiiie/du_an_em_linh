@@ -1,3 +1,4 @@
+import { nhomBai } from './nhom-bai';
 import { VanBanToan } from '../../shared/toan/van-ban-toan';
 import { Item, ScheduleDetails } from '../../api/ux';
 import { ApiLopHoc } from '../../api/lop-hoc';
@@ -49,6 +50,15 @@ export class TrangHocSinh {
     const bai = (this.ds.value() ?? []).filter((b) => b.soBuoc > 0);
     const recommend=this.goiBai.hasValue()?this.goiBai.value()[0]:undefined;
     return bai.find(b=>b.trangThai==='DANG_LAM') ?? bai.find(b=>b.maBai===recommend?.id) ?? bai.find(b=>b.trangThai==='CHUA_LAM');
+  });
+  protected readonly sapToi = computed(() => {
+    const ds = this.ds.value() ?? [];
+    const ke = this.ke()?.maBai;
+    const uuTien = ds.filter(b => b.maBai !== ke && b.ketQua !== 'DAT')
+      .sort((a,b) => (a.han ? Date.parse(a.han) : Infinity) - (b.han ? Date.parse(b.han) : Infinity))
+      .slice(0, 5);
+    const chon = new Set(uuTien.map(b => b.maBai));
+    return nhomBai(ds).map(n => ({...n, tong: n.hang.length, hang: n.hang.filter(h => chon.has(h.bai.maBai))})).filter(n => n.hang.length);
   });
   protected readonly deBang = deBang;
   protected readonly thanDe = thanDe;

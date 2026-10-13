@@ -13,7 +13,7 @@
   @if (ke(); as ke) {
     <section class="ke-tiep" aria-labelledby="tieu-de-ke-tiep">
       <div class="ke-chu">
-        <h2 id="tieu-de-ke-tiep" class="nhan-muc">Bài tiếp theo</h2>
+        <h2 id="tieu-de-ke-tiep" class="nhan-muc">Tiếp theo</h2>
         @if(goiBai.hasValue() && goiBai.value()[0]?.id === ke.maBai){<p class="phu">{{goiBai.value()[0].subtitle}}</p>}
         <p class="ky-nang">{{ ke.tenKyNang }}</p>
         <p class="cau-hoi"><app-van-ban-toan [text]="thanDe(ke.deBai)" /></p>
@@ -32,11 +32,17 @@
   <section aria-labelledby="tieu-de-bai-giao">
     <div class="section-heading"><h2 id="tieu-de-bai-giao" class="nhan-muc">Bài được giao</h2><span class="list-summary">{{ (ds.value()?.length ?? 0) | soViet }} bài</span></div>
     @if (ds.value()?.length) {
-      <ul class="danh-sach">
-        @for (b of ds.value(); track b.maBai; let i = $index) {
-          <li><app-hang-bai [bai]="b" [so]="i + 1" /></li>
-        }
-      </ul>
+      @for (n of sapToi(); track n.id) {
+        <div class="nhom-sap-toi">
+          <div class="section-heading"><h3>{{n.ten}}</h3><span class="list-summary">{{n.dat | soViet}}/{{n.tong | soViet}} đạt</span></div>
+          <ul class="danh-sach">
+            @for (h of n.hang; track h.bai.maBai) {
+              <li><app-hang-bai [bai]="h.bai" [so]="h.so" /></li>
+            }
+          </ul>
+        </div>
+      } @empty {<p class="muted">Không còn bài sắp tới. Em có thể xem lại các bài đã làm.</p>}
+      <a class="xem-tat-ca" routerLink="/hs/bai">Xem tất cả bài được giao →</a>
     } @else {
 <app-trang-rong tieuDe="Chưa có bài" moTa="Chưa có bài. Bài thầy cô giao sẽ hiện ở đây."><a appButton variant="secondary" routerLink="/hs/kho">Ôn công thức</a></app-trang-rong>
     }

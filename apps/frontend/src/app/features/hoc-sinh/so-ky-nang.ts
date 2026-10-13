@@ -1,4 +1,4 @@
-import { Component, input } from '@angular/core';
+import { Component, computed, input } from '@angular/core';
 import { KyNangCuaEm, Muc4, TEN_MUC } from '../../api/hoc-sinh';
 
 const BAC: readonly Muc4[] = ['NHAN_BIET', 'THONG_HIEU', 'VAN_DUNG', 'VAN_DUNG_CAO'];
@@ -28,12 +28,10 @@ const BAC: readonly Muc4[] = ['NHAN_BIET', 'THONG_HIEU', 'VAN_DUNG', 'VAN_DUNG_C
                 <i [class.dat]="i <= viTri(k.muc4)"></i>
               }
             </div>
-            @if (k.ket) {
-              <p class="nhac">Em sai liên tiếp ở kỹ năng này. Thầy cô đã nhận được báo; em xem lại bảng công thức rồi làm lại nhé.</p>
-            }
           </li>
         }
       </ul>
+      @if (coKet()) {<p class="nhac">Kỹ năng đang kẹt: em xem lại công thức hoặc hỏi gia sư để luyện tiếp.</p>}
     } @else {
       <div class="trong">
         <p>Chưa làm bài — làm một bài để hiện kỹ năng.</p>
@@ -56,7 +54,7 @@ const BAC: readonly Muc4[] = ['NHAN_BIET', 'THONG_HIEU', 'VAN_DUNG', 'VAN_DUNG_C
     }
 
     li {
-      padding: var(--space-4) var(--space-5);
+      padding: var(--space-3) var(--space-4);
     }
 
     li + li {
@@ -68,7 +66,7 @@ const BAC: readonly Muc4[] = ['NHAN_BIET', 'THONG_HIEU', 'VAN_DUNG', 'VAN_DUNG_C
       flex-wrap: wrap;
       align-items: baseline;
       justify-content: space-between;
-      gap: var(--space-3);
+      gap: var(--space-1) var(--space-2);
     }
 
     .ten,
@@ -78,7 +76,7 @@ const BAC: readonly Muc4[] = ['NHAN_BIET', 'THONG_HIEU', 'VAN_DUNG', 'VAN_DUNG_C
     }
 
     .ten {
-      font-size: 16px;
+      font-size: 14px;
     }
 
     .muc {
@@ -104,7 +102,7 @@ const BAC: readonly Muc4[] = ['NHAN_BIET', 'THONG_HIEU', 'VAN_DUNG', 'VAN_DUNG_C
     }
 
     .bac i {
-      height: 6px;
+      height: 4px;
       border-radius: 999px;
       background: var(--wash);
     }
@@ -116,12 +114,13 @@ const BAC: readonly Muc4[] = ['NHAN_BIET', 'THONG_HIEU', 'VAN_DUNG', 'VAN_DUNG_C
     .nhac {
       margin-top: var(--space-2);
       color: var(--ink-2);
-      font-size: 16px;
+      font-size: 14px;
     }
   `,
 })
 export class SoKyNang {
   readonly kyNang = input.required<readonly KyNangCuaEm[]>();
+  protected readonly coKet = computed(() => this.kyNang().some(k => k.ket));
   protected readonly tenMuc = TEN_MUC;
   protected readonly bac = BAC;
 

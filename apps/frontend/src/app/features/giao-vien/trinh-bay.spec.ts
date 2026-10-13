@@ -9,7 +9,21 @@ describe('Hạn bài giao', () => {
     const histories = new Map<string,StudentProfile>([['a',{student:{...assignment('a'),details:{skills:[],submitted:2}},history:[history,history]}]]);
     const groups = gomHan([assignment('a'),assignment('a'),assignment('b'),assignment('a','2026-10-21T13:00:00Z')],bank,histories);
     expect(groups).toHaveLength(2);
-    expect(groups[0]).toMatchObject({title:'Xét tính đơn điệu',submitted:1,total:2,dueAt:'2026-10-20T13:00:00Z'});
+    expect(groups[0]).toMatchObject({title:'Hàm số: đơn điệu và cực trị',submitted:1,total:2,dueAt:'2026-10-20T13:00:00Z'});
+  });
+  it('gom nhiều bài trong một bộ, dùng tên bộ và đếm mỗi lượt giao một lần', () => {
+    const a = {...assignment('a'), details:{...assignment('a').details, tenBo:'Ôn tuần 1'}};
+    const b = {...a,id:'b',title:'CODE2',details:{...a.details,problemCode:'CODE2'}};
+    expect(gomHan([a,a,b],bank,new Map())).toMatchObject([{title:'Ôn tuần 1',total:2,submitted:0}]);
+  });
+  it('dùng title bộ từ API hiện hành khi problemCode đã tách riêng, bỏ đề bài dài', () => {
+    const a={...assignment('a'),title:'Ôn tập tuần 2'};
+    expect(gomHan([a],bank,new Map())[0].title).toBe('Ôn tập tuần 2');
+    expect(gomHan([{...a,title:bank[0].subtitle}],bank,new Map())[0].title).toBe('Hàm số: đơn điệu và cực trị');
+  });
+  it('chủ đề không có trong danh mục tĩnh lấy tên kỹ năng từ API tiến độ', () => {
+    const b={...bank[0],details:{...bank[0].details,skillCode:'T12.NT.XS'}};
+    expect(gomHan([assignment('a')],[b],new Map(),new Map([['T12.NT.XS','Xác suất có điều kiện']]))[0].title).toBe('Xác suất có điều kiện');
   });
   it('không tạo hạn giả từ ngày thiếu hoặc hỏng', () => {
     expect(gomHan([assignment('a',''),assignment('b','sai')],bank,new Map())).toEqual([]);

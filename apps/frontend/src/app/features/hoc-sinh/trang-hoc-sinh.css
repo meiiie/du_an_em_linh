@@ -116,3 +116,7 @@
   .hoc-so { padding: 16px; gap: 24px; }
   .hoc-grid, .hoc-chinh { gap: 24px; }
 }
+
+.nhom-sap-toi { margin-bottom: 16px; }
+.nhom-sap-toi h3 { margin: 0; font-size: 16px; line-height: 24px; }
+.xem-tat-ca { display: inline-flex; align-items: center; min-height: 44px; color: var(--label); }

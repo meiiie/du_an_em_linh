@@ -210,7 +210,7 @@
 
         @if (daNop()) {
           <section class="da-nop" data-testid="da-nop" aria-labelledby="tieu-de-nop">
-            <h2 id="tieu-de-nop">{{ chuDaNop() }}</h2>
+            <h3 id="tieu-de-nop">{{ chuDaNop() }}</h3>
             @if (loiPhatLai()) {
               <p class="phu" role="alert">Chưa tải được kết quả và lời giải của lần nộp.</p>
               <button appButton variant="secondary" type="button" data-testid="tai-lai-ket-qua" (click)="taiLaiKetQuaNop()">Thử lại</button>
