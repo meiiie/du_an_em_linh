@@ -45,7 +45,7 @@ public final class WorkspaceDto {
     public record Formula(@NotNull UUID lopId,@NotBlank @Size(max=200) String title,@NotBlank @Size(max=4000) String latex,@NotBlank @Size(max=4000) String statement) {
     }
 
-    public record Settings(@NotNull UUID lopId,boolean revealSolutionAfterSubmit,@NotNull @Pattern(regexp="offline") String aiProvider) {
+    public record Settings(@NotNull UUID lopId,boolean revealSolutionAfterSubmit,@NotNull @Pattern(regexp="offline|glm") String aiProvider) {
     }
 
     public record Schedule(@NotBlank @Size(max=200) String title,@NotNull Instant startsAt,@NotNull Instant endsAt) {

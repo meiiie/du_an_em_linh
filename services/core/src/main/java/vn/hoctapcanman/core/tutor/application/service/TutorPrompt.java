@@ -21,14 +21,27 @@ public final class TutorPrompt {
     public static boolean safeToSend(String question, java.util.List<String> lines) {
         for (String t : concat(question, lines)) {
             if (t == null) continue;
-            String plain = t.replaceAll("(?s)\\$[^$]*\\$", " ");
-            if (RUI_RO_KHONG_TEN.matcher(plain).find() || TEN.matcher(plain.strip()).find()) return false;
+            // Kiểm cả trong vùng toán: chữ trong \\text{}, chữ có dấu tiếng Việt hay cụm từ viết hoa trong $…$ đều có thể là tên.
+            for (var m = MATH.matcher(t); m.find(); ) {
+                String math = m.group();
+                if (math.contains("\\text") || math.contains("\\mathrm") || math.contains("\\operatorname") || CHU_CO_DAU.matcher(math).find()
+                    || CHU_DAI.matcher(math).find()) return false;
+            }
+            String plain = MATH.matcher(t).replaceAll(" ");
+            if (RUI_RO_KHONG_TEN.matcher(t).find() || TEN.matcher(plain.strip()).find() || IN_HOA.matcher(t).find()) return false;
         }
         return true;
     }
     private static final java.util.regex.Pattern RUI_RO_KHONG_TEN = java.util.regex.Pattern.compile(
         "(?u)@|https?://|www\\.|\\d{5,}|\\b(?:đường|phố|phường|quận|huyện|xã|tỉnh|số nhà|facebook|zalo|tiktok|instagram|sđt|điện thoại|mã số|mshs)\\b",
         java.util.regex.Pattern.CASE_INSENSITIVE | java.util.regex.Pattern.UNICODE_CASE);
+    private static final java.util.regex.Pattern MATH = java.util.regex.Pattern.compile("(?s)\\$\\$.*?\\$\\$|\\$[^$]*\\$|\\\\\\(.*?\\\\\\)|\\\\\\[.*?\\\\\\]");
+    /** Chữ cái ngoài ASCII (có dấu) trong vùng toán. */
+    private static final java.util.regex.Pattern CHU_CO_DAU = java.util.regex.Pattern.compile("[\\p{L}&&[^\\p{ASCII}]&&[^\\p{InGreek}]]");
+    /** Từ chữ cái ≥ 4 ký tự không phải lệnh LaTeX trong vùng toán (ví dụ An Nguyen). */
+    private static final java.util.regex.Pattern CHU_DAI = java.util.regex.Pattern.compile("(?<![\\\\a-zA-Z])(?!(?:sqrt|frac|cdot|left|right|infty|times|over|sin|cos|tan|cot|log|ln|lim|pi)\\b)[A-Za-z]{4,}");
+    /** Hai từ viết hoa toàn bộ liền nhau (ví dụ NGUYỄN VĂN). */
+    private static final java.util.regex.Pattern IN_HOA = java.util.regex.Pattern.compile("(?u)\\b\\p{Lu}{2,}\\s+\\p{Lu}{2,}\\b");
     private static java.util.List<String> concat(String q, java.util.List<String> lines) {
         var all = new java.util.ArrayList<String>(); all.add(q); all.addAll(lines); return all;
     }

@@ -29,6 +29,7 @@ class GlmTutorServiceTest {
         when(store.tutorContext(eq(student), eq(cl), any())).thenReturn(Optional.of(
             new TutorContext(problem, "DH1", "Đề bài", "x**2", "B.DH.TXD", hint)));
         when(model.provider()).thenReturn("GLM");
+        when(store.settings(cl)).thenReturn(new Settings(cl, false, "glm"));
     }
     @Test void answerRequestsNeverCallModel() {
         when(gate.sanitize(eq(cl), eq(problem), anyString(), anyString(), anyList())).thenAnswer(i -> java.util.Optional.of(i.<String>getArgument(2)));
@@ -76,6 +77,12 @@ class GlmTutorServiceTest {
             Optional.of(new TutorContext(problem, "DH1", "Đề bài", "x**2", "B.DH.TXD", hint, "Tập xác định", f1, List.of())),
             Optional.of(new TutorContext(problem, "DH1", "Đề bài", "x**2", "B.DH.TXD", hint, "Tập xác định", f2, List.of())));
         assertEquals(409, assertThrows(WorkspaceException.class, () -> tutor.answerAuthorized(student, cl, request("Em bị kẹt"), x -> {})).status());
+    }
+    @Test void offlineClassNeverCallsModel() {
+        when(store.settings(cl)).thenReturn(new Settings(cl, false, "offline"));
+        when(gate.sanitize(cl, problem, hint, "Em bị kẹt", List.of())).thenReturn(Optional.of(hint));
+        assertEquals(new TutorEvent("xong", hint, "THANG"), tutor.answer(student, request("Em bị kẹt")));
+        verify(model, never()).draft(any());
     }
     @Test void blockedModelDraftFallsBackThroughGate() {
         when(model.draft(any())).thenReturn(Optional.of("Bản nháp bị chặn"));

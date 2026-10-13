@@ -100,3 +100,5 @@ node --test scripts/*.test.mjs
 ```
 
 Kết quả: **112 JUnit đạt**, 0 lỗi/bỏ qua (gồm ArchUnit, tự kiểm luật và `@NullMarked`); **19 ca eval unit đạt**, toàn bộ **4 tệp test scripts đạt**. CLI không có khóa in đúng thông báo bỏ qua, exit 0; `git diff --check` đạt. Lệnh Maven không có `-javaagent` vướng Mockito tự gắn agent trong sandbox; quét khóa chuẩn vướng Node tạo `/bin/sh` với `EPERM`, nên dùng phép quét trực tiếp tương đương, thêm Java và tệp mới: **849 tệp văn bản**, không phát hiện chuỗi khóa. Chưa chạy GLM thật, CAS HTTP, PostgreSQL/Testcontainers hoặc Compose trong phiên này; không có số đo độ trễ/chi phí nhà thật. Không sửa `.github/` hay migration V1–V13, không thêm migration.
+
+> Gia sư GLM chỉ chạy khi **lớp chọn nhà `glm`** (giáo viên: Cài đặt → Gia sư → «Gia sư AI (GLM)») **và** máy chủ có `GLM_API_KEY`. Lớp mới mặc định `offline`. Seed dev trường Nguyễn Trãi đặt sẵn `glm` cho ba lớp (dữ liệu hư cấu). Câu hỏi nghi có thông tin cá nhân (kể cả trong `$…$`/`\text{}`) không được gửi ra ngoài.

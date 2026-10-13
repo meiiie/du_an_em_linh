@@ -68,7 +68,7 @@ public class OfflineTutorService {
             phase.accept("goi");
             boolean refusal = asksAnswer(request.cauHoi());
             Optional<String> draft = Optional.empty();
-            if (!refusal && TutorPrompt.safeToSend(request.cauHoi(), context.submittedLines())) {
+            if (!refusal && glmEnabled(cl) && TutorPrompt.safeToSend(request.cauHoi(), context.submittedLines())) {
                 try { draft = model.draft(TutorPrompt.compose(context, request)); }
                 catch (RuntimeException ignored) { /* Nhà lỗi: chỉ dùng thang sau khi qua cổng. */ }
             }
@@ -107,6 +107,12 @@ public class OfflineTutorService {
                 hashed(student), problemCode, Math.clamp(request.cap(), 1, 3), model.provider(),
                 (System.nanoTime() - start) / 1_000_000, outcome);
         }
+    }
+
+    /** Lớp phải chọn nhà GLM (giáo viên bật); mặc định offline, không gửi gì ra ngoài. */
+    private boolean glmEnabled(UUID cl) {
+        var settings = store.settings(cl);
+        return settings != null && "glm".equals(settings.aiProvider());
     }
 
     private TutorEvent release(UUID student, UUID cl, TutorRequest request, TutorContext asked, String status, String text, String nguon) {

@@ -210,3 +210,5 @@ node --test scripts/eval-gia-su.test.mjs
 ```
 
 Không có khóa: in `bỏ qua: thiếu GLM_API_KEY`, thoát 0. Bộ 24 ca kiểm HTTP, thứ tự SSE, lời kết thúc, lộ đáp án theo dữ liệu seed/heuristic và độ trễ; JSON chỉ chứa tên ca và số đo, không chứa chat/tài khoản/khóa. Giãn mặc định 51 giây/lượt để không chạm 12 lượt/10 phút, mất khoảng 20 phút; script gia hạn phiên đăng nhập. Dùng tài khoản riêng, không đồng thời hỏi trên UI. Muốn chạy nhanh trong dev, nâng `GLM_RATE_LIMIT_REQUESTS` hoặc giảm `GLM_RATE_LIMIT_WINDOW` **giống nhau ở core và script**, rồi khởi động lại core. Thiếu bài phù hợp hoặc SSE `loi` làm ca trượt; kiểm lộ là phép dò cơ học, không thay eval sư phạm hay CAS. Chưa có số đo GLM thật trong sandbox của phiên hiện thực này.
+
+> Gia sư GLM chỉ chạy khi **lớp chọn nhà `glm`** (giáo viên: Cài đặt → Gia sư → «Gia sư AI (GLM)») **và** máy chủ có `GLM_API_KEY`. Lớp mới mặc định `offline`. Seed dev trường Nguyễn Trãi đặt sẵn `glm` cho ba lớp (dữ liệu hư cấu). Câu hỏi nghi có thông tin cá nhân (kể cả trong `$…$`/`\text{}`) không được gửi ra ngoài.

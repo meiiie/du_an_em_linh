@@ -51,9 +51,9 @@ class GiaSuPromptTest {
     }
 
     @org.junit.jupiter.api.Test void personalDataKeepsTextLocal() {
-        for (String q : java.util.List.of("Em là Nguyễn Văn An lớp bên", "zalo em 0912345678", "nhà em ở phường 5", "liên hệ an@gmail.com", "mshs 2024123"))
+        for (String q : java.util.List.of("Em là Nguyễn Văn An lớp bên", "zalo em 0912345678", "nhà em ở phường 5", "liên hệ an@gmail.com", "mshs 2024123", "Em viết $Nguyễn Văn An$", "\\(\\text{NGUYEN VAN AN}\\)", "$An Nguyen$", "EM LÀ TRẦN BÌNH"))
             assertFalse(TutorPrompt.safeToSend(q, java.util.List.of()), q);
-        for (String q : java.util.List.of("Em kẹt ở bước tính đạo hàm", "Đạo hàm của $x^2$ là gì ạ?", "Em ra y' = 2x - 6 có đúng không"))
+        for (String q : java.util.List.of("Em kẹt ở bước tính đạo hàm", "Đạo hàm của $x^2$ là gì ạ?", "Em ra y' = 2x - 6 có đúng không", "Em tính $\\frac{x^2+1}{x-1}$ và $\\sqrt{x}$ thế nào"))
             assertTrue(TutorPrompt.safeToSend(q, java.util.List.of("y' = 2x - 6")), q);
     }
 }
