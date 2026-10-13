@@ -79,12 +79,14 @@ public class OfflineTutorService {
                 return release(student, cl, request, context, "xong", REFUSAL, "TU_CHOI");
             }
             Optional<String> fromModel = draft.filter(d -> hasSafeShape(context, d)).flatMap(d -> allowed(cl, context, d, request));
+            if (draft.isPresent()) logGate(1, draft.get(), fromModel);
             if (fromModel.isEmpty() && draft.isPresent()) {
                 // Cổng bỏ hết bản nháp: thử lại đúng một lần với yêu cầu chặt hơn (không nới cổng, ADR 013).
                 try {
                     var first = TutorPrompt.compose(context, request);
                     var retry = model.draft(new HintPrompt(first.system(), first.user() + TutorPrompt.RETRY));
                     fromModel = retry.filter(d -> hasSafeShape(context, d)).flatMap(d -> allowed(cl, context, d, request));
+                    if (retry.isPresent()) logGate(2, retry.get(), fromModel);
                 } catch (RuntimeException ignored) { /* Nhà lỗi: dùng thang. */ }
             }
             if (fromModel.isPresent()) {
@@ -107,6 +109,12 @@ public class OfflineTutorService {
                 hashed(student), problemCode, Math.clamp(request.cap(), 1, 3), model.provider(),
                 (System.nanoTime() - start) / 1_000_000, outcome);
         }
+    }
+
+    /** Đo tỉ lệ cổng bỏ bản nháp (ADR 013, «điều làm quyết định này sai»); chỉ ghi số đếm, không ghi nội dung. */
+    private static void logGate(int lan, String draft, Optional<String> kept) {
+        String giu = kept.isEmpty() ? "BO" : kept.get().equals(draft) ? "TOAN_BO" : "MOT_PHAN";
+        LOG.info("gia_su_cong lan={} giu={}", lan, giu);
     }
 
     /** Lớp phải chọn nhà GLM (giáo viên bật); mặc định offline, không gửi gì ra ngoài. */
