@@ -37,7 +37,7 @@ import vn.hoctapcanman.core.workspace.application.service.WorkspaceService;
 
 /** Real web/security/use cases; only external ports are replaced. */
 @WebMvcTest(controllers = {WorkspaceController.class, OfflineTutorController.class})
-@Import({SecurityConfig.class, WorkspaceService.class, OfflineTutorService.class, WorkspaceApiTest.Time.class})
+@Import({SecurityConfig.class, WorkspaceService.class, OfflineTutorService.class, vn.hoctapcanman.core.tutor.application.service.TutorRateLimiter.class, WorkspaceApiTest.Time.class})
 class WorkspaceApiTest {
     @TestConfiguration static class Time {
         @Bean Clock clock() { return Clock.fixed(NOW, ZoneOffset.UTC); }
@@ -46,6 +46,7 @@ class WorkspaceApiTest {
     final UUID actor = UUID.randomUUID(), student = UUID.randomUUID(), cl = UUID.randomUUID(), problem = UUID.randomUUID();
     @Autowired MockMvc mvc;
     @MockitoBean WorkspaceStore store;
+    @MockitoBean vn.hoctapcanman.core.tutor.application.port.HintModel hintModel;
     @MockitoBean ClassMembership membership;
     @MockitoBean ContentWorkflow content;
     @MockitoBean PasswordHasher hasher;

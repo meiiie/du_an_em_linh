@@ -61,7 +61,7 @@ export class PhongGiaoVien{
   return this.cacMuc.map((m,i) => ({m, i, count: d[m] ?? 0, ratio: total ? (d[m] ?? 0) / total : 0}));
  });
  protected readonly tenKyNangTheoMa = computed(() => new Map((this.tienDo.hasValue() ? this.tienDo.value() : []).flatMap(s => s.details.skills.map(k => [k.code, k.name] as const))));
- protected readonly caiModel=linkedSignal(()=>({revealSolutionAfterSubmit:this.caiDat.hasValue()?this.caiDat.value().revealSolutionAfterSubmit:false,aiProvider:'offline'}));protected readonly caiForm=form(this.caiModel);
+ protected readonly caiModel=linkedSignal(()=>({revealSolutionAfterSubmit:this.caiDat.hasValue()?this.caiDat.value().revealSolutionAfterSubmit:false,aiProvider:this.caiDat.hasValue()&&this.caiDat.value().aiProvider==='glm'?'glm':'offline'}));protected readonly caiForm=form(this.caiModel);
  protected readonly giaoModel=signal<{setName:string;mode:CheDoHoc;dueAt:string}>({setName:'',mode:'ON_TAP',dueAt:''});protected readonly giaoForm=form(this.giaoModel,p=>{required(p.setName);maxLength(p.setName,120);});
  protected readonly congModel=signal({title:'',latex:'',statement:''});protected readonly congForm=form(this.congModel,p=>{required(p.title);maxLength(p.title,120);required(p.latex);maxLength(p.latex,2000);required(p.statement);maxLength(p.statement,2000);});
  protected readonly baiModel=signal({code:'',skillCode:'T12.DH.03',level4:'NHAN_BIET',statement:'',latex:'',function:''});protected readonly baiForm=form(this.baiModel,p=>{required(p.code);required(p.skillCode);required(p.statement);required(p.latex);required(p.function);maxLength(p.code,120);maxLength(p.statement,2000);maxLength(p.latex,2000);maxLength(p.function,2000);});

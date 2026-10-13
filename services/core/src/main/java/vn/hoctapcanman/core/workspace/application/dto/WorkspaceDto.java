@@ -45,7 +45,7 @@ public final class WorkspaceDto {
     public record Formula(@NotNull UUID lopId,@NotBlank @Size(max=200) String title,@NotBlank @Size(max=4000) String latex,@NotBlank @Size(max=4000) String statement) {
     }
 
-    public record Settings(@NotNull UUID lopId,boolean revealSolutionAfterSubmit,@NotNull @Pattern(regexp="offline") String aiProvider) {
+    public record Settings(@NotNull UUID lopId,boolean revealSolutionAfterSubmit,@NotNull @Pattern(regexp="offline|glm") String aiProvider) {
     }
 
     public record Schedule(@NotBlank @Size(max=200) String title,@NotNull Instant startsAt,@NotNull Instant endsAt) {
@@ -72,9 +72,25 @@ public final class WorkspaceDto {
     public record TutorRequest(@NotBlank @Size(max=64) String maBai,@NotBlank @Size(max=32) String maBuoc,@Min(1) @Max(3) int cap,@NotNull @Size(max=2000) String cauHoi) {
     }
 
-    public record TutorEvent(String status,String message) {
+    /** nguon: MO_HINH, THANG, CO_DINH, TU_CHOI hoặc null (sự kiện trạng thái); không chứa dữ liệu cá nhân. */
+    public record TutorEvent(String status,String message,@org.jspecify.annotations.Nullable String nguon) {
+        public TutorEvent(String status,String message) {
+            this(status,message,null);
+        }
     }
 
-    public record TutorContext(UUID problemId,String code,String statement,String function,String step,String hint) {
+    public record TutorFormula(int number,String code,String title,String latex,String statement) {
+    }
+
+    public record TutorContext(UUID problemId,String code,String statement,String function,String step,String hint,
+        String stepName,List<TutorFormula> formulas,List<String> submittedLines) {
+        public TutorContext {
+            formulas=List.copyOf(formulas);
+            submittedLines=List.copyOf(submittedLines);
+        }
+        public TutorContext(UUID problemId,String code,String statement,String function,String step,String hint) {
+            this(problemId,code,statement,function,step,hint,step,List.of(),List.of());
+        }
+        @Override public String toString() { return "TutorContext[đã ẩn nội dung]"; }
     }
 }

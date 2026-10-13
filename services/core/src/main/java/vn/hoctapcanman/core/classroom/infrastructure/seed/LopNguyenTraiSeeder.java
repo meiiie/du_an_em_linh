@@ -64,7 +64,8 @@ public class LopNguyenTraiSeeder implements ApplicationRunner {
                 Integer.parseInt(ten.substring(0, 2)), TruongNguyenTrai.NAM_HOC, now)));
             TruongNguyenTrai.taiKhoan().stream().filter(tk -> tk.lop().contains(ten))
                 .forEach(tk -> ghiDanh(lop.id(), tk.email(), ClassRole.valueOf(tk.vaiTro()), now));
-            if (settings.findByClassId(lop.id()).isEmpty()) settings.save(ClassSettings.macDinh(lop.id(), now));
+            if (settings.findByClassId(lop.id()).isEmpty()) // Trường hư cấu (dev): bật gia sư GLM; máy chủ không có khóa thì vẫn chạy thang offline.
+                settings.save(new ClassSettings(lop.id(), false, "glm", false, now, null));
         }
     }
 
