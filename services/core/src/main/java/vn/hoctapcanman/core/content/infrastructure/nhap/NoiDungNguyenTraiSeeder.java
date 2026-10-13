@@ -38,6 +38,12 @@ public class NoiDungNguyenTraiSeeder implements ApplicationRunner {
             try {
                 theoLop.nhapTruong(id, noiDung.bai());
                 theoLop.napBangChuong(id);
+                UUID teacher = jdbc.sql("""
+                    SELECT e.user_id FROM enrollments e JOIN users u ON u.id=e.user_id
+                    WHERE e.class_id=:cl AND e.role_in_class='TEACHER' AND u.synthetic AND u.enabled
+                    AND u.role='TEACHER' ORDER BY e.enrolled_at,e.user_id LIMIT 1
+                    """).param("cl", id).query(UUID.class).single();
+                theoLop.duyetTruong(id, teacher);
             } catch (RuntimeException e) {
                 // Không in payload/lời giải/định danh trong lỗi của dịch vụ ngoài.
                 LOG.warn("Chưa nhập xong kho của một lớp hư cấu; kiểm kết nối CAS và nguồn nội dung.");

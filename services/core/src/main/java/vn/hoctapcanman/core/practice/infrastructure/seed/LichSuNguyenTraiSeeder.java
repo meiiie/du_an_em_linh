@@ -32,7 +32,7 @@ import vn.hoctapcanman.core.shared.infrastructure.math.MathServiceClient;
 import vn.hoctapcanman.core.shared.infrastructure.seed.LopSeedAnToan;
 import vn.hoctapcanman.core.shared.infrastructure.seed.TruongNguyenTrai;
 
-/** Lịch sử hư cấu 3 tuần: từng bài có payload học sinh, phán quyết CAS thật, không sửa bài làm đã có. */
+/** Lịch sử hư cấu 3 tuần: từng bài có payload học sinh, phán quyết CAS hoặc giáo viên hư cấu, không sửa bài làm đã có. */
 @Component
 @Profile("dev")
 @Order(5)
@@ -68,13 +68,27 @@ public class LichSuNguyenTraiSeeder implements ApplicationRunner {
             for (int i=0; i<students.size(); i++) {
                 UUID student = students.get(i);
                 schedule(cl, student, anchor);
-                int round = 0;
+                List<String> codes = db.sql("""
+                    SELECT p.code FROM assignments a JOIN problems p ON p.id=a.problem_id
+                    WHERE a.class_id=:cl AND a.student_id=:hs AND p.code<>'NT-DH12-NB-02'
+                    ORDER BY p.skill_code, CASE p.level4 WHEN 'NHAN_BIET' THEN 0 WHEN 'THONG_HIEU' THEN 1
+                        WHEN 'VAN_DUNG' THEN 2 ELSE 3 END,p.code
+                    """).param("cl",cl).param("hs",student).query(String.class).list();
+                UUID teacher = db.sql("""
+                    SELECT e.user_id FROM enrollments e JOIN users u ON u.id=e.user_id
+                    WHERE e.class_id=:cl AND e.role_in_class='TEACHER' AND u.synthetic AND u.enabled
+                    AND u.role='TEACHER' ORDER BY e.enrolled_at,e.user_id LIMIT 1
+                    """).param("cl",cl).query(UUID.class).single();
                 for (Map<String, Object> fixture : fixtures) {
                     String code = (String) fixture.get("ma");
                     if (code.equals("NT-DH12-NB-02")) continue; // bài kiểm tra tới hạn, chưa có bài nộp
-                    int task = round / 3;
-                    String kind = kind(i, task);
-                    round++;
+                    int task = codes.indexOf(code);
+                    if (task < 0) continue;
+                    String skill = code.split("-")[1];
+                    List<String> chapter = codes.stream().filter(c -> c.split("-")[1].equals(skill)).toList();
+                    int successes = successes(i, codes.stream().map(c -> c.split("-")[1]).distinct().toList().indexOf(skill));
+                    String kind = chapter.indexOf(code) >= chapter.size() - successes ? "DUNG" : "SAI";
+                    if (i == 0 && chapter.size() > 3 && chapter.indexOf(code) == 0) kind = "CAN_DUYET";
                     if (!kind.equals(fixture.get("loai"))) continue;
                     UUID id = TruongNguyenTrai.id("bai-lam:" + student + ":" + code);
                     if (db.sql("SELECT EXISTS(SELECT 1 FROM submissions WHERE id=:id)").param("id", id).query(Boolean.class).single()) continue;
@@ -86,35 +100,41 @@ public class LichSuNguyenTraiSeeder implements ApplicationRunner {
                         """).param("cl", cl).param("hs", student).param("code", code).param("now", Timestamp.from(clock.instant()))
                         .query((r,n) -> new ProblemRow(r.getObject(1,UUID.class),r.getInt(2),r.getString(3),r.getString(4))).list();
                     if (available.isEmpty()) continue;
-                    String key = code + ":" + kind;
+                    String key = code + ":" + kind + (Boolean.TRUE.equals(fixture.get("giao_vien_cham")) ? ":"+teacher : "");
                     Map<String, @Nullable Object> grade = grades.get(key);
                     if (grade == null) {
-                        MathResult result = math.call(MathJob.GRADE, map(fixture.get("payload")));
-                        if (!(result instanceof MathResult.Ok ok) || !Objects.equals(ok.body().get("ket_qua"), fixture.get("ket_qua"))) {
-                            LOG.warn("Bỏ qua lịch sử hư cấu: CAS không xác nhận payload học sinh.");
-                            continue;
+                        if (Boolean.TRUE.equals(fixture.get("giao_vien_cham"))) {
+                            grade = new HashMap<>();
+                            grade.put("ket_qua", fixture.get("ket_qua"));
+                            grade.put("loai_ket_qua", "GV_DUYET_SEED");
+                            grade.put("per_buoc", Map.of());
+                            grade.put("thong_bao", "Bài làm tổng hợp được giáo viên chấm theo lời giải kiểm bởi pytest.");
+                            grade.put("chuan_hoa", Map.of("nguon", "GIAO_VIEN_SEED", "reviewer_id", teacher.toString(),
+                                "dap_an_hoc_sinh", fixture.get("dap_an_hoc_sinh")));
+                        } else {
+                            MathResult result = math.call(MathJob.GRADE, map(fixture.get("payload")));
+                            if (!(result instanceof MathResult.Ok ok) || !Objects.equals(ok.body().get("ket_qua"), fixture.get("ket_qua"))) {
+                                LOG.warn("Bỏ qua lịch sử hư cấu: CAS không xác nhận payload học sinh.");
+                                continue;
+                            }
+                            grade = ok.body();
                         }
-                        grade = ok.body(); grades.put(key, grade);
+                        grades.put(key, grade);
                     }
                     Map<String, @Nullable Object> verdict = grade;
-                    Instant at = anchor.minus(Duration.ofDays(20-task*3)).plus(Duration.ofMinutes(i*7));
+                    Instant at = anchor.minus(Duration.ofDays(20)).plus(Duration.ofHours(task*12L)).plus(Duration.ofMinutes(i*7));
                     tx.executeWithoutResult(t -> save(id, cl, student, available.getFirst(), fixture, verdict, at));
                     count++;
                 }
             }
             reviewQueue(cl, anchor);
         }
-        LOG.info("Lịch sử trường hư cấu: {} bài nộp mới có căn cứ CAS", count);
+        LOG.info("Lịch sử trường hư cấu: {} bài nộp mới có căn cứ chấm", count);
     }
 
-    private static String kind(int student, int task) {
-        return switch (student % 5) {
-            case 0 -> "DUNG";
-            case 1 -> task == 6 ? "SAI" : "DUNG";
-            case 2 -> task % 3 == 0 ? "DUNG" : "SAI";
-            case 3 -> task == 6 ? "CAN_DUYET" : task % 2 == 0 ? "DUNG" : "SAI";
-            default -> task < 2 ? "DUNG" : "SAI";
-        };
+    static int successes(int student, int chapter) {
+        int bucket = (student * 2 + chapter) % 20;
+        return bucket < 7 ? 0 : bucket < 13 ? 2 : bucket < 18 ? 3 : 4;
     }
 
     private void save(UUID id, UUID cl, UUID student, ProblemRow p, Map<String,Object> fixture,

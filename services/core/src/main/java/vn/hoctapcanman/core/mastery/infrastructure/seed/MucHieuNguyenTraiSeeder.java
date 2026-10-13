@@ -52,11 +52,11 @@ public class MucHieuNguyenTraiSeeder implements ApplicationRunner {
                         var before=mastery.lock(MasteryState.initial(student,work.skill(),config,work.at()));
                         var update=before.apply(new MasteryState.Evidence(work.correct(),work.level(),work.error(),false),config,work.at());
                         mastery.save(update.after(),new MasteryEvent(TruongNguyenTrai.id("muc-hieu:"+work.id()),student,work.skill(),work.id(),
-                            update.delta(),MasteryEvent.Rule.THEO_KY_NANG_BAI,work.correct()?null:"B.DH.DAOHAM",work.error(),null,
+                            update.delta(),MasteryEvent.Rule.THEO_KY_NANG_BAI,work.correct() || !work.skill().equals("T12.NT.HS") ? null : "B.DH.DAOHAM",work.error(),null,
                             false,before.level(),update.after().level(),config.version(),work.at()));
                         if (update.stuckAlert()) db.sql("""
                             INSERT INTO escalations(id,class_id,student_id,skill_code,kind,reason,created_at)
-                            VALUES(:id,:cl,:hs,:skill,'KET','Cần củng cố quy tắc đạo hàm sau các lượt sai liên tiếp.',:at)
+                            VALUES(:id,:cl,:hs,:skill,'KET','Cần ôn lại kỹ năng sau các lượt sai liên tiếp.',:at)
                             ON CONFLICT DO NOTHING
                             """).param("id",TruongNguyenTrai.id("ket:"+student+":"+work.skill())).param("cl",cl).param("hs",student)
                             .param("skill",work.skill()).param("at",Timestamp.from(work.at())).update();

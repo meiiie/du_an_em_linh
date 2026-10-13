@@ -107,6 +107,23 @@ public class NhapTheoLop {
         return nhap(lop, bai, true);
     }
 
+    /** Chỉ runner dev gọi; ghi quyết định thật qua domain, không đổi các tầng CAS. */
+    void duyetTruong(UUID lop, UUID giaoVien) {
+        for (var ex : nguon.danhSach("dev/nguyen-trai/bai-tap.json")) {
+            var review = doiTuong(ex.get("duyet_seed"));
+            if (!"DA_DUYET".equals(review.get("trang_thai"))) continue;
+            Problem p = problems.findByCode(chu(ex.get("id"))).orElseThrow();
+            giaoDich.executeWithoutResult(t -> {
+                var run = runs.findLatest(lop, SubjectKind.PROBLEM, p.id()).orElseThrow();
+                UUID sheet = sheets.findCurrent(lop).map(FormulaSheet::id).orElse(null);
+                if (run.approvalRefusal(true, p.contentHash(), sheet).isEmpty()) {
+                    runs.saveApproval(run.approve(giaoVien, chu(review.get("ghi_chu")), true,
+                        p.contentHash(), sheet, clock.instant()));
+                }
+            });
+        }
+    }
+
     private KetQua nhap(UUID lop, List<NhapNoiDungChung.BaiNhap> bai, boolean truong) {
         // Trước mọi lệnh gọi dịch vụ toán (có thể lỗi): bài rời nguồn thôi phát hành dù phần sau của lần nhập hỏng.
         rutBaiRoiNguon(lop, bai.stream().map(NhapNoiDungChung.BaiNhap::ma).collect(java.util.stream.Collectors.toSet()));

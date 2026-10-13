@@ -25,7 +25,7 @@ def equal(left, right):
 def test_coverage():
     assert len(EXERCISES) >= 40
     assert len({e['id'] for e in EXERCISES}) == len(EXERCISES)
-    assert {e['chu_de'] for e in EXERCISES} == {'DH12', 'LG11', 'DS11', 'DH11', 'TP12', 'KG12', 'XS10'}
+    assert {e['chu_de'] for e in EXERCISES} == {c['ma'] for c in json.loads((ROOT / 'danh-muc.json').read_text())}
     for chapter in {e['chu_de'] for e in EXERCISES}:
         assert {e['muc_do_4'] for e in EXERCISES if e['chu_de'] == chapter} == {'NB', 'TH', 'VD', 'VDC'}
 
@@ -40,7 +40,16 @@ def test_teacher_solution(exercise):
     p = exercise['kiem_dinh']['du_kien']
     kind = exercise['kiem_dinh']['loai']
     answer = exercise['loi_giai']['dap_an']
-    if kind == 'ham_so':
+    if kind == 'quadratic_min':
+        f = expr(p['ham'])
+        assert s.diff(f, x, 2) > 0
+        expected = f.subs(x, s.solve(s.diff(f, x), x)[0])
+    elif kind == 'set_intersection':
+        assert answer == sorted(set(p['A']) & set(p['B']))
+        return
+    elif kind == 'mean':
+        expected = s.Rational(sum(p['values']), len(p['values']))
+    elif kind == 'ham_so':
         extra = answer.get('so_nghiem_theo_m')
         if extra:
             if exercise['id'].endswith('07'):
@@ -91,7 +100,7 @@ def test_teacher_solution(exercise):
         from app.grader import bai_lam_sang_payload, grade
         assert grade(bai_lam_sang_payload(bl, p['ham']))['ket_qua'] == 'DAT'
         return
-    if kind == 'trig_value':
+    elif kind == 'trig_value':
         expected = p.get('hang_so', 0) + p.get('he_so', 1) * getattr(s, p['ham'])(expr(p['goc']))
     elif kind == 'trig_roots':
         actual = s.FiniteSet(*(expr(v) for v in answer))
@@ -202,6 +211,13 @@ def test_chapter_formula(formula):
 @pytest.mark.parametrize('work', json.loads((ROOT / 'bai-lam-lich-su.json').read_text()), ids=lambda w: w['ma']+'-'+w['loai'])
 def test_historical_student_work(work):
     from app.grader import grade
+    if work.get('giao_vien_cham'):
+        exercise = next(e for e in EXERCISES if e['id'] == work['ma'])
+        assert exercise['duyet_seed']['trang_thai'] == 'DA_DUYET'
+        correct = work['dap_an_hoc_sinh'] == exercise['loi_giai']['dap_an']
+        assert correct == (work['loai'] == 'DUNG')
+        assert work['ket_qua'] == {'DUNG': 'DAT', 'SAI': 'SAI', 'CAN_DUYET': 'KHONG_KIEM_DUOC'}[work['loai']]
+        return
     expected = {'DUNG': 'DAT', 'SAI': 'SAI', 'CAN_DUYET': 'KHONG_KIEM_DUOC'}[work['loai']]
     assert grade(work['payload'])['ket_qua'] == expected == work['ket_qua']
 
@@ -240,3 +256,27 @@ def test_runtime_publication_gate(exercise):
     expected = 'DA_PHAT_HANH' if exercise['bai_lam'] else 'CHO_GIAO_VIEN_DUYET'
     assert result['trang_thai_phat_hanh'] == expected
     assert len(result['tang']) == 3
+
+
+@pytest.mark.parametrize('exercise', EXERCISES, ids=lambda e: e['id'])
+def test_display_math_is_separate(exercise):
+    display = exercise['de_bai']['latex']
+    statement = exercise['de_bai']['van_ban']
+    assert display.strip() and '**' not in display and '*' not in display
+    assert statement.count('$') >= 2 and statement.count('$') % 2 == 0
+    assert '**' not in statement and '·' not in statement
+    machine = exercise['de_bai']['ham_so_sympy']
+    if machine:
+        # Deterministic SymPy rendering, without an optional ANTLR dependency.
+        expected = s.latex(s.sympify(machine, locals=LOCALS, evaluate=False) if exercise['kiem_dinh']['loai'] == 'trig_value' else expr(machine)).replace(r'\frac', r'\dfrac')
+        assert expected in display
+
+
+def test_review_queue_and_grade_coverage():
+    assert sum(e['duyet_seed']['trang_thai'] == 'CHO_DUYET' for e in EXERCISES) == 5
+    catalog = json.loads((ROOT / 'danh-muc.json').read_text())
+    assert {c['ma'] for c in catalog if c['lop'] == 10} == {'BH10', 'MT10', 'TK10', 'XS10'}
+    assert {c['ma'] for c in catalog if c['lop'] == 11} == {'LG11', 'DS11', 'DH11', 'KG11', 'XS11'}
+    assert {c['ma'] for c in catalog if c['lop'] == 12} == {'DH12', 'TP12', 'KG12', 'XS12'}
+    for c in catalog:
+        assert any(e['chu_de'] == c['ma'] and e['duyet_seed']['trang_thai'] == 'DA_DUYET' for e in EXERCISES)

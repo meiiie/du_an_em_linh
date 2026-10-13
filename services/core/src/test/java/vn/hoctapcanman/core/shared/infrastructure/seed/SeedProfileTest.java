@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
+import vn.hoctapcanman.core.workspace.infrastructure.seed.WorkspaceNguyenTraiSeedAdapter;
 import vn.hoctapcanman.core.classroom.infrastructure.seed.LopNguyenTraiSeeder;
 import vn.hoctapcanman.core.content.infrastructure.nhap.NoiDungNguyenTraiSeeder;
 import vn.hoctapcanman.core.identity.infrastructure.seed.TaiKhoanNguyenTraiSeeder;
@@ -14,12 +15,12 @@ import vn.hoctapcanman.core.practice.infrastructure.seed.LichSuNguyenTraiSeeder;
 class SeedProfileTest {
     @Test void prodKhongTaoSeederVaKhongCanBatKyCongDbCasHayMatKhau() {
         new ApplicationContextRunner().withUserConfiguration(TaiKhoanNguyenTraiSeeder.class,LopNguyenTraiSeeder.class,
-            NoiDungNguyenTraiSeeder.class,GiaoBaiNguyenTraiSeeder.class,LichSuNguyenTraiSeeder.class,MucHieuNguyenTraiSeeder.class)
+            NoiDungNguyenTraiSeeder.class,GiaoBaiNguyenTraiSeeder.class,LichSuNguyenTraiSeeder.class,MucHieuNguyenTraiSeeder.class,WorkspaceNguyenTraiSeedAdapter.class)
             .withPropertyValues("spring.profiles.active=prod","app.content.import-on-startup=true")
             .run(context -> {
                 assertThat(context).hasNotFailed();
                 for(Class<?> type:List.of(TaiKhoanNguyenTraiSeeder.class,LopNguyenTraiSeeder.class,NoiDungNguyenTraiSeeder.class,
-                    GiaoBaiNguyenTraiSeeder.class,LichSuNguyenTraiSeeder.class,MucHieuNguyenTraiSeeder.class))
+                    GiaoBaiNguyenTraiSeeder.class,LichSuNguyenTraiSeeder.class,MucHieuNguyenTraiSeeder.class,WorkspaceNguyenTraiSeedAdapter.class))
                     assertThat(context).doesNotHaveBean(type);
             });
     }

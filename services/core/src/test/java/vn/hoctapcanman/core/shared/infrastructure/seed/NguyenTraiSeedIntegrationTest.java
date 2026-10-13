@@ -46,26 +46,42 @@ class NguyenTraiSeedIntegrationTest {
     @Autowired GiaoBaiNguyenTraiSeeder assignments;
     @Autowired LichSuNguyenTraiSeeder history;
     @Autowired MucHieuNguyenTraiSeeder mastery;
+    @Autowired vn.hoctapcanman.core.workspace.application.port.WorkspaceStore workspace;
 
     @Test void completeSeedAndSecondRunPreservesData() throws Exception {
         try {
             assertThat(count("users")).isEqualTo(35);
             assertThat(count("classes")).isEqualTo(3);
             assertThat(count("enrollments")).isEqualTo(36);
-            assertThat(count("problems")).isEqualTo(44);
+            assertThat(count("problems")).isEqualTo(68);
             assertThat(count("documents")).isEqualTo(21);
             assertThat(count("formula_sheets")).isEqualTo(6);
-            assertThat(count("assignments")).isEqualTo(240);
-            assertThat(count("submissions")).isEqualTo(210);
+            assertThat(count("assignments")).isEqualTo(630);
+            assertThat(count("submissions")).isEqualTo(620);
             assertThat(count("study_sessions")).isEqualTo(120);
-            assertThat(count("mastery_states")).isEqualTo(30);
-            assertThat(count("mastery_events")).isEqualTo(204);
+            assertThat(count("mastery_states")).isEqualTo(130);
+            assertThat(count("mastery_events")).isEqualTo(607);
             assertThat(count("tutor_review_queue")).isEqualTo(3);
             assertThat(db.sql("SELECT count(*) FROM users WHERE NOT synthetic").query(Integer.class).single()).isZero();
             assertThat(db.sql("SELECT DISTINCT level4 FROM mastery_states").query(String.class).list())
                 .containsExactlyInAnyOrder("NHAN_BIET","THONG_HIEU","VAN_DUNG","VAN_DUNG_CAO");
-            assertThat(db.sql("SELECT count(*) FROM assignments WHERE mode='KIEM_TRA' AND due_at>now() AND due_at<now()+interval '24 hours'").query(Integer.class).single()).isEqualTo(30);
-            assertThat(db.sql("SELECT count(*) FROM submissions WHERE result='KHONG_KIEM_DUOC'").query(Integer.class).single()).isEqualTo(6);
+            assertThat(db.sql("SELECT count(*) FROM assignments WHERE mode='KIEM_TRA' AND due_at>now() AND due_at<now()+interval '24 hours'").query(Integer.class).single()).isEqualTo(10);
+            assertThat(db.sql("SELECT count(*) FROM submissions WHERE result='KHONG_KIEM_DUOC'").query(Integer.class).single()).isEqualTo(13);
+            assertThat(db.sql("SELECT count(*) FROM problem_releases WHERE status='CHO_GIAO_VIEN_DUYET'").query(Integer.class).single()).isEqualTo(15);
+            assertThat(count("content_reviews")).isEqualTo(165);
+            assertThat(db.sql("""
+                SELECT count(*) FROM assignments a JOIN classes c ON c.id=a.class_id
+                JOIN problems p ON p.id=a.problem_id JOIN skills sk ON sk.code=p.skill_code
+                JOIN topics topic ON topic.code=sk.topic_code
+                WHERE topic.grade<>c.grade
+                """).query(Integer.class).single()).isZero();
+            for (String name:TruongNguyenTrai.LOP) {
+                var dashboard=workspace.dashboard(TruongNguyenTrai.id("lop:"+name));
+                assertThat(dashboard.distribution().values()).containsExactly(name.equals("11A2") ? 18L : 14L,
+                    name.equals("11A2") ? 15L : 12L, name.equals("11A2") ? 12L : 10L, name.equals("11A2") ? 5L : 4L);
+                assertThat(workspace.assignments(TruongNguyenTrai.id("lop:"+name)))
+                    .allSatisfy(row -> assertThat(row.title()).doesNotStartWith("NT-"));
+            }
             Map<String,List<String>> before=snapshot();
             for(ApplicationRunner seed:List.of(accounts,classes,content,assignments,history,mastery)) seed.run(new DefaultApplicationArguments());
             assertThat(snapshot()).isEqualTo(before);
@@ -85,7 +101,7 @@ class NguyenTraiSeedIntegrationTest {
     private int count(String table) {return db.sql("SELECT count(*) FROM "+table).query(Integer.class).single();}
     private Map<String,List<String>> snapshot() {
         var result=new java.util.LinkedHashMap<String,List<String>>();
-        for(String table:List.of("users","classes","enrollments","class_settings","documents","document_passages","formula_sheets","formulas","problems","solutions","verification_runs","verification_tier_results","problem_releases","assignments","submissions","grading_results","submission_steps","submission_tables","submission_table_cells","mastery_states","mastery_events","study_sessions","escalations","tutor_review_queue")) {
+        for(String table:List.of("users","classes","enrollments","class_settings","documents","document_passages","formula_sheets","formulas","problems","solutions","verification_runs","content_reviews","verification_tier_results","problem_releases","assignments","submissions","grading_results","submission_steps","submission_tables","submission_table_cells","mastery_states","mastery_events","study_sessions","escalations","tutor_review_queue")) {
             result.put(table,db.sql("SELECT row_to_json(t)::text FROM "+table+" t ORDER BY row_to_json(t)::text").query(String.class).list());
         }
         return result;
