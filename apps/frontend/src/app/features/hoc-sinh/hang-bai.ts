@@ -10,6 +10,7 @@ import { DinhDangSo, ngayViet } from '../../shared/ui/dinh-dang';
 /** Công thức của đề để hiện: thêm «y =» khi đề chỉ ghi biểu thức (như `hamLatex` của v0, `apps/web/lib/de-hoc-sinh.ts`). */
 export function hamLatex(latex: string): string {
   const tho = latexHienThi(latex).trim();
+  if (tho.startsWith(String.raw`\text{`)) return tho;
   if (laVanBan(tho)) return String.raw`\text{${tho.replace(/[{}\\]/g, '')}}`;
   return !tho || tho.includes('=') ? tho : `y = ${tho}`;
 }
