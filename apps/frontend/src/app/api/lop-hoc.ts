@@ -1,7 +1,7 @@
 import { HttpClient, httpResource } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { Muc4 } from './hoc-sinh';
-import { BankDetails, Dashboard, Item, Library, ModeDetails, RecommendationDetails, ReminderDetails, Result, ScheduleDetails, Settings, StudentDetails, StudentProfile, UserDetails } from './ux';
+import { AlertDetails, WeeklyPlan, BankDetails, Dashboard, Item, Library, ModeDetails, RecommendationDetails, ReminderDetails, Result, ScheduleDetails, Settings, StudentDetails, StudentProfile, UserDetails } from './ux';
 
 export type CheDoHoc = 'ON_TAP' | 'KIEM_TRA';
 export type TrangQuanTri = 'nguoi-dung' | 'lop' | 'nhat-ky';
@@ -53,6 +53,10 @@ export class ApiLopHoc {
   goiBai(bat: () => boolean = () => true) {
     return httpResource<Item<RecommendationDetails>[]>(() => bat() ? '/api/hs/goi-bai' : undefined);
   }
+  canhBao(lopId: () => string | undefined) {
+    return httpResource<Item<AlertDetails>[]>(() => { const id = lopId(); return id ? this.duongGv('canh-bao', id) : undefined; });
+  }
+  keHoachTuan(tuan: () => number) { return httpResource<WeeklyPlan>(() => `/api/hs/ke-hoach-tuan?tuan=${tuan()}`); }
   lich() { return httpResource<Item<ScheduleDetails>[]>(() => '/api/hs/lich'); }
   nhac() { return httpResource<Item<ReminderDetails>[]>(() => '/api/hs/nhac'); }
   quanTri(trang: () => TrangQuanTri) { return httpResource<Item[]>(() => `/api/qt/${trang()}`); }

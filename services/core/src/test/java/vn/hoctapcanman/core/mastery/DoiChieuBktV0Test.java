@@ -81,7 +81,7 @@ class DoiChieuBktV0Test {
         ca.add(dynamicTest("đã chạy hết tệp vàng", () -> {
             assertThat(dem.nop).as("lần nộp").isEqualTo(d.path("nop").asInt()).isGreaterThan(250);
             assertThat(dem.tinh).as("lần được tính").isEqualTo(d.path("tinh").asInt());
-            assertThat(dem.canhBao).as("cảnh báo kẹt").isEqualTo(d.path("canh_bao").asInt()).isPositive();
+            assertThat(dem.canhBao).as("cảnh báo cùng bước theo FR-025, đếm kỹ năng BKT vẫn khớp v0").isEqualTo(0);
             assertThat(dem.mucDoi).as("lần đổi mức").isEqualTo(d.path("muc_doi").asInt()).isPositive();
         }));
         return ca.stream();
@@ -95,13 +95,15 @@ class DoiChieuBktV0Test {
         DuLieuPractice.ghiDanh(jdbc, lop, hs, "STUDENT");
         try {
             int i = 0;
+            ExpectedStepAlerts alerts = new ExpectedStepAlerts();
             for (JsonNode b : kb.path("buoc")) {
                 String o = kb.path("ma").asString() + "#" + i;
                 if (b.path("loai").asString().equals("xu_ly_canh_bao")) {
+                    alerts.open.clear();
                     jdbc.sql("update escalations set handled_at = now(), handled_by = ? where student_id = ? and handled_at is null")
                         .params(giaoVien, hs).update();
                 } else {
-                    nop(o, b, hs, lop, LUC.plusSeconds(i), dem);
+                    nop(o, b, hs, lop, LUC.plusSeconds(i), dem, alerts);
                 }
                 i++;
             }
@@ -111,13 +113,14 @@ class DoiChieuBktV0Test {
         }
     }
 
-    private void nop(String o, JsonNode b, UUID hs, UUID lop, Instant luc, Dem dem) {
+    private void nop(String o, JsonNode b, UUID hs, UUID lop, Instant luc, Dem dem, ExpectedStepAlerts alerts) {
         JsonNode cham = b.path("cham");
         BaiDaNop bai = new BaiDaNop(UUID.randomUUID(), hs, lop, UUID.randomUUID(), b.path("bai").path("ky_nang").asString(),
             b.path("bai").path("muc").asString(), KetQuaBai.valueOf(cham.path("ket_qua").asString()),
             cham.path("buoc_sai").isNull() ? null : new ViTriSai(cham.path("buoc_sai").path("ma_buoc").asString(), null, null, null),
             chu(cham.path("ma_loi")), cham.path("do_tin_cay").isNull() ? null : cham.path("do_tin_cay").asDouble(),
             cham.has("toan_dung") ? cham.path("toan_dung").asBoolean() : null, b.path("nghi").asBoolean(), luc);
+        List<String> expectedAlerts = alerts.next(b);
         int canhBaoTruoc = soCanhBao(hs);
         List<ThayDoiMucHieu> ra = mucHieu.sauKhiNop(bai);
 
@@ -133,15 +136,15 @@ class DoiChieuBktV0Test {
         List<Map<String, Object>> trangThai = trangThai(hs);
         assertThat(trangThai).as(o + ": mastery_states").isEqualTo(trangThaiVang(b));
         assertThat(suKien(bai.baiLamId())).as(o + ": mastery_events").isEqualTo(sk.isNull() ? null : suKienVang(sk, kyVong.getFirst()));
-        assertThat(canhBaoMoi(hs, canhBaoTruoc)).as(o + ": cảnh báo vừa ghi").isEqualTo(canhBaoVang(b));
+        assertThat(canhBaoMoi(hs, canhBaoTruoc)).as(o + ": cảnh báo vừa ghi").isEqualTo(expectedAlerts);
 
         assertThat(mucHieu.sauKhiNop(bai)).as(o + ": gửi lại phát lại").isEqualTo(ra);
         assertThat(trangThai(hs)).as(o + ": gửi lại không tính lần hai").isEqualTo(trangThai);
-        assertThat(soCanhBao(hs)).as(o + ": gửi lại không ghi cảnh báo").isEqualTo(canhBaoTruoc + b.path("canh_bao").size());
+        assertThat(soCanhBao(hs)).as(o + ": gửi lại không ghi cảnh báo").isEqualTo(canhBaoTruoc + expectedAlerts.size());
 
         dem.nop++;
         dem.tinh += sk.isNull() ? 0 : 1;
-        dem.canhBao += b.path("canh_bao").size();
+        dem.canhBao += expectedAlerts.size();
         dem.mucDoi += !kyVong.isEmpty() && !b.path("muc_truoc").isNull() && !kyVong.getFirst().muc4Truoc().equals(kyVong.getFirst().muc4Sau())
             ? 1 : 0;
     }
@@ -232,11 +235,21 @@ class DoiChieuBktV0Test {
         return tatCa.subList(truoc, tatCa.size());
     }
 
-    private static List<String> canhBaoVang(JsonNode b) {
-        List<String> ra = new ArrayList<>();
-        b.path("canh_bao").forEach(c -> ra.add(c.path("loai").asString() + " " + c.path("skillCode").asString() + " - - "
-            + c.path("reason").asString()));
-        return ra;
+    /** BKT/sự kiện so nguyên văn v0; cảnh báo v2 dùng chuỗi cùng bước theo FR-025, độc lập với đếm theo kỹ năng v0. */
+    private static final class ExpectedStepAlerts {
+        String previous = "";
+        int consecutive;
+        final java.util.Set<String> open = new java.util.HashSet<>();
+        List<String> next(JsonNode b) {
+            JsonNode event=b.path("su_kien");
+            if (event.isNull() || event.path("nghiDoanMo").asBoolean()) return List.of();
+            String current=event.path("buocSai").isNull()?"":event.path("buocSai").path("ma_buoc").asString();
+            String skill=event.path("skillCode").asString();
+            consecutive=current.isEmpty()?0:current.equals(previous)?consecutive+1:1;
+            previous=current;
+            if (consecutive<3 || !b.path("cham").path("ket_qua").asString().equals("SAI") || !open.add(skill)) return List.of();
+            return List.of("KET "+skill+" - - Kẹt 3 lượt ở bước "+current);
+        }
     }
 
     private int soCanhBao(UUID hs) {

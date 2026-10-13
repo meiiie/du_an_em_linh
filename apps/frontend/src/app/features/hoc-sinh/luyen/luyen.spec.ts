@@ -75,10 +75,10 @@ describe('Luyen', () => {
       await fixture.whenStable();
     };
     /** `kiemTra` / `nopBai` tự `await` ngoài Angular: chờ thêm một vòng macrotask (AGENTS.md của frontend). */
-    const xong = async () => {
+    const xong = async (recommendations: object[] = []) => {
       await new Promise((r) => setTimeout(r, 0));
       TestBed.tick();
-      http.match('/api/hs/goi-bai').forEach(r=>r.flush([]));
+      http.match('/api/hs/goi-bai').forEach(r=>r.flush(recommendations));
       await fixture.whenStable();
     };
     return { fixture, http, el, $, chu, go, bam, xong };
@@ -285,6 +285,17 @@ describe('Luyen', () => {
     await t.xong();
     expect(t.chu('.tieu-de')).toBe('Bước 1/5 Tập xác định');
     expect(t.$('[data-testid="step-B.DH.TXD"]')!.getAttribute('data-tt')).toBe('da-sua');
+  });
+
+  it('kết quả kẹt với lời khuyên gửi thầy cô không tạo liên kết bài rỗng', async () => {
+    const t = await mo(chiTiet({ trangThai: 'DA_NOP', cacBuoc: CAC_BUOC.map((s) => daDat(s.maBuoc)) }), false);
+    TestBed.tick();
+    t.http.expectOne({method:'POST',url:API_HS.nopBai(MA)}).flush({ketQua:'SAI',mucHieu:[]});
+    await t.xong([{id:'',title:'Gửi thầy cô',subtitle:'Em đang kẹt. Hãy gửi thầy cô; chưa tăng độ khó.',status:'GUI_THAY_CO',details:{}}]);
+    expect(t.chu('[data-testid=da-nop]')).toContain('gửi thầy cô');
+    expect(t.$('[data-testid=bai-ke-ket-qua]')).toBeNull();
+    expect(t.$('[data-testid=da-nop] a')?.getAttribute('href')).toBe('/hs');
+    t.http.verify();
   });
 
   it('mở lại bài đã nộp: gửi lại POST …/nop để core phát lại kết quả, mức hiểu và lời giải', async () => {

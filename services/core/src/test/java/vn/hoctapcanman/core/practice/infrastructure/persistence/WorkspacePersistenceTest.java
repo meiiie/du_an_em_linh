@@ -246,7 +246,24 @@ class WorkspacePersistenceTest {
         store.assign(teacher, new Assign(cl, List.of(student), List.of(problem), "KIEM_TRA", now.plusSeconds(3600), "Kiểm tra"), List.of(student), now);
         store.recommend(teacher, new NextProblem(cl, student, problem, "Củng cố kỹ năng"), now);
         assertThat(store.modes(student, cl)).singleElement().satisfies(i -> assertThat(i.status()).isEqualTo("KIEM_TRA"));
-        assertThat(store.recommendations(student, cl)).singleElement().satisfies(i -> assertThat(i.id()).isEqualTo(code));
+        assertThat(store.recommendations(student, cl)).isEmpty(); // Gợi ôn tập không đưa em sang bài kiểm tra.
+    }
+
+    @Test
+    void recommendationsOnlyUseReleasedAssignmentsForThisStudentAndClassWithinCeiling() {
+        db.sql("UPDATE problems SET level4='NHAN_BIET' WHERE id=:id").param("id",problem).update();
+        store.assign(teacher,new Assign(cl,List.of(student),List.of(problem),"ON_TAP",null,"Ôn"),List.of(student),now);
+        assertThat(store.recommendations(student,cl)).singleElement().satisfies(i->assertThat(i.id()).isEqualTo(code));
+        UUID otherStudent=DuLieuPractice.nguoi(db,"STUDENT");
+        DuLieuPractice.ghiDanh(db,cl,otherStudent,"STUDENT");
+        assertThat(store.recommendations(otherStudent,cl)).isEmpty();
+        UUID otherClass=DuLieuPractice.lop(db);
+        assertThat(store.recommendations(student,otherClass)).isEmpty();
+        db.sql("UPDATE problems SET level4='VAN_DUNG_CAO' WHERE id=:id").param("id",problem).update();
+        assertThat(store.recommendations(student,cl)).isEmpty();
+        db.sql("UPDATE problems SET level4='NHAN_BIET' WHERE id=:id").param("id",problem).update();
+        db.sql("UPDATE problem_releases SET status='NHAP' WHERE problem_id=:id AND class_id=:cl").param("id",problem).param("cl",cl).update();
+        assertThat(store.recommendations(student,cl)).isEmpty();
     }
 
     @Test

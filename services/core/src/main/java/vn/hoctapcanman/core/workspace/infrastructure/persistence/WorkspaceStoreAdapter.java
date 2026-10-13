@@ -8,6 +8,9 @@ import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 import vn.hoctapcanman.core.workspace.application.dto.WorkspaceDto.*;
+import vn.hoctapcanman.core.workspace.domain.model.PersonalLearningRules.Level4;
+import vn.hoctapcanman.core.workspace.domain.model.PersonalLearningRules;
+import vn.hoctapcanman.core.workspace.domain.model.PersonalLearningRules.*;
 import vn.hoctapcanman.core.workspace.application.port.WorkspaceStore;
 import vn.hoctapcanman.core.workspace.application.exception.WorkspaceException;
 
@@ -117,19 +120,72 @@ import vn.hoctapcanman.core.workspace.application.exception.WorkspaceException;
         return db.sql("SELECT p.code,a.mode,a.due_at FROM assignments a JOIN problems p ON p.id=a.problem_id WHERE a.student_id=:student AND a.class_id=:cl AND a.status='DA_GIAO'").param("student",student).param("cl",cl).query((r,n)->new Item(r.getString("code"),r.getString("code"),"",r.getString("mode"),details("dueAt",instant(r,"due_at")))).list();
     }
 
-    public List<Item> recommendations(UUID student,UUID cl) {
+    public List<Skill> learningSkills(UUID student, UUID cl) {
         return db.sql("""
- SELECT p.code,p.skill_code,p.level4,(o.id IS NOT NULL) overridden FROM assignments a
- JOIN problems p ON p.id=a.problem_id JOIN problem_releases pr ON pr.problem_id=p.id AND pr.class_id=a.class_id
- LEFT JOIN mastery_states m ON m.student_id=a.student_id AND m.skill_code=p.skill_code
- LEFT JOIN LATERAL(SELECT level4 FROM mastery_overrides WHERE student_id=a.student_id AND skill_code=p.skill_code AND removed_at IS NULL ORDER BY created_at DESC LIMIT 1) mo ON true
- LEFT JOIN next_problem_overrides o ON o.student_id=a.student_id AND o.problem_id=p.id AND o.consumed_at IS NULL
- WHERE a.student_id=:student AND a.class_id=:cl AND a.status='DA_GIAO' AND pr.status='DA_PHAT_HANH'
- AND (a.due_at IS NULL OR a.due_at>now())
- AND NOT EXISTS(SELECT 1 FROM submissions s WHERE s.student_id=a.student_id AND s.problem_id=p.id AND s.class_id=a.class_id AND s.content_version=p.content_version AND s.status='DA_NOP' AND s.result='DAT')
- ORDER BY (o.id IS NOT NULL) DESC,coalesce(m.mastery,0),
- abs(array_position(ARRAY['NHAN_BIET','THONG_HIEU','VAN_DUNG','VAN_DUNG_CAO']::text[],p.level4::text)-least(4,coalesce(array_position(ARRAY['NHAN_BIET','THONG_HIEU','VAN_DUNG','VAN_DUNG_CAO']::text[],coalesce(mo.level4,m.level4)::text),0)+1)),p.code LIMIT 1
- """).param("student",student).param("cl",cl).query((r,n)->new Item(r.getString("code"),r.getString("code"),r.getBoolean("overridden")?"Bài giáo viên chọn cho em":"Luyện kỹ năng cần củng cố, tiến thêm một mức.","",details("level4",r.getString("level4"),"skillCode",r.getString("skill_code")))).list();
+            SELECT sk.code,sk.name,coalesce(o.level4,m.level4,'NHAN_BIET') level4,
+                coalesce(m.mastery,0.3) mastery,coalesce(m.attempts,0) attempts,
+                (ev.wrong_step IS NOT NULL AND (
+                    SELECT count(*) FROM (
+                        SELECT e.wrong_step FROM mastery_events e WHERE e.student_id=:student AND NOT e.guess_suspected
+                        ORDER BY e.created_at DESC,e.id DESC LIMIT (cfg.value->>'so_luot_ket')::int
+                    ) recent WHERE recent.wrong_step=ev.wrong_step
+                ) >= (cfg.value->>'so_luot_ket')::int) stuck,
+                coalesce(err.name,st.description,ev.wrong_step,'') error_type,
+                coalesce(ev.result='DAT',false) passed,ev.created_at graded_at,coalesce(ev.problem_level,coalesce(o.level4,m.level4,'NHAN_BIET')) practiced_level
+            FROM skills sk JOIN topics t ON t.code=sk.topic_code
+            JOIN classes c ON c.id=:cl
+            JOIN mastery_config cfg ON cfg.key='bkt'
+            LEFT JOIN mastery_states m ON m.skill_code=sk.code AND m.student_id=:student
+            LEFT JOIN LATERAL(SELECT level4 FROM mastery_overrides
+                WHERE student_id=:student AND skill_code=sk.code AND removed_at IS NULL
+                ORDER BY created_at DESC,id DESC LIMIT 1)o ON true
+            LEFT JOIN LATERAL(SELECT e.skill_code,e.wrong_step,e.error_code,e.confidence,e.created_at,s.result,s.level4 problem_level FROM mastery_events e
+                JOIN submissions s ON s.id=e.submission_id AND s.class_id=:cl AND s.status='DA_NOP'
+                WHERE e.student_id=:student AND (e.skill_code=sk.code OR s.skill_code=sk.code) AND NOT e.guess_suspected
+                ORDER BY e.created_at DESC,e.id DESC LIMIT 1)ev ON true
+            LEFT JOIN error_types err ON err.code=ev.error_code AND ev.result='SAI'
+                AND ev.confidence>=(cfg.value->>'nguong_tin_cay_ma_loi')::float8
+            LEFT JOIN step_templates st ON st.step_code=ev.wrong_step AND ev.result='SAI'
+            WHERE (sk.is_core AND t.grade=c.grade AND coalesce(sk.grade,t.grade)=c.grade) OR EXISTS(
+                SELECT 1 FROM mastery_events e JOIN submissions s ON s.id=e.submission_id
+                WHERE e.student_id=:student AND s.class_id=:cl AND e.skill_code=sk.code)
+            ORDER BY sk.code
+            """).param("student",student).param("cl",cl).query((r,n)->new Skill(r.getString("code"),r.getString("name"),
+                Level4.valueOf(r.getString("level4")),r.getDouble("mastery"),r.getInt("attempts"),r.getBoolean("stuck"),
+                r.getBoolean("passed")?"":r.getString("error_type"),r.getBoolean("passed"),
+                r.getTimestamp("graded_at")==null?Instant.EPOCH:r.getTimestamp("graded_at").toInstant(),Level4.valueOf(r.getString("practiced_level")))).list();
+    }
+
+    public List<Item> stuckAlerts(UUID cl) {
+        return db.sql("""
+            SELECT e.id,e.student_id,u.display_name,e.reason,coalesce(sk.name,e.skill_code) skill_name
+            FROM escalations e JOIN users u ON u.id=e.student_id
+            JOIN enrollments en ON en.user_id=e.student_id AND en.class_id=e.class_id AND en.role_in_class='STUDENT'
+            LEFT JOIN skills sk ON sk.code=e.skill_code
+            WHERE e.class_id=:cl AND e.kind='KET' AND e.handled_at IS NULL ORDER BY e.created_at DESC,e.id
+            """).param("cl",cl).query((r,n)->new Item(r.getString("id"),r.getString("display_name"),
+                "Đang kẹt ở "+r.getString("skill_name")+". "+r.getString("reason"),"KET",details("studentId",r.getString("student_id")))).list();
+    }
+
+    public List<Item> recommendations(UUID student,UUID cl) {
+        List<Candidate> candidates=db.sql("""
+            SELECT p.code,p.skill_code,p.level4,coalesce(o.reason,'') teacher_reason FROM assignments a
+            JOIN problems p ON p.id=a.problem_id
+            JOIN problem_releases pr ON pr.problem_id=p.id AND pr.class_id=a.class_id
+            LEFT JOIN LATERAL(SELECT reason FROM next_problem_overrides
+                WHERE student_id=a.student_id AND problem_id=p.id AND consumed_at IS NULL
+                ORDER BY created_at DESC,id DESC LIMIT 1)o ON true
+            WHERE a.student_id=:student AND a.class_id=:cl AND a.status='DA_GIAO' AND a.mode='ON_TAP'
+                AND pr.status='DA_PHAT_HANH' AND p.answer_form='TU_LUAN_5_BUOC'
+                AND (a.due_at IS NULL OR a.due_at>:now)
+                AND NOT EXISTS(SELECT 1 FROM submissions s WHERE s.student_id=a.student_id
+                    AND s.problem_id=p.id AND s.class_id=a.class_id AND s.content_version=p.content_version
+                    AND s.status='DA_NOP') ORDER BY p.code
+            """).param("student",student).param("cl",cl).param("now",java.sql.Timestamp.from(clock.instant()))
+            .query((r,n)->new Candidate(r.getString("code"),r.getString("skill_code"),Level4.valueOf(r.getString("level4")),r.getString("teacher_reason"))).list();
+        return PersonalLearningRules.choose(learningSkills(student,cl),candidates)
+            .map(r->List.of(new Item(r.code(),r.code().isEmpty()?"Gửi thầy cô":r.code(),r.reason(),r.kind(),
+                details("level4",r.level().name(),"skillCode",r.skillCode())))).orElse(List.of());
     }
 
     public Library library(UUID cl,boolean teacher) {

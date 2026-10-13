@@ -130,6 +130,7 @@ describe('Tổng quan với hạn theo bài', () => {
     const lop={id:signal('lop1'),ds:signal([]),dangTai:signal(false),loi:signal(false),soChoDuyet:signal(0),tai:async()=>{}};
     TestBed.configureTestingModule({providers:[provideHttpClient(),provideHttpClientTesting(),provideRouter([]),{provide:LopDangChon,useValue:lop}]});
     const f=TestBed.createComponent(PhongGiaoVien);f.detectChanges();const http=TestBed.inject(HttpTestingController);
+    http.expectOne('/api/gv/canh-bao?lopId=lop1').flush([]);
     http.expectOne('/api/gv/tong-quan?lopId=lop1').flush({students:1,stuck:0,pending:0,assignments:80,distribution:{},deadlines:Array.from({length:8},(_,i)=>({id:String(i),title:'Ôn tập '+i,subtitle:'2 bài',status:'ON_TAP',details:{tenBo:'Ôn tập '+i,setKey:String(i),problemCodes:['A','B'],problemCount:2,studentCount:5,assignmentCount:10,submittedCount:3,dueAt:'2026-10-'+(20+i)+'T13:00:00Z'}})).reverse()});
     await f.whenStable();const el=f.nativeElement as HTMLElement;
     expect(el.querySelectorAll('.row-list li')).toHaveLength(5);
@@ -145,6 +146,7 @@ describe('Tổng quan với hạn theo bài', () => {
     TestBed.configureTestingModule({providers:[provideHttpClient(),provideHttpClientTesting(),provideRouter([]),{provide:LopDangChon,useValue:lop}]});
     const f=TestBed.createComponent(PhongGiaoVien);f.detectChanges();
     const http=TestBed.inject(HttpTestingController);
+    http.expectOne('/api/gv/canh-bao?lopId=lop1').flush([]);
     http.expectOne('/api/gv/tong-quan?lopId=lop1').flush({students:2,stuck:0,pending:0,assignments:2,distribution:{NHAN_BIET:1,THONG_HIEU:1},deadlines:[{id:"old",title:"CODE",details:{dueAt:"2026-10-20T13:00:00Z",studentId:"a",problemCode:"CODE"}}]});
     await new Promise(r=>setTimeout(r,0));
     TestBed.tick();
@@ -188,6 +190,23 @@ describe('Kết quả chấm trong lịch sử bài nộp', () => {
     const el = fixture.nativeElement as HTMLElement;
     const section = [...el.querySelectorAll('section')].find(s => s.querySelector('h2')?.textContent === 'Bài đã nộp')!;
     expect([...section.querySelectorAll('.badge')].map(b => b.textContent?.trim())).toEqual(['Đạt', 'Sai', 'Không kiểm được', 'Sai', 'Không kiểm được']);
+    http.verify();
+  });
+});
+
+describe('Cảnh báo kẹt cho giáo viên', () => {
+  it('cảnh báo có tên, kỹ năng và dẫn tới đúng học sinh', async () => {
+    const lop={id:signal('lop1'),ds:signal([]),dangTai:signal(false),loi:signal(false),soChoDuyet:signal(0),tai:async()=>{}};
+    TestBed.configureTestingModule({providers:[provideHttpClient(),provideHttpClientTesting(),provideRouter([]),{provide:LopDangChon,useValue:lop}]});
+    const f=TestBed.createComponent(PhongGiaoVien); f.detectChanges();
+    const http=TestBed.inject(HttpTestingController);
+    http.expectOne('/api/gv/canh-bao?lopId=lop1').flush([{id:'ket1',title:'Chi',subtitle:'Đang kẹt ở Xét dấu đạo hàm.',status:'KET',details:{studentId:'chi'}}]);
+    http.expectOne('/api/gv/tong-quan?lopId=lop1').flush({students:1,stuck:1,pending:0,assignments:0,distribution:{},deadlines:[]});
+    await f.whenStable();
+    const alert=(f.nativeElement as HTMLElement).querySelector('[data-testid=canh-bao-ket]')!;
+    expect(alert.textContent).toContain('Chi');
+    expect(alert.textContent).toContain('Xét dấu đạo hàm');
+    expect(alert.querySelector('a')?.getAttribute('href')).toBe('/gv/hoc-sinh/chi');
     http.verify();
   });
 });

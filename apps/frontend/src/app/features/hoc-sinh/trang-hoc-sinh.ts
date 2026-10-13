@@ -37,6 +37,9 @@ export class TrangHocSinh {
   protected readonly laKiemTra = (ma: string) => this.cheDo.hasValue() && this.cheDo.value().find(m => m.id === ma)?.status === 'KIEM_TRA';
   protected readonly goiBai = this.api.goiBai();
   protected readonly nhac = this.api.nhac();
+  protected readonly deXuat = computed(() => (this.goiBai.value() ?? []).filter(r => r.status === 'GUI_THAY_CO'
+    || (this.ds.value() ?? []).some(b => b.maBai === r.id && b.trangThai !== 'DA_NOP')));
+  protected tenBaiGoiY(id: string): string { return (this.ds.value() ?? []).find(b => b.maBai === id)?.tenKyNang ?? 'Bài được giao'; }
   protected readonly gio = (s:string)=>ngayViet(s, true);
   protected nhacTen(n: Item<ReminderDetails>): string {
     const code = n.title.startsWith('Sắp đến hạn: ') ? n.title.slice('Sắp đến hạn: '.length) : '';

@@ -48,6 +48,32 @@ const BAI: BaiCuaHocSinh[] = [
 ];
 
 describe('TrangHocSinh', () => {
+  it('sau bài nộp sai, hiện bài khác được gợi để chữa đúng dạng lỗi', async () => {
+    const t = await mo(undefined, [], undefined, [{id:BAI[2].maBai,title:'',subtitle:'Chữa dạng lỗi vừa gặp: Nhầm dấu đạo hàm.',status:'CHUA_LOI',details:{level4:'NHAN_BIET',skillCode:'T12.DH.03'}}]);
+    t.http.expectOne(API_HS.bai).flush([{...BAI[0],ketQua:'SAI'},BAI[2]]);
+    await t.fixture.whenStable();
+    expect(t.chu('[data-testid=de-xuat-bai]')).toContain('Nhầm dấu đạo hàm');
+    expect(t.el.querySelector('[data-testid=de-xuat-bai] a')?.getAttribute('href')).toBe('/hs/luyen/'+BAI[2].maBai);
+    t.http.verify();
+  });
+
+  it('kẹt và không có bài dễ hơn: hiện gửi thầy cô ngay cả khi chưa có bài', async () => {
+    const t = await mo(undefined, [], [], [{id:'',title:'Gửi thầy cô',subtitle:'Em đang kẹt ở Xét dấu đạo hàm. Hãy gửi thầy cô; chưa tăng độ khó.',status:'GUI_THAY_CO',details:{level4:'NHAN_BIET',skillCode:'T12.DH.03'}}]);
+    t.http.expectOne(API_HS.bai).flush([]);
+    await t.fixture.whenStable();
+    expect(t.chu('[data-testid=de-xuat-bai]')).toContain('gửi thầy cô');
+    expect(t.el.querySelector('[data-testid=de-xuat-bai] a')).toBeNull();
+    t.http.verify();
+  });
+
+  it('bỏ gợi bài không thuộc danh sách đã giao của em', async () => {
+    const t = await mo(undefined, [], [], [{id:'lop-khac',title:'Bài bí mật',subtitle:'Chữa lỗi',status:'CHUA_LOI',details:{}}]);
+    t.http.expectOne(API_HS.bai).flush([]);
+    await t.fixture.whenStable();
+    expect(t.el.querySelector('[data-testid=de-xuat-bai]')).toBeNull();
+    t.http.verify();
+  });
+
   it('gợi bài NT-DH12-NB-01 kiểm tra không lấn bài luyện chưa nộp dù bài luyện thiếu chế độ', async () => {
     const kt = {...BAI[2], maBai: 'NT-DH12-NB-01', tenBo: 'Kiểm tra hàm số — 45 phút'};
     const t = await mo(undefined, [], [{id:kt.maBai,status:'KIEM_TRA',details:{dueAt:kt.han}}],

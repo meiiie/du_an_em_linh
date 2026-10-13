@@ -23,6 +23,26 @@ class WorkspaceServiceTest {
  @Test void csvEscapesQuotesAndNewlines(){assertEquals("\"Đạo hàm \"tích\"\nquy tắc\"".replace("\"tích\"","\"\"tích\"\""),WorkspaceService.csvCell("Đạo hàm \"tích\"\nquy tắc"));}
  @Test void csvNeutralizesFormulaInjection(){assertEquals("\"'=1+1\"",WorkspaceService.csvCell("=1+1"));assertEquals("\"' @SUM(A1)\"",WorkspaceService.csvCell(" @SUM(A1)"));}
  @Test void csvNeutralizesMultilineFormula(){assertEquals("\"'=1+1\nX\"",WorkspaceService.csvCell("=1+1\nX"));}
+ @Test void todaysGeneratedSessionPrecedesOtherReminders(){
+  var at=Instant.parse("2026-10-14T08:00:00Z");
+  var s=new WorkspaceService(store,members,gate,hasher,Clock.fixed(at,ZoneOffset.UTC));
+  when(members.lopHoc(student)).thenReturn(Optional.of(cl));
+  when(store.reminders(student,at)).thenReturn(List.of(new Item("other1","Hạn ngày mai","","ON_TAP",Map.of()),new Item("other2","Hạn khác","","ON_TAP",Map.of())));
+  var rows=s.reminders(student);
+  assertEquals("GOI_Y",rows.getFirst().status());
+  assertEquals("2026-10-14T12:30:00Z",rows.getFirst().details().get("startsAt"));
+  assertEquals(3,rows.size());
+ }
+ @Test void weeklyPlanNeedsOwnClassAndValidWeekRange(){
+  assertThrows(WorkspaceException.class,()->service.weeklyPlan(student,53));
+  verifyNoInteractions(store,members);
+  assertThrows(WorkspaceException.class,()->service.weeklyPlan(student,0));
+  verifyNoInteractions(store);
+ }
+ @Test void stuckAlertsCheckTeacherBeforeReading(){
+  doThrow(new WorkspaceException(403,"Không thuộc lớp")).when(members).kiemGiaoVien(actor,cl);
+  assertThrows(WorkspaceException.class,()->service.stuckAlerts(actor,cl));verifyNoInteractions(store);
+ }
  @Test void scheduleRejectsSubMinuteAndOverEightHours(){assertThrows(WorkspaceException.class,()->service.schedule(student,new Schedule("Học",now,now.plusSeconds(30))));assertThrows(WorkspaceException.class,()->service.schedule(student,new Schedule("Học",now,now.plusSeconds(8*3600+1))));verifyNoInteractions(store);}
  @Test void schoolAdminCannotDisableOutsideClass(){when(store.accountRole(actor)).thenReturn("SCHOOL_ADMIN");assertThrows(WorkspaceException.class,()->service.bulk(actor,new Bulk(List.of(student),false)));verify(store,never()).bulk(any(),any(),any());}
  @Test void cannotDisableSelf(){assertThrows(WorkspaceException.class,()->service.bulk(actor,new Bulk(List.of(actor),false)));verifyNoInteractions(store);}

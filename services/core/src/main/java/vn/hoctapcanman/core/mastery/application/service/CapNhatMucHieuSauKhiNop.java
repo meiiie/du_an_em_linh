@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import vn.hoctapcanman.core.classroom.application.port.CanhBaoGiaoVien;
 import vn.hoctapcanman.core.content.application.port.DanhMucKyNang;
+import vn.hoctapcanman.core.mastery.domain.model.RepeatedStepFailures;
 import vn.hoctapcanman.core.mastery.domain.model.BktConfig;
 import vn.hoctapcanman.core.mastery.domain.model.Level4;
 import vn.hoctapcanman.core.mastery.domain.model.MasteryEvent;
@@ -29,7 +30,7 @@ import vn.hoctapcanman.core.practice.application.port.CapNhatMucHieu;
  *   <li>Kỹ năng được tính: của bài; bài sai có mã lỗi đủ tin cậy thì kỹ năng của mã lỗi ({@code THEO_MA_LOI}), không thì
  *       có bước sai thì kỹ năng của bước ({@code THEO_BUOC}).</li>
  *   <li>Khóa trạng thái của kỹ năng đó, áp BKT ({@link MasteryState#apply}), ghi trạng thái và sự kiện; sai đủ ngưỡng kẹt
- *       thì ghi cảnh báo {@code KET} cho giáo viên của lớp (cổng của classroom không ghi trùng cảnh báo đang mở).</li>
+ *       cùng bước thì ghi cảnh báo {@code KET} cho giáo viên của lớp (cổng của classroom không ghi trùng cảnh báo đang mở).</li>
  * </ol>
  * Khác v0: v0 tính ở mỗi lần nộp bước, kể cả bước sai giữa bài; v2 tính một lần khi nộp bài, với phán quyết của bước kết
  * luận (nên {@code DAT} luôn là xong cả bài).
@@ -68,8 +69,9 @@ public class CapNhatMucHieuSauKhiNop implements CapNhatMucHieu {
             bai.nghiDoanMo() ? Rule.NGHI_DOAN_MO : tinh.luat(), buocSai, bai.maLoi(), bai.doTinCay(), bai.nghiDoanMo(),
             truoc.level(), u.after().level(), cfg.version(), bai.nopLuc());
         repo.save(u.after(), suKien);
-        if (u.stuckAlert()) {
-            canhBao.ghiKet(bai.hocSinhId(), tinh.kyNang(), null, null, "Kẹt " + u.after().stuckCounter() + " lượt ở " + tinh.kyNang());
+        int sameStepFailures = RepeatedStepFailures.count(repo.recentEventsOf(bai.hocSinhId(), cfg.stuckAfter()));
+        if (!dung && !bai.nghiDoanMo() && sameStepFailures >= cfg.stuckAfter()) {
+            canhBao.ghiKet(bai.hocSinhId(), tinh.kyNang(), null, null, "Kẹt " + sameStepFailures + " lượt ở bước " + buocSai);
         }
         return List.of(thayDoi(suKien));
     }

@@ -12,6 +12,7 @@ import vn.hoctapcanman.core.content.application.dto.KyNang;
 import vn.hoctapcanman.core.content.application.port.DanhMucKyNang;
 import vn.hoctapcanman.core.identity.application.port.UserDirectory;
 import vn.hoctapcanman.core.mastery.application.dto.hocsinh.TrangHoc;
+import vn.hoctapcanman.core.mastery.domain.model.RepeatedStepFailures;
 import vn.hoctapcanman.core.mastery.domain.model.BktConfig;
 import vn.hoctapcanman.core.mastery.domain.model.Level4;
 import vn.hoctapcanman.core.mastery.domain.model.MasteryState;
@@ -36,6 +37,12 @@ public class GetTrangHocUseCase {
         this.danhMuc = danhMuc;
     }
 
+    private boolean stuck(MasteryState s, BktConfig cfg) {
+        var events=repo.recentEventsOf(s.studentId(),cfg.stuckAfter());
+        // Snapshot seed cũ chưa có sự kiện: giữ trạng thái đã nhập; có lịch sử thì xét cùng bước.
+        return events.isEmpty()?s.stuck(cfg):RepeatedStepFailures.count(events)>=cfg.stuckAfter() && events.stream().anyMatch(e -> e.skillCode().equals(s.skillCode()));
+    }
+
     public TrangHoc execute(UUID hocSinhId) {
         String ten = users.tenHienThi(hocSinhId).orElseThrow(() -> new IllegalStateException("Tài khoản của access token không còn"));
         BktConfig cfg = repo.config();
@@ -56,7 +63,7 @@ public class GetTrangHocUseCase {
             .entrySet().stream().filter(e -> vdc.containsAll(e.getValue())).map(Map.Entry::getKey).sorted().toList();
         return new TrangHoc(ten,
             cuaEm.stream().map(s -> new TrangHoc.KyNangCuaEm(s.skillCode(), tenKyNang.getOrDefault(s.skillCode(), s.skillCode()),
-                overrides.getOrDefault(s.skillCode(),s.level()).name(), s.stuck(cfg))).toList(),
+                overrides.getOrDefault(s.skillCode(),s.level()).name(), stuck(s,cfg))).toList(),
             new TrangHoc.HoanThanh(vdc.stream().sorted().toList(), chuDeXong));
     }
 }
