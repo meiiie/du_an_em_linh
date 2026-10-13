@@ -22,6 +22,9 @@ class WorkspaceServiceTest {
  @Test void overrideCarriesActorAndReason(){when(members.laHocSinh(student,cl)).thenReturn(true);MasteryOverride r=new MasteryOverride(cl,student,"K1","VAN_DUNG","Đã kiểm tra trên lớp");service.override(actor,r);verify(store).override(actor,r,now);}
  @Test void csvEscapesQuotesAndNewlines(){assertEquals("\"Đạo hàm \"tích\"\nquy tắc\"".replace("\"tích\"","\"\"tích\"\""),WorkspaceService.csvCell("Đạo hàm \"tích\"\nquy tắc"));}
  @Test void csvNeutralizesFormulaInjection(){assertEquals("\"'=1+1\"",WorkspaceService.csvCell("=1+1"));assertEquals("\"' @SUM(A1)\"",WorkspaceService.csvCell(" @SUM(A1)"));}
+ @Test void csvNeutralizesMultilineFormula(){assertEquals("\"'=1+1\nX\"",WorkspaceService.csvCell("=1+1\nX"));}
+ @Test void scheduleRejectsSubMinuteAndOverEightHours(){assertThrows(WorkspaceException.class,()->service.schedule(student,new Schedule("Học",now,now.plusSeconds(30))));assertThrows(WorkspaceException.class,()->service.schedule(student,new Schedule("Học",now,now.plusSeconds(8*3600+1))));verifyNoInteractions(store);}
+ @Test void schoolAdminCannotDisableOutsideClass(){when(store.accountRole(actor)).thenReturn("SCHOOL_ADMIN");assertThrows(WorkspaceException.class,()->service.bulk(actor,new Bulk(List.of(student),false)));verify(store,never()).bulk(any(),any(),any());}
  @Test void cannotDisableSelf(){assertThrows(WorkspaceException.class,()->service.bulk(actor,new Bulk(List.of(actor),false)));verifyNoInteractions(store);}
  @Test void rejectsRealStudentIntake(){assertThrows(WorkspaceException.class,()->service.createUser(actor,new NewUser("demo@example.test","Demo","long-password","STUDENT",false)));verifyNoInteractions(hasher,store);}
  @Test void scheduleChecksTimeRange(){assertThrows(WorkspaceException.class,()->service.schedule(student,new Schedule("Học",now,now.minusSeconds(1))));verifyNoInteractions(store);}

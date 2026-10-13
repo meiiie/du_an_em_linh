@@ -3,17 +3,17 @@
 </header>
 
 @if (ds.isLoading() && !ds.hasValue()) {
-  <div class="dang-tai" aria-busy="true"><span class="sr-only">Đang tải bài được giao</span></div>
+  <app-khung-cho nhan="Đang tải bài được giao" />
 } @else if (ds.error()) {
   <div class="trong" role="alert">
-    <p>Chưa tải được bài. Kiểm tra kết nối rồi thử lại.</p>
-    <button appButton variant="secondary" type="button" (click)="ds.reload()">Thử lại</button>
+    <app-loi-tai (thuLai)="ds.reload()" />
   </div>
 } @else {
   @if (ke(); as ke) {
     <section class="ke-tiep" aria-labelledby="tieu-de-ke-tiep">
       <div class="ke-chu">
         <h2 id="tieu-de-ke-tiep" class="nhan-muc">Bài tiếp theo</h2>
+        @if(goiBai.hasValue() && goiBai.value()[0]?.id === ke.maBai){<p class="phu">{{goiBai.value()[0].subtitle}}</p>}
         <p class="ky-nang">{{ ke.tenKyNang }}</p>
         <p class="cau-hoi">{{ thanDe(ke.deBai) }}</p>
         <div class="tien-do" role="img" [attr.aria-label]="'Đã đạt ' + ke.soBuocDat + ' trên ' + ke.soBuoc + ' bước'">
@@ -38,11 +38,13 @@
       </ul>
     } @else {
       <div class="trong">
-        <p>Chưa có bài. Bài thầy cô giao sẽ hiện ở đây.</p>
+        <app-trang-rong tieuDe="Chưa có bài" moTa="Bài thầy cô giao sẽ hiện ở đây." />
       </div>
     }
   </section>
 
+  @if(nhac.hasValue() && nhac.value().length){<section class="surface"><h2 class="nhan-muc">Hôm nay và hạn sắp tới</h2><ul class="row-list">@for(n of nhac.value();track n.id){<li><strong>{{n.title}}</strong><p class="muted">{{gio(n.details.startsAt)}}</p></li>}</ul><a routerLink="/hs/lich">Xem lịch học →</a></section>}
+  @if(th.isLoading()){<app-khung-cho nhan="Đang tải mức hiểu" />}@else if(th.error()){<app-loi-tai moTa="Chưa tải được mức hiểu. Bài được giao vẫn làm được." (thuLai)="th.reload()" />}
   @if (th.hasValue()) {
     <section aria-labelledby="tieu-de-ky-nang" data-testid="so-ky-nang">
       <h2 id="tieu-de-ky-nang" class="nhan-muc">Kỹ năng</h2>

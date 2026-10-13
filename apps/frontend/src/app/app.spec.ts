@@ -60,11 +60,11 @@ describe('định tuyến và tiêu đề tab', () => {
     expect(TestBed.inject(Title).getTitle()).toBe('Học · MathL+');
   });
 
-  it('giáo viên: /gv «Chưa có lớp», tab «Lớp»; vào /hs bị đưa về /gv', async () => {
+  it('giáo viên: /gv «Tổng quan», tab «Tổng quan»; vào /hs bị đưa về /gv', async () => {
     gia.dangNhapNhu(GV);
     const gv = await den('/gv');
-    expect(gv.el?.querySelector('h1')?.textContent?.trim()).toBe('Chưa có lớp');
-    expect(TestBed.inject(Title).getTitle()).toBe('Lớp · MathL+');
+    expect(gv.el?.querySelector('h1')?.textContent?.trim()).toBe('Tổng quan');
+    expect(TestBed.inject(Title).getTitle()).toBe('Tổng quan · MathL+');
     expect((await den('/hs')).url).toBe('/gv');
   });
 

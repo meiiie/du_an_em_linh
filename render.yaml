@@ -1,6 +1,6 @@
-# Blueprint du système Angular + core + math. Aucun déploiement n'est exécuté par ce fichier seul.
-# Services privés payants; vérifier le plan avant de synchroniser le Blueprint.
-# Référence: https://render.com/docs/blueprint-spec (2026-10-13).
+# Blueprint Angular + core + math; chưa thực hiện triển khai.
+# Dịch vụ riêng cần gói trả phí; cấu hình này chỉ là bản chuẩn bị.
+# Nguồn: https://render.com/docs/blueprint-spec (2026-10-13).
 services:
   - type: web
     name: hoc-toan-frontend
@@ -34,8 +34,6 @@ services:
     envVars:
       - key: SERVER_PORT
         value: "8080"
-      - key: SPRING_DATASOURCE_URL
-        value: jdbc:postgresql://${PGHOST}:${PGPORT}/${PGDATABASE}
       - key: PGHOST
         fromDatabase:
           name: hoc-toan-pg

@@ -204,10 +204,7 @@ def test_tam_bai_khung_ngan_seed_y_phay_de_dung_va_khop_dao_ham():
             assert chan("y' = %s" % yp_str, s + de), b["id"]
 
 
-def test_seed_ts_gui_de_bai_va_buoc_bat_dau():
-    src = open(os.path.join(ROOT, "apps/web/scripts/seed.ts"), encoding="utf-8").read()
-    assert "de_bai: opts.text" in src
-    assert "buoc_bat_dau: ex.buoc_bat_dau" in src
+# Hợp đồng solve của core được kiểm trong test API/core; seed Next.js đã gỡ.
 
 
 # ------------------------------------------------------------------ fail closed / an toàn đầu vào

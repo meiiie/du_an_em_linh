@@ -65,11 +65,25 @@ def _run(kind, payload):
 
 def _extract_pdf(payload):
     path = payload.get("path")
-    if not path:
+    if "pdf_base64" not in payload and not path:
         return {"text": "", "trang_thai": "KHONG_CO_FILE"}
     try:
+        source = path
+        if "pdf_base64" in payload:
+            import base64
+            from io import BytesIO
+            encoded = payload["pdf_base64"]
+            if not isinstance(encoded, str) or not encoded:
+                return {"text": "", "trang_thai": "KHONG_TRICH_DUOC", "ly_do": "FILE_KHONG_HOP_LE"}
+            limit = 5 * 1024 * 1024
+            if len(encoded) > 4 * ((limit + 2) // 3):
+                return {"text": "", "trang_thai": "KHONG_TRICH_DUOC", "ly_do": "FILE_QUA_LON"}
+            raw = base64.b64decode(encoded, validate=True)
+            if len(raw) > limit:
+                return {"text": "", "trang_thai": "KHONG_TRICH_DUOC", "ly_do": "FILE_QUA_LON"}
+            source = BytesIO(raw)
         from pypdf import PdfReader
-        reader = PdfReader(path)
+        reader = PdfReader(source)
         parts = []
         for page in reader.pages:
             parts.append(page.extract_text() or "")

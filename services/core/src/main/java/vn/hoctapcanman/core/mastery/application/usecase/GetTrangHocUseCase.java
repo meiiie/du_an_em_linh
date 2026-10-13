@@ -40,7 +40,9 @@ public class GetTrangHocUseCase {
         String ten = users.tenHienThi(hocSinhId).orElseThrow(() -> new IllegalStateException("Tài khoản của access token không còn"));
         BktConfig cfg = repo.config();
         Map<String,Level4> overrides = repo.overridesOf(hocSinhId);
-        List<MasteryState> cuaEm = repo.statesOf(List.of(hocSinhId)).stream()
+        List<MasteryState> raw = new java.util.ArrayList<>(repo.statesOf(List.of(hocSinhId)));
+        for(String skill:overrides.keySet())if(raw.stream().noneMatch(s->s.skillCode().equals(skill)))raw.add(MasteryState.initial(hocSinhId,skill,cfg,java.time.Instant.EPOCH));
+        List<MasteryState> cuaEm = raw.stream()
             .sorted(Comparator.comparingDouble(MasteryState::mastery)
                 .thenComparing(Comparator.comparingInt(MasteryState::stuckCounter).reversed())
                 .thenComparing(MasteryState::skillCode))

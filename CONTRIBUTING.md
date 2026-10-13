@@ -19,6 +19,8 @@ Tên nhánh: chữ thường, gạch nối, một ý. Ví dụ: `feat/lich-hoc`,
 
 Các nhánh `cursor/*-91a8` cũ là chồng PR lúc dựng nguyên mẫu — đã gom vào `main` qua một PR. Đừng tạo thêm chồng đó.
 
+**Chủ repo, 2026-10-13:** Codex được hiện thực yêu cầu, lead review diff và cổng trước commit/PR. Phiên hoàn thiện không commit/push, không deploy production. Giao diện FLAT: không bóng hoặc dải màu mép; `pnpm lint` có cổng kiểm.
+
 ## Phạm vi đã khóa
 
 Đọc `AGENTS.md` trước khi mở rộng. Không làm:
@@ -33,14 +35,17 @@ Các nhánh `cursor/*-91a8` cũ là chồng PR lúc dựng nguyên mẫu — đ�
 
 ```bash
 pnpm dev:math
-pnpm dev:web
-pnpm db:migrate && pnpm seed
+pnpm dev:core
+pnpm dev:frontend
+# Flyway + importer tự chạy với core profile dev
 pnpm test:math
-pnpm test:web
-pnpm --filter web test:e2e
+pnpm test:core
+pnpm test:frontend
+pnpm lint
+pnpm --filter frontend e2e
 ```
 
-Sửa UI → `apps/web`. Sửa CAS / cổng / bộ lọc → `services/math` (sandbox). Bản đồ: `docs/CODEMAP.md`.
+Sửa UI → `apps/frontend`. Sửa nghiệp vụ → `services/core`. Sửa CAS / cổng / bộ lọc → `services/math` (sandbox). Bản đồ: `docs/CODEMAP.md`.
 
 ## Commit / tiêu đề PR
 

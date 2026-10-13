@@ -10,7 +10,7 @@ export interface RecommendationDetails{level4:Muc4;skillCode:string;}
 export interface ScheduleDetails{startsAt:string;endsAt:string;}
 export interface FormulaDetails{statement:string;tier1:string;tier2:string;version:number;}
 export interface Library{formulas:Item<FormulaDetails>[];documents:Item[];}
-export interface Dashboard{students:number;stuck:number;pending:number;assignments:number;}
+export interface Dashboard{students:number;stuck:number;pending:number;assignments:number;distribution:Record<string,number>;deadlines:Item[];}
 export interface Settings{lopId:string;revealSolutionAfterSubmit:boolean;aiProvider:string;}
 export interface UserDetails{enabled:boolean;synthetic:boolean;}
 export interface StudentProfile{student:Item<StudentDetails>;history:Item[];}

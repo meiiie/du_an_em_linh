@@ -19,6 +19,7 @@
       <p>Dạng câu này (không theo khung 5 bước) chưa có khung làm bài trên ứng dụng. Em làm ra giấy và nộp thầy cô.</p>
     </div>
   } @else {
+    <div class="practice-grid" [class.co-gia-su]="coGiaSu()">
     <section
       class="phieu"
       data-testid="solve-screen"
@@ -27,6 +28,8 @@
       [attr.data-buoc-bat-dau]="b.buocBatDau ?? b.cacBuoc[0]?.maBuoc"
     >
       <header class="de">
+        @if (mode()?.status === 'KIEM_TRA') { <p class="badge" data-testid="che-do-kiem-tra">Kiểm tra · Không chat</p> }
+        @if (han()) { <p class="phu">Hạn nộp: {{han()}}</p> }
         <p class="nhan-muc">{{ tenMuc[b.muc4] }}</p>
         <p class="ky-nang">{{ b.tenKyNang }}</p>
         <p class="cau-hoi">{{ thanDe(b.de.text) }}</p>
@@ -222,7 +225,10 @@
                 <p>{{ lg }}</p>
               </div>
             }
-            <a appButton routerLink="/hs">Về bài được giao</a>
+            @if (goiBai.hasValue() && goiBai.value().length) {
+              <p class="phu">{{goiBai.value()[0].subtitle}}</p>
+              <a appButton [routerLink]="['/hs/luyen',goiBai.value()[0].id]" data-testid="bai-ke-ket-qua">Bài tiếp theo</a>
+            } @else { <a appButton routerLink="/hs">Về bài được giao</a> }
           </section>
         } @else {
           @if (buocCanKiemLai(); as c) {
@@ -250,5 +256,7 @@
         }
       </div>
     </section>
+    @if (coGiaSu()) { <app-gia-su [maBai]="b.maBai" [maBuoc]="buocHien()?.maBuoc ?? ''" [tenBuoc]="buocHien()?.ten ?? ''" /> }
+    </div>
   }
 }

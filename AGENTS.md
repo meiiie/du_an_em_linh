@@ -4,7 +4,7 @@ Nguồn chuẩn cho mọi agent (Codex, Cursor, Claude Code…). Claude Code đ�
 
 ## Đây là gì
 
-**MathL+** (phần mềm học toán với AI) — hợp đồng dài hạn. Tên do chủ repo chọn ngày 2026-10-03 (#124). Tên kỹ thuật giữ nguyên: gói `vn.hoctapcanman`, CSDL `hoc_toan_core`, image `hoc-toan-*`, repo. v0 giữ tên hiển thị cũ. Mục tiêu sản phẩm (đọc từ sơ đồ khách): [`docs/product/MUC-TIEU.md`](docs/product/MUC-TIEU.md).
+**MathL+** (phần mềm học toán với AI) — hợp đồng dài hạn. Tên do chủ repo chọn ngày 2026-10-03 (#124). Tên kỹ thuật giữ nguyên: gói `vn.hoctapcanman`, CSDL `hoc_toan_core`, image `hoc-toan-*`, repo. Mục tiêu sản phẩm (đọc từ sơ đồ khách): [`docs/product/MUC-TIEU.md`](docs/product/MUC-TIEU.md).
 
 - **Hiện hành (chủ repo, 2026-10-13):** một chủ đề Toán 12 — đơn điệu và cực trị; `apps/frontend` + `services/core` + `services/math`. Mọi chữ trên màn hình là tiếng Việt. Demo dùng dữ liệu tổng hợp và gia sư `offline`. `apps/web` đã được gỡ theo yêu cầu trực tiếp; giữ snapshot `data/v0` cho importer.
 - **v2 (chấp nhận 2026-10-01, [ADR 011](docs/adr/011-kien-truc-v2.md)):** `apps/frontend` (Angular 22) + `services/core` (Spring Boot 4.1, Java 25) + giữ `services/math`. Làm theo pha trong [`docs/product/LO-TRINH.md`](docs/product/LO-TRINH.md); yêu cầu chủ repo ngày 2026-10-13 thay điều kiện giữ v0: gỡ `apps/web`, chỉ phát triển v2.
@@ -22,7 +22,7 @@ Nguồn chuẩn cho mọi agent (Codex, Cursor, Claude Code…). Claude Code đ�
 | Số đo kiểm thử thật | [`docs/KIEM-THU.md`](docs/KIEM-THU.md) |
 | Lab: thiết kế, sư phạm, kiểm định, nghiên cứu, quyết định | [`labs/README.md`](labs/README.md) |
 
-## Không mở lại (v0 — ADR 002–010)
+## Các quyết định kế thừa v0 (ADR 002–010)
 
 - Khung 5 bước `B.DH.TXD` / `B.DH.DAOHAM` / `B.DH.NGHIEM` / `B.DH.XETDAU` / `B.DH.KETLUAN`. Chấm cả bước, không tô từng ô khi gõ.
 - Cổng 3 tầng: `DAT` | `SAI` | `KHONG_KIEM_DUOC` + `GV_DUYET`.

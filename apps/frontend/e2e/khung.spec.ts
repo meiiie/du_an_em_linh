@@ -41,7 +41,7 @@ const GIAO_VIEN: readonly (readonly [string, RegExp, string])[] = [
   ['nav-gv-tien-do', /\/gv\/tien-do$/, 'Mức lớp'],
   ['nav-gv-ket-noi-ai', /\/gv\/ket-noi-ai$/, 'Gia sư'],
   ['nav-gv-cai-dat', /\/gv\/cai-dat$/, 'Cài đặt lớp'],
-  ['nav-gv-tong-quan', /\/gv$/, 'Chưa có lớp'],
+  ['nav-gv-tong-quan', /\/gv$/, 'Tổng quan'],
 ];
 
 test('học sinh: ray dẫn tới đủ bốn màn, không tràn ngang', async ({ page }) => {

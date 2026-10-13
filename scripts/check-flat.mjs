@@ -70,14 +70,17 @@ export function scanSource(source, path = 'source.css') {
       report('shadow-token', offset + match.index, `Token bóng bị cấm: ${match[0]}`);
     }
     for (const match of clean.matchAll(/@apply\s+([^;{}]+)/g)) utility(match[1], offset + match.index + match[0].indexOf(match[1]));
-    // Catch the usual pseudo-element replacement for a left border stripe.
+    // Catch the usual pseudo-element replacement for a vertical edge stripe.
     for (const match of clean.matchAll(/([^{}]+)\{([^{}]*)\}/g)) {
+      for (const token of match[1].matchAll(/\.((?:[\w-]+\\:)*(?:inset-)?shadow(?:-[\w-]+)?)/g)) {
+        utility(token[1].replace(/\\:/g, ':'), offset + match.index + token.index + 1);
+      }
       const body = match[2];
       if (/::?(?:before|after)/.test(match[1])
-          && /(?:left|inset-inline-start)\s*:\s*0(?:px)?\b/.test(body)
+          && /(?:left|right|inset-inline-start|inset-inline-end)\s*:\s*0(?:px)?\b/.test(body)
           && /width\s*:\s*(?:[1-4](?:px)?|0\.(?:125|25)rem)\b/.test(body)
           && /background(?:-color)?\s*:\s*(?!none\b|transparent\b)[^;]+/.test(body)) {
-        report('edge-stripe', offset + match.index, 'Pseudo-element tạo dải màu mép trái bị cấm.');
+        report('edge-stripe', offset + match.index, 'Pseudo-element tạo dải màu mép bị cấm.');
       }
     }
   };
@@ -97,6 +100,12 @@ export function scanSource(source, path = 'source.css') {
         }
         if (/^\[style\.border(?:-left|-inline-start|left|inlinestart)/.test(name)) {
           report('edge-stripe', start, 'Style viền trái động bị cấm.');
+        }
+        if (name === '[ngstyle]' || name === '[style]') {
+          for (const property of value.matchAll(/(?:['"]?)(box-shadow|boxShadow|border-left|borderLeft|border-inline-start|borderInlineStart)(?:['"]?)\s*:\s*([^,}]+)/g)) {
+            const reset = /^(?:['"]none['"]|null|0)$/.test(property[2].trim());
+            if (!reset) report(property[1].startsWith('box') ? 'shadow' : 'edge-stripe', contentStart + property.index, 'Style object tạo bóng hoặc viền nhấn trái bị cấm.');
+          }
         }
       }
     }

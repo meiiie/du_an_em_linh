@@ -1,4 +1,4 @@
-# Ảnh nginx thay ${CORE_URL}, ${SITE_URL} lúc khởi động. envsubst chỉ thay biến môi trường đã khai báo, nên $host, $uri… giữ nguyên.
+# Ảnh nginx thay ${CORE_HOSTPORT}, ${SITE_URL} lúc khởi động. envsubst chỉ thay biến môi trường đã khai báo, nên $host, $uri… giữ nguyên.
 server {
     listen 8080;
     server_name _;
@@ -17,10 +17,21 @@ server {
 
     # ^~: location regex của tệp tĩnh bên dưới không bắt nhầm đường API.
     location ^~ /api/ {
-        proxy_pass ${CORE_URL};
+        proxy_pass http://${CORE_HOSTPORT};
+        proxy_buffering off;
+        proxy_read_timeout 90s;
         proxy_set_header Host $host;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    location = /health {
+        proxy_pass http://${CORE_HOSTPORT}/actuator/health/readiness;
+        proxy_set_header Host $host;
+        add_header Cache-Control "no-cache" always;
+        add_header X-Content-Type-Options nosniff always;
+        add_header X-Frame-Options DENY always;
+        add_header Referrer-Policy strict-origin-when-cross-origin always;
     }
 
     # Tệp build có hash 8 ký tự base64url trong tên (main-5KQ2JHEV.js, chunk-Bo9Sfcq-.js, media/…-AB12cd_4.woff2):

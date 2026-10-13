@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtemp, writeFile, rm } from 'node:fs/promises';
+import { mkdtemp, mkdir, writeFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { scanSource, runCheck } from './check-flat.mjs';
@@ -43,16 +43,31 @@ test('checks Angular bound classes, ngClass and bound box-shadow', () => {
 
 test('detects shadow utility in CSS apply and thin colored pseudo edge', () => {
   assert.equal(scanSource('.a { @apply shadow-sm; } .a::before { position:absolute; inset-inline-start:0; width:3px; height:100%; background:var(--accent); }', 'a.css').length, 2);
+  assert.equal(scanSource('.shadow-lg { color:red } .hover\\:shadow-md:hover { color:red }', 'a.css').length, 2);
+  assert.equal(scanSource('.a::after { right:0; width:4px; height:100%; background:red; }', 'a.css').length, 1);
+});
+
+test('checks ngStyle/style object bindings without scanning ordinary text', () => {
+  assert.equal(scanSource('<p [ngStyle]="{boxShadow: effect}" [style]="{\'border-left\': stripe}"></p>', 'a.html').length, 2);
+  assert.deepEqual(scanSource('<p [ngStyle]="{boxShadow: \'none\'}">boxShadow: effect</p>', 'a.html'), []);
+});
+
+test('missing input fails closed instead of reporting flat success', async () => {
+  const output = [];
+  assert.equal(await runCheck('/tmp/mathl-flat-directory-that-does-not-exist', text => output.push(text)), 1);
+  assert.match(output[0], /không kiểm được/);
 });
 
 test('CLI recursively checks frontend source and fails with path and line', async () => {
   const dir = await mkdtemp(join(tmpdir(), 'mathl-flat-'));
   try {
-    await writeFile(join(dir, 'bad.css'), '.a {\n box-shadow: 1px 1px red;\n}');
+    const nested = join(dir, 'component');
+    await mkdir(nested);
+    await writeFile(join(nested, 'bad.css'), '.a {\n box-shadow: 1px 1px red;\n}');
     const output = [];
     assert.equal(await runCheck(dir, message => output.push(message)), 1);
     assert.match(output.join('\n'), /bad\.css:2/);
-    await writeFile(join(dir, 'bad.css'), '.a { box-shadow: none; }');
+    await writeFile(join(nested, 'bad.css'), '.a { box-shadow: none; }');
     assert.equal(await runCheck(dir, () => {}), 0);
   } finally { await rm(dir, { recursive: true, force: true }); }
 });

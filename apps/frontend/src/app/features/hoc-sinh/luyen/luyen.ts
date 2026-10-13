@@ -19,6 +19,8 @@ import { Katex } from '../../../shared/toan/katex';
 import { OCongThuc } from '../../../shared/toan/o-cong-thuc';
 import { Button } from '../../../shared/ui/button';
 import { deBang, thanDe } from '../hang-bai';
+import { Item, ModeDetails, RecommendationDetails } from '../../../api/ux';
+import { GiaSu } from './gia-su';
 import { BangXetDau, SuKienO } from './bang-xet-dau';
 import { DAO_HAM, dongNghiem, KET_LUAN, Mui, NGHIEM, NhapPhieu, nhapTuBaiLam, oKetLuan, TXD, XET_DAU, yeuCauNop } from './phieu';
 
@@ -49,7 +51,7 @@ const TEN_TRANG_THAI: Record<TrangThaiBuoc, string> = {
  */
 @Component({
   selector: 'app-luyen',
-  imports: [BangXetDau, Button, Katex, OCongThuc, RouterLink],
+  imports: [GiaSu, BangXetDau, Button, Katex, OCongThuc, RouterLink],
   templateUrl: './luyen.html',
   styleUrl: './luyen.css',
 })
@@ -62,6 +64,11 @@ export class Luyen {
   private readonly vungPhanHoi = viewChild<ElementRef<HTMLElement>>('vungPhanHoi');
 
   protected readonly bai = httpResource<ChiTietBai>(() => API_HS.chiTietBai(this.maBai()));
+  protected readonly cheDo = httpResource<Item<ModeDetails>[]>(()=>'/api/hs/che-do');
+  protected readonly goiBai = httpResource<Item<RecommendationDetails>[]>(()=>this.daNop()?'/api/hs/goi-bai':undefined);
+  protected readonly mode = computed(()=>(this.cheDo.hasValue()?this.cheDo.value():[]).find(x=>x.id===this.maBai()));
+  protected readonly coGiaSu = computed(()=>this.cheDo.hasValue() && this.mode()?.status !== 'KIEM_TRA' && !this.daNop());
+  protected readonly han = computed(()=>this.mode()?.details.dueAt ? new Date(this.mode()!.details.dueAt!).toLocaleString('vi-VN') : '');
   protected readonly tenMuc = TEN_MUC;
   protected readonly deBang = deBang;
   protected readonly thanDe = thanDe;

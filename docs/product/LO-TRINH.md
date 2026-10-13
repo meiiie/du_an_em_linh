@@ -1,5 +1,6 @@
 # Lộ trình v2
 
+> **Chỉ đạo chủ repo 2026-10-13:** gỡ `apps/web` ngay, phát triển trên Angular/core/math; thay điều kiện giữ v0 dưới đây. Bảng pha và số đo giữ nguyên như lịch sử kế hoạch, không tự đánh dấu pha hoàn thành nếu cổng nghiệm thu chưa chạy. Phạm vi phiên hiện hành: `docs/ASSUMPTIONS.md`.
 > Nguồn chuẩn về thứ tự làm. Nâng từ [`labs/decisions/2026-10-01-kien-truc-v2.md`](../../labs/decisions/2026-10-01-kien-truc-v2.md) §7 sau khi ADR 011 được chấp nhận (2026-10-01). Đổi thứ tự hay điều kiện xong → PR sửa file này, chủ repo duyệt.
 
 Nguyên tắc: **strangler theo luồng**. v0 (`apps/web`) vẫn chạy để demo cho tới khi v2 đạt tương đương luồng A và B ([`MUC-TIEU.md`](MUC-TIEU.md) §3). Mỗi pha xong khi điều kiện đo được ở cột cuối đạt, có số đo thật trong PR.

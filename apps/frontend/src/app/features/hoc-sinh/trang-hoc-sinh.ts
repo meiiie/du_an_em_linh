@@ -2,6 +2,8 @@ import { httpResource } from '@angular/common/http';
 import { Component, computed, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { API_HS, BaiCuaHocSinh, TEN_MUC, TrangHoc } from '../../api/hoc-sinh';
+import { Item, RecommendationDetails, ScheduleDetails } from '../../api/ux';
+import { KhungCho, LoiTai, TrangRong } from '../../shared/ui/trang-thai';
 import { Phien } from '../../core/auth/phien';
 import { Katex } from '../../shared/toan/katex';
 import { Button } from '../../shared/ui/button';
@@ -15,7 +17,7 @@ import { SoKyNang } from './so-ky-nang';
  */
 @Component({
   selector: 'app-trang-hoc-sinh',
-  imports: [Button, HangBai, Katex, RouterLink, SoKyNang],
+  imports: [KhungCho, LoiTai, TrangRong, Button, HangBai, Katex, RouterLink, SoKyNang],
   templateUrl: './trang-hoc-sinh.html',
   styleUrl: './trang-hoc-sinh.css',
 })
@@ -25,10 +27,14 @@ export class TrangHocSinh {
   protected readonly ds = httpResource<BaiCuaHocSinh[]>(() => API_HS.bai);
   /** Mức hiểu theo kỹ năng (mastery). Lỗi thì chỉ ẩn sổ kỹ năng, danh sách bài vẫn dùng được. */
   protected readonly th = httpResource<TrangHoc>(() => API_HS.trangHoc);
+  protected readonly goiBai = httpResource<Item<RecommendationDetails>[]>(()=>'/api/hs/goi-bai');
+  protected readonly nhac = httpResource<Item<ScheduleDetails>[]>(()=>'/api/hs/nhac');
+  protected readonly gio = (s:string)=>new Date(s).toLocaleString('vi-VN',{day:'numeric',month:'numeric',hour:'2-digit',minute:'2-digit'});
   /** Bài làm được trên phiếu (`soBuoc` 0 là bài trắc nghiệm, em làm ra giấy): đang làm dở trước, rồi chưa làm. */
   protected readonly ke = computed(() => {
     const bai = (this.ds.value() ?? []).filter((b) => b.soBuoc > 0);
-    return bai.find((b) => b.trangThai === 'DANG_LAM') ?? bai.find((b) => b.trangThai === 'CHUA_LAM');
+    const recommend=this.goiBai.hasValue()?this.goiBai.value()[0]:undefined;
+    return bai.find(b=>b.trangThai==='DANG_LAM') ?? bai.find(b=>b.maBai===recommend?.id) ?? bai.find(b=>b.trangThai==='CHUA_LAM');
   });
   protected readonly deBang = deBang;
   protected readonly thanDe = thanDe;

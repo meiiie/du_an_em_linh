@@ -46,9 +46,18 @@ public class JwtConfig {
     }
 
     @Bean
-    JwtDecoder jwtDecoder(SecretKey jwtSigningKey, IdentityProperties properties) {
+    JwtDecoder jwtDecoder(SecretKey jwtSigningKey, IdentityProperties properties, vn.hoctapcanman.core.identity.domain.repository.UserRepository users) {
         NimbusJwtDecoder decoder = NimbusJwtDecoder.withSecretKey(jwtSigningKey).macAlgorithm(MacAlgorithm.HS256).build();
-        decoder.setJwtValidator(JwtValidators.createDefaultWithIssuer(properties.issuer()));
+        decoder.setJwtValidator(new org.springframework.security.oauth2.core.DelegatingOAuth2TokenValidator<>(
+            JwtValidators.createDefaultWithIssuer(properties.issuer()), jwt -> {
+                try {
+                    boolean active=users.findById(new vn.hoctapcanman.core.identity.domain.model.UserId(java.util.UUID.fromString(jwt.getSubject())))
+                        .filter(u->u.enabled() && u.role().name().equals(jwt.getClaimAsString("role"))).isPresent();
+                    if(active)return org.springframework.security.oauth2.core.OAuth2TokenValidatorResult.success();
+                } catch(IllegalArgumentException ignored) { /* malformed subject fails closed */ }
+                return org.springframework.security.oauth2.core.OAuth2TokenValidatorResult.failure(
+                    new org.springframework.security.oauth2.core.OAuth2Error("invalid_token","Phiên không còn hợp lệ.",null));
+            }));
         return decoder;
     }
 }

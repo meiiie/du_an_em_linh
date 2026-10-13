@@ -22,6 +22,7 @@ import {
   RouterLinkActive,
   RouterOutlet,
 } from '@angular/router';
+import { HangChoDuyet } from '../../core/hang-cho';
 import { Phien } from '../../core/auth/phien';
 import { BieuTuong } from '../ui/bieu-tuong';
 import { BrandMark } from '../ui/brand-mark';
@@ -110,7 +111,7 @@ const MAN_HINH_RONG = '(min-width: 64rem)';
             (click)="chonMuc()"
           >
             <app-bieu-tuong [ten]="muc.bieuTuong" />
-            <span class="nhan">{{ muc.nhan }}</span>
+            <span class="nhan">{{ muc.nhan }}</span>@if(muc.duongDan==='/gv/duyet' && choDuyet.so()){<span class="badge" aria-label="Bài chờ duyệt">{{choDuyet.so()}}</span>}
           </a>
         }
       </nav>
@@ -405,6 +406,7 @@ export class KhungTrang {
   readonly khuVuc = input.required<KhuVuc>();
 
   protected readonly phien = inject(Phien);
+  protected readonly choDuyet = inject(HangChoDuyet);
   protected readonly cacMuc = computed(() => DIEU_HUONG[this.khuVuc()]);
   protected readonly mucDuoi = computed(() => this.khuVuc() === 'GV' ? this.cacMuc().filter(m=>['/gv','/gv/tien-do','/gv/giao','/gv/duyet'].includes(m.duongDan)) : this.cacMuc());
   protected readonly tenKhuVuc = computed(() => TEN_KHU_VUC[this.khuVuc()]);

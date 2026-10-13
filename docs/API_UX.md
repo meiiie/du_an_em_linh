@@ -1,15 +1,17 @@
 # Hợp đồng API vòng học tập U5–U14
 
-Các đường dưới yêu cầu Bearer JWT; id người thao tác luôn lấy từ token. JSON camelCase. Lỗi dùng problem+json. Giáo viên chỉ đọc/ghi lớp mình dạy; /api/qt dành ADMIN (SCHOOL_ADMIN chưa có mô hình trường, bị đóng).
+Các đường dưới yêu cầu Bearer JWT; id người thao tác luôn lấy từ token. JSON camelCase. Lỗi dùng problem+json. Giáo viên chỉ đọc/ghi lớp mình dạy; /api/qt dành ADMIN hoặc SCHOOL_ADMIN. ADMIN quản lý toàn hệ thống. SCHOOL_ADMIN chỉ xem người dùng/lớp đã được phân công, bật/tắt tài khoản học sinh/giáo viên trong phạm vi và phân công trong lớp mình; tạo tài khoản/lớp mới dành ADMIN.
 
 DTO dùng chung `Item`: `{id:string,title:string,subtitle:string,status:string,details:object}`. `details` chứa dữ liệu mô tả của từng dòng (bên dưới). `Result`: `{message:string,count:number}`.
 
 - `GET /api/gv/lop` → Item[]; id lớp, title tên, details `{grade,schoolYear}`.
-- `GET /api/gv/tong-quan?lopId=UUID` → `{students:number,stuck:number,pending:number,assignments:number}`.
+- `GET /api/gv/tong-quan?lopId=UUID` → `{students:number,stuck:number,pending:number,assignments:number,distribution:{NHAN_BIET:number,THONG_HIEU:number,VAN_DUNG:number,VAN_DUNG_CAO:number},deadlines:Item[]}`.
 - `GET /api/gv/tien-do?lopId=UUID` → Item[]; id học sinh, title tên; details `{skills:[{code,name,level4,level3,mastery,overridden}],submitted:number}`.
 - `GET /api/gv/hoc-sinh/{id}?lopId=UUID` → `{student:Item,history:Item[]}`; history details `{problemCode,result,submittedAt}`.
 - `POST /api/gv/muc-hieu` body `{lopId,studentId,skillCode,level4,reason}` → Result. Bốn mã mức NHAN_BIET/THONG_HIEU/VAN_DUNG/VAN_DUNG_CAO; lý do bắt buộc.
 - `GET /api/gv/ngan-hang?lopId=UUID` → Item[]; id UUID bài, title mã, subtitle đề; status trạng thái phát hành; details `{code,skillCode,level4,gate,latex}`. FE lọc các trường này.
+- `POST /api/gv/ngan-hang` body `{lopId,code,skillCode,level4,statement,latex,function}` → Result. Chỉ chủ đề DH12 hiện tại; máy giải + kiểm 3 tầng rồi lưu trạng thái. Không tự phát hành khi thiếu căn cứ.
+- `POST /api/gv/goi-bai` body `{lopId,studentId,problemId,reason}` → Result; giao bài ôn nếu chưa có, ưu tiên bài này; ghi đè hết hiệu lực khi em bắt đầu nộp bước.
 - `GET /api/gv/giao?lopId=UUID` → Item[]; details `{studentId,problemCode,mode,dueAt}`.
 - `POST /api/gv/giao` body `{lopId,studentIds:UUID[],problemIds:UUID[],mode:"ON_TAP"|"KIEM_TRA",dueAt:ISO|null,setName:string}` → Result. studentIds rỗng là cả lớp. Mỗi bài/học sinh một giao đang hiệu lực; giao lại cập nhật chế độ/hạn.
 - `GET /api/hs/che-do` → Item[]; id = mã bài; status = mode; details `{dueAt}`. Khóa gia sư và hạn nộp kiểm ở máy chủ.
@@ -20,7 +22,7 @@ DTO dùng chung `Item`: `{id:string,title:string,subtitle:string,status:string,d
 - `GET /api/gv/cong-thuc?lopId=UUID` → Item[] (kể cả nháp).
 - `POST /api/gv/cong-thuc` body `{lopId,title,latex,statement}` → Result; thêm vào bảng NHAP, chưa phát hành cho học sinh.
 - `POST /api/gv/cong-thuc/kiem?lopId=UUID` → Result; kiểm dòng nháp qua dịch vụ toán và khóa khi mọi dòng đạt có trích dẫn.
-- `GET /api/gv/duyet?lopId=UUID` → Item[]; id lượt kiểm; title mã bài; subtitle lý do; status KHONG_KIEM_DUOC.
+- `GET /api/gv/duyet?lopId=UUID` → Item[]; id lượt kiểm; title mã bài; subtitle lý do; status KHONG_KIEM_DUOC; details `{kind:"PROBLEM",tiers:[{tier,status,reason,citation}]}` hoặc `{kind:"TUTOR",draft}`. Duyệt lời gợi ý chỉ xác nhận giáo viên đã xem; không bỏ qua cổng an toàn khi gia sư chạy.
 - `POST /api/gv/duyet/{id}` body `{lopId,approve:boolean,reason:string}` → Result; chỉ duyệt lượt mới nhất còn hiệu lực; SAI không thể duyệt.
 - `GET /api/gv/cai-dat?lopId=UUID` → `{lopId,revealSolutionAfterSubmit:boolean,aiProvider:string}`.
 - `PUT /api/gv/cai-dat` body `{lopId,revealSolutionAfterSubmit,aiProvider:"offline"}` → Result.
@@ -37,4 +39,4 @@ DTO dùng chung `Item`: `{id:string,title:string,subtitle:string,status:string,d
 - `POST /api/qt/lop/phan-cong` body `{lopId,userId,role:"TEACHER"|"STUDENT"}` → Result; vai trò tài khoản phải khớp.
 - `GET /api/qt/nhat-ky` → Item[]; title hành động, subtitle lý do; details `{actorId,createdAt}`.
 
-API có sẵn giữ nguyên: GET /api/hs/trang-hoc → `{tenHienThi,kyNang:[{ma,ten,muc4,ket}],hoanThanh:{kyNang,chuDe}}` (đọc DTO thực để xác nhận tên); GET /api/hs/bai, GET /api/hs/bai/{ma}, POST /buoc, POST /nop.
+API có sẵn giữ nguyên: GET /api/hs/trang-hoc → `{ten,soKyNang:[{kyNang,tenKyNang,muc4,ket}],hoanThanh:{kyNang,chuDe}}`; GET /api/hs/bai, GET /api/hs/bai/{ma}, POST /buoc, POST /nop.

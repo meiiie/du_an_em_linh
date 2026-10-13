@@ -1,5 +1,6 @@
 # Harness gia sư AI
 
+> **Phạm vi thực thi từ 2026-10-13:** `apps/web` đã gỡ. Tài liệu này giữ đặc tả/giới hạn nhà AI và lịch sử v0; các đường `lib/*.ts` bên dưới không còn là mã thực thi. Core hiện dùng tutor offline, kiểm lời giảng/lộ đáp án trước khi gửi; nhà trực tuyến chưa tích hợp. Hợp đồng SSE hiện hành là `docs/API_UX.md`, lựa chọn phạm vi là `docs/ASSUMPTIONS.md`.
 Quyết định: `docs/adr/007-ai-providers.md`. Sư phạm: `docs/adr/003-gia-su-khong-doc-loi-giai.md`.
 
 ## Thứ tự vẫn khóa
