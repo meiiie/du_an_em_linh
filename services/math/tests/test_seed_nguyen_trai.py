@@ -30,6 +30,17 @@ def test_coverage():
         assert {e['muc_do_4'] for e in EXERCISES if e['chu_de'] == chapter} == {'NB', 'TH', 'VD', 'VDC'}
 
 
+@pytest.mark.parametrize('practice', [e for e in EXERCISES if '-LUYEN' in e['id']], ids=lambda e: e['id'])
+def test_practice_statements_and_functions_are_unique(practice):
+    for other in EXERCISES:
+        if other['id'] == practice['id']:
+            continue
+        assert practice['de_bai']['van_ban'] != other['de_bai']['van_ban'], (practice['id'], other['id'])
+        function = practice['de_bai']['ham_so_sympy']
+        if function:
+            assert function != other['de_bai']['ham_so_sympy'], (practice['id'], other['id'])
+
+
 @pytest.mark.parametrize('exercise', EXERCISES, ids=lambda e: e['id'])
 def test_teacher_solution(exercise):
     # Each displayed symbolic step is checked, not only the final number.
