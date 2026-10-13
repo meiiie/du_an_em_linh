@@ -60,3 +60,44 @@ Chọn **A**.
 - Đo trên bộ ca thật thấy gia sư mất gần hết công thức có ích (trên 20 % câu bị thay bằng gợi ý thang vì bỏ công thức trong bảng) → xem lại bộ nhận dạng, không nới cổng.
 - Một câu phát biểu quy tắc bằng lời không khớp bảng mà vẫn tới học sinh (trong bộ ca hay thực tế) → lỗi P1, bổ sung từ vựng bằng bản vá mới. Lọt lặp lại theo cách từ vựng không theo kịp → chuyển sang danh sách trắng theo câu: chỉ hiện câu không có thuật ngữ toán, câu trích dẫn dòng bảng hoặc câu gợi ý đã kiểm trước.
 - Khách muốn gia sư giải thích ngoài bảng công thức (ví dụ chứng minh một quy tắc) → cần một luồng «giải thích đã duyệt trước» do giáo viên soạn, không nới cổng cho mô hình.
+
+## Bổ sung 2026-10-14 — KD-0006: thu hẹp ứng viên quy tắc bằng lời
+
+KD-0006 sửa bộ nhận diện trong `services/math/app/loi_giang.py`, giữ quyết định A và nguyên bộ assertion KD-0005. Không sửa dữ liệu kiểm định đã khóa. Cổng vẫn xét **cả câu**, tất định và đóng mặc định khi lỗi hoặc không phân loại được.
+
+### Luật nhận diện
+
+- Giữ bộ thuật ngữ/quan hệ và cách khớp KD-0005 làm mặc định. Chỉ loại khỏi ứng viên khi nhận ra thao tác học sinh phải làm hoặc chỗ trống cần trả lời, và không còn quan hệ khẳng định chưa kiểm. Dữ liệu mẫu nằm trong `_CHO_TRONG`, `_QUAN_HE_MANH`, `_THAO_TAC` và các mẫu hỗ trợ của KD-0006.
+- Các chỗ trống như «là tập nào», «bằng bao nhiêu», «đổi dấu thế nào», «dương trên khoảng nào»; câu hỏi tìm giá trị/chỗ nào làm hàm không xác định; chỉ dẫn «em hãy lấy đạo hàm», «trước khi», «bằng cách», «bằng [n]» không tự phát biểu một quy tắc. Chỉ che đúng cách hỏi/chỉ dẫn, giữ mệnh đề khác trong cùng câu để kiểm. Ví dụ «Đạo hàm của hằng số không xác định, em cần tìm điểm nào?» vẫn bị bỏ.
+- **Không miễn theo dấu hỏi, «đúng không», «chưa» hay «em hãy».** Quan hệ bằng/là/nhân/chia/cộng/trừ, dấu, đơn điệu, cực trị, suy luận hoặc «nếu … thì» còn lại phải khớp bảng. Quy tắc sai, đúng nhưng ngoài bảng, diễn đạt lại không được bộ đọc xác nhận, và câu mơ hồ vẫn bị bỏ. Câu «Hàm đã cho là đa thức» trong corpus cũng bị bỏ; câu hỏi độc lập sau nó có thể giữ.
+- Unicode và cách khớp không dấu theo KD-0005; từ có dấu phải khớp đúng từ, tránh nhập nhằng «bảng» với «bằng». Không gọi mô hình hoặc dùng xác suất.
+- Thêm `KY_HIEU/DAT` cho tên `$x$`, `$y$` trong câu hỏi có chỗ cần trả lời rõ ràng, không có đẳng thức/giá trị. Giữ cách đọc `$y'$`, `$f'(x)$` như thuật ngữ đạo hàm hiện có. Không cho qua tên có chỉ số/đối số cụ thể như `$x_0$`, `$y'(0)$`. Ca KD-0005 «Em kiểm tra lại $x$ ở dòng đầu nhé.» vẫn đóng: chỉ dẫn này chưa xác định được ý nghĩa toán cần kiểm; không mở danh sách trắng cho mọi câu chứa tên biến.
+- **Tên phương trình `$y' = 0$`:** chỉ cho qua khi đứng ngay sau «giải phương trình» hoặc «viết phương trình», trùng nguyên mảnh `y'=0` có ranh giới trong LaTeX của một dòng bảng dùng được. Phải có trích dẫn và kiểm lại tầng 1 đạt `DAT`; ghi mã dòng và ba tầng trong phán quyết. Không suy ra mảnh bằng SymPy, không biến đổi `0+0`, không cho qua `y'=1`, `x=0`, «ta có», «đạo hàm là», «đặt», hoặc chỉ «tìm nghiệm của». Cách gọi bằng lời «giải phương trình đạo hàm bằng không» cần cùng mảnh và dòng dùng được. Trong corpus, dòng `d-4` đáp ứng điều kiện; không coi `d-6` thiếu tiêu đề và không đạt kiểm lại là dòng dùng được.
+- Tên phương trình chỉ xác định nhiệm vụ, không cung cấp nghiệm hoặc đạo hàm đã tính. Câu vẫn qua kiểm tra quy tắc và mọi đoạn khác: thêm `$x=3$`, giá trị số hoặc quy tắc sai vào cùng câu thì bỏ cả câu. Các chữ số viết trong lời văn cũng bị chặn, ngoại trừ chỉ số bước/mức/dòng và dấu dẫn `[n]`; số nằm trong trích nguyên văn đề/bài làm tiếp tục theo hợp đồng cũ.
+
+### Số đo trên corpus
+
+Nguồn: `services/math/tests/data/ban-nhap-glm-2026-10-14.json`, SHA-256 `7e861056065a594c9e57f0d1015e5116e6510476ee087c32e6c409fcb25f45b4`. Corpus có **45 bản nháp, 71 câu**, kèm hàm từng bài và bảng khóa. Đo trực tiếp bằng `kiem_loi_giang`, không tính câu thay thế hay kết quả sau retry.
+
+Mốc trước sửa: mã tại SHA `96000f169c4c00c22efe42f80e7d2eebbc42f7b5`; nạp bản `git show HEAD:services/math/app/loi_giang.py` từ tệp tạm để so với bản KD-0006 trên cùng đầu vào. Bản mã sau sửa chưa commit có SHA-256 `591122c76ed4ec92b1c3138408f777ea4d775f99544f2aea71ec1a84db780003`. Tỷ lệ 63% được nêu ban đầu không phải số đo trên đúng corpus này.
+
+| Số đo | Trước KD-0006 | Sau KD-0006 |
+| --- | ---: | ---: |
+| Bản nháp bị bỏ toàn bộ | 32/45 | 8/45 |
+| Tỷ lệ bản nháp bị bỏ toàn bộ | 71,11% | **17,78%** |
+| Câu bị bỏ | 58/71 | 25/71 |
+| Phán quyết bỏ `QUY_TAC_BANG_LOI` | 53 | 20 |
+| Phán quyết bỏ `KHONG_PHAN_TICH_DUOC` | 6 | 4 |
+| Phán quyết bỏ `KET_QUA_CU_THE` | 15 | 10 |
+
+Năm phán quyết kết quả cụ thể chuyển sang tên phương trình có căn cứ bảng; **không** chuyển giá trị số sang đạt. Bốn đoạn giá trị `$0$`, `$1$`, `$-2$` trong corpus đều còn bị bỏ, kể cả `$0$` dùng làm chỉ dẫn đặt đạo hàm bằng không. Tám bản còn bị bỏ toàn bộ chứa tên phương trình thiếu ngữ cảnh cho phép, khẳng định ngoài bảng hoặc nội dung mơ hồ; không giảm tỷ lệ bằng cách giữ những câu này.
+
+### Kiểm tra chống lọt
+
+`tests/test_loi_giang_kd0006.py` có **122 ca**, kiểm các câu giữ từ corpus, quy tắc sai trong câu hỏi/mệnh lệnh, quy tắc diễn đạt ngoài bảng, số/khoảng/nghiệm/dấu/cực trị cụ thể, «đáp án là», câu ghép cài quy tắc sai, khoảng trắng/Unicode, và tên phương trình khi bảng rỗng/thiếu mảnh/thiếu trích dẫn/sai tầng 1. Kiểm corpus nhận diện đoạn giá trị số độc lập với nhãn của cổng, buộc câu chứa chúng bị bỏ, buộc chúng không còn trong `cau_sach`, kiểm lặp kết quả tất định và buộc tỷ lệ bỏ toàn bộ ≤ 0,20.
+
+Lệnh kiểm từ `services/math`: `.venv/bin/pytest -q tests/test_loi_giang_kd0006.py` và `.venv/bin/pytest -q` cho toàn bộ kiểm thử hiện có cùng KD-0006. Bảo đảm chống lọt là ràng buộc bắt buộc của cổng và được kiểm trên các bộ ca này; nhận diện từ vựng vẫn không phải chứng minh cho mọi cách diễn đạt tiếng Việt. Rủi ro còn lại và điều kiện chuyển sang danh sách trắng theo câu của ADR này giữ nguyên.
+
+Điều kiện chạy ngày 2026-10-14: lệnh pytest trực tiếp kẹt trong `TestClient`/AnyIO; tái hiện cả với `/health` không qua SymPy. Stack trace cho thấy luồng gọi chờ callback trong khi vòng lặp chờ selector. Tệp tạm `/tmp/mathl-kd0006-runtime/sitecustomize.py` giới hạn thời gian mỗi lần `EpollSelector.select` chờ tối đa 0,01 giây để vòng lặp quan sát callback. Lệnh toàn bộ dùng `PYTHONPATH=/tmp/mathl-kd0006-runtime:. .venv/bin/pytest -q`; không đổi kiểm thử/assertion, handler HTTP, sandbox CAS hay tệp phụ thuộc của repo. Bộ KD-0006 trực tiếp chạy không cần cấu hình polling này.
+
+Kết quả trên bản mã có SHA-256 nêu trên: **122/122 ca KD-0006 đạt** với lệnh trực tiếp; **2.129/2.129 ca toàn bộ đạt**, mã thoát 0, với lệnh có cấu hình polling tạm. Giữ nguyên 2.007 ca hiện có, gồm 159 ca `test_loi_giang.py`; không sửa/xóa assertion KD-0005. Không có đoạn giá trị số nào trong corpus hoặc ca đối kháng được giữ nhầm.
