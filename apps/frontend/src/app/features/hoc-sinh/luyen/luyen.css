@@ -242,7 +242,7 @@
 .thanh-nop {
   position: fixed;
   inset-inline: 0;
-  bottom: 0;
+  bottom: var(--chieu-cao-nav-duoi, 0px);
   z-index: 20;
   display: flex;
   gap: var(--space-3);
@@ -293,4 +293,6 @@
 .buoc[aria-current] .so, .buoc[aria-current][data-tt='sai'] .so { border: 0; background: transparent; color: inherit; }
 .buoc[data-tt='sai'] { color: var(--mark); }
 .phan-hoi { animation: etat-vao 160ms var(--ease); }
-@media (max-width: 600px) { .phieu { padding: 16px; padding-bottom: 24px; } }
+@media (max-width: 600px) {
+  .phieu { padding: 16px; padding-bottom: 104px; }
+}

@@ -1,0 +1,28 @@
+import { provideHttpClient } from '@angular/common/http';
+import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
+import { TestBed } from '@angular/core/testing';
+import { Kho } from './kho';
+
+describe('Kho', () => {
+  it('lỗi HTTP 500 hiện thông báo và cho tải lại kho', async () => {
+    TestBed.configureTestingModule({ providers: [provideHttpClient(), provideHttpClientTesting()] });
+    const http = TestBed.inject(HttpTestingController);
+    const fixture = TestBed.createComponent(Kho);
+    fixture.detectChanges();
+    http.expectOne('/api/hs/kho').flush({}, { status: 500, statusText: 'Server Error' });
+    await fixture.whenStable();
+
+    const alert = fixture.nativeElement.querySelector('[role="alert"]') as HTMLElement;
+    expect(alert.textContent).toContain('Chưa tải được');
+    expect(alert.textContent).toContain('Chưa tải được công thức và tài liệu của lớp.');
+    const retry = alert.querySelector('button')!;
+    expect(retry.textContent).toBe('Thử lại');
+    retry.click();
+    TestBed.tick();
+    http.expectOne('/api/hs/kho').flush({ formulas: [], documents: [] });
+    await fixture.whenStable();
+    expect(fixture.nativeElement.querySelector('[role="alert"]')).toBeNull();
+    expect(fixture.nativeElement.textContent).toContain('Chưa có công thức');
+    http.verify();
+  });
+});
