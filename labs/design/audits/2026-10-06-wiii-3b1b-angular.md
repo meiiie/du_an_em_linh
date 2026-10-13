@@ -31,7 +31,7 @@ Ngày: 2026-10-06. Nhánh `feat/frontend-wiii-3b1b`. Nghiên cứu và lựa ch�
 
 ## Khác ảnh mô phỏng (có chủ ý)
 
-- Trang chủ hiện trạng thái rỗng thay cho danh sách bài, thẻ «Bài tiếp theo» và hàng mức độ: core chưa có API học sinh (T021, chờ ADR 015).
+- Trang chủ hiện trạng thái rỗng thay cho danh sách bài, thẻ «Bài tiếp theo» và hàng mức độ: core chưa có API học sinh (T021, chờ ADR 017).
 - Viền ô nhập đậm hơn ảnh mô phỏng để đạt 3 : 1.
 - Heading 28 px theo `docs/DESIGN.md`; ảnh mô phỏng trông gần 36 px.
 - Ảnh mô phỏng vẽ đồ thị lộ cực trị lúc đang làm; giao diện thật không có đồ thị trên màn đang chấm (`docs/DESIGN.md`).

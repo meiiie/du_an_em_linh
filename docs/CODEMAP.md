@@ -24,6 +24,7 @@ Harness (Anthropic 2026): tệp này là mục lục để agent biết chỗ m�
 | `.coderabbit.yaml` | Review tự động theo vùng, bám hiến chương |
 | `.github/labels.json` + `scripts/github/sync-labels.mjs` | Bộ nhãn ưu tiên / trạng thái / vùng / lab |
 | `.github/rulesets/main-protection.json` | Ruleset bảo vệ `main` (ranh giới phía máy chủ) — áp dụng theo `docs/GITHUB.md` |
+| `specs/002-hoan-thien-v2/` | Epic tiếp nối: U0–U15, API và nghiệm thu, task T100+; không là báo cáo đã hoàn thành |
 | `docs/ASSUMPTIONS.md` | Mặc định phạm vi, giới hạn và việc chưa được yêu cầu |
 | `scripts/check-flat.mjs` + `.test.mjs` | Cổng FLAT, quét source frontend và báo tệp/dòng |
 | `docs/DESIGN.md` | Token, lưới, nút, tâm quang học (46% / 3:2) |

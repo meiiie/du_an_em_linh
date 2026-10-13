@@ -1,5 +1,7 @@
 # Hợp đồng API vòng học tập U5–U14
 
+> Hợp đồng dùng cho đặc tả/hiện thực; không là chứng nhận mọi endpoint đã qua nghiệm thu. [Spec 002](../specs/002-hoan-thien-v2/spec.md) và [plan](../specs/002-hoan-thien-v2/plan.md) bổ sung ca quyền, chế độ, hạn và cạnh tranh yêu cầu.
+
 Các đường dưới yêu cầu Bearer JWT; id người thao tác luôn lấy từ token. JSON camelCase. Lỗi dùng problem+json. Giáo viên chỉ đọc/ghi lớp mình dạy; /api/qt dành ADMIN hoặc SCHOOL_ADMIN. ADMIN quản lý toàn hệ thống. SCHOOL_ADMIN chỉ xem người dùng/lớp đã được phân công, bật/tắt tài khoản học sinh/giáo viên trong phạm vi và phân công trong lớp mình; tạo tài khoản/lớp mới dành ADMIN.
 
 DTO dùng chung `Item`: `{id:string,title:string,subtitle:string,status:string,details:object}`. `details` chứa dữ liệu mô tả của từng dòng (bên dưới). `Result`: `{message:string,count:number}`.
@@ -40,3 +42,12 @@ DTO dùng chung `Item`: `{id:string,title:string,subtitle:string,status:string,d
 - `GET /api/qt/nhat-ky` → Item[]; title hành động, subtitle lý do; details `{actorId,createdAt}`.
 
 API có sẵn giữ nguyên: GET /api/hs/trang-hoc → `{ten,soKyNang:[{kyNang,tenKyNang,muc4,ket}],hoanThanh:{kyNang,chuDe}}`; GET /api/hs/bai, GET /api/hs/bai/{ma}, POST /buoc, POST /nop.
+
+## Ràng buộc nghiệm thu bổ sung của epic 002
+
+- Mọi yêu cầu tutor và ghi bước/nộp đọc giao đang hiệu lực từ server. `KIEM_TRA` trả 403 trước mở SSE/truy hồi/nhà AI, kể cả mode giả, tab cũ và `dueAt=null`; không có giao hợp lệ thì từ chối. Gia sư kiểm lại quyền ngay trước khi phát câu. Đây là yêu cầu policy theo ADR 017, cần integration test trước khi công bố đạt.
+- `now >= dueAt` là hết hạn theo giờ máy chủ: từ chối ghi bước/nộp/tutor bằng 403 problem+json với mã lỗi phân biệt. Đọc bài đã lưu theo quyền vẫn được. Một giao hiệu lực mỗi bài/em; giao lại cập nhật chế độ/hạn và phải nhất quán với yêu cầu đang xử lý.
+- Công thức nháp/chặn/stale không xuất cho học sinh hoặc CSV. CSV phải escape dấu phẩy/nháy/xuống dòng, bảo vệ ô có thể thực thi công thức bảng tính; nhập Quizlet thủ công qua bảng tính, không API ghi.
+- Nhắc chỉ trong app, lịch đã hoàn thành không nhắc lại; không đồng nghĩa đã gửi push/email/Zalo. Bulk quản trị kiểm toàn tập trước ghi, không cập nhật một phần khi có ID ngoài quyền.
+
+Các thay đổi cần schema chỉ thêm Flyway V12+ còn trống; V1–V10 bất biến, không dùng V11. Không nới cổng ADR 013 khi giáo viên xác nhận đã xem lời gia sư.

@@ -2,6 +2,8 @@
 
 **Trạng thái:** Đề xuất (2026-10-02) — chờ chủ repo duyệt và luật sư trả lời 6 câu hỏi ở §11 của bản phân tích.
 
+> **Chú thích hiện hành 2026-10-13:** tham chiếu mã/RLS v0 bên dưới là lịch sử thiết kế, không là đường mã đang chạy sau ADR 016. Các nghĩa vụ quyền riêng tư và trạng thái phê duyệt ADR giữ nguyên.
+
 ## Bối cảnh
 
 v0 chỉ dùng dữ liệu tổng hợp (ADR 006). Pilot với học sinh thật chịu Luật BVDLCN 91/2025/QH15 và Nghị định 356/2025/NĐ-CP (cùng hiệu lực 01/01/2026), cùng Luật Trí tuệ nhân tạo 134/2025/QH15 (hiệu lực 01/03/2026). Ba điểm đổi cách làm:

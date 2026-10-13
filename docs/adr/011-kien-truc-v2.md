@@ -1,6 +1,6 @@
 # ADR 011 — Kiến trúc v2: Angular + Spring Boot, giữ dịch vụ toán Python
 
-**Trạng thái:** Chấp nhận (2026-10-01) — chủ repo duyệt phương án C trong phiên thiết lập quy trình; ghi nhận chính thức khi PR thiết lập harness được merge.
+**Trạng thái:** Chấp nhận (2026-10-01) — chủ repo duyệt phương án C trong phiên thiết lập quy trình; ghi nhận chính thức khi PR thiết lập harness được merge. **Thay thế một phần bởi [ADR 016](016-go-v0.md) ngày 2026-10-13:** điều kiện giữ v0 tới khi tương đương hết hiệu lực; nội dung quyết định gốc dưới đây giữ làm lịch sử.
 
 ## Bối cảnh
 

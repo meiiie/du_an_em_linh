@@ -124,4 +124,4 @@ yêu cầu ─► (lab nếu cần) ─► issue có tiêu chí ─► nhánh �
 
 - **2026-10-01** — Thiết lập: kế thừa pipeline Codex → Claude → CodeRabbit → chủ repo của LMS; thêm 5 lab; chuyển guardrail từ chữ sang hook; thay `.claudeignore` (không phải tính năng của Claude Code) bằng `permissions.deny`.
 
-- **2026-10-13 — chủ repo cho phép Codex viết mã:** Codex hiện thực trong phạm vi được giao; lead duyệt diff và kết quả cổng. Phiên hoàn thiện MathL+ được phép thực hiện liên tục trong working tree, không commit/push và không triển khai production. FLAT ưu tiên hơn chỉ dẫn giao diện trước đây.
+- **2026-10-13 — chủ repo cho phép Codex viết mã:** Codex được viết mã và test trong phạm vi được giao; lead đọc diff, review và duyệt kết quả cổng trước commit/PR. Lane DOCS chỉ sửa tài liệu, không mở rộng sang mã. Phiên hoàn thiện MathL+ được phép thực hiện liên tục trong working tree, không commit/push và không triển khai production. FLAT ưu tiên hơn chỉ dẫn giao diện trước đây.

@@ -6,7 +6,7 @@ Không dùng kit Figma EduPlus / Eduva / EduTracker / EduFlow (Poppins, thẻ KP
 
 ## FLAT — chỉ đạo ưu tiên của chủ repo ngày 2026-10-13
 
-Không bóng đổ, kể cả inset, token `--shadow-*` hay utility shadow. Không viền nhấn trái/inline-start, không dải màu ở mép hoặc khối 3D. Phân cấp bằng nền `canvas`/`wash`/`raise`, viền 1 px đều bốn cạnh, khoảng trắng và chữ. Focus dùng `outline` 2 px. Luật này thay mọi chỉ dẫn bóng/vạch trái cũ trong docs, rule, skill và nguyên mẫu.
+Không bóng đổ, kể cả inset, token `--shadow-*` hay utility shadow. Không viền nhấn trái/inline-start, không dải màu ở mép hoặc khối 3D. Phân cấp bằng nền `canvas`/`wash`/`raise`, viền 1 px đều bốn cạnh, khoảng trắng và chữ. Focus dùng `outline` 2 px. Luật này thay mọi chỉ dẫn bóng/vạch trái cũ trong docs, rule, skill và nguyên mẫu; quyết định được ghi tại [ADR 014](adr/014-giao-dien-phang.md).
 
 Cổng `node scripts/check-flat.mjs` quét CSS, HTML và `styles`/`template` nội tuyến TypeScript ở `apps/frontend/src`; báo tệp/dòng, thất bại khi phát hiện vi phạm. Scanner là kiểm tĩnh, nên rà giao diện vẫn cần kiểm dải màu tạo bằng hình ảnh hoặc CSS động. Test: `node --test scripts/check-flat.test.mjs`.
 
@@ -37,7 +37,7 @@ Chữ đạt ≥ 4,5 : 1, thành phần giao diện ≥ 3 : 1. Bảng ghi ngư�
 | --- | --- | --- | --- |
 | `canvas` | `#FAF9F5` | `#1E1D1B` | Nền trang (Wiii `--surface`) |
 | `wash` | `#F0EEE6` | `#282724` | Thanh bên (cả khi là ngăn kéo trên điện thoại), khối phụ |
-| `raise` | `#FFFFFF` | `#353330` | Bề mặt phụ, ô nhập. Không đặt `accent` hay `mark` làm chữ / biểu tượng trên `raise` tối (dưới ngưỡng) |
+| `raise` | `#FFFFFF` | `#353330` | Bề mặt phụ, ô nhập. Không đặt `accent` làm chữ / biểu tượng trên `raise` tối (dưới ngưỡng); `mark` dùng giá trị tối đã điều chỉnh trong bảng và phải qua cổng tương phản |
 | `line` | `#D8D5CD` | `#3A3935` | Kẻ chia 1 px (trang trí, không phải ranh giới duy nhất của một điều khiển) |
 | `line-strong` | `#8A877F` | `#82807A` | Viền ô nhập, nút phụ, ranh giới điều khiển: ≥ 3 : 1 trên `canvas`, `wash`, `raise` (WCAG 1.4.11) |
 | `ink` | `#141413` | `#E8E8E4` | Chữ chính |
@@ -98,7 +98,7 @@ Không dashboard thẻ. Phiếu là bài kế: thân đề, công thức lớn, 
 +--------+---------------------------+------------------+
 ```
 
-Desktop (`lg`): cột phiếu `1fr` | kẻ 1 px | cột sổ `18–24rem`. Điện thoại / máy tính bảng: phiếu rồi sổ. Sổ là **tab gạch chân `accent`** (Carbon / InstUI) — `Kỹ năng` mặc định, `?so=giao` cho bài tập. Không viên thuốc. Tab trình duyệt ngắn: `Học` / `Đề bài` / `Lịch` / `Công thức` (template `· MathL+` ở v2, #124; v0 giữ `· Học toán với AI`). Ray HS cùng bốn chữ đó (testid `nav-hs-*` giữ nguyên).
+Desktop (`lg`): cột phiếu `1fr` | kẻ 1 px | cột sổ `18–24rem`. Điện thoại / máy tính bảng: phiếu rồi sổ. Sổ là **tab gạch chân `accent`** (Carbon / InstUI) — `Kỹ năng` mặc định, `?so=giao` cho bài tập. Không viên thuốc. Tab trình duyệt ngắn: `Học` / `Đề bài` / `Lịch` / `Công thức` (template `· MathL+`, #124). Ray HS cùng bốn chữ đó (testid `nav-hs-*` giữ nguyên).
 
 Đề = KaTeX từ `statementLatex`. Một thang 4 mức — không Bloom trên mặt học sinh (3 mức CV 7991 chỉ ở cổng GV). Sổ kỹ năng: tên + mức 4 + ô vững; không câu giải thích UI. Hàng yếu lên trên, hàng đang gợi tô `wash`. Tab Bài tập ≠ Đề bài: chỉ bài thầy cô giao chưa đạt. Số chưa làm chỉ trên tab Bài tập. Mục lục đủ tên năm bước nằm trên trang làm bài, không trên phiếu. Nút trên điện thoại: `Kiểm tra` cạnh `Cần gợi ý?`.
 
@@ -148,7 +148,7 @@ Thanh công cụ điện thoại 48 px (`h-12`) — Material touch 48 dp, cao h�
 - Nút primary = nền `action` (đất nung), chữ trắng, bán kính 8 px, giải phẫu trên. Nút phụ: nền `raise`, viền `line-strong` (≥ 3 : 1; `line` chỉ là kẻ chia).
 - Bước 5 bước = mục lục tên + số mono, nền nhạt và chữ đậm ở bước hiện tại. Mỗi hàng `min-h-11`. Không chip viên thuốc, không tô nền đặc cả hàng.
 - Sai = chữ và biểu tượng `mark` trên mục và dòng phản hồi ngay dưới chỗ viết. Ô sai trong bảng vẫn `cell-bad`.
-- Composer gia sư: chỉ khi bấm `Cần gợi ý?`. Dưới `lg` là tờ full màn; `lg+` là tờ phải 24 rem, có Đóng. Không chiếm cột khi đóng. Thanh đáy điện thoại: **Kiểm tra + Cần gợi ý?** Chip «Sai chỗ nào?» (gửi vẫn «Em sai chỗ nào?»). `visualViewport` khi bàn phím, composer đáy, Đóng 44. `textarea` tối thiểu 44, nút Gửi **luôn** 44×44, Enter gửi / Shift+Enter dòng / Escape Dừng hoặc đóng tờ. Ô vẫn gõ được lúc đang nghĩ. Cuộn theo đáy (Open WebUI); kéo lên thì giữ chỗ, có «Xuống». Lỗi: «Hỏi lại» đổ câu vào ô — không tự gửi. SSE `trang_thai` kho/gọi/lọc rồi `xong` — **không** xả token. Chờ = 3 ô CSS (bước đang làm nhịp, scale 0,85↔1) + chữ `Đang nghĩ…` / `Đang mở công thức…` / `Đang hỏi gia sư…` / `Đang kiểm lời…`. Câu mới và dòng chấm vào bằng `phieu-vao` (180 ms, 6 px); tờ dưới `lg` dùng `to-len` (200 ms, 16 px). Không khối SVG trang trí, không bong bóng gradient, không gọi lại model khi SSE lỗi. Hình trang chủ là đồ thị của hàm minh họa, không phải họa tiết.
+- Composer gia sư: chỉ khi bấm `Cần gợi ý?`. Ở ≤640 px là bottom sheet; từ đó tới `lg` là tờ đọc thích ứng; `lg+` là cột phải 24 rem khi mở, có Đóng. Không chiếm cột khi đóng. Thanh đáy điện thoại: **Kiểm tra + Cần gợi ý?** Chip «Sai chỗ nào?» (gửi vẫn «Em sai chỗ nào?»). `visualViewport` khi bàn phím, composer đáy, Đóng 44. `textarea` tối thiểu 44, nút Gửi **luôn** 44×44, Enter gửi / Shift+Enter dòng / Escape Dừng hoặc đóng tờ. Ô vẫn gõ được lúc đang nghĩ. Cuộn theo đáy (Open WebUI); kéo lên thì giữ chỗ, có «Xuống». Lỗi: «Hỏi lại» đổ câu vào ô — không tự gửi. SSE theo `docs/API_UX.md`: `kho`, `goi`, `loc` rồi `xong`/`loi` — **không** xả token. Chờ = 3 ô CSS (bước đang làm nhịp, đổi độ đậm) + chữ `Đang nghĩ…` / `Đang mở công thức…` / `Đang hỏi gia sư…` / `Đang kiểm lời…`. Câu mới và dòng chấm vào bằng `phieu-vao` (180 ms, 6 px); tờ dưới `lg` dùng `to-len` (200 ms, 16 px). Không khối SVG trang trí, không bong bóng gradient, không gọi lại model khi SSE lỗi. Hình trang chủ là đồ thị của hàm minh họa, không phải họa tiết.
 - Lời gia sư: Markdown + KaTeX (nhịp Claude / assistant-ui / Open WebUI — flush trái trên `canvas`, học sinh mới có bong bóng `wash` (sáng) / `raise` (tối) như Wiii). Cột hẹp: đoạn ngắn, danh sách, công thức căn trái cuộn ngang. Chuẩn hóa `\[ \]`, `\(...\)`, `align` trần, hàng rào `latex`. KaTeX lỗi thì chữ mờ, không hộp đỏ. Tiêu đề `#` thành chữ đậm cùng cỡ. Không HTML thô; lời gia sư không có bong bóng. Không tự giới thiệu trên mặt («Chào em», «Mình là AI…») — lời mở chỉ việc: đọc công thức, không đáp án. Trích dẫn: số `[n]` trong lời là badge (không lẫn số danh sách). Bấm số / chip = xem đúng đoạn trên phiếu. **Mở công thức** / **Mở tài liệu** mới về `#ct-` / `#tl-`. Một đoạn, không chồng 5–6.
 - Kết nối tài khoản: hai bước như Notion/Linear (mở trang chính thức → dán một lần). Không nút xanh ChatGPT, không logo.
 - Không hero navy, không số khổng lồ trên 3 thẻ giống nhau.
@@ -186,3 +186,13 @@ Skip link, `:focus-visible` viền 2 px màu `focus` cách 2 px (vào trong 2 px
 - IBM Carbon — 8 px spacing, productive button 40 / 48.
 - Fitts, P. M. (1954). *The information capacity of the human motor system*.
 - Smashing Magazine (2024). *Designing Better Target Sizes*.
+
+## Hoàn thiện U0–U15 và chuyển động
+
+[Spec 002](../specs/002-hoan-thien-v2/spec.md) là hợp đồng nghiệm thu U0–U15; màn Học lấy mức/bài kế từ server, nội dung Kho theo lớp, giao Ôn tập/Kiểm tra và hạn được server cưỡng chế. Mục mới theo vai trò có thể mở rộng cấu hình điều hướng, giữ heading/testid đã khóa. Trạng thái luôn có chữ/biểu tượng, không chỉ màu.
+
+Chuyển trạng thái 120–200 ms; phiếu vào tối đa 6 px, tờ mở tối đa 16 px, không nâng thẻ khi hover, không khối 3D/perspective/rotateY. Flashcard đổi mặt bằng nội dung hoặc fade 2D, Enter/Space dùng được và focus giữ nguyên. `prefers-reduced-motion` tắt dịch chuyển/chuyển động lặp; chỉ báo chờ dùng hình tĩnh kèm chữ. Chuyển động tự chạy dừng trong 5 giây hoặc có nút dừng. Không animation thưởng/pháo giấy khi làm đúng.
+
+Primitive dùng chung: rỗng, skeleton khớp bố cục, lỗi có «Thử lại», toast gộp trùng (3/4/5 giây) và hộp thoại phẳng. Lỗi cần hành động còn trong vùng tác vụ sau khi toast tắt. Hộp thoại/bottom sheet giữ focus, khóa cuộn và trả focus; bottom nav có safe-area, không che CTA hay ô nhập khi bàn phím mở. Tab hỗ trợ mũi tên/Home/End; progress có tên/giá trị ARIA.
+
+Copy tiếng Việt đủ dấu, viết hoa đầu câu; nhãn cố gắng ≤5 từ, gợi ý ≤2 câu trừ nội dung toán cần thiết. Lỗi nói việc tiếp theo, không stacktrace/thuật ngữ kỹ thuật/emoji. Ảnh nghiệm thu 390/1280/1440 px sáng/tối; axe và kiểm bàn phím/reduced-motion bổ sung cổng FLAT tĩnh.

@@ -1,6 +1,7 @@
 # Hiến chương kỹ thuật — MathL+
 
 > **Phiên bản 1.0.0** · Đề xuất 2026-10-01 · Phê chuẩn: chờ chủ repo.
+> Cập nhật chỉ mục cổng ngày 2026-10-13 theo chỉ đạo gỡ v0/FLAT; không đổi tám nguyên tắc hoặc trạng thái phê chuẩn.
 > Hiến chương đứng trên mọi quy ước khác. Thứ bậc: Hiến chương > ADR đã chấp nhận > `AGENTS.md` / `CLAUDE.md` > rule, skill > ý kiến review. Xung đột thì bậc trên thắng.
 
 Mỗi nguyên tắc nêu **luật**, **lý do**, **cách kiểm**. Nguyên tắc I–III không thương lượng: reviewer được quyền chặn merge.
@@ -71,11 +72,11 @@ Cách kiểm: `pnpm test:khoa`; hook chặn đọc / ghi file bí mật; reviewe
 | --- | --- | --- |
 | Dịch vụ toán | `pnpm test:math` | II |
 | Bộ kiểm định (ác ý, 5 bước, AI, thang gợi ý qua bộ lọc) | Theo `services/math/kiemdinh/` khi đụng CAS, cổng, bộ lọc | I, II |
-| Web v0 | `pnpm test:web`; e2e khi đụng UI | VII, VIII |
+| FLAT | `node scripts/check-flat.mjs` + `node --test scripts/check-flat.test.mjs`; rà ảnh cho dải màu/CSS động | VIII |
 | Eval gia sư | Bộ ca lab Đánh giá khi đụng prompt, nhà, bộ lọc | I, IV |
 | Quét khóa | `pnpm test:khoa` | III |
-| v2 `services/core` | Maven test gồm ArchUnit + Testcontainers (lệnh chốt khi dựng khung) | VI |
-| v2 `apps/frontend` | Build + Vitest (lệnh chốt khi dựng khung) | VI, VIII |
+| v2 `services/core` | `(cd services/core && ./mvnw verify)` gồm ArchUnit + Testcontainers (JDK 25) | VI |
+| v2 `apps/frontend` | `pnpm --filter frontend build` + `pnpm --filter frontend test`; `pnpm --filter frontend e2e` khi đụng UI | VI, VIII |
 | Harness | `node --test .claude/hooks/*.test.mjs` | VII |
 | Review | CodeRabbit + chủ repo duyệt | VII |
 
