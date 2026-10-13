@@ -217,6 +217,16 @@ import vn.hoctapcanman.core.workspace.application.port.*;
         return ok("Đã lưu cài đặt.",1);
     }
 
+    public List<Item> stuckAlerts(UUID actor, UUID cl) {
+        teacher(actor, cl);
+        return store.stuckAlerts(cl);
+    }
+
+    public WeeklyPlan weeklyPlan(UUID student, int weekOffset) {
+        if (weekOffset < -52 || weekOffset > 52) throw new WorkspaceException(400, "Chọn tuần trong phạm vi một năm.");
+        return WeeklyStudyRules.build(store.learningSkills(student, studentClass(student)), clock.instant(), weekOffset);
+    }
+
     public List<Item> schedule(UUID student) {
         return store.schedule(student);
     }
@@ -233,7 +243,12 @@ import vn.hoctapcanman.core.workspace.application.port.*;
     }
 
     public List<Item> reminders(UUID student) {
-        return store.reminders(student,clock.instant());
+        var result = new ArrayList<>(store.reminders(student,clock.instant()));
+        var today = clock.instant().atZone(WeeklyStudyRules.SCHOOL_ZONE).toLocalDate();
+        weeklyPlan(student, 0).sessions().stream().filter(b ->
+            Instant.parse((String)b.details().get("startsAt")).atZone(WeeklyStudyRules.SCHOOL_ZONE).toLocalDate().equals(today)
+            && !Instant.parse((String)b.details().get("endsAt")).isBefore(clock.instant())).forEach(b -> result.addFirst(b));
+        return result;
     }
 
     private boolean globalAdmin(UUID actor) {

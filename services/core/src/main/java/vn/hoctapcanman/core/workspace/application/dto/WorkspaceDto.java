@@ -12,6 +12,8 @@ public final class WorkspaceDto {
     public record Item(String id,String title,String subtitle,String status,Map<String,Object> details) {
     }
 
+    public record WeeklyPlan(List<Item> sessions, String loiKhuyen) {}
+
     public record Result(String message,int count) {
     }
 

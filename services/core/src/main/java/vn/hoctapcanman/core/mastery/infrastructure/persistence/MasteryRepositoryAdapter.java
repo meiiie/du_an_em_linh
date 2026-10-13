@@ -61,6 +61,12 @@ public class MasteryRepositoryAdapter implements MasteryRepository {
     }
 
     @Override
+    public List<MasteryEvent> recentEventsOf(UUID studentId, int limit) {
+        return jdbc.sql("select " + COT_SU_KIEN + " from mastery_events where student_id=:student and not guess_suspected order by created_at desc,id desc limit :limit")
+            .param("student", studentId).param("limit", limit).query(MasteryRepositoryAdapter::suKien).list();
+    }
+
+    @Override
     public MasteryState lock(MasteryState initial) {
         jdbc.sql("""
                 insert into mastery_states (%s) values (:student, :skill, :mastery, :level, :attempts, :stuck,

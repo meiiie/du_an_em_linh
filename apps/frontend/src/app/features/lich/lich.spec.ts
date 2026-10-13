@@ -4,13 +4,14 @@ import { TestBed } from '@angular/core/testing';
 import { vi } from 'vitest';
 import { Lich } from './lich';
 
-async function setup(reminders: unknown[] = [], sessions: unknown[] = []) {
+async function setup(reminders: unknown[] = [], sessions: unknown[] = [], plan: {sessions:unknown[];loiKhuyen:string} = {sessions:[],loiKhuyen:""}) {
   TestBed.configureTestingModule({ providers: [provideHttpClient(), provideHttpClientTesting()] });
   const fixture = TestBed.createComponent(Lich);
   fixture.detectChanges();
   const http = TestBed.inject(HttpTestingController);
   http.expectOne('/api/hs/lich').flush(sessions);
   http.expectOne('/api/hs/nhac').flush(reminders);
+  for (const request of http.match('/api/hs/ke-hoach-tuan?tuan=0')) request.flush(plan);
   await fixture.whenStable();
   const el = fixture.nativeElement as HTMLElement;
   for (const dialog of el.querySelectorAll<HTMLDialogElement>('dialog')) {
@@ -28,6 +29,22 @@ function setInput(el: HTMLElement, selector: string, value: string) {
 }
 
 describe('Lịch theo giờ Việt Nam', () => {
+  it('hiện lịch gợi ý mặc định và lời khuyên bắt đầu khi chưa làm bài', async () => {
+    const t = await setup([], [], {loiKhuyen:'Bắt đầu bằng một bài Nhận biết.',sessions:[{id:'goi-y',title:'Ôn công thức · Tập xác định',subtitle:'Buổi học gợi ý',status:'GOI_Y',details:{startsAt:'2026-10-12T12:30:00Z',endsAt:'2026-10-12T12:50:00Z'}}]});
+    expect(t.el.querySelector('[data-testid=loi-khuyen]')?.textContent).toContain('Bắt đầu');
+    expect(t.el.querySelector('[data-testid=lich-tuan]')?.textContent).toContain('Tập xác định');
+    expect(t.el.querySelector('.schedule-item')?.textContent).toContain('19:30–19:50');
+    expect(t.el.querySelector('.schedule-item button')).toBeNull();
+    t.http.verify();
+  });
+
+  it('kỹ năng yếu đang kẹt: hiện lời khuyên đúng dạng và chưa tăng độ khó', async () => {
+    const t = await setup([], [], {loiKhuyen:'Ôn lại Xét dấu đạo hàm: Nhầm dấu; em đang kẹt, chưa tăng độ khó.',sessions:[]});
+    expect(t.el.querySelector('[data-testid=loi-khuyen]')?.textContent).toContain('Xét dấu đạo hàm');
+    expect(t.el.querySelector('[data-testid=loi-khuyen]')?.textContent).toContain('chưa tăng độ khó');
+    t.http.verify();
+  });
+
   beforeEach(() => {
     vi.useFakeTimers({ toFake: ['Date'] });
     // Chủ nhật UTC, đã sang thứ hai ở trường.
@@ -70,9 +87,13 @@ describe('Lịch theo giờ Việt Nam', () => {
     const t = await setup();
     expect(t.el.querySelector('.toolbar strong')?.textContent).toBe('28/12 – 03/01');
     t.button('Tuần sau →').click();
+    TestBed.tick();
+    t.http.expectOne('/api/hs/ke-hoach-tuan?tuan=1').flush({sessions:[],loiKhuyen:''});
     await t.fixture.whenStable();
     expect(t.el.querySelector('.toolbar strong')?.textContent).toBe('04/01 – 10/01');
     t.button('← Tuần trước').click();
+    TestBed.tick();
+    t.http.expectOne('/api/hs/ke-hoach-tuan?tuan=0').flush({sessions:[],loiKhuyen:''});
     await t.fixture.whenStable();
     expect(t.el.querySelector('.toolbar strong')?.textContent).toBe('28/12 – 03/01');
     t.http.verify();

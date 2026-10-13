@@ -28,5 +28,7 @@ public interface MasteryRepository {
     /** Mọi trạng thái của các học sinh này. */
     List<MasteryState> statesOf(Collection<UUID> studentIds);
 
+    List<MasteryEvent> recentEventsOf(UUID studentId, int limit);
+
     default java.util.Map<String, vn.hoctapcanman.core.mastery.domain.model.Level4> overridesOf(UUID studentId) { return java.util.Map.of(); }
 }

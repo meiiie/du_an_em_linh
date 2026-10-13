@@ -24,6 +24,14 @@ import vn.hoctapcanman.core.workspace.application.service.WorkspaceService;
         return service.classes(actor(jwt));
     }
 
+    @GetMapping("/api/gv/canh-bao") public List<Item> stuckAlerts(@AuthenticationPrincipal Jwt jwt,@RequestParam UUID lopId) {
+        return service.stuckAlerts(actor(jwt),lopId);
+    }
+
+    @GetMapping("/api/hs/ke-hoach-tuan") public WeeklyPlan weeklyPlan(@AuthenticationPrincipal Jwt jwt,@RequestParam(defaultValue="0") int tuan) {
+        return service.weeklyPlan(actor(jwt),tuan);
+    }
+
     @GetMapping("/api/gv/tong-quan") public Dashboard dashboard(@AuthenticationPrincipal Jwt jwt,@RequestParam UUID lopId) {
         return service.dashboard(actor(jwt),lopId);
     }

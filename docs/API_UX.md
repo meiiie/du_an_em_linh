@@ -8,6 +8,7 @@ DTO dùng chung `Item`: `{id:string,title:string,subtitle:string,status:string,d
 
 - `GET /api/gv/lop` → Item[]; id lớp, title tên, details `{grade,schoolYear}`.
 - `GET /api/gv/tong-quan?lopId=UUID` → `{students:number,stuck:number,pending:number,assignments:number,distribution:{NHAN_BIET:number,THONG_HIEU:number,VAN_DUNG:number,VAN_DUNG_CAO:number},deadlines:Item[]}`.
+- `GET /api/gv/canh-bao?lopId=UUID` → Item[]; cảnh báo `KET` chưa xử lý của học sinh còn trong lớp, title tên em, subtitle kỹ năng/lý do, details `{studentId}`. Liên kết tới hồ sơ của em.
 - `GET /api/gv/tien-do?lopId=UUID` → Item[]; id học sinh, title tên; details `{skills:[{code,name,level4,level3,mastery,overridden}],submitted:number}`.
 - `GET /api/gv/hoc-sinh/{id}?lopId=UUID` → `{student:Item,history:Item[]}`; history details `{problemCode,result,submittedAt}`.
 - `POST /api/gv/muc-hieu` body `{lopId,studentId,skillCode,level4,reason}` → Result. Bốn mã mức NHAN_BIET/THONG_HIEU/VAN_DUNG/VAN_DUNG_CAO; lý do bắt buộc.
@@ -17,7 +18,7 @@ DTO dùng chung `Item`: `{id:string,title:string,subtitle:string,status:string,d
 - `GET /api/gv/giao?lopId=UUID` → Item[]; details `{studentId,problemCode,mode,dueAt}`.
 - `POST /api/gv/giao` body `{lopId,studentIds:UUID[],problemIds:UUID[],mode:"ON_TAP"|"KIEM_TRA",dueAt:ISO|null,setName:string}` → Result. studentIds rỗng là cả lớp. Mỗi bài/học sinh một giao đang hiệu lực; giao lại cập nhật chế độ/hạn.
 - `GET /api/hs/che-do` → Item[]; id = mã bài; status = mode; details `{dueAt}`. Khóa gia sư và hạn nộp kiểm ở máy chủ.
-- `GET /api/hs/goi-bai` → Item[] (tối đa 1); id = mã bài; title mã, subtitle lý do; details `{level4,skillCode}`. Bài đã giao còn phát hành, ưu tiên kỹ năng yếu và +1 mức; ghi đè giáo viên được xét.
+- `GET /api/hs/goi-bai` → Item[] (tối đa 1); id = mã bài; title mã, subtitle lý do; details `{level4,skillCode}`. Chỉ bài ôn đã giao cho chính em, còn phát hành trong lớp, còn hạn và chưa nộp ở phiên bản hiện tại. Status `CHUA_LOI` / `CUNG_CO` / `NANG_1_NAC` / `DE_HON` / `THAY_CO_GIAO`; không vượt mức hiểu hiệu lực +1 kể cả ghi đè. Bài vừa đạt ưu tiên tiếp kỹ năng đó, mức bài kế chỉ hơn bài vừa làm một nấc; nếu mastery vừa tăng thì không tăng lần nữa. Lỗi chỉ dùng tên mã khi đủ độ tin cậy. Sai cùng bước tới ngưỡng BKT thì dễ hơn; thiếu bài dễ hơn trả `GUI_THAY_CO` với id rỗng, chỉ lời khuyên, không liên kết bài.
 - `GET /api/hs/kho` và `GET /api/gv/kho?lopId=UUID` → `{formulas:Item[],documents:Item[]}`. Công thức: title tên, subtitle LaTeX, status trạng thái bảng; details `{statement,tier1,tier2,version}`. Tài liệu: title tên, subtitle nội dung, status quyền dùng.
 - `GET /api/hs/flashcards/export` → `{filename:"cong-thuc.csv",content:string}`. UTF-8 CSV hai cột thuật ngữ, định nghĩa; escape nháy/xuống dòng và chống spreadsheet injection. FE tạo Blob tải về.
 - `POST /api/gv/tai-lieu` multipart fields `lopId`, `title`, `licenseStatus` (`tu_soan` mặc định), `file` (.txt/.md/.pdf ≤5MiB) → Result. PDF có text; scan rỗng báo 400.
@@ -29,10 +30,11 @@ DTO dùng chung `Item`: `{id:string,title:string,subtitle:string,status:string,d
 - `GET /api/gv/cai-dat?lopId=UUID` → `{lopId,revealSolutionAfterSubmit:boolean,aiProvider:string}`.
 - `PUT /api/gv/cai-dat` body `{lopId,revealSolutionAfterSubmit,aiProvider:"offline"}` → Result.
 - `POST /api/hs/gia-su` body `{maBai:string,maBuoc:string,cap:1|2|3,cauHoi:string}` → SSE `event: kho`, `goi`, `loc`, `xong`/`loi`; data `{status:string,message:string}`. Chỉ xong mang câu gia sư sau bộ lọc CAS; kiểm tra bị 403 trước SSE. Không stream token. Gia sư offline không đọc lời giải.
+- `GET /api/hs/ke-hoach-tuan?tuan=0` → `{sessions:Item[],loiKhuyen:string}`; tuần tương đối −52…52 theo `Asia/Ho_Chi_Minh`, ba buổi gợi ý 20 phút (thứ hai/tư/bảy, 19:30). Dựa mức hiểu hiệu lực của kỹ năng yếu nhất và chuỗi sai cùng bước; có cả kỹ năng nền đã gặp trong bài lớp này. Chưa có lịch sử dùng lịch/lời khuyên bắt đầu. Sessions status `GOI_Y`, id `goi-y-*`, không lưu/đánh dấu hoàn thành bằng API buổi tự thêm.
 - `GET /api/hs/lich` → Item[]; id lịch; title hoạt động; status CHUA_XONG/XONG; details `{startsAt,endsAt}`.
 - `POST /api/hs/lich` body `{title,startsAt:ISO,endsAt:ISO}` → Result; tạo phiên học trong khung rảnh.
 - `POST /api/hs/lich/{id}/xong` → Result.
-- `GET /api/hs/nhac` → Item[] lịch tới hạn trong 24h và bài sắp hết hạn; id/status/title/details như lịch/giao bài.
+- `GET /api/hs/nhac` → Item[]; ưu tiên buổi gợi ý hôm nay theo giờ Việt Nam, sau đó lịch tự thêm trong 24h và bài sắp hết hạn; id/status/title/details như lịch/giao bài.
 - `GET /api/qt/nguoi-dung` → Item[]; title tên; subtitle email; status role; details `{enabled,synthetic}`.
 - `POST /api/qt/nguoi-dung` body `{email,displayName,password,role,synthetic:true}` → Result.
 - `POST /api/qt/nguoi-dung/bulk` body `{ids:UUID[],enabled:boolean}` → Result; không tự khóa mình; thu hồi phiên khi khóa.

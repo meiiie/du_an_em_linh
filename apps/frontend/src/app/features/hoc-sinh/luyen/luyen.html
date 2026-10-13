@@ -244,7 +244,9 @@
             }
             @if (goiBai.hasValue() && goiBai.value().length) {
               <p class="phu">{{goiBai.value()[0].subtitle}}</p>
-              <a appButton [routerLink]="['/hs/luyen',goiBai.value()[0].id]" data-testid="bai-ke-ket-qua">Bài tiếp theo</a>
+              @if(goiBai.value()[0].status !== 'GUI_THAY_CO' && goiBai.value()[0].id){
+                <a appButton [routerLink]="['/hs/luyen',goiBai.value()[0].id]" data-testid="bai-ke-ket-qua">Bài tiếp theo</a>
+              } @else {<a appButton routerLink="/hs">Về bài được giao</a>}
             } @else { <a appButton routerLink="/hs">Về bài được giao</a> }
           </section>
         } @else {

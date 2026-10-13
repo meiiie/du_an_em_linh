@@ -18,6 +18,7 @@ class GiaSuPromptTest {
         assertAll(() -> assertTrue(p.user().contains(c.statement())),
             () -> assertTrue(p.user().contains("B.DH.DAOHAM — Đạo hàm")),
             () -> assertTrue(p.user().contains("Mức gợi ý: 3")),
+            () -> assertTrue(p.user().contains("chỉ gợi ý cho bước «Đạo hàm»")),
             () -> assertTrue(p.user().contains("[1] Lũy thừa")),
             () -> assertTrue(p.user().contains("f'(x)=3x")),
             () -> assertTrue(p.user().contains(c.hint())),

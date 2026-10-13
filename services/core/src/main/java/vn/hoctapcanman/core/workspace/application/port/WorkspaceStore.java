@@ -13,6 +13,8 @@ public interface WorkspaceStore {
     List<Item> assignments(UUID classId);
     List<Item> modes(UUID student,UUID classId);
     List<Item> recommendations(UUID student,UUID classId);
+    List<vn.hoctapcanman.core.workspace.domain.model.PersonalLearningRules.Skill> learningSkills(UUID student,UUID classId);
+    List<Item> stuckAlerts(UUID classId);
     Library library(UUID classId,boolean teacher);
     List<Item> reviews(UUID classId);
     void assign(UUID actor,Assign request,List<UUID> students,Instant now);

@@ -1,0 +1,279 @@
+{
+ "bang_cong_thuc": [
+  {
+   "id": "d-1",
+   "latex": "(x^n)' = n x^{n-1}",
+   "phat_bieu": "Đạo hàm của x mũ n là n nhân x mũ n trừ 1. Hằng số có đạo hàm bằng 0.",
+   "trich_dan": {
+    "tai_lieu": "d40a4de2-c34e-4d1a-b2d1-012e4a7d436e"
+   }
+  },
+  {
+   "id": "d-2",
+   "latex": "(u+v)' = u' + v'",
+   "phat_bieu": "Đạo hàm của tổng bằng tổng các đạo hàm.",
+   "trich_dan": {
+    "tai_lieu": "cb1a9f48-7bdb-4b33-9339-c986b82cd17e"
+   }
+  },
+  {
+   "id": "d-3",
+   "latex": "(u/v)' = (u'v - uv') / v^2",
+   "phat_bieu": "Với thương, tử là u'v trừ uv', mẫu là v bình.",
+   "trich_dan": {
+    "tai_lieu": "e161b42b-a463-40da-bac2-d6fd14127f26"
+   }
+  },
+  {
+   "id": "d-4",
+   "latex": "y' \\ge 0,\\ y' = 0 \\text{ chỉ tại hữu hạn điểm} \\Rightarrow \\text{đồng biến}",
+   "phat_bieu": "Hàm đồng biến trên khoảng khi đạo hàm không âm và bằng 0 tại hữu hạn điểm; nghịch biến khi đạo hàm không dương theo cùng quy tắc.",
+   "trich_dan": {
+    "tai_lieu": "82846f4e-59d7-438a-90ca-f4f63017a222"
+   }
+  },
+  {
+   "id": "d-5",
+   "latex": "+ \\to - : \\text{cực đại}",
+   "phat_bieu": "Đạo hàm đổi từ dương sang âm thì cực đại; từ âm sang dương thì cực tiểu. Đạo hàm bằng 0 mà không đổi dấu thì chưa phải cực trị.",
+   "trich_dan": {
+    "tai_lieu": "07000f3f-3743-417a-9745-25bd744154b9"
+   }
+  },
+  {
+   "id": "d-6",
+   "latex": "y'=0 \\text{ hoặc } y' \\text{ không xác định}",
+   "phat_bieu": "Điểm tới hạn gồm nghiệm của đạo hàm bằng 0 và điểm thuộc tập xác định mà đạo hàm không xác định.",
+   "trich_dan": {
+    "tai_lieu": "4d80e3ed-aa8d-41ca-a638-fca22b935d55"
+   }
+  }
+ ],
+ "ban_nhap": [
+  {
+   "draft": "Em hãy viết rõ điều kiện xác định trước khi dùng quy tắc đạo hàm.",
+   "ham": "-x**4+18*x**2-24",
+   "ma": "NT-DH12-VDC-08"
+  },
+  {
+   "draft": "Em xem lại hàm số $y = x^{2} - 6 x + 4$: có giá trị $x$ nào làm hàm này không xác định không, em?",
+   "ham": "x**2-6*x+4",
+   "ma": "NT-LUYEN12-NB-01"
+  },
+  {
+   "draft": "Hàm đã cho là đa thức, vậy em nghĩ có giá trị nào làm hàm không xác định không? Từ đó tập xác định của em sẽ là tập nào?",
+   "ham": "x**2-6*x+4",
+   "ma": "NT-LUYEN12-NB-01"
+  },
+  {
+   "draft": "Hàm đã cho là đa thức. Có giá trị thực nào làm hàm không xác định không?",
+   "ham": "x**2-6*x+4",
+   "ma": "NT-LUYEN12-NB-01"
+  },
+  {
+   "draft": "Em nhìn lại biểu thức $y = x^{2} - 6 x + 4$ xem có chứa mẫu thức, căn thức hay logarit nào buộc mình phải đặt điều kiện không? Nếu không có gì ràng buộc thì tập xác định của hàm đa thức này là gì, em?",
+   "ham": "x**2-6*x+4",
+   "ma": "NT-LUYEN12-NB-01"
+  },
+  {
+   "draft": "Với hàm $y = x^{2} - 6 x + 4$, em hãy thử đặt các giá trị của $x$ như $0$, $1$, hay $-2$ vào biểu thức để xem có gặp phép toán nào không thực hiện được không nhé. Nếu mọi giá trị của $x$ đều tính được bình thường, em kết luận gì về tập xác định của hàm số này?",
+   "ham": "x**2-6*x+4",
+   "ma": "NT-LUYEN12-NB-01"
+  },
+  {
+   "draft": "Em đang ở bước tìm tập xác định: em hãy xem hàm số này có bị cấm giá trị nào của biến hay không, và kết luận tập xác định là tập nào?",
+   "ham": "x**2-6*x+4",
+   "ma": "NT-LUYEN12-NB-01"
+  },
+  {
+   "draft": "Bước này em cần tìm những điểm nào làm dấu đạo hàm thay đổi — em nghĩ nên bắt đầu từ việc tìm nghiệm của $y' = 0$ hay kiểm tra xem $y'$ có chỗ nào không xác định, em đã thử chưa?",
+   "ham": "x**2-6*x+4",
+   "ma": "NT-LUYEN12-NB-01"
+  },
+  {
+   "draft": "Em hãy nghĩ xem đạo hàm của hàm số này là gì trước đã, rồi từ đó tìm những điểm nào có thể làm dấu đạo hàm thay đổi nhé? Em xem lại [6] và [1].",
+   "ham": "x**2-6*x+4",
+   "ma": "NT-LUYEN12-NB-01"
+  },
+  {
+   "draft": "Em đã tính đạo hàm của $y = x^{2} - 6 x + 4$ chưa, và nếu rồi thì em thử đặt biểu thức $y'$ bằng $0$ để giải xem sao? Đừng quên kiểm tra xem $y'$ có điểm nào không xác định trong tập xác định không nhé, em có thể xem lại khái niệm điểm tới hạn ở [6].",
+   "ham": "x**2-6*x+4",
+   "ma": "NT-LUYEN12-NB-01"
+  },
+  {
+   "draft": "Em đã thử tính đạo hàm của hàm số theo các công thức [1] và [2] chưa? Sau đó em hãy giải phương trình đạo hàm bằng không, và kiểm tra xem đạo hàm có bị không xác định tại điểm nào trong tập xác định không nhé, xem [6].",
+   "ham": "x**2-6*x+4",
+   "ma": "NT-LUYEN12-NB-01"
+  },
+  {
+   "draft": "Em hãy tính đạo hàm của $y = x^{2} - 6 x + 4$ bằng cách dùng [1] và [2], rồi viết phương trình $y' = 0$ và giải để tìm nghiệm nhé. Em cũng kiểm tra xem đạo hàm có điểm nào không xác định không dựa theo [6].",
+   "ham": "x**2-6*x+4",
+   "ma": "NT-LUYEN12-NB-01"
+  },
+  {
+   "draft": "Sau khi tính đạo hàm bằng [1] và [2], em cần giải phương trình đạo hàm bằng không để tìm điểm tới hạn, xem [6] — em đã thử giải phương trình đó chưa?",
+   "ham": "x**2-6*x+4",
+   "ma": "NT-LUYEN12-NB-01"
+  },
+  {
+   "draft": "Bước này em cần lập bảng xét dấu của đạo hàm — em đã tìm được nghiệm của $y'$ để chia trục số thành các khoảng chưa?",
+   "ham": "x**2-6*x+4",
+   "ma": "NT-LUYEN12-NB-01"
+  },
+  {
+   "draft": "Ở bước này, em cần giải phương trình đạo hàm bằng không để tìm nghiệm, xem [6]. Nghiệm tìm được sẽ chia trục số thành những khoảng nào để em lập bảng xét dấu?",
+   "ham": "x**2-6*x+4",
+   "ma": "NT-LUYEN12-NB-01"
+  },
+  {
+   "draft": "Nghiệm đạo hàm chia trục số thành những khoảng nào?",
+   "ham": "x**2-6*x+4",
+   "ma": "NT-LUYEN12-NB-01"
+  },
+  {
+   "draft": "Em ơi, để lập bảng xét dấu thì em cần dùng quy tắc [4]. Em đã chọn giá trị thử trong mỗi khoảng do nghiệm của $y'$ chia trục ra chưa?",
+   "ham": "x**2-6*x+4",
+   "ma": "NT-LUYEN12-NB-01"
+  },
+  {
+   "draft": "Em đã thử thay một giá trị đại diện vào từng khoảng trong bảng chưa? Nếu chưa chắc cách kết luận chiều biến thiên, em xem [4] nhé.",
+   "ham": "x**2-6*x+4",
+   "ma": "NT-LUYEN12-NB-01"
+  },
+  {
+   "draft": "Ở bước này, em cần lập bảng xét dấu của đạo hàm: trước tiên hãy giải phương trình $y' = 0$ để tìm điểm tới hạn theo [6], sau đó chọn một điểm thử ở mỗi khoảng để xác định dấu của $y'$, rồi cuối cùng dùng [4] và [5] để đọc khoảng đơn điệu và cực trị từ bảng. Em hãy bắt đầu bằng việc trình bày nghiệm của $y' = 0$ nhé.",
+   "ham": "x**2-6*x+4",
+   "ma": "NT-LUYEN12-NB-01"
+  },
+  {
+   "draft": "Ở bước này, em cần xác định đạo hàm đổi dấu thế nào qua nghiệm mà em đã tìm, rồi lập bảng xét dấu. Em xem quy tắc đơn điệu ở [4] và quy tắc cực trị ở [5], rồi tự điền dấu vào từng khoảng nhé.",
+   "ham": "x**2-6*x+4",
+   "ma": "NT-LUYEN12-NB-01"
+  },
+  {
+   "draft": "Ở bước này, em dựa vào dấu của $y'$ để kết luận: em đã xem xét $y'$ dương trên khoảng nào và âm trên khoảng nào chưa? Sau đó, dựa vào chiều đổi dấu của $y'$ qua nghiệm, em sẽ tìm được cực trị theo quy tắc [5]. Em thử kể lại thứ tự các việc em cần làm nhé?",
+   "ham": "x**2-6*x+4",
+   "ma": "NT-LUYEN12-NB-01"
+  },
+  {
+   "draft": "Em đã tìm được nghiệm của $y'$ và xét dấu của $y'$ trên các khoảng chưa? Em xem quy tắc đơn điệu [4] và quy tắc đổi dấu để nhận cực đại, cực tiểu [5], rồi cho mình biết đạo hàm đổi dấu thế nào qua nghiệm đó nhé.",
+   "ham": "x**2-6*x+4",
+   "ma": "NT-LUYEN12-NB-01"
+  },
+  {
+   "draft": "Em đã lập bảng dấu của đạo hạm chưa, và khi nhìn vào đó em thấy dấu thay đổi thế nào ở điểm tới hạn? Xem [4] và [5] để đối chiếu nhé.",
+   "ham": "x**2-6*x+4",
+   "ma": "NT-LUYEN12-NB-01"
+  },
+  {
+   "draft": "Hàm đã cho là đa thức, em thử nghĩ xem có giá trị nào của $x$ làm cho $y = - x^{2} - 2 x + 5$ không xác định không?",
+   "ham": "-x**2-2*x+5",
+   "ma": "NT-LUYEN12-NB-02"
+  },
+  {
+   "draft": "Với hàm đa thức dạng này, em thử nghĩ xem có giá trị nào của biến làm hàm số không xác định không, và từ đó tập xác định là tập nào?",
+   "ham": "-x**2-2*x+5",
+   "ma": "NT-LUYEN12-NB-02"
+  },
+  {
+   "draft": "Hàm đã cho là đa thức. Có giá trị thực nào làm hàm không xác định không?",
+   "ham": "-x**2-2*x+5",
+   "ma": "NT-LUYEN12-NB-02"
+  },
+  {
+   "draft": "Em xem lại biểu thức $y = - x^{2} - 2 x + 5$: có mẫu số, căn thức hay logarit nào cần đặt điều kiện không? Nếu không có gì ràng buộc thì tập xác định của em là gì?",
+   "ham": "-x**2-2*x+5",
+   "ma": "NT-LUYEN12-NB-02"
+  },
+  {
+   "draft": "Bước này em chỉ cần trả lời câu hỏi: hàm số $y = - x^{2} - 2 x + 5$ có giá trị nào của $x$ khiến biểu thức không xác định không, hay là xác định với mọi $x$ thuộc $\\\\mathbb{R}$?",
+   "ham": "-x**2-2*x+5",
+   "ma": "NT-LUYEN12-NB-02"
+  },
+  {
+   "draft": "Với hàm đa thức này, em hãy cho mình biết giá trị của biến có bị cấm ở điểm nào không, và tập xác định của hàm là tập nào nhé?",
+   "ham": "-x**2-2*x+5",
+   "ma": "NT-LUYEN12-NB-02"
+  },
+  {
+   "draft": "Trước tiên em cần tìm đạo hàm của hàm số $y = - x^{2} - 2 x + 5$ — em thấy hàm số này gồm những hạng tử nào, và mỗi hạng tử thuộc dạng nào trong bảng công thức?",
+   "ham": "-x**2-2*x+5",
+   "ma": "NT-LUYEN12-NB-02"
+  },
+  {
+   "draft": "Em hãy thử lấy đạo hàm của cả hàm số trên theo từng hạng tử, xem [1] và [2] nhé.",
+   "ham": "-x**2-2*x+5",
+   "ma": "NT-LUYEN12-NB-02"
+  },
+  {
+   "draft": "Hãy lấy đạo hàm từng hạng tử của hàm bậc hai đã cho.",
+   "ham": "-x**2-2*x+5",
+   "ma": "NT-LUYEN12-NB-02"
+  },
+  {
+   "draft": "Em đã tính đạo hàm của $y = - x^{2} - 2 x + 5$ chưa, và em cần tìm những giá trị nào để giải phương trình $y' = 0$ ở bước này?",
+   "ham": "-x**2-2*x+5",
+   "ma": "NT-LUYEN12-NB-02"
+  },
+  {
+   "draft": "Em đã tính đạo hàm của hàm số $y = - x^{2} - 2 x + 5$ bằng các quy tắc [1] và [2] chưa, và khi đã có $y'$ thì bước này em cần giải phương trình $y' = 0$ như thế nào?",
+   "ham": "-x**2-2*x+5",
+   "ma": "NT-LUYEN12-NB-02"
+  },
+  {
+   "draft": "Em đã thử giải phương trình đạo hàm bằng 0 chưa, và em nghĩ điểm nào làm em thấy kết quả có vấn đề? Mình gợi ý em xem lại [1] và [2] trước khi kết luận nhé.",
+   "ham": "-x**2-2*x+5",
+   "ma": "NT-LUYEN12-NB-02"
+  },
+  {
+   "draft": "Em đã có đạo hàm $y'$ chưa, và theo bước này em cần giải phương trình $y' = 0$ với $y'$ của hàm $y = - x^{2} - 2 x + 5$ đã tính ở bước trước? Em thử đặt $y' = 0$ và giải phương trình bậc nhất xem.",
+   "ham": "-x**2-2*x+5",
+   "ma": "NT-LUYEN12-NB-02"
+  },
+  {
+   "draft": "Em đã tính đạo hàm của hàm số trên chưa, và em thấy nó có xác định với mọi giá trị của biến hay không, em xem [6] nhé?",
+   "ham": "-x**2-2*x+5",
+   "ma": "NT-LUYEN12-NB-02"
+  },
+  {
+   "draft": "Mức 1: Trước khi lập bảng xét dấu, em hãy cho mình biết đạo hàm $y'$ của hàm số $y = - x^{2} - 2 x + 5$ bằng bao nhiêu đã nhé?",
+   "ham": "-x**2-2*x+5",
+   "ma": "NT-LUYEN12-NB-02"
+  },
+  {
+   "draft": "Để làm bước này, em hãy thử đặt nghiệm của đạo hàm lên trục số và xem chúng chia trục thành những khoảng nào. Trên mỗi khoảng đó, em cần tìm gì để điền vào bảng xét dấu?",
+   "ham": "-x**2-2*x+5",
+   "ma": "NT-LUYEN12-NB-02"
+  },
+  {
+   "draft": "Em hãy viết đạo hàm của hàm $y = - x^{2} - 2 x + 5$ bằng cách dùng [1] và [2], rồi đặt $y' = 0$ để tìm điểm tới hạn theo [6]. Sau đó em lập bảng xét dấu $y'$ trên các khoảng chia bởi nghiệm đó, dựa vào [4] và [5] để kết luận dấu tương ứng với đồng biến, nghịch biến và cực trị nhé.",
+   "ham": "-x**2-2*x+5",
+   "ma": "NT-LUYEN12-NB-02"
+  },
+  {
+   "draft": "Em đang ở bước bảng xét dấu, vậy em cần điền dấu của đạo hàm vào hai phía của điểm tới hạn theo quy tắc xem [4], rồi em đã nhìn xem đạo hàm đổi dấu như thế nào chưa?",
+   "ham": "-x**2-2*x+5",
+   "ma": "NT-LUYEN12-NB-02"
+  },
+  {
+   "draft": "Em đã lập được bảng dấu của đạo hàm $y'$ chưa, và em thấy dấu của nó thay đổi thế nào qua nghiệm của $y' = 0$?",
+   "ham": "-x**2-2*x+5",
+   "ma": "NT-LUYEN12-NB-02"
+  },
+  {
+   "draft": "Em đã lập bảng dấu của đạo hàm ở bước trước chưa, và dựa vào đó em thấy hàm đổi chiều biến thiên ở đâu? Để kết luận chiều biến thiên và cực trị, em xem quy tắc [4] và [5] trong bảng công thức nhé.",
+   "ham": "-x**2-2*x+5",
+   "ma": "NT-LUYEN12-NB-02"
+  },
+  {
+   "draft": "Em đã có bảng xét dấu của $y = - x^{2} - 2 x + 5$ rồi, đúng không? Bây giờ em hãy dùng quy tắc [4] để nhìn dấu của đạo hàm trên từng khoảng mà kết luận đồng biến hay nghịch biến nhé.",
+   "ham": "-x**2-2*x+5",
+   "ma": "NT-LUYEN12-NB-02"
+  },
+  {
+   "draft": "Em đã có dấu của $y'$ trên từng khoảng rồi chưa? Mình gợi ý: em hãy lập bảng dấu của đạo hàm, rồi áp dụng quy tắc [4] để kết luận khoảng đồng biến, nghịch biến và quy tắc [5] để chỉ ra cực đại, cực tiểu dựa trên chiều đổi dấu của $y'$.",
+   "ham": "-x**2-2*x+5",
+   "ma": "NT-LUYEN12-NB-02"
+  }
+ ]
+}

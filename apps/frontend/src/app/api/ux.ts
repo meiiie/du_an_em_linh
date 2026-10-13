@@ -7,6 +7,8 @@ export interface StudentDetails{skills:Skill[];submitted:number;}
 export interface BankDetails{code:string;skillCode:string;skillName?:string;level4:Muc4;gate:string;latex:string;}
 export interface ModeDetails{dueAt:string|null;}
 export interface RecommendationDetails{level4:Muc4;skillCode:string;}
+export interface WeeklyPlan {sessions:Item<ScheduleDetails>[];loiKhuyen:string;}
+export interface AlertDetails {studentId:string;}
 export interface ScheduleDetails{startsAt:string;endsAt:string;}
 /** Nhắc buổi học có startsAt/endsAt; nhắc bài được giao có dueAt. */
 export interface ReminderDetails extends Partial<ScheduleDetails>{dueAt?:string|null;}

@@ -46,8 +46,13 @@ test('Gia sư: toggle, shortcut, persistence, resize hoặc sheet và focus', as
   await noOverflow(page);
   expect((await new AxeBuilder({ page }).exclude('math-field').analyze()).violations.filter(v => v.impact === 'serious' || v.impact === 'critical')).toEqual([]); // math-field: MathLive bên thứ ba tự lồng textbox
   await page.reload();
+  if (page.viewportSize()!.width <= 1024) {
+    // Điện thoại: gia sư là hộp thoại toàn màn, tải lại trang không tự mở che bài làm.
+    await expect(toggle).toHaveAttribute('aria-expanded', 'false');
+    return;
+  }
   await expect(panel).toBeVisible();
-  if (page.viewportSize()!.width > 1024) expect((await panel.boundingBox())!.width).toBeCloseTo(460, 0);
+  expect((await panel.boundingBox())!.width).toBeCloseTo(460, 0);
   await page.keyboard.press('Escape');
   await expect(panel).toHaveCount(0);
   await page.reload();

@@ -210,10 +210,11 @@ export class GiaSu {
                 });
         });
         afterNextRender(() => {
+            let daMo = false;
             try {
                 const w = Number(localStorage.getItem('mathl-gia-su-rong'));
                 this.doiRong(w >= 360 && w <= 480 ? w : 400);
-                this.mo.set(localStorage.getItem('mathl-gia-su-mo') === 'true');
+                daMo = localStorage.getItem('mathl-gia-su-mo') === 'true';
             }
             catch {
             }
@@ -228,6 +229,9 @@ export class GiaSu {
                 m.addEventListener('change', change);
                 this.destroy.onDestroy(() => m.removeEventListener('change', change));
             }
+            // Chỉ mở lại thanh bên ở màn rộng; trên điện thoại gia sư là hộp thoại toàn màn, không tự bật khi tải trang.
+            if (daMo && this.rong())
+                this.mo.set(true);
             const key = (e: KeyboardEvent) => {
                 if ((e.ctrlKey || e.metaKey) && e.key === '/') {
                     e.preventDefault();

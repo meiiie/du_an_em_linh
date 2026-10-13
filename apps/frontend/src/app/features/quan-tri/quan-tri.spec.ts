@@ -5,6 +5,16 @@ import { TestBed } from '@angular/core/testing';
 import { QuanTri } from './quan-tri';
 
 describe('Danh sách người dùng', () => {
+  it('nhật ký hiện tên hành động và vai trò tiếng Việt thay cho mã', async () => {
+    TestBed.configureTestingModule({providers:[provideHttpClient(),provideHttpClientTesting()]});
+    const f=TestBed.createComponent(QuanTri);f.componentRef.setInput('trang','nhat-ky');f.detectChanges();
+    TestBed.inject(HttpTestingController).expectOne('/api/qt/nhat-ky').flush([{id:'1',title:'TAO_TAI_KHOAN',subtitle:'STUDENT',status:'4ea60e1f-c26c-456c-b85f-ca2fedd7bf86',details:{createdAt:'2026-10-13T19:18:45Z'}}]);
+    await f.whenStable();
+    const row=(f.nativeElement as HTMLElement).querySelector('tbody tr')!.textContent!;
+    expect(row).toContain('Tạo tài khoản');expect(row).toContain('Học sinh');expect(row).toContain('Mã đối tượng 4ea60e1f');
+    expect(row).not.toContain('TAO_TAI_KHOAN');
+  });
+
   it('màn hẹp hiện 10 người, đổi trang không mất lựa chọn và đổi chiều rộng đặt lại trang', async () => {
     TestBed.configureTestingModule({providers:[provideHttpClient(),provideHttpClientTesting()]});
     const size=TestBed.inject(KichThuocTrang);size.soMuc.set(10);

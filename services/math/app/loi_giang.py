@@ -2,15 +2,19 @@
 """Job kiem_loi_giang (ADR 013): cổng thế giới đóng cho câu gia sư, chạy sau /v1/filter, trước khi học sinh thấy câu.
 
 Đơn vị giữ hay bỏ là CÂU (tách như luật 1 của KD-0005). Một câu còn trong `cau_sach` khi mọi đoạn toán của nó DAT và
-nó không là ứng viên quy tắc bằng lời, hoặc khi cả câu khớp một dòng bảng đã khóa. Đoạn toán DAT thuộc một trong ba loại:
+nó không là ứng viên quy tắc bằng lời, hoặc khi cả câu khớp một dòng bảng đã khóa. Đoạn toán DAT thuộc các loại:
   CONG_THUC_TONG_QUAT  khớp một dòng bảng dùng được: trùng LaTeX, cùng (E)' = R theo SymPy với u(x), v(x) ký hiệu, trùng
                        vế phải, hoặc bộ đọc định lí của dong_cong_thuc đọc ra cùng mục danh mục với dòng.
   TRICH_DE_BAI         trùng hàm, tử hay mẫu của đề sau khi chuẩn hóa cách viết; không rút gọn, không đổi thứ tự.
   TRICH_BAI_LAM        trùng nguyên một dòng học sinh đã nộp (chỉ bỏ khoảng trắng), đứng ngay sau «em viết …».
+  KY_HIEU             tên x, y trong câu hỏi/chỉ dẫn có vai trò biến rõ ràng; không có giá trị, toán tử hay chỉ số.
+Điều kiện gọi tên y'=0, y'>0, y'<0 cần ngữ cảnh tham chiếu, mảnh LaTeX/chiều dấu nhất quán với dòng bảng dùng được.
+Điều kiện đi cùng một kết luận đã chọn vẫn là quy tắc phải kiểm, không được miễn theo mệnh lệnh hay dẫn [n].
 Đoạn có dạng quy tắc (vế trái (…)', ký hiệu chung u, v, n…, mệnh đề định lí) chỉ DAT qua bảng, không bao giờ là trích.
 Còn lại bị bỏ: KET_QUA_CU_THE, CONG_THUC_TONG_QUAT ngoài bảng (SAI khi máy có phản ví dụ), KHONG_PHAN_TICH_DUOC (LaTeX
 hỏng, dấu phân cách không đóng, toán viết trần ngoài $…$).
-Ứng viên quy tắc bằng lời là câu có một cụm thuật ngữ và một cụm quan hệ khác nhau. Ứng viên, và câu có toán viết trần,
+Ứng viên quy tắc bằng lời có thuật ngữ và quan hệ khác nhau (KD-0005), trừ câu gợi mở nhận diện được không khẳng định
+quan hệ (KD-0006). Dấu hỏi/mệnh lệnh không miễn kiểm mệnh đề bên trong. Ứng viên, và câu có toán viết trần,
 chỉ được giữ khi trùng nguyên một câu phát biểu của dòng bảng, hoặc bộ đọc định lí đọc trọn câu ra đúng mục của dòng.
 Đóng mặc định: lỗi bất kỳ, đầu vào sai kiểu hay quá giới hạn thì không giữ gì (`loi`, `thay_bang_goi_y`).
 """
@@ -29,6 +33,7 @@ DAT, SAI, KKD = "DAT", "SAI", "KHONG_KIEM_DUOC"
 CONG_THUC, QUY_TAC = "CONG_THUC_TONG_QUAT", "QUY_TAC_BANG_LOI"
 TRICH_BAI_LAM, TRICH_DE_BAI = "TRICH_BAI_LAM", "TRICH_DE_BAI"
 KET_QUA, KHONG_PHAN_TICH = "KET_QUA_CU_THE", "KHONG_PHAN_TICH_DUOC"
+KY_HIEU = "KY_HIEU"
 
 # Từ vựng tạm của lab Kiểm định: KD-0005 bản 2 (#116, commit b1232ca, tu-vung-quy-tac.yaml, SHA-256 8fe6bdb6…), chép
 # nguyên văn, bỏ mục «nếu … thì» (luật 7). T029b áp bản vá thì đọc từ kiemdinh/loi-giang/ thay cho hai bộ này.
@@ -134,10 +139,172 @@ def _cum(chu):
     return ket
 
 
-def _la_ung_vien(chu):
-    """Luật 6: hai cụm khác nhau, một mang nhãn thuật ngữ, một mang nhãn quan hệ."""
+def _ung_vien_kd0005(chu):
+    """Luật 6 đã khóa: hai cụm khác nhau, một thuật ngữ, một quan hệ."""
     c = _cum(chu)
     return any(a[0] != b[0] and "T" in a[1] and "Q" in b[1] for a in c for b in c)
+
+
+# KD-0006: chỉ loại khỏi ứng viên khi nhận ra thao tác hoặc chỗ trống cần học sinh trả lời.
+# Mỗi mẫu dưới đây chỉ che cách hỏi/chỉ dẫn, không che mệnh đề toán còn lại trong cùng câu.
+def _mau_viet(mau):
+    """Từ có dấu phải khớp đúng; thêm dạng ASCII như luật 4, không nhập nhằng «bảng» với «bằng»."""
+    def tu(m):
+        s = m.group(0)
+        return "(?:%s|%s)" % (s, _bo_dau(s)) if not s.isascii() else s
+    return re.compile(re.sub(r"\\[A-Za-z]|[^\W\d_]+", tu, mau))
+
+
+_CHO_TRONG = (
+    r"\b(?:là|bằng|gồm|thuộc)\s+(?:(?:tập|những hạng tử|những khoảng|hạng tử|dạng)\s+)?(?:nào|gì|bao nhiêu)\b",
+    r"\b(?:đổi dấu|thay đổi)\s+(?:như\s+)?thế nào\b",
+    r"\b(?:như\s+)?thế nào\b",
+    r"\b(?:dương|âm)\s+trên\s+khoảng nào\b",
+    r"\bchia\s+trục(?: số)?\s+thành\s+(?:những\s+khoảng nào|các\s+khoảng chưa)\b",
+    r"\bbằng\s+cách\b",
+    r"\b((?:em\s+(?:(?:hãy|thử|cần|đã)\s+){0,2}|hãy\s+))lấy(?=\s+đạo hàm\b)",
+    r"\b(?:trước|sau) khi\b",
+    r"\bđể\s+(?:nhận|kết luận|chỉ ra)\s+(?:khoảng\s+)?(?:đồng biến|nghịch biến|cực đại|cực tiểu|cực trị)"
+    r"(?:\s*[, ]\s*(?:đồng biến|nghịch biến|cực đại|cực tiểu|cực trị))*\b",
+    r"\bquy tắc\s+(?:đổi dấu|đơn điệu|cực trị|cực đại|cực tiểu)\b",
+)
+_CHE_LOI_HOI = tuple(_mau_viet(p) for p in _CHO_TRONG)
+_QUAN_HE_MANH = _mau_viet(
+    r"\b(?:bằng|là|nhân|chia|cộng|trừ|bình phương|lập phương|mũ|lớn hơn|nhỏ hơn|dương|âm|đổi dấu|"
+    r"trái dấu|cùng dấu|suy ra|kéo theo|khi và chỉ khi|tương đương|gồm|đạt|cũng vậy|cũng thế|"
+    r"cũng như|tương tự|như vậy|như thế|giống|ứng với|tương ứng|đồng nghĩa|nghĩa là|tức|cho ra|"
+    r"trùng|cao hơn|thấp hơn|lớn nhất|nhỏ nhất|vì vậy|vì thế|do đó|cho nên|dẫn đến|các đạo hàm|"
+    r"luôn|mọi|đều|triệt tiêu|thay đổi|không xác định|đồng biến|nghịch biến|đơn điệu|cực trị|cực đại|"
+    r"cực tiểu|tăng|giảm|đi lên|đi xuống|thuộc|khác|lấy)\b")
+_THAO_TAC = _mau_viet(
+    r"\b(?:em\s+(?:(?:hãy|thử|cần|đã|cũng|chỉ cần)\s+){0,2}(?:viết|tính|tìm|giải|lập|xác định|"
+    r"xem|nhìn|nghĩ|chọn|điền|cho|dùng|lấy|đặt|kiểm tra|tra|đọc|đối chiếu|áp dụng|vận dụng|chia|thay|tách)|"
+    r"hãy\s+(?:viết|tính|tìm|giải|lập|lấy|tra|đọc|đối chiếu|áp dụng|vận dụng)|"
+    r"đừng quên kiểm tra)\b")
+_HOI_THIEU = _mau_viet(r"\b(?:nào|gì|bao nhiêu|thế nào|ra sao|chưa)\b")
+_KET_LUAN_HO = _mau_viet(r"\b(?:đáp án|ta có|tính ra|tìm ra)\b")
+_SO_THU_TU = _mau_viet(r"\b(?:bước|mức|dòng)\s+\d{1,3}\b")
+_DAP_AN = _mau_viet(r"\bđáp án\b")
+_QUAN_HE_BO_SUNG = _mau_viet(
+    r"\b(?:không có nghiệm|vô nghiệm|xác định trên|xác định với|"
+    r"(?:cho|nhận|ra)\s+(?:tích|tổng|hiệu|thương))\b")
+_VI_TRI_KET_QUA = _mau_viet(
+    r"\b(?:cực đại|cực tiểu|cực trị|nghiệm|điểm tới hạn|đỉnh|đáy|kết quả|giá trị|ta có|tính ra|tìm ra)"
+    r"\s+(?:(?:tại|ở|là|bằng|ra)\s+)?"
+    r"(?:âm\s+)?(?:không|một|hai|ba|bốn|năm|sáu|bảy|tám|chín|mười)\b")
+_HOI_KXD = _mau_viet(r"(\b(?:giá trị|điểm|chỗ)(?:\s+\w+){0,4}\s+nào(?:\s+\w+){0,8}\s+)không xác định\b")
+_HOI_DAU = _mau_viet(r"(\b(?:giá trị|điểm|chỗ)(?:\s+\w+){0,4}\s+nào(?:\s+\w+){0,12}\s+)(?:thay đổi|đổi dấu)\b")
+_QUAN_HE_TRANG_THAI = _mau_viet(r"\bthay đổi\b")
+_NEU_THI = _mau_viet(r"\bnếu\b.*\bthì\b")
+_BANG_DAN = _mau_viet(r"\bbằng\s+(?:(?:các\s+)?quy tắc\s+)?")
+_TEN_PT_LOI = _mau_viet(r"\b(?:giải|viết) phương trình đạo hàm bằng (?:không|0)\b")
+_KHUNG_TEN_PT = _mau_viet(r"\b(?:giải|viết)\s+phương trình\s*$")
+_MANH_PT = re.compile(r"(?<![A-Za-z0-9'=])y'=0(?=$|[,;]|\\text)")
+
+# Vai trò cú pháp, không phải danh sách câu của corpus. Chỉ che bổ ngữ danh từ/chỗ hỏi;
+# dấu nối hai mệnh đề (nếu/thì/suy ra…), quan hệ có vế phải và giá trị cụ thể còn nguyên.
+_TEN_QUY_TAC = _mau_viet(
+    r"\b(?:quy tắc|công thức|định lí)\s+(?:(?:đơn điệu|cực trị|cực đại|cực tiểu|đạo hàm)\s+)?")
+_LAY_DAO_HAM = _mau_viet(r"\b(?:lấy|tính)\s+đạo hàm\b")
+_CONG_BO_NGU = _mau_viet(r"\bđể\s+cộng\s+lại\b")
+_CHIA_TRUC = _mau_viet(r"\bchia\s+(?:được\s+)?trục(?: số)?\s+thành\s+(?:các|những)\s+khoảng\s+(?:nào|chưa)\b")
+_HOI_PHEP_LAY = _mau_viet(r"\bnào\s+được phép lấy\b")
+_HOI_CHIEU = _mau_viet(r"\b(?:đổi dấu|thay đổi)\b([^,;:.!?]*?)\b(?:theo chiều nào|thế nào|ra sao)\b")
+_LOAI_KET_LUAN = r"(?:đồng biến|nghịch biến|cực đại|cực tiểu|cực trị)"
+_TU_LUA_CHON = _mau_viet(r"\b(?:hay|hoặc)\b")
+_PHAN_LOAI = _mau_viet(r"^\s*(?:phân biệt|phân loại)\b")
+_BO_NGU_KET_LUAN = _mau_viet(
+    r"\b(?:kết luận|phân biệt|phân loại|chỉ ra|đọc|tìm|xác định)\s+"
+    r"(?:(?:hàm|hàm số|khoảng|từng khoảng|giá trị|dấu tương ứng với)\s+)?" + _LOAI_KET_LUAN +
+    r"(?:\s*(?:,|và|hay|hoặc)\s*" + _LOAI_KET_LUAN + r")*(?:\s+tương ứng)?\b")
+_BIEN_BAT_KY = _mau_viet(r"\b(?:một giá trị|giá trị)\s*(?:bất kỳ|trong (?:mỗi|từng) khoảng|nào)\b")
+_MUC_DICH = _mau_viet(r"\bđể\s+(?:kết luận|phân biệt|phân loại|chỉ ra|đọc|tìm|xác định|xét)\b")
+_VIET_TONG = _mau_viet(r"\bviết\s+(?:lại\s+)?tổng các đạo hàm\s+(?:đó|này)\b")
+_BO_SUNG_NGUON = _mau_viet(r"\b(?:của|khi|để)\b")
+_KHOANG_CHIA = _mau_viet(r"\b(?:các|những|từng) khoảng\s+(?:được\s+)?chia bởi nghiệm\b")
+_CHIA_BANG = _mau_viet(r"\bchia\s+(?=bảng|trục)")
+_DAU = r"(?:dương|âm)"
+_LUA_CHON_DAU = _mau_viet(
+    r"\b(?:dấu đổi|đổi dấu|đổi)\s+từ\s+" + _DAU + r"\s+sang\s+" + _DAU +
+    r"\s+hay\s+từ\s+" + _DAU + r"\s+sang\s+" + _DAU + r"\b")
+_TEN_DK_LOI = _mau_viet(r"\bđiểm\s+đạo hàm\s+(?:bằng (?:không|0)|triệt tiêu)\b")
+_GIA_TRI_CHU = _mau_viet(
+    r"(?:\b(?:tại|ở|bằng|từ|đến|ra)\s+|:\s*)(?:âm\s+)?(?:không|một|hai|ba|bốn|năm|sáu|bảy|tám|chín|mười)\b")
+_VE_SAU_HAI_CHAM = _mau_viet(r":\s*(?:đạo hàm|tích|thương|tổng|hiệu|hằng số)\b")
+_KHUNG_DIEU_KIEN = _mau_viet(r"\b(?:xét|kiểm tra)\s+điều kiện\s*$")
+_NGHIEM_DIEU_KIEN = _mau_viet(r"\bnghiệm của\s*$")
+_DIEU_KIEN = re.compile(r"y'([=<>])0")
+
+
+def _bo_ngu_goi_mo(t):
+    """Bỏ các vị trí chưa điền quan hệ; không bỏ một mệnh đề chỉ vì câu có dấu hỏi/dẫn bảng."""
+    t = re.sub(_BANG_DAN.pattern + _CHE_DAN + r"+", "theo bảng", t)
+    t = re.sub(_TEN_QUY_TAC.pattern + _CHE_DAN + r"+", "tham chiếu", t)
+    thao_tac = bool(_THAO_TAC.search(t) or _MUC_DICH.search(t))
+    if thao_tac:
+        # Động từ «lấy đạo hàm» có bổ ngữ; «đạo hàm của tích lấy tích đạo hàm» không có vai trò này.
+        t = _LAY_DAO_HAM.sub("đạo hàm", t)
+        # Động từ chưa chỉ định toán hạng có thể là thao tác. Toán hạng toán học
+        # hoặc nguồn phép toán theo sau nó phải còn nguyên để kiểm quan hệ.
+        t = _CONG_BO_NGU.sub(lambda m: m[0] if _cum(t[m.end():]) else "thao tác", t)
+        t = _BO_NGU_KET_LUAN.sub("loại kết luận", t)
+        t = _VIET_TONG.sub(lambda m: m[0] if _BO_SUNG_NGUON.search(t[m.end():]) else "thao tác", t)
+        t = _KHOANG_CHIA.sub("khoảng", t)
+        if _HOI_THIEU.search(t):
+            t = _CHIA_BANG.sub("thao tác ", t)
+        t = _LUA_CHON_DAU.sub("chỗ hỏi", t)
+    t = _CHIA_TRUC.sub("thao tác", t)
+    t = _HOI_PHEP_LAY.sub("chỗ hỏi", t)
+    # Chỗ hỏi chỉ ràng buộc thuộc tính cần tìm; một quan hệ khẳng định chen giữa
+    # chủ ngữ và chỗ hỏi vẫn phải kiểm, không được nuốt bởi phạm vi .*.
+    t = _HOI_CHIEU.sub(lambda m: m[0] if _QUAN_HE_MANH.search(m[1]) else "chỗ hỏi", t)
+    return t
+
+
+def _ket_luan_da_chon(chu):
+    """Bổ ngữ kết luận đã chốt; phân biệt/phân loại nhiều loại và hay/hoặc còn để ngỏ."""
+    for m in _BO_NGU_KET_LUAN.finditer(_chu_tu_vung(chu)):
+        if _TU_LUA_CHON.search(m[0]):
+            continue
+        if _PHAN_LOAI.search(m[0]) and len(re.findall(_LOAI_KET_LUAN, m[0])) > 1:
+            continue
+        return True
+    return False
+
+
+def _chu_nhan_dien(chu):
+    """Cùng chuẩn Unicode/không dấu với KD-0005; bỏ phần đã xét riêng và chỉ số bước, mức, dòng."""
+    t = _chu_tu_vung(chu).replace(_CHE, " ")
+    # «Bằng [n]» chỉ cách tra bảng, không phải quan hệ bằng giữa hai đại lượng.
+    t = re.sub(_BANG_DAN.pattern + _CHE_DAN + r"+", "theo bảng", t)
+    return re.sub(r"\s+", " ", _SO_THU_TU.sub(" ", t.replace(_CHE_DAN, " "))).strip()
+
+
+def _loi_goi_mo(chu):
+    """Không miễn theo dấu hỏi hay «em hãy»: quan hệ chưa được che luôn đóng, dù là câu hỏi/mệnh lệnh."""
+    goc = _chu_nhan_dien(chu)
+    mood = bool(_THAO_TAC.search(goc) or _HOI_THIEU.search(goc) or _MUC_DICH.search(goc)
+                or _BIEN_BAT_KY.search(goc))
+    t = _chu_nhan_dien(_bo_ngu_goi_mo(_chu_tu_vung(chu).replace(_CHE, " ")))
+    if re.search(r"\d", t) or _KET_LUAN_HO.search(t):
+        return False
+    if not mood:
+        return False
+    # Câu hỏi tồn tại một giá trị/chỗ không xác định; không miễn «đạo hàm không xác định đúng không?».
+    t = _HOI_KXD.sub(lambda m: m.group(1), t)
+    t = _HOI_DAU.sub(lambda m: m.group(1), t)
+    for p in _CHE_LOI_HOI:
+        t = p.sub(" ", t)
+    # «Nếu … thì» chứa hai vế khẳng định vẫn là quy tắc; hỏi kết luận gì không cung cấp vế kết luận.
+    if _NEU_THI.search(t):
+        return False
+    return not (_QUAN_HE_MANH.search(t) or _VE_SAU_HAI_CHAM.search(t))
+
+
+def _la_ung_vien(chu):
+    t = _chu_nhan_dien(chu)
+    return bool(_DAP_AN.search(t) or _QUAN_HE_BO_SUNG.search(t)) or (
+        (_ung_vien_kd0005(chu) or _QUAN_HE_TRANG_THAI.search(t)) and not _loi_goi_mo(chu))
 
 
 # ------------------------------------------------------------------ đoạn toán, câu, toán viết trần
@@ -606,6 +773,30 @@ class _NguCanh:
         k = _chuan_bang(cau)
         return self._chon([d for d in self.dong if k in d.cau])
 
+    def dong_ten_phuong_trinh(self):
+        """Tên phương trình chỉ gồm đúng mảnh y'=0 của dòng dùng được; không suy ra mảnh theo SymPy."""
+        return next((d for d in self.dong if d.khoa and _MANH_PT.search(d.khoa) and self.dung_duoc(d)), None)
+
+    def dong_dieu_kien(self, dieu_kien):
+        """Điều kiện gọi tên: mảnh chính xác, hoặc dấu chặt nhất quán với dòng đơn điệu có LaTeX dấu.
+
+        Không dùng ID/tên dòng làm căn cứ, không suy ra một giá trị số mới. Hướng dấu phải có
+        trong mệnh đề đã đọc của dòng, nên LaTeX và phát biểu sai/thiếu trích dẫn không được miễn.
+        """
+        m = _DIEU_KIEN.fullmatch(dieu_kien or "")
+        if not m:
+            return None
+        if m[1] == "=":
+            return self.dong_ten_phuong_trinh()
+        huong = 1 if m[1] == ">" else -1
+        for d in self.dong:
+            if not d.khoa or not self.dung_duoc(d):
+                continue
+            if re.search(r"(?<![A-Za-z0-9'=])y'(?:[<>]|\\(?:ge|le)q?)0(?=$|[,;]|\\)", d.khoa):
+                if any(p[0] == "DD" and p[1][0] == "D" and p[1][1] == huong for p in d.menh):
+                    return d
+        return None
+
     def phan_quyet_dong(self, d, loai):
         if self.dung_duoc(d):
             return _pq(loai, DAT, dong_bang=d.id, tang={"1": DAT, "2": DAT, "3": DAT})
@@ -661,11 +852,15 @@ def _xep_doan(ctx, inner, dong_dung, khung_hs):
 _DAO_HAM_RIENG = re.compile(r"[yf]'(?:\(x\))?")
 
 
-def _ky_hieu_chung(s):
+def _ky_hieu_chung(s, hoi_bien=False):
     """Chữ thay cho `s` khi xét từ vựng: «đạo hàm» với y', f'(x); None khi `s` không phải ký hiệu chung đứng riêng."""
     t = dct._BO_NGOAC.sub("", unicodedata.normalize("NFC", s).translate(_DOI_KY_TU))
     t = re.sub(r"[\s{}]+", "", re.sub(r"\^\s*\{?\s*\\prime\s*\}?", "'", t))
-    return "đạo hàm" if _DAO_HAM_RIENG.fullmatch(t) else None
+    if _DAO_HAM_RIENG.fullmatch(t):
+        return "đạo hàm"
+    if hoi_bien and t in ("x", "y"):
+        return "biến" if t == "x" else "hàm số"
+    return None
 
 
 def _doc_ten(s, ten):
@@ -686,14 +881,36 @@ def _bo_phan_cach(cau):
 
 def _xet_cau(ctx, t, v, a, b, doan):
     """(giữ câu?, phán quyết các biểu thức của câu, chữ của câu để xét từ vựng và nội dung)."""
-    pq, ke, trich_truoc, ten = [], a, False, []
+    pq, ke, trich_truoc, ten, co_dieu_kien = [], a, False, [], False
+    # Chỉ tên biến trong câu hỏi có chỗ trống rõ ràng; «kiểm tra lại x ở dòng đầu» vẫn mơ hồ (KD-0005).
+    chu_hoi = _chu_nhan_dien(v[a:b])
+    hoi_bien = bool(_HOI_THIEU.search(chu_hoi) or _BIEN_BAT_KY.search(chu_hoi)) and _loi_goi_mo(v[a:b])
     for d0, d1, r0, r1, dung in doan:
-        thay = _ky_hieu_chung(t[r0:r1]) if dung else None
+        thay = _ky_hieu_chung(t[r0:r1], hoi_bien) if dung else None
         if thay is not None:
             ten.append((d0 - a, d1 - a, thay))
+            if thay != "đạo hàm":
+                pq.append((d0, dict({"doan": t[r0:r1].strip()}, **_pq(KY_HIEU, DAT))))
             trich_truoc = False
         else:
             truoc = t[ke:d0]
+            # Không cho qua một đẳng thức tính hộ: chỉ tên phương trình ngay sau thao tác giải/viết,
+            # đúng nguyên mảnh LaTeX trong bảng, và cả câu vẫn phải qua nhận diện quy tắc/kết quả.
+            khung_pt = _KHUNG_TEN_PT.search(_chu_tu_vung(truoc))
+            khung_dk = _KHUNG_DIEU_KIEN.search(_chu_tu_vung(truoc))
+            # «nghiệm của …» chỉ là tham chiếu trong câu hỏi có chỗ cần trả lời;
+            # chỉ dẫn tìm nghiệm/đặt phương trình riêng lẻ vẫn chưa đủ ngữ cảnh (KD-0006 vòng đầu).
+            khung_nghiem = _NGHIEM_DIEU_KIEN.search(_chu_tu_vung(truoc)) and _HOI_THIEU.search(chu_hoi)
+            lua_chon = ten and _NOI_TRICH.fullmatch(_chu_tu_vung(truoc).replace("hay", "hoặc"))
+            dong_pt = ctx.dong_dieu_kien(dct._khoa_cong_thuc(t[r0:r1])) if (
+                dung and (khung_pt or khung_dk or khung_nghiem or lua_chon)) else None
+            if dong_pt:
+                ten.append((d0 - a, d1 - a, "đạo hàm theo bảng"))
+                co_dieu_kien = True
+                pq.append((d0, dict({"doan": t[r0:r1].strip()}, **ctx.phan_quyet_dong(dong_pt, CONG_THUC))))
+                trich_truoc = False
+                ke = d1
+                continue
             khung = bool(_KHUNG_HS.search(truoc.lower())) or (trich_truoc and bool(_NOI_TRICH.fullmatch(truoc.lower())))
             p = dict({"doan": t[r0:r1].strip()}, **_xep_doan(ctx, t[r0:r1], dung, khung))
             trich_truoc = p["loai"] == TRICH_BAI_LAM
@@ -708,7 +925,26 @@ def _xet_cau(ctx, t, v, a, b, doan):
                                                                   ly_do="Toán viết trần ngoài $…$, không phân loại được."))))
     pq = [p for _, p in sorted(pq, key=lambda z: z[0])]
     chu = _doc_ten(v[a:b], ten)
+    for mau, thay in ((_TEN_PT_LOI, "giải phương trình theo bảng"),
+                      (_TEN_DK_LOI, "điểm tới hạn theo bảng")):
+        dong_pt = ctx.dong_ten_phuong_trinh() if mau.search(_chu_tu_vung(chu)) else None
+        if dong_pt:
+            chu = mau.sub(thay, _chu_tu_vung(chu))
+            co_dieu_kien = True
+            for m in mau.finditer(_chu_tu_vung(_doc_ten(v[a:b], ten))):
+                pq.append(dict({"doan": m[0]}, **ctx.phan_quyet_dong(dong_pt, CONG_THUC)))
     ung_vien = _la_ung_vien(chu)
+    # Điều kiện có vế kết luận đã chọn là quy tắc, kể cả được viết bằng mệnh lệnh.
+    # Không che «để/và/rồi kết luận nghịch biến» sau y'>0 như một yêu cầu trống.
+    if (co_dieu_kien or _LUA_CHON_DAU.search(_chu_tu_vung(chu))) and _ket_luan_da_chon(chu):
+        ung_vien = True
+    if all(p["trang_thai"] == DAT for p in pq) and (
+            _VI_TRI_KET_QUA.search(_chu_nhan_dien(chu)) or _GIA_TRI_CHU.search(_chu_nhan_dien(chu))):
+        ung_vien = True
+    # Chữ số viết trần là giá trị cụ thể, trừ chỉ số bước/mức/dòng và dẫn bảng đã che.
+    # Không thêm phán quyết trùng cho các ca toán viết trần/quy tắc đã bị chặn của KD-0005.
+    if not ung_vien and all(p["trang_thai"] == DAT for p in pq) and re.search(r"\d", _chu_nhan_dien(chu)):
+        pq.append(dict({"doan": t[a:b].rstrip(".;?!")}, **_pq(KET_QUA, KKD, ly_do="Giá trị số viết trong lời văn.")))
     if not ung_vien and all(p["trang_thai"] == DAT for p in pq):
         return True, pq, chu
     cau = t[a:b]

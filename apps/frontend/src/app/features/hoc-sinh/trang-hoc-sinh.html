@@ -11,11 +11,20 @@
   @if (cheDo.error()) { <app-loi-tai [loi]="cheDo.error()" moTa="Chưa tải được chế độ bài." (thuLai)="cheDo.reload()" /> }
   <div class="hoc-grid">
   <div class="hoc-chinh">
+  @if(goiBai.error()){<app-loi-tai [loi]="goiBai.error()" moTa="Chưa tải được gợi ý bài kế." (thuLai)="goiBai.reload()" />}
+  @for(r of deXuat(); track r.id){
+    <section class="surface" data-testid="de-xuat-bai" aria-label="Gợi ý bài kế">
+      <h2 class="nhan-muc">Gợi ý cho em</h2>
+      <p>{{r.subtitle}}</p>
+      @if(r.status !== 'GUI_THAY_CO'){
+        <a appButton variant="secondary" [routerLink]="['/hs/luyen',r.id]">Luyện {{tenBaiGoiY(r.id)}}</a>
+      }
+    </section>
+  }
   @if (ke(); as ke) {
     <section class="ke-tiep" aria-labelledby="tieu-de-ke-tiep">
       <div class="ke-chu">
         <h2 id="tieu-de-ke-tiep" class="nhan-muc">Tiếp theo</h2>
-        @if(!kiemTraKe() && goiBai.hasValue() && goiBai.value()[0]?.id === ke.maBai){<p class="phu">{{goiBai.value()[0].subtitle}}</p>}
         @if (kiemTraKe(); as kt) {
           <p class="ky-nang">{{ kt.ten }}</p>
           <p class="phu">{{ kt.soCau | soViet }} câu · Hạn: {{ gio(kt.han || '') }}</p>

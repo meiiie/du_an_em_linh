@@ -74,6 +74,10 @@ export class MockApi {
                 response = { formulas: [formula], documents: [item('tl1', 'Tài liệu đơn điệu', 'Tài liệu tổng hợp do lớp biên soạn.', 'tu_soan')] };
             else if (path === '/api/hs/flashcards/export')
                 response = { filename: 'cong-thuc.csv', content: csv };
+            else if (path === '/api/hs/ke-hoach-tuan')
+                response = { sessions: [], loiKhuyen: 'Bắt đầu bằng một bài Nhận biết.' };
+            else if (path === '/api/gv/canh-bao')
+                response = [];
             else if (path === '/api/hs/lich' || path === '/api/hs/nhac')
                 response = method === 'GET' ? [] : { message: 'Đã thêm buổi học.', count: 1 };
             else if (path === '/api/gv/lop' || path === '/api/qt/lop')
