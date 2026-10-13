@@ -12,6 +12,9 @@ import java.time.Clock;
 import java.util.HashMap;
 import java.util.Optional;
 import java.util.UUID;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.NullAndEmptySource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.mockito.ArgumentCaptor;
@@ -29,27 +32,28 @@ class TaiKhoanNguyenTraiSeederTest {
         return new MockEnvironment().withProperty("MATHL_DEV_SEED_PASSWORD_FILE", temp.resolve("password").toString());
     }
 
-    @Test void thieuHoacTrangThiSinhMatKhauNgauNhienVaTaiSuDung() throws IOException {
-        for (String value : new String[]{"", " ", "absent"}) {
-            Files.deleteIfExists(temp.resolve("password"));
-            var users = mock(UserRepository.class);
-            var hasher = mock(PasswordHasher.class);
-            when(users.findByEmail(any())).thenReturn(Optional.empty());
-            when(hasher.hash(any())).thenReturn("hash-in-memory");
-            var env = environment();
-            if (!value.equals("absent")) env.withProperty("MATHL_DEV_SEED_PASSWORD", value);
-            var seed = new TaiKhoanNguyenTraiSeeder(users, hasher, Clock.systemUTC(), env);
-            seed.run(new DefaultApplicationArguments());
-            String generated = Files.readString(temp.resolve("password"));
-            assertThat(generated).matches("[A-Za-z0-9_-]{43}");
-            assertThat(Files.getPosixFilePermissions(temp.resolve("password")))
-                .isEqualTo(PosixFilePermissions.fromString("rw-------"));
-            var passwords = ArgumentCaptor.forClass(String.class);
-            verify(hasher, times(35)).hash(passwords.capture());
-            assertThat(passwords.getAllValues()).containsOnly(generated);
-            seed.run(new DefaultApplicationArguments());
-            assertThat(Files.readString(temp.resolve("password"))).isEqualTo(generated);
-        }
+    @ParameterizedTest
+    @NullAndEmptySource
+    @ValueSource(strings = {" ", "\t\n"})
+    void thieuHoacTrangThiSinhMatKhauNgauNhienVaTaiSuDung(String value) throws IOException {
+        Files.deleteIfExists(temp.resolve("password"));
+        var users = mock(UserRepository.class);
+        var hasher = mock(PasswordHasher.class);
+        when(users.findByEmail(any())).thenReturn(Optional.empty());
+        when(hasher.hash(any())).thenReturn("hash-in-memory");
+        var env = environment();
+        if (value != null) env.withProperty("MATHL_DEV_SEED_PASSWORD", value);
+        var seed = new TaiKhoanNguyenTraiSeeder(users, hasher, Clock.systemUTC(), env);
+        seed.run(new DefaultApplicationArguments());
+        String generated = Files.readString(temp.resolve("password"));
+        assertThat(generated).matches("[A-Za-z0-9_-]{43}");
+        assertThat(Files.getPosixFilePermissions(temp.resolve("password")))
+            .isEqualTo(PosixFilePermissions.fromString("rw-------"));
+        var passwords = ArgumentCaptor.forClass(String.class);
+        verify(hasher, times(35)).hash(passwords.capture());
+        assertThat(passwords.getAllValues()).containsOnly(generated);
+        seed.run(new DefaultApplicationArguments());
+        assertThat(Files.readString(temp.resolve("password"))).isEqualTo(generated);
     }
 
     @Test void khongLuuDuocMatKhauThiBoQuaTaiKhoan() {

@@ -2,7 +2,7 @@ package vn.hoctapcanman.core.workspace.infrastructure.seed;
 
 import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.Comparator;
+import java.time.Clock;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
@@ -23,29 +23,14 @@ import vn.hoctapcanman.core.workspace.infrastructure.persistence.WorkspaceStoreA
 @Profile("dev")
 public class WorkspaceNguyenTraiSeedAdapter extends WorkspaceStoreAdapter {
     private final JdbcClient db;
-    public WorkspaceNguyenTraiSeedAdapter(JdbcClient db) {
-        super(db);
+    public WorkspaceNguyenTraiSeedAdapter(JdbcClient db,Clock clock) {
+        super(db,clock);
         this.db = db;
     }
 
     private boolean seeded(UUID cl) {
         return TruongNguyenTrai.LOP.stream()
             .anyMatch(name -> TruongNguyenTrai.id("lop:"+name).equals(cl) && LopSeedAnToan.kiem(db,name));
-    }
-
-    @Override public List<Item> students(UUID cl) {
-        var rows = super.students(cl);
-        if (!seeded(cl)) return rows;
-        var skills = db.sql("SELECT code FROM skills WHERE grade=(SELECT grade FROM classes WHERE id=:cl)")
-            .param("cl",cl).query(String.class).list();
-        return rows.stream().map(row -> {
-            Map<String,Object> details = new HashMap<>(row.details());
-            if (details.get("skills") instanceof List<?> all) {
-                details.put("skills", all.stream().filter(value -> value instanceof Map<?,?> skill
-                    && skills.contains(String.valueOf(skill.get("code")))).toList());
-            }
-            return new Item(row.id(),row.title(),row.subtitle(),row.status(),details);
-        }).toList();
     }
 
     @Override public List<Item> assignments(UUID cl) {
@@ -73,9 +58,7 @@ public class WorkspaceNguyenTraiSeedAdapter extends WorkspaceStoreAdapter {
     @Override public Dashboard dashboard(UUID cl) {
         var dashboard = super.dashboard(cl);
         if (!seeded(cl)) return dashboard;
-        var deadlines = boBai(assignments(cl)).stream()
-            .filter(row -> !String.valueOf(row.details().get("dueAt")).isBlank())
-            .sorted(Comparator.comparing(row -> String.valueOf(row.details().get("dueAt")))).toList();
+        var deadlines = boBai(upcomingDeadlines(assignments(cl)));
         return new Dashboard(dashboard.students(),dashboard.stuck(),dashboard.pending(),dashboard.assignments(),
             dashboard.distribution(),deadlines);
     }

@@ -12,8 +12,10 @@ import vn.hoctapcanman.core.workspace.application.exception.WorkspaceException;
 
 @Repository public class WorkspaceStoreAdapter implements WorkspaceStore {
     private final JdbcClient db;
-    public WorkspaceStoreAdapter(JdbcClient db) {
+    private final Clock clock;
+    public WorkspaceStoreAdapter(JdbcClient db,Clock clock) {
         this.db=db;
+        this.clock=clock;
     }
 
     private static Map<String,Object> details(Object... pairs) {
@@ -50,21 +52,30 @@ import vn.hoctapcanman.core.workspace.application.exception.WorkspaceException;
                 levels.computeIfPresent(level,(key,n)->n+1);
             }
         }
-        List<Item> deadlines=assignments(cl).stream().filter(i->!String.valueOf(i.details().get("dueAt")).isBlank()).sorted(Comparator.comparing(i->String.valueOf(i.details().get("dueAt")))).limit(10).toList();
+        List<Item> deadlines=upcomingDeadlines(assignments(cl)).stream().limit(10).toList();
         return new Dashboard(count("SELECT count(*) FROM enrollments WHERE class_id=:cl AND role_in_class='STUDENT'",cl),count("SELECT count(DISTINCT student_id) FROM escalations WHERE class_id=:cl AND handled_at IS NULL",cl),reviews(cl).size(),count("SELECT count(*) FROM assignments WHERE class_id=:cl AND status='DA_GIAO'",cl),levels,deadlines);
     }
 
-    public List<Item> students(UUID cl) {
-        return db.sql("SELECT u.id,u.display_name,(SELECT count(*) FROM submissions s WHERE s.student_id=u.id AND s.class_id=:cl AND s.status='DA_NOP') submitted FROM users u JOIN enrollments e ON e.user_id=u.id WHERE e.class_id=:cl AND e.role_in_class='STUDENT' ORDER BY u.display_name") .param("cl",cl).query((r,n)->new Item(r.getString("id"),r.getString("display_name"),"","",details("skills",skills(UUID.fromString(r.getString("id"))),"submitted",r.getInt("submitted")))).list();
+    /** Lọc hạn đã qua trước khi gom bộ hoặc giới hạn số hàng; so sánh theo thời điểm thật. */
+    protected List<Item> upcomingDeadlines(List<Item> rows) {
+        Instant now=clock.instant();
+        return rows.stream().filter(row -> row.details().get("dueAt") instanceof String due
+            && !due.isBlank() && !Instant.parse(due).isBefore(now))
+            .sorted(Comparator.comparing(row -> Instant.parse((String)row.details().get("dueAt")))).toList();
     }
 
-    private List<Map<String,Object>> skills(UUID student) {
+    public List<Item> students(UUID cl) {
+        return db.sql("SELECT u.id,u.display_name,(SELECT count(*) FROM submissions s WHERE s.student_id=u.id AND s.class_id=:cl AND s.status='DA_NOP') submitted FROM users u JOIN enrollments e ON e.user_id=u.id WHERE e.class_id=:cl AND e.role_in_class='STUDENT' ORDER BY u.display_name") .param("cl",cl).query((r,n)->new Item(r.getString("id"),r.getString("display_name"),"","",details("skills",skills(UUID.fromString(r.getString("id")),cl),"submitted",r.getInt("submitted")))).list();
+    }
+
+    private List<Map<String,Object>> skills(UUID student,UUID cl) {
         return db.sql("""
  SELECT sk.code,sk.name,coalesce(o.level4,m.level4,'NHAN_BIET') level4,coalesce(m.mastery,0) mastery,(o.level4 IS NOT NULL) overridden
- FROM skills sk LEFT JOIN mastery_states m ON m.skill_code=sk.code AND m.student_id=:student
+ FROM skills sk JOIN topics t ON t.code=sk.topic_code JOIN classes c ON c.id=:cl AND c.grade=t.grade
+ LEFT JOIN mastery_states m ON m.skill_code=sk.code AND m.student_id=:student
  LEFT JOIN LATERAL(SELECT level4 FROM mastery_overrides WHERE student_id=:student AND skill_code=sk.code AND removed_at IS NULL ORDER BY created_at DESC,id DESC LIMIT 1)o ON true
- WHERE sk.is_core ORDER BY sk.code
- """).param("student",student).query((r,n)->details("code",r.getString("code"),"name",r.getString("name"),"level4",r.getString("level4"),"level3",switch(r.getString("level4")) {
+ WHERE sk.is_core AND coalesce(sk.grade,t.grade)=c.grade ORDER BY sk.code
+ """).param("student",student).param("cl",cl).query((r,n)->details("code",r.getString("code"),"name",r.getString("name"),"level4",r.getString("level4"),"level3",switch(r.getString("level4")) {
             case "NHAN_BIET"->"BIET";case "THONG_HIEU"->"HIEU";default->"VAN_DUNG";
         },"mastery",r.getDouble("mastery"),"overridden",r.getBoolean("overridden"))).list();
     }
@@ -286,10 +297,7 @@ import vn.hoctapcanman.core.workspace.application.exception.WorkspaceException;
             SELECT count(*) FROM assignments a JOIN problems p ON p.id=a.problem_id
             WHERE a.student_id=:student AND a.class_id=:cl AND a.status='DA_GIAO'
             AND ((p.code=:code AND a.due_at<=now()) OR
-                (a.mode='KIEM_TRA' AND p.code=:code AND (a.due_at IS NULL OR a.due_at>now())
-                AND NOT EXISTS(SELECT 1 FROM submissions s WHERE s.student_id=a.student_id
-                    AND s.class_id=a.class_id AND s.problem_id=a.problem_id AND s.content_version=p.content_version
-                    AND s.status='DA_NOP' AND s.submitted_at>=a.assigned_at)))
+                (a.mode='KIEM_TRA' AND p.code=:code AND (a.due_at IS NULL OR a.due_at>now())))
             """).param("student",student).param("cl",cl).param("code",code).query(Integer.class).single()>0;
     }
 
