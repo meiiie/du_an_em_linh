@@ -136,7 +136,8 @@
       "trang_thai": "DA_DUYET",
       "can_cu": "test_teacher_solution",
       "ghi_chu": "Giáo viên hư cấu duyệt lời giải đã được pytest kiểm độc lập."
-    }
+    },
+    "kiem_tra_seed": true
   },
   {
     "id": "NT-DH12-NB-02",
@@ -275,12 +276,13 @@
       "trang_thai": "DA_DUYET",
       "can_cu": "test_teacher_solution",
       "ghi_chu": "Giáo viên hư cấu duyệt lời giải đã được pytest kiểm độc lập."
-    }
+    },
+    "kiem_tra_seed": true
   },
   {
     "id": "NT-DH12-TH-03",
     "chu_de": "DH12",
-    "ky_nang_chinh": "T12.NT.HS",
+    "ky_nang_chinh": "T12.NT.HS.2",
     "ky_nang_phu": [],
     "muc_do_4": "TH",
     "muc_do_bo_3": "HIEU",
@@ -441,12 +443,13 @@
       "trang_thai": "DA_DUYET",
       "can_cu": "test_teacher_solution",
       "ghi_chu": "Giáo viên hư cấu duyệt lời giải đã được pytest kiểm độc lập."
-    }
+    },
+    "kiem_tra_seed": true
   },
   {
     "id": "NT-DH12-TH-04",
     "chu_de": "DH12",
-    "ky_nang_chinh": "T12.NT.HS",
+    "ky_nang_chinh": "T12.NT.HS.4",
     "ky_nang_phu": [],
     "muc_do_4": "TH",
     "muc_do_bo_3": "HIEU",
@@ -564,12 +567,13 @@
       "trang_thai": "DA_DUYET",
       "can_cu": "test_teacher_solution",
       "ghi_chu": "Giáo viên hư cấu duyệt lời giải đã được pytest kiểm độc lập."
-    }
+    },
+    "kiem_tra_seed": true
   },
   {
     "id": "NT-DH12-VD-05",
     "chu_de": "DH12",
-    "ky_nang_chinh": "T12.NT.HS",
+    "ky_nang_chinh": "T12.NT.HS.3",
     "ky_nang_phu": [],
     "muc_do_4": "VD",
     "muc_do_bo_3": "VAN_DUNG",
@@ -757,12 +761,13 @@
       "trang_thai": "DA_DUYET",
       "can_cu": "test_teacher_solution",
       "ghi_chu": "Giáo viên hư cấu duyệt lời giải đã được pytest kiểm độc lập."
-    }
+    },
+    "kiem_tra_seed": true
   },
   {
     "id": "NT-DH12-VD-06",
     "chu_de": "DH12",
-    "ky_nang_chinh": "T12.NT.HS",
+    "ky_nang_chinh": "T12.NT.HS.4",
     "ky_nang_phu": [],
     "muc_do_4": "VD",
     "muc_do_bo_3": "VAN_DUNG",
@@ -933,12 +938,13 @@
       "trang_thai": "DA_DUYET",
       "can_cu": "test_teacher_solution",
       "ghi_chu": "Giáo viên hư cấu duyệt lời giải đã được pytest kiểm độc lập."
-    }
+    },
+    "kiem_tra_seed": true
   },
   {
     "id": "NT-DH12-VDC-07",
     "chu_de": "DH12",
-    "ky_nang_chinh": "T12.NT.HS",
+    "ky_nang_chinh": "T12.NT.HS.2",
     "ky_nang_phu": [],
     "muc_do_4": "VDC",
     "muc_do_bo_3": "VAN_DUNG",
@@ -1110,12 +1116,13 @@
       "trang_thai": "DA_DUYET",
       "can_cu": "test_teacher_solution",
       "ghi_chu": "Giáo viên hư cấu duyệt lời giải đã được pytest kiểm độc lập."
-    }
+    },
+    "kiem_tra_seed": true
   },
   {
     "id": "NT-DH12-VDC-08",
     "chu_de": "DH12",
-    "ky_nang_chinh": "T12.NT.HS",
+    "ky_nang_chinh": "T12.NT.HS.3",
     "ky_nang_phu": [],
     "muc_do_4": "VDC",
     "muc_do_bo_3": "VAN_DUNG",
@@ -1316,7 +1323,8 @@
       "trang_thai": "DA_DUYET",
       "can_cu": "test_teacher_solution",
       "ghi_chu": "Giáo viên hư cấu duyệt lời giải đã được pytest kiểm độc lập."
-    }
+    },
+    "kiem_tra_seed": true
   },
   {
     "id": "NT-LG11-NB-01",
@@ -1369,7 +1377,8 @@
       "trang_thai": "DA_DUYET",
       "can_cu": "test_teacher_solution",
       "ghi_chu": "Giáo viên hư cấu duyệt lời giải đã được pytest kiểm độc lập."
-    }
+    },
+    "kiem_tra_seed": true
   },
   {
     "id": "NT-LG11-NB-02",
@@ -1422,7 +1431,8 @@
       "trang_thai": "DA_DUYET",
       "can_cu": "test_teacher_solution",
       "ghi_chu": "Giáo viên hư cấu duyệt lời giải đã được pytest kiểm độc lập."
-    }
+    },
+    "kiem_tra_seed": false
   },
   {
     "id": "NT-LG11-TH-03",
@@ -1475,7 +1485,8 @@
       "trang_thai": "DA_DUYET",
       "can_cu": "test_teacher_solution",
       "ghi_chu": "Giáo viên hư cấu duyệt lời giải đã được pytest kiểm độc lập."
-    }
+    },
+    "kiem_tra_seed": true
   },
   {
     "id": "NT-LG11-VD-04",
@@ -1530,12 +1541,13 @@
       "trang_thai": "DA_DUYET",
       "can_cu": "test_teacher_solution",
       "ghi_chu": "Giáo viên hư cấu duyệt lời giải đã được pytest kiểm độc lập."
-    }
+    },
+    "kiem_tra_seed": true
   },
   {
     "id": "NT-LG11-VDC-05",
     "chu_de": "LG11",
-    "ky_nang_chinh": "T11.NT.LG",
+    "ky_nang_chinh": "T11.NT.LG.2",
     "ky_nang_phu": [],
     "muc_do_4": "VDC",
     "muc_do_bo_3": "VAN_DUNG",
@@ -1586,12 +1598,13 @@
       "trang_thai": "DA_DUYET",
       "can_cu": "test_teacher_solution",
       "ghi_chu": "Giáo viên hư cấu duyệt lời giải đã được pytest kiểm độc lập."
-    }
+    },
+    "kiem_tra_seed": true
   },
   {
     "id": "NT-LG11-VDC-06",
     "chu_de": "LG11",
-    "ky_nang_chinh": "T11.NT.LG",
+    "ky_nang_chinh": "T11.NT.LG.2",
     "ky_nang_phu": [],
     "muc_do_4": "VDC",
     "muc_do_bo_3": "VAN_DUNG",
@@ -1642,7 +1655,8 @@
       "trang_thai": "CHO_DUYET",
       "can_cu": "test_teacher_solution",
       "ghi_chu": "Lời giải đã kiểm độc lập; đang chờ rà soát lập luận sư phạm."
-    }
+    },
+    "kiem_tra_seed": false
   },
   {
     "id": "NT-DS11-NB-01",
@@ -1697,7 +1711,8 @@
       "trang_thai": "DA_DUYET",
       "can_cu": "test_teacher_solution",
       "ghi_chu": "Giáo viên hư cấu duyệt lời giải đã được pytest kiểm độc lập."
-    }
+    },
+    "kiem_tra_seed": false
   },
   {
     "id": "NT-DS11-TH-02",
@@ -1752,12 +1767,13 @@
       "trang_thai": "DA_DUYET",
       "can_cu": "test_teacher_solution",
       "ghi_chu": "Giáo viên hư cấu duyệt lời giải đã được pytest kiểm độc lập."
-    }
+    },
+    "kiem_tra_seed": false
   },
   {
     "id": "NT-DS11-TH-03",
     "chu_de": "DS11",
-    "ky_nang_chinh": "T11.NT.DS",
+    "ky_nang_chinh": "T11.NT.DS.2",
     "ky_nang_phu": [],
     "muc_do_4": "TH",
     "muc_do_bo_3": "HIEU",
@@ -1807,7 +1823,8 @@
       "trang_thai": "DA_DUYET",
       "can_cu": "test_teacher_solution",
       "ghi_chu": "Giáo viên hư cấu duyệt lời giải đã được pytest kiểm độc lập."
-    }
+    },
+    "kiem_tra_seed": false
   },
   {
     "id": "NT-DS11-VD-04",
@@ -1862,7 +1879,8 @@
       "trang_thai": "DA_DUYET",
       "can_cu": "test_teacher_solution",
       "ghi_chu": "Giáo viên hư cấu duyệt lời giải đã được pytest kiểm độc lập."
-    }
+    },
+    "kiem_tra_seed": false
   },
   {
     "id": "NT-DS11-VDC-05",
@@ -1925,12 +1943,13 @@
       "trang_thai": "DA_DUYET",
       "can_cu": "test_teacher_solution",
       "ghi_chu": "Giáo viên hư cấu duyệt lời giải đã được pytest kiểm độc lập."
-    }
+    },
+    "kiem_tra_seed": false
   },
   {
     "id": "NT-DS11-VDC-06",
     "chu_de": "DS11",
-    "ky_nang_chinh": "T11.NT.DS",
+    "ky_nang_chinh": "T11.NT.DS.2",
     "ky_nang_phu": [],
     "muc_do_4": "VDC",
     "muc_do_bo_3": "VAN_DUNG",
@@ -1992,7 +2011,8 @@
       "trang_thai": "CHO_DUYET",
       "can_cu": "test_teacher_solution",
       "ghi_chu": "Lời giải đã kiểm độc lập; đang chờ rà soát lập luận sư phạm."
-    }
+    },
+    "kiem_tra_seed": false
   },
   {
     "id": "NT-DH11-NB-01",
@@ -2049,7 +2069,8 @@
       "trang_thai": "DA_DUYET",
       "can_cu": "test_teacher_solution",
       "ghi_chu": "Giáo viên hư cấu duyệt lời giải đã được pytest kiểm độc lập."
-    }
+    },
+    "kiem_tra_seed": true
   },
   {
     "id": "NT-DH11-TH-02",
@@ -2106,7 +2127,8 @@
       "trang_thai": "DA_DUYET",
       "can_cu": "test_teacher_solution",
       "ghi_chu": "Giáo viên hư cấu duyệt lời giải đã được pytest kiểm độc lập."
-    }
+    },
+    "kiem_tra_seed": true
   },
   {
     "id": "NT-DH11-TH-03",
@@ -2163,7 +2185,8 @@
       "trang_thai": "DA_DUYET",
       "can_cu": "test_teacher_solution",
       "ghi_chu": "Giáo viên hư cấu duyệt lời giải đã được pytest kiểm độc lập."
-    }
+    },
+    "kiem_tra_seed": false
   },
   {
     "id": "NT-DH11-VD-04",
@@ -2220,12 +2243,13 @@
       "trang_thai": "DA_DUYET",
       "can_cu": "test_teacher_solution",
       "ghi_chu": "Giáo viên hư cấu duyệt lời giải đã được pytest kiểm độc lập."
-    }
+    },
+    "kiem_tra_seed": true
   },
   {
     "id": "NT-DH11-VDC-05",
     "chu_de": "DH11",
-    "ky_nang_chinh": "T11.NT.DH",
+    "ky_nang_chinh": "T11.NT.DH.2",
     "ky_nang_phu": [],
     "muc_do_4": "VDC",
     "muc_do_bo_3": "VAN_DUNG",
@@ -2283,12 +2307,13 @@
       "trang_thai": "CHO_DUYET",
       "can_cu": "test_teacher_solution",
       "ghi_chu": "Lời giải đã kiểm độc lập; đang chờ rà soát lập luận sư phạm."
-    }
+    },
+    "kiem_tra_seed": false
   },
   {
     "id": "NT-DH11-VDC-06",
     "chu_de": "DH11",
-    "ky_nang_chinh": "T11.NT.DH",
+    "ky_nang_chinh": "T11.NT.DH.3",
     "ky_nang_phu": [],
     "muc_do_4": "VDC",
     "muc_do_bo_3": "VAN_DUNG",
@@ -2365,7 +2390,8 @@
       "trang_thai": "DA_DUYET",
       "can_cu": "test_teacher_solution",
       "ghi_chu": "Giáo viên hư cấu duyệt lời giải đã được pytest kiểm độc lập."
-    }
+    },
+    "kiem_tra_seed": true
   },
   {
     "id": "NT-TP12-NB-01",
@@ -2420,7 +2446,8 @@
       "trang_thai": "DA_DUYET",
       "can_cu": "test_teacher_solution",
       "ghi_chu": "Giáo viên hư cấu duyệt lời giải đã được pytest kiểm độc lập."
-    }
+    },
+    "kiem_tra_seed": false
   },
   {
     "id": "NT-TP12-TH-02",
@@ -2475,7 +2502,8 @@
       "trang_thai": "DA_DUYET",
       "can_cu": "test_teacher_solution",
       "ghi_chu": "Giáo viên hư cấu duyệt lời giải đã được pytest kiểm độc lập."
-    }
+    },
+    "kiem_tra_seed": false
   },
   {
     "id": "NT-TP12-TH-03",
@@ -2530,12 +2558,13 @@
       "trang_thai": "DA_DUYET",
       "can_cu": "test_teacher_solution",
       "ghi_chu": "Giáo viên hư cấu duyệt lời giải đã được pytest kiểm độc lập."
-    }
+    },
+    "kiem_tra_seed": false
   },
   {
     "id": "NT-TP12-VD-04",
     "chu_de": "TP12",
-    "ky_nang_chinh": "T12.NT.TP",
+    "ky_nang_chinh": "T12.NT.TP.2",
     "ky_nang_phu": [],
     "muc_do_4": "VD",
     "muc_do_bo_3": "VAN_DUNG",
@@ -2582,12 +2611,13 @@
       "trang_thai": "DA_DUYET",
       "can_cu": "test_teacher_solution",
       "ghi_chu": "Giáo viên hư cấu duyệt lời giải đã được pytest kiểm độc lập."
-    }
+    },
+    "kiem_tra_seed": false
   },
   {
     "id": "NT-TP12-VDC-05",
     "chu_de": "TP12",
-    "ky_nang_chinh": "T12.NT.TP",
+    "ky_nang_chinh": "T12.NT.TP.3",
     "ky_nang_phu": [],
     "muc_do_4": "VDC",
     "muc_do_bo_3": "VAN_DUNG",
@@ -2646,12 +2676,13 @@
       "trang_thai": "CHO_DUYET",
       "can_cu": "test_teacher_solution",
       "ghi_chu": "Lời giải đã kiểm độc lập; đang chờ rà soát lập luận sư phạm."
-    }
+    },
+    "kiem_tra_seed": false
   },
   {
     "id": "NT-TP12-VDC-06",
     "chu_de": "TP12",
-    "ky_nang_chinh": "T12.NT.TP",
+    "ky_nang_chinh": "T12.NT.TP.4",
     "ky_nang_phu": [],
     "muc_do_4": "VDC",
     "muc_do_bo_3": "VAN_DUNG",
@@ -2703,7 +2734,8 @@
       "trang_thai": "DA_DUYET",
       "can_cu": "test_teacher_solution",
       "ghi_chu": "Giáo viên hư cấu duyệt lời giải đã được pytest kiểm độc lập."
-    }
+    },
+    "kiem_tra_seed": false
   },
   {
     "id": "NT-KG12-NB-01",
@@ -2758,7 +2790,8 @@
       "trang_thai": "DA_DUYET",
       "can_cu": "test_teacher_solution",
       "ghi_chu": "Giáo viên hư cấu duyệt lời giải đã được pytest kiểm độc lập."
-    }
+    },
+    "kiem_tra_seed": false
   },
   {
     "id": "NT-KG12-TH-02",
@@ -2813,12 +2846,13 @@
       "trang_thai": "DA_DUYET",
       "can_cu": "test_teacher_solution",
       "ghi_chu": "Giáo viên hư cấu duyệt lời giải đã được pytest kiểm độc lập."
-    }
+    },
+    "kiem_tra_seed": false
   },
   {
     "id": "NT-KG12-TH-03",
     "chu_de": "KG12",
-    "ky_nang_chinh": "T12.NT.KG",
+    "ky_nang_chinh": "T12.NT.KG.2",
     "ky_nang_phu": [],
     "muc_do_4": "TH",
     "muc_do_bo_3": "HIEU",
@@ -2875,12 +2909,13 @@
       "trang_thai": "DA_DUYET",
       "can_cu": "test_teacher_solution",
       "ghi_chu": "Giáo viên hư cấu duyệt lời giải đã được pytest kiểm độc lập."
-    }
+    },
+    "kiem_tra_seed": false
   },
   {
     "id": "NT-KG12-VD-04",
     "chu_de": "KG12",
-    "ky_nang_chinh": "T12.NT.KG",
+    "ky_nang_chinh": "T12.NT.KG.3",
     "ky_nang_phu": [],
     "muc_do_4": "VD",
     "muc_do_bo_3": "VAN_DUNG",
@@ -2932,12 +2967,13 @@
       "trang_thai": "DA_DUYET",
       "can_cu": "test_teacher_solution",
       "ghi_chu": "Giáo viên hư cấu duyệt lời giải đã được pytest kiểm độc lập."
-    }
+    },
+    "kiem_tra_seed": false
   },
   {
     "id": "NT-KG12-VDC-05",
     "chu_de": "KG12",
-    "ky_nang_chinh": "T12.NT.KG",
+    "ky_nang_chinh": "T12.NT.KG.4",
     "ky_nang_phu": [],
     "muc_do_4": "VDC",
     "muc_do_bo_3": "VAN_DUNG",
@@ -3011,12 +3047,13 @@
       "trang_thai": "CHO_DUYET",
       "can_cu": "test_teacher_solution",
       "ghi_chu": "Lời giải đã kiểm độc lập; đang chờ rà soát lập luận sư phạm."
-    }
+    },
+    "kiem_tra_seed": false
   },
   {
     "id": "NT-KG12-VDC-06",
     "chu_de": "KG12",
-    "ky_nang_chinh": "T12.NT.KG",
+    "ky_nang_chinh": "T12.NT.KG.5",
     "ky_nang_phu": [],
     "muc_do_4": "VDC",
     "muc_do_bo_3": "VAN_DUNG",
@@ -3101,7 +3138,8 @@
       "trang_thai": "DA_DUYET",
       "can_cu": "test_teacher_solution",
       "ghi_chu": "Giáo viên hư cấu duyệt lời giải đã được pytest kiểm độc lập."
-    }
+    },
+    "kiem_tra_seed": false
   },
   {
     "id": "NT-XS10-NB-01",
@@ -3157,7 +3195,8 @@
       "trang_thai": "DA_DUYET",
       "can_cu": "test_teacher_solution",
       "ghi_chu": "Giáo viên hư cấu duyệt lời giải đã được pytest kiểm độc lập."
-    }
+    },
+    "kiem_tra_seed": false
   },
   {
     "id": "NT-XS10-TH-02",
@@ -3219,12 +3258,13 @@
       "trang_thai": "DA_DUYET",
       "can_cu": "test_teacher_solution",
       "ghi_chu": "Giáo viên hư cấu duyệt lời giải đã được pytest kiểm độc lập."
-    }
+    },
+    "kiem_tra_seed": false
   },
   {
     "id": "NT-XS10-TH-03",
     "chu_de": "XS10",
-    "ky_nang_chinh": "T10.NT.XS",
+    "ky_nang_chinh": "T10.NT.XS.2",
     "ky_nang_phu": [],
     "muc_do_4": "VD",
     "muc_do_bo_3": "VAN_DUNG",
@@ -3274,7 +3314,8 @@
       "trang_thai": "DA_DUYET",
       "can_cu": "test_teacher_solution",
       "ghi_chu": "Giáo viên hư cấu duyệt lời giải đã được pytest kiểm độc lập."
-    }
+    },
+    "kiem_tra_seed": false
   },
   {
     "id": "NT-XS10-VD-04",
@@ -3336,7 +3377,8 @@
       "trang_thai": "DA_DUYET",
       "can_cu": "test_teacher_solution",
       "ghi_chu": "Giáo viên hư cấu duyệt lời giải đã được pytest kiểm độc lập."
-    }
+    },
+    "kiem_tra_seed": false
   },
   {
     "id": "NT-XS12-VDC-07",
@@ -3397,12 +3439,13 @@
       "trang_thai": "DA_DUYET",
       "can_cu": "test_teacher_solution",
       "ghi_chu": "Giáo viên hư cấu duyệt lời giải đã được pytest kiểm độc lập."
-    }
+    },
+    "kiem_tra_seed": false
   },
   {
     "id": "NT-XS12-VDC-08",
     "chu_de": "XS12",
-    "ky_nang_chinh": "T12.NT.XS",
+    "ky_nang_chinh": "T12.NT.XS.2",
     "ky_nang_phu": [],
     "muc_do_4": "VDC",
     "muc_do_bo_3": "VAN_DUNG",
@@ -3460,7 +3503,8 @@
       "trang_thai": "DA_DUYET",
       "can_cu": "test_teacher_solution",
       "ghi_chu": "Giáo viên hư cấu duyệt lời giải đã được pytest kiểm độc lập."
-    }
+    },
+    "kiem_tra_seed": false
   },
   {
     "id": "NT-BH10-NB-01",
@@ -3500,7 +3544,8 @@
       "trang_thai": "DA_DUYET",
       "can_cu": "test_teacher_solution",
       "ghi_chu": "Giáo viên hư cấu duyệt lời giải đã được pytest kiểm độc lập."
-    }
+    },
+    "kiem_tra_seed": true
   },
   {
     "id": "NT-BH10-TH-02",
@@ -3540,7 +3585,8 @@
       "trang_thai": "DA_DUYET",
       "can_cu": "test_teacher_solution",
       "ghi_chu": "Giáo viên hư cấu duyệt lời giải đã được pytest kiểm độc lập."
-    }
+    },
+    "kiem_tra_seed": true
   },
   {
     "id": "NT-BH10-VD-03",
@@ -3580,7 +3626,8 @@
       "trang_thai": "DA_DUYET",
       "can_cu": "test_teacher_solution",
       "ghi_chu": "Giáo viên hư cấu duyệt lời giải đã được pytest kiểm độc lập."
-    }
+    },
+    "kiem_tra_seed": true
   },
   {
     "id": "NT-BH10-VDC-04",
@@ -3620,7 +3667,8 @@
       "trang_thai": "DA_DUYET",
       "can_cu": "test_teacher_solution",
       "ghi_chu": "Giáo viên hư cấu duyệt lời giải đã được pytest kiểm độc lập."
-    }
+    },
+    "kiem_tra_seed": true
   },
   {
     "id": "NT-MT10-NB-01",
@@ -3674,7 +3722,8 @@
       "trang_thai": "DA_DUYET",
       "can_cu": "test_teacher_solution",
       "ghi_chu": "Giáo viên hư cấu duyệt lời giải đã được pytest kiểm độc lập."
-    }
+    },
+    "kiem_tra_seed": true
   },
   {
     "id": "NT-MT10-TH-02",
@@ -3731,7 +3780,8 @@
       "trang_thai": "DA_DUYET",
       "can_cu": "test_teacher_solution",
       "ghi_chu": "Giáo viên hư cấu duyệt lời giải đã được pytest kiểm độc lập."
-    }
+    },
+    "kiem_tra_seed": true
   },
   {
     "id": "NT-MT10-VD-03",
@@ -3791,7 +3841,8 @@
       "trang_thai": "DA_DUYET",
       "can_cu": "test_teacher_solution",
       "ghi_chu": "Giáo viên hư cấu duyệt lời giải đã được pytest kiểm độc lập."
-    }
+    },
+    "kiem_tra_seed": true
   },
   {
     "id": "NT-MT10-VDC-04",
@@ -3854,7 +3905,8 @@
       "trang_thai": "DA_DUYET",
       "can_cu": "test_teacher_solution",
       "ghi_chu": "Giáo viên hư cấu duyệt lời giải đã được pytest kiểm độc lập."
-    }
+    },
+    "kiem_tra_seed": true
   },
   {
     "id": "NT-TK10-NB-01",
@@ -3899,7 +3951,8 @@
       "trang_thai": "DA_DUYET",
       "can_cu": "test_teacher_solution",
       "ghi_chu": "Giáo viên hư cấu duyệt lời giải đã được pytest kiểm độc lập."
-    }
+    },
+    "kiem_tra_seed": false
   },
   {
     "id": "NT-TK10-TH-02",
@@ -3944,7 +3997,8 @@
       "trang_thai": "DA_DUYET",
       "can_cu": "test_teacher_solution",
       "ghi_chu": "Giáo viên hư cấu duyệt lời giải đã được pytest kiểm độc lập."
-    }
+    },
+    "kiem_tra_seed": false
   },
   {
     "id": "NT-TK10-VD-03",
@@ -3989,7 +4043,8 @@
       "trang_thai": "DA_DUYET",
       "can_cu": "test_teacher_solution",
       "ghi_chu": "Giáo viên hư cấu duyệt lời giải đã được pytest kiểm độc lập."
-    }
+    },
+    "kiem_tra_seed": false
   },
   {
     "id": "NT-TK10-VDC-04",
@@ -4034,7 +4089,8 @@
       "trang_thai": "DA_DUYET",
       "can_cu": "test_teacher_solution",
       "ghi_chu": "Giáo viên hư cấu duyệt lời giải đã được pytest kiểm độc lập."
-    }
+    },
+    "kiem_tra_seed": false
   },
   {
     "id": "NT-KG11-NB-01",
@@ -4078,7 +4134,8 @@
       "trang_thai": "DA_DUYET",
       "can_cu": "test_teacher_solution",
       "ghi_chu": "Giáo viên hư cấu duyệt lời giải đã được pytest kiểm độc lập."
-    }
+    },
+    "kiem_tra_seed": false
   },
   {
     "id": "NT-KG11-TH-02",
@@ -4122,7 +4179,8 @@
       "trang_thai": "DA_DUYET",
       "can_cu": "test_teacher_solution",
       "ghi_chu": "Giáo viên hư cấu duyệt lời giải đã được pytest kiểm độc lập."
-    }
+    },
+    "kiem_tra_seed": false
   },
   {
     "id": "NT-KG11-VD-03",
@@ -4166,7 +4224,8 @@
       "trang_thai": "DA_DUYET",
       "can_cu": "test_teacher_solution",
       "ghi_chu": "Giáo viên hư cấu duyệt lời giải đã được pytest kiểm độc lập."
-    }
+    },
+    "kiem_tra_seed": false
   },
   {
     "id": "NT-KG11-VDC-04",
@@ -4210,7 +4269,8 @@
       "trang_thai": "DA_DUYET",
       "can_cu": "test_teacher_solution",
       "ghi_chu": "Giáo viên hư cấu duyệt lời giải đã được pytest kiểm độc lập."
-    }
+    },
+    "kiem_tra_seed": false
   },
   {
     "id": "NT-XS11-NB-01",
@@ -4253,7 +4313,8 @@
       "trang_thai": "DA_DUYET",
       "can_cu": "test_teacher_solution",
       "ghi_chu": "Giáo viên hư cấu duyệt lời giải đã được pytest kiểm độc lập."
-    }
+    },
+    "kiem_tra_seed": false
   },
   {
     "id": "NT-XS11-TH-02",
@@ -4296,7 +4357,8 @@
       "trang_thai": "DA_DUYET",
       "can_cu": "test_teacher_solution",
       "ghi_chu": "Giáo viên hư cấu duyệt lời giải đã được pytest kiểm độc lập."
-    }
+    },
+    "kiem_tra_seed": false
   },
   {
     "id": "NT-XS11-VD-03",
@@ -4339,7 +4401,8 @@
       "trang_thai": "DA_DUYET",
       "can_cu": "test_teacher_solution",
       "ghi_chu": "Giáo viên hư cấu duyệt lời giải đã được pytest kiểm độc lập."
-    }
+    },
+    "kiem_tra_seed": false
   },
   {
     "id": "NT-XS11-VDC-04",
@@ -4382,12 +4445,13 @@
       "trang_thai": "DA_DUYET",
       "can_cu": "test_teacher_solution",
       "ghi_chu": "Giáo viên hư cấu duyệt lời giải đã được pytest kiểm độc lập."
-    }
+    },
+    "kiem_tra_seed": false
   },
   {
     "id": "NT-XS12-NB-01",
     "chu_de": "XS12",
-    "ky_nang_chinh": "T12.NT.XS",
+    "ky_nang_chinh": "T12.NT.XS.2",
     "ky_nang_phu": [],
     "muc_do_4": "NB",
     "muc_do_bo_3": "BIET",
@@ -4426,12 +4490,13 @@
       "trang_thai": "DA_DUYET",
       "can_cu": "test_teacher_solution",
       "ghi_chu": "Giáo viên hư cấu duyệt lời giải đã được pytest kiểm độc lập."
-    }
+    },
+    "kiem_tra_seed": false
   },
   {
     "id": "NT-XS12-TH-02",
     "chu_de": "XS12",
-    "ky_nang_chinh": "T12.NT.XS",
+    "ky_nang_chinh": "T12.NT.XS.2",
     "ky_nang_phu": [],
     "muc_do_4": "TH",
     "muc_do_bo_3": "HIEU",
@@ -4470,12 +4535,13 @@
       "trang_thai": "DA_DUYET",
       "can_cu": "test_teacher_solution",
       "ghi_chu": "Giáo viên hư cấu duyệt lời giải đã được pytest kiểm độc lập."
-    }
+    },
+    "kiem_tra_seed": false
   },
   {
     "id": "NT-XS12-VD-03",
     "chu_de": "XS12",
-    "ky_nang_chinh": "T12.NT.XS",
+    "ky_nang_chinh": "T12.NT.XS.2",
     "ky_nang_phu": [],
     "muc_do_4": "VD",
     "muc_do_bo_3": "VAN_DUNG",
@@ -4514,12 +4580,13 @@
       "trang_thai": "DA_DUYET",
       "can_cu": "test_teacher_solution",
       "ghi_chu": "Giáo viên hư cấu duyệt lời giải đã được pytest kiểm độc lập."
-    }
+    },
+    "kiem_tra_seed": false
   },
   {
     "id": "NT-XS12-VDC-04",
     "chu_de": "XS12",
-    "ky_nang_chinh": "T12.NT.XS",
+    "ky_nang_chinh": "T12.NT.XS.2",
     "ky_nang_phu": [],
     "muc_do_4": "VDC",
     "muc_do_bo_3": "VAN_DUNG",
@@ -4558,6 +4625,7 @@
       "trang_thai": "DA_DUYET",
       "can_cu": "test_teacher_solution",
       "ghi_chu": "Giáo viên hư cấu duyệt lời giải đã được pytest kiểm độc lập."
-    }
+    },
+    "kiem_tra_seed": false
   }
 ]

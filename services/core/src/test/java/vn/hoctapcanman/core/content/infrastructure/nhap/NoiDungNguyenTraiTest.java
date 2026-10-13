@@ -32,6 +32,10 @@ class NoiDungNguyenTraiTest {
         assertThat(first.bai()).hasSize(68);
         assertThat(saved.values()).filteredOn(Problem::isFiveStep).hasSize(8);
         assertThat(saved.values()).filteredOn(p -> !p.isFiveStep()).hasSize(60);
+        var skills=ArgumentCaptor.forClass(vn.hoctapcanman.core.content.domain.model.Skill.class);
+        verify(catalog,atLeastOnce()).saveSkill(skills.capture());
+        assertThat(skills.getAllValues()).extracting(vn.hoctapcanman.core.content.domain.model.Skill::name)
+            .contains("Cực trị hàm bậc ba", "Thể tích khối chóp", "Cấp số cộng");
         var records=ArgumentCaptor.forClass(Solution.class);
         verify(solutions,times(68)).save(records.capture());
         assertThat(records.getAllValues()).allSatisfy(s -> {

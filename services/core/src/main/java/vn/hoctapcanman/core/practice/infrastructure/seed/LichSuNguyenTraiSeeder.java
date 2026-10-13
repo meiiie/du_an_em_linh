@@ -70,7 +70,7 @@ public class LichSuNguyenTraiSeeder implements ApplicationRunner {
                 schedule(cl, student, anchor);
                 List<String> codes = db.sql("""
                     SELECT p.code FROM assignments a JOIN problems p ON p.id=a.problem_id
-                    WHERE a.class_id=:cl AND a.student_id=:hs AND p.code<>'NT-DH12-NB-02'
+                    WHERE a.class_id=:cl AND a.student_id=:hs AND a.mode='ON_TAP'
                     ORDER BY p.skill_code, CASE p.level4 WHEN 'NHAN_BIET' THEN 0 WHEN 'THONG_HIEU' THEN 1
                         WHEN 'VAN_DUNG' THEN 2 ELSE 3 END,p.code
                     """).param("cl",cl).param("hs",student).query(String.class).list();
@@ -81,7 +81,6 @@ public class LichSuNguyenTraiSeeder implements ApplicationRunner {
                     """).param("cl",cl).query(UUID.class).single();
                 for (Map<String, Object> fixture : fixtures) {
                     String code = (String) fixture.get("ma");
-                    if (code.equals("NT-DH12-NB-02")) continue; // bài kiểm tra tới hạn, chưa có bài nộp
                     int task = codes.indexOf(code);
                     if (task < 0) continue;
                     String skill = code.split("-")[1];
@@ -93,7 +92,7 @@ public class LichSuNguyenTraiSeeder implements ApplicationRunner {
                     if (db.sql("SELECT EXISTS(SELECT 1 FROM submissions WHERE id=:id)").param("id", id).query(Boolean.class).single()) continue;
                     List<ProblemRow> available = db.sql("""
                         SELECT p.id,p.content_version,p.skill_code,p.level4 FROM problems p
-                        JOIN assignments a ON a.problem_id=p.id AND a.class_id=:cl AND a.student_id=:hs AND a.status='DA_GIAO'
+                        JOIN assignments a ON a.problem_id=p.id AND a.class_id=:cl AND a.student_id=:hs AND a.status='DA_GIAO' AND a.mode='ON_TAP'
                         JOIN problem_releases r ON r.problem_id=p.id AND r.class_id=:cl AND r.status='DA_PHAT_HANH'
                         WHERE p.code=:code AND (a.due_at IS NULL OR a.due_at>:now)
                         """).param("cl", cl).param("hs", student).param("code", code).param("now", Timestamp.from(clock.instant()))

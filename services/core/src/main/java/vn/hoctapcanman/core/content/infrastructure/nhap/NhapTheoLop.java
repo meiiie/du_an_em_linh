@@ -108,8 +108,10 @@ public class NhapTheoLop {
     }
 
     /** Chỉ runner dev gọi; ghi quyết định thật qua domain, không đổi các tầng CAS. */
-    void duyetTruong(UUID lop, UUID giaoVien) {
+    void duyetTruong(UUID lop, UUID giaoVien, List<NhapNoiDungChung.BaiNhap> bai) {
+        var codes = bai.stream().map(NhapNoiDungChung.BaiNhap::ma).collect(java.util.stream.Collectors.toSet());
         for (var ex : nguon.danhSach("dev/nguyen-trai/bai-tap.json")) {
+            if (!codes.contains(chu(ex.get("id")))) continue;
             var review = doiTuong(ex.get("duyet_seed"));
             if (!"DA_DUYET".equals(review.get("trang_thai"))) continue;
             Problem p = problems.findByCode(chu(ex.get("id"))).orElseThrow();
