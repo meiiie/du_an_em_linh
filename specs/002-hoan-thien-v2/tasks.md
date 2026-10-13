@@ -73,3 +73,14 @@ description: "Nhiệm vụ T100+ hoàn thiện MathL+ v2 theo U0–U15"
 T100–102 là nền. U0 → U1 → U2 → U3 → U4. U5 → U6; U9 policy là điều kiện để phát hành U7/U8, U7 → U8. U10 dùng mastery/quyền lớp; U11 → U12; U13 dùng giao bài và học; U14 dùng identity/classroom. U15 sau các lát được nghiệm thu. Không đánh dấu task xong chỉ vì spec đã mô tả hoặc có endpoint placeholder.
 
 MVP: nền, U0–U9, U13 và phần U15 vòng lõi. Phần U10–U12/U14 vẫn cần issue/tiêu chí riêng. Không tự tạo PR, không commit trong phiên DOCS; nội dung code/test được bàn giao cho lane phù hợp.
+
+## LANE SEED — trường THPT hư cấu (2026-10-13)
+
+Phạm vi: `services/core/**`, tệp mới `data/**`, `services/math/tests/**`, `docs/SEED.md` và mục này. Không commit; không sửa V1–V12, không thêm seed vào migration production. Chỉ runner profile `dev`. Yêu cầu trực tiếp của chủ repo thay tài khoản/lớp thử trong seed; heading frontend/e2e nằm ngoài lane này.
+
+- [x] T140 [US6] [U14] Thay seed tài khoản/lớp bằng Trường THPT Nguyễn Trãi hư cấu, 2026–2027, 10A1/11A2/12A3, 4 giáo viên, 30 học sinh, 1 ADMIN; mật khẩu chỉ đọc `MATHL_DEV_SEED_PASSWORD`; thiếu/trắng thì bỏ tạo và cảnh báo không bí mật. Kiểm unit trùng tài khoản, đủ roster, production không có runner.
+- [x] T141 [US4] [U11] Thêm 44 bài tự soạn ở `data/dev/nguyen-trai`, 7 chương, đủ 4 mức, lời giải từng bước/đáp án/dữ kiện SymPy; ghi 7 tài liệu/lớp, bảng đạo hàm chỉ khóa qua CAS, bảng chương chưa hỗ trợ giữ nháp. Không sửa `data/supham`/kiểm định hoặc tự đặt cổng DAT.
+- [ ] T142 [US2/US4/US5] [U9/U10/U12/U13] Hiện thực giao ôn/kiểm tra có hạn, lịch/nhắc, lịch sử 3 tuần có căn cứ CAS và BKT, tình huống chờ giáo viên; xác minh số lượng và snapshot idempotency trên PostgreSQL thật bằng `NguyenTraiSeedIntegrationTest`. Mã/test đã có; nghiệm thu PostgreSQL còn chờ quyền socket của môi trường.
+- [x] T143 [U15] Chạy pytest mới, kiểm đáp án và bước độc lập bằng SymPy, grade payload lịch sử, khóa bảng và cổng phát hành; sửa mọi sai lệch đề/đáp án phát hiện khi review. Bằng chứng và giới hạn cổng tại `docs/SEED.md`.
+- [ ] T144 [U15] Chạy đầy đủ `JAVA_HOME=$HOME/.local/jdk/jdk-25.0.4.1+1 ./mvnw -B -q verify`; core đã build/unit/ArchUnit qua khi cấp Mockito javaagent và bỏ riêng test HTTP dùng socket. Lệnh đầy đủ còn bị môi trường chặn test socket/Testcontainers, không coi là xanh toàn bộ.
+- [x] T145 [U15] Viết `docs/SEED.md`: bật dev, tên biến mật khẩu (không giá trị), danh sách lớp/tài khoản, idempotency, số lượng mục tiêu và phần chưa có bằng chứng tích hợp; giữ diff đúng lane, không commit.

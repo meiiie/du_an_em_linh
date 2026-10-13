@@ -76,7 +76,4 @@ Không đọc, không ghi `.env`, `.env.local`, khóa, `*.pem` (Claude Code: `pe
 
 ## Tài khoản thử
 
-| Vai trò | Email | Mật khẩu |
-| --- | --- | --- |
-| Giáo viên | `gv@demo.local` | `giaovien123` |
-| Học sinh | `hs.an@demo.local` | `hocsinh123` |
+Tài khoản dev (chỉ profile `dev`, mật khẩu đặt qua biến môi trường `MATHL_DEV_SEED_PASSWORD`, không ghi trong repo): xem [docs/SEED.md](docs/SEED.md).

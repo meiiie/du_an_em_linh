@@ -1,4 +1,4 @@
-/** Dữ liệu thử của module làm bài cho profile {@code dev}, bằng SQL ({@code du-lieu-thu/}). */
+/** Dữ liệu trường hư cấu, chỉ profile dev. */
 @NullMarked
 package vn.hoctapcanman.core.practice.infrastructure.seed;
 

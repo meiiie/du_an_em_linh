@@ -1,4 +1,4 @@
-/** Dữ liệu tổng hợp cho dev / demo: lớp «12A1 thử» (ADR 006). */
+/** Dữ liệu trường hư cấu dành riêng cho profile dev. */
 @NullMarked
 package vn.hoctapcanman.core.classroom.infrastructure.seed;
 

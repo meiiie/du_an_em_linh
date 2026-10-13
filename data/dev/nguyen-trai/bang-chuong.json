@@ -1,0 +1,138 @@
+{
+  "version": 1,
+  "note": "Bảng chương bổ sung; chưa khóa khi CAS chưa hỗ trợ nhận dạng",
+  "formulas": [
+    {
+      "ma": "NT-CT-01",
+      "skillCode": "T11.NT.LG",
+      "title": "Hệ thức lượng giác cơ bản",
+      "latex": "\\sin^2 x+\\cos^2 x=1",
+      "noiDung": "Trên đường tròn đơn vị, hoành độ là cos x, tung độ là sin x, nên tổng hai bình phương bằng 1. Dùng góc chuẩn, sau đó kiểm dấu theo góc phần tư. Phương trình lượng giác phải xét mọi nhánh nghiệm và giới hạn miền trước khi kết luận.",
+      "kiem_dinh": {
+        "trai": "sin(x)**2+cos(x)**2",
+        "phai": "1"
+      }
+    },
+    {
+      "ma": "NT-CT-02",
+      "skillCode": "T11.NT.LG",
+      "title": "Góc nhân đôi",
+      "latex": "\\cos 2x=1-2\\sin^2 x",
+      "noiDung": "Trên đường tròn đơn vị, hoành độ là cos x, tung độ là sin x, nên tổng hai bình phương bằng 1. Dùng góc chuẩn, sau đó kiểm dấu theo góc phần tư. Phương trình lượng giác phải xét mọi nhánh nghiệm và giới hạn miền trước khi kết luận.",
+      "kiem_dinh": {
+        "trai": "cos(2*x)",
+        "phai": "1-2*sin(x)**2"
+      }
+    },
+    {
+      "ma": "NT-CT-03",
+      "skillCode": "T11.NT.DS",
+      "title": "Số hạng cấp số cộng",
+      "latex": "u_n=u_1+(n-1)d",
+      "noiDung": "Cấp số cộng tăng mỗi lần một công sai d, do đó u_n=u_1+(n−1)d. Ghép số hạng đầu với số hạng cuối cho cùng tổng, suy ra S_n=n(2u_1+(n−1)d)/2. Cấp số nhân tăng theo tỉ số q; với q khác 1, S_n=u_1(q^n−1)/(q−1). Với q=1, tổng là nu_1.",
+      "kiem_dinh": {
+        "trai": "u1+(n-1)*d",
+        "phai": "u1+(n-1)*d"
+      }
+    },
+    {
+      "ma": "NT-CT-04",
+      "skillCode": "T11.NT.DS",
+      "title": "Tổng cấp số cộng",
+      "latex": "S_n=\\frac{n(2u_1+(n-1)d)}2",
+      "noiDung": "Cấp số cộng tăng mỗi lần một công sai d, do đó u_n=u_1+(n−1)d. Ghép số hạng đầu với số hạng cuối cho cùng tổng, suy ra S_n=n(2u_1+(n−1)d)/2. Cấp số nhân tăng theo tỉ số q; với q khác 1, S_n=u_1(q^n−1)/(q−1). Với q=1, tổng là nu_1.",
+      "kiem_dinh": {
+        "trai": "Sum(u1+(k-1)*d,(k,1,n))",
+        "phai": "n*(2*u1+(n-1)*d)/2"
+      }
+    },
+    {
+      "ma": "NT-CT-05",
+      "skillCode": "T11.NT.DH",
+      "title": "Đạo hàm hàm sin",
+      "latex": "(\\sin x)\\prime=\\cos x",
+      "noiDung": "Đạo hàm đo tốc độ thay đổi tại điểm. Đạo hàm sin x là cos x khi x tính bằng radian. Đạo hàm tích uv bằng u′v+uv′; hàm hợp cần nhân thêm đạo hàm bên trong. Hệ số góc tiếp tuyến tại x_0 bằng f′(x_0). Luôn kiểm miền trước khi thế điểm.",
+      "kiem_dinh": {
+        "trai": "Derivative(sin(x),x)",
+        "phai": "cos(x)"
+      }
+    },
+    {
+      "ma": "NT-CT-06",
+      "skillCode": "T11.NT.DH",
+      "title": "Đạo hàm tích",
+      "latex": "(uv)\\prime=u\\prime v+uv\\prime",
+      "noiDung": "Đạo hàm đo tốc độ thay đổi tại điểm. Đạo hàm sin x là cos x khi x tính bằng radian. Đạo hàm tích uv bằng u′v+uv′; hàm hợp cần nhân thêm đạo hàm bên trong. Hệ số góc tiếp tuyến tại x_0 bằng f′(x_0). Luôn kiểm miền trước khi thế điểm.",
+      "kiem_dinh": {
+        "trai": "Derivative((x**2+1)*sin(x),x)",
+        "phai": "2*x*sin(x)+(x**2+1)*cos(x)"
+      }
+    },
+    {
+      "ma": "NT-CT-07",
+      "skillCode": "T12.NT.TP",
+      "title": "Nguyên hàm đa thức",
+      "latex": "\\int x^2 dx=\\frac{x^3}3+C",
+      "noiDung": "Một nguyên hàm F của f thỏa mãn F′=f. Nguyên hàm x² là x³/3 cộng hằng số. Nếu f liên tục trên [a;b], tích phân từ a đến b bằng F(b)−F(a). Diện tích dùng tích phân giá trị tuyệt đối hoặc chia miền theo giao điểm; không đồng nhất diện tích với tích phân có dấu.",
+      "kiem_dinh": {
+        "trai": "Integral(x**2,x)",
+        "phai": "x**3/3"
+      }
+    },
+    {
+      "ma": "NT-CT-08",
+      "skillCode": "T12.NT.TP",
+      "title": "Newton–Leibniz",
+      "latex": "\\int_a^b 2x dx=b^2-a^2",
+      "noiDung": "Một nguyên hàm F của f thỏa mãn F′=f. Nguyên hàm x² là x³/3 cộng hằng số. Nếu f liên tục trên [a;b], tích phân từ a đến b bằng F(b)−F(a). Diện tích dùng tích phân giá trị tuyệt đối hoặc chia miền theo giao điểm; không đồng nhất diện tích với tích phân có dấu.",
+      "kiem_dinh": {
+        "trai": "Integral(2*x,(x,a,b))",
+        "phai": "b**2-a**2"
+      }
+    },
+    {
+      "ma": "NT-CT-09",
+      "skillCode": "T12.NT.KG",
+      "title": "Thể tích hình chóp",
+      "latex": "V=\\frac{Bh}3",
+      "noiDung": "Thể tích hình chóp là một phần ba diện tích đáy nhân chiều cao vuông góc. Chiều cao không tự động bằng cạnh bên. Trong tọa độ vuông góc, khoảng cách bằng căn tổng bình phương các hiệu tọa độ. Khoảng cách đến mặt phẳng bằng giá trị tuyệt đối vế trái chia độ dài vectơ pháp tuyến.",
+      "kiem_dinh": {
+        "trai": "B*h/3",
+        "phai": "B*h/3"
+      }
+    },
+    {
+      "ma": "NT-CT-10",
+      "skillCode": "T12.NT.KG",
+      "title": "Khoảng cách trong không gian",
+      "latex": "AB=\\sqrt{(b_1-a_1)^2+(b_2-a_2)^2+(b_3-a_3)^2}",
+      "noiDung": "Thể tích hình chóp là một phần ba diện tích đáy nhân chiều cao vuông góc. Chiều cao không tự động bằng cạnh bên. Trong tọa độ vuông góc, khoảng cách bằng căn tổng bình phương các hiệu tọa độ. Khoảng cách đến mặt phẳng bằng giá trị tuyệt đối vế trái chia độ dài vectơ pháp tuyến.",
+      "kiem_dinh": {
+        "trai": "sqrt((b1-a1)**2+(b2-a2)**2+(b3-a3)**2)",
+        "phai": "sqrt((b1-a1)**2+(b2-a2)**2+(b3-a3)**2)"
+      }
+    },
+    {
+      "ma": "NT-CT-11",
+      "skillCode": "T10.NT.XS",
+      "title": "Xác suất cổ điển",
+      "latex": "P(A)=\\frac{|A|}{|\\Omega|}",
+      "noiDung": "Khi các kết quả đồng khả năng, xác suất bằng số kết quả thuận lợi chia số kết quả của không gian mẫu. Chọn không hoàn lại dùng tổ hợp và thay đổi số phần tử còn lại. Với P(B)>0, P(A|B)=P(A∩B)/P(B). Không thay xác suất có điều kiện bằng xác suất độc lập khi chưa có căn cứ.",
+      "kiem_dinh": {
+        "trai": "favorable/total",
+        "phai": "favorable/total"
+      }
+    },
+    {
+      "ma": "NT-CT-12",
+      "skillCode": "T10.NT.XS",
+      "title": "Xác suất có điều kiện",
+      "latex": "P(A\\mid B)=\\frac{P(A\\cap B)}{P(B)}",
+      "noiDung": "Khi các kết quả đồng khả năng, xác suất bằng số kết quả thuận lợi chia số kết quả của không gian mẫu. Chọn không hoàn lại dùng tổ hợp và thay đổi số phần tử còn lại. Với P(B)>0, P(A|B)=P(A∩B)/P(B). Không thay xác suất có điều kiện bằng xác suất độc lập khi chưa có căn cứ.",
+      "kiem_dinh": {
+        "trai": "intersection/probB",
+        "phai": "intersection/probB"
+      }
+    }
+  ]
+}

@@ -1,4 +1,4 @@
-# Máy dev: PostgreSQL 18 cục bộ (docker compose ở #58) và tài khoản tổng hợp (TaiKhoanThuSeeder).
+# Máy dev: PostgreSQL cục bộ và Trường THPT Nguyễn Trãi hư cấu (xem docs/SEED.md).
 spring:
   datasource:
     url: jdbc:postgresql://localhost:5432/hoc_toan_core
@@ -7,4 +7,4 @@ spring:
 app:
   content:
     source: ../../data # chạy từ services/core: data/supham và data/v0 của repo; ảnh core đặt APP_CONTENT_SOURCE=/app/noi-dung (T003b), biến môi trường thắng profile
-    import-on-startup: true # nhập nội dung chung khi khởi động (T012a); dịch vụ toán lỗi thì ghi lỗi, không ghi gì
+    import-on-startup: true # chỉ nhập nội dung dev vào lớp có định danh seed; CAS lỗi không phát hành

@@ -46,12 +46,7 @@ Tầng 1: SymPy. Tầng 2: đoạn trích tài liệu đã nạp. Tầng 3: bả
 
 Dữ liệu tổng hợp, không có học sinh thật.
 
-| Vai trò | Email | Mật khẩu |
-| --- | --- | --- |
-| Giáo viên | `gv@demo.local` | `giaovien123` |
-| An | `hs.an@demo.local` | `hocsinh123` |
-| Bình | `hs.binh@demo.local` | `hocsinh123` |
-| Chi | `hs.chi@demo.local` | `hocsinh123` |
+Tài khoản dev (chỉ profile `dev`, mật khẩu đặt qua biến môi trường `MATHL_DEV_SEED_PASSWORD`, không ghi trong repo): xem [docs/SEED.md](docs/SEED.md).
 
 ## Chạy local
 
