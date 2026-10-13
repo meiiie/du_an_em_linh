@@ -86,9 +86,8 @@ public class LichSuNguyenTraiSeeder implements ApplicationRunner {
                     if (task < 0) continue;
                     String skill = code.split("-")[1];
                     List<String> chapter = codes.stream().filter(c -> c.split("-")[1].equals(skill)).toList();
-                    int successes = successes(i, codes.stream().map(c -> c.split("-")[1]).distinct().toList().indexOf(skill));
-                    String kind = chapter.indexOf(code) >= chapter.size() - successes ? "DUNG" : "SAI";
-                    if (i == 0 && chapter.size() > 3 && chapter.indexOf(code) == 0) kind = "CAN_DUYET";
+                    int chapterIndex = codes.stream().map(c -> c.split("-")[1]).distinct().toList().indexOf(skill);
+                    String kind = outcome(i, chapterIndex, chapter.indexOf(code), chapter.size());
                     if (!kind.equals(fixture.get("loai"))) continue;
                     UUID id = TruongNguyenTrai.id("bai-lam:" + student + ":" + code);
                     if (db.sql("SELECT EXISTS(SELECT 1 FROM submissions WHERE id=:id)").param("id", id).query(Boolean.class).single()) continue;
@@ -132,9 +131,17 @@ public class LichSuNguyenTraiSeeder implements ApplicationRunner {
         LOG.info("Lịch sử trường hư cấu: {} bài nộp mới có căn cứ chấm", count);
     }
 
-    static int successes(int student, int chapter) {
-        int bucket = (student * 2 + chapter) % 20;
-        return bucket < 7 ? 0 : bucket < 13 ? 2 : bucket < 18 ? 3 : 4;
+    /** Tỷ lệ khác nhau theo học sinh; chờ duyệt không tính sai, không đưa vào BKT. */
+    static String outcome(int student, int chapter, int task, int size) {
+        double[] rates = {.75, .95, .90, .85, .80, .75, .65, .55, .40, .20};
+        boolean review = (student + chapter) % 3 != 2;
+        if (review && task == 0) return "CAN_DUYET";
+        int graded = size - (review ? 1 : 0);
+        int correct = (int) Math.round(graded * rates[student]);
+        int index = task - (review ? 1 : 0);
+        // Hai học sinh cần hỗ trợ còn sai ở bài khó cuối; các em khác tiến bộ dần.
+        boolean passed = student >= 8 ? index < correct : index >= graded - correct;
+        return passed ? "DUNG" : "SAI";
     }
 
     private void save(UUID id, UUID cl, UUID student, ProblemRow p, Map<String,Object> fixture,
@@ -187,11 +194,12 @@ public class LichSuNguyenTraiSeeder implements ApplicationRunner {
         if (result.equals("KHONG_KIEM_DUOC")) {
             db.sql("""
                 INSERT INTO escalations(id,class_id,student_id,skill_code,problem_code,step_code,kind,reason,created_at)
-                VALUES(:id,:cl,:hs,:skill,:code,'B.DH.DAOHAM','NHO_GV',
-                    'Bài đã nộp: cách viết đạo hàm chưa được máy nhận dạng, chờ giáo viên xem.',:at)
+                VALUES(:id,:cl,:hs,:skill,:code,:step,'NHO_GV',
+                    'Bài đã nộp: cần thầy cô xem cách trình bày và lập luận.',:at)
                 ON CONFLICT DO NOTHING
                 """).param("id",TruongNguyenTrai.id("duyet-bai:"+id)).param("cl",cl).param("hs",student).param("skill",p.skill())
-                .param("code",fixture.get("ma")).param("at",Timestamp.from(at.plusSeconds(1200))).update();
+                .param("code",fixture.get("ma")).param("step",p.skill().equals("T12.NT.HS") ? "B.DH.DAOHAM" : null)
+                .param("at",Timestamp.from(at.plusSeconds(1200))).update();
         }
     }
 

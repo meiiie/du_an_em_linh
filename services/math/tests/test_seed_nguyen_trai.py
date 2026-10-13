@@ -280,3 +280,13 @@ def test_review_queue_and_grade_coverage():
     assert {c['ma'] for c in catalog if c['lop'] == 12} == {'DH12', 'TP12', 'KG12', 'XS12'}
     for c in catalog:
         assert any(e['chu_de'] == c['ma'] and e['duyet_seed']['trang_thai'] == 'DA_DUYET' for e in EXERCISES)
+
+
+@pytest.mark.parametrize('exercise', EXERCISES, ids=lambda e: e['id'])
+def test_list_preview_is_human(exercise):
+    preview = exercise['de_bai']['latex']
+    assert len(preview) <= 180
+    assert not any(token in preview for token in ('Dữ kiện', 'good=', 'bad=', 'draw=', 'want=', 'g1=', 'normal=', r'\left['))
+    if exercise['chu_de'].startswith(('KG', 'XS')):
+        assert r'\text{' in preview
+        assert any(word in preview.lower() for word in ('chóp', 'hộp', 'thẻ', 'bút', 'xu', 'bi ', 'nhóm', 'đoạn', 'diện', 'chiếu'))

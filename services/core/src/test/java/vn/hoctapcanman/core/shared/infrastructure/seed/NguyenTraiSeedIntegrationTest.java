@@ -60,13 +60,15 @@ class NguyenTraiSeedIntegrationTest {
             assertThat(count("submissions")).isEqualTo(620);
             assertThat(count("study_sessions")).isEqualTo(120);
             assertThat(count("mastery_states")).isEqualTo(130);
-            assertThat(count("mastery_events")).isEqualTo(607);
+            assertThat(count("mastery_events")).isEqualTo(532);
+            assertThat(db.sql("SELECT count(*) FROM submissions WHERE result='DAT'").query(Integer.class).single()).isEqualTo(371);
+            assertThat(db.sql("SELECT count(*) FROM submissions WHERE result='SAI'").query(Integer.class).single()).isEqualTo(161);
             assertThat(count("tutor_review_queue")).isEqualTo(3);
             assertThat(db.sql("SELECT count(*) FROM users WHERE NOT synthetic").query(Integer.class).single()).isZero();
             assertThat(db.sql("SELECT DISTINCT level4 FROM mastery_states").query(String.class).list())
                 .containsExactlyInAnyOrder("NHAN_BIET","THONG_HIEU","VAN_DUNG","VAN_DUNG_CAO");
             assertThat(db.sql("SELECT count(*) FROM assignments WHERE mode='KIEM_TRA' AND due_at>now() AND due_at<now()+interval '24 hours'").query(Integer.class).single()).isEqualTo(10);
-            assertThat(db.sql("SELECT count(*) FROM submissions WHERE result='KHONG_KIEM_DUOC'").query(Integer.class).single()).isEqualTo(13);
+            assertThat(db.sql("SELECT count(*) FROM submissions WHERE result='KHONG_KIEM_DUOC'").query(Integer.class).single()).isEqualTo(88);
             assertThat(db.sql("SELECT count(*) FROM problem_releases WHERE status='CHO_GIAO_VIEN_DUYET'").query(Integer.class).single()).isEqualTo(15);
             assertThat(count("content_reviews")).isEqualTo(165);
             assertThat(db.sql("""
@@ -77,8 +79,16 @@ class NguyenTraiSeedIntegrationTest {
                 """).query(Integer.class).single()).isZero();
             for (String name:TruongNguyenTrai.LOP) {
                 var dashboard=workspace.dashboard(TruongNguyenTrai.id("lop:"+name));
-                assertThat(dashboard.distribution().values()).containsExactly(name.equals("11A2") ? 18L : 14L,
-                    name.equals("11A2") ? 15L : 12L, name.equals("11A2") ? 12L : 10L, name.equals("11A2") ? 5L : 4L);
+                assertThat(dashboard.distribution().values()).containsExactly(name.equals("11A2") ? 10L : 8L,
+                    name.equals("10A1") ? 15L : name.equals("11A2") ? 9L : 1L,
+                    name.equals("10A1") ? 6L : name.equals("11A2") ? 17L : 11L,
+                    name.equals("10A1") ? 11L : name.equals("11A2") ? 14L : 20L);
+                assertThat(dashboard.deadlines()).hasSize(name.equals("10A1") ? 4 : 5);
+                assertThat(dashboard.deadlines()).allSatisfy(row -> {
+                    assertThat(row.title()).doesNotStartWith("NT-");
+                    assertThat(row.details()).containsKeys("tenBo","setKey","problemCodes","problemCount","studentCount","assignmentCount","submittedCount");
+                    assertThat(row.details().get("studentCount")).isEqualTo(10);
+                });
                 assertThat(workspace.assignments(TruongNguyenTrai.id("lop:"+name)))
                     .allSatisfy(row -> assertThat(row.title()).doesNotStartWith("NT-"));
             }
