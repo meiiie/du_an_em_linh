@@ -1,5 +1,7 @@
 # Kiểm giao diện Angular sau khi áp token Wiii + 3b1b (A + B)
 
+> **Cập nhật bảng màu 2026-10-13:** [ADR 018](../../../docs/adr/018-bang-mau-xanh-trang.md) thay bảng màu ấm bằng xanh–trắng (sáng) / navy–xanh (tối). Token thực thi chỉ nằm trong `apps/frontend/src/styles.css`; `docs/DESIGN.md` là bản đối chiếu. Màu, prompt, ảnh và số đo bên dưới là hồ sơ lịch sử ngày 2026-10-06, không phải nghiệm thu bảng màu hiện hành. Khi tạo ảnh mới, dùng token hiện hành; điều hướng chọn nền xanh nhạt, nút chính xanh, bốn mức xanh / teal / amber / indigo, luôn FLAT.
+
 Ngày: 2026-10-06. Nhánh `feat/frontend-wiii-3b1b`. Nghiên cứu và lựa chọn: `../studies/2026-10-06-wiii-3b1b.md` (chủ repo chọn A + B).
 
 ## Cách đo

@@ -73,7 +73,7 @@
   color: var(--ink-2);
   font-size: 14px;
   white-space: nowrap;
-  mask-image: linear-gradient(to right, #000 85%, transparent);
+  mask-image: linear-gradient(to right, var(--mask) 85%, transparent);
 }
 
 .muc {
