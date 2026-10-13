@@ -141,6 +141,11 @@ class TepVangDoiChieuTest {
                 if (duongDan.startsWith("apps/web/") || NGUON_LUU_TRU.contains(duongDan)) {
                     String hash = String.valueOf(e.getValue());
                     assertThat(hash).as("hash lưu trữ của %s", duongDan).matches("[0-9a-f]{40}");
+                    // Checkout nông (CI fetch-depth 1) không có lịch sử của nguồn v0 đã gỡ (ADR 016): chỉ kiểm định dạng hash.
+                    if (NONG) {
+                        daSo++;
+                        continue;
+                    }
                     assertThat(git("cat-file", "-t", hash)).as("đối tượng nguồn lưu trữ của %s", tepVang)
                         .isIn("blob", "tree");
                     assertThat(git("rev-list", "--all", "--objects", "--", duongDan))
@@ -176,6 +181,8 @@ class TepVangDoiChieuTest {
         });
         return ra;
     }
+
+    private static final boolean NONG = "true".equals(git("rev-parse", "--is-shallow-repository"));
 
     private static String git(String... lenh) {
         try {
