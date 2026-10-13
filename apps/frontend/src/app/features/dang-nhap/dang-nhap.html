@@ -96,11 +96,7 @@
             </label>
             @if (loi() === 'sai') {
               <p id="loi-dang-nhap" class="loi-dang-nhap" data-testid="loi-dang-nhap" role="alert">
-                @if (laTaiKhoanThu()) {
-                  Chưa vào được. Học sinh <span class="mono">hocsinh123</span> · giáo viên <span class="mono">giaovien123</span>.
-                } @else {
-                  Chưa vào được. Kiểm tra lại email và mật khẩu.
-                }
+                Chưa vào được. Kiểm tra lại email và mật khẩu.
               </p>
             } @else if (loi() === 'khoa') {
               <p id="loi-dang-nhap" class="loi-dang-nhap" data-testid="khoa-dang-nhap" role="alert">
@@ -118,16 +114,6 @@
           </form>
         }
 
-        <ul class="tai-khoan-thu" aria-label="Chọn tài khoản">
-          @for (tk of taiKhoanThu; track tk.email) {
-            <li>
-              <button appButton variant="secondary" size="lg" block type="button" [disabled]="dangGui()" (click)="chonEmail(tk.email)">
-                <app-bieu-tuong [ten]="tk.bieuTuong" />
-                {{ tk.nhan }}
-              </button>
-            </li>
-          }
-        </ul>
       </section>
       <div class="du du-duoi" aria-hidden="true"></div>
     </div>

@@ -5,7 +5,6 @@ import { Router, RouterLink } from '@angular/router';
 import { VaiTro } from '../../api/auth';
 import { Phien, trangChuCua } from '../../core/auth/phien';
 import { TEN_SAN_PHAM } from '../../core/san-pham';
-import { BieuTuong } from '../../shared/ui/bieu-tuong';
 import { BrandMark } from '../../shared/ui/brand-mark';
 import { Button } from '../../shared/ui/button';
 import { DoiGiaoDien } from '../../shared/ui/doi-giao-dien';
@@ -14,22 +13,15 @@ import { MinhHoaDangNhap } from './minh-hoa-dang-nhap';
 type Buoc = 'email' | 'mat-khau';
 type LoiDangNhap = 'sai' | 'khoa' | 'may-chu';
 
-// Tài khoản tổng hợp của bản demo (AGENTS.md), không phải học sinh thật.
-const TAI_KHOAN_THU = [
-  { nhan: 'Học sinh An', email: 'hs.an@demo.local', bieuTuong: 'user' },
-  { nhan: 'Giáo viên', email: 'gv@demo.local', bieuTuong: 'users' },
-] as const;
-
 /** Đăng nhập hai bước như v0 (apps/web/components/login-form.tsx): email → mật khẩu. */
 @Component({
   selector: 'app-dang-nhap',
-  imports: [FormField, RouterLink, BieuTuong, BrandMark, Button, DoiGiaoDien, MinhHoaDangNhap],
+  imports: [FormField, RouterLink, BrandMark, Button, DoiGiaoDien, MinhHoaDangNhap],
   templateUrl: './dang-nhap.html',
   styleUrl: './dang-nhap.css',
 })
 export class DangNhap {
   protected readonly tenSanPham = TEN_SAN_PHAM;
-  protected readonly taiKhoanThu = TAI_KHOAN_THU;
   protected readonly buoc = signal<Buoc>('email');
   protected readonly hienMatKhau = signal(false);
   /** Đã bấm «Tiếp tục» ít nhất một lần: từ đó mới báo lỗi email, và lỗi tự tắt khi email đúng. */
@@ -49,9 +41,6 @@ export class DangNhap {
   readonly returnUrl = input<string>();
   protected readonly dangGui = signal(false);
   protected readonly loi = signal<LoiDangNhap | null>(null);
-  /** Gợi ý mật khẩu thử như v0, chỉ cho tài khoản tổng hợp `@demo.local`. */
-  protected readonly laTaiKhoanThu = computed(() => this.f.email().value().endsWith('@demo.local'));
-
   private readonly phien = inject(Phien);
   private readonly router = inject(Router);
 
@@ -81,7 +70,7 @@ export class DangNhap {
     // Đang gửi đăng nhập thì không đổi tài khoản: kết quả sẽ thuộc về email cũ (nút đã khóa, đây là lớp chặn thứ hai).
     if (this.dangGui()) return;
     // Mỗi lần vào bước mật khẩu, ô mật khẩu bắt đầu rỗng (như v0): mật khẩu không theo sang tài khoản khác,
-    // dù email đổi bằng chip hay gõ tay (ô email gắn thẳng vào model nên không so được với email cũ).
+    // khi email đổi bằng cách gõ tay (ô email gắn thẳng vào model nên không so được với email cũ).
     this.taiKhoan.set({ email: giaTri, matKhau: '' });
     this.daGuiEmail.set(false);
     this.loi.set(null);

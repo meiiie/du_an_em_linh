@@ -71,17 +71,17 @@ describe('DangNhap', () => {
     expect(t.o('email')?.hasAttribute('aria-invalid')).toBe(false);
   });
 
-  it('tài khoản thử điền email và sang bước mật khẩu', async () => {
+  it('không có nút chọn tài khoản thử', async () => {
     const t = await moTrang();
-    t.nut('Giáo viên')!.click();
-    await t.on();
-    expect(t.o('email')?.value).toBe('gv@demo.local');
-    expect(t.o('password')).not.toBeNull();
+    expect(t.nut('Học sinh An')).toBeNull();
+    expect(t.nut('Giáo viên')).toBeNull();
   });
 
   it('Hiện / Ẩn mật khẩu đổi kiểu ô và aria-pressed', async () => {
     const t = await moTrang();
-    t.nut('Học sinh An')!.click();
+    go(t.o('email')!, 'hs.an@demo.local');
+    await t.on();
+    t.gui();
     await t.on();
     const nutMat = t.el.querySelector<HTMLButtonElement>('[aria-controls="o-mat-khau"]')!;
     expect(nutMat.getAttribute('aria-label')).toBe('Hiện mật khẩu');
@@ -92,42 +92,27 @@ describe('DangNhap', () => {
     expect(nutMat.getAttribute('aria-label')).toBe('Ẩn mật khẩu');
   });
 
-  it('mật khẩu đã gõ không theo sang tài khoản khác (gõ email khác, chip khác, chọn lại)', async () => {
+  it('mật khẩu đã gõ không theo sang tài khoản khác hoặc chọn lại', async () => {
     const t = await moTrang();
-    const goMatKhauChoAn = async () => {
-      t.nut('Học sinh An')!.click();
+    for (const email of ['hs.an@demo.local', 'gv@demo.local', 'gv@demo.local']) {
+      go(t.o('email')!, email);
       await t.on();
+      t.gui();
+      await t.on();
+      expect(t.o('email')?.value).toBe(email);
+      expect(t.o('password')?.value).toBe('');
       go(t.o('password')!, 'bi-mat');
       await t.on();
-    };
-
-    await goMatKhauChoAn();
-    t.nut('Quay lại')!.click();
-    await t.on();
-    go(t.o('email')!, 'hs.binh@demo.local');
-    await t.on();
-    t.gui();
-    await t.on();
-    expect(t.o('email')?.value).toBe('hs.binh@demo.local');
-    expect(t.o('password')?.value).toBe('');
-
-    await goMatKhauChoAn();
-    t.nut('Giáo viên')!.click();
-    await t.on();
-    expect(t.o('email')?.value).toBe('gv@demo.local');
-    expect(t.o('password')?.value).toBe('');
-
-    await goMatKhauChoAn();
-    t.nut('Quay lại')!.click();
-    await t.on();
-    t.nut('Học sinh An')!.click();
-    await t.on();
-    expect(t.o('password')?.value).toBe('');
+      t.nut('Quay lại')!.click();
+      await t.on();
+    }
   });
 
   it('Quay lại về bước email, giữ email đã nhập', async () => {
     const t = await moTrang();
-    t.nut('Học sinh An')!.click();
+    go(t.o('email')!, 'hs.an@demo.local');
+    await t.on();
+    t.gui();
     await t.on();
     t.nut('Quay lại')!.click();
     await t.on();
@@ -172,15 +157,16 @@ describe('DangNhap', () => {
       expect(la.dieuHuong).toHaveBeenCalledWith('/hs');
     });
 
-    it('sai mật khẩu → báo lỗi kèm mật khẩu thử như v0, ô mật khẩu aria-invalid', async () => {
+    it('sai mật khẩu → báo lỗi chung, không lộ mật khẩu thử, ô mật khẩu aria-invalid', async () => {
       const t = await vaoBuocMatKhau();
       t.gia.ketQuaDangNhap = () => Promise.reject(new HttpErrorResponse({ status: 401 }));
       t.gui();
       await t.on();
       const loi = t.el.querySelector('[data-testid="loi-dang-nhap"]');
       expect(loi?.getAttribute('role')).toBe('alert');
-      expect(loi?.textContent).toContain('hocsinh123');
-      expect(loi?.textContent).toContain('giaovien123');
+      expect(loi?.textContent).toContain('Kiểm tra lại email và mật khẩu');
+      expect(loi?.textContent).not.toContain('hocsinh123');
+      expect(loi?.textContent).not.toContain('giaovien123');
       expect(t.o('password')?.getAttribute('aria-invalid')).toBe('true');
       expect(t.o('password')?.getAttribute('aria-describedby')).toBe('loi-dang-nhap');
       expect(t.dieuHuong).not.toHaveBeenCalled();
@@ -224,7 +210,7 @@ describe('DangNhap', () => {
       await t.on();
       expect(t.nut('Vào học')?.disabled).toBe(true);
       expect(t.nut('Vào học')?.getAttribute('aria-busy')).toBe('true');
-      for (const chu of ['Quay lại', 'Học sinh An', 'Giáo viên']) {
+      for (const chu of ['Quay lại']) {
         expect(t.nut(chu)?.disabled, chu).toBe(true);
       }
       expect(t.el.querySelector<HTMLButtonElement>('[aria-label="Sửa email"]')?.disabled).toBe(true);

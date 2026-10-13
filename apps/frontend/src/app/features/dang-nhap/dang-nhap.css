@@ -161,10 +161,6 @@ h1 {
   line-height: 20px;
 }
 
-.loi-dang-nhap .mono {
-  font-family: var(--font-mono);
-}
-
 .loi-truong {
   display: block;
   margin-top: var(--space-2);
@@ -217,26 +213,6 @@ h1 {
 .nhom-nut {
   display: grid;
   gap: var(--space-3);
-}
-
-/* Hai tài khoản thử cạnh nhau như ảnh mô phỏng A / B. */
-.tai-khoan-thu {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--space-3);
-  width: 100%;
-  margin: var(--space-4) 0 0;
-  padding: 0;
-  list-style: none;
-}
-
-.tai-khoan-thu button {
-  font-weight: 500;
-}
-
-.tai-khoan-thu app-bieu-tuong {
-  inline-size: 18px;
-  block-size: 18px;
 }
 
 .chan {

@@ -50,13 +50,15 @@ test('mở trang cần đăng nhập → đăng nhập xong quay về đúng tra
   await expect(page).toHaveURL(/\/gv$/);
 });
 
-test('sai mật khẩu → báo lỗi kèm mật khẩu thử như v0, ở lại trang', async ({ page }) => {
+test('sai mật khẩu → báo lỗi chung, ở lại trang', async ({ page }) => {
   await page.goto('/dang-nhap');
-  await page.getByRole('button', { name: 'Học sinh An' }).click();
+  await page.getByTestId('email').fill('hs.an@demo.local');
+  await page.getByRole('button', { name: 'Tiếp tục' }).click();
   await page.getByTestId('password').fill('hocsinh1233');
   await page.getByRole('button', { name: 'Vào học' }).click();
-  await expect(page.getByTestId('loi-dang-nhap')).toContainText('hocsinh123');
-  await expect(page.getByTestId('loi-dang-nhap')).toContainText('giaovien123');
+  await expect(page.getByTestId('loi-dang-nhap')).toContainText('Kiểm tra lại email và mật khẩu');
+  await expect(page.getByTestId('loi-dang-nhap')).not.toContainText('hocsinh123');
+  await expect(page.getByTestId('loi-dang-nhap')).not.toContainText('giaovien123');
   await expect(page).toHaveURL(/\/dang-nhap$/);
   await chup(page, 'loi');
 });

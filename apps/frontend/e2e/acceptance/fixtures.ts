@@ -111,12 +111,12 @@ export class MockApi {
 }
 export const test = base.extend<{
     api: MockApi;
-}>({ api: async ({ page }, use) => {
+}>({ api: [async ({ page }, use) => {
         const api = new MockApi(page);
         await api.install();
         await use(api);
         expect(api.unexpected, 'Every API request needs an explicit mock').toEqual([]);
-    } });
+    }, { auto: true }] });
 export { expect };
 export async function navigate(page: Page, id: string) {
     if ((page.viewportSize()?.width ?? 1440) < 1024)
