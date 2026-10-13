@@ -60,6 +60,7 @@ export class TrangHocSinh {
     const chon = new Set(uuTien.map(b => b.maBai));
     return nhomBai(ds).map(n => ({...n, tong: n.hang.length, hang: n.hang.filter(h => chon.has(h.bai.maBai))})).filter(n => n.hang.length);
   });
+  protected readonly ngay = ngayViet;
   protected readonly deBang = deBang;
   protected readonly thanDe = thanDe;
   protected readonly tenMuc = TEN_MUC;

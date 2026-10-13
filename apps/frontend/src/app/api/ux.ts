@@ -10,7 +10,26 @@ export interface RecommendationDetails{level4:Muc4;skillCode:string;}
 export interface ScheduleDetails{startsAt:string;endsAt:string;}
 export interface FormulaDetails{statement:string;tier1:string;tier2:string;version:number;}
 export interface Library{formulas:Item<FormulaDetails>[];documents:Item[];}
-export interface Dashboard{students:number;stuck:number;pending:number;assignments:number;distribution:Record<string,number>;deadlines:Item[];}
+/** Chi tiết lượt giao; các trường bộ bài có trên lớp seed dev. */
+export interface AssignmentDetails extends Record<string, unknown> {
+  studentId?: string;
+  problemCode?: string;
+  mode?: string;
+  dueAt?: string | null;
+  tenBo?: string | null;
+  setKey?: string;
+  classId?: string;
+  submitted?: boolean;
+}
+/** Tổng quan mới trả một dòng mỗi bộ; máy chủ cũ trả lượt giao. */
+export interface DeadlineDetails extends AssignmentDetails {
+  problemCodes?: string[];
+  problemCount?: number;
+  studentCount?: number;
+  assignmentCount?: number;
+  submittedCount?: number;
+}
+export interface Dashboard{students:number;stuck:number;pending:number;assignments:number;distribution:Record<string,number>;deadlines:Item<DeadlineDetails>[];}
 export interface Settings{lopId:string;revealSolutionAfterSubmit:boolean;aiProvider:string;}
 export interface UserDetails{enabled:boolean;synthetic:boolean;}
 export interface StudentProfile{student:Item<StudentDetails>;history:Item[];}

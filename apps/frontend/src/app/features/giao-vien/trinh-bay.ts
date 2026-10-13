@@ -1,4 +1,4 @@
-import { BankDetails, Item, StudentProfile } from '../../api/ux';
+import { AssignmentDetails, BankDetails, DeadlineDetails, Item, StudentProfile } from '../../api/ux';
 
 // Tên từ danh mục dữ liệu hiện hành data/dev/nguyen-trai/danh-muc.json.
 const KY_NANG: Record<string, string> = {
@@ -20,8 +20,8 @@ export function tenTrangThai(status: string): string {
 export function tenBai(b: Item<BankDetails>): string {
   return b.subtitle || (/^[A-Z0-9][A-Z0-9._-]+$/.test(b.title) ? tenKyNang(b.details.skillCode) : b.title);
 }
-export interface HanBai { id: string; title: string; dueAt: string; submitted: number; total: number; }
-export function gomHan(assignments: Item[], bank: Item<BankDetails>[], histories: Map<string, StudentProfile>, skillNames: ReadonlyMap<string, string> = new Map()): HanBai[] {
+export interface HanBai { id: string; title: string; dueAt: string; submitted: number; total: number; problemCount?: number; studentCount?: number; }
+export function gomHan(assignments: Item<AssignmentDetails>[], bank: Item<BankDetails>[], histories: Map<string, StudentProfile>, skillNames: ReadonlyMap<string, string> = new Map()): HanBai[] {
   const groups = new Map<string, HanBai & { entries: Set<string> }>();
   for (const a of assignments) {
     const dueAt = a.details['dueAt'];
@@ -32,8 +32,8 @@ export function gomHan(assignments: Item[], bank: Item<BankDetails>[], histories
     const topTitle = typeof a.details['problemCode'] === 'string' && a.title !== code && a.title !== b?.subtitle && a.title !== b?.title ? a.title : undefined;
     const setName = [a.details['tenBo'], a.details['setName'], a.details['title'], topTitle].find(v => typeof v === 'string' && v.trim());
     const title = typeof setName === 'string' ? setName.trim() : tenKyNang(b?.details.skillCode ?? '', String(a.details['topicName'] ?? skillNames.get(b?.details.skillCode ?? '') ?? ''));
-    const setId = a.details['setId'] ?? a.details['maBo'];
-    const key = JSON.stringify([setId ?? title, dueAt, a.status]);
+    const setId = a.details.setKey ?? a.details['setId'] ?? a.details['maBo'];
+    const key = JSON.stringify([a.details.classId, setId ?? title, dueAt, a.status]);
     let group = groups.get(key);
     if (!group) {
       group = { id: key, title, dueAt, submitted: 0, total: 0, entries: new Set() };
@@ -43,7 +43,15 @@ export function gomHan(assignments: Item[], bank: Item<BankDetails>[], histories
     if (group.entries.has(entry)) continue;
     group.entries.add(entry);
     group.total++;
-    if (histories.get(studentId)?.history.some(h => h.status === 'DA_NOP' && (h.details['problemCode'] ?? h.title) === code)) group.submitted++;
+    if (a.details.submitted ?? histories.get(studentId)?.history.some(h => h.status === 'DA_NOP' && (h.details['problemCode'] ?? h.title) === code)) group.submitted++;
   }
   return [...groups.values()].sort((a,b) => new Date(a.dueAt).getTime() - new Date(b.dueAt).getTime());
+}
+
+/** Dùng số lượt nộp của bộ do máy chủ tính, kể cả bài chờ giáo viên xem. */
+export function hanTheoBo(deadlines: Item<DeadlineDetails>[]): HanBai[] {
+  return deadlines.filter(a => typeof a.details.dueAt === 'string' && Number.isFinite(new Date(a.details.dueAt).getTime()))
+    .map(a => ({ id: a.details.setKey || a.id, title: a.details.tenBo?.trim() || a.title || 'Bài được giao',
+      dueAt: a.details.dueAt!, submitted: a.details.submittedCount ?? 0, total: a.details.assignmentCount ?? 0, problemCount: a.details.problemCount ?? a.details.problemCodes?.length, studentCount: a.details.studentCount }))
+    .sort((a, b) => new Date(a.dueAt).getTime() - new Date(b.dueAt).getTime());
 }

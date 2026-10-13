@@ -1,6 +1,6 @@
 import { KichThuocTrang } from '../../shared/ui/kich-thuoc-trang';
 import { PhanTrang } from '../../shared/ui/phan-trang';
-import { gomHan, tenBai, tenKyNang, tenTrangThai } from './trinh-bay';
+import { gomHan, hanTheoBo, tenBai, tenKyNang, tenTrangThai } from './trinh-bay';
 import { VanBanToan } from '../../shared/toan/van-ban-toan';
 import { DinhDangSo, ngayViet } from '../../shared/ui/dinh-dang';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
@@ -10,7 +10,7 @@ import { RouterLink } from '@angular/router';
 import { firstValueFrom, fromEvent, takeUntil } from 'rxjs';
 import { ApiLopHoc, CheDoHoc } from '../../api/lop-hoc';
 import { Muc4, TEN_MUC } from '../../api/hoc-sinh';
-import { BankDetails, Item, Result, StudentDetails, StudentProfile } from '../../api/ux';
+import { AssignmentDetails, BankDetails, Item, Result, StudentDetails, StudentProfile } from '../../api/ux';
 import { LopDangChon } from '../../core/lop-dang-chon';
 import { Katex } from '../../shared/toan/katex';
 import { OCongThuc } from '../../shared/toan/o-cong-thuc';
@@ -32,14 +32,16 @@ export class PhongGiaoVien{
  protected readonly ds=this.api.danhSachGv(()=>{const t=this.trang();return t==='duyet'||t==='giao'||t==='cong-thuc'?t:undefined;},()=>this.lop.id());
  protected readonly kho=this.api.khoGv(()=>this.trang()==='tai-lieu'?this.lop.id():undefined);
  protected readonly caiDat=this.api.caiDat(()=>['cai-dat','ket-noi-ai'].includes(this.trang())?this.lop.id():undefined);
- // Tổng quan cũ giới hạn 10 bản ghi học sinh; dùng danh sách giao đầy đủ để gom đúng bài.
+ // Dùng dòng bộ của tổng quan; chỉ tải lịch sử cho hợp đồng cũ.
  protected readonly hanBai = resource({
-  params: () => this.trang() === 'tong-quan' && this.lop.id() ? this.lop.id() : undefined,
-  loader: async ({ params: lopId, abortSignal }) => {
+  params: () => this.trang() === 'tong-quan' && this.lop.id() && this.tongQuan.hasValue()
+   ? { lopId: this.lop.id(), deadlines: this.tongQuan.value().deadlines } : undefined,
+  loader: async ({ params: { lopId, deadlines }, abortSignal }) => {
+   if (deadlines.every(a => typeof a.details.assignmentCount === 'number')) return hanTheoBo(deadlines);
    const get = <T>(path: string) => firstValueFrom(this.http.get<T>(this.api.duongGv(path, lopId)).pipe(takeUntil(fromEvent(abortSignal, 'abort'))));
-   const [assignments, bank, students] = await Promise.all([get<Item[]>('giao'), get<Item<BankDetails>[]>('ngan-hang'), get<Item<StudentDetails>[]>('tien-do')]);
+   const [assignments, bank, students] = await Promise.all([get<Item<AssignmentDetails>[]>('giao'), get<Item<BankDetails>[]>('ngan-hang'), get<Item<StudentDetails>[]>('tien-do')]);
    const histories = new Map<string, StudentProfile>();
-   const ids = [...new Set(assignments.filter(a => a.details['dueAt']).map(a => String(a.details['studentId'])))].filter(id => students.find(s => s.id === id)?.details.submitted !== 0);
+   const ids = [...new Set(assignments.filter(a => a.details.dueAt && typeof a.details.submitted !== 'boolean').map(a => String(a.details['studentId'])))].filter(id => students.find(s => s.id === id)?.details.submitted !== 0);
    // Giới hạn bốn yêu cầu, hủy khi chuyển lớp/trang. Chỉ lấy lịch sử, không lấy lời giải.
    for (let i = 0; i < ids.length; i += 4) {
     if (abortSignal.aborted) throw new Error('Đã hủy');

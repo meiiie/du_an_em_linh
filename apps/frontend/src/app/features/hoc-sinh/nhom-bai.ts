@@ -4,6 +4,8 @@ export interface NhomBai {
   id: string;
   ten: string;
   dat: number;
+  daNop: number;
+  han: string | null;
   hang: { bai: BaiCuaHocSinh; so: number }[];
 }
 
@@ -11,14 +13,15 @@ export interface NhomBai {
 export function nhomBai(ds: readonly BaiCuaHocSinh[]): NhomBai[] {
   const nhom = new Map<string, NhomBai>();
   ds.forEach((bai, i) => {
-    const tenBo = bai.tenBo?.trim() || bai.title?.trim();
-    const id = tenBo ? 'bo:' + (bai.maBo || tenBo) : 'chu-de:' + bai.kyNang;
+    const tenBo = bai.tenBo?.trim();
+    const id = tenBo ? 'bo:' + JSON.stringify([tenBo, bai.han]) : 'chu-de:' + bai.kyNang;
     let n = nhom.get(id);
     if (!n) {
-      n = { id, ten: tenBo || bai.tenKyNang || 'Bài được giao', dat: 0, hang: [] };
+      n = { id, ten: tenBo || bai.tenKyNang || 'Bài được giao', dat: 0, daNop: 0, han: bai.han, hang: [] };
       nhom.set(id, n);
     }
     n.hang.push({ bai, so: i + 1 });
+    if (bai.trangThai === 'DA_NOP') n.daNop++;
     if (bai.ketQua === 'DAT') n.dat++;
   });
   return [...nhom.values()];

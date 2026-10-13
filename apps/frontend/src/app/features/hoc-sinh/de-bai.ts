@@ -1,4 +1,4 @@
-import { DinhDangSo } from '../../shared/ui/dinh-dang';
+import { DinhDangSo, ngayViet } from '../../shared/ui/dinh-dang';
 import { ApiLopHoc } from '../../api/lop-hoc';
 import { httpResource } from '@angular/common/http';
 import { Component, computed, inject, signal } from '@angular/core';
@@ -26,7 +26,7 @@ import { nhomBai, locTrangThai } from './nhom-bai';
     } @else {
       @for (n of nhom(); track n.id; let dau = $first) {
         <details class="nhom-chu-de" [open]="dau">
-          <summary><span>{{ n.ten }}</span><span class="list-summary">{{n.hang.length | soViet}} bài · {{n.dat | soViet}}/{{n.tong | soViet}} đạt</span></summary>
+          <summary><span>{{ n.ten }}</span><span class="list-summary">{{n.hang.length | soViet}} bài · {{n.daNop | soViet}}/{{n.tong | soViet}} đã nộp · Hạn: {{ngay(n.han)}}</span></summary>
           <ul class="danh-sach">
             @for (h of n.hang; track h.bai.maBai) {
               <li><app-hang-bai [bai]="h.bai" [so]="h.so" /></li>
@@ -73,6 +73,7 @@ import { nhomBai, locTrangThai } from './nhom-bai';
 export class DeBai {
  private readonly api=inject(ApiLopHoc);
 
+  protected readonly ngay = ngayViet;
   protected readonly ds = httpResource<BaiCuaHocSinh[]>(() => API_HS.bai);
   protected readonly cheDo=this.api.cheDo();
   protected readonly loc=signal('giao');

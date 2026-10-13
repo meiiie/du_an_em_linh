@@ -1,4 +1,4 @@
-import { gomHan, tenTrangThai } from './trinh-bay';
+import { gomHan, hanTheoBo, tenTrangThai } from './trinh-bay';
 import { BankDetails, Item, StudentProfile } from '../../api/ux';
 
 describe('Hạn bài giao', () => {
@@ -27,6 +27,16 @@ describe('Hạn bài giao', () => {
   });
   it('không tạo hạn giả từ ngày thiếu hoặc hỏng', () => {
     expect(gomHan([assignment('a',''),assignment('b','sai')],bank,new Map())).toEqual([]);
+  });
+  it('lấy submitted chính thức, dùng setKey và tách lớp', () => {
+    const a = {...assignment('a'),details:{...assignment('a').details,tenBo:'Ôn tuần 7',setKey:'set1',classId:'lop1',submitted:true}};
+    const b = {...a,id:'b',details:{...a.details,studentId:'b',submitted:false}};
+    const other = {...a,id:'c',details:{...a.details,setKey:'set2',classId:'lop2'}};
+    expect(gomHan([a,b,other],bank,new Map()).map(g=>[g.title,g.submitted,g.total])).toEqual([['Ôn tuần 7',1,2],['Ôn tuần 7',1,1]]);
+  });
+  it('đọc dòng bộ không cần problemCode đơn, dùng title dự phòng và bỏ hạn hỏng', () => {
+    const row = {id:'set',title:'Ôn tuần 7',subtitle:'2 bài',status:'ON_TAP',details:{dueAt:'2026-10-20T13:00:00Z',problemCodes:['A','B'],problemCount:2,studentCount:5,assignmentCount:10,submittedCount:7}};
+    expect(hanTheoBo([row,{...row,id:'bad',details:{...row.details,dueAt:'bad'}}])).toEqual([{id:'set',title:'Ôn tuần 7',dueAt:row.details.dueAt,submitted:7,total:10,problemCount:2,studentCount:5}]);
   });
   it('nhãn Việt phân biệt chờ duyệt với không kiểm được', () => {
     expect(tenTrangThai('CHO_GIAO_VIEN_DUYET')).toBe('Chờ duyệt');

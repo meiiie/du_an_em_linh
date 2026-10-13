@@ -48,6 +48,15 @@ const BAI: BaiCuaHocSinh[] = [
 ];
 
 describe('TrangHocSinh', () => {
+  it('dùng tên bộ, hạn Việt và đếm bài chờ xem là đã nộp', async () => {
+    const t = await mo();
+    t.http.expectOne(API_HS.bai).flush(BAI.map((b, i) => ({...b, tenBo:'Ôn tập tuần 7', han:'2026-10-20T13:00:00Z', trangThai:i === 0 ? 'DA_NOP' : b.trangThai, ketQua:i === 0 ? 'KHONG_KIEM_DUOC' : b.ketQua})));
+    await t.fixture.whenStable();
+    expect(t.chu('.nhom-sap-toi h3')).toBe('Ôn tập tuần 7');
+    expect(t.chu('.nhom-sap-toi .list-summary')).toContain('1/3 đã nộp · Hạn: Thứ Ba, 20/10');
+    t.http.verify();
+  });
+
   /** `trangHoc`: thân trả cho `GET /api/hs/trang-hoc` (null: lỗi 500); mặc định chưa có kỹ năng nào. */
   async function mo(trangHoc: TrangHoc | null = { ten: 'An', soKyNang: [], hoanThanh: { kyNang: [], chuDe: [] } }, nhac: unknown[] = []) {
     TestBed.configureTestingModule({ providers: [provideHttpClient(), provideHttpClientTesting(), provideRouter([])] });
@@ -79,7 +88,7 @@ describe('TrangHocSinh', () => {
     expect(t.chu('.tien-do span')).toBe('3/5 bước · Vận dụng');
     expect(t.el.querySelector('[data-testid=lam-buoc-tiep]')!.getAttribute('href')).toBe('/hs/luyen/GEN-bac_ba-11');
     expect([...t.el.querySelectorAll('.tt')].map((e) => e.textContent!.trim())).toEqual(['Chưa làm']);
-    expect(t.chu('.nhom-sap-toi .list-summary')).toBe('1/3 đạt');
+    expect(t.chu('.nhom-sap-toi .list-summary')).toContain('1/3 đã nộp');
     expect(t.el.querySelector('.xem-tat-ca')?.getAttribute('href')).toBe('/hs/bai');
   });
 
@@ -88,7 +97,7 @@ describe('TrangHocSinh', () => {
     t.http.expectOne(API_HS.bai).flush(Array.from({length:24},(_,i)=>({...BAI[2],maBai:'b'+i})));
     await t.fixture.whenStable();
     expect(t.el.querySelectorAll('app-hang-bai')).toHaveLength(5);
-    expect(t.chu('.nhom-sap-toi .list-summary')).toBe('0/24 đạt');
+    expect(t.chu('.nhom-sap-toi .list-summary')).toContain('0/24 đã nộp');
     expect(t.el.querySelector('[data-testid=bai-b0]')).toBeNull();
   });
 

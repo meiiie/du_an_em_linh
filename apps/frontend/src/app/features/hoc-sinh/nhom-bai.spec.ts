@@ -6,6 +6,17 @@ describe('Nhóm bài học sinh', () => {
     const ds = [bai('1','DA_NOP','DAT'), bai('2','CHUA_LAM'), {...bai('3','DA_NOP','SAI'), tenBo:'Ôn tuần 1'}];
     expect(nhomBai(ds).map(n=>({ten:n.ten, dat:n.dat, tong:n.hang.length}))).toEqual([{ten:'Hàm số',dat:1,tong:2},{ten:'Ôn tuần 1',dat:0,tong:1}]);
   });
+  it('tách bộ cùng tên khác hạn, đếm đã nộp độc lập kết quả và giữ fallback null', () => {
+    const ds = [
+      {...bai('1','DA_NOP','KHONG_KIEM_DUOC'), tenBo:' Ôn tuần 7 ', han:'2026-10-20T13:00:00Z'},
+      {...bai('2','CHUA_LAM'), tenBo:'Ôn tuần 7', han:'2026-10-20T13:00:00Z'},
+      {...bai('3','DA_NOP','SAI'), tenBo:'Ôn tuần 7', han:'2026-10-21T13:00:00Z'},
+      {...bai('4','CHUA_LAM'), tenBo:null},
+    ];
+    expect(nhomBai(ds).map(n => [n.ten,n.daNop,n.hang.length,n.han])).toEqual([
+      ['Ôn tuần 7',1,2,'2026-10-20T13:00:00Z'], ['Ôn tuần 7',1,1,'2026-10-21T13:00:00Z'], ['Hàm số',0,1,null],
+    ]);
+  });
   it('lọc chưa đạt không gom bài chưa làm hay bài đang chờ thầy cô', () => {
     const ds=[bai('1','CHUA_LAM'),bai('2','DANG_LAM'),bai('3','DA_NOP','SAI'),bai('4','DA_NOP','KHONG_KIEM_DUOC'),bai('5','DA_NOP','DAT')];
     expect(ds.filter(b=>locTrangThai(b,'chua-dat')).map(b=>b.maBai)).toEqual(['3']);

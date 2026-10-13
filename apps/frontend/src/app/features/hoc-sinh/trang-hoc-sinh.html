@@ -34,7 +34,7 @@
     @if (ds.value()?.length) {
       @for (n of sapToi(); track n.id) {
         <div class="nhom-sap-toi">
-          <div class="section-heading"><h3>{{n.ten}}</h3><span class="list-summary">{{n.dat | soViet}}/{{n.tong | soViet}} đạt</span></div>
+          <div class="section-heading"><h3>{{n.ten}}</h3><span class="list-summary">{{n.daNop | soViet}}/{{n.tong | soViet}} đã nộp · Hạn: {{ngay(n.han)}}</span></div>
           <ul class="danh-sach">
             @for (h of n.hang; track h.bai.maBai) {
               <li><app-hang-bai [bai]="h.bai" [so]="h.so" /></li>
