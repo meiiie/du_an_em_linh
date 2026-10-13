@@ -51,3 +51,59 @@ describe('Danh sách người dùng', () => {
     http.verify();
   });
 });
+
+async function userForm(password: string) {
+  TestBed.configureTestingModule({ providers: [provideHttpClient(), provideHttpClientTesting()] });
+  const fixture = TestBed.createComponent(QuanTri);
+  fixture.detectChanges();
+  const http = TestBed.inject(HttpTestingController);
+  http.expectOne('/api/qt/nguoi-dung').flush([]);
+  await fixture.whenStable();
+  const el = fixture.nativeElement as HTMLElement;
+  for (const dialog of el.querySelectorAll<HTMLDialogElement>('dialog')) {
+    dialog.showModal = () => { dialog.open = true; };
+    dialog.close = () => { dialog.open = false; };
+  }
+  [...el.querySelectorAll<HTMLButtonElement>('button')].find(b => b.textContent?.trim() === 'Thêm người dùng')!.click();
+  await fixture.whenStable();
+  const inputs = el.querySelectorAll<HTMLInputElement>('app-hop-thoai form input');
+  for (const [index, value] of ['Người dùng thử', 'demo@example.test', password].entries()) {
+    inputs[index].value = value;
+    inputs[index].dispatchEvent(new Event('input'));
+  }
+  await fixture.whenStable();
+  const form = inputs[0].closest('form')!;
+  return { fixture, http, el, form, submit: () => form.dispatchEvent(new Event('submit', { cancelable: true })) };
+}
+
+describe('Tạo người dùng theo ràng buộc máy chủ', () => {
+  it('mật khẩu 11 ký tự không thể gửi, hướng dẫn ghi tối thiểu 12', async () => {
+    const t = await userForm('abcdefghijk');
+    expect(t.form.textContent).toContain('ít nhất 12 ký tự');
+    expect(t.form.querySelector<HTMLButtonElement>('button[type=submit]')!.disabled).toBe(true);
+    t.submit();
+    t.http.expectNone(r => r.method === 'POST');
+    t.http.verify();
+  });
+
+  it('mật khẩu 12 ký tự được gửi và hiện detail tiếng Việt của máy chủ', async () => {
+    const t = await userForm('abcdefghijkl');
+    expect(t.form.querySelector<HTMLButtonElement>('button[type=submit]')!.disabled).toBe(false);
+    t.submit();
+    const request = t.http.expectOne(r => r.url === '/api/qt/nguoi-dung' && r.method === 'POST');
+    expect(request.request.body.password).toBe('abcdefghijkl');
+    request.flush({ detail: 'Email đã được sử dụng.' }, { status: 409, statusText: 'Conflict' });
+    await t.fixture.whenStable();
+    expect(t.form.querySelector('[role=alert]')?.textContent).toBe('Email đã được sử dụng.');
+    t.http.verify();
+  });
+
+  it('lỗi không có detail vẫn hiện hướng dẫn thử lại', async () => {
+    const t = await userForm('abcdefghijkl');
+    t.submit();
+    t.http.expectOne(r => r.method === 'POST').flush({}, { status: 500, statusText: 'Server Error' });
+    await t.fixture.whenStable();
+    expect(t.form.querySelector('[role=alert]')?.textContent).toBe('Chưa lưu được. Kiểm tra lựa chọn và thử lại.');
+    t.http.verify();
+  });
+});

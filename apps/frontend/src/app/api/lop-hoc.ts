@@ -1,7 +1,7 @@
 import { HttpClient, httpResource } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { Muc4 } from './hoc-sinh';
-import { BankDetails, Dashboard, Item, Library, ModeDetails, RecommendationDetails, Result, ScheduleDetails, Settings, StudentDetails, StudentProfile, UserDetails } from './ux';
+import { BankDetails, Dashboard, Item, Library, ModeDetails, RecommendationDetails, ReminderDetails, Result, ScheduleDetails, Settings, StudentDetails, StudentProfile, UserDetails } from './ux';
 
 export type CheDoHoc = 'ON_TAP' | 'KIEM_TRA';
 export type TrangQuanTri = 'nguoi-dung' | 'lop' | 'nhat-ky';
@@ -54,7 +54,7 @@ export class ApiLopHoc {
     return httpResource<Item<RecommendationDetails>[]>(() => bat() ? '/api/hs/goi-bai' : undefined);
   }
   lich() { return httpResource<Item<ScheduleDetails>[]>(() => '/api/hs/lich'); }
-  nhac() { return httpResource<Item<ScheduleDetails>[]>(() => '/api/hs/nhac'); }
+  nhac() { return httpResource<Item<ReminderDetails>[]>(() => '/api/hs/nhac'); }
   quanTri(trang: () => TrangQuanTri) { return httpResource<Item[]>(() => `/api/qt/${trang()}`); }
   nguoiDung(bat: () => boolean) { return httpResource<Item<UserDetails>[]>(() => bat() ? '/api/qt/nguoi-dung' : undefined); }
   xuatThe() { return this.http.get<TepThe>('/api/hs/flashcards/export'); }

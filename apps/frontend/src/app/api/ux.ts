@@ -8,6 +8,8 @@ export interface BankDetails{code:string;skillCode:string;skillName?:string;leve
 export interface ModeDetails{dueAt:string|null;}
 export interface RecommendationDetails{level4:Muc4;skillCode:string;}
 export interface ScheduleDetails{startsAt:string;endsAt:string;}
+/** Nhắc buổi học có startsAt/endsAt; nhắc bài được giao có dueAt. */
+export interface ReminderDetails extends Partial<ScheduleDetails>{dueAt?:string|null;}
 export interface FormulaDetails{statement:string;tier1:string;tier2:string;version:number;}
 export interface Library{formulas:Item<FormulaDetails>[];documents:Item[];}
 /** Chi tiết lượt giao; các trường bộ bài có trên lớp seed dev. */

@@ -163,3 +163,31 @@ describe('Tổng quan với hạn theo bài', () => {
     http.expectNone('/api/gv/hoc-sinh/b?lopId=lop1');http.verify();
   });
 });
+
+describe('Kết quả chấm trong lịch sử bài nộp', () => {
+  it('dùng details.result trước subtitle, dịch cả ba kết quả thay cho DA_NOP', async () => {
+    const lop = { id: signal('lop1'), ds: signal([]), dangTai: signal(false), loi: signal(false), soChoDuyet: signal(0), tai: async () => {} };
+    TestBed.configureTestingModule({ providers: [provideHttpClient(), provideHttpClientTesting(), provideRouter([]), { provide: LopDangChon, useValue: lop }] });
+    const fixture = TestBed.createComponent(PhongGiaoVien);
+    fixture.componentRef.setInput('trang', 'hoc-sinh');
+    fixture.componentRef.setInput('id', 'hs1');
+    fixture.detectChanges();
+    const http = TestBed.inject(HttpTestingController);
+    http.expectOne('/api/gv/ngan-hang?lopId=lop1').flush([]);
+    http.expectOne('/api/gv/hoc-sinh/hs1?lopId=lop1').flush({
+      student: { id: 'hs1', title: 'Học sinh thử', details: { skills: [] } },
+      history: [
+        { id: 'dat', title: 'Bài đúng', subtitle: 'SAI', status: 'DA_NOP', details: { result: 'DAT' } },
+        { id: 'sai', title: 'Bài sai', subtitle: 'DAT', status: 'DA_NOP', details: { result: 'SAI' } },
+        { id: 'unknown', title: 'Bài cần xem', subtitle: 'DAT', status: 'DA_NOP', details: { result: 'KHONG_KIEM_DUOC' } },
+        { id: 'fallback', title: 'Bài cũ', subtitle: 'SAI', status: 'DA_NOP', details: {} },
+        { id: 'empty', title: 'Chưa có kết quả', subtitle: 'KHONG_KIEM_DUOC', status: 'DA_NOP', details: { result: '' } },
+      ],
+    });
+    await fixture.whenStable();
+    const el = fixture.nativeElement as HTMLElement;
+    const section = [...el.querySelectorAll('section')].find(s => s.querySelector('h2')?.textContent === 'Bài đã nộp')!;
+    expect([...section.querySelectorAll('.badge')].map(b => b.textContent?.trim())).toEqual(['Đạt', 'Sai', 'Không kiểm được', 'Sai', 'Không kiểm được']);
+    http.verify();
+  });
+});
