@@ -1,5 +1,5 @@
 :host{display:block;min-width:0}
-.tutor-panel,.tutor-sheet{display:flex;flex-direction:column;border:1px solid var(--line);border-radius:var(--radius-card);background:var(--canvas);color:var(--ink);padding:var(--space-4);gap:var(--space-4);height:calc(100dvh - 48px);min-height:400px;box-sizing:border-box}
+.tutor-panel,.tutor-sheet{display:flex;flex-direction:column;border:1px solid var(--line);border-radius:var(--radius-card);background:var(--canvas);color:var(--ink);padding:var(--space-4);gap:var(--space-4);height:calc(100dvh - 96px);min-height:400px;box-sizing:border-box}
 .tutor-panel{position:sticky;top:24px}
 header{display:flex;align-items:center;justify-content:space-between;gap:var(--space-3)}
 h2{margin:0;font-size:18px}header p{margin:var(--space-1) 0 0;font-size:14px}
