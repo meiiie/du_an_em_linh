@@ -1,14 +1,15 @@
 <header class="dau-trang">
+  <p class="nhan-muc">Toán 12 · Đơn điệu và cực trị</p>
   <h1>Chào {{ ten() }}</h1>
 </header>
 
 @if (ds.isLoading() && !ds.hasValue()) {
   <app-khung-cho nhan="Đang tải bài được giao" />
 } @else if (ds.error()) {
-  <div class="trong" role="alert">
-    <app-loi-tai (thuLai)="ds.reload()" />
-  </div>
+  <app-loi-tai [loi]="ds.error()" (thuLai)="ds.reload()" />
 } @else {
+  <div class="hoc-grid">
+  <div class="hoc-chinh">
   @if (ke(); as ke) {
     <section class="ke-tiep" aria-labelledby="tieu-de-ke-tiep">
       <div class="ke-chu">
@@ -37,18 +38,21 @@
         }
       </ul>
     } @else {
-      <div class="trong">
-        <app-trang-rong tieuDe="Chưa có bài" moTa="Bài thầy cô giao sẽ hiện ở đây." />
-      </div>
+<app-trang-rong tieuDe="Chưa có bài" moTa="Chưa có bài. Bài thầy cô giao sẽ hiện ở đây." />
     }
   </section>
 
+  </div>
+  <aside class="hoc-so" aria-label="Sổ học tập">
   @if(nhac.hasValue() && nhac.value().length){<section class="surface"><h2 class="nhan-muc">Hôm nay và hạn sắp tới</h2><ul class="row-list">@for(n of nhac.value();track n.id){<li><strong>{{n.title}}</strong><p class="muted">{{gio(n.details.startsAt)}}</p></li>}</ul><a routerLink="/hs/lich">Xem lịch học →</a></section>}
-  @if(th.isLoading()){<app-khung-cho nhan="Đang tải mức hiểu" />}@else if(th.error()){<app-loi-tai moTa="Chưa tải được mức hiểu. Bài được giao vẫn làm được." (thuLai)="th.reload()" />}
+  @if(nhac.error()){<app-loi-tai [loi]="nhac.error()" moTa="Chưa tải được lịch nhắc học." (thuLai)="nhac.reload()" />}
+  @if(th.isLoading()){<app-khung-cho nhan="Đang tải mức hiểu" />}@else if(th.error()){<app-loi-tai [loi]="th.error()" moTa="Chưa tải được mức hiểu. Bài được giao vẫn làm được." (thuLai)="th.reload()" />}
   @if (th.hasValue()) {
     <section aria-labelledby="tieu-de-ky-nang" data-testid="so-ky-nang">
       <h2 id="tieu-de-ky-nang" class="nhan-muc">Kỹ năng</h2>
       <app-so-ky-nang [kyNang]="th.value().soKyNang" />
     </section>
   }
+  </aside>
+  </div>
 }

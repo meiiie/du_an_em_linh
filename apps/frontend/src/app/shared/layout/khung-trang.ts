@@ -24,6 +24,7 @@ import {
 } from '@angular/router';
 import { HangChoDuyet } from '../../core/hang-cho';
 import { Phien } from '../../core/auth/phien';
+import { ChuyenTrang } from '../ui/chuyen-trang';
 import { BieuTuong } from '../ui/bieu-tuong';
 import { BrandMark } from '../ui/brand-mark';
 import { Button } from '../ui/button';
@@ -48,7 +49,7 @@ const MAN_HINH_RONG = '(min-width: 64rem)';
  */
 @Component({
   selector: 'app-khung-trang',
-  imports: [RouterLink, RouterLinkActive, RouterOutlet, BieuTuong, BrandMark, Button, DoiGiaoDien],
+  imports: [ChuyenTrang, RouterLink, RouterLinkActive, RouterOutlet, BieuTuong, BrandMark, Button, DoiGiaoDien],
   host: { '(document:keydown.escape)': 'dong(true)' },
   template: `
     <a class="skip-link" href="#noi-dung" [attr.inert]="nganKeoMo() ? '' : null">Bỏ qua đến nội dung</a>
@@ -62,7 +63,7 @@ const MAN_HINH_RONG = '(min-width: 64rem)';
           aria-label="Mở menu"
           aria-controls="ray"
           [attr.aria-expanded]="moNganKeo()"
-          (click)="mo()"
+          (click)="mo($event)"
         >
           <app-bieu-tuong ten="menu" />
         </button>
@@ -99,8 +100,17 @@ const MAN_HINH_RONG = '(min-width: 64rem)';
           </button>
         }
       </div>
+      @if (laQuanTri()) {
+        <nav class="chuyen-khu-vuc" aria-label="Khu vực làm việc">
+          <a routerLink="/gv" [attr.aria-current]="khuVuc() === 'GV' ? 'page' : null" (click)="chonMuc()">Giáo viên</a>
+          <a routerLink="/qt" data-testid="chuyen-quan-tri" [attr.aria-current]="khuVuc() === 'QT' ? 'page' : null" (click)="chonMuc()">Quản trị</a>
+        </nav>
+      }
       <nav class="ray-nav" data-testid="sidebar-nav" [attr.aria-label]="nhanMenu()">
-        @for (muc of cacMuc(); track muc.duongDan) {
+        @for (muc of cacMuc(); track muc.duongDan; let i = $index) {
+          @if (muc.nhom && (i === 0 || cacMuc()[i - 1].nhom !== muc.nhom)) {
+            <p class="nhom-nav">{{muc.nhom}}</p>
+          }
           <a
             class="muc"
             [routerLink]="muc.duongDan"
@@ -133,7 +143,7 @@ const MAN_HINH_RONG = '(min-width: 64rem)';
       @if (thongBaoLoi()) {
         <p class="loi" role="alert">{{ thongBaoLoi() }}</p>
       }
-      <main #noiDung id="noi-dung" class="noi-dung" tabindex="-1">
+      <main appChuyenTrang #noiDung id="noi-dung" class="noi-dung" tabindex="-1">
         <router-outlet />
       </main>
     </div>
@@ -142,270 +152,18 @@ const MAN_HINH_RONG = '(min-width: 64rem)';
         @for (m of mucDuoi(); track m.duongDan) {
           <a [routerLink]="m.duongDan" routerLinkActive="dang-mo" [routerLinkActiveOptions]="{exact:laTrangChu(m.duongDan)}" ariaCurrentWhenActive="page"><app-bieu-tuong [ten]="m.bieuTuong" /><span>{{m.nhan}}</span></a>
         }
-        <button type="button" (click)="mo()"><app-bieu-tuong ten="menu" /><span>{{khuVuc() === 'HS' ? 'Tôi' : 'Thêm'}}</span></button>
+        <button type="button" aria-label="Mở thêm điều hướng" aria-controls="ray" [attr.aria-expanded]="moNganKeo()" (click)="mo($event)"><app-bieu-tuong ten="menu" /><span>{{khuVuc() === 'HS' ? 'Tôi' : 'Thêm'}}</span></button>
       </nav>
     }
     <p class="sr-only" aria-live="polite" data-testid="thong-bao-trang">{{ thongBaoTrang() }}</p>
   `,
-  styles: `
-    :host {
-      --rong-ray: 260px;
-      display: block;
-      min-height: 100dvh;
-    }
-
-    /* Vùng an toàn (index.html có viewport-fit=cover): tai thỏ khi xoay ngang, thanh trạng thái, thanh home. */
-    .thanh-tren {
-      position: sticky;
-      top: 0;
-      z-index: 30;
-      display: flex;
-      align-items: center;
-      gap: var(--space-2);
-      min-height: calc(48px + env(safe-area-inset-top));
-      padding: env(safe-area-inset-top) max(var(--space-2), env(safe-area-inset-right)) 0
-        max(var(--space-2), env(safe-area-inset-left));
-      border-bottom: 1px solid var(--line);
-      background: var(--canvas);
-    }
-
-    .thanh-tren app-doi-giao-dien {
-      margin-left: auto;
-    }
-
-    .muc:hover {
-      background: color-mix(in srgb, var(--ink) 6%, transparent);
-      color: var(--ink);
-    }
-
-    .muc app-bieu-tuong {
-      inline-size: 20px;
-      block-size: 20px;
-    }
-
-    .thuong-hieu {
-      display: inline-flex;
-      align-items: center;
-      min-width: 0;
-      min-height: var(--target);
-      padding: 0 var(--space-1);
-      border-radius: var(--radius);
-      color: inherit;
-      text-decoration: none;
-    }
-
-    /* Màn che mờ dần cùng nhịp ray trượt; đóng thì không nhận chạm. */
-    .man-che {
-      position: fixed;
-      inset: 0;
-      z-index: 30;
-      background: var(--scrim);
-      opacity: 0;
-      visibility: hidden;
-      pointer-events: none;
-      transition:
-        opacity 200ms var(--ease),
-        visibility 0s 200ms;
-    }
-
-    .man-che.mo {
-      opacity: 1;
-      visibility: visible;
-      pointer-events: auto;
-      transition: opacity 200ms var(--ease);
-    }
-
-    .ray {
-      position: fixed;
-      top: 0;
-      bottom: 0;
-      left: 0;
-      z-index: 40;
-      display: flex;
-      flex-direction: column;
-      inline-size: calc(var(--rong-ray) + env(safe-area-inset-left));
-      padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom) env(safe-area-inset-left);
-      border-right: 1px solid var(--line);
-      background: var(--wash);
-      color: var(--ink);
-      transform: translateX(-100%);
-      visibility: hidden;
-      /* Đóng: trượt ra xong mới ẩn (visibility trễ 200 ms). */
-      transition:
-        transform 200ms var(--ease),
-        visibility 0s 200ms;
-    }
-
-    .ray.mo {
-      transform: none;
-      visibility: visible;
-      /* Mở: hiện ngay, không chuyển tiếp visibility. Nếu chuyển tiếp, khung đầu vẫn hidden và focus() vào nút đóng
-         (afterNextRender) bị trình duyệt bỏ qua. */
-      transition: transform 200ms var(--ease);
-    }
-
-    .ray-dau {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: var(--space-2);
-      padding: var(--space-3) var(--space-2) var(--space-3) var(--space-5);
-    }
-
-    .ray-thuong-hieu {
-      display: grid;
-      gap: 6px;
-      min-width: 0;
-    }
-
-    .ray-thuong-hieu .nhan-muc {
-      margin: 0;
-    }
-
-    .ray-nav {
-      display: flex;
-      flex: 1;
-      flex-direction: column;
-      gap: 2px;
-      overflow-y: auto;
-      overscroll-behavior: contain;
-      padding: var(--space-2) var(--space-3) var(--space-3);
-    }
-
-    .muc {
-      display: flex;
-      align-items: center;
-      gap: var(--space-3);
-      min-height: var(--target);
-      padding: 0 var(--space-3);
-      border-radius: var(--radius);
-      color: var(--ink-2);
-      font-size: 15px;
-      font-weight: 500;
-      text-decoration: none;
-      transition: background-color 150ms var(--ease);
-    }
-
-    /* Mục đang mở: nền nhạt theo màu nhấn và vạch trái 3 px như thanh bên Wiii. */
-    .muc.dang-mo {
-      background: color-mix(in srgb, var(--accent) 12%, transparent);
-      color: var(--ink);
-      font-weight: 600;
-    }
-
-    .muc.dang-mo app-bieu-tuong {
-      color: var(--accent);
-    }
-
-    /* Chân thanh bên: ô tròn và tên một hàng; nút Đăng xuất (block) xuống hàng dưới. */
-    .ray-chan {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      gap: var(--space-3);
-      margin-top: auto;
-      padding: var(--space-4);
-      border-top: 1px solid var(--line);
-    }
-
-    .chu-dau {
-      display: grid;
-      flex-shrink: 0;
-      place-items: center;
-      inline-size: 32px;
-      block-size: 32px;
-      border-radius: 50%;
-      background: var(--action);
-      color: var(--action-ink);
-      font-size: 14px;
-      font-weight: 700;
-    }
-
-    .nguoi-dung {
-      flex: 1;
-      margin: 0;
-      min-width: 0;
-      font-size: 15px;
-      font-weight: 500;
-    }
-
-    /* Chữ một dòng, dài thì cắt bằng dấu ba chấm. */
-    .nhan,
-    .nguoi-dung {
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-
-    .vung {
-      position: relative;
-    }
-
-    .goc {
-      position: absolute;
-      top: var(--space-5);
-      right: max(var(--space-5), env(safe-area-inset-right));
-    }
-
-    .loi {
-      margin: 0;
-      padding: var(--space-3) var(--space-4);
-      background: var(--wash);
-      color: var(--mark);
-      font-size: 14px;
-    }
-
-    .noi-dung {
-      max-width: 64rem;
-      margin: 0 auto;
-      padding: var(--space-5) max(var(--space-4), env(safe-area-inset-right)) calc(var(--space-8) + env(safe-area-inset-bottom))
-        max(var(--space-4), env(safe-area-inset-left));
-      outline: none;
-    }
-
-    @media (min-width: 40rem) {
-      .noi-dung {
-        padding-inline: max(var(--space-5), env(safe-area-inset-left)) max(var(--space-5), env(safe-area-inset-right));
-      }
-    }
-
-    @media (min-width: 64rem) {
-      .ray {
-        transform: none;
-        visibility: visible;
-        transition: none;
-      }
-
-      .ray-dau {
-        padding: var(--space-6) var(--space-5) var(--space-5);
-      }
-
-      .vung {
-        padding-left: calc(var(--rong-ray) + env(safe-area-inset-left));
-      }
-
-      /* Thông báo lỗi chạy ngang trên cùng: chừa chỗ cho nút đổi giao diện ở góc. */
-      .loi {
-        padding-inline-end: calc(var(--target) + var(--space-6));
-      }
-
-      .noi-dung {
-        padding: var(--space-6) max(var(--space-6), env(safe-area-inset-right)) calc(var(--space-8) + env(safe-area-inset-bottom))
-          var(--space-6);
-      }
-
-      /* Skip link hiện bên phải ray, không đè khối thương hiệu. */
-      .skip-link {
-        left: calc(var(--rong-ray) + var(--space-3));
-      }
-    }
-  `,
-})
+  styleUrl: './khung-trang.css',})
 export class KhungTrang {
   /** Khu vực của route cha (`data: { khuVuc }` trong app.routes.ts). */
   readonly khuVuc = input.required<KhuVuc>();
 
   protected readonly phien = inject(Phien);
+  protected readonly laQuanTri = computed(() => ['ADMIN', 'SCHOOL_ADMIN'].includes(this.phien.nguoiDung()?.role ?? ''));
   protected readonly choDuyet = inject(HangChoDuyet);
   protected readonly cacMuc = computed(() => DIEU_HUONG[this.khuVuc()]);
   protected readonly mucDuoi = computed(() => this.khuVuc() === 'GV' ? this.cacMuc().filter(m=>['/gv','/gv/tien-do','/gv/giao','/gv/duyet'].includes(m.duongDan)) : this.cacMuc());
@@ -482,7 +240,10 @@ export class KhungTrang {
     }
   }
 
-  protected mo(): void {
+  private nutDaMo: HTMLElement | null = null;
+
+  protected mo(e?: Event): void {
+    this.nutDaMo = e?.currentTarget as HTMLElement | null;
     this.moNganKeo.set(true);
     afterNextRender(() => this.nutDong()?.nativeElement.focus(), { injector: this.injector });
   }
@@ -490,7 +251,7 @@ export class KhungTrang {
   protected dong(traTieuDiem: boolean): void {
     if (!this.moNganKeo()) return;
     this.moNganKeo.set(false);
-    if (traTieuDiem) afterNextRender(() => this.nutMo()?.nativeElement.focus(), { injector: this.injector });
+    if (traTieuDiem) afterNextRender(() => (this.nutDaMo ?? this.nutMo()?.nativeElement)?.focus(), { injector: this.injector });
   }
 
   /**

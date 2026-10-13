@@ -45,7 +45,7 @@
 
 .cau-hoi {
   color: var(--ink-2);
-  font-size: 15px;
+  font-size: 16px;
 }
 
 .phu {
@@ -212,8 +212,8 @@
 
 .phan-hoi {
   margin: 0;
-  padding-left: var(--space-3);
-  font-size: 15px;
+  padding: 0;
+  font-size: 16px;
 }
 
 .phan-hoi[data-kq='DAT'] {
@@ -282,16 +282,15 @@
   }
 }
 
-/* Màn rộng: đề đứng yên bên trái, phiếu bên phải. */
-@media (min-width: 64rem) {
-  .phieu {
-    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
-    align-items: start;
-    gap: var(--space-8);
-  }
 
-  .de {
-    position: sticky;
-    top: var(--space-6);
-  }
-}
+/* Phiếu có một luồng đọc; cột thứ hai dành cho gia sư khi mở. */
+.phieu { padding: 24px; border: 1px solid var(--line); border-radius: 12px; background: var(--raise); }
+.de { padding-bottom: 24px; border-bottom: 1px solid var(--line); }
+.cac-buoc { gap: 4px; }
+.buoc { min-height: 56px; padding: 8px 4px; border-radius: 8px; }
+.so { width: auto; height: auto; border: 0; background: transparent; font-family: var(--font-mono); color: inherit; }
+.buoc[aria-current] { background: var(--wash); }
+.buoc[aria-current] .so, .buoc[aria-current][data-tt='sai'] .so { border: 0; background: transparent; color: inherit; }
+.buoc[data-tt='sai'] { color: var(--mark); }
+.phan-hoi { animation: etat-vao 160ms var(--ease); }
+@media (max-width: 600px) { .phieu { padding: 16px; padding-bottom: 24px; } }

@@ -7,6 +7,7 @@ export interface MucDieuHuong {
   readonly nhan: string;
   readonly testId: string;
   readonly bieuTuong: TenBieuTuong;
+  readonly nhom?: string;
 }
 
 /**
@@ -21,15 +22,15 @@ export const DIEU_HUONG: Record<KhuVuc, readonly MucDieuHuong[]> = {
     { duongDan: '/hs/kho', nhan: 'Công thức', testId: 'nav-hs-kho', bieuTuong: 'kho' },
   ],
   GV: [
-    { duongDan: '/gv', nhan: 'Tổng quan', testId: 'nav-gv-tong-quan', bieuTuong: 'home' },
-    { duongDan: '/gv/giao', nhan: 'Giao bài', testId: 'nav-gv-giao', bieuTuong: 'book' },
-    { duongDan: '/gv/duyet', nhan: 'Duyệt', testId: 'nav-gv-duyet', bieuTuong: 'inbox' },
-    { duongDan: '/gv/ngan-hang', nhan: 'Đề bài', testId: 'nav-gv-ngan-hang', bieuTuong: 'bank' },
-    { duongDan: '/gv/tai-lieu', nhan: 'Tài liệu', testId: 'nav-gv-tai-lieu', bieuTuong: 'file' },
-    { duongDan: '/gv/cong-thuc', nhan: 'Công thức', testId: 'nav-gv-cong-thuc', bieuTuong: 'sigma' },
-    { duongDan: '/gv/tien-do', nhan: 'Mức', testId: 'nav-gv-tien-do', bieuTuong: 'chart' },
-    { duongDan: '/gv/ket-noi-ai', nhan: 'Gia sư', testId: 'nav-gv-ket-noi-ai', bieuTuong: 'plug' },
-    { duongDan: '/gv/cai-dat', nhan: 'Cài lớp', testId: 'nav-gv-cai-dat', bieuTuong: 'settings' },
+    { nhom: 'Lớp học', duongDan: '/gv', nhan: 'Tổng quan', testId: 'nav-gv-tong-quan', bieuTuong: 'home' },
+    { nhom: 'Lớp học', duongDan: '/gv/giao', nhan: 'Giao bài', testId: 'nav-gv-giao', bieuTuong: 'book' },
+    { nhom: 'Nội dung', duongDan: '/gv/duyet', nhan: 'Duyệt', testId: 'nav-gv-duyet', bieuTuong: 'inbox' },
+    { nhom: 'Nội dung', duongDan: '/gv/ngan-hang', nhan: 'Đề bài', testId: 'nav-gv-ngan-hang', bieuTuong: 'bank' },
+    { nhom: 'Nội dung', duongDan: '/gv/tai-lieu', nhan: 'Tài liệu', testId: 'nav-gv-tai-lieu', bieuTuong: 'file' },
+    { nhom: 'Nội dung', duongDan: '/gv/cong-thuc', nhan: 'Công thức', testId: 'nav-gv-cong-thuc', bieuTuong: 'sigma' },
+    { nhom: 'Theo dõi', duongDan: '/gv/tien-do', nhan: 'Mức', testId: 'nav-gv-tien-do', bieuTuong: 'chart' },
+    { nhom: 'Thiết lập', duongDan: '/gv/ket-noi-ai', nhan: 'Gia sư', testId: 'nav-gv-ket-noi-ai', bieuTuong: 'plug' },
+    { nhom: 'Thiết lập', duongDan: '/gv/cai-dat', nhan: 'Cài lớp', testId: 'nav-gv-cai-dat', bieuTuong: 'settings' },
   ],
   QT: [
     { duongDan: '/qt', nhan: 'Người dùng', testId: 'nav-qt-nguoi-dung', bieuTuong: 'home' },

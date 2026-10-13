@@ -54,6 +54,8 @@ describe('TrangHocSinh', () => {
     const fixture = TestBed.createComponent(TrangHocSinh);
     fixture.detectChanges();
     const http = TestBed.inject(HttpTestingController);
+    http.expectOne('/api/hs/goi-bai').flush([]);
+    http.expectOne('/api/hs/nhac').flush([]);
     const th = http.expectOne(API_HS.trangHoc);
     if (trangHoc) th.flush(trangHoc);
     else th.flush(null, { status: 500, statusText: 'Lỗi' });

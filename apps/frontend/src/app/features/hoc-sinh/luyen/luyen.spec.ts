@@ -55,6 +55,7 @@ describe('Luyen', () => {
     fixture.componentRef.setInput('maBai', MA);
     fixture.detectChanges();
     const http = TestBed.inject(HttpTestingController);
+    http.expectOne('/api/hs/che-do').flush([{id:MA,title:MA,subtitle:'',status:'ON_TAP',details:{dueAt:null}}]);
     const yc = http.expectOne({ method: 'GET', url: API_HS.chiTietBai(MA) });
     if ('loi' in bai) yc.flush({ detail: 'x' }, { status: bai.loi, statusText: 'Lỗi' });
     else yc.flush(bai);
@@ -75,6 +76,8 @@ describe('Luyen', () => {
     /** `kiemTra` / `nopBai` tự `await` ngoài Angular: chờ thêm một vòng macrotask (AGENTS.md của frontend). */
     const xong = async () => {
       await new Promise((r) => setTimeout(r, 0));
+      TestBed.tick();
+      http.match('/api/hs/goi-bai').forEach(r=>r.flush([]));
       await fixture.whenStable();
     };
     return { fixture, http, el, $, chu, go, bam, xong };

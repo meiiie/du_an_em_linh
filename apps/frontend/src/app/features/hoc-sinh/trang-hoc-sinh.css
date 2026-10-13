@@ -30,7 +30,7 @@
 .cau-hoi {
   margin: var(--space-1) 0 0;
   color: var(--ink-2);
-  font-size: 15px;
+  font-size: 16px;
 }
 
 .tien-do {
@@ -99,4 +99,13 @@
     align-items: center;
     padding: var(--space-6);
   }
+}
+
+.hoc-grid, .hoc-chinh, .hoc-so { display: grid; gap: 32px; min-width: 0; align-content: start; }
+.hoc-so { padding: 24px; background: var(--wash); border: 1px solid var(--line); border-radius: 12px; }
+.hoc-so .surface { padding: 0; border: 0; background: transparent; }
+.hoc-chinh > section > h2 { margin-top: 0; }
+@media (min-width: 75rem) {
+  .hoc-grid { grid-template-columns: minmax(0, 1fr) minmax(280px, 320px); gap: 32px; }
+  .ke-tiep { grid-template-columns: 1fr; }
 }

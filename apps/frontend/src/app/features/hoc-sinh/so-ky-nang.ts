@@ -65,6 +65,7 @@ const BAC: readonly Muc4[] = ['NHAN_BIET', 'THONG_HIEU', 'VAN_DUNG', 'VAN_DUNG_C
 
     .dong {
       display: flex;
+      flex-wrap: wrap;
       align-items: baseline;
       justify-content: space-between;
       gap: var(--space-3);
@@ -77,7 +78,7 @@ const BAC: readonly Muc4[] = ['NHAN_BIET', 'THONG_HIEU', 'VAN_DUNG', 'VAN_DUNG_C
     }
 
     .ten {
-      font-size: 15px;
+      font-size: 16px;
     }
 
     .muc {
@@ -115,7 +116,7 @@ const BAC: readonly Muc4[] = ['NHAN_BIET', 'THONG_HIEU', 'VAN_DUNG', 'VAN_DUNG_C
     .nhac {
       margin-top: var(--space-2);
       color: var(--ink-2);
-      font-size: 13px;
+      font-size: 16px;
     }
   `,
 })

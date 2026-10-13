@@ -1,7 +1,6 @@
-import { HttpClient, httpResource } from '@angular/common/http';
+import { ApiLopHoc } from '../../api/lop-hoc';
 import { Component, computed, inject, signal } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
-import { Library } from '../../api/ux';
 import { Katex } from '../../shared/toan/katex';
 import { Button } from '../../shared/ui/button';
 import { HopThoai } from '../../shared/ui/hop-thoai';
@@ -9,14 +8,18 @@ import { ThongBaoNhanh } from '../../shared/ui/thong-bao';
 import { KhungCho, LoiTai, TrangRong } from '../../shared/ui/trang-thai';
 @Component({selector:'app-kho',imports:[Katex,Button,HopThoai,KhungCho,LoiTai,TrangRong],template:`
 <div class="page"><header><h1>Công thức và tài liệu</h1><p>Kho kiến thức của lớp em.</p></header>
-@if(kho.isLoading()){<app-khung-cho />}@else if(kho.error()){<app-loi-tai (thuLai)="kho.reload()" />}@else if(kho.value();as k){
-<section class="surface"><div class="toolbar"><h2>Công thức</h2>@if(k.formulas.length){<button appButton type="button" (click)="moThe()">Ôn bằng thẻ</button><button appButton variant="secondary" type="button" [disabled]="dangXuat()" (click)="xuat()">Xuất CSV</button>}</div>
-@if(!k.formulas.length){<app-trang-rong tieuDe="Chưa có công thức" moTa="Công thức thầy cô đã kiểm sẽ hiện ở đây." />}@else{<ul class="row-list">@for(c of k.formulas;track c.id){<li [id]="'ct-'+c.id"><h3>{{c.title}}</h3><app-katex khoi [latex]="c.subtitle" /><p>{{c.details.statement}}</p></li>}</ul>}</section>
-<section class="surface"><h2>Tài liệu</h2>@if(!k.documents.length){<app-trang-rong tieuDe="Chưa có tài liệu" moTa="Tài liệu của lớp sẽ hiện ở đây." />}@else{<ul class="row-list">@for(d of k.documents;track d.id){<li [id]="'tl-'+d.id"><h3>{{d.title}}</h3><p class="document-text">{{d.subtitle}}</p></li>}</ul>}</section>}
+@if(kho.isLoading()){<app-khung-cho />}@else if(kho.error()){<app-loi-tai [loi]="kho.error()" (thuLai)="kho.reload()" />}@else if(kho.value();as k){
+<div class="toolbar" role="group" aria-label="Nội dung lớp"><button appButton variant="secondary" type="button" [attr.aria-pressed]="tab()==='cong-thuc'" (click)="tab.set('cong-thuc')">Công thức</button><button appButton variant="secondary" type="button" [attr.aria-pressed]="tab()==='tai-lieu'" (click)="tab.set('tai-lieu')">Tài liệu</button></div>
+@if(tab()==='cong-thuc'){<section class="surface"><div class="toolbar"><h2>Công thức</h2>@if(k.formulas.length){<button appButton type="button" (click)="moThe()">Ôn bằng thẻ</button><button appButton variant="secondary" type="button" [disabled]="dangXuat()" (click)="xuat()">Xuất CSV</button>}</div>
+@if(!k.formulas.length){<app-trang-rong tieuDe="Chưa có công thức" moTa="Công thức thầy cô đã kiểm sẽ hiện ở đây." />}@else{<ul class="row-list">@for(c of k.formulas;track c.id){<li [id]="'ct-'+c.id"><h3>{{c.title}}</h3><app-katex khoi [latex]="c.subtitle" /><p>{{c.details.statement}}</p></li>}</ul>}</section>}
+@if(tab()==='tai-lieu'){<section class="surface"><h2>Tài liệu</h2>@if(!k.documents.length){<app-trang-rong tieuDe="Chưa có tài liệu" moTa="Tài liệu của lớp sẽ hiện ở đây." />}@else{<ul class="row-list">@for(d of k.documents;track d.id){<li [id]="'tl-'+d.id"><h3>{{d.title}}</h3><p class="document-text">{{d.subtitle}}</p></li>}</ul>}</section>}}
 </div>
 <app-hop-thoai [mo]="theMo()" tieuDe="Ôn công thức" (dong)="theMo.set(false)">@if(the();as c){<p class="muted">Thẻ {{viTri()+1}} / {{kho.value()?.formulas?.length}}</p><button class="flashcard" type="button" [attr.aria-label]="lat() ? 'Mặt sau. Lật về câu hỏi' : 'Mặt trước. Lật xem công thức'" [attr.aria-pressed]="lat()" (click)="lat.update(doi)">@if(lat()){<app-katex khoi [latex]="c.subtitle" /><span>{{c.details.statement}}</span>}@else{<strong>{{c.title}}</strong><span class="muted">Nhấn Enter hoặc chạm để lật</span>}</button><div class="actions"><button appButton variant="secondary" type="button" [disabled]="viTri()===0" (click)="chuyen(-1)">Thẻ trước</button><button appButton type="button" [disabled]="viTri()+1 >= (kho.value()?.formulas?.length ?? 0)" (click)="chuyen(1)">Thẻ tiếp</button></div>}</app-hop-thoai>`,styles:`.document-text{white-space:pre-wrap}.flashcard{display:grid;gap:24px;place-items:center;min-height:240px;width:100%;padding:24px;margin-bottom:24px;border:1px solid var(--line-strong);border-radius:12px;background:var(--raise);color:var(--ink);font:inherit}.flashcard strong{font-size:20px}`})
 export class Kho{
- protected readonly kho=httpResource<Library>(()=>'/api/hs/kho');protected readonly theMo=signal(false);protected readonly viTri=signal(0);protected readonly lat=signal(false);protected readonly dangXuat=signal(false);protected readonly doi=(v:boolean)=>!v;protected readonly the=computed(()=>this.kho.value()?.formulas[this.viTri()]);private readonly http=inject(HttpClient);private readonly thongBao=inject(ThongBaoNhanh);
+ private readonly api=inject(ApiLopHoc);
+
+ protected readonly tab=signal<'cong-thuc'|'tai-lieu'>('cong-thuc');
+ protected readonly kho=this.api.khoHocSinh();protected readonly theMo=signal(false);protected readonly viTri=signal(0);protected readonly lat=signal(false);protected readonly dangXuat=signal(false);protected readonly doi=(v:boolean)=>!v;protected readonly the=computed(()=>this.kho.value()?.formulas[this.viTri()]);private readonly thongBao=inject(ThongBaoNhanh);
  protected moThe(){this.viTri.set(0);this.lat.set(false);this.theMo.set(true);}protected chuyen(d:number){this.viTri.update(v=>v+d);this.lat.set(false);}
- protected async xuat(){this.dangXuat.set(true);try{const c=await firstValueFrom(this.http.get<{filename:string;content:string}>('/api/hs/flashcards/export'));const url=URL.createObjectURL(new Blob(['\uFEFF'+c.content],{type:'text/csv;charset=utf-8'}));const a=document.createElement('a');a.href=url;a.download=c.filename;a.click();URL.revokeObjectURL(url);this.thongBao.hien('Đã xuất bảng công thức.');}catch{this.thongBao.hien('Chưa xuất được. Thử lại sau.','loi');}finally{this.dangXuat.set(false);}}
+ protected async xuat(){this.dangXuat.set(true);try{const c=await firstValueFrom(this.api.xuatThe());const url=URL.createObjectURL(new Blob(['\uFEFF'+c.content],{type:'text/csv;charset=utf-8'}));const a=document.createElement('a');a.href=url;a.download=c.filename;a.click();URL.revokeObjectURL(url);this.thongBao.hien('Đã xuất bảng công thức.');}catch{this.thongBao.hien('Chưa xuất được. Thử lại sau.','loi');}finally{this.dangXuat.set(false);}}
 }
