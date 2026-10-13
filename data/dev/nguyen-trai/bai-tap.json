@@ -2716,7 +2716,7 @@
     "dang_cau": "TU_LUAN",
     "de_bai": {
       "van_ban": "Hình chóp có đáy tam giác vuông với hai cạnh góc vuông $6$ cm, $8$ cm; chiều cao $9$ cm. Tính thể tích.",
-      "latex": "\\text{Dữ kiện: }a=6,\\quad b=8,\\quad h=9",
+      "latex": "\\text{Chóp đáy tam giác vuông, hai cạnh }6,8\\text{ cm; cao }9\\text{ cm}",
       "ham_so_sympy": null
     },
     "thang_goi_y": [],
@@ -2771,7 +2771,7 @@
     "dang_cau": "TU_LUAN",
     "de_bai": {
       "van_ban": "Hình chóp có đáy tam giác vuông với hai cạnh góc vuông $5$ cm, $12$ cm; chiều cao $7$ cm. Tính thể tích.",
-      "latex": "\\text{Dữ kiện: }a=5,\\quad b=12,\\quad h=7",
+      "latex": "\\text{Chóp đáy tam giác vuông, hai cạnh }5,12\\text{ cm; cao }7\\text{ cm}",
       "ham_so_sympy": null
     },
     "thang_goi_y": [],
@@ -2826,7 +2826,7 @@
     "dang_cau": "TU_LUAN",
     "de_bai": {
       "van_ban": "Cho $A(1;-2;3), B(5;1;3)$ trong không gian tọa độ. Tính độ dài $AB$.",
-      "latex": "\\text{Dữ kiện: }A=\\left[ 1, \\  -2, \\  3\\right],\\quad B=\\left[ 5, \\  1, \\  3\\right]",
+      "latex": "\\text{Độ dài đoạn }AB\\text{ với }A(1;-2;3),\\ B(5;1;3)",
       "ham_so_sympy": null
     },
     "thang_goi_y": [],
@@ -2888,7 +2888,7 @@
     "dang_cau": "TU_LUAN",
     "de_bai": {
       "van_ban": "Hộp chữ nhật có ba cạnh $4$, $7$, $8$ cm. Tính độ dài đường chéo không gian.",
-      "latex": "\\text{Dữ kiện: }canh=\\left[ 4, \\  7, \\  8\\right]",
+      "latex": "\\text{Đường chéo hộp chữ nhật, ba cạnh }4,7,8\\text{ cm}",
       "ham_so_sympy": null
     },
     "thang_goi_y": [],
@@ -2945,7 +2945,7 @@
     "dang_cau": "TU_LUAN",
     "de_bai": {
       "van_ban": "Cho $M(2;-1;4)$ và mặt phẳng $2x-y+2z-5=0$. Tìm hình chiếu $H$ của $M$ lên mặt phẳng và khoảng cách $MH$; chứng minh điểm gần nhất.",
-      "latex": "\\text{Dữ kiện: }M=\\left[ 2, \\  -1, \\  4\\right],\\quad normal=\\left[ 2, \\  -1, \\  2\\right],\\quad d=-5",
+      "latex": "\\text{Hình chiếu của }M(2;-1;4)\\text{ lên }2x-y+2z-5=0",
       "ham_so_sympy": null
     },
     "thang_goi_y": [],
@@ -3024,7 +3024,7 @@
     "dang_cau": "TU_LUAN",
     "de_bai": {
       "van_ban": "Cho tứ diện $O(0;0;0), A(3;0;0), B(1;4;0), C(2;1;5)$. Tính thể tích bằng tích hỗn tạp và kiểm bằng đáy–chiều cao.",
-      "latex": "\\text{Dữ kiện: }O=\\left[ 0, \\  0, \\  0\\right],\\quad A=\\left[ 3, \\  0, \\  0\\right],\\quad B=\\left[ 1, \\  4, \\  0\\right],\\quad C=\\left[ 2, \\  1, \\  5\\right]",
+      "latex": "\\text{Tứ diện }OABC:\\ O(0;0;0),\\ A(3;0;0),\\ B(1;4;0),\\ C(2;1;5)",
       "ham_so_sympy": null
     },
     "thang_goi_y": [],
@@ -3114,7 +3114,7 @@
     "dang_cau": "TU_LUAN",
     "de_bai": {
       "van_ban": "Một hộp có $5$ thẻ xanh và $7$ thẻ vàng, các thẻ cùng kích thước. Rút ngẫu nhiên một thẻ. Tính xác suất thẻ xanh.",
-      "latex": "\\text{Dữ kiện: }good=5,\\quad bad=7,\\quad draw=1,\\quad want=1",
+      "latex": "\\text{Hộp có }5\\text{ thẻ xanh, }7\\text{ thẻ vàng; rút một thẻ}",
       "ham_so_sympy": null
     },
     "thang_goi_y": [],
@@ -3170,7 +3170,7 @@
     "dang_cau": "TU_LUAN",
     "de_bai": {
       "van_ban": "Có $4$ bút đỏ và $6$ bút đen. Chọn ngẫu nhiên $2$ bút khác nhau, không hoàn lại. Tính xác suất cả hai đều đỏ.",
-      "latex": "\\text{Dữ kiện: }good=4,\\quad bad=6,\\quad draw=2,\\quad want=2",
+      "latex": "\\text{Chọn }2\\text{ bút từ }4\\text{ bút đỏ và }6\\text{ bút đen}",
       "ham_so_sympy": null
     },
     "thang_goi_y": [],
@@ -3232,7 +3232,7 @@
     "dang_cau": "TU_LUAN",
     "de_bai": {
       "van_ban": "Tung $2$ đồng xu cân đối độc lập. Tính xác suất có đúng $1$ mặt ngửa.",
-      "latex": "\\text{Dữ kiện: }n=2,\\quad k=1",
+      "latex": "\\text{Tung }2\\text{ đồng xu; xác suất đúng một mặt ngửa}",
       "ham_so_sympy": null
     },
     "thang_goi_y": [],
@@ -3287,7 +3287,7 @@
     "dang_cau": "TU_LUAN",
     "de_bai": {
       "van_ban": "Một túi có $7$ bi xanh và $5$ bi đỏ. Lấy đồng thời $3$ bi. Tính xác suất đúng $2$ bi xanh.",
-      "latex": "\\text{Dữ kiện: }good=7,\\quad bad=5,\\quad draw=3,\\quad want=2",
+      "latex": "\\text{Lấy }3\\text{ bi từ }7\\text{ bi xanh và }5\\text{ bi đỏ}",
       "ham_so_sympy": null
     },
     "thang_goi_y": [],
@@ -3349,7 +3349,7 @@
     "dang_cau": "TU_LUAN",
     "de_bai": {
       "van_ban": "Một nhóm có $6$ bạn nữ và $4$ bạn nam. Chọn ngẫu nhiên $3$ người; biết nhóm chọn có ít nhất một nữ, tính xác suất cả $3$ đều nữ.",
-      "latex": "\\text{Dữ kiện: }good=6,\\quad bad=4,\\quad draw=3",
+      "latex": "\\text{Chọn }3\\text{ người từ nhóm }6\\text{ nữ, }4\\text{ nam; biết có nữ}",
       "ham_so_sympy": null
     },
     "thang_goi_y": [],
@@ -3410,7 +3410,7 @@
     "dang_cau": "TU_LUAN",
     "de_bai": {
       "van_ban": "Có hai hộp thẻ: hộp I gồm $3$ xanh, $2$ đỏ; hộp II gồm $2$ xanh, $4$ đỏ. Chọn hộp với xác suất bằng nhau rồi rút một thẻ. Biết thẻ xanh, tính xác suất đã chọn hộp I.",
-      "latex": "\\text{Dữ kiện: }g1=3,\\quad b1=2,\\quad g2=2,\\quad b2=4",
+      "latex": "\\text{Hai hộp thẻ: I có }3\\text{ xanh, }2\\text{ đỏ; II có }2\\text{ xanh, }4\\text{ đỏ}",
       "ham_so_sympy": null
     },
     "thang_goi_y": [],
@@ -4047,7 +4047,7 @@
     "dang_cau": "TU_LUAN",
     "de_bai": {
       "van_ban": "Hình hộp chữ nhật có các cạnh $a=2, b=3, c=4$ (cm). Tính đường chéo không gian, giải thích hai lần dùng định lý Pythagore.",
-      "latex": "a=2, b=3, c=4",
+      "latex": "\\text{Đường chéo hình hộp chữ nhật, }a=2, b=3, c=4\\text{ cm}",
       "ham_so_sympy": null
     },
     "thang_goi_y": [],
@@ -4091,7 +4091,7 @@
     "dang_cau": "TU_LUAN",
     "de_bai": {
       "van_ban": "Hình hộp chữ nhật có các cạnh $a=3, b=4, c=5$ (cm). Tính đường chéo không gian, giải thích hai lần dùng định lý Pythagore.",
-      "latex": "a=3, b=4, c=5",
+      "latex": "\\text{Đường chéo hình hộp chữ nhật, }a=3, b=4, c=5\\text{ cm}",
       "ham_so_sympy": null
     },
     "thang_goi_y": [],
@@ -4135,7 +4135,7 @@
     "dang_cau": "TU_LUAN",
     "de_bai": {
       "van_ban": "Hình hộp chữ nhật có các cạnh $a=4, b=5, c=6$ (cm). Tính đường chéo không gian, giải thích hai lần dùng định lý Pythagore.",
-      "latex": "a=4, b=5, c=6",
+      "latex": "\\text{Đường chéo hình hộp chữ nhật, }a=4, b=5, c=6\\text{ cm}",
       "ham_so_sympy": null
     },
     "thang_goi_y": [],
@@ -4179,7 +4179,7 @@
     "dang_cau": "TU_LUAN",
     "de_bai": {
       "van_ban": "Hình hộp chữ nhật có các cạnh $a=5, b=6, c=7$ (cm). Tính đường chéo không gian, giải thích hai lần dùng định lý Pythagore.",
-      "latex": "a=5, b=6, c=7",
+      "latex": "\\text{Đường chéo hình hộp chữ nhật, }a=5, b=6, c=7\\text{ cm}",
       "ham_so_sympy": null
     },
     "thang_goi_y": [],
@@ -4223,7 +4223,7 @@
     "dang_cau": "TU_LUAN",
     "de_bai": {
       "van_ban": "Một hộp có $5$ thẻ xanh và $7$ thẻ vàng, các thẻ cùng kích thước. Rút ngẫu nhiên một thẻ. Tính xác suất thẻ xanh.",
-      "latex": "\\text{Dữ kiện: }good=5,\\quad bad=7,\\quad draw=1,\\quad want=1",
+      "latex": "\\text{Hộp có }5\\text{ thẻ xanh, }7\\text{ thẻ vàng; rút một thẻ}",
       "ham_so_sympy": null
     },
     "thang_goi_y": [],
@@ -4266,7 +4266,7 @@
     "dang_cau": "TU_LUAN",
     "de_bai": {
       "van_ban": "Một hộp có $5$ thẻ xanh và $7$ thẻ vàng, các thẻ cùng kích thước. Rút ngẫu nhiên một thẻ. Tính xác suất thẻ xanh.",
-      "latex": "\\text{Dữ kiện: }good=5,\\quad bad=7,\\quad draw=1,\\quad want=1",
+      "latex": "\\text{Hộp có }5\\text{ thẻ xanh, }7\\text{ thẻ vàng; rút một thẻ}",
       "ham_so_sympy": null
     },
     "thang_goi_y": [],
@@ -4309,7 +4309,7 @@
     "dang_cau": "TU_LUAN",
     "de_bai": {
       "van_ban": "Một hộp có $5$ thẻ xanh và $7$ thẻ vàng, các thẻ cùng kích thước. Rút ngẫu nhiên một thẻ. Tính xác suất thẻ xanh.",
-      "latex": "\\text{Dữ kiện: }good=5,\\quad bad=7,\\quad draw=1,\\quad want=1",
+      "latex": "\\text{Hộp có }5\\text{ thẻ xanh, }7\\text{ thẻ vàng; rút một thẻ}",
       "ham_so_sympy": null
     },
     "thang_goi_y": [],
@@ -4352,7 +4352,7 @@
     "dang_cau": "TU_LUAN",
     "de_bai": {
       "van_ban": "Một hộp có $5$ thẻ xanh và $7$ thẻ vàng, các thẻ cùng kích thước. Rút ngẫu nhiên một thẻ. Tính xác suất thẻ xanh.",
-      "latex": "\\text{Dữ kiện: }good=5,\\quad bad=7,\\quad draw=1,\\quad want=1",
+      "latex": "\\text{Hộp có }5\\text{ thẻ xanh, }7\\text{ thẻ vàng; rút một thẻ}",
       "ham_so_sympy": null
     },
     "thang_goi_y": [],
@@ -4395,7 +4395,7 @@
     "dang_cau": "TU_LUAN",
     "de_bai": {
       "van_ban": "Có hai hộp thẻ: hộp I gồm $3$ xanh, $2$ đỏ; hộp II gồm $2$ xanh, $4$ đỏ. Chọn hộp với xác suất bằng nhau rồi rút một thẻ. Biết thẻ xanh, tính xác suất đã chọn hộp I.",
-      "latex": "\\text{Dữ kiện: }g1=3,\\quad b1=2,\\quad g2=2,\\quad b2=4",
+      "latex": "\\text{Hai hộp thẻ: I có }3\\text{ xanh, }2\\text{ đỏ; II có }2\\text{ xanh, }4\\text{ đỏ}",
       "ham_so_sympy": null
     },
     "thang_goi_y": [],
@@ -4439,7 +4439,7 @@
     "dang_cau": "TU_LUAN",
     "de_bai": {
       "van_ban": "Có hai hộp thẻ: hộp I gồm $3$ xanh, $2$ đỏ; hộp II gồm $2$ xanh, $4$ đỏ. Chọn hộp với xác suất bằng nhau rồi rút một thẻ. Biết thẻ xanh, tính xác suất đã chọn hộp I.",
-      "latex": "\\text{Dữ kiện: }g1=3,\\quad b1=2,\\quad g2=2,\\quad b2=4",
+      "latex": "\\text{Hai hộp thẻ: I có }3\\text{ xanh, }2\\text{ đỏ; II có }2\\text{ xanh, }4\\text{ đỏ}",
       "ham_so_sympy": null
     },
     "thang_goi_y": [],
@@ -4483,7 +4483,7 @@
     "dang_cau": "TU_LUAN",
     "de_bai": {
       "van_ban": "Có hai hộp thẻ: hộp I gồm $3$ xanh, $2$ đỏ; hộp II gồm $2$ xanh, $4$ đỏ. Chọn hộp với xác suất bằng nhau rồi rút một thẻ. Biết thẻ xanh, tính xác suất đã chọn hộp I.",
-      "latex": "\\text{Dữ kiện: }g1=3,\\quad b1=2,\\quad g2=2,\\quad b2=4",
+      "latex": "\\text{Hai hộp thẻ: I có }3\\text{ xanh, }2\\text{ đỏ; II có }2\\text{ xanh, }4\\text{ đỏ}",
       "ham_so_sympy": null
     },
     "thang_goi_y": [],
@@ -4527,7 +4527,7 @@
     "dang_cau": "TU_LUAN",
     "de_bai": {
       "van_ban": "Có hai hộp thẻ: hộp I gồm $3$ xanh, $2$ đỏ; hộp II gồm $2$ xanh, $4$ đỏ. Chọn hộp với xác suất bằng nhau rồi rút một thẻ. Biết thẻ xanh, tính xác suất đã chọn hộp I.",
-      "latex": "\\text{Dữ kiện: }g1=3,\\quad b1=2,\\quad g2=2,\\quad b2=4",
+      "latex": "\\text{Hai hộp thẻ: I có }3\\text{ xanh, }2\\text{ đỏ; II có }2\\text{ xanh, }4\\text{ đỏ}",
       "ham_so_sympy": null
     },
     "thang_goi_y": [],

@@ -25,7 +25,7 @@ Nguồn ở `data/dev/nguyen-trai/`, dùng các trường của importer hiện 
 
 Có **68 bài, 13 chủ đề**, mỗi chủ đề đủ bốn mức. Khối 10 có hàm số bậc hai, mệnh đề/tập hợp, thống kê và xác suất cơ bản; khối 11 có lượng giác, dãy số/cấp số, đạo hàm, hình học không gian và xác suất; khối 12 có đơn điệu/cực trị, tích phân, hình học không gian/Oxyz và xác suất có điều kiện. Ngân hàng vẫn dùng chung để giáo viên khảo sát; bài giao chỉ thuộc đúng khối lớp.
 
-`de_bai.latex` là bản hiển thị LaTeX riêng, sinh bằng `sympy.latex` khi có biểu thức; `ham_so_sympy` và `kiem_dinh.du_kien` giữ dạng máy. Đề nhúng toán trong `$...$`. Pytest kiểm đáp án từng bài và đối chiếu bản hiển thị với SymPy, không cần cài `parse_latex`/ANTLR.
+`de_bai.latex` là preview LaTeX ngắn của từng bài, sinh bằng `sympy.latex` khi có biểu thức; hình học/xác suất dùng câu tiếng Việt trong `\text{...}` kèm số liệu, không dùng tên khóa máy như `good`, `g1` hoặc mảng tọa độ; `ham_so_sympy` và `kiem_dinh.du_kien` giữ dạng máy. Đề nhúng toán trong `$...$`. Pytest kiểm đáp án từng bài và đối chiếu bản hiển thị với SymPy, không cần cài `parse_latex`/ANTLR.
 
 CAS hiện có chấm khung đạo hàm 5 bước. **8 bài hàm số** phát hành sau cổng CAS; **55 bài khác** có quyết định giáo viên hư cấu duyệt qua `VerificationRun.approve`, ghi `content_reviews.reviewer_id` bằng giáo viên tổng hợp của lớp. Không đổi các tầng CAS sang `DAT`. **5 bài/lớp** giữ chờ rà soát lập luận sư phạm: lượng giác, cấp số nhân, tiếp tuyến, cực tiểu diện tích và phép chiếu. Quyết định duyệt seed căn cứ vào `test_teacher_solution`; pytest kiểm cả các bài vẫn chờ rà soát. Cách này chỉ nằm trong runner dev.
 
@@ -43,23 +43,31 @@ Mục tiêu trên CSDL mới khi CAS hoạt động đầy đủ (số lượng 
 | Bảng công thức | 3 bảng đạo hàm khóa + 3 bảng chương nháp |
 | Lượt giao | 630: khối 10 có 160, khối 11 có 240, khối 12 có 230 |
 | Bài đã nộp lịch sử | 620; 10 lượt kiểm tra hàm số chưa nộp |
-| Bài chưa kiểm được | 13, có cảnh báo `NHO_GV` |
-| Sự kiện mức hiểu | 607; bỏ qua 13 bài chưa kiểm được |
+| Bài chờ thầy cô xem | 88, có cảnh báo `NHO_GV`; không tính sai |
+| Sự kiện mức hiểu | 532; bỏ qua 88 bài chưa kiểm được |
 | Trạng thái mức hiểu | 130, tính BKT thật trên kỹ năng đúng khối |
 | Lịch học | 120 phiên, 45 phút/phiên |
 | Gợi ý chờ duyệt | 3 |
 
-Tên bộ bài là “Ôn tập đạo hàm – tuần 6”, “Ôn tập tích phân – tuần 6”, v.v. Bài kiểm tra “Kiểm tra hàm số — 45 phút” chỉ giao cho lớp 12, mode `KIEM_TRA`, hạn 12 giờ từ lần giao đầu; tên không tạo cơ chế bấm giờ. Bài ôn có hạn 7 ngày. Thời điểm giao và lịch neo vào lần tạo lớp; chạy lại không dời hạn.
+Dùng khái niệm bộ bài sẵn có `assignments.set_name` (V7), không thêm V13. Lớp 10A1 có **4 bộ**, 11A2 có **5 bộ**, 12A3 có **5 bộ** (4 bộ ôn + 1 kiểm tra). Tên như “Ôn tập tích phân – tuần 7”. Bài kiểm tra “Kiểm tra hàm số — 45 phút” chỉ giao cho lớp 12, mode `KIEM_TRA`, hạn 12 giờ sau lần tạo lớp; tên không tạo cơ chế bấm giờ. Các bộ ôn có hạn khác nhau từ 3–7 ngày sau lần tạo lớp, cùng bộ có cùng hạn cho mọi bài/học sinh. Thời điểm giao và lịch neo vào lần tạo lớp; chạy lại không dời hạn.
 
 `bai-lam-lich-su.json` gồm payload tổng hợp đúng/sai/chưa đọc được. Bài khung 5 bước lấy phán quyết CAS thật; bài chương khác có `giao_vien_cham=true`, đáp án học sinh được pytest đối chiếu với lời giải đã kiểm, lưu căn cứ `GV_DUYET_SEED` và giáo viên chấm trong `grading_results.normalization.reviewer_id`. Đây là lịch sử giáo viên chấm tổng hợp, không phải phán quyết CAS. Các lượt chưa kiểm được không tác động BKT.
 
-Kế hoạch luyện gồm sai trước rồi đúng ở cuối, dùng BKT domain và làm tròn PostgreSQL `real` giữa các lượt. Kiểm thử domain xác nhận khối 10/12 có **14/12/10/4** trạng thái (35/30/25/10%), khối 11 có **18/15/12/5** (36/30/24/10%). Adapter đọc seed `WorkspaceNguyenTraiSeedAdapter` chỉ bật profile dev, chỉ áp cho lớp UUID seed qua guard: tổng quan đếm kỹ năng đúng khối, danh sách bài giao dùng tên bộ bài. Lớp khác dùng adapter hiện hành.
+Lịch sử mới gồm **371 đạt (59,8%) / 161 chưa đạt (26,0%) / 88 chờ xem (14,2%)**. Mỗi lớp sắp học sinh theo email như truy vấn seed: chỉ số 1–4 là nhóm mạnh, 8–9 là nhóm cần hỗ trợ, chỉ số 0 (học sinh đầu danh sách) đạt khoảng 75% các bài đã chấm. Phân bố cố định theo học sinh/chương; nhóm mạnh đạt nhiều hơn nhóm cần hỗ trợ. Các em khác thường sai trước rồi đúng ở cuối, hai em cần hỗ trợ còn sai ở bài khó cuối. Không gán mức hiểu riêng: dùng BKT domain, làm tròn PostgreSQL `real` giữa các lượt. Phát lại cho khối 10 có **8/15/6/11**, khối 11 **10/9/17/14**, khối 12 **8/1/11/20** trạng thái theo thứ tự Nhận biết / Thông hiểu / Vận dụng / Vận dụng cao. Adapter đọc seed `WorkspaceNguyenTraiSeedAdapter` chỉ bật profile dev, chỉ áp cho lớp UUID seed qua guard: tổng quan đếm kỹ năng đúng khối, danh sách bài giao dùng tên bộ bài và tổng quan gom hạn theo bộ. Lớp khác dùng adapter hiện hành.
+
+## Hợp đồng API cho lane UI (SEED3)
+
+- `GET /api/hs/bai`: giữ `deBai` là đề đầy đủ; **`deBaiLatex` là trường preview đang được UI hiển thị**, không đổi tên/kiểu. Nguồn `de_bai.latex` đã thay 24 preview hình học/xác suất thành LaTeX dễ đọc. Thêm **`tenBo: string | null`**, lấy trực tiếp từ `Assignment.setName`; bộ cũ không tên trả `null`. `han` tiếp tục là hạn của bộ. Trường mới có trên DTO ở mọi profile.
+- `GET /api/gv/giao?lopId=...` trên lớp seed dev: vẫn trả từng lượt giao, giữ `id`, `details.studentId`, `details.problemCode`, `details.mode`, `details.dueAt`. `title` là tên bộ. Thêm `details.tenBo: string`, `details.setKey: string` (UUID ổn định), `details.classId: string`, `details.submitted: boolean` (đã nộp ở phiên bản đề hiện tại, kể cả chưa kiểm được). Lane UI có thể gom bằng `setKey`.
+- `GET /api/gv/tong-quan?lopId=...` trên lớp seed dev: **`deadlines` trả một `Item` mỗi bộ**, thay vì từng lượt giao; `Item.id = details.setKey`, `title = tenBo`, `subtitle = "N bài"`, `status = mode`. `details` gồm `tenBo`, `setKey`, `dueAt`, `mode`, `problemCodes: string[]`, `problemCount: number`, `studentCount: number`, `assignmentCount: number`, `submittedCount: number`. `submittedCount` đếm lượt học sinh × bài đã nộp, không phải số học sinh hoàn thành cả bộ. Không có `problemCode` đơn trên dòng bộ; dùng `problemCodes` nếu cần. `assignments` ở tổng quan vẫn đếm lượt giao học sinh × bài (160/240/230), không đổi sang số bộ.
+
+Khóa bộ gồm lớp + tên bộ + hạn + mode, nên hai lần giao cùng tên nhưng khác hạn hoặc mode không bị trộn. Đề, payload máy, lời giải và cổng chấm không đổi vì preview.
 
 ## Tính idempotent và dữ liệu đã tồn tại
 
 UUID lớp, bài lịch sử, lịch và cảnh báo được suy từ namespace seed ổn định. Lớp trùng tên/năm nhưng khác UUID, hoặc có thành viên không tổng hợp/vai trò sai, bị bỏ qua. Tài khoản trùng không bị cập nhật; học sinh thuộc lớp khác không được kéo về lớp seed. SQL chỉ chạy trên đúng UUID lớp được guard xác nhận.
 
-Chạy lại giữ id, mật khẩu, hạn, mode, bài đã nộp, lịch hoàn thành, quyết định duyệt và tiến độ đã có. Importer giữ phiên bản khi nội dung không đổi; bảng nháp giáo viên đã sửa không bị ghi đè. Các lịch/hạn neo vào lần tạo/giao đầu, không tự dời để luôn có nhắc mới. Mastery bootstrap chỉ chạy với học sinh chưa có trạng thái mức hiểu; nếu một phần lịch sử thiếu do CAS lỗi nhưng tiến độ đã tồn tại, seed không backfill để tránh ghi đè tiến độ đang học. Bảng nháp seed chưa được ai sửa có thể được importer dùng lại để khóa phiên bản đạo hàm mới khi nguồn đổi; bản giáo viên đã sửa hoặc chép giữ nguyên. Không tự xóa tài khoản/lớp seed cũ trong CSDL đang dùng; muốn thử lại từ đầu, dùng CSDL hoặc schema dev mới.
+Chạy lại giữ id, mật khẩu, hạn, mode, bài đã nộp, lịch hoàn thành, quyết định duyệt và tiến độ đã có. Importer giữ phiên bản khi nội dung không đổi; bảng nháp giáo viên đã sửa không bị ghi đè. Các lịch/hạn neo vào lần tạo/giao đầu, không tự dời để luôn có nhắc mới. Mastery bootstrap chỉ chạy với học sinh chưa có trạng thái mức hiểu; nếu một phần lịch sử thiếu do CAS lỗi nhưng tiến độ đã tồn tại, seed không backfill để tránh ghi đè tiến độ đang học. Bảng nháp seed chưa được ai sửa có thể được importer dùng lại để khóa phiên bản đạo hàm mới khi nguồn đổi; bản giáo viên đã sửa hoặc chép giữ nguyên. Không tự xóa tài khoản/lớp seed cũ trong CSDL đang dùng; muốn thử lại từ đầu, dùng CSDL hoặc schema dev mới. SEED3 không sửa bài đã nộp hoặc hạn/tên bộ đã có từ SEED2; để thấy tỷ lệ lịch sử và lịch bộ mới, khởi tạo schema dev mới. Preview là nội dung ngân hàng nên importer nạp phiên bản mới khi LaTeX đổi; lịch sử cũ giữ nguyên phiên bản/căn cứ.
 
 ## Danh sách lớp và tài khoản
 
@@ -141,3 +149,22 @@ SHA nền: `82795de6954e3a2b3116c276e6bef5f06b6c5d5e` (diff chưa commit).
 - Core unit/ArchUnit: **23 tests passed**, exit 0, chọn `PhanBoMucHieuSeedTest,NoiDungNguyenTraiTest,BangChuongSeedTest,SeedProfileTest,CleanArchitectureTest,DddArchitectureTest,NullMarkedPackagesTest` với Maven offline `test`, JDK đã chỉ định và Mockito javaagent. Kiểm BKT phát lại dữ liệu seed bằng domain, đối chiếu phân bố từng khối; test profile xác nhận adapter đọc seed không bật ở production.
 - Sandbox không cho mở socket: không kết nối PostgreSQL/CAS HTTP, chưa xác minh số lượng hoặc idempotency trên PostgreSQL. Test tích hợp opt-in có assertion số lượng, khối giao bài, quyết định duyệt, tổng quan và snapshot chạy lại.
 - Không sửa migration V1–V12, không commit.
+
+### Bằng chứng phiên SEED3, 2026-10-13
+
+SHA nền: `7d2df1ac2a8c79f5cf0e515fdd943e9ec818b141` (diff chưa commit).
+
+- `/workspace/du_an_em_linh/services/math/.venv/bin/pytest services/math/tests/test_seed_nguyen_trai.py -o addopts='' -q`: **476 passed**, exit 0; gồm 68 kiểm tra preview và các kiểm tra đáp án/cổng toán/lịch sử kế thừa.
+- Từ `services/core`: `JAVA_HOME=$HOME/.local/jdk/jdk-25.0.4.1+1 ./mvnw -B -q -o test-compile`: exit 0.
+- Core không dùng socket: **261 tests passed**, 0 failure/error/skipped trong 47 lớp test, exit 0. Lệnh thực tế (từ `services/core`, danh sách tên được truyền qua tệp tạm của phiên):
+
+```bash
+JAVA_HOME=$HOME/.local/jdk/jdk-25.0.4.1+1 ./mvnw -B -q -o \
+  -Dtest=AuthControllerTest,AuthSessionTest,BangChuongSeedTest,BktTest,BoBaiSeedTest,ChiaDoanTest,ClassMembershipServiceTest,ClassSettingsTest,CleanArchitectureTest,ContentReviewTest,DauVanTayTest,DddArchitectureTest,DeBaiHocSinhServiceTest,DocKetQuaChamTest,EmailTest,EscalationTest,FormulaSheetTest,GetBaiCuaHocSinhPreviewTest,JsonKieuJsTest,KienTrucRulesTuKiemTest,Level4Test,LoginAttemptKeyTest,LoginRequestTest,LoginUseCaseTest,LogoutUseCaseTest,LopNguyenTraiSeederTest,NghiDoanMoTest,NoiDungNguyenTraiTest,NullMarkedPackagesTest,OfflineTutorServiceTest,PhanBoMucHieuSeedTest,PracticeModelTest,ProblemReleaseTest,ProblemTest,RefreshSessionUseCaseTest,RefreshTokenTest,SchoolClassTest,SeedProfileTest,SubmissionHistoryTest,TaiKhoanNguyenTraiSeederTest,TepVangDoiChieuTest,UserTest,VerificationRunTest,VietLoiGiaiTest,WorkspaceApiTest,WorkspaceServiceTest,YeuCauChamTest \
+  -DargLine=-javaagent:/home/box/.m2/repository/org/mockito/mockito-core/5.23.0/mockito-core-5.23.0.jar test
+```
+
+- Unit phát lại 620 lượt, xác nhận **371/161/88**, đủ bốn mức và nhóm mạnh đạt nhiều hơn; chờ xem không tăng số lượt BKT. Kiểm tra gom bộ tách hạn/mode, số bài/học sinh/lượt giao/lượt nộp và khóa ổn định. Test DTO gọi use case thật và kiểm JSON `tenBo`/`deBaiLatex`. Importer unit nhập lần hai không ghi lại nội dung.
+- Đã chạy test đỏ cho preview máy, thiếu hàm gom bộ và `tenBo` chưa ánh xạ, rồi kiểm lại xanh sau sửa.
+- Chưa chạy test socket PostgreSQL/CAS HTTP trong lane này. Test tích hợp opt-in đã cập nhật các số lượng, phân bố, 4/5/5 bộ và snapshot trước/sau chạy lại; chưa xác nhận idempotency trên PostgreSQL ở phiên này.
+- Không sửa frontend/migration V1–V12, không thêm V13 vì đã có `set_name`, không commit.

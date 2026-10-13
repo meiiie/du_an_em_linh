@@ -59,6 +59,6 @@ public class GetBaiCuaHocSinhUseCase {
         int soBuoc = bai.cacBuoc().isEmpty() ? 0 : bai.cacBuoc().size() - YeuCauCham.batDau(bai.cacBuoc(), bai.buocBatDau());
         GradeStatus ketQua = xem.ketQuaNop();
         return new BaiCuaHocSinh(bai.ma(), bai.deBai(), bai.deBaiLatex(), bai.kyNang(), bai.tenKyNang(), bai.mucDo(), giao.dueAt(),
-            xem.trangThai(), xem.soBuocDat(), soBuoc, ketQua == null ? null : ketQua.name());
+            xem.trangThai(), xem.soBuocDat(), soBuoc, ketQua == null ? null : ketQua.name(), giao.setName());
     }
 }

@@ -7,6 +7,7 @@ import org.jspecify.annotations.Nullable;
  * Một dòng của {@code GET /api/hs/bai}: bài được giao cho em ở lớp của em và đang phát hành ở lớp đó. {@code soBuoc} là số
  * bước em phải làm, từ bước bắt đầu tới bước kết luận (0 khi bài không làm theo khung bước); {@code soBuocDat} là số bước mà
  * lần chấm của nội dung hiện tại là {@code DAT}; {@code ketQua} là kết quả lúc nộp, chỉ khi {@link TrangThaiBaiLam#DA_NOP}.
+ * {@code deBaiLatex} dùng làm preview danh sách; {@code tenBo} lấy từ lần giao, null khi bộ cũ không có tên.
  */
 public record BaiCuaHocSinh(
         String maBai,
@@ -19,4 +20,5 @@ public record BaiCuaHocSinh(
         TrangThaiBaiLam trangThai,
         int soBuocDat,
         int soBuoc,
-        @Nullable String ketQua) {}
+        @Nullable String ketQua,
+        @Nullable String tenBo) {}
