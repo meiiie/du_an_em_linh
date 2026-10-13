@@ -262,7 +262,7 @@ class WorkspacePersistenceTest {
         db.sql("UPDATE problems SET level4='VAN_DUNG_CAO' WHERE id=:id").param("id",problem).update();
         assertThat(store.recommendations(student,cl)).isEmpty();
         db.sql("UPDATE problems SET level4='NHAN_BIET' WHERE id=:id").param("id",problem).update();
-        db.sql("UPDATE problem_releases SET status='CHO_GIAO_VIEN_DUYET' WHERE problem_id=:id AND class_id=:cl").param("id",problem).param("cl",cl).update();
+        db.sql("UPDATE problem_releases SET status='NHAP',run_id=NULL WHERE problem_id=:id AND class_id=:cl").param("id",problem).param("cl",cl).update();
         assertThat(store.recommendations(student,cl)).isEmpty();
     }
 
