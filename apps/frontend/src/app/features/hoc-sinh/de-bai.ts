@@ -29,7 +29,7 @@ import { nhomBai, locTrangThai } from './nhom-bai';
           <summary><span>{{ n.ten }}</span><span class="list-summary">{{n.hang.length | soViet}} bài · {{n.daNop | soViet}}/{{n.tong | soViet}} đã nộp · Hạn: {{ngay(n.han)}}</span></summary>
           <ul class="danh-sach">
             @for (h of n.hang; track h.bai.maBai) {
-              <li><app-hang-bai [bai]="h.bai" [so]="h.so" /></li>
+              <li><app-hang-bai [bai]="h.bai" [so]="h.so" [kiemTra]="laKiemTra(h.bai.maBai)" /></li>
             }
           </ul>
         </details>
@@ -76,6 +76,7 @@ export class DeBai {
   protected readonly ngay = ngayViet;
   protected readonly ds = httpResource<BaiCuaHocSinh[]>(() => API_HS.bai);
   protected readonly cheDo=this.api.cheDo();
+  protected readonly laKiemTra = (ma: string) => this.cheDo.hasValue() && this.cheDo.value().find(m => m.id === ma)?.status === 'KIEM_TRA';
   protected readonly loc=signal('giao');
   protected readonly tim=signal('');
   protected readonly trangThai=signal('tat-ca');

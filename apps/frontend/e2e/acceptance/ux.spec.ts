@@ -1,6 +1,6 @@
 import { readFile } from 'node:fs/promises';
 import { createRequire } from 'node:module';
-import { test, expect, navigate, noOverflow, flat, csv, detail, formula, bank } from './fixtures';
+import { test, expect, navigate, noOverflow, flat, csv, detail, formula, bank, problem, item } from './fixtures';
 import type { Page } from '@playwright/test';
 const hs = [['nav-hs-bai', '/hs/bai', 'Đề bài'], ['nav-hs-lich', '/hs/lich', 'Lịch học'], ['nav-hs-kho', '/hs/kho', 'Công thức và tài liệu'], ['nav-hs-lo-trinh', '/hs', 'Chào An']];
 const gv = [['nav-gv-giao', '/gv/giao', 'Giao bài'], ['nav-gv-duyet', '/gv/duyet', 'Duyệt'], ['nav-gv-ngan-hang', '/gv/ngan-hang', 'Đề bài'], ['nav-gv-tai-lieu', '/gv/tai-lieu', 'Tài liệu'], ['nav-gv-cong-thuc', '/gv/cong-thuc', 'Công thức'], ['nav-gv-tien-do', '/gv/tien-do', 'Mức lớp'], ['nav-gv-ket-noi-ai', '/gv/ket-noi-ai', 'Gia sư'], ['nav-gv-cai-dat', '/gv/cai-dat', 'Cài đặt lớp'], ['nav-gv-tong-quan', '/gv', 'Lớp 12A1 thử']];
@@ -376,4 +376,40 @@ test('U9 giáo viên giao chế độ Kiểm tra và hạn nộp', async ({ page
     const body = api.calls.find(c => c.method === 'POST' && c.path === '/api/gv/giao')?.body;
     expect(body).toMatchObject({ mode: 'KIEM_TRA', problemIds: ['E2E-01'], studentIds: [] });
     expect(body.dueAt).toMatch(/^2026-10-20T.*Z$/);
+});
+
+test('Học ghi rõ bài kiểm tra tiếp theo và Luyện hiện banner cùng hạn', async ({ page, api }) => {
+    api.mode = 'KIEM_TRA';
+    api.overrides.set('GET /api/hs/bai', { body: [
+        {...problem, tenBo: 'Kiểm tra hàm số — 45 phút'},
+        {...problem, maBai: 'E2E-NEXT', tenBo: 'Kiểm tra hàm số — 45 phút'},
+    ] });
+    api.overrides.set('GET /api/hs/che-do', { body: ['E2E-01', 'E2E-NEXT'].map(id => item(id, id, '', 'KIEM_TRA', {dueAt: problem.han})) });
+    await page.goto('/hs');
+    await expect(page.locator('.ke-tiep')).toContainText('Bài kiểm tra · 45 phút');
+    await expect(page.locator('.ke-tiep')).toContainText('2 câu');
+    await expect(page.locator('.ke-tiep')).toContainText('20/10');
+    await expect(page.locator('.ke-tiep')).toContainText('Gia sư tạm tắt');
+    await expect(page.getByTestId('bai-E2E-NEXT')).toContainText('Kiểm tra');
+    await page.getByRole('link', {name: 'Bắt đầu kiểm tra', exact: true}).click();
+    await expect(page.getByTestId('bang-kiem-tra')).toContainText('Đang kiểm tra — gia sư tạm tắt');
+    await expect(page.getByTestId('bang-kiem-tra')).toContainText('20/10');
+    await expect(page.getByTestId('mo-gia-su')).toHaveCount(0);
+    await flat(page);
+    await noOverflow(page);
+});
+
+test('Học ưu tiên bài ôn dù có bài kiểm tra đang làm và được gợi trước', async ({ page, api }) => {
+    api.overrides.set('GET /api/hs/bai', {body: [
+        {...problem, trangThai: 'DANG_LAM', tenBo: 'Kiểm tra hàm số — 45 phút'},
+        {...problem, maBai: 'E2E-NEXT'},
+    ]});
+    api.overrides.set('GET /api/hs/che-do', {body: [
+        item('E2E-01', '', '', 'KIEM_TRA', {dueAt: problem.han}),
+        item('E2E-NEXT', '', '', 'ON_TAP', {dueAt: problem.han}),
+    ]});
+    await page.goto('/hs');
+    await expect(page.getByTestId('lam-buoc-tiep')).toHaveAttribute('href', '/hs/luyen/E2E-NEXT');
+    await page.getByTestId('lam-buoc-tiep').click();
+    await expect(page.getByTestId('mo-gia-su')).toBeVisible();
 });

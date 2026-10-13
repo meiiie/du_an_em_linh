@@ -13,12 +13,27 @@
     }
   </div>
 } @else if (bai.value(); as b) {
+  @if (mode()?.status === 'KIEM_TRA') {
+    <section class="surface" data-testid="bang-kiem-tra" aria-label="Chế độ kiểm tra">
+      <strong>Đang kiểm tra — gia sư tạm tắt</strong>
+      <p class="muted">Hạn nộp: {{ han() || 'Chưa đặt hạn' }}</p>
+    </section>
+  }
+  @if(cheDo.error()){<app-loi-tai [loi]="cheDo.error()" moTa="Chưa tải được chế độ bài. Thử lại để mở gia sư cho bài ôn." (thuLai)="cheDo.reload()" />}
   @if (b.dangTraLoi !== 'TU_LUAN_5_BUOC' || !b.cacBuoc.length) {
     <div class="trong">
+      <p><app-van-ban-toan [text]="b.de.text" /></p>
+      @if (b.cacBuoc.length) {
+        <nav class="toolbar" aria-label="Các bước gợi mở">
+          @for (s of b.cacBuoc; track s.maBuoc; let i = $index) {
+            <button appButton variant="secondary" type="button" [attr.aria-pressed]="buoc() === i" (click)="moBuoc(i)">{{ i + 1 }}. {{ tenBuocGiay(s.maBuoc) }}</button>
+          }
+        </nav>
+      }
+      @if (coGiaSu()) { <app-gia-su [maBai]="b.maBai" [maBuoc]="buocHien()?.maBuoc ?? 'B.DH.TXD'" [tenBuoc]="tenBuocGiay(buocHien()?.maBuoc ?? '')" /> }
       <p>Dạng câu này (không theo khung 5 bước) chưa có khung làm bài trên ứng dụng. Em làm ra giấy và nộp thầy cô.</p>
     </div>
   } @else {
-    @if(cheDo.error()){<app-loi-tai [loi]="cheDo.error()" moTa="Chưa tải được chế độ bài. Thử lại để mở gia sư cho bài ôn." (thuLai)="cheDo.reload()" />}
     <div class="practice-grid" [class.co-gia-su]="coGiaSu() && giaSuMo()">
     <section
       class="phieu"
@@ -29,7 +44,7 @@
     >
       <header class="de">
         @if (mode()?.status === 'KIEM_TRA') { <p class="badge" data-testid="che-do-kiem-tra">Kiểm tra · Không chat</p> }
-        @if (han()) { <p class="phu">Hạn nộp: {{han()}}</p> }
+        @if (han() && mode()?.status !== 'KIEM_TRA') { <p class="phu">Hạn nộp: {{han()}}</p> }
         <p class="nhan-muc">{{ tenMuc[b.muc4] }}</p>
         <p class="ky-nang">{{ b.tenKyNang }}</p>
         <p class="cau-hoi"><app-van-ban-toan [text]="thanDe(b.de.text)" /></p>

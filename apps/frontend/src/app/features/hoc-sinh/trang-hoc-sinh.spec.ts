@@ -48,6 +48,18 @@ const BAI: BaiCuaHocSinh[] = [
 ];
 
 describe('TrangHocSinh', () => {
+  it('gợi bài NT-DH12-NB-01 kiểm tra không lấn bài luyện chưa nộp dù bài luyện thiếu chế độ', async () => {
+    const kt = {...BAI[2], maBai: 'NT-DH12-NB-01', tenBo: 'Kiểm tra hàm số — 45 phút'};
+    const t = await mo(undefined, [], [{id:kt.maBai,status:'KIEM_TRA',details:{dueAt:kt.han}}],
+      [{id:kt.maBai,title:'',subtitle:'Gợi ý kiểm tra',status:'',details:{}}]);
+    t.http.expectOne(API_HS.bai).flush([kt, BAI[0], BAI[2]]);
+    await t.fixture.whenStable();
+    expect(t.el.querySelector('[data-testid=lam-buoc-tiep]')?.getAttribute('href')).toBe('/hs/luyen/GEN-huu_ti-5');
+    expect(t.chu('[data-testid=lam-buoc-tiep]')).toBe('Làm bước tiếp');
+    expect(t.chu('.ke-tiep')).not.toContain('Gợi ý kiểm tra');
+    t.http.verify();
+  });
+
   it('dùng tên bộ, hạn Việt và đếm bài chờ xem là đã nộp', async () => {
     const t = await mo();
     t.http.expectOne(API_HS.bai).flush(BAI.map((b, i) => ({...b, tenBo:'Ôn tập tuần 7', han:'2026-10-20T13:00:00Z', trangThai:i === 0 ? 'DA_NOP' : b.trangThai, ketQua:i === 0 ? 'KHONG_KIEM_DUOC' : b.ketQua})));
@@ -57,13 +69,34 @@ describe('TrangHocSinh', () => {
     t.http.verify();
   });
 
+  it('ưu tiên bài ôn chưa làm trước bài kiểm tra đang làm', async () => {
+    const t = await mo(undefined, [], BAI.map(b => ({id:b.maBai,status:b.maBai === BAI[1].maBai ? 'KIEM_TRA' : 'ON_TAP',details:{dueAt:b.han}})));
+    t.http.expectOne(API_HS.bai).flush(BAI);
+    await t.fixture.whenStable();
+    expect(t.el.querySelector('[data-testid=lam-buoc-tiep]')?.getAttribute('href')).toBe('/hs/luyen/GEN-huu_ti-5');
+    expect(t.chu('.ke-tiep')).not.toContain('Bắt đầu kiểm tra');
+  });
+
+  it('hết bài ôn thì ghi rõ bài kiểm tra, hạn, số câu và gia sư tạm tắt', async () => {
+    const t = await mo(undefined, [], BAI.map(b => ({id:b.maBai,status:'KIEM_TRA',details:{dueAt:'2026-10-20T12:00:00Z'}})));
+    t.http.expectOne(API_HS.bai).flush(BAI.map(b => ({...b,tenBo:'Kiểm tra hàm số — 45 phút',han:'2026-10-20T12:00:00Z'})));
+    await t.fixture.whenStable();
+    expect(t.chu('.ke-tiep')).toContain('Bài kiểm tra · 45 phút');
+    expect(t.chu('.ke-tiep')).toContain('3 câu');
+    expect(t.chu('.ke-tiep')).toContain('20/10');
+    expect(t.chu('[data-testid=lam-buoc-tiep]')).toBe('Bắt đầu kiểm tra');
+    expect(t.chu('.ke-tiep')).toContain('Gia sư tạm tắt');
+    expect(t.chu('app-hang-bai')).toContain('Kiểm tra');
+  });
+
   /** `trangHoc`: thân trả cho `GET /api/hs/trang-hoc` (null: lỗi 500); mặc định chưa có kỹ năng nào. */
-  async function mo(trangHoc: TrangHoc | null = { ten: 'An', soKyNang: [], hoanThanh: { kyNang: [], chuDe: [] } }, nhac: unknown[] = []) {
+  async function mo(trangHoc: TrangHoc | null = { ten: 'An', soKyNang: [], hoanThanh: { kyNang: [], chuDe: [] } }, nhac: unknown[] = [], modes = BAI.map(b => ({id:b.maBai,status:'ON_TAP',details:{dueAt:b.han}})), recommendations: unknown[] = []) {
     TestBed.configureTestingModule({ providers: [provideHttpClient(), provideHttpClientTesting(), provideRouter([])] });
     const fixture = TestBed.createComponent(TrangHocSinh);
     fixture.detectChanges();
     const http = TestBed.inject(HttpTestingController);
-    http.expectOne('/api/hs/goi-bai').flush([]);
+    http.expectOne('/api/hs/che-do').flush(modes);
+    http.expectOne('/api/hs/goi-bai').flush(recommendations);
     http.expectOne('/api/hs/nhac').flush(nhac);
     const th = http.expectOne(API_HS.trangHoc);
     if (trangHoc) th.flush(trangHoc);
@@ -80,6 +113,17 @@ describe('TrangHocSinh', () => {
     t.http.verify();
   });
 
+  it('chỉ hiện hai nhắc hạn và giữ liên kết lịch sau danh sách', async () => {
+    const reminders = Array.from({length:4}, (_, i) => ({id:'nhac'+i,title:'Nhắc học '+i,subtitle:'',status:'',details:{startsAt:'2026-10-20T13:00:00Z'}}));
+    const t = await mo(undefined, reminders);
+    t.http.expectOne(API_HS.bai).flush(BAI);
+    await t.fixture.whenStable();
+    expect(t.el.querySelectorAll('.nhac-hoc .row-list > li')).toHaveLength(2);
+    expect(t.el.querySelector('.nhac-hoc .row-list')?.nextElementSibling?.getAttribute('href')).toBe('/hs/lich');
+    expect(t.chu('.nhac-hoc')).not.toContain('Nhắc học 2');
+    t.http.verify();
+  });
+
   it('gọi GET /api/hs/bai; «Bài tiếp theo» là bài đang làm dở, nút dẫn tới phiếu của bài đó', async () => {
     const t = await mo();
     t.http.expectOne({ method: 'GET', url: API_HS.bai }).flush(BAI);
@@ -93,7 +137,7 @@ describe('TrangHocSinh', () => {
   });
 
   it('24 bài chỉ hiện tối đa 5 bài sắp tới, nhóm có tiến độ đầy đủ', async () => {
-    const t = await mo();
+    const t = await mo(undefined, [], Array.from({length:24},(_,i)=>({id:'b'+i,status:'ON_TAP',details:{dueAt:null}})));
     t.http.expectOne(API_HS.bai).flush(Array.from({length:24},(_,i)=>({...BAI[2],maBai:'b'+i})));
     await t.fixture.whenStable();
     expect(t.el.querySelectorAll('app-hang-bai')).toHaveLength(5);

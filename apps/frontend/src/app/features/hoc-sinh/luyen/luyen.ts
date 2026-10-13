@@ -74,9 +74,16 @@ export class Luyen {
   protected readonly goiBai = this.api.goiBai(()=>this.daNop());
   protected readonly mode = computed(()=>(this.cheDo.hasValue()?this.cheDo.value():[]).find(x=>x.id===this.maBai()));
   protected readonly giaSu = viewChild(GiaSu);
-  protected readonly coGiaSu = computed(()=>this.cheDo.hasValue() && this.mode()?.status !== 'KIEM_TRA');
+  /** Chưa có thao tác cho phép làm lại: DA_NOP khóa gia sư; API trả DANG_LAM thì mở lại. */
+  protected readonly coGiaSu = computed(()=>this.mode()?.status === 'ON_TAP' && !this.daNop());
   protected readonly han = computed(()=>this.mode()?.details.dueAt ? ngayViet(this.mode()!.details.dueAt!, true) : '');
   protected readonly tenMuc = TEN_MUC;
+  protected tenBuocGiay(ma: string): string {
+    if (ma.endsWith('.PHANTICH')) return 'Phân tích đề';
+    if (ma.endsWith('.LAPLUAN')) return 'Lập luận';
+    if (ma.endsWith('.KETLUAN')) return 'Kết luận';
+    return 'Phân tích đề';
+  }
   protected readonly deBang = deBang;
   protected readonly thanDe = thanDe;
   protected readonly ma = { TXD, DAO_HAM, NGHIEM, XET_DAU, KET_LUAN };

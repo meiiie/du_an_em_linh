@@ -33,6 +33,8 @@ export class TrangHocSinh {
   protected readonly ds = httpResource<BaiCuaHocSinh[]>(() => API_HS.bai);
   /** Mức hiểu theo kỹ năng (mastery). Lỗi thì chỉ ẩn sổ kỹ năng, danh sách bài vẫn dùng được. */
   protected readonly th = httpResource<TrangHoc>(() => API_HS.trangHoc);
+  protected readonly cheDo = this.api.cheDo();
+  protected readonly laKiemTra = (ma: string) => this.cheDo.hasValue() && this.cheDo.value().find(m => m.id === ma)?.status === 'KIEM_TRA';
   protected readonly goiBai = this.api.goiBai();
   protected readonly nhac = this.api.nhac();
   protected readonly gio = (s:string)=>ngayViet(s, true);
@@ -45,12 +47,24 @@ export class TrangHocSinh {
     const dueAt = (n.details as unknown as Record<string, unknown>)['dueAt'];
     return ngayViet(typeof dueAt === 'string' ? dueAt : n.details.startsAt, true);
   }
-  /** Bài làm được trên phiếu (`soBuoc` 0 là bài trắc nghiệm, em làm ra giấy): đang làm dở trước, rồi chưa làm. */
+  /** Bài ôn chưa nộp trước bài kiểm tra; không dùng gợi bài đã nộp làm lối vào làm lại. */
   protected readonly ke = computed(() => {
-    const bai = (this.ds.value() ?? []).filter((b) => b.soBuoc > 0);
-    const recommend=this.goiBai.hasValue()?this.goiBai.value()[0]:undefined;
-    return bai.find(b=>b.trangThai==='DANG_LAM') ?? bai.find(b=>b.maBai===recommend?.id) ?? bai.find(b=>b.trangThai==='CHUA_LAM');
+    if (!this.cheDo.hasValue()) return undefined;
+    const bai = (this.ds.value() ?? []).filter(b => b.trangThai !== 'DA_NOP');
+    const on = bai.filter(b => !this.laKiemTra(b.maBai));
+    const recommend = this.goiBai.hasValue() ? this.goiBai.value()[0]?.id : undefined;
+    return on.find(b => b.trangThai === 'DANG_LAM') ?? on.find(b => b.maBai === recommend) ?? on[0]
+      ?? bai.find(b => this.laKiemTra(b.maBai));
   });
+  protected readonly kiemTraKe = computed(() => {
+    const ke = this.ke();
+    if (!ke || !this.laKiemTra(ke.maBai)) return null;
+    const nhom = (this.ds.value() ?? []).filter(b => this.laKiemTra(b.maBai) && b.tenBo === ke.tenBo && b.han === ke.han);
+    const phut = ke.tenBo?.match(/(\d+)\s*phút/u)?.[1];
+    return { ten: 'Bài kiểm tra' + (phut ? ' · ' + phut + ' phút' : ''), soCau: nhom.length,
+      han: (this.cheDo.value() ?? []).find(m => m.id === ke.maBai)?.details.dueAt ?? ke.han };
+  });
+  protected readonly nhacSapToi = computed(() => (this.nhac.value() ?? []).slice(0, 2));
   protected readonly sapToi = computed(() => {
     const ds = this.ds.value() ?? [];
     const ke = this.ke()?.maBai;

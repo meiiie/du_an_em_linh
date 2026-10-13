@@ -61,6 +61,12 @@
   font-weight: 600;
 }
 
+.tieu-de .badge {
+  margin-inline-start: 8px;
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
 /* Công thức dài hơn hàng thì mờ dần ở mép phải, không cắt kiểu «…» (KaTeX không chịu text-overflow). */
 .ham {
   overflow: hidden;

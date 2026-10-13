@@ -42,7 +42,7 @@ const daDat = (maBuoc: string, dong = [{ dong: 0, latex: '\\mathbb{R}' }]) => ({
 });
 
 describe('Luyen', () => {
-  async function mo(bai: ChiTietBai | { loi: number }, choOn = true) {
+  async function mo(bai: ChiTietBai | { loi: number }, choOn = true, mode = 'ON_TAP') {
     TestBed.configureTestingModule({
       providers: [
         provideHttpClient(),
@@ -55,7 +55,7 @@ describe('Luyen', () => {
     fixture.componentRef.setInput('maBai', MA);
     fixture.detectChanges();
     const http = TestBed.inject(HttpTestingController);
-    http.expectOne('/api/hs/che-do').flush([{id:MA,title:MA,subtitle:'',status:'ON_TAP',details:{dueAt:null}}]);
+    http.expectOne('/api/hs/che-do').flush([{id:MA,title:MA,subtitle:'',status:mode,details:{dueAt:'2026-10-20T12:00:00Z'}}]);
     const yc = http.expectOne({ method: 'GET', url: API_HS.chiTietBai(MA) });
     if ('loi' in bai) yc.flush({ detail: 'x' }, { status: bai.loi, statusText: 'Lỗi' });
     else yc.flush(bai);
@@ -82,6 +82,40 @@ describe('Luyen', () => {
     };
     return { fixture, http, el, $, chu, go, bam, xong };
   }
+
+  it('bài ôn không có bước vẫn mở gia sư', async () => {
+    const t = await mo(chiTiet({}, { cacBuoc: [], dangTraLoi: 'TU_LUAN' }));
+    expect(t.$('[data-testid="mo-gia-su"]')).not.toBeNull();
+    await t.bam('[data-testid="mo-gia-su"]');
+    expect(t.$('.tutor-panel')).not.toBeNull();
+  });
+
+  it('bài luyện trên giấy cho chọn bước gợi mở bằng tên tiếng Việt', async () => {
+    const t = await mo(chiTiet({}, { dangTraLoi: 'TU_LUAN', cacBuoc: [
+      {maBuoc:'B.L10.PHANTICH',ten:'B.L10.PHANTICH',viec:''},
+      {maBuoc:'B.L10.LAPLUAN',ten:'B.L10.LAPLUAN',viec:''},
+    ] }));
+    expect(t.chu('[aria-label="Các bước gợi mở"]')).toContain('Phân tích đề');
+    await t.bam('[aria-label="Các bước gợi mở"] button:nth-child(2)');
+    expect(t.$('[aria-label="Các bước gợi mở"] button:nth-child(2)')?.getAttribute('aria-pressed')).toBe('true');
+    expect(t.$('[data-testid="mo-gia-su"]')).not.toBeNull();
+  });
+
+  it('bài kiểm tra hiện banner và hạn kể cả khi không có bước', async () => {
+    const t = await mo(chiTiet({}, { cacBuoc: [] }), true, 'KIEM_TRA');
+    expect(t.chu('[data-testid="bang-kiem-tra"]')).toContain('Đang kiểm tra — gia sư tạm tắt');
+    expect(t.chu('[data-testid="bang-kiem-tra"]')).toContain('20/10');
+    expect(t.$('[data-testid="mo-gia-su"]')).toBeNull();
+  });
+
+  it('bài đã nộp không mở gia sư khi chưa có thao tác làm lại', async () => {
+    const t = await mo(chiTiet({ trangThai: 'DA_NOP' }), false);
+    TestBed.tick();
+    t.http.expectOne({ method: 'POST', url: API_HS.nopBai(MA) }).flush({ ketQua: 'DAT', mucHieu: [] });
+    t.http.match('/api/hs/goi-bai').forEach(r => r.flush([]));
+    await t.fixture.whenStable();
+    expect(t.$('[data-testid="mo-gia-su"]')).toBeNull();
+  });
 
   it('nút gợi ý nằm cạnh luồng bước và mở cột gia sư trên desktop', async () => {
     const t = await mo(chiTiet());

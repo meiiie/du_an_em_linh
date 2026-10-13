@@ -54,7 +54,7 @@ export function chuTrangThai(b: BaiCuaHocSinh): string {
         }
       </svg>
       <span class="ten">
-        <strong>Bài {{ so() | soViet }} · {{ bai().tenKyNang }}</strong>
+        <span class="tieu-de"><strong>Bài {{ so() | soViet }} · {{ bai().tenKyNang }}</strong>@if (kiemTra()) { <span class="badge">Kiểm tra</span> }</span>
         <span class="ham"><app-katex [latex]="hamHang()" /></span>
       </span>
       <span class="muc">{{ tenMuc() }}@if (han(); as h) { · Hạn {{ h }}}</span>
@@ -66,6 +66,7 @@ export function chuTrangThai(b: BaiCuaHocSinh): string {
 })
 export class HangBai {
   readonly bai = input.required<BaiCuaHocSinh>();
+  readonly kiemTra = input(false);
   readonly so = input.required<number>();
 
   protected readonly tenMuc = computed(() => TEN_MUC[this.bai().muc4]);
