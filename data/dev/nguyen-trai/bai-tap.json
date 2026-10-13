@@ -4282,32 +4282,39 @@
     "muc_bloom": "NHO",
     "dang_cau": "TU_LUAN",
     "de_bai": {
-      "van_ban": "Một hộp có $5$ thẻ xanh và $7$ thẻ vàng, các thẻ cùng kích thước. Rút ngẫu nhiên một thẻ. Tính xác suất thẻ xanh.",
-      "latex": "\\text{Hộp có }5\\text{ thẻ xanh, }7\\text{ thẻ vàng; rút một thẻ}",
+      "van_ban": "Có $15$ thẻ giống nhau về kích thước, đánh số từ $1$ đến $15$. Rút ngẫu nhiên một thẻ. Tính xác suất số trên thẻ chia hết cho $3$.",
+      "latex": "\\text{Rút một thẻ trong }1,\\ldots,15\\text{; số chia hết cho }3",
       "ham_so_sympy": null
     },
     "thang_goi_y": [],
     "loi_giai": {
       "cac_buoc": [
         {
-          "van_ban": "Áp dụng định nghĩa và tính từ dữ kiện đề bài.",
-          "latex": "\\dfrac{5}{12}"
+          "van_ban": "Các số thuận lợi là 3, 6, 9, 12, 15; có 15 kết quả đồng khả năng.",
+          "bieu_thuc_sympy": "binomial(5,1)/binomial(15,1)",
+          "ket_qua_sympy": "1/3",
+          "latex": "\\dfrac{5}{15} = \\dfrac{1}{3}"
         }
       ],
-      "dap_an": "5/12",
-      "latex": "\\dfrac{5}{12}"
+      "dap_an": "1/3",
+      "latex": "\\dfrac{1}{3}"
     },
     "kiem_dinh": {
       "loai": "hypergeom",
       "du_kien": {
         "good": 5,
-        "bad": 7,
+        "bad": 10,
         "draw": 1,
         "want": 1
       }
     },
     "bai_lam": null,
-    "su_kien": [],
+    "su_kien": [
+      {
+        "loai": "DAP_AN",
+        "gia_tri": "\"1/3\""
+      }
+    ],
     "nguon": "Tổ Toán Trường THPT Nguyễn Trãi (hư cấu), tự soạn cho MathL+, không chép SGK",
     "duyet_seed": {
       "trang_thai": "DA_DUYET",
@@ -4326,32 +4333,51 @@
     "muc_bloom": "HIEU",
     "dang_cau": "TU_LUAN",
     "de_bai": {
-      "van_ban": "Một hộp có $5$ thẻ xanh và $7$ thẻ vàng, các thẻ cùng kích thước. Rút ngẫu nhiên một thẻ. Tính xác suất thẻ xanh.",
-      "latex": "\\text{Hộp có }5\\text{ thẻ xanh, }7\\text{ thẻ vàng; rút một thẻ}",
+      "van_ban": "Một túi có $6$ bi đỏ và $4$ bi xanh, mỗi viên có cơ hội được chọn như nhau. Lấy đồng thời $2$ viên. Tính xác suất hai viên khác màu và giải thích cách đếm các cặp không có thứ tự.",
+      "latex": "\\text{Túi }6\\text{ bi đỏ, }4\\text{ bi xanh; lấy }2\\text{ viên khác màu}",
       "ham_so_sympy": null
     },
     "thang_goi_y": [],
     "loi_giai": {
       "cac_buoc": [
         {
-          "van_ban": "Áp dụng định nghĩa và tính từ dữ kiện đề bài.",
-          "latex": "\\dfrac{5}{12}"
+          "van_ban": "Đếm mọi cặp hai viên, không phân biệt thứ tự.",
+          "bieu_thuc_sympy": "binomial(10,2)",
+          "ket_qua_sympy": "45",
+          "latex": "45 = 45"
+        },
+        {
+          "van_ban": "Chọn một viên mỗi màu.",
+          "bieu_thuc_sympy": "binomial(6,1)*binomial(4,1)",
+          "ket_qua_sympy": "24",
+          "latex": "6 \\cdot 4 = 24"
+        },
+        {
+          "van_ban": "Lấy số cặp thuận lợi chia cho số cặp có thể.",
+          "bieu_thuc_sympy": "24/45",
+          "ket_qua_sympy": "8/15",
+          "latex": "\\dfrac{24}{45} = \\dfrac{8}{15}"
         }
       ],
-      "dap_an": "5/12",
-      "latex": "\\dfrac{5}{12}"
+      "dap_an": "8/15",
+      "latex": "\\dfrac{8}{15}"
     },
     "kiem_dinh": {
       "loai": "hypergeom",
       "du_kien": {
-        "good": 5,
-        "bad": 7,
-        "draw": 1,
+        "good": 6,
+        "bad": 4,
+        "draw": 2,
         "want": 1
       }
     },
     "bai_lam": null,
-    "su_kien": [],
+    "su_kien": [
+      {
+        "loai": "DAP_AN",
+        "gia_tri": "\"8/15\""
+      }
+    ],
     "nguon": "Tổ Toán Trường THPT Nguyễn Trãi (hư cấu), tự soạn cho MathL+, không chép SGK",
     "duyet_seed": {
       "trang_thai": "DA_DUYET",
@@ -4370,32 +4396,65 @@
     "muc_bloom": "VAN_DUNG",
     "dang_cau": "TU_LUAN",
     "de_bai": {
-      "van_ban": "Một hộp có $5$ thẻ xanh và $7$ thẻ vàng, các thẻ cùng kích thước. Rút ngẫu nhiên một thẻ. Tính xác suất thẻ xanh.",
-      "latex": "\\text{Hộp có }5\\text{ thẻ xanh, }7\\text{ thẻ vàng; rút một thẻ}",
+      "van_ban": "Một hộp có $5$ thẻ xanh, $4$ thẻ đỏ và $3$ thẻ vàng, các thẻ cùng kích thước. Chọn đồng thời $4$ thẻ ngẫu nhiên. Tính xác suất đủ cả ba màu; giải thích vì sao các trường hợp màu xuất hiện hai lần không chồng lặp.",
+      "latex": "\\text{Chọn }4\\text{ thẻ từ }5\\text{ xanh, }4\\text{ đỏ, }3\\text{ vàng; đủ ba màu}",
       "ham_so_sympy": null
     },
     "thang_goi_y": [],
     "loi_giai": {
       "cac_buoc": [
         {
-          "van_ban": "Áp dụng định nghĩa và tính từ dữ kiện đề bài.",
-          "latex": "\\dfrac{5}{12}"
+          "van_ban": "Mọi tập bốn thẻ có cùng xác suất.",
+          "bieu_thuc_sympy": "binomial(12,4)",
+          "ket_qua_sympy": "495",
+          "latex": "495 = 495"
+        },
+        {
+          "van_ban": "Xanh xuất hiện hai lần, mỗi màu còn lại một lần.",
+          "bieu_thuc_sympy": "binomial(5,2)*4*3",
+          "ket_qua_sympy": "120",
+          "latex": "10 \\cdot 4 \\cdot 3 = 120"
+        },
+        {
+          "van_ban": "Đỏ xuất hiện hai lần, mỗi màu còn lại một lần.",
+          "bieu_thuc_sympy": "5*binomial(4,2)*3",
+          "ket_qua_sympy": "90",
+          "latex": "5 \\cdot 6 \\cdot 3 = 90"
+        },
+        {
+          "van_ban": "Vàng xuất hiện hai lần, mỗi màu còn lại một lần.",
+          "bieu_thuc_sympy": "5*4*binomial(3,2)",
+          "ket_qua_sympy": "60",
+          "latex": "5 \\cdot 4 \\cdot 3 = 60"
+        },
+        {
+          "van_ban": "Ba trường hợp rời nhau vì chỉ một màu có thể xuất hiện hai lần.",
+          "bieu_thuc_sympy": "(120+90+60)/495",
+          "ket_qua_sympy": "6/11",
+          "latex": "\\dfrac{60 + 90 + 120}{495} = \\dfrac{6}{11}"
         }
       ],
-      "dap_an": "5/12",
-      "latex": "\\dfrac{5}{12}"
+      "dap_an": "6/11",
+      "latex": "\\dfrac{6}{11}"
     },
     "kiem_dinh": {
-      "loai": "hypergeom",
+      "loai": "three_colors",
       "du_kien": {
-        "good": 5,
-        "bad": 7,
-        "draw": 1,
-        "want": 1
+        "counts": [
+          5,
+          4,
+          3
+        ],
+        "draw": 4
       }
     },
     "bai_lam": null,
-    "su_kien": [],
+    "su_kien": [
+      {
+        "loai": "DAP_AN",
+        "gia_tri": "\"6/11\""
+      }
+    ],
     "nguon": "Tổ Toán Trường THPT Nguyễn Trãi (hư cấu), tự soạn cho MathL+, không chép SGK",
     "duyet_seed": {
       "trang_thai": "DA_DUYET",
@@ -4414,32 +4473,63 @@
     "muc_bloom": "PHAN_TICH",
     "dang_cau": "TU_LUAN",
     "de_bai": {
-      "van_ban": "Một hộp có $5$ thẻ xanh và $7$ thẻ vàng, các thẻ cùng kích thước. Rút ngẫu nhiên một thẻ. Tính xác suất thẻ xanh.",
-      "latex": "\\text{Hộp có }5\\text{ thẻ xanh, }7\\text{ thẻ vàng; rút một thẻ}",
+      "van_ban": "Một nhóm tổng hợp có $6$ bạn nữ và $5$ bạn nam. Chọn ngẫu nhiên $4$ người, rồi chọn một trưởng nhóm và một thư ký khác nhau trong nhóm đó, mọi cách chọn chức vụ đều đồng khả năng. Tính xác suất nhóm có ít nhất $2$ nữ, trưởng nhóm là nữ và thư ký là nam. Lập luận bằng cách phân loại số nữ và kiểm tra bằng cách chọn chức vụ trước.",
+      "latex": "\\text{Nhóm }6\\text{ nữ, }5\\text{ nam; chọn }4\\text{, trưởng nữ, thư ký nam, ít nhất }2\\text{ nữ}",
       "ham_so_sympy": null
     },
     "thang_goi_y": [],
     "loi_giai": {
       "cac_buoc": [
         {
-          "van_ban": "Áp dụng định nghĩa và tính từ dữ kiện đề bài.",
-          "latex": "\\dfrac{5}{12}"
+          "van_ban": "Chọn nhóm rồi chọn hai chức vụ có thứ tự.",
+          "bieu_thuc_sympy": "binomial(11,4)*4*3",
+          "ket_qua_sympy": "3960",
+          "latex": "330 \\cdot 4 \\cdot 3 = 3960"
+        },
+        {
+          "van_ban": "Nhóm có hai nữ: chọn nhóm rồi có 2 cách chọn trưởng và 2 cách chọn thư ký.",
+          "bieu_thuc_sympy": "binomial(6,2)*binomial(5,2)*2*2",
+          "ket_qua_sympy": "600",
+          "latex": "15 \\cdot 10 \\cdot 2 \\cdot 2 = 600"
+        },
+        {
+          "van_ban": "Nhóm có ba nữ: có 3 cách chọn trưởng và 1 cách chọn thư ký; bốn nữ không có thư ký nam.",
+          "bieu_thuc_sympy": "binomial(6,3)*binomial(5,1)*3",
+          "ket_qua_sympy": "300",
+          "latex": "20 \\cdot 5 \\cdot 3 = 300"
+        },
+        {
+          "van_ban": "Kiểm tra: chọn trưởng nữ và thư ký nam trước, hai người còn lại phải có ít nhất một nữ.",
+          "bieu_thuc_sympy": "6*5*(binomial(9,2)-binomial(4,2))",
+          "ket_qua_sympy": "900",
+          "latex": "6 \\cdot 5 \\left(36 - 6\\right) = 900"
+        },
+        {
+          "van_ban": "Cộng hai trường hợp rời nhau và chia cho số kết quả đồng khả năng.",
+          "bieu_thuc_sympy": "(600+300)/3960",
+          "ket_qua_sympy": "5/22",
+          "latex": "\\dfrac{300 + 600}{3960} = \\dfrac{5}{22}"
         }
       ],
-      "dap_an": "5/12",
-      "latex": "\\dfrac{5}{12}"
+      "dap_an": "5/22",
+      "latex": "\\dfrac{5}{22}"
     },
     "kiem_dinh": {
-      "loai": "hypergeom",
+      "loai": "committee_roles",
       "du_kien": {
-        "good": 5,
-        "bad": 7,
-        "draw": 1,
-        "want": 1
+        "women": 6,
+        "men": 5,
+        "draw": 4,
+        "min_women": 2
       }
     },
     "bai_lam": null,
-    "su_kien": [],
+    "su_kien": [
+      {
+        "loai": "DAP_AN",
+        "gia_tri": "\"5/22\""
+      }
+    ],
     "nguon": "Tổ Toán Trường THPT Nguyễn Trãi (hư cấu), tự soạn cho MathL+, không chép SGK",
     "duyet_seed": {
       "trang_thai": "DA_DUYET",
@@ -4458,33 +4548,37 @@
     "muc_bloom": "NHO",
     "dang_cau": "TU_LUAN",
     "de_bai": {
-      "van_ban": "Có hai hộp thẻ: hộp I gồm $3$ xanh, $2$ đỏ; hộp II gồm $2$ xanh, $4$ đỏ. Chọn hộp với xác suất bằng nhau rồi rút một thẻ. Biết thẻ xanh, tính xác suất đã chọn hộp I.",
-      "latex": "\\text{Hai hộp thẻ: I có }3\\text{ xanh, }2\\text{ đỏ; II có }2\\text{ xanh, }4\\text{ đỏ}",
+      "van_ban": "Một thẻ được lấy từ một trong hai hộp. Gọi $I$ là biến cố chọn hộp I, $X$ là biến cố thẻ xanh. Biết $P(I\\cap X)=\\dfrac{1}{5}$ và $P(X)=\\dfrac{1}{2}$. Áp dụng trực tiếp công thức Bayes $P(I\\mid X)=P(I\\cap X)/P(X)$ để tính xác suất thẻ xanh thuộc hộp I.",
+      "latex": "\\text{Thẻ xanh: }P(I\\cap X)=\\dfrac{1}{5},\\quad P(X)=\\dfrac{1}{2}",
       "ham_so_sympy": null
     },
     "thang_goi_y": [],
     "loi_giai": {
       "cac_buoc": [
         {
-          "van_ban": "Áp dụng định nghĩa và tính từ dữ kiện đề bài.",
-          "latex": "\\dfrac{9}{14}"
+          "van_ban": "Thay xác suất giao và xác suất điều kiện đã cho vào công thức.",
+          "bieu_thuc_sympy": "(1/5)/(1/2)",
+          "ket_qua_sympy": "2/5",
+          "latex": "1 \\cdot \\dfrac{1}{5} \\dfrac{1}{1 \\cdot \\dfrac{1}{2}} = \\dfrac{2}{5}"
         }
       ],
-      "dap_an": "9/14",
-      "latex": "\\dfrac{9}{14}"
+      "dap_an": "2/5",
+      "latex": "\\dfrac{2}{5}"
     },
     "kiem_dinh": {
-      "loai": "bayes",
+      "loai": "bayes_given",
       "du_kien": {
-        "g1": 3,
-        "b1": 2,
-        "g2": 2,
-        "b2": 4,
-        "prior": "1/2"
+        "joint": "1/5",
+        "evidence": "1/2"
       }
     },
     "bai_lam": null,
-    "su_kien": [],
+    "su_kien": [
+      {
+        "loai": "DAP_AN",
+        "gia_tri": "\"2/5\""
+      }
+    ],
     "nguon": "Tổ Toán Trường THPT Nguyễn Trãi (hư cấu), tự soạn cho MathL+, không chép SGK",
     "duyet_seed": {
       "trang_thai": "DA_DUYET",
@@ -4503,33 +4597,52 @@
     "muc_bloom": "HIEU",
     "dang_cau": "TU_LUAN",
     "de_bai": {
-      "van_ban": "Có hai hộp thẻ: hộp I gồm $3$ xanh, $2$ đỏ; hộp II gồm $2$ xanh, $4$ đỏ. Chọn hộp với xác suất bằng nhau rồi rút một thẻ. Biết thẻ xanh, tính xác suất đã chọn hộp I.",
-      "latex": "\\text{Hai hộp thẻ: I có }3\\text{ xanh, }2\\text{ đỏ; II có }2\\text{ xanh, }4\\text{ đỏ}",
+      "van_ban": "Hai hộp thẻ có cùng kích thước thẻ: hộp I có $4$ xanh, $2$ đỏ; hộp II có $1$ xanh, $5$ đỏ. Chọn hộp I với xác suất $\\dfrac{1}{3}$, hộp II với xác suất $\\dfrac{2}{3}$, rồi rút ngẫu nhiên một thẻ. Biết thẻ xanh, tính xác suất đã chọn hộp I; giải thích vai trò của xác suất chọn hộp.",
+      "latex": "\\text{Hai hộp thẻ: I }4\\text{ xanh, }2\\text{ đỏ; II }1\\text{ xanh, }5\\text{ đỏ; }P(I)=\\dfrac{1}{3}",
       "ham_so_sympy": null
     },
     "thang_goi_y": [],
     "loi_giai": {
       "cac_buoc": [
         {
-          "van_ban": "Áp dụng định nghĩa và tính từ dữ kiện đề bài.",
-          "latex": "\\dfrac{9}{14}"
+          "van_ban": "Xác suất đồng thời chọn hộp I và rút thẻ xanh.",
+          "bieu_thuc_sympy": "(1/3)*(4/6)",
+          "ket_qua_sympy": "2/9",
+          "latex": "1 \\cdot \\dfrac{1}{3} \\cdot 4 \\cdot \\dfrac{1}{6} = \\dfrac{2}{9}"
+        },
+        {
+          "van_ban": "Cộng hai nhánh để được xác suất rút thẻ xanh.",
+          "bieu_thuc_sympy": "(1/3)*(4/6)+(2/3)*(1/6)",
+          "ket_qua_sympy": "1/3",
+          "latex": "2 \\cdot \\dfrac{1}{3} \\cdot 1 \\cdot \\dfrac{1}{6} + 1 \\cdot \\dfrac{1}{3} \\cdot 4 \\cdot \\dfrac{1}{6} = \\dfrac{1}{3}"
+        },
+        {
+          "van_ban": "Dùng Bayes; không coi hai hộp được chọn với xác suất bằng nhau.",
+          "bieu_thuc_sympy": "(2/9)/(1/3)",
+          "ket_qua_sympy": "2/3",
+          "latex": "\\dfrac{2}{9 \\cdot 1 \\cdot \\dfrac{1}{3}} = \\dfrac{2}{3}"
         }
       ],
-      "dap_an": "9/14",
-      "latex": "\\dfrac{9}{14}"
+      "dap_an": "2/3",
+      "latex": "\\dfrac{2}{3}"
     },
     "kiem_dinh": {
       "loai": "bayes",
       "du_kien": {
-        "g1": 3,
+        "g1": 4,
         "b1": 2,
-        "g2": 2,
-        "b2": 4,
-        "prior": "1/2"
+        "g2": 1,
+        "b2": 5,
+        "prior": "1/3"
       }
     },
     "bai_lam": null,
-    "su_kien": [],
+    "su_kien": [
+      {
+        "loai": "DAP_AN",
+        "gia_tri": "\"2/3\""
+      }
+    ],
     "nguon": "Tổ Toán Trường THPT Nguyễn Trãi (hư cấu), tự soạn cho MathL+, không chép SGK",
     "duyet_seed": {
       "trang_thai": "DA_DUYET",
@@ -4548,33 +4661,60 @@
     "muc_bloom": "VAN_DUNG",
     "dang_cau": "TU_LUAN",
     "de_bai": {
-      "van_ban": "Có hai hộp thẻ: hộp I gồm $3$ xanh, $2$ đỏ; hộp II gồm $2$ xanh, $4$ đỏ. Chọn hộp với xác suất bằng nhau rồi rút một thẻ. Biết thẻ xanh, tính xác suất đã chọn hộp I.",
-      "latex": "\\text{Hai hộp thẻ: I có }3\\text{ xanh, }2\\text{ đỏ; II có }2\\text{ xanh, }4\\text{ đỏ}",
+      "van_ban": "Hộp I có $5$ thẻ xanh, $3$ thẻ đỏ; hộp II có $2$ thẻ xanh, $6$ thẻ đỏ. Chọn hộp I với xác suất $\\dfrac{2}{5}$, hộp II với xác suất $\\dfrac{3}{5}$. Từ hộp đã chọn, rút đồng thời $2$ thẻ ngẫu nhiên không hoàn lại. Biết hai thẻ khác màu, tính xác suất đã chọn hộp I. Giải thích vì sao không dùng hai phép thử độc lập.",
+      "latex": "\\text{Hai hộp thẻ: I }5\\text{ xanh, }3\\text{ đỏ; II }2\\text{ xanh, }6\\text{ đỏ; rút }2\\text{ khác màu}",
       "ham_so_sympy": null
     },
     "thang_goi_y": [],
     "loi_giai": {
       "cac_buoc": [
         {
-          "van_ban": "Áp dụng định nghĩa và tính từ dữ kiện đề bài.",
-          "latex": "\\dfrac{9}{14}"
+          "van_ban": "Xác suất hai thẻ khác màu khi chọn hộp I.",
+          "bieu_thuc_sympy": "binomial(5,1)*binomial(3,1)/binomial(8,2)",
+          "ket_qua_sympy": "15/28",
+          "latex": "5 \\cdot 3 \\cdot \\dfrac{1}{28} = \\dfrac{15}{28}"
+        },
+        {
+          "van_ban": "Xác suất hai thẻ khác màu khi chọn hộp II.",
+          "bieu_thuc_sympy": "binomial(2,1)*binomial(6,1)/binomial(8,2)",
+          "ket_qua_sympy": "3/7",
+          "latex": "2 \\cdot 6 \\cdot \\dfrac{1}{28} = \\dfrac{3}{7}"
+        },
+        {
+          "van_ban": "Xác suất của dữ kiện là tổng hai nhánh có trọng số.",
+          "bieu_thuc_sympy": "(2/5)*(15/28)+(3/5)*(12/28)",
+          "ket_qua_sympy": "33/70",
+          "latex": "2 \\cdot \\dfrac{1}{5} \\cdot 15 \\cdot \\dfrac{1}{28} + 3 \\cdot \\dfrac{1}{5} \\cdot 12 \\cdot \\dfrac{1}{28} = \\dfrac{33}{70}"
+        },
+        {
+          "van_ban": "Bayes với biến cố quan sát là hai thẻ khác màu.",
+          "bieu_thuc_sympy": "((2/5)*(15/28))/(33/70)",
+          "ket_qua_sympy": "5/11",
+          "latex": "2 \\cdot \\dfrac{1}{5} \\cdot 15 \\cdot \\dfrac{1}{28} \\dfrac{1}{33 \\cdot \\dfrac{1}{70}} = \\dfrac{5}{11}"
         }
       ],
-      "dap_an": "9/14",
-      "latex": "\\dfrac{9}{14}"
+      "dap_an": "5/11",
+      "latex": "\\dfrac{5}{11}"
     },
     "kiem_dinh": {
-      "loai": "bayes",
+      "loai": "bayes_sample",
       "du_kien": {
-        "g1": 3,
-        "b1": 2,
+        "g1": 5,
+        "b1": 3,
         "g2": 2,
-        "b2": 4,
-        "prior": "1/2"
+        "b2": 6,
+        "prior": "2/5",
+        "draw": 2,
+        "want": 1
       }
     },
     "bai_lam": null,
-    "su_kien": [],
+    "su_kien": [
+      {
+        "loai": "DAP_AN",
+        "gia_tri": "\"5/11\""
+      }
+    ],
     "nguon": "Tổ Toán Trường THPT Nguyễn Trãi (hư cấu), tự soạn cho MathL+, không chép SGK",
     "duyet_seed": {
       "trang_thai": "DA_DUYET",
@@ -4593,33 +4733,64 @@
     "muc_bloom": "PHAN_TICH",
     "dang_cau": "TU_LUAN",
     "de_bai": {
-      "van_ban": "Có hai hộp thẻ: hộp I gồm $3$ xanh, $2$ đỏ; hộp II gồm $2$ xanh, $4$ đỏ. Chọn hộp với xác suất bằng nhau rồi rút một thẻ. Biết thẻ xanh, tính xác suất đã chọn hộp I.",
-      "latex": "\\text{Hai hộp thẻ: I có }3\\text{ xanh, }2\\text{ đỏ; II có }2\\text{ xanh, }4\\text{ đỏ}",
+      "van_ban": "Hộp A có $4$ bi xanh và $3$ bi đỏ; hộp B có $2$ bi xanh và $4$ bi đỏ. Chuyển ngẫu nhiên một viên từ A sang B, rồi lấy đồng thời $2$ viên từ B không hoàn lại, mỗi tập hai viên có cơ hội như nhau. Biết cả hai viên lấy ra đều xanh, tính xác suất viên đã chuyển là xanh. Vẽ hai nhánh theo màu viên chuyển, cập nhật thành phần hộp B và dùng Bayes.",
+      "latex": "\\text{Hộp bi A: }4\\text{ xanh, }3\\text{ đỏ; B: }2\\text{ xanh, }4\\text{ đỏ; chuyển }1\\text{, rút }2\\text{ xanh}",
       "ham_so_sympy": null
     },
     "thang_goi_y": [],
     "loi_giai": {
       "cac_buoc": [
         {
-          "van_ban": "Áp dụng định nghĩa và tính từ dữ kiện đề bài.",
-          "latex": "\\dfrac{9}{14}"
+          "van_ban": "Xác suất viên chuyển xanh.",
+          "bieu_thuc_sympy": "4/7",
+          "ket_qua_sympy": "4/7",
+          "latex": "\\dfrac{4}{7} = \\dfrac{4}{7}"
+        },
+        {
+          "van_ban": "Nếu chuyển xanh, B có 3 xanh và 4 đỏ; xác suất lấy hai xanh.",
+          "bieu_thuc_sympy": "binomial(3,2)/binomial(7,2)",
+          "ket_qua_sympy": "1/7",
+          "latex": "\\dfrac{3}{21} = \\dfrac{1}{7}"
+        },
+        {
+          "van_ban": "Nếu chuyển đỏ, B có 2 xanh và 5 đỏ; xác suất lấy hai xanh.",
+          "bieu_thuc_sympy": "binomial(2,2)/binomial(7,2)",
+          "ket_qua_sympy": "1/21",
+          "latex": "1 \\cdot \\dfrac{1}{21} = \\dfrac{1}{21}"
+        },
+        {
+          "van_ban": "Tổng xác suất lấy được hai xanh theo hai màu viên chuyển.",
+          "bieu_thuc_sympy": "(4/7)*(1/7)+(3/7)*(1/21)",
+          "ket_qua_sympy": "5/49",
+          "latex": "3 \\cdot \\dfrac{1}{7} \\cdot 1 \\cdot \\dfrac{1}{21} + 4 \\cdot \\dfrac{1}{7} \\cdot 1 \\cdot \\dfrac{1}{7} = \\dfrac{5}{49}"
+        },
+        {
+          "van_ban": "Bayes suy ra màu viên chuyển từ dữ kiện hai viên lấy ra.",
+          "bieu_thuc_sympy": "((4/7)*(1/7))/(5/49)",
+          "ket_qua_sympy": "4/5",
+          "latex": "4 \\cdot \\dfrac{1}{7} \\cdot 1 \\cdot \\dfrac{1}{7} \\dfrac{1}{5 \\cdot \\dfrac{1}{49}} = \\dfrac{4}{5}"
         }
       ],
-      "dap_an": "9/14",
-      "latex": "\\dfrac{9}{14}"
+      "dap_an": "4/5",
+      "latex": "\\dfrac{4}{5}"
     },
     "kiem_dinh": {
-      "loai": "bayes",
+      "loai": "bayes_transfer",
       "du_kien": {
-        "g1": 3,
-        "b1": 2,
-        "g2": 2,
-        "b2": 4,
-        "prior": "1/2"
+        "source_green": 4,
+        "source_red": 3,
+        "target_green": 2,
+        "target_red": 4,
+        "draw": 2
       }
     },
     "bai_lam": null,
-    "su_kien": [],
+    "su_kien": [
+      {
+        "loai": "DAP_AN",
+        "gia_tri": "\"4/5\""
+      }
+    ],
     "nguon": "Tổ Toán Trường THPT Nguyễn Trãi (hư cấu), tự soạn cho MathL+, không chép SGK",
     "duyet_seed": {
       "trang_thai": "DA_DUYET",

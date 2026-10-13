@@ -1,5 +1,6 @@
 """Kiểm nội dung tự soạn; không thay cổng phát hành ba tầng của ứng dụng."""
 import json
+from itertools import combinations
 from pathlib import Path
 
 import pytest
@@ -30,15 +31,17 @@ def test_coverage():
         assert {e['muc_do_4'] for e in EXERCISES if e['chu_de'] == chapter} == {'NB', 'TH', 'VD', 'VDC'}
 
 
-@pytest.mark.parametrize('practice', [e for e in EXERCISES if '-LUYEN' in e['id']], ids=lambda e: e['id'])
-def test_practice_statements_and_functions_are_unique(practice):
-    for other in EXERCISES:
-        if other['id'] == practice['id']:
+@pytest.mark.parametrize('field', ['van_ban', 'latex', 'ham_so_sympy'])
+def test_seed_statements_displays_and_functions_are_unique(field):
+    seen = {}
+    for exercise in EXERCISES:
+        value = exercise['de_bai'][field]
+        # Non-function exercises intentionally have no SymPy function.
+        if field == 'ham_so_sympy' and not value:
             continue
-        assert practice['de_bai']['van_ban'] != other['de_bai']['van_ban'], (practice['id'], other['id'])
-        function = practice['de_bai']['ham_so_sympy']
-        if function:
-            assert function != other['de_bai']['ham_so_sympy'], (practice['id'], other['id'])
+        assert value and value.strip(), exercise['id']
+        assert value not in seen, (field, seen.get(value), exercise['id'])
+        seen[value] = exercise['id']
 
 
 @pytest.mark.parametrize('exercise', EXERCISES, ids=lambda e: e['id'])
@@ -198,6 +201,26 @@ def test_teacher_solution(exercise):
         expected = s.Abs(s.Matrix.hstack(*(s.Matrix(p[key])-origin for key in ('A', 'B', 'C'))).det()) / 6
     elif kind == 'hypergeom':
         expected = s.binomial(p['good'], p['want']) * s.binomial(p['bad'], p['draw']-p['want']) / s.binomial(p['good']+p['bad'], p['draw'])
+    elif kind == 'three_colors':
+        colors = [color for color, count in enumerate(p['counts']) for _ in range(count)]
+        samples = list(combinations(range(len(colors)), p['draw']))
+        favorable = sum(len({colors[i] for i in sample}) == len(p['counts']) for sample in samples)
+        expected = s.Rational(favorable, len(samples))
+    elif kind == 'committee_roles':
+        # Enumerate the two officers first, then the unordered remaining members.
+        women, men, draw = p['women'], p['men'], p['draw']
+        total = favorable = 0
+        people = range(women + men)
+        for captain in people:
+            for secretary in people:
+                if captain == secretary:
+                    continue
+                remaining = [i for i in people if i not in (captain, secretary)]
+                for members in combinations(remaining, draw - 2):
+                    total += 1
+                    female_count = sum(i < women for i in (captain, secretary, *members))
+                    favorable += captain < women <= secretary and female_count >= p['min_women']
+        expected = s.Rational(favorable, total)
     elif kind == 'binomial':
         prob = expr(p['p'])
         expected = s.binomial(p['n'], p['k']) * prob**p['k'] * (1-prob)**(p['n']-p['k'])
@@ -208,6 +231,30 @@ def test_teacher_solution(exercise):
         green1 = s.Rational(p['g1'], p['g1']+p['b1'])
         green2 = s.Rational(p['g2'], p['g2']+p['b2'])
         expected = prior*green1/(prior*green1+(1-prior)*green2)
+    elif kind == 'bayes_given':
+        joint, evidence = expr(p['joint']), expr(p['evidence'])
+        assert 0 <= joint <= evidence <= 1 and evidence > 0
+        expected = joint / evidence
+    elif kind == 'bayes_sample':
+        probabilities = []
+        for good, bad in [(p['g1'], p['b1']), (p['g2'], p['b2'])]:
+            samples = list(combinations(range(good + bad), p['draw']))
+            favorable = sum(sum(i < good for i in sample) == p['want'] for sample in samples)
+            probabilities.append(s.Rational(favorable, len(samples)))
+        prior = expr(p['prior'])
+        joint = prior * probabilities[0]
+        expected = joint / (joint + (1 - prior) * probabilities[1])
+    elif kind == 'bayes_transfer':
+        # Each source marble and each subsequent target subset is equally likely.
+        joint = evidence = 0
+        for source in range(p['source_green'] + p['source_red']):
+            transferred_green = source < p['source_green']
+            colors = [True] * p['target_green'] + [False] * p['target_red'] + [transferred_green]
+            for sample in combinations(range(len(colors)), p['draw']):
+                if all(colors[i] for i in sample):
+                    evidence += 1
+                    joint += transferred_green
+        expected = s.Rational(joint, evidence)
     else:
         pytest.fail(f'Không có bộ kiểm cho {kind}')
     equal(expected, answer)
