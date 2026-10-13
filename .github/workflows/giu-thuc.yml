@@ -15,18 +15,18 @@ jobs:
     steps:
       - name: Ping
         env:
-          KEEP_AWAKE_URL: ${{ vars.FRONTEND_URL }}
+          KEEP_AWAKE_URL: ${{ vars.KEEP_AWAKE_URL }}
         run: |
           set -euo pipefail
-          URL="${KEEP_AWAKE_URL:?Cần cấu hình biến FRONTEND_URL}"
+          URL="${KEEP_AWAKE_URL:-https://hoc-toan-ai.onrender.com}"
           URL="${URL%/}"
           ping() {
             curl -fsSL --max-time 90 -o /tmp/giu-thuc.body -w "%{http_code}" "$1" || true
           }
           for i in 1 2 3; do
-            code="$(ping "${URL}/health")"
+            code="$(ping "${URL}/api/suc-khoe")"
             if [ "$code" = "200" ]; then
-              echo "thức: /health"
+              echo "thức: /api/suc-khoe"
               exit 0
             fi
             code="$(ping "${URL}/dang-nhap")"

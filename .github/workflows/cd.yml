@@ -1,51 +1,66 @@
-# CI xanh trên main → các hook riêng; kiểm đúng revision frontend và readiness core.
+# CD: CI «Kiểm thử» xanh trên main → POST Deploy Hook → đợi /api/suc-khoe.ban đúng commit.
+# Secret RENDER_DEPLOY_HOOK: Render → hoc-toan-ai → Settings → Deploy Hook.
+# Nhánh service phải là main. Không có hook thì fail — không tính trang cũ còn 200 là xong.
 name: Triển khai
+
 on:
   workflow_run:
     workflows: [Kiểm thử]
     types: [completed]
     branches: [main]
   workflow_dispatch:
+
 concurrency:
   group: trien-khai-main
   cancel-in-progress: true
+
 permissions:
   contents: read
+
 jobs:
   render:
+    name: Render + sức khỏe
     if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     timeout-minutes: 25
     steps:
-      - name: Gọi hook math, core, frontend
+      - name: Gọi deploy hook
         env:
-          MATH_HOOK: ${{ secrets.RENDER_DEPLOY_HOOK_MATH }}
-          CORE_HOOK: ${{ secrets.RENDER_DEPLOY_HOOK_CORE }}
-          FRONTEND_HOOK: ${{ secrets.RENDER_DEPLOY_HOOK_FRONTEND }}
+          HOOK: ${{ secrets.RENDER_DEPLOY_HOOK }}
         run: |
           set -euo pipefail
-          for hook in "$MATH_HOOK" "$CORE_HOOK" "$FRONTEND_HOOK"; do
-            test -n "$hook" || { echo "Thiếu một trong ba deploy hook Render." >&2; exit 1; }
-          done
-          for hook in "$MATH_HOOK" "$CORE_HOOK" "$FRONTEND_HOOK"; do
-            curl -fsS --max-time 60 -X POST "$hook" > /dev/null
-          done
-      - name: Đợi revision và readiness
+          if [ -z "${HOOK:-}" ]; then
+            echo "Thiếu secret RENDER_DEPLOY_HOOK."
+            echo "Render → service hoc-toan-ai → Settings → Deploy Hook."
+            echo "GitHub → Settings → Secrets → Actions → tên RENDER_DEPLOY_HOOK."
+            echo "Nhánh service phải là main."
+            exit 1
+          fi
+          curl -fsS -X POST "$HOOK"
+          echo "đã gọi hook"
+      - name: Đợi đúng commit
         env:
-          FRONTEND_URL: ${{ vars.FRONTEND_URL }}
+          KEEP_AWAKE_URL: ${{ vars.KEEP_AWAKE_URL }}
           SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
         run: |
           set -euo pipefail
-          test -n "$FRONTEND_URL" || { echo "Thiếu biến FRONTEND_URL." >&2; exit 1; }
-          URL="${FRONTEND_URL%/}"
+          URL="${KEEP_AWAKE_URL:-https://hoc-toan-ai.onrender.com}"
+          URL="${URL%/}"
+          BAN="$(printf '%s' "$SHA" | tr -cd '0-9a-fA-F' | cut -c1-7)"
+          if [ -z "$BAN" ]; then
+            echo "không có SHA để đối chiếu" >&2
+            exit 1
+          fi
+          echo "đợi ban=$BAN"
           for i in $(seq 1 40); do
-            body="$(curl -fsS --max-time 30 "$URL/version.json" || true)"
-            got="$(printf '%s' "$body" | python3 -c 'import json,sys; print(json.load(sys.stdin).get("revision", ""))' 2>/dev/null || true)"
-            if [ "$got" = "$SHA" ] && curl -fsS --max-time 30 "$URL/health" > /dev/null; then
-              echo "Frontend đúng revision, core sẵn sàng."
+            body="$(curl -fsS --max-time 90 "$URL/api/suc-khoe" || true)"
+            got="$(printf '%s' "$body" | python3 -c 'import json,sys; d=json.loads(sys.stdin.read() or "{}"); print(d.get("ban") or "")' 2>/dev/null || true)"
+            echo "lần $i: ban=${got:-trống}"
+            if [ "$got" = "$BAN" ]; then
+              echo "đúng commit"
               exit 0
             fi
-            sleep 20
+            sleep 30
           done
-          echo "Chưa xác nhận được revision và readiness." >&2
+          echo "bản chạy chưa là $BAN — hook đã gọi nhưng Render chưa lên commit này" >&2
           exit 1
