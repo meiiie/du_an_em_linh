@@ -56,6 +56,17 @@ class GlmTutorServiceTest {
         assertEquals(new TutorEvent("xong", "Em đã xét bước này chưa?"), tutor.answer(student, request("Em bị kẹt")));
         verify(model, times(2)).draft(any());
     }
+    @Test void personalDataNeverReachesModel() {
+        when(gate.sanitize(cl, problem, hint, "Em là Nguyễn Văn An, bị kẹt", List.of())).thenReturn(Optional.of(hint));
+        assertEquals(new TutorEvent("xong", hint), tutor.answer(student, request("Em là Nguyễn Văn An, bị kẹt")));
+        verify(model, never()).draft(any());
+    }
+    @Test void cancelledDuringModelCallIsNotReleased() {
+        when(model.draft(any())).thenReturn(Optional.of("Em đã xét bước này chưa?"));
+        when(gate.sanitize(eq(cl), eq(problem), anyString(), anyString(), anyList())).thenAnswer(a -> Optional.of(a.<String>getArgument(2)));
+        when(store.tutorContext(eq(student), eq(cl), any())).thenReturn(Optional.of(new TutorContext(problem, "DH1", "Đề bài", "x**2", "B.DH.TXD", hint)), Optional.empty());
+        assertThrows(vn.hoctapcanman.core.workspace.application.exception.WorkspaceException.class, () -> tutor.answer(student, request("Em bị kẹt")));
+    }
     @Test void blockedModelDraftFallsBackThroughGate() {
         when(model.draft(any())).thenReturn(Optional.of("Bản nháp bị chặn"));
         when(gate.sanitize(cl, problem, hint, "Em bị kẹt", List.of())).thenAnswer(i -> java.util.Optional.of(i.<String>getArgument(2)));
@@ -89,7 +100,7 @@ class GlmTutorServiceTest {
         }
         assertEquals(List.of("kho", "goi", "mô hình", "loc", "cổng"), timeline.subList(0, 5));
         assertEquals(429, assertThrows(WorkspaceException.class, () -> tutor.authorize(student, r)).status());
-        verify(store, times(12)).tutorContext(student, cl, r);
+        verify(store, times(24)).tutorContext(student, cl, r); // đọc ngữ cảnh + kiểm lại trước khi phát
     }
     @Test void modelCannotReferOutsideSheetOrExceedThreeSentences() {
         when(gate.sanitize(eq(cl), eq(problem), anyString(), anyString(), anyList())).thenAnswer(i -> java.util.Optional.of(i.<String>getArgument(2)));

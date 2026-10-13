@@ -65,7 +65,7 @@ public class OfflineTutorService {
             phase.accept("goi");
             boolean refusal = asksAnswer(request.cauHoi());
             Optional<String> draft = Optional.empty();
-            if (!refusal) {
+            if (!refusal && TutorPrompt.safeToSend(request.cauHoi(), context.submittedLines())) {
                 try { draft = model.draft(TutorPrompt.compose(context, request)); }
                 catch (RuntimeException ignored) { /* Nhà lỗi: chỉ dùng thang sau khi qua cổng. */ }
             }
@@ -110,6 +110,9 @@ public class OfflineTutorService {
         if (!membership.lopHoc(student).filter(cl::equals).isPresent()) throw new WorkspaceException(404, "Em chưa có lớp.");
         if (store.testMode(student, cl, request.maBai())) throw new WorkspaceException(403,
             "Gia sư không mở trong bài kiểm tra hoặc bài đã hết hạn.");
+        // Gọi ngoài có thể lâu: kiểm lại toàn bộ điều kiện giao bài (hủy, gỡ phát hành, hết hạn) trước khi phát.
+        if (store.tutorContext(student, cl, request).isEmpty()) throw new WorkspaceException(404,
+            "Chưa có gợi ý phù hợp cho bước này. Em có thể nhờ giáo viên.");
         return new TutorEvent(status, text);
     }
 

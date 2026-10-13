@@ -15,6 +15,24 @@ public final class TutorPrompt {
         + " nếu cần quy tắc thì chỉ nói «xem [n]».";
     private TutorPrompt() {}
 
+    private static final java.util.regex.Pattern TEN = java.util.regex.Pattern.compile("(?u)(?<!^)(?<![.!?]\\s)\\b\\p{Lu}\\p{Ll}*\\s+\\p{Lu}\\p{Ll}*");
+
+    /** Đóng mặc định: còn nghi có dữ liệu cá nhân (tên viết hoa giữa câu, liên hệ, địa chỉ, mã số dài) thì không gửi ra nhà ngoài, dùng thang offline. */
+    public static boolean safeToSend(String question, java.util.List<String> lines) {
+        for (String t : concat(question, lines)) {
+            if (t == null) continue;
+            String plain = t.replaceAll("(?s)\\$[^$]*\\$", " ");
+            if (RUI_RO_KHONG_TEN.matcher(plain).find() || TEN.matcher(plain.strip()).find()) return false;
+        }
+        return true;
+    }
+    private static final java.util.regex.Pattern RUI_RO_KHONG_TEN = java.util.regex.Pattern.compile(
+        "(?u)@|https?://|www\\.|\\d{5,}|\\b(?:đường|phố|phường|quận|huyện|xã|tỉnh|số nhà|facebook|zalo|tiktok|instagram|sđt|điện thoại|mã số|mshs)\\b",
+        java.util.regex.Pattern.CASE_INSENSITIVE | java.util.regex.Pattern.UNICODE_CASE);
+    private static java.util.List<String> concat(String q, java.util.List<String> lines) {
+        var all = new java.util.ArrayList<String>(); all.add(q); all.addAll(lines); return all;
+    }
+
     public static HintPrompt compose(TutorContext context, TutorRequest request) {
         int level = Math.clamp(request.cap(), 1, 3);
         String rows = context.formulas().stream().map(f -> "[" + f.number() + "] " + f.title()
