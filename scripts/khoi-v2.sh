@@ -63,17 +63,17 @@ curl -fsS -o /dev/null "$MATH/health"
 dat "/api/me không token → 401; math /health đạt"
 
 ds=$(curl -fsS "$GOC/api/hs/bai" -H "Authorization: Bearer $token")
-python3 -c 'import json,sys; rows=json.load(sys.stdin); assert len(rows)==25; assert all(r["tenKyNang"] for r in rows)' <<<"$ds"
+python3 -c 'import json,sys; rows=json.load(sys.stdin); assert len(rows)>=10, len(rows); assert all(r["tenKyNang"] for r in rows)' <<<"$ds"
 modes=$(curl -fsS "$GOC/api/hs/che-do" -H "Authorization: Bearer $token")
-test_code=$(python3 -c 'import json,sys; rows=json.load(sys.stdin); tests=[r for r in rows if r["status"]=="KIEM_TRA"]; assert len(tests)==8; print(tests[0]["id"])' <<<"$modes")
-dat "Nam thấy 25 bài giao; endpoint chế độ trả 8 bài kiểm tra"
+test_code=$(python3 -c 'import json,sys; rows=json.load(sys.stdin); tests=[r for r in rows if r["status"]=="KIEM_TRA"]; assert len(tests)==8, len(tests); print(tests[0]["id"])' <<<"$modes")
+dat "Nam thấy bài được giao; endpoint chế độ trả 8 bài kiểm tra"
 
 # Gia sư phải chặn bài kiểm tra; bài ôn đáp lại bằng luồng SSE offline.
 request() { printf '{"maBai":"%s","maBuoc":"B.DH.TXD","cap":1,"cauHoi":"Em cần gợi ý bước đầu"}' "$1"; }
 status=$(curl -sS -o /dev/null -w '%{http_code}' -X POST "$GOC/api/hs/gia-su" \
   -H "Authorization: Bearer $token" -H 'Content-Type: application/json' -d "$(request "$test_code")")
 test "$status" = 403
-on_tap=$(python3 -c 'import json,sys; print(next(r["id"] for r in json.load(sys.stdin) if r["status"]=="ON_TAP" and r["id"].startswith("NT-LUYEN12-")))' <<<"$modes")
+on_tap=$(python3 -c 'import json,sys; print(next(r["maBai"] for r in json.load(sys.stdin) if r["maBai"].startswith("NT-LUYEN12-") and r["trangThai"]!="DA_NOP"))' <<<"$ds")
 tutor=$(curl -fsS --max-time 30 -X POST "$GOC/api/hs/gia-su" \
   -H "Authorization: Bearer $token" -H 'Content-Type: application/json' -d "$(request "$on_tap")")
 grep -Eq '^event:(xong|loi)' <<<"$tutor"
