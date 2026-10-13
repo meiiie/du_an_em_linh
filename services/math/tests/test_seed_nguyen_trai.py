@@ -290,3 +290,35 @@ def test_list_preview_is_human(exercise):
     if exercise['chu_de'].startswith(('KG', 'XS')):
         assert r'\text{' in preview
         assert any(word in preview.lower() for word in ('chóp', 'hộp', 'thẻ', 'bút', 'xu', 'bi ', 'nhóm', 'đoạn', 'diện', 'chiếu'))
+
+
+def test_seed_skills_have_specific_human_names():
+    skills = {k['ma']: k for k in json.loads((ROOT / 'ky-nang.json').read_text())}
+    chapters = {c['ma']: c for c in json.loads((ROOT / 'danh-muc.json').read_text())}
+    for exercise in EXERCISES:
+        skill = skills[exercise['ky_nang_chinh']]
+        assert skill['ten'].strip() and skill['ten'] != 'Kỹ năng toán học'
+        assert skill['chu_de'] == exercise['chu_de']
+        assert skill['lop'] == chapters[exercise['chu_de']]['lop']
+    assert {'Cực trị hàm bậc ba', 'Thể tích khối chóp', 'Xác suất có điều kiện',
+            'Cấp số cộng', 'Phương trình lượng giác cơ bản'} <= {k['ten'] for k in skills.values()}
+
+
+def test_each_grade_has_eight_approved_test_exercises_at_four_levels():
+    chapters = {c['ma']: c['lop'] for c in json.loads((ROOT / 'danh-muc.json').read_text())}
+    for grade in (10, 11, 12):
+        exercises = [e for e in EXERCISES if e.get('kiem_tra_seed') and chapters[e['chu_de']] == grade]
+        assert len(exercises) == 8
+        assert {e['muc_do_4'] for e in exercises} == {'NB', 'TH', 'VD', 'VDC'}
+        assert all(e['duyet_seed']['trang_thai'] == 'DA_DUYET' for e in exercises)
+
+
+def test_function_skill_matches_the_function_type():
+    skills = {k['ma']: k['ten'] for k in json.loads((ROOT / 'ky-nang.json').read_text())}
+    expected = {'NT-DH12-NB-01': 'Đơn điệu và cực trị hàm bậc hai',
+                'NT-DH12-TH-03': 'Cực trị hàm bậc ba',
+                'NT-DH12-TH-04': 'Đơn điệu hàm phân thức',
+                'NT-DH12-VD-05': 'Cực trị hàm trùng phương'}
+    for exercise in EXERCISES:
+        if exercise['id'] in expected:
+            assert skills[exercise['ky_nang_chinh']] == expected[exercise['id']]

@@ -74,7 +74,27 @@ import vn.hoctapcanman.core.workspace.application.exception.WorkspaceException;
     }
 
     public List<Item> bank(UUID cl) {
-        return db.sql("SELECT p.*,CASE WHEN EXISTS(SELECT 1 FROM review_blocks b WHERE b.run_id=v.id) THEN 'BI_CHAN' ELSE r.status END release_status,v.overall_status FROM problems p JOIN problem_releases r ON r.problem_id=p.id AND r.class_id=:cl LEFT JOIN LATERAL(SELECT id,overall_status FROM verification_runs WHERE class_id=r.class_id AND subject_id=p.id AND subject_kind='PROBLEM' ORDER BY created_at DESC,id DESC LIMIT 1)v ON true ORDER BY p.code") .param("cl",cl).query((r,n)->new Item(r.getString("id"),r.getString("code"),r.getString("statement_text"),r.getString("release_status"),details("code",r.getString("code"),"skillCode",r.getString("skill_code"),"level4",r.getString("level4"),"gate",str(r,"overall_status"),"latex",r.getString("statement_latex")))).list();
+        int grade = db.sql("SELECT grade FROM classes WHERE id=:cl").param("cl", cl).query(Integer.class).single();
+        var rows = db.sql("""
+            SELECT p.*,sk.name skill_name,t.grade,
+                CASE WHEN EXISTS(SELECT 1 FROM review_blocks b WHERE b.run_id=v.id)
+                    THEN 'BI_CHAN' ELSE r.status END release_status,v.overall_status
+            FROM problems p JOIN skills sk ON sk.code=p.skill_code JOIN topics t ON t.code=sk.topic_code
+            JOIN problem_releases r ON r.problem_id=p.id AND r.class_id=:cl
+            LEFT JOIN LATERAL(SELECT id,overall_status FROM verification_runs
+                WHERE class_id=r.class_id AND subject_id=p.id AND subject_kind='PROBLEM'
+                ORDER BY created_at DESC,id DESC LIMIT 1)v ON true ORDER BY p.code
+            """).param("cl",cl).query((r,n)->new Item(r.getString("id"),r.getString("code"),
+                r.getString("statement_text"),r.getString("release_status"),
+                details("code",r.getString("code"),"skillCode",r.getString("skill_code"),
+                    "skillName",r.getString("skill_name"),"grade",r.getInt("grade"),
+                    "level4",r.getString("level4"),"gate",str(r,"overall_status"),
+                    "latex",r.getString("statement_latex")))).list();
+        return bankForGrade(rows, grade);
+    }
+
+    static List<Item> bankForGrade(List<Item> rows, int grade) {
+        return rows.stream().filter(row -> Integer.valueOf(grade).equals(row.details().get("grade"))).toList();
     }
 
     public List<Item> assignments(UUID cl) {

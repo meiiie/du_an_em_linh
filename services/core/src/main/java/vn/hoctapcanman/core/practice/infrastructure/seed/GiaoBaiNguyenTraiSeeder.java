@@ -3,6 +3,12 @@ package vn.hoctapcanman.core.practice.infrastructure.seed;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.List;
+import java.util.Map;
+import org.springframework.beans.factory.annotation.Value;
+import tools.jackson.databind.json.JsonMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.ApplicationArguments;
@@ -25,22 +31,33 @@ public class GiaoBaiNguyenTraiSeeder implements ApplicationRunner {
     private static final Logger LOG = LoggerFactory.getLogger(GiaoBaiNguyenTraiSeeder.class);
 
     private final JdbcClient jdbc;
+    private final Path source;
 
-    public GiaoBaiNguyenTraiSeeder(JdbcClient jdbc) {
+    public GiaoBaiNguyenTraiSeeder(JdbcClient jdbc, @Value("${app.content.source}") String source) {
         this.jdbc = jdbc;
+        this.source = Path.of(source);
+    }
+
+    @SuppressWarnings("unchecked")
+    static List<String> testCodes(String json) {
+        List<Map<String,Object>> exercises = JsonMapper.builder().build().readValue(json, List.class);
+        return exercises.stream().filter(e -> Boolean.TRUE.equals(e.get("kiem_tra_seed")))
+            .map(e -> (String)e.get("id")).toList();
     }
 
     @Override
     public void run(ApplicationArguments args) {
         String sql;
+        List<String> testCodes;
         try {
             sql = new ClassPathResource(TEP).getContentAsString(StandardCharsets.UTF_8);
+            testCodes = testCodes(Files.readString(source.resolve("dev/nguyen-trai/bai-tap.json")));
         } catch (IOException e) {
             throw new UncheckedIOException("Không đọc được " + TEP, e);
         }
         int moi = 0;
         for (String ten : TruongNguyenTrai.LOP) {
-            if (LopSeedAnToan.kiem(jdbc, ten)) moi += jdbc.sql(sql).param("lop", TruongNguyenTrai.id("lop:" + ten)).update();
+            if (LopSeedAnToan.kiem(jdbc, ten)) moi += jdbc.sql(sql).param("lop", TruongNguyenTrai.id("lop:" + ten)).param("kiemTra", testCodes).update();
         }
         LOG.info("Giao bài trường hư cấu: {} lượt giao mới", moi);
     }

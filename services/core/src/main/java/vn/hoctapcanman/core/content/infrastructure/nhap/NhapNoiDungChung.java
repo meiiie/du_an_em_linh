@@ -136,6 +136,7 @@ public class NhapNoiDungChung {
     DaNhap nhapTruong() {
         List<Map<String, @Nullable Object>> chuDe = nguon.danhSach("dev/nguyen-trai/danh-muc.json");
         List<Map<String, @Nullable Object>> tap = nguon.danhSach("dev/nguyen-trai/bai-tap.json");
+        List<Map<String, @Nullable Object>> kyNang = nguon.danhSach("dev/nguyen-trai/ky-nang.json");
         List<BaiNhap> bai = tap.stream().map(ex -> {
             Map<String, @Nullable Object> de = doiTuong(ex.get("de_bai"));
             String muc = chu(ex.get("muc_do_4"));
@@ -150,8 +151,10 @@ public class NhapNoiDungChung {
                 String ma = chu(cd.get("ma"));
                 int lop = ((Number) Objects.requireNonNull(cd.get("lop"))).intValue();
                 catalog.saveTopic(new Topic(ma, chu(cd.get("ten")), lop));
-                catalog.saveSkill(new Skill(chu(cd.get("ky_nang")), ma, chu(cd.get("ten")),
-                    "Nội dung tự soạn của trường hư cấu", lop, true));
+            }
+            for (Map<String, @Nullable Object> skill : kyNang) {
+                catalog.saveSkill(new Skill(chu(skill.get("ma")), chu(skill.get("chu_de")), chu(skill.get("ten")),
+                    "Nội dung tự soạn của trường hư cấu", ((Number) Objects.requireNonNull(skill.get("lop"))).intValue(), true));
             }
             for (Map<String, @Nullable Object> buoc : nguon.danhSach("v0/khung-buoc.json")) {
                 Map<String, @Nullable Object> moi = new LinkedHashMap<>(buoc);
@@ -165,7 +168,7 @@ public class NhapNoiDungChung {
                 ghiBai(b, luc, JsonKieuJs.stringify(answer));
             }
         });
-        return new DaNhap(new KetQua(chuDe.size(), 0, 5, bai.stream().map(BaiNhap::ma).toList()), bai);
+        return new DaNhap(new KetQua(kyNang.size(), 0, 5, bai.stream().map(BaiNhap::ma).toList()), bai);
     }
 
     // ---- Dựng bài (gọi dịch vụ toán) ---------------------------------------------------------------------------

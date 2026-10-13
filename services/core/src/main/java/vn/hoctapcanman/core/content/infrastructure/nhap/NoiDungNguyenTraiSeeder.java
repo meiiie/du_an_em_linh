@@ -36,14 +36,17 @@ public class NoiDungNguyenTraiSeeder implements ApplicationRunner {
         for (String ten : lop) {
             UUID id = TruongNguyenTrai.id("lop:" + ten);
             try {
-                theoLop.nhapTruong(id, noiDung.bai());
+                var skills = jdbc.sql("SELECT code FROM skills WHERE grade=(SELECT grade FROM classes WHERE id=:cl)")
+                    .param("cl", id).query(String.class).list();
+                var bank = noiDung.bai().stream().filter(b -> skills.contains(b.kyNang())).toList();
+                theoLop.nhapTruong(id, bank);
                 theoLop.napBangChuong(id);
                 UUID teacher = jdbc.sql("""
                     SELECT e.user_id FROM enrollments e JOIN users u ON u.id=e.user_id
                     WHERE e.class_id=:cl AND e.role_in_class='TEACHER' AND u.synthetic AND u.enabled
                     AND u.role='TEACHER' ORDER BY e.enrolled_at,e.user_id LIMIT 1
                     """).param("cl", id).query(UUID.class).single();
-                theoLop.duyetTruong(id, teacher);
+                theoLop.duyetTruong(id, teacher, bank);
             } catch (RuntimeException e) {
                 // Không in payload/lời giải/định danh trong lỗi của dịch vụ ngoài.
                 LOG.warn("Chưa nhập xong kho của một lớp hư cấu; kiểm kết nối CAS và nguồn nội dung.");
