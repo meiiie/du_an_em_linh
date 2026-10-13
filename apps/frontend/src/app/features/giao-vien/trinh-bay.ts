@@ -18,7 +18,7 @@ export function tenTrangThai(status: string): string {
   } as Record<string, string>)[status] ?? 'Chưa xác định';
 }
 export function tenBai(b: Item<BankDetails>): string {
-  return b.subtitle || (/^[A-Z0-9][A-Z0-9._-]+$/.test(b.title) ? tenKyNang(b.details.skillCode) : b.title);
+  return b.subtitle || (/^[A-Z0-9][A-Z0-9._-]+$/.test(b.title) ? tenKyNang(b.details.skillCode, b.details.skillName) : b.title);
 }
 export interface HanBai { id: string; title: string; dueAt: string; submitted: number; total: number; problemCount?: number; studentCount?: number; }
 export function gomHan(assignments: Item<AssignmentDetails>[], bank: Item<BankDetails>[], histories: Map<string, StudentProfile>, skillNames: ReadonlyMap<string, string> = new Map()): HanBai[] {
