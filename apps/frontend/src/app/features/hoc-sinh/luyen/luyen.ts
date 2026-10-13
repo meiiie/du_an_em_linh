@@ -1,3 +1,4 @@
+import { ngayViet } from '../../../shared/ui/dinh-dang';
 import { ApiLopHoc } from '../../../api/lop-hoc';
 import { HttpClient, HttpErrorResponse, httpResource } from '@angular/common/http';
 import {
@@ -72,7 +73,7 @@ export class Luyen {
   protected readonly goiBai = this.api.goiBai(()=>this.daNop());
   protected readonly mode = computed(()=>(this.cheDo.hasValue()?this.cheDo.value():[]).find(x=>x.id===this.maBai()));
   protected readonly coGiaSu = computed(()=>this.cheDo.hasValue() && this.mode()?.status !== 'KIEM_TRA' && !this.daNop());
-  protected readonly han = computed(()=>this.mode()?.details.dueAt ? new Date(this.mode()!.details.dueAt!).toLocaleString('vi-VN') : '');
+  protected readonly han = computed(()=>this.mode()?.details.dueAt ? ngayViet(this.mode()!.details.dueAt!, true) : '');
   protected readonly tenMuc = TEN_MUC;
   protected readonly deBang = deBang;
   protected readonly thanDe = thanDe;

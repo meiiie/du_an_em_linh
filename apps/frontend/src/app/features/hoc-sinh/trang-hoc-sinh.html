@@ -21,7 +21,7 @@
           @for (dat of vach(ke); track $index) {
             <i [class.dat]="dat"></i>
           }
-          <span>{{ ke.soBuocDat }}/{{ ke.soBuoc }} bước · {{ tenMuc[ke.muc4] }}</span>
+          <span>{{ ke.soBuocDat | soViet }}/{{ ke.soBuoc | soViet }} bước · {{ tenMuc[ke.muc4] }}</span>
         </div>
         <a appButton size="lg" [routerLink]="['/hs/luyen', ke.maBai]" data-testid="lam-buoc-tiep">Làm bước tiếp</a>
       </div>
@@ -30,7 +30,7 @@
   }
 
   <section aria-labelledby="tieu-de-bai-giao">
-    <h2 id="tieu-de-bai-giao" class="nhan-muc">Bài được giao</h2>
+    <div class="section-heading"><h2 id="tieu-de-bai-giao" class="nhan-muc">Bài được giao</h2><span class="list-summary">{{ (ds.value()?.length ?? 0) | soViet }} bài</span></div>
     @if (ds.value()?.length) {
       <ul class="danh-sach">
         @for (b of ds.value(); track b.maBai; let i = $index) {
@@ -38,13 +38,14 @@
         }
       </ul>
     } @else {
-<app-trang-rong tieuDe="Chưa có bài" moTa="Chưa có bài. Bài thầy cô giao sẽ hiện ở đây." />
+<app-trang-rong tieuDe="Chưa có bài" moTa="Chưa có bài. Bài thầy cô giao sẽ hiện ở đây."><a appButton variant="secondary" routerLink="/hs/kho">Ôn công thức</a></app-trang-rong>
     }
   </section>
 
   </div>
   <aside class="hoc-so" aria-label="Sổ học tập">
-  @if(nhac.hasValue() && nhac.value().length){<section class="surface"><h2 class="nhan-muc">Hôm nay và hạn sắp tới</h2><ul class="row-list">@for(n of nhac.value();track n.id){<li><strong>{{n.title}}</strong><p class="muted">{{gio(n.details.startsAt)}}</p></li>}</ul><a routerLink="/hs/lich">Xem lịch học →</a></section>}
+  @if(nhac.isLoading()){<app-khung-cho nhan="Đang tải lịch nhắc học" />}
+  @if(nhac.hasValue() && nhac.value().length){<section class="surface"><h2 class="nhan-muc">Hôm nay và hạn sắp tới</h2><ul class="row-list" tabindex="0" aria-label="Lịch nhắc học và hạn nộp">@for(n of nhac.value();track n.id){<li><strong>{{n.title}}</strong><p class="muted">{{gio(n.details.startsAt)}}</p></li>}</ul><a routerLink="/hs/lich">Xem lịch học →</a></section>}
   @if(nhac.error()){<app-loi-tai [loi]="nhac.error()" moTa="Chưa tải được lịch nhắc học." (thuLai)="nhac.reload()" />}
   @if(th.isLoading()){<app-khung-cho nhan="Đang tải mức hiểu" />}@else if(th.error()){<app-loi-tai [loi]="th.error()" moTa="Chưa tải được mức hiểu. Bài được giao vẫn làm được." (thuLai)="th.reload()" />}
   @if (th.hasValue()) {

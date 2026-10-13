@@ -109,3 +109,10 @@
   .hoc-grid { grid-template-columns: minmax(0, 1fr) minmax(280px, 320px); gap: 32px; }
   .ke-tiep { grid-template-columns: 1fr; }
 }
+
+.dau-trang { margin-bottom: 0; padding-bottom: 24px; border-bottom: 1px solid var(--line); }
+.hoc-so .row-list { max-height: 320px; overflow: auto; }
+@media (max-width: 600px) {
+  .hoc-so { padding: 16px; gap: 24px; }
+  .hoc-grid, .hoc-chinh { gap: 24px; }
+}

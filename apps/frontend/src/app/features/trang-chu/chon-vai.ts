@@ -62,8 +62,8 @@ import { Button } from '../../shared/ui/button';
       <div id="truoc-khi-dung" class="truoc">
         <h3>Trước khi dùng</h3>
         <p>
-          MathL+ đang ở bản thử nghiệm. Hiện có một chủ đề: đơn điệu và cực trị, Toán 12. Chưa tự đăng ký được; tài
-          khoản thử do nhóm phát triển cấp. Các hình trên trang minh họa cách học, không phải bài làm của học sinh.
+          Nội dung hiện tại: đơn điệu và cực trị, Toán 12. Chưa tự đăng ký được; tài
+          khoản do nhà trường cung cấp. Các hình trên trang minh họa cách học, không phải bài làm của học sinh.
         </p>
       </div>
     </section>

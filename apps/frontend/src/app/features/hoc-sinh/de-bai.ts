@@ -1,3 +1,4 @@
+import { DinhDangSo } from '../../shared/ui/dinh-dang';
 import { ApiLopHoc } from '../../api/lop-hoc';
 import { httpResource } from '@angular/common/http';
 import { Component, computed, inject, signal } from '@angular/core';
@@ -11,9 +12,9 @@ const THU_TU: readonly Muc4[] = ['NHAN_BIET', 'THONG_HIEU', 'VAN_DUNG', 'VAN_DUN
 /** `/hs/bai`: mọi bài được giao (`GET /api/hs/bai`), nhóm theo bốn mức; mỗi hàng dẫn tới phiếu làm bài. */
 @Component({
   selector: 'app-de-bai',
-  imports: [KhungCho, LoiTai, TrangRong, Button, HangBai],
+  imports: [KhungCho, LoiTai, TrangRong, Button, HangBai, DinhDangSo],
   template: `
-    <header class="dau-trang"><h1>Đề bài</h1></header>
+    <header class="dau-trang"><h1>Đề bài</h1><p class="muted">Tìm bài được giao và chọn mức phù hợp để luyện tập.</p></header><div class="toolbar"><label>Tìm đề bài<input type="search" [value]="tim()" (input)="tim.set($any($event.target).value)" placeholder="Kỹ năng, mã bài, đề bài" /></label></div>
     <div class="toolbar" role="group" aria-label="Lọc bài">@for(m of locs;track m.id){<button appButton variant="secondary" type="button" [attr.aria-pressed]="loc()===m.id" (click)="loc.set(m.id)">{{m.ten}}</button>}</div>
     @if(cheDo.error() && loc()!=='giao'){<app-loi-tai [loi]="cheDo.error()" (thuLai)="cheDo.reload()" />}
     @if (ds.isLoading() && !ds.hasValue()) {
@@ -21,11 +22,11 @@ const THU_TU: readonly Muc4[] = ['NHAN_BIET', 'THONG_HIEU', 'VAN_DUNG', 'VAN_DUN
     } @else if (ds.error()) {
       <app-loi-tai [loi]="ds.error()" (thuLai)="ds.reload()" />
     } @else if (!nhom().length) {
-      <app-trang-rong tieuDe="Chưa có bài phù hợp" moTa="Bài thầy cô giao sẽ hiện ở đây." />
+      <app-trang-rong tieuDe="Chưa có bài phù hợp" moTa="Đổi từ khóa hoặc bộ lọc để tìm lại. Bài mới thầy cô giao sẽ hiện ở đây." />
     } @else {
       @for (n of nhom(); track n.muc) {
         <section [attr.aria-labelledby]="'muc-' + n.muc">
-          <h2 [id]="'muc-' + n.muc" class="nhan-muc">{{ n.ten }}</h2>
+          <div class="section-heading"><h2 [id]="'muc-' + n.muc" class="nhan-muc">{{ n.ten }}</h2><span class="list-summary">{{n.hang.length | soViet}} bài</span></div>
           <ul class="danh-sach">
             @for (h of n.hang; track h.bai.maBai) {
               <li><app-hang-bai [bai]="h.bai" [so]="h.so" /></li>
@@ -71,10 +72,12 @@ export class DeBai {
   protected readonly ds = httpResource<BaiCuaHocSinh[]>(() => API_HS.bai);
   protected readonly cheDo=this.api.cheDo();
   protected readonly loc=signal('giao');
+  protected readonly tim=signal('');
   protected readonly locs=[{id:'giao',ten:'Được giao'},{id:'on',ten:'Ôn tập'},{id:'kiem',ten:'Kiểm tra'}];
   protected readonly nhom = computed(() => {
     const modes=this.cheDo.hasValue()?this.cheDo.value():[];
-    const bai = (this.ds.value() ?? []).filter(b=>this.loc()==='giao'|| (this.loc()==='kiem'?modes.find(m=>m.id===b.maBai)?.status==='KIEM_TRA':modes.find(m=>m.id===b.maBai)?.status==='ON_TAP'));
+    const q=this.tim().trim().toLocaleLowerCase('vi');
+    const bai = (this.ds.value() ?? []).filter(b=>(b.maBai+' '+b.tenKyNang+' '+b.deBai).toLocaleLowerCase('vi').includes(q)).filter(b=>this.loc()==='giao'|| (this.loc()==='kiem'?modes.find(m=>m.id===b.maBai)?.status==='KIEM_TRA':modes.find(m=>m.id===b.maBai)?.status==='ON_TAP'));
     return THU_TU.map((muc) => ({
       muc,
       ten: TEN_MUC[muc],

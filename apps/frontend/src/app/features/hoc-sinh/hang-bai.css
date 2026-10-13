@@ -114,3 +114,14 @@
     grid-template-areas: 'vong ten muc tt mui';
   }
 }
+
+.hang { padding-block: 16px; gap: 8px 16px; }
+.ten strong { line-height: 1.5; }
+.muc { line-height: 1.5; }
+@media (max-width: 600px) {
+  .hang {
+    grid-template-columns: 24px minmax(0, 1fr) 16px;
+    grid-template-areas: 'vong ten mui' '. muc .' '. tt .';
+  }
+  .tt { white-space: normal; font-size: 13px; }
+}

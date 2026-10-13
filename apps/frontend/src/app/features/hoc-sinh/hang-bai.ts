@@ -3,7 +3,7 @@ import { RouterLink } from '@angular/router';
 import { BaiCuaHocSinh, TEN_MUC } from '../../api/hoc-sinh';
 import { Katex } from '../../shared/toan/katex';
 
-const NGAY = new Intl.DateTimeFormat('vi-VN', { weekday: 'short', day: '2-digit', month: '2-digit', timeZone: 'Asia/Ho_Chi_Minh' });
+import { DinhDangSo, ngayViet } from '../../shared/ui/dinh-dang';
 
 /** Chữ trạng thái của một bài, theo dữ liệu core trả (không tự suy đúng / sai). */
 /** Công thức của đề để hiện: thêm «y =» khi đề chỉ ghi biểu thức (như `hamLatex` của v0, `apps/web/lib/de-hoc-sinh.ts`). */
@@ -38,7 +38,7 @@ export function chuTrangThai(b: BaiCuaHocSinh): string {
 /** Một hàng bài: vòng trạng thái, tên kỹ năng và hàm số, mức, hạn, trạng thái; cả hàng dẫn tới phiếu làm bài. */
 @Component({
   selector: 'app-hang-bai',
-  imports: [Katex, RouterLink],
+  imports: [Katex, RouterLink, DinhDangSo],
   template: `
     <a class="hang" [routerLink]="['/hs/luyen', bai().maBai]" [attr.data-testid]="'bai-' + bai().maBai">
       <svg [class]="'vong ' + loaiVong()" viewBox="0 0 24 24" aria-hidden="true">
@@ -51,7 +51,7 @@ export function chuTrangThai(b: BaiCuaHocSinh): string {
         }
       </svg>
       <span class="ten">
-        <strong>Bài {{ so() }} · {{ bai().tenKyNang }}</strong>
+        <strong>Bài {{ so() | soViet }} · {{ bai().tenKyNang }}</strong>
         <span class="ham"><app-katex [latex]="hamHang()" /></span>
       </span>
       <span class="muc">{{ tenMuc() }}@if (han(); as h) { · Hạn {{ h }}}</span>
@@ -67,7 +67,7 @@ export class HangBai {
 
   protected readonly tenMuc = computed(() => TEN_MUC[this.bai().muc4]);
   protected readonly chu = computed(() => chuTrangThai(this.bai()));
-  protected readonly han = computed(() => (this.bai().han ? NGAY.format(new Date(this.bai().han!)) : null));
+  protected readonly han = computed(() => (this.bai().han ? ngayViet(this.bai().han!) : null));
   /** Trong hàng chỉ hàm số; phần «, y′ = …» của đề hiện đủ trên bảng ở phiếu làm bài. */
   protected readonly hamHang = computed(() => hamLatex(this.bai().deBaiLatex.split(String.raw`,\quad`)[0]));
   protected readonly loaiVong = computed(() => {

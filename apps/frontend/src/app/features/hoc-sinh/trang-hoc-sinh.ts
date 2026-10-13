@@ -9,6 +9,7 @@ import { Katex } from '../../shared/toan/katex';
 import { Button } from '../../shared/ui/button';
 import { deBang, HangBai, thanDe } from './hang-bai';
 import { SoKyNang } from './so-ky-nang';
+import { DinhDangSo, ngayViet } from '../../shared/ui/dinh-dang';
 
 /**
  * `/hs`: trang chủ học sinh theo ảnh mô phỏng A (labs/design/prototypes/2026-10-06-wiii-3b1b/A-hoc-1280): «Chào <tên>»
@@ -17,7 +18,7 @@ import { SoKyNang } from './so-ky-nang';
  */
 @Component({
   selector: 'app-trang-hoc-sinh',
-  imports: [KhungCho, LoiTai, TrangRong, Button, HangBai, Katex, RouterLink, SoKyNang],
+  imports: [KhungCho, LoiTai, TrangRong, Button, HangBai, Katex, RouterLink, SoKyNang, DinhDangSo],
   templateUrl: './trang-hoc-sinh.html',
   styleUrl: './trang-hoc-sinh.css',
 })
@@ -31,7 +32,7 @@ export class TrangHocSinh {
   protected readonly th = httpResource<TrangHoc>(() => API_HS.trangHoc);
   protected readonly goiBai = this.api.goiBai();
   protected readonly nhac = this.api.nhac();
-  protected readonly gio = (s:string)=>new Date(s).toLocaleString('vi-VN',{day:'numeric',month:'numeric',hour:'2-digit',minute:'2-digit'});
+  protected readonly gio = (s:string)=>ngayViet(s, true);
   /** Bài làm được trên phiếu (`soBuoc` 0 là bài trắc nghiệm, em làm ra giấy): đang làm dở trước, rồi chưa làm. */
   protected readonly ke = computed(() => {
     const bai = (this.ds.value() ?? []).filter((b) => b.soBuoc > 0);

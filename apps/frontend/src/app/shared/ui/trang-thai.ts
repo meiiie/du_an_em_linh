@@ -2,6 +2,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { Component, computed, input, output } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { Button } from './button';
+import { DinhDangSo } from './dinh-dang';
 
 @Component({
   selector: 'app-trang-rong',
@@ -14,9 +15,13 @@ export class TrangRong {
 
 @Component({
   selector: 'app-khung-cho',
-  template: `<div class="khung-cho" role="status" aria-busy="true"><span class="sr-only">{{nhan()}}</span><i></i><i></i><i></i></div>`,
+  template: `<div class="khung-cho" [attr.data-kieu]="kieu()" role="status" aria-busy="true"><span class="sr-only">{{nhan()}}</span>@for (row of hang(); track $index) {<i aria-hidden="true"></i>}</div>`,
 })
-export class KhungCho { readonly nhan = input('Đang tải'); }
+export class KhungCho {
+  readonly nhan = input('Đang tải');
+  readonly kieu = input<'danh-sach' | 'bang' | 'lich'>('danh-sach');
+  protected readonly hang = computed(() => Array.from({ length: this.kieu() === 'lich' ? 7 : 4 }));
+}
 
 @Component({
   selector: 'app-loi-tai',
@@ -35,8 +40,8 @@ export class LoiTai {
 
 @Component({
   selector: 'app-so-do',
-  imports: [RouterLink],
-  template: `<a class="so-do" [routerLink]="duongDan()"><span>{{nhan()}}</span><strong>{{giaTri()}}</strong><span class="muted">{{moTa()}} <span aria-hidden="true">→</span></span></a>`,
+  imports: [RouterLink, DinhDangSo],
+  template: `<a class="so-do" [routerLink]="duongDan()"><span>{{nhan()}}</span><strong>{{giaTri() | soViet}}</strong><span class="muted">{{moTa()}} <span aria-hidden="true">→</span></span></a>`,
 })
 export class SoDo {
   readonly nhan = input.required<string>();
