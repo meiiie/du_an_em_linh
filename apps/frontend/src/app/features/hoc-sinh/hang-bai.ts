@@ -1,6 +1,7 @@
 import { Component, computed, input } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { BaiCuaHocSinh, TEN_MUC } from '../../api/hoc-sinh';
+import { latexHienThi } from '../../shared/toan/bieu-thuc';
 import { Katex } from '../../shared/toan/katex';
 
 import { DinhDangSo, ngayViet } from '../../shared/ui/dinh-dang';
@@ -8,7 +9,7 @@ import { DinhDangSo, ngayViet } from '../../shared/ui/dinh-dang';
 /** Chữ trạng thái của một bài, theo dữ liệu core trả (không tự suy đúng / sai). */
 /** Công thức của đề để hiện: thêm «y =» khi đề chỉ ghi biểu thức (như `hamLatex` của v0, `apps/web/lib/de-hoc-sinh.ts`). */
 export function hamLatex(latex: string): string {
-  const tho = latex.trim();
+  const tho = latexHienThi(latex).trim();
   return !tho || tho.includes('=') ? tho : `y = ${tho}`;
 }
 

@@ -55,7 +55,7 @@ const MAN_HINH_RONG = '(min-width: 64rem)';
     <a class="skip-link" href="#noi-dung" [attr.inert]="nganKeoMo() ? '' : null">Bỏ qua đến nội dung</a>
     @if (!manHinhRong()) {
       <header class="thanh-tren" [attr.inert]="nganKeoMo() ? '' : null">
-        <button
+        @if (!dienThoai()) {<button
           #nutMo
           type="button"
           class="nut-icon"
@@ -66,14 +66,14 @@ const MAN_HINH_RONG = '(min-width: 64rem)';
           (click)="mo($event)"
         >
           <app-bieu-tuong ten="menu" />
-        </button>
+        </button>}
         <a class="thuong-hieu" [routerLink]="trangChu()">
           <app-brand-mark />
         </a>
-        <app-doi-giao-dien />
+        @if(dienThoai()){<span class="top-page-title">{{tieuDeHien()}}</span>}@else{<app-doi-giao-dien />
         <button appButton variant="secondary" type="button" data-testid="dang-xuat" [disabled]="dangThoat()" (click)="thoat()">
           Đăng xuất
-        </button>
+        </button>}
       </header>
       <div class="man-che" [class.mo]="moNganKeo()" aria-hidden="true" (click)="dong(true)"></div>
     }
@@ -128,7 +128,8 @@ const MAN_HINH_RONG = '(min-width: 64rem)';
       <div class="ray-chan">
         <span class="chu-dau" aria-hidden="true">{{ chuDau() }}</span>
         <p class="nguoi-dung" data-testid="ten-nguoi-dung">{{ phien.nguoiDung()?.displayName }}</p>
-        @if (manHinhRong()) {
+        @if(dienThoai()){<app-doi-giao-dien />}
+        @if (manHinhRong() || dienThoai()) {
           <button appButton variant="secondary" block type="button" data-testid="dang-xuat" [disabled]="dangThoat()" (click)="thoat()">
             Đăng xuất
           </button>
@@ -152,7 +153,7 @@ const MAN_HINH_RONG = '(min-width: 64rem)';
         @for (m of mucDuoi(); track m.duongDan) {
           <a [routerLink]="m.duongDan" routerLinkActive="dang-mo" [routerLinkActiveOptions]="{exact:laTrangChu(m.duongDan)}" ariaCurrentWhenActive="page"><app-bieu-tuong [ten]="m.bieuTuong" /><span>{{m.nhan}}</span></a>
         }
-        <button type="button" aria-label="Mở thêm điều hướng" aria-controls="ray" [attr.aria-expanded]="moNganKeo()" (click)="mo($event)"><app-bieu-tuong ten="menu" /><span>{{khuVuc() === 'HS' ? 'Tôi' : 'Thêm'}}</span></button>
+        <button type="button" [attr.data-testid]="dienThoai() ? 'mo-sidebar' : 'mo-tai-khoan'" [attr.aria-label]="dienThoai() ? 'Mở menu' : 'Mở thêm điều hướng'" aria-controls="ray" [attr.aria-expanded]="moNganKeo()" (click)="mo($event)"><app-bieu-tuong ten="menu" /><span>{{dienThoai() || khuVuc() === 'HS' ? 'Tôi' : 'Thêm'}}</span></button>
       </nav>
     }
     <p class="sr-only" aria-live="polite" data-testid="thong-bao-trang">{{ thongBaoTrang() }}</p>
@@ -178,6 +179,9 @@ export class KhungTrang {
   );
 
   protected readonly manHinhRong = signal(true);
+  protected readonly dienThoai = signal(false);
+  private readonly duongHien = signal('');
+  protected readonly tieuDeHien = computed(() => this.duongHien().includes('/luyen/') ? 'Luyện bài' : this.cacMuc().find(m => m.duongDan === this.duongHien())?.nhan ?? this.tenKhuVuc());
   protected readonly moNganKeo = signal(false);
   /** Ngăn kéo đang mở (chỉ có ở màn hẹp): phần còn lại của trang `inert`, như sau một hộp thoại. */
   protected readonly nganKeoMo = computed(() => !this.manHinhRong() && this.moNganKeo());
@@ -209,6 +213,7 @@ export class KhungTrang {
       if (e instanceof NavigationStart) {
         this.loiDieuHuong.set('');
       } else if (e instanceof NavigationEnd) {
+        this.duongHien.set(e.urlAfterRedirects.split('?')[0]);
         // Chuyển trang (chọn mục, hay lùi / tiến của trình duyệt) thì đóng ngăn kéo.
         this.moNganKeo.set(false);
         // Lần nạp đầu trình đọc màn hình tự đọc tiêu đề. Router đặt tiêu đề ngay sau NavigationEnd (cùng lượt chạy),
@@ -229,6 +234,11 @@ export class KhungTrang {
 
     // jsdom (test) không có matchMedia: coi như màn rộng.
     if (typeof matchMedia === 'function') {
+      const phone = matchMedia('(max-width: 600px)');
+      this.dienThoai.set(phone.matches);
+      const phoneChange = (e: MediaQueryListEvent) => this.dienThoai.set(e.matches);
+      phone.addEventListener('change', phoneChange);
+      inject(DestroyRef).onDestroy(() => phone.removeEventListener('change', phoneChange));
       const mq = matchMedia(MAN_HINH_RONG);
       this.manHinhRong.set(mq.matches);
       const doi = (e: MediaQueryListEvent) => {

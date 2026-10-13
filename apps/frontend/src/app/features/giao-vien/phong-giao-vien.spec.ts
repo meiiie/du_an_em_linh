@@ -26,14 +26,28 @@ async function setup() {
 describe('Giao bài với ngân hàng và lớp đầy đủ', () => {
   it('chỉ hiện bài phát hành, tìm bài độc lập với 30 học sinh', async () => {
     const t = await setup();
-    expect(t.lists()[0].querySelectorAll('[type=checkbox]')).toHaveLength(44);
-    expect(t.lists()[1].querySelectorAll('[type=checkbox]')).toHaveLength(30);
+    expect(t.lists()[0].querySelectorAll('[type=checkbox]')).toHaveLength(20);
+    expect(t.lists()[1].querySelectorAll('[type=checkbox]')).toHaveLength(20);
     await t.search(0, 'Bài 43');
     expect(t.lists()[0].querySelectorAll('[type=checkbox]')).toHaveLength(1);
-    expect(t.lists()[1].querySelectorAll('[type=checkbox]')).toHaveLength(30);
+    expect(t.lists()[1].querySelectorAll('[type=checkbox]')).toHaveLength(20);
     await t.search(1, 'Học sinh 29');
     expect(t.lists()[1].querySelectorAll('[type=checkbox]')).toHaveLength(1);
     expect(t.lists()[0].textContent).toContain('Bài 43');
+    t.http.verify();
+  });
+  it('phân trang vẫn giữ lựa chọn và tìm được bài cuối ngân hàng', async () => {
+    const t = await setup();
+    (t.lists()[0].querySelector('[type=checkbox]') as HTMLInputElement).click();
+    const next = () => [...t.lists()[0].querySelectorAll('button')].find(b => b.textContent?.includes('Trang sau'))!;
+    next().click(); await t.fixture.whenStable();
+    expect(t.lists()[0].textContent).toContain('Bài 20');
+    next().click(); await t.fixture.whenStable();
+    expect(t.lists()[0].querySelectorAll('[type=checkbox]')).toHaveLength(4);
+    expect(t.lists()[0].textContent).toContain('Bài 43');
+    expect(t.lists()[0].textContent).not.toContain('Bài 44');
+    await t.search(0, 'Bài 0');
+    expect((t.lists()[0].querySelector('[type=checkbox]') as HTMLInputElement).checked).toBe(true);
     t.http.verify();
   });
   it('giữ lựa chọn khi tìm bài khác, hiển thị hướng dẫn khi không có kết quả', async () => {
@@ -77,5 +91,27 @@ describe('Giao bài với ngân hàng và lớp đầy đủ', () => {
     expect((t.lists()[0].querySelector('input[type=search]') as HTMLInputElement).value).toBe('');
     expect(t.lists()[0].textContent).toContain('Chưa có bài đã phát hành');
     t.http.verify();
+  });
+});
+
+describe('Tổng quan với hạn theo bài', () => {
+  it('dùng giao bài đầy đủ, đếm người đã nộp và hiển thị tên thay mã', async () => {
+    const lop={id:signal('lop1'),ds:signal([{id:'lop1',title:'12A1'}]),dangTai:signal(false),loi:signal(false),soChoDuyet:signal(0),tai:async()=>{}};
+    TestBed.configureTestingModule({providers:[provideHttpClient(),provideHttpClientTesting(),provideRouter([]),{provide:LopDangChon,useValue:lop}]});
+    const f=TestBed.createComponent(PhongGiaoVien);f.detectChanges();
+    const http=TestBed.inject(HttpTestingController);
+    http.expectOne('/api/gv/tong-quan?lopId=lop1').flush({students:2,stuck:0,pending:0,assignments:2,distribution:{NHAN_BIET:1,THONG_HIEU:1},deadlines:[]});
+    http.expectOne('/api/gv/giao?lopId=lop1').flush(['a','b'].map(id=>({id,title:'CODE',subtitle:id,status:'ON_TAP',details:{studentId:id,problemCode:'CODE',dueAt:'2026-10-20T13:00:00Z'}})));
+    http.expectOne('/api/gv/ngan-hang?lopId=lop1').flush([{id:'p',title:'CODE',subtitle:'Xét tính đơn điệu',status:'DA_PHAT_HANH',details:{code:'CODE',skillCode:'T12.NT.HS',level4:'NHAN_BIET',gate:'DAT',latex:'x**2'}}]);
+    http.expectOne('/api/gv/tien-do?lopId=lop1').flush(['a','b'].map(id=>({id,title:id,subtitle:'',status:'STUDENT',details:{skills:[],submitted:id==='a'?1:0}})));
+    await new Promise(r=>setTimeout(r,0));TestBed.tick();
+    http.expectOne('/api/gv/hoc-sinh/a?lopId=lop1').flush({student:{id:'a',title:'a',subtitle:'',status:'STUDENT',details:{skills:[],submitted:1}},history:[{id:'s',title:'CODE',subtitle:'DAT',status:'DA_NOP',details:{problemCode:'CODE'}}]});
+    await f.whenStable();
+    const el=f.nativeElement as HTMLElement;
+    expect(el.querySelectorAll('.row-list li')).toHaveLength(1);
+    expect(el.querySelector('.row-list strong')?.textContent).toBe('Xét tính đơn điệu');
+    expect(el.querySelector('.row-list')?.textContent).toContain('Thứ Ba, 20/10 · 1/2 học sinh đã nộp');
+    expect(el.querySelector('.distribution-legend')?.textContent).toContain('50%');
+    http.expectNone('/api/gv/hoc-sinh/b?lopId=lop1');http.verify();
   });
 });

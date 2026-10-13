@@ -32,7 +32,7 @@
         @if (han()) { <p class="phu">Hạn nộp: {{han()}}</p> }
         <p class="nhan-muc">{{ tenMuc[b.muc4] }}</p>
         <p class="ky-nang">{{ b.tenKyNang }}</p>
-        <p class="cau-hoi">{{ thanDe(b.de.text) }}</p>
+        <p class="cau-hoi"><app-van-ban-toan [text]="thanDe(b.de.text)" /></p>
         <app-katex bang [latex]="deBang(b.de.latex)" />
         @if (deChoSan()) {
           <p class="phu" data-testid="de-cho-san">
@@ -63,6 +63,7 @@
           </ol>
         </nav>
 
+        @if (coGiaSu()) {<div class="tutor-trigger"><button appButton variant="secondary" type="button" data-testid="mo-gia-su" [attr.aria-expanded]="giaSuMo()" (click)="giaSu()?.moGiaSu()">Cần gợi ý?</button></div>}
         @if (buocHien(); as s) {
           @if (nhap(); as n) {
             <h2 #tieuDe class="tieu-de" tabindex="-1">
@@ -256,7 +257,7 @@
         }
       </div>
     </section>
-    @if (coGiaSu()) { <app-gia-su (moChange)="giaSuMo.set($event)" [maBai]="b.maBai" [maBuoc]="buocHien()?.maBuoc ?? ''" [tenBuoc]="buocHien()?.ten ?? ''" /> }
+    @if (coGiaSu()) { <app-gia-su [anNut]="true" (moChange)="giaSuMo.set($event)" [maBai]="b.maBai" [maBuoc]="buocHien()?.maBuoc ?? ''" [tenBuoc]="buocHien()?.ten ?? ''" /> }
     </div>
   }
 }

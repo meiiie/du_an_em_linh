@@ -49,19 +49,27 @@ const BAI: BaiCuaHocSinh[] = [
 
 describe('TrangHocSinh', () => {
   /** `trangHoc`: thân trả cho `GET /api/hs/trang-hoc` (null: lỗi 500); mặc định chưa có kỹ năng nào. */
-  async function mo(trangHoc: TrangHoc | null = { ten: 'An', soKyNang: [], hoanThanh: { kyNang: [], chuDe: [] } }) {
+  async function mo(trangHoc: TrangHoc | null = { ten: 'An', soKyNang: [], hoanThanh: { kyNang: [], chuDe: [] } }, nhac: unknown[] = []) {
     TestBed.configureTestingModule({ providers: [provideHttpClient(), provideHttpClientTesting(), provideRouter([])] });
     const fixture = TestBed.createComponent(TrangHocSinh);
     fixture.detectChanges();
     const http = TestBed.inject(HttpTestingController);
     http.expectOne('/api/hs/goi-bai').flush([]);
-    http.expectOne('/api/hs/nhac').flush([]);
+    http.expectOne('/api/hs/nhac').flush(nhac);
     const th = http.expectOne(API_HS.trangHoc);
     if (trangHoc) th.flush(trangHoc);
     else th.flush(null, { status: 500, statusText: 'Lỗi' });
     const el = fixture.nativeElement as HTMLElement;
     return { fixture, http, el, chu: (s: string) => el.querySelector(s)?.textContent?.replace(/\s+/g, ' ').trim() };
   }
+
+  it('nhắc hạn dùng tên bài và dueAt thay mã bài và startsAt trống', async () => {
+    const t=await mo(undefined,[{id:'reminder',title:'Sắp đến hạn: DH12-03-NB-01',subtitle:'',status:'ON_TAP',details:{dueAt:'2026-10-20T13:00:00Z'}}]);
+    t.http.expectOne(API_HS.bai).flush(BAI);await t.fixture.whenStable();
+    expect(t.chu('.hoc-so .row-list strong')).toBe('Sắp đến hạn: Tính đơn điệu của hàm số');
+    expect(t.chu('.hoc-so .row-list p')).toBe('Thứ Ba, 20/10 · 20:00');
+    t.http.verify();
+  });
 
   it('gọi GET /api/hs/bai; «Bài tiếp theo» là bài đang làm dở, nút dẫn tới phiếu của bài đó', async () => {
     const t = await mo();

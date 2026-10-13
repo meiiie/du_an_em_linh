@@ -598,3 +598,48 @@ app-luyen .practice-grid .da-nop .phu { margin-bottom: 16px; }
   app-luyen .practice-grid .buoc { font-size: 11px; padding-inline: 2px; }
   app-luyen .practice-grid .da-nop { padding: 16px; }
 }
+
+/* Công thức nhẹ, danh sách phân trang và phân bố mức hiểu. */
+.pagination { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 16px; padding-block: 16px; }
+.pagination span { color: var(--muted); font-size: 14px; font-variant-numeric: tabular-nums; }
+.role-filters { display: flex; flex-wrap: wrap; gap: 8px; }
+.role-filters [aria-pressed=true] { background: var(--wash); border-color: var(--ink-2); font-weight: 600; }
+.data-table caption { padding: 16px; margin: 0; }
+.data-table thead th { white-space: nowrap; padding-block: 20px; }
+.problem-code { display: block; margin-block: 8px; font-size: 12px; }
+.nowrap { white-space: nowrap; overflow-wrap: normal; }
+.bank-table .badge { white-space: nowrap; }
+.distribution-bar { display: flex; height: 24px; overflow: hidden; border: 1px solid var(--line); border-radius: 8px; background: var(--wash); }
+.distribution-bar span { min-width: 0; flex-basis: 0; }
+[data-level='0'] { background: var(--label); }
+[data-level='1'] { background: var(--pass); }
+[data-level='2'] { background: var(--action); }
+[data-level='3'] { background: var(--ink-2); }
+.distribution-legend { display: flex; flex-wrap: wrap; gap: 16px 24px; padding: 0; margin: 24px 0 0; list-style: none; }
+.distribution-legend a { display: flex; align-items: center; gap: 8px; color: var(--ink); text-decoration: none; font-size: 14px; }
+.distribution-legend i { width: 12px; height: 12px; border-radius: 2px; }
+.distribution-legend strong { font-variant-numeric: tabular-nums; }
+.tutor-trigger { display: flex; justify-content: flex-end; }
+.top-page-title { margin-inline-start: auto; color: var(--ink-2); font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+@media (min-width: 601px) {
+  .bank-table { min-width: 960px; table-layout: fixed; }
+
+  .bank-table th:nth-child(2) { width: 240px; }
+  .bank-table th:nth-child(3) { width: 120px; }
+  .bank-table th:nth-child(4) { width: 152px; }
+  .bank-table .bank-skill { white-space: nowrap; overflow-wrap: normal; overflow: hidden; text-overflow: ellipsis; }
+}
+@media (max-width: 600px) {
+  .distribution-legend { display: grid; gap: 16px; }
+  .distribution-legend a { flex-wrap: wrap; }
+  .bank-table td { white-space: normal; }
+}
+
+.practice-grid:not(.co-gia-su) > app-gia-su { display: none; }
+@media (max-width: 600px) {
+  .kpi-grid { grid-template-columns: repeat(3,minmax(0,1fr)); gap: 8px; }
+  .kpi-grid .so-do { height: 100%; padding: 12px; gap: 8px; }
+  .kpi-grid .so-do > span:first-child { min-height: 48px; font-size: 13px; line-height: 16px; }
+  .kpi-grid .so-do strong { font-size: 28px; }
+  .kpi-grid .so-do > .muted { font-size: 12px; }
+}

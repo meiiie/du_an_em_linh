@@ -1,3 +1,5 @@
+import { VanBanToan } from '../../shared/toan/van-ban-toan';
+import { Item, ScheduleDetails } from '../../api/ux';
 import { ApiLopHoc } from '../../api/lop-hoc';
 import { httpResource } from '@angular/common/http';
 import { Component, computed, inject } from '@angular/core';
@@ -18,7 +20,7 @@ import { DinhDangSo, ngayViet } from '../../shared/ui/dinh-dang';
  */
 @Component({
   selector: 'app-trang-hoc-sinh',
-  imports: [KhungCho, LoiTai, TrangRong, Button, HangBai, Katex, RouterLink, SoKyNang, DinhDangSo],
+  imports: [VanBanToan,KhungCho, LoiTai, TrangRong, Button, HangBai, Katex, RouterLink, SoKyNang, DinhDangSo],
   templateUrl: './trang-hoc-sinh.html',
   styleUrl: './trang-hoc-sinh.css',
 })
@@ -33,6 +35,15 @@ export class TrangHocSinh {
   protected readonly goiBai = this.api.goiBai();
   protected readonly nhac = this.api.nhac();
   protected readonly gio = (s:string)=>ngayViet(s, true);
+  protected nhacTen(n: Item<ScheduleDetails>): string {
+    const code = n.title.startsWith('Sắp đến hạn: ') ? n.title.slice('Sắp đến hạn: '.length) : '';
+    const b = (this.ds.value() ?? []).find(b => b.maBai === code);
+    return code ? 'Sắp đến hạn: ' + (b?.tenKyNang || 'Bài được giao') : n.title;
+  }
+  protected nhacNgay(n: Item<ScheduleDetails>): string {
+    const dueAt = (n.details as unknown as Record<string, unknown>)['dueAt'];
+    return ngayViet(typeof dueAt === 'string' ? dueAt : n.details.startsAt, true);
+  }
   /** Bài làm được trên phiếu (`soBuoc` 0 là bài trắc nghiệm, em làm ra giấy): đang làm dở trước, rồi chưa làm. */
   protected readonly ke = computed(() => {
     const bai = (this.ds.value() ?? []).filter((b) => b.soBuoc > 0);
