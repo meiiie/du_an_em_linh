@@ -40,7 +40,7 @@
 
 ## Skill dùng khi chỉnh UI / API
 
-- `.cursor/skills/frontend-design` — theo `docs/DESIGN.md`: từ 2026-10-06 v2 dùng kiểu Wiii (kem, than ấm, đất nung) với bảng toán 3b1b; vẫn tránh Literata; v0 giữ giao diện cũ.
+- `.cursor/skills/frontend-design` — theo `docs/DESIGN.md`: từ 2026-10-06 v2 dùng kiểu Wiii (kem, than ấm, đất nung) với bảng toán 3b1b; vẫn tránh Literata; giao diện v0 chỉ còn trong hồ sơ lịch sử; không phát triển hoặc demo v0.
 - `.cursor/skills/web-design-guidelines` — a11y, focus, form, motion.
 - `.cursor/skills/fastapi-routers` — router / Pydantic / không import SymPy ở process API.
 

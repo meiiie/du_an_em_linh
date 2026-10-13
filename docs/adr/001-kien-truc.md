@@ -1,5 +1,7 @@
 # ADR 001 — Monorepo Next.js và dịch vụ toán FastAPI
 
+**Trạng thái:** Đã thay thế bởi [ADR 016](016-go-v0.md) ngày 2026-10-13. Nội dung dưới đây là quyết định lịch sử về nguyên mẫu, không là bản đồ mã hoặc hướng dẫn chạy hiện hành.
+
 Nguyên mẫu tách hai tiến trình.
 
 - `apps/web` là Next.js (App Router), TypeScript, Tailwind. Giao diện tiếng Việt, KaTeX để hiện công thức, MathLive kèm ô LaTeX thường để nhập được khi bàn phím ảo không mở.

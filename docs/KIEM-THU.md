@@ -1,5 +1,6 @@
 # Kết quả kiểm thử
 
+> **Phân biệt lịch sử (2026-10-13):** các lệnh web v0, đường e2e Next.js và số đo bàn giao nguyên mẫu bên dưới là bằng chứng của lần đo cũ, không là lệnh chạy hiện hành hay kết quả v2. Cổng mới theo `specs/002-hoan-thien-v2/plan.md`; chỉ thêm số đo khi thực sự chạy.
 Chỉ ghi số chạy thật. Không suy diễn thêm. CI (`.github/workflows/ci.yml`) chạy mọi job khi push lên `main`; ở PR, job «Phân loại thay đổi» chỉ bật job của vùng có file đổi (`scripts/ci-thay-doi.mjs`), file lạ thì chạy hết.
 
 ## Lần bàn giao — 29/09/2026 (giờ Việt Nam)
@@ -67,3 +68,12 @@ Bộ Build+UX lần 12 còn 39 đỏ (đếm cả hai cỡ màn hình):
 ## Lần dựng nguyên mẫu (lịch sử)
 
 - `pytest`: 11/11 hàm; Playwright 10/10; unit 18/18 (harness + kho).
+
+## Kiểm tài liệu lane DOCS — 2026-10-13
+
+Nền HEAD `aed11c1`, working tree chưa commit; phạm vi tài liệu hoàn thiện spec 002. Không dùng SHA nền để nói đây là commit chứa thay đổi.
+
+- `git diff --check`: exit 0.
+- `node scripts/tuong-phan-token.mjs`: exit 0; 26 token khớp CSS, 34 cặp bắt buộc đạt, 5 đối chứng dưới ngưỡng đúng mô tả. Chỉ đo token/tài liệu, không thay kiểm ảnh thật.
+- Kiểm cấu trúc tài liệu bằng Python: task T100–T133 liên tục/không trùng, 17 FR và 8 SC đủ, có U0–U15/US1–US6; link nội bộ trong tệp sửa/mới đều tồn tại; diff nằm trong lane được phép.
+- Chưa chạy Maven, build/test/e2e frontend, math, compose hoặc bộ eval trong phiên chỉ tài liệu. Các checkbox task mã vẫn để trống; lead/chủ repo rà ADR 017 và lane hiện thực chạy cổng riêng. Không commit, không deploy.

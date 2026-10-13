@@ -9,6 +9,8 @@ Nguyên mẫu NCKH: phần mềm học Toán THPT, **một** chủ đề Toán 1
 
 **Kiến trúc hiện hành:** Angular (`apps/frontend`) + Spring Boot (`services/core`) + FastAPI/SymPy (`services/math`), PostgreSQL 18. `apps/web` đã gỡ theo yêu cầu chủ repo ngày 2026-10-13. URL Render cũ là bản v0 lịch sử; phiên này chưa triển khai bản mới.
 
+
+Đặc tả hoàn thiện: [U0–U15](specs/002-hoan-thien-v2/spec.md), [kế hoạch](specs/002-hoan-thien-v2/plan.md), [task T100+](specs/002-hoan-thien-v2/tasks.md). Mặc định câu hỏi khách: [ASSUMPTIONS](docs/ASSUMPTIONS.md). Các ô task chưa đánh dấu không được coi là tính năng đã nghiệm thu.
 Học sinh làm bài theo năm bước (`B.DH.TXD` → `B.DH.DAOHAM` → `B.DH.NGHIEM` → `B.DH.XETDAU` → `B.DH.KETLUAN`). Gia sư sửa và giảng, **không đưa đáp án**. Mỗi bài phải qua cổng kiểm định ba tầng trước khi phát hành.
 
 ## Tính năng

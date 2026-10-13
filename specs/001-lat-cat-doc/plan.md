@@ -1,5 +1,8 @@
 # Implementation Plan: P2 — Lát cắt dọc một chủ đề
 
+> **Hồ sơ lát cắt P2 ngày 2026-10-02:** kế hoạch tiếp nối hiện hành là [002-hoan-thien-v2](../002-hoan-thien-v2/spec.md). Đường mã/lệnh v0 và task tạo migration cũ bên dưới chỉ là lịch sử, không thực hiện lại. Phiên 2026-10-13 gỡ v0, giữ snapshot import, FLAT tuyệt đối; V1–V10 bất biến, không dùng V11, chỉ thêm V12+ còn trống.
+
+
 **Branch**: `001-lat-cat-doc` | **Date**: 2026-10-02 | **Spec**: [spec.md](spec.md)
 **Input**: Feature specification from `specs/001-lat-cat-doc/spec.md`
 
