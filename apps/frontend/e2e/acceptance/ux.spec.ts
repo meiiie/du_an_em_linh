@@ -1,6 +1,6 @@
 import { readFile } from 'node:fs/promises';
 import { createRequire } from 'node:module';
-import { test, expect, navigate, noOverflow, flat, csv, detail, formula } from './fixtures';
+import { test, expect, navigate, noOverflow, flat, csv, detail, formula, bank } from './fixtures';
 import type { Page } from '@playwright/test';
 const hs = [['nav-hs-bai', '/hs/bai', 'Đề bài'], ['nav-hs-lich', '/hs/lich', 'Lịch học'], ['nav-hs-kho', '/hs/kho', 'Công thức và tài liệu'], ['nav-hs-lo-trinh', '/hs', 'Chào An']];
 const gv = [['nav-gv-giao', '/gv/giao', 'Giao bài'], ['nav-gv-duyet', '/gv/duyet', 'Duyệt'], ['nav-gv-ngan-hang', '/gv/ngan-hang', 'Đề bài'], ['nav-gv-tai-lieu', '/gv/tai-lieu', 'Tài liệu'], ['nav-gv-cong-thuc', '/gv/cong-thuc', 'Công thức'], ['nav-gv-tien-do', '/gv/tien-do', 'Mức lớp'], ['nav-gv-ket-noi-ai', '/gv/ket-noi-ai', 'Gia sư'], ['nav-gv-cai-dat', '/gv/cai-dat', 'Cài đặt lớp'], ['nav-gv-tong-quan', '/gv', 'Lớp 12A1 thử']];
@@ -119,6 +119,11 @@ test('U10 KPI drill-down, tiến độ và ghi đè có lý do', async ({ page, 
     api.role = 'TEACHER';
     await page.goto('/gv');
     await expect(page.getByRole('heading', { name: 'Lớp 12A1 thử' })).toBeVisible();
+    const deadlines = page.getByRole('heading', { name: 'Hạn sắp tới' }).locator('..');
+    await expect(deadlines.locator('li')).toHaveCount(1);
+    await expect(deadlines).toContainText('Ôn đơn điệu');
+    await expect(deadlines).toContainText('2 bài · 3 học sinh');
+    await expect(deadlines).toContainText('1/6 đã nộp');
     await expect(page.getByRole('heading', { name: 'Phân bố mức hiểu' })).toBeVisible();
     await page.getByRole('link', { name: /Học sinh cần hỗ trợ/ }).click();
     await expect(page).toHaveURL('/gv/tien-do');
@@ -141,7 +146,8 @@ test('U11 ngân hàng lọc mức/cổng; tài liệu và công thức', async (
     await page.getByLabel('Mức', { exact: true }).selectOption('THONG_HIEU');
     await page.getByLabel('Kết quả kiểm').selectOption('KHONG_KIEM_DUOC');
     await expect(page.getByRole('table').locator('tbody tr')).toHaveCount(1);
-    await expect(page.getByRole('table')).toContainText('Bài thông hiểu');
+    await expect(page.getByRole('table')).toContainText('Xét cực trị');
+    await expect(page.getByRole('table')).toContainText('E2E-02');
     await page.getByLabel('Kết quả kiểm').selectOption('DAT');
     await expect(page.getByRole('heading', { name: 'Không có bài phù hợp' })).toBeVisible();
     await navigate(page, 'nav-gv-tai-lieu');
@@ -149,6 +155,33 @@ test('U11 ngân hàng lọc mức/cổng; tài liệu và công thức', async (
     await navigate(page, 'nav-gv-cong-thuc');
     await expect(page.locator('main .katex')).toBeVisible();
     await expect(page.getByRole('button', { name: 'Kiểm và khóa bảng' })).toBeEnabled();
+});
+test('U11 phân trang ngân hàng và tìm kiếm đặt lại trang', async ({ page, api }) => {
+    api.role = 'TEACHER';
+    api.overrides.set('GET /api/gv/ngan-hang', { body: Array.from({ length: 21 }, (_, i) => ({
+        ...bank[0], id: `PAGE-${i}`, title: `PAGE-${i}`, subtitle: `Đề trang ${i}`,
+        details: { ...bank[0].details, code: `PAGE-${i}` },
+    })) });
+    await page.goto('/gv/ngan-hang');
+    const rows = page.getByRole('table').locator('tbody tr');
+    const size = page.viewportSize()!.width === 390 ? 10 : 20;
+    await expect(rows).toHaveCount(size);
+    const pagination = page.getByRole('navigation', { name: 'Phân trang danh sách' });
+    await pagination.getByRole('button', { name: 'Trang sau' }).click();
+    await expect(rows.first()).toContainText(`PAGE-${size}`);
+    await expect(rows).toHaveCount(21 - size > size ? size : 21 - size);
+    await page.getByLabel('Tìm bài', { exact: true }).fill('PAGE-20');
+    await expect(rows).toHaveCount(1);
+    await expect(rows.first()).toContainText('Đề trang 20');
+    await expect(pagination).toHaveCount(0);
+});
+
+test('U4 đề bài nhóm theo tên bộ và đếm bài đã nộp', async ({ page, api }) => {
+    await page.goto('/hs/bai');
+    await expect(page.locator('details')).toHaveCount(1);
+    await expect(page.locator('summary')).toContainText('Ôn đơn điệu');
+    await expect(page.locator('summary')).toContainText('2 bài · 0/2 đã nộp · Hạn:');
+    await expect(page.locator('details li')).toHaveCount(2);
 });
 for (const approve of [true, false])
     test(`U12 ${approve ? 'duyệt' : 'chặn'} cần lý do`, async ({ page, api }) => {

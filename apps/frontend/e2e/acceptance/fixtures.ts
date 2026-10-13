@@ -1,9 +1,14 @@
 import { test as base, expect, type Page } from '@playwright/test';
 import type { VaiTro } from '../../src/app/api/auth';
 import type { BaiCuaHocSinh, ChiTietBai } from '../../src/app/api/hoc-sinh';
+import type { DeadlineDetails } from '../../src/app/api/ux';
 export const item = <D extends object = Record<string, unknown>>(id: string, title: string, subtitle = '', status = 'DAT', details: D = {} as D) => ({ id, title, subtitle, status, details });
 export const levels = ['NHAN_BIET', 'THONG_HIEU', 'VAN_DUNG', 'VAN_DUNG_CAO'];
-export const problem: BaiCuaHocSinh = { maBai: 'E2E-01', deBai: 'Xét tính đơn điệu của hàm số', deBaiLatex: 'y=x^3-3x', kyNang: 'T12.DH.03', tenKyNang: 'Đơn điệu', muc4: 'NHAN_BIET', han: null, trangThai: 'CHUA_LAM', soBuocDat: 0, soBuoc: 5, ketQua: null };
+export const problem: BaiCuaHocSinh = { maBai: 'E2E-01', deBai: 'Xét tính đơn điệu của hàm số', deBaiLatex: 'y=x^3-3x', kyNang: 'T12.DH.03', tenKyNang: 'Đơn điệu', muc4: 'NHAN_BIET', tenBo: 'Ôn đơn điệu', han: '2026-10-20T12:00:00Z', trangThai: 'CHUA_LAM', soBuocDat: 0, soBuoc: 5, ketQua: null };
+export const deadline = item<DeadlineDetails>('han1', 'Ôn đơn điệu', 'Hạn tuần này', 'ON_TAP', {
+    tenBo: 'Ôn đơn điệu', setKey: 'bo1', classId: 'lop1', mode: 'ON_TAP', dueAt: '2026-10-20T12:00:00Z',
+    problemCodes: ['E2E-01', 'E2E-NEXT'], problemCount: 2, studentCount: 3, assignmentCount: 6, submittedCount: 1,
+});
 const steps = ['TXD', 'DAOHAM', 'NGHIEM', 'XETDAU', 'KETLUAN'].map((s, i) => ({ maBuoc: `B.DH.${s}`, ten: ['Tập xác định', 'Đạo hàm', 'Nghiệm', 'Xét dấu', 'Kết luận'][i], viec: 'Trình bày bước đang làm.' }));
 export const detail: ChiTietBai = { maBai: problem.maBai, de: { text: problem.deBai, latex: problem.deBaiLatex }, kyNang: problem.kyNang, tenKyNang: problem.tenKyNang, muc4: problem.muc4, dangTraLoi: 'TU_LUAN_5_BUOC', buocBatDau: null, khaiBaoKetLuan: ['dong_bien', 'nghich_bien'], cacBuoc: steps, baiLam: { trangThai: 'DANG_LAM', cacBuoc: [] }, coTheMoLoiGiai: false };
 export const formula = item('ct1', 'Đạo hàm, hàm đa thức', 'y=x^n', 'KHOA', { statement: 'Định nghĩa "đạo hàm", có dấu phẩy', tier1: 'DAT', tier2: 'DAT', version: 1 });
@@ -74,7 +79,7 @@ export class MockApi {
             else if (path === '/api/gv/lop' || path === '/api/qt/lop')
                 response = [item('lop1', '12A1 thử', '2026-2027', 'DANG_HOC')];
             else if (path === '/api/gv/tong-quan')
-                response = { students: 3, stuck: 1, pending: 1, assignments: 2, distribution: Object.fromEntries(levels.map(l => [l, 1])), deadlines: [item('han1', 'Ôn đơn điệu', 'Hạn tuần này')] };
+                response = { students: 3, stuck: 1, pending: 1, assignments: 6, distribution: Object.fromEntries(levels.map(l => [l, 1])), deadlines: [deadline] };
             else if (path === '/api/gv/tien-do')
                 response = [student];
             else if (path === '/api/gv/hoc-sinh/hs1')

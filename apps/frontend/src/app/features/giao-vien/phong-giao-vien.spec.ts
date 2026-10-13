@@ -14,7 +14,7 @@ async function setup() {
   fixture.componentRef.setInput('trang', 'giao');
   fixture.detectChanges();
   const http = TestBed.inject(HttpTestingController);
-  http.expectOne('/api/gv/ngan-hang?lopId=lop1').flush(Array.from({ length: 45 }, (_, i) => ({ id: 'b' + i, title: 'Bài ' + i, subtitle: '', status: i === 44 ? 'NHAP' : 'DA_PHAT_HANH', details: { level4: 'NHAN_BIET', skillCode: 'T12.DH.03', gate: 'DAT', latex: 'x' } })));
+  http.expectOne('/api/gv/ngan-hang?lopId=lop1').flush(Array.from({ length: 45 }, (_, i) => ({ id: 'b' + i, title: 'Bài ' + i, subtitle: i === 0 ? 'Xét tính đơn điệu' : '', status: i === 44 ? 'NHAP' : 'DA_PHAT_HANH', details: { level4: 'NHAN_BIET', skillCode: 'T12.DH.03', gate: 'DAT', latex: 'x' } })));
   http.expectOne('/api/gv/tien-do?lopId=lop1').flush(Array.from({ length: 30 }, (_, i) => ({ id: 'hs' + i, title: 'Học sinh ' + i, subtitle: '', status: 'STUDENT', details: { skills: [], submitted: 0 } })));
   http.expectOne('/api/gv/giao?lopId=lop1').flush([]);
   await fixture.whenStable();
@@ -25,6 +25,13 @@ async function setup() {
 }
 
 describe('Giao bài với ngân hàng và lớp đầy đủ', () => {
+  it('tên truy cập của bài giữ tên gốc cùng đề bài và mức khi hiển thị đề bài', async () => {
+    const t = await setup();
+    const checkbox = t.lists()[0].querySelector('input[type=checkbox]')!;
+    expect(checkbox.getAttribute('aria-label')).toBe('Bài 0 · Xét tính đơn điệu · Nhận biết');
+    expect(checkbox.closest('label')?.textContent).toContain('Xét tính đơn điệu · Nhận biết');
+    t.http.verify();
+  });
   it('chỉ hiện bài phát hành, tìm bài độc lập với 30 học sinh', async () => {
     const t = await setup();
     expect(t.lists()[0].querySelectorAll('[type=checkbox]')).toHaveLength(20);

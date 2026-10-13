@@ -10,6 +10,7 @@ import { DinhDangSo, ngayViet } from '../../shared/ui/dinh-dang';
 /** Công thức của đề để hiện: thêm «y =» khi đề chỉ ghi biểu thức (như `hamLatex` của v0, `apps/web/lib/de-hoc-sinh.ts`). */
 export function hamLatex(latex: string): string {
   const tho = latexHienThi(latex).trim();
+  if (laVanBan(tho)) return String.raw`\text{${tho.replace(/[{}\\]/g, '')}}`;
   return !tho || tho.includes('=') ? tho : `y = ${tho}`;
 }
 
@@ -77,4 +78,9 @@ export class HangBai {
     return b.trangThai === 'DANG_LAM' ? 'dang-lam' : 'chua-lam';
   });
   protected readonly phanDat = computed(() => (this.bai().soBuoc ? this.bai().soBuocDat / this.bai().soBuoc : 0));
+}
+
+/** Xem trước là câu chữ (đề hình học, xác suất) chứ không phải biểu thức: không thêm «y =», hiện dạng chữ thường. */
+export function laVanBan(s: string): boolean {
+  return !s.includes('\\') && (/[À-ỹĐđ]/.test(s) || /[A-Za-z]{3,}\s+[A-Za-z]{2,}/.test(s));
 }
