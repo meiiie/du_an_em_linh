@@ -2,15 +2,14 @@
 <a class="ve" routerLink="/hs">← Bài được giao</a>
 
 @if (bai.isLoading() && !bai.hasValue()) {
-  <div class="dang-tai" aria-busy="true"><span class="sr-only">Đang tải bài</span></div>
+  <app-khung-cho nhan="Đang tải bài" />
 } @else if (bai.error()) {
   <div class="trong" role="alert">
     @if (khongTimThay()) {
       <p>Bài này không còn mở cho lớp em.</p>
       <a appButton variant="secondary" routerLink="/hs">Về bài được giao</a>
     } @else {
-      <p>Chưa tải được bài. Kiểm tra kết nối rồi thử lại.</p>
-      <button appButton variant="secondary" type="button" (click)="bai.reload()">Thử lại</button>
+      <app-loi-tai [loi]="bai.error()" (thuLai)="bai.reload()" />
     }
   </div>
 } @else if (bai.value(); as b) {
@@ -19,7 +18,8 @@
       <p>Dạng câu này (không theo khung 5 bước) chưa có khung làm bài trên ứng dụng. Em làm ra giấy và nộp thầy cô.</p>
     </div>
   } @else {
-    <div class="practice-grid" [class.co-gia-su]="coGiaSu()">
+    @if(cheDo.error()){<app-loi-tai [loi]="cheDo.error()" moTa="Chưa tải được chế độ bài. Thử lại để mở gia sư cho bài ôn." (thuLai)="cheDo.reload()" />}
+    <div class="practice-grid" [class.co-gia-su]="coGiaSu() && giaSuMo()">
     <section
       class="phieu"
       data-testid="solve-screen"
@@ -256,7 +256,7 @@
         }
       </div>
     </section>
-    @if (coGiaSu()) { <app-gia-su [maBai]="b.maBai" [maBuoc]="buocHien()?.maBuoc ?? ''" [tenBuoc]="buocHien()?.ten ?? ''" /> }
+    @if (coGiaSu()) { <app-gia-su (moChange)="giaSuMo.set($event)" [maBai]="b.maBai" [maBuoc]="buocHien()?.maBuoc ?? ''" [tenBuoc]="buocHien()?.ten ?? ''" /> }
     </div>
   }
 }

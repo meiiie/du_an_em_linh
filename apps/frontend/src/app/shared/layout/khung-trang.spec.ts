@@ -72,6 +72,7 @@ describe('KhungTrang', () => {
     const muc = [...t.el.querySelectorAll<HTMLAnchorElement>('[data-testid="sidebar-nav"] a')];
     expect(muc.map((a) => a.dataset['testid'])).toEqual([
       'nav-gv-tong-quan',
+      'nav-gv-giao',
       'nav-gv-duyet',
       'nav-gv-ngan-hang',
       'nav-gv-tai-lieu',
@@ -207,4 +208,14 @@ describe('KhungTrang', () => {
     expect(ray.classList).not.toContain('mo');
     expect(document.activeElement).toBe(noiDung);
   });
+  it('quản trị có thể chuyển giữa khu vực giáo viên và quản trị', async () => {
+    const t = await mo('/gv', { ...GV, role: 'ADMIN' });
+    expect(t.el.querySelector('[data-testid="chuyen-quan-tri"]')?.getAttribute('href')).toBe('/qt');
+  });
+
+  it('học sinh không nhìn thấy điều hướng quản trị', async () => {
+    const t = await mo('/hs');
+    expect(t.el.querySelector('[data-testid="chuyen-quan-tri"]')).toBeNull();
+  });
+
 });

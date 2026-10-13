@@ -1,7 +1,8 @@
+import { ApiLopHoc } from '../../api/lop-hoc';
 import { httpResource } from '@angular/common/http';
-import { Component, computed, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { API_HS, BaiCuaHocSinh, Muc4, TEN_MUC } from '../../api/hoc-sinh';
-import { Item, ModeDetails } from '../../api/ux';
+import { KhungCho, LoiTai, TrangRong } from '../../shared/ui/trang-thai';
 import { Button } from '../../shared/ui/button';
 import { HangBai } from './hang-bai';
 
@@ -10,19 +11,17 @@ const THU_TU: readonly Muc4[] = ['NHAN_BIET', 'THONG_HIEU', 'VAN_DUNG', 'VAN_DUN
 /** `/hs/bai`: mọi bài được giao (`GET /api/hs/bai`), nhóm theo bốn mức; mỗi hàng dẫn tới phiếu làm bài. */
 @Component({
   selector: 'app-de-bai',
-  imports: [Button, HangBai],
+  imports: [KhungCho, LoiTai, TrangRong, Button, HangBai],
   template: `
     <header class="dau-trang"><h1>Đề bài</h1></header>
     <div class="toolbar" role="group" aria-label="Lọc bài">@for(m of locs;track m.id){<button appButton variant="secondary" type="button" [attr.aria-pressed]="loc()===m.id" (click)="loc.set(m.id)">{{m.ten}}</button>}</div>
+    @if(cheDo.error() && loc()!=='giao'){<app-loi-tai [loi]="cheDo.error()" (thuLai)="cheDo.reload()" />}
     @if (ds.isLoading() && !ds.hasValue()) {
-      <div class="dang-tai" aria-busy="true"><span class="sr-only">Đang tải đề bài</span></div>
+      <app-khung-cho nhan="Đang tải đề bài" />
     } @else if (ds.error()) {
-      <div class="trong" role="alert">
-        <p>Chưa tải được đề bài. Kiểm tra kết nối rồi thử lại.</p>
-        <button appButton variant="secondary" type="button" (click)="ds.reload()">Thử lại</button>
-      </div>
+      <app-loi-tai [loi]="ds.error()" (thuLai)="ds.reload()" />
     } @else if (!nhom().length) {
-      <div class="trong"><p>Chưa có bài. Bài thầy cô giao sẽ hiện ở đây.</p></div>
+      <app-trang-rong tieuDe="Chưa có bài phù hợp" moTa="Bài thầy cô giao sẽ hiện ở đây." />
     } @else {
       @for (n of nhom(); track n.muc) {
         <section [attr.aria-labelledby]="'muc-' + n.muc">
@@ -67,8 +66,10 @@ const THU_TU: readonly Muc4[] = ['NHAN_BIET', 'THONG_HIEU', 'VAN_DUNG', 'VAN_DUN
   `,
 })
 export class DeBai {
+ private readonly api=inject(ApiLopHoc);
+
   protected readonly ds = httpResource<BaiCuaHocSinh[]>(() => API_HS.bai);
-  protected readonly cheDo=httpResource<Item<ModeDetails>[]>(()=>'/api/hs/che-do');
+  protected readonly cheDo=this.api.cheDo();
   protected readonly loc=signal('giao');
   protected readonly locs=[{id:'giao',ten:'Được giao'},{id:'on',ten:'Ôn tập'},{id:'kiem',ten:'Kiểm tra'}];
   protected readonly nhom = computed(() => {
