@@ -30,6 +30,7 @@ import vn.hoctapcanman.core.workspace.infrastructure.persistence.WorkspaceStoreA
 class WorkspacePersistenceTest {
     @Autowired JdbcClient db;
     @Autowired WorkspaceStoreAdapter store;
+    @Autowired vn.hoctapcanman.core.classroom.infrastructure.persistence.EnrollmentJpaRepository enrollments;
     @Autowired vn.hoctapcanman.core.content.infrastructure.persistence.FormulaSheetRepositoryAdapter sheets;
     UUID teacher;
     UUID student;
@@ -64,6 +65,31 @@ class WorkspacePersistenceTest {
         assertThat(store.bank(cl)).hasSize(1);
         assertThat(store.dashboard(cl).students()).isEqualTo(1);
         assertThat(store.audit()).anyMatch(i -> i.title().equals("GIAO_BAI"));
+    }
+
+    @Test
+    void activeTestAlsoBlocksTutorForAnotherProblemButExpiredTestDoesNot() {
+        store.assign(teacher, new Assign(cl, List.of(student), List.of(problem), "KIEM_TRA", now.plusSeconds(3600), "Kiểm tra"), List.of(student), now);
+        assertThat(store.testMode(student, cl, "BAI_KHAC")).isTrue();
+        assertThat(store.testMode(teacher, cl, "BAI_KHAC")).isFalse();
+        store.assign(teacher, new Assign(cl, List.of(student), List.of(problem), "KIEM_TRA", now.minusSeconds(1), "Đã hết hạn"), List.of(student), now);
+        assertThat(store.testMode(student, cl, "BAI_KHAC")).isFalse();
+        assertThat(store.testMode(student, cl, code)).isTrue();
+    }
+
+    @Test
+    void classLockPreservesEnrollmentButClosesMembershipUntilUnlocked() {
+        assertThat(enrollments.findActive(cl, student)).isPresent();
+        assertThat(store.lockClass(teacher, cl, true, now)).isTrue();
+        assertThat(enrollments.findActive(cl, student)).isEmpty();
+        assertThat(enrollments.findByUserIdOrderByEnrolledAtAscClassIdAsc(student)).isEmpty();
+        assertThat(enrollments.findByClassIdAndRoleOrderByEnrolledAtAscUserIdAsc(cl,
+            vn.hoctapcanman.core.classroom.domain.model.ClassRole.STUDENT)).isEmpty();
+        assertThat(store.classes(teacher, false)).singleElement().satisfies(i -> assertThat(i.status()).isEqualTo("KHOA"));
+        assertThat(store.lockClass(teacher, cl, false, now.plusSeconds(1))).isTrue();
+        assertThat(enrollments.findActive(cl, student)).isPresent();
+        assertThat(store.audit()).anyMatch(i -> i.title().equals("KHOA_LOP"));
+        assertThat(store.lockClass(teacher, UUID.randomUUID(), true, now)).isFalse();
     }
 
     @Test

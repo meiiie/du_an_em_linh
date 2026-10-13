@@ -72,6 +72,47 @@ import vn.hoctapcanman.core.workspace.application.port.*;
         return store.bank(cl);
     }
 
+    public List<Item> bank(UUID actor,UUID cl,String q,String level4,String skillCode,String gate) {
+        teacher(actor,cl);
+        String query=searchQuery(q);
+        if(!level4.isEmpty()&&!Set.of("NHAN_BIET","THONG_HIEU","VAN_DUNG","VAN_DUNG_CAO").contains(level4)
+            ||!gate.isEmpty()&&!Set.of("DAT","SAI","KHONG_KIEM_DUOC","GV_DUYET").contains(gate))
+            throw new WorkspaceException(400,"Chọn mức và trạng thái kiểm hợp lệ.");
+        return store.bank(cl).stream().filter(i->matches(i,query))
+            .filter(i->level4.isEmpty()||level4.equals(i.details().get("level4")))
+            .filter(i->skillCode.isEmpty()||skillCode.equals(i.details().get("skillCode")))
+            .filter(i->gate.isEmpty()||gate.equals(i.details().get("gate"))).toList();
+    }
+
+    public Library library(UUID actor,UUID cl,String q) {
+        teacher(actor,cl);
+        return searchLibrary(store.library(cl,true),q);
+    }
+
+    public Library library(UUID student,String q) {
+        return searchLibrary(library(student),q);
+    }
+
+    private static Library searchLibrary(Library library,String q) {
+        String query=searchQuery(q);
+        return new Library(library.formulas().stream().filter(i->matches(i,query)).toList(),
+            library.documents().stream().filter(i->matches(i,query)).toList());
+    }
+
+    private static String searchQuery(String q) {
+        if(q.length()>200)throw new WorkspaceException(400,"Từ khóa tìm kiếm tối đa 200 ký tự.");
+        return fold(q.strip());
+    }
+
+    private static String fold(String value) {
+        return java.text.Normalizer.normalize(value,java.text.Normalizer.Form.NFD)
+            .replaceAll("\\p{M}","").toLowerCase(Locale.ROOT).replace('đ','d');
+    }
+
+    private static boolean matches(Item i,String query) {
+        return query.isEmpty()||fold(i.title()+" "+i.subtitle()+" "+i.details()).contains(query);
+    }
+
     public List<Item> assignments(UUID actor,UUID cl) {
         teacher(actor,cl);
         return store.assignments(cl);
@@ -230,6 +271,18 @@ import vn.hoctapcanman.core.workspace.application.port.*;
         if(!globalAdmin(actor))throw new WorkspaceException(403,"Nhờ quản trị hệ thống tạo và phân công lớp mới.");
         store.createClass(actor,r,clock.instant());
         return ok("Đã tạo lớp.",1);
+    }
+
+    public Result lockUser(UUID actor,UUID id,Lock r) {
+        return bulk(actor,new Bulk(List.of(id),!r.locked()));
+    }
+
+    public Result lockClass(UUID actor,UUID id,Lock r) {
+        boolean global=globalAdmin(actor);
+        if(store.classes(actor,global).stream().noneMatch(i->i.id().equals(id.toString())))
+            throw new WorkspaceException(global?404:403,"Không tìm thấy lớp trong phạm vi quản lý.");
+        if(!store.lockClass(actor,id,r.locked(),clock.instant()))throw new WorkspaceException(404,"Không tìm thấy lớp.");
+        return ok(r.locked()?"Đã khóa lớp.":"Đã mở lớp.",1);
     }
 
     public Result enroll(UUID actor,Enrollment r) {

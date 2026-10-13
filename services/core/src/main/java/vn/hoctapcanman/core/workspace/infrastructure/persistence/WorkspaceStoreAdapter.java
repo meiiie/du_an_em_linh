@@ -37,7 +37,7 @@ import vn.hoctapcanman.core.workspace.application.exception.WorkspaceException;
     }
 
     public List<Item> classes(UUID actor,boolean admin) {
-        return db.sql("SELECT c.* FROM classes c WHERE :admin OR EXISTS(SELECT 1 FROM enrollments e WHERE e.class_id=c.id AND e.user_id=:actor AND e.role_in_class='TEACHER') ORDER BY c.name") .param("admin",admin).param("actor",actor).query((r,n)->new Item(r.getString("id"),r.getString("name"),r.getString("school_year"),"",details("grade",r.getInt("grade"),"schoolYear",r.getString("school_year")))).list();
+        return db.sql("SELECT c.* FROM classes c WHERE :admin OR EXISTS(SELECT 1 FROM enrollments e WHERE e.class_id=c.id AND e.user_id=:actor AND e.role_in_class='TEACHER') ORDER BY c.name") .param("admin",admin).param("actor",actor).query((r,n)->new Item(r.getString("id"),r.getString("name"),r.getString("school_year"),r.getBoolean("enabled")?"MO":"KHOA",details("grade",r.getInt("grade"),"schoolYear",r.getString("school_year"),"enabled",r.getBoolean("enabled")))).list();
     }
 
     public Dashboard dashboard(UUID cl) {
@@ -222,8 +222,9 @@ import vn.hoctapcanman.core.workspace.application.exception.WorkspaceException;
     }
 
     public void bulk(UUID actor,Bulk r,Instant now) {
-        for(UUID id:r.ids()) {
-            db.sql("UPDATE users SET enabled=:enabled,updated_at=:now WHERE id=:id").param("enabled",r.enabled()).param("now",java.sql.Timestamp.from(now)).param("id",id).update();
+        for(UUID id:r.ids().stream().distinct().toList()) {
+            if(db.sql("UPDATE users SET enabled=:enabled,updated_at=:now WHERE id=:id").param("enabled",r.enabled()).param("now",java.sql.Timestamp.from(now)).param("id",id).update()!=1)
+                throw new WorkspaceException(404,"Không tìm thấy tài khoản.");
             if(!r.enabled()) {
                 db.sql("UPDATE auth_sessions SET revoked_at=:now WHERE user_id=:id AND revoked_at IS NULL").param("now",java.sql.Timestamp.from(now)).param("id",id).update();
                 db.sql("UPDATE refresh_tokens SET revoked_at=:now WHERE user_id=:id AND revoked_at IS NULL").param("now",java.sql.Timestamp.from(now)).param("id",id).update();
@@ -236,6 +237,13 @@ import vn.hoctapcanman.core.workspace.application.exception.WorkspaceException;
         UUID id=UUID.randomUUID();
         db.sql("INSERT INTO classes(id,name,grade,school_year,created_at) VALUES(:id,:name,:grade,:year,:now)").param("id",id).param("name",r.name()).param("grade",r.grade()).param("year",r.schoolYear()).param("now",java.sql.Timestamp.from(now)).update();
         log(actor,"TAO_LOP",id.toString(),r.name(),now);
+    }
+
+    public boolean lockClass(UUID actor,UUID cl,boolean locked,Instant now) {
+        int changed=db.sql("UPDATE classes SET enabled=:enabled WHERE id=:id")
+            .param("enabled",!locked).param("id",cl).update();
+        if(changed==1)log(actor,locked?"KHOA_LOP":"MO_LOP",cl.toString(),"Thao tác quản trị",now);
+        return changed==1;
     }
 
     public void enroll(UUID actor,Enrollment r,Instant now) {
@@ -254,7 +262,15 @@ import vn.hoctapcanman.core.workspace.application.exception.WorkspaceException;
     }
 
     public boolean testMode(UUID student,UUID cl,String code) {
-        return db.sql("SELECT count(*) FROM assignments a JOIN problems p ON p.id=a.problem_id WHERE a.student_id=:student AND a.class_id=:cl AND p.code=:code AND a.status='DA_GIAO' AND (a.mode='KIEM_TRA' OR (a.due_at IS NOT NULL AND a.due_at<=now()))").param("student",student).param("cl",cl).param("code",code).query(Integer.class).single()>0;
+        return db.sql("""
+            SELECT count(*) FROM assignments a JOIN problems p ON p.id=a.problem_id
+            WHERE a.student_id=:student AND a.class_id=:cl AND a.status='DA_GIAO'
+            AND ((p.code=:code AND a.due_at<=now()) OR
+                (a.mode='KIEM_TRA' AND (a.due_at IS NULL OR a.due_at>now())
+                AND NOT EXISTS(SELECT 1 FROM submissions s WHERE s.student_id=a.student_id
+                    AND s.class_id=a.class_id AND s.problem_id=a.problem_id AND s.content_version=p.content_version
+                    AND s.status='DA_NOP' AND s.submitted_at>=a.assigned_at)))
+            """).param("student",student).param("cl",cl).param("code",code).query(Integer.class).single()>0;
     }
 
     public Optional<TutorContext> tutorContext(UUID student,UUID cl,TutorRequest request) {

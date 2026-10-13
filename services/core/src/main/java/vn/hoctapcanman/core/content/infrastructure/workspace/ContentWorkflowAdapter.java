@@ -198,7 +198,7 @@ import vn.hoctapcanman.core.shared.infrastructure.math.*;
             var solution=solutions.findByProblemId(problemId);
             if(solution.isEmpty())return false;
             Object facts=JSON.readValue(solution.get().protectedFactsJson(),Object.class);
-            if(!(facts instanceof List<?> f)||f.isEmpty())return false;
+            if(!(facts instanceof List<?> protectedFacts)||protectedFacts.isEmpty())return false;
             var result=math.call(MathJob.FILTER,Map.of("ban_nhap",draft,"su_kien",facts,"cau_hs",question));
             if(!(result instanceof MathResult.Ok ok)||!Boolean.TRUE.equals(ok.body().get("cho_phep"))||!Boolean.FALSE.equals(ok.body().get("loi")))return false;
             List<Map<String,Object>> formulas=sheets.findCurrent(classId).map(s->s.rows().stream().map(f->Map.<String,Object>of("id",f.code(),"latex",f.latex(),"phat_bieu",f.statement(),"trich_dan",Map.of("tai_lieu",Objects.toString(f.citationPassageId(),"")))).toList()).orElse(List.of());

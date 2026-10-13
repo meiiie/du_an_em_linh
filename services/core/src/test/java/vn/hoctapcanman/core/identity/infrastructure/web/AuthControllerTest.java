@@ -56,6 +56,9 @@ class AuthControllerTest {
     @MockitoBean
     private GetCurrentUserUseCase currentUser;
 
+    @MockitoBean
+    private vn.hoctapcanman.core.identity.domain.repository.UserRepository users;
+
     private static AuthResponse phien(String access, String refreshToken) {
         return new AuthResponse(access, Instant.now().plus(Duration.ofMinutes(15)), refreshToken,
             Instant.now().plus(Duration.ofDays(30)), AN_DTO);

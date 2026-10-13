@@ -32,6 +32,7 @@ public interface WorkspaceStore {
     void createUser(UUID actor,NewUser request,String hash,Instant now);
     void bulk(UUID actor,Bulk request,Instant now);
     void createClass(UUID actor,NewClass request,Instant now);
+    boolean lockClass(UUID actor,UUID classId,boolean locked,Instant now);
     void enroll(UUID actor,Enrollment request,Instant now);
     List<Item> audit();
     void log(UUID actor,String action,String target,String reason,Instant now);

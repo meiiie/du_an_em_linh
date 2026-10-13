@@ -60,6 +60,9 @@ public final class WorkspaceDto {
     public record Bulk(@NotEmpty @Size(max=200) List<UUID> ids,boolean enabled) {
     }
 
+    public record Lock(@NotNull Boolean locked) {
+    }
+
     public record NewClass(@NotBlank @Size(max=60) String name,@Min(1) @Max(12) int grade,@Pattern(regexp="[0-9]{4}-[0-9]{4}") @NotNull String schoolYear) {
     }
 
