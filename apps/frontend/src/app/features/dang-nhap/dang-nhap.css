@@ -132,7 +132,7 @@ h1 {
   line-height: 24px;
   transition:
     border-color 150ms var(--ease),
-    box-shadow 150ms var(--ease);
+    border-color 150ms var(--ease);
 }
 
 .o-nhap:hover {

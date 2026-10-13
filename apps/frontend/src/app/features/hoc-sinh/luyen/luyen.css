@@ -213,7 +213,6 @@
 .phan-hoi {
   margin: 0;
   padding-left: var(--space-3);
-  border-left: 3px solid var(--mark);
   font-size: 15px;
 }
 

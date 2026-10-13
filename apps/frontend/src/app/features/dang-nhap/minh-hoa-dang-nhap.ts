@@ -33,7 +33,6 @@ import { Component } from '@angular/core';
       width: 100%;
       height: auto;
       border-radius: 16px;
-      box-shadow: 0 24px 60px rgb(0 0 0 / 0.45);
     }
     .cau {
       margin: var(--space-6) 0 0;

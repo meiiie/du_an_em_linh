@@ -7,7 +7,7 @@
 
 Nguyên mẫu NCKH: phần mềm học Toán THPT, **một** chủ đề Toán 12 — ứng dụng đạo hàm để xét đơn điệu và cực trị. Mọi chữ trên màn hình là tiếng Việt. Demo chạy hết khi không có khóa API mô hình ngôn ngữ.
 
-**Bản thử:** [hoc-toan-ai.onrender.com](https://hoc-toan-ai.onrender.com) — trang chủ công khai; vào lớp ở `/dang-nhap`. Logo tab: `/favicon.ico` (ICO + PNG ≥48px cho Google Search).
+**Kiến trúc hiện hành:** Angular (`apps/frontend`) + Spring Boot (`services/core`) + FastAPI/SymPy (`services/math`), PostgreSQL 18. `apps/web` đã gỡ theo yêu cầu chủ repo ngày 2026-10-13. URL Render cũ là bản v0 lịch sử; phiên này chưa triển khai bản mới.
 
 Học sinh làm bài theo năm bước (`B.DH.TXD` → `B.DH.DAOHAM` → `B.DH.NGHIEM` → `B.DH.XETDAU` → `B.DH.KETLUAN`). Gia sư sửa và giảng, **không đưa đáp án**. Mỗi bài phải qua cổng kiểm định ba tầng trước khi phát hành.
 
@@ -15,7 +15,7 @@ Học sinh làm bài theo năm bước (`B.DH.TXD` → `B.DH.DAOHAM` → `B.DH.N
 
 - Phiếu 5 bước + chấm SymPy; cổng `DAT` / `SAI` / `KHONG_KIEM_DUOC` + duyệt giáo viên
 - Gia sư: luật xin đáp án → thang 3 cấp → kho lớp → nhà đã chọn → lọc lộ đáp án
-- ChatGPT bằng khóa API chính thức một lần; Ollama / LM Studio chỉ loopback
+- Gia sư offline mặc định; nhà AI chính thức cần tích hợp backend và bộ lọc đầy đủ trước khi bật (xem `docs/ASSUMPTIONS.md`)
 - BKT gợi bài tiếp; 4 mức khi học, 3 mức CV 7991 lúc xem
 - Đa thiết bị (điện thoại / máy tính bảng / máy tính)
 
@@ -53,59 +53,25 @@ Dữ liệu tổng hợp, không có học sinh thật.
 
 ## Chạy local
 
-Cần PostgreSQL 18, Python 3.12, Node 22, pnpm.
+Cần Docker, hoặc JDK 25, Python 3.12, Node 24 và pnpm khi chạy từng dịch vụ.
 
 ```bash
-cd services/math
-python3 -m venv .venv
-.venv/bin/pip install -e ".[dev]"
-cd ../..
-
 pnpm install
-pnpm db:migrate
-pnpm seed
-pnpm dev:math   # một tiến trình
-pnpm dev:web    # tiến trình khác → http://127.0.0.1:3000
+# Cả hệ, dữ liệu tổng hợp và migration tự nạp qua profile dev:
+docker compose up --build --wait
 ```
 
-Hoặc một lệnh bằng Docker: `docker compose up --build --wait` → http://localhost:3000. PostgreSQL 18, job `migrate` chạy migration rồi seed khi CSDL trống, sau đó mới tới `web`; kiểm cả hệ: `bash scripts/khoi-v0.sh`.
-
-Gia sư bằng Z.AI Coding Plan (GLM-5.3): khóa đi bằng Docker secret, không vào image, git hay `docker inspect`:
-
-```bash
-ZAI_API_KEY_FILE=/duong/dan/toi/tep-khoa.txt docker compose up --build --wait
-docker compose exec -T web docker-entrypoint.sh node --input-type=module < ops/thu-zai.mjs   # gọi thử, không in khóa
-```
-
-Rồi giáo viên chọn **Z.AI** ở **Cài lớp**. Đổi model: `ZAI_MODEL` (mặc định `glm-5.3`). Dừng: `docker compose down`; thêm `-v` để xóa CSDL.
-
-Đã chạy compose của v0 trước #118 (tên project theo thư mục, PostgreSQL 16): stack cũ không được nhận ra nữa, và dữ liệu PostgreSQL 16 không dùng thẳng được cho 18. Dữ liệu v0 là seed tổng hợp nên thường không cần giữ. Cần giữ thì:
-
-```bash
-docker exec <tên-thư-mục-repo>-postgres-1 pg_dump -U hoc_toan -d hoc_toan > v0.sql   # gọi thẳng container cũ: file compose mới không còn service postgres
-docker compose -p <tên-thư-mục-repo> down --remove-orphans                            # service cũ là orphan; thêm -v để xóa volume cũ
-docker compose up -d --wait db                                                       # chỉ CSDL mới, còn trống
-docker compose exec -T db psql -v ON_ERROR_STOP=1 -U hoc_toan -d hoc_toan < v0.sql
-docker compose up --build --wait                                                     # migrate thấy migration đã chạy, seed thấy có dữ liệu nên bỏ qua
-```
-
-Biến môi trường: `.env.example`.
-
-### v2 (đang dựng, ADR 011)
-
-Một lệnh, cần Docker:
-
-```bash
-docker compose -f compose.v2.yaml up --build --wait
-```
+`docker-compose.yml` include `compose.v2.yaml`. Có thể gọi trực tiếp `docker compose -f compose.v2.yaml up --build --wait`.
 
 | Dịch vụ | Địa chỉ |
 | --- | --- |
 | `apps/frontend` (nginx, `/api/` chuyển tới core) | http://localhost:4200 |
-| `services/core` (profile `dev`, có 4 tài khoản thử ở trên) | http://localhost:8080/actuator/health |
+| `services/core` | http://localhost:8080/actuator/health |
 | `services/math` | http://localhost:8000/health |
 
-PostgreSQL 18 chỉ mở trong mạng compose. Dừng: `docker compose -f compose.v2.yaml down`; thêm `-v` để xóa CSDL. Đăng nhập bằng tài khoản thử ở trên: học sinh vào `/hs`, giáo viên vào `/gv`. Kiểm cả hệ: `bash scripts/khoi-v2.sh` và `pnpm --filter frontend e2e`. Cổng 8000 trùng với `math` của v0, nên không chạy hai compose cùng lúc.
+PostgreSQL chỉ mở trong mạng compose. Đăng nhập bằng tài khoản thử ở trên: học sinh vào `/hs`, giáo viên vào `/gv`. Kiểm cả hệ: `bash scripts/khoi-v2.sh` và `pnpm --filter frontend e2e`. Dừng bằng `docker compose down`; thêm `-v` sẽ xóa dữ liệu demo.
+
+Chạy từng dịch vụ: `pnpm dev:math`, `pnpm dev:core`, `pnpm dev:frontend`. Core profile `dev` cần PostgreSQL trên máy như `application-dev.yaml`; frontend chuyển `/api/` tới core ở :8080. Tên biến cấu hình nằm ở `.env.example`; không tạo hoặc đọc file bí mật bằng agent.
 
 ## Demo khoảng năm phút
 
@@ -120,17 +86,18 @@ PostgreSQL 18 chỉ mở trong mạng compose. Dừng: `docker compose -f compos
 
 ```bash
 pnpm test:math
-pnpm test:web              # typecheck + lint + unit
-pnpm --filter web test:e2e
+pnpm test:frontend        # Vitest
+pnpm test:core            # Maven verify + ArchUnit
+pnpm lint                 # khóa, FLAT, tương phản
+node --test scripts/check-flat.test.mjs
+pnpm --filter frontend e2e
 ```
 
-Số liệu lần dựng nguyên mẫu: [`docs/KIEM-THU.md`](docs/KIEM-THU.md). CI chạy cùng bộ lệnh trên mọi push/PR (`.github/workflows/ci.yml`).
+Số liệu lần dựng nguyên mẫu: [`docs/KIEM-THU.md`](docs/KIEM-THU.md). Kết quả lịch sử không đại diện cho SHA hiện tại; dùng cổng đúng vùng và ghi kết quả thực tế. CI: `.github/workflows/ci.yml`.
 
 ## Deploy
 
-Render free, không thẻ: một container Next + SymPy + Postgres. Chi tiết giữ thức, Neon, hạn 30 ngày: [`docs/TRIEN-KHAI.md`](docs/TRIEN-KHAI.md).
-
-[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/meiiie/du_an_em_linh)
+Blueprint `render.yaml` mô tả frontend, core và math riêng biệt cùng PostgreSQL. Hướng dẫn demo và những phần cần cấu hình trước production: [`docs/TRIEN-KHAI.md`](docs/TRIEN-KHAI.md). Chưa deploy trong phiên hoàn thiện này.
 
 ## Nhánh
 
@@ -153,6 +120,7 @@ Chủ repo bật bảo vệ nhánh và mô tả repo: [`docs/GITHUB.md`](docs/GI
 | [`CONTRIBUTING.md`](CONTRIBUTING.md) | Nhánh, PR, lệnh |
 | [`SUPPORT.md`](SUPPORT.md) | Chỗ hỏi / mở issue |
 | [`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md) | Contributor Covenant 2.1 |
+| [`docs/ASSUMPTIONS.md`](docs/ASSUMPTIONS.md) | Phạm vi mặc định, giới hạn và việc để sau |
 | [`docs/DESIGN.md`](docs/DESIGN.md) | Token, lưới 8 px, nút 40/44 |
 | [`docs/AI-HARNESS.md`](docs/AI-HARNESS.md) | Nhà AI, không fallback, không lộ đáp án |
 | [`docs/adr/`](docs/adr/) | Quyết định kiến trúc (ADR 011 — kiến trúc v2: Angular + Spring Boot + dịch vụ toán) |
@@ -164,7 +132,7 @@ Chủ repo bật bảo vệ nhánh và mô tả repo: [`docs/GITHUB.md`](docs/GI
 
 - Chỉ đơn điệu và cực trị hàm một biến. Bài đúng/sai và tham số không có lời giải 5 bước → hàng chờ.
 - Tầng 2 tìm cụm từ, không nhúng vector. Tài liệu «chưa rõ quyền» bị bỏ.
-- ChatGPT = khóa API chính thức; không device-OAuth Codex.
+- Nhà AI trực tuyến chỉ dùng khóa API chính thức sau khi tích hợp được kiểm chứng; không device-OAuth Codex.
 - Chưa có cổng phụ huynh. Chấm đọc ô LaTeX thường, không đọc MathLive.
 
 ## Giấy phép

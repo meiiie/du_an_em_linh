@@ -1,7 +1,7 @@
 # v2 cục bộ, một lệnh: docker compose -f compose.v2.yaml up --build --wait   → http://localhost:4200
 # PostgreSQL 18 + services/core (profile dev: tài khoản thử, lớp «12A1 thử», nội dung chủ đề, giao bài thử bằng SQL
 # services/core/src/main/resources/du-lieu-thu/giao-bai.sql) + services/math + apps/frontend (nginx,
-# /api/ → core). Tách khỏi docker-compose.yml của v0 để không đổi cách chạy v0. Chỉ dữ liệu tổng hợp (ADR 006).
+# /api/ → core). docker-compose.yml bao gồm tệp này. Chỉ dữ liệu tổng hợp (ADR 006).
 # Mọi cổng chỉ mở trên 127.0.0.1; container không root, bỏ mọi capability, không leo quyền; log xoay vòng.
 name: hoc-toan-v2
 
@@ -47,8 +47,7 @@ services:
       # Trống: core dùng khóa tạm, token mất hiệu lực mỗi lần khởi động lại (đủ cho chạy thử).
       APP_IDENTITY_JWT_SECRET: ${APP_IDENTITY_JWT_SECRET:-}
       APP_MATH_BASE_URL: http://math:8000
-      # Nhà AI cho gia sư (research R3), cùng tên biến với v0 (.env.example). Khóa trống = chỉ nhà `offline`.
-      # Gia sư của core (#91) chưa có: khi có sẽ nhận khóa qua Docker secret như web của v0.
+      # Gia sư mặc định offline; bí mật không nằm trong frontend hoặc image.
       LLM_BASE_URL: ${LLM_BASE_URL:-https://api.openai.com/v1}
       LLM_API_KEY: ${LLM_API_KEY:-}
       LLM_MODEL: ${LLM_MODEL:-gpt-4o-mini}
@@ -94,8 +93,10 @@ services:
     build:
       context: .
       dockerfile: apps/frontend/Dockerfile
+      args:
+        GIT_SHA: ${BUILD_SHA:-development}
     environment:
-      CORE_URL: http://core:8080
+      CORE_HOSTPORT: core:8080
       SITE_URL: ${SITE_URL:-http://localhost:4200}
     depends_on:
       core:

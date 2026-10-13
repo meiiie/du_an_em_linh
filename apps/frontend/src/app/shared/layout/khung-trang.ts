@@ -136,6 +136,14 @@ const MAN_HINH_RONG = '(min-width: 64rem)';
         <router-outlet />
       </main>
     </div>
+    @if (!manHinhRong()) {
+      <nav class="bottom-nav" aria-label="Điều hướng nhanh" [attr.inert]="nganKeoMo() ? '' : null">
+        @for (m of mucDuoi(); track m.duongDan) {
+          <a [routerLink]="m.duongDan" routerLinkActive="dang-mo" [routerLinkActiveOptions]="{exact:laTrangChu(m.duongDan)}" ariaCurrentWhenActive="page"><app-bieu-tuong [ten]="m.bieuTuong" /><span>{{m.nhan}}</span></a>
+        }
+        <button type="button" (click)="mo()"><app-bieu-tuong ten="menu" /><span>{{khuVuc() === 'HS' ? 'Tôi' : 'Thêm'}}</span></button>
+      </nav>
+    }
     <p class="sr-only" aria-live="polite" data-testid="thong-bao-trang">{{ thongBaoTrang() }}</p>
   `,
   styles: `
@@ -230,7 +238,6 @@ const MAN_HINH_RONG = '(min-width: 64rem)';
     .ray.mo {
       transform: none;
       visibility: visible;
-      box-shadow: var(--shadow-lg);
       /* Mở: hiện ngay, không chuyển tiếp visibility. Nếu chuyển tiếp, khung đầu vẫn hidden và focus() vào nút đóng
          (afterNextRender) bị trình duyệt bỏ qua. */
       transition: transform 200ms var(--ease);
@@ -281,7 +288,6 @@ const MAN_HINH_RONG = '(min-width: 64rem)';
     /* Mục đang mở: nền nhạt theo màu nhấn và vạch trái 3 px như thanh bên Wiii. */
     .muc.dang-mo {
       background: color-mix(in srgb, var(--accent) 12%, transparent);
-      box-shadow: inset 3px 0 0 var(--accent);
       color: var(--ink);
       font-weight: 600;
     }
@@ -400,10 +406,11 @@ export class KhungTrang {
 
   protected readonly phien = inject(Phien);
   protected readonly cacMuc = computed(() => DIEU_HUONG[this.khuVuc()]);
+  protected readonly mucDuoi = computed(() => this.khuVuc() === 'GV' ? this.cacMuc().filter(m=>['/gv','/gv/tien-do','/gv/giao','/gv/duyet'].includes(m.duongDan)) : this.cacMuc());
   protected readonly tenKhuVuc = computed(() => TEN_KHU_VUC[this.khuVuc()]);
   /** «Menu học sinh» / «Menu giáo viên». */
   protected readonly nhanMenu = computed(() => 'Menu ' + this.tenKhuVuc().toLocaleLowerCase('vi'));
-  protected readonly trangChu = computed(() => (this.khuVuc() === 'HS' ? '/hs' : '/gv'));
+  protected readonly trangChu = computed(() => (this.khuVuc() === 'HS' ? '/hs' : this.khuVuc() === 'GV' ? '/gv' : '/qt'));
   protected readonly laTrangChu = laTrangChuKhuVuc;
   /** Chữ đầu của tên gọi (từ cuối: «Nguyễn Văn An» → «A») cho ô tròn ở chân thanh bên. */
   protected readonly chuDau = computed(() =>

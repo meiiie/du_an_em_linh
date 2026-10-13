@@ -34,3 +34,7 @@ Khác với v0:
 - Mã dòng công thức `d-1` … `d-6` trùng mã của test `services/math/tests/test_dong_cong_thuc.py`.
 - Khóa của tài liệu xếp như bản vá `sp-tai-lieu-0001` của lab Sư phạm, để importer đọc một định dạng cho cả tài liệu của
   v0 và của lab.
+
+## Lưu trữ từ 2026-10-13
+
+Theo yêu cầu gỡ v0 của chủ repo, `apps/web` và script trích `data/v0/trich-tu-seed.cjs` đã được gỡ. Các JSON snapshot trong thư mục này giữ nguyên cho importer core; các đường dẫn seed/mã v0 ở phần nguồn phía trên là tham chiếu lịch sử, lấy lại qua commit Git đã ghi, không phải lệnh hiện hành. Không sinh lại hay tự sửa nội dung sư phạm.

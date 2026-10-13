@@ -1,6 +1,6 @@
 import { TenBieuTuong } from '../ui/bieu-tuong';
 
-export type KhuVuc = 'HS' | 'GV';
+export type KhuVuc = 'HS' | 'GV' | 'QT';
 
 export interface MucDieuHuong {
   readonly duongDan: string;
@@ -21,7 +21,8 @@ export const DIEU_HUONG: Record<KhuVuc, readonly MucDieuHuong[]> = {
     { duongDan: '/hs/kho', nhan: 'Công thức', testId: 'nav-hs-kho', bieuTuong: 'kho' },
   ],
   GV: [
-    { duongDan: '/gv', nhan: 'Lớp', testId: 'nav-gv-tong-quan', bieuTuong: 'home' },
+    { duongDan: '/gv', nhan: 'Tổng quan', testId: 'nav-gv-tong-quan', bieuTuong: 'home' },
+    { duongDan: '/gv/giao', nhan: 'Giao bài', testId: 'nav-gv-giao', bieuTuong: 'book' },
     { duongDan: '/gv/duyet', nhan: 'Duyệt', testId: 'nav-gv-duyet', bieuTuong: 'inbox' },
     { duongDan: '/gv/ngan-hang', nhan: 'Đề bài', testId: 'nav-gv-ngan-hang', bieuTuong: 'bank' },
     { duongDan: '/gv/tai-lieu', nhan: 'Tài liệu', testId: 'nav-gv-tai-lieu', bieuTuong: 'file' },
@@ -30,11 +31,16 @@ export const DIEU_HUONG: Record<KhuVuc, readonly MucDieuHuong[]> = {
     { duongDan: '/gv/ket-noi-ai', nhan: 'Gia sư', testId: 'nav-gv-ket-noi-ai', bieuTuong: 'plug' },
     { duongDan: '/gv/cai-dat', nhan: 'Cài lớp', testId: 'nav-gv-cai-dat', bieuTuong: 'settings' },
   ],
+  QT: [
+    { duongDan: '/qt', nhan: 'Người dùng', testId: 'nav-qt-nguoi-dung', bieuTuong: 'home' },
+    { duongDan: '/qt/lop', nhan: 'Lớp học', testId: 'nav-qt-lop', bieuTuong: 'book' },
+    { duongDan: '/qt/nhat-ky', nhan: 'Nhật ký', testId: 'nav-qt-nhat-ky', bieuTuong: 'file' },
+  ],
 };
 
-export const TEN_KHU_VUC: Record<KhuVuc, string> = { HS: 'Học sinh', GV: 'Giáo viên' };
+export const TEN_KHU_VUC: Record<KhuVuc, string> = { HS: 'Học sinh', GV: 'Giáo viên', QT: 'Quản trị' };
 
 /** Trang chủ của khu vực chỉ sáng khi đứng đúng trang đó, mục khác sáng cả ở trang con (như `navActive` của v0). */
 export function laTrangChuKhuVuc(duongDan: string): boolean {
-  return duongDan === '/hs' || duongDan === '/gv';
+  return duongDan === '/hs' || duongDan === '/gv' || duongDan === '/qt';
 }

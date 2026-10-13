@@ -2,7 +2,7 @@
 
 **Sứ mệnh:** quyết định học sinh và giáo viên nhìn thấy, chạm vào, hiểu điều gì — dựa trên tham chiếu sản phẩm thật, nguyên lý có nguồn, và thử trên màn 390 px / 1280 px trước khi viết mã.
 
-**Nguồn chuẩn hiện hành:** [`docs/DESIGN.md`](../../docs/DESIGN.md) — từ 2026-10-06: khung kiểu Wiii (sáng kem mặc định, tối than ấm), bảng toán 3b1b, phông hệ thống, lưới 8 px, nút 40/44, tâm quang học 46 % (nghiên cứu `studies/2026-10-06-wiii-3b1b.md`). Hệ «phiếu làm bài» cũ (mực / giấy, IBM Plex) giữ ở v0. Lab không sửa trực tiếp file đó; lab đề xuất, chủ repo duyệt, rồi mới nâng lên.
+**Nguồn chuẩn hiện hành:** [`docs/DESIGN.md`](../../docs/DESIGN.md) — từ 2026-10-06: khung kiểu Wiii (sáng kem mặc định, tối than ấm), bảng toán 3b1b, phông hệ thống, lưới 8 px, nút 40/44, tâm quang học 46 % (nghiên cứu `studies/2026-10-06-wiii-3b1b.md`). Ngày 2026-10-13 chủ repo chốt FLAT: không bóng, không vạch nhấn trái/dải màu mép; hướng này ưu tiên mọi nghiên cứu và nguyên mẫu cũ. v0 đã gỡ. Lab không sửa trực tiếp file đó; lab đề xuất, chủ repo duyệt, rồi mới nâng lên.
 
 ## Cấu trúc
 

@@ -6,12 +6,12 @@ Nguồn chuẩn cho mọi agent (Codex, Cursor, Claude Code…). Claude Code đ�
 
 **MathL+** (phần mềm học toán với AI) — hợp đồng dài hạn. Tên do chủ repo chọn ngày 2026-10-03 (#124). Tên kỹ thuật giữ nguyên: gói `vn.hoctapcanman`, CSDL `hoc_toan_core`, image `hoc-toan-*`, repo. v0 giữ tên hiển thị cũ. Mục tiêu sản phẩm (đọc từ sơ đồ khách): [`docs/product/MUC-TIEU.md`](docs/product/MUC-TIEU.md).
 
-- **v0 (mã hiện có):** nguyên mẫu NCKH, **một** chủ đề Toán 12 — đơn điệu và cực trị. `apps/web` (Next.js) + `services/math` (FastAPI + SymPy). Mọi chữ trên màn hình là tiếng Việt. Demo mặc định nhà `offline` — chạy không cần `LLM_API_KEY`.
-- **v2 (chấp nhận 2026-10-01, [ADR 011](docs/adr/011-kien-truc-v2.md)):** `apps/frontend` (Angular 22) + `services/core` (Spring Boot 4.1, Java 25) + giữ `services/math`. Làm theo pha trong [`docs/product/LO-TRINH.md`](docs/product/LO-TRINH.md); `apps/web` (v0) đóng băng, chỉ sửa lỗi, gỡ khi v2 tương đương.
+- **Hiện hành (chủ repo, 2026-10-13):** một chủ đề Toán 12 — đơn điệu và cực trị; `apps/frontend` + `services/core` + `services/math`. Mọi chữ trên màn hình là tiếng Việt. Demo dùng dữ liệu tổng hợp và gia sư `offline`. `apps/web` đã được gỡ theo yêu cầu trực tiếp; giữ snapshot `data/v0` cho importer.
+- **v2 (chấp nhận 2026-10-01, [ADR 011](docs/adr/011-kien-truc-v2.md)):** `apps/frontend` (Angular 22) + `services/core` (Spring Boot 4.1, Java 25) + giữ `services/math`. Làm theo pha trong [`docs/product/LO-TRINH.md`](docs/product/LO-TRINH.md); yêu cầu chủ repo ngày 2026-10-13 thay điều kiện giữ v0: gỡ `apps/web`, chỉ phát triển v2.
 
 ## Thứ bậc và bản đồ
 
-Hiến chương [`docs/HIEN-CHUONG.md`](docs/HIEN-CHUONG.md) > ADR đã chấp nhận (`docs/adr/`) > tệp này > rule, skill.
+**Chỉ đạo trực tiếp của chủ repo ngày 2026-10-13 ưu tiên khi xung đột về FLAT, gỡ v0 và quyền Codex hiện thực.** Các ràng buộc an toàn toán, dữ liệu và gia sư giữ nguyên. Hiến chương [`docs/HIEN-CHUONG.md`](docs/HIEN-CHUONG.md) > ADR đã chấp nhận (`docs/adr/`) > tệp này > rule, skill.
 
 | Cần | Đọc |
 | --- | --- |
@@ -36,23 +36,24 @@ Hiến chương [`docs/HIEN-CHUONG.md`](docs/HIEN-CHUONG.md) > ADR đã chấp n
 
 ```bash
 pnpm dev:math
-pnpm dev:web
-pnpm db:migrate && pnpm seed
+pnpm --filter frontend dev
+# Core profile dev: Flyway + importer tự nạp dữ liệu tổng hợp
 pnpm test:math
-pnpm test:web                       # typecheck + lint + unit
-pnpm --filter web test:e2e
+node scripts/check-flat.mjs
+node --test scripts/check-flat.test.mjs
+pnpm --filter frontend e2e
 pnpm test:khoa                      # quét khóa trong git
 (cd services/core && ./mvnw verify)  # v2 core: build + test + ArchUnit (JDK 25)
 pnpm --filter frontend build && pnpm --filter frontend test  # v2 frontend (Node 24)
 node --test .claude/hooks/*.test.mjs  # test hook của harness
 ```
 
-Lệnh cục bộ: `apps/web/AGENTS.md`, `services/math/AGENTS.md`, `services/core/AGENTS.md`, `apps/frontend/AGENTS.md`. Chạy test của đúng thư mục đã đụng, không chạy cả repo khi không cần.
+Lệnh cục bộ: `services/math/AGENTS.md`, `services/core/AGENTS.md`, `apps/frontend/AGENTS.md`. Chạy test của đúng thư mục đã đụng, không chạy cả repo khi không cần.
 
 ## Cách làm
 
 1. Việc đến từ GitHub Issue có tiêu chí nghiệm thu. Một việc → một nhánh `feat/` `fix/` `docs/` `chore/` → một PR vào `main`. Không chồng PR, không đẩy thẳng `main`, agent không merge.
-2. Đọc bản đồ rồi sửa đúng tầng: UI v0 → `apps/web`; UI v2 → `apps/frontend`; nghiệp vụ v2 → `services/core`; CAS → `services/math` (sandbox). Diff tối thiểu, đúng phạm vi.
+2. Đọc bản đồ rồi sửa đúng tầng: UI → `apps/frontend`; nghiệp vụ v2 → `services/core`; CAS → `services/math` (sandbox). Diff tối thiểu, đúng phạm vi.
 3. Commit Conventional Commits (tiêu đề tiếng Việt được), trailer `Co-Authored-By` khi agent viết. Stage từng đường dẫn.
 4. Trước PR: chạy cổng của vùng đã đụng, ghi số đo thật (lệnh + kết quả + SHA) vào PR. Không viết «đã test» chung chung.
 5. Quyết định khó đảo ngược → phân tích ở `labs/decisions/`, ADR «Đề xuất», chờ chủ repo duyệt rồi mới viết mã.
@@ -61,9 +62,11 @@ Lệnh cục bộ: `apps/web/AGENTS.md`, `services/math/AGENTS.md`, `services/co
 
 ## Giao diện
 
-v2 (`apps/frontend`): phòng Wiii, bảng phấn 3b1b (chủ repo, 2026-10-06): khung ấm kiểu Wiii (sáng mặc định, tối theo máy), vùng toán là tấm bảng tối với màu Manim. v0 (`apps/web`) giữ giao diện «phiếu làm bài» cũ khi sửa lỗi. Không kit Figma Edu*, không Literata, không chép hex Coursera `#0056D2`, Khan `#1865f2`, IBM `#0F62FE`, Canvas electric, Brilliant pear.
+**FLAT — luật chủ repo, 2026-10-13:** không bóng đổ kể cả inset, không token/utility bóng, không viền nhấn trái/inline-start hoặc dải màu ở mép. Phân cấp bằng nền, chữ, khoảng trắng, viền 1 px đều bốn cạnh; focus dùng outline 2 px. Luật này thay mọi chỉ dẫn bóng/vạch trái cũ trong docs, rule và lab. Cổng: `node scripts/check-flat.mjs`.
 
-Lưới **8 px**. Nút: cao thị giác **40**, mục tiêu chạm **44**, đệm ngang **16**, bán kính **8** ở v2 (v0 giữ **6**). `padding` nới hit; `margin` không. Khối đứng: **tâm quang học ≈ 46 %** từ đỉnh, dư dưới : dư trên = **3 : 2**. Chi tiết và nguồn: `docs/DESIGN.md`.
+v2 (`apps/frontend`): phòng Wiii, bảng phấn 3b1b (chủ repo, 2026-10-06): khung ấm kiểu Wiii (sáng mặc định, tối theo máy), vùng toán là tấm bảng tối với màu Manim. Không kit Figma Edu*, không Literata, không chép hex Coursera `#0056D2`, Khan `#1865f2`, IBM `#0F62FE`, Canvas electric, Brilliant pear.
+
+Lưới **8 px**. Nút: cao thị giác **40**, mục tiêu chạm **44**, đệm ngang **16**, bán kính **8**. `padding` nới hit; `margin` không. Khối đứng: **tâm quang học ≈ 46 %** từ đỉnh, dư dưới : dư trên = **3 : 2**. Chi tiết và nguồn: `docs/DESIGN.md`.
 
 Skill nạp khi cần: Claude Code `.claude/skills/` (`design-study`, …); Cursor `.cursor/skills/frontend-design`, `.cursor/skills/web-design-guidelines`, `.cursor/skills/fastapi-routers`.
 

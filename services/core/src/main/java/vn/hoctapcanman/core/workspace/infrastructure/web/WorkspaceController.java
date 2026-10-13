@@ -1,0 +1,48 @@
+package vn.hoctapcanman.core.workspace.infrastructure.web;
+import java.io.IOException;
+import java.util.*;
+import jakarta.validation.Valid;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.web.multipart.MultipartFile;
+import vn.hoctapcanman.core.workspace.application.dto.WorkspaceDto.*;
+import vn.hoctapcanman.core.workspace.application.service.WorkspaceService;
+@RestController
+public class WorkspaceController {
+ private final WorkspaceService service;
+ public WorkspaceController(WorkspaceService service){this.service=service;}
+ private UUID actor(Jwt jwt){return UUID.fromString(jwt.getSubject());}
+ @GetMapping("/api/gv/lop") public List<Item> classes(@AuthenticationPrincipal Jwt jwt){return service.classes(actor(jwt));}
+ @GetMapping("/api/gv/tong-quan") public Dashboard dashboard(@AuthenticationPrincipal Jwt jwt,@RequestParam UUID lopId){return service.dashboard(actor(jwt),lopId);}
+ @GetMapping("/api/gv/tien-do") public List<Item> students(@AuthenticationPrincipal Jwt jwt,@RequestParam UUID lopId){return service.students(actor(jwt),lopId);}
+ @GetMapping("/api/gv/hoc-sinh/{id}") public Student student(@AuthenticationPrincipal Jwt jwt,@PathVariable UUID id,@RequestParam UUID lopId){return service.student(actor(jwt),lopId,id);}
+ @PostMapping("/api/gv/muc-hieu") public Result override(@AuthenticationPrincipal Jwt jwt,@Valid @RequestBody MasteryMasteryOverride request){return service.override(actor(jwt),request);}
+ @GetMapping("/api/gv/ngan-hang") public List<Item> bank(@AuthenticationPrincipal Jwt jwt,@RequestParam UUID lopId){return service.bank(actor(jwt),lopId);}
+ @GetMapping("/api/gv/giao") public List<Item> assignments(@AuthenticationPrincipal Jwt jwt,@RequestParam UUID lopId){return service.assignments(actor(jwt),lopId);}
+ @PostMapping("/api/gv/giao") public Result assign(@AuthenticationPrincipal Jwt jwt,@Valid @RequestBody Assign request){return service.assign(actor(jwt),request);}
+ @GetMapping("/api/hs/che-do") public List<Item> modes(@AuthenticationPrincipal Jwt jwt){return service.modes(actor(jwt));}
+ @GetMapping("/api/hs/goi-bai") public List<Item> recommend(@AuthenticationPrincipal Jwt jwt){return service.recommendations(actor(jwt));}
+ @GetMapping("/api/hs/kho") public Library library(@AuthenticationPrincipal Jwt jwt){return service.library(actor(jwt));}
+ @GetMapping("/api/gv/kho") public Library teacherLibrary(@AuthenticationPrincipal Jwt jwt,@RequestParam UUID lopId){return service.library(actor(jwt),lopId);}
+ @GetMapping("/api/hs/flashcards/export") public Export export(@AuthenticationPrincipal Jwt jwt){return service.export(actor(jwt));}
+ @PostMapping(value="/api/gv/tai-lieu",consumes="multipart/form-data") public Result upload(@AuthenticationPrincipal Jwt jwt,@RequestParam UUID lopId,@RequestParam String title,@RequestParam(defaultValue="tu_soan") String licenseStatus,@RequestParam MultipartFile file)throws IOException{return service.upload(actor(jwt),lopId,title,licenseStatus,Objects.requireNonNullElse(file.getOriginalFilename(),""),file.getBytes());}
+ @GetMapping("/api/gv/cong-thuc") public List<Item> formulas(@AuthenticationPrincipal Jwt jwt,@RequestParam UUID lopId){return service.library(actor(jwt),lopId).formulas();}
+ @PostMapping("/api/gv/cong-thuc") public Result formula(@AuthenticationPrincipal Jwt jwt,@Valid @RequestBody Formula request){return service.formula(actor(jwt),request);}
+ @PostMapping("/api/gv/cong-thuc/kiem") public Result check(@AuthenticationPrincipal Jwt jwt,@RequestParam UUID lopId){return service.checkFormulas(actor(jwt),lopId);}
+ @GetMapping("/api/gv/duyet") public List<Item> reviews(@AuthenticationPrincipal Jwt jwt,@RequestParam UUID lopId){return service.reviews(actor(jwt),lopId);}
+ @PostMapping("/api/gv/duyet/{id}") public Result review(@AuthenticationPrincipal Jwt jwt,@PathVariable UUID id,@Valid @RequestBody Review request){return service.review(actor(jwt),id,request);}
+ @GetMapping("/api/gv/cai-dat") public Settings settings(@AuthenticationPrincipal Jwt jwt,@RequestParam UUID lopId){return service.settings(actor(jwt),lopId);}
+ @PutMapping("/api/gv/cai-dat") public Result settings(@AuthenticationPrincipal Jwt jwt,@Valid @RequestBody Settings request){return service.settings(actor(jwt),request);}
+ @GetMapping("/api/hs/lich") public List<Item> schedule(@AuthenticationPrincipal Jwt jwt){return service.schedule(actor(jwt));}
+ @PostMapping("/api/hs/lich") public Result schedule(@AuthenticationPrincipal Jwt jwt,@Valid @RequestBody Schedule request){return service.schedule(actor(jwt),request);}
+ @PostMapping("/api/hs/lich/{id}/xong") public Result complete(@AuthenticationPrincipal Jwt jwt,@PathVariable UUID id){return service.complete(actor(jwt),id);}
+ @GetMapping("/api/hs/nhac") public List<Item> reminders(@AuthenticationPrincipal Jwt jwt){return service.reminders(actor(jwt));}
+ @GetMapping("/api/qt/nguoi-dung") public List<Item> users(@AuthenticationPrincipal Jwt jwt){return service.users(actor(jwt));}
+ @PostMapping("/api/qt/nguoi-dung") public Result user(@AuthenticationPrincipal Jwt jwt,@Valid @RequestBody NewUser request){return service.createUser(actor(jwt),request);}
+ @PostMapping("/api/qt/nguoi-dung/bulk") public Result bulk(@AuthenticationPrincipal Jwt jwt,@Valid @RequestBody Bulk request){return service.bulk(actor(jwt),request);}
+ @GetMapping("/api/qt/lop") public List<Item> allClasses(@AuthenticationPrincipal Jwt jwt){return service.allClasses(actor(jwt));}
+ @PostMapping("/api/qt/lop") public Result newClass(@AuthenticationPrincipal Jwt jwt,@Valid @RequestBody NewClass request){return service.createClass(actor(jwt),request);}
+ @PostMapping("/api/qt/lop/phan-cong") public Result enroll(@AuthenticationPrincipal Jwt jwt,@Valid @RequestBody Enrollment request){return service.enroll(actor(jwt),request);}
+ @GetMapping("/api/qt/nhat-ky") public List<Item> audit(@AuthenticationPrincipal Jwt jwt){return service.audit(actor(jwt));}
+}

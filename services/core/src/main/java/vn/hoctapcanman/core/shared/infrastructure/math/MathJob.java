@@ -7,6 +7,7 @@ import java.time.Duration;
  * {@code specs/001-lat-cat-doc/contracts/math-v1.md}. Dịch vụ toán tự chặn trần 20 s cho mỗi job.
  */
 public enum MathJob {
+    EXTRACT("/v1/extract", Duration.ofSeconds(22)),
     GRADE("/v1/grade", Duration.ofSeconds(12)),
     VERIFY("/v1/verify", Duration.ofSeconds(20)),
     FILTER("/v1/filter", Duration.ofSeconds(12)),

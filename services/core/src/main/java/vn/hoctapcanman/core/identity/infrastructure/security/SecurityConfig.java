@@ -30,6 +30,7 @@ public class SecurityConfig {
                         .requestMatchers("/actuator/health", "/actuator/health/**", "/error").permitAll()
                         // Vai trò tài khoản theo đường dẫn, như guard của apps/frontend (#111): cổng ClassMembership
                         // chỉ xét vai trò trong lớp, nên tài khoản STUDENT có ghi danh TEACHER vẫn bị chặn ở đây.
+                        .requestMatchers("/api/qt/**").hasAnyRole("ADMIN", "SCHOOL_ADMIN")
                         .requestMatchers("/api/gv/**").hasAnyRole("TEACHER", "SCHOOL_ADMIN", "ADMIN")
                         .requestMatchers("/api/hs/**").hasRole("STUDENT")
                         .anyRequest().authenticated())

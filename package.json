@@ -2,7 +2,7 @@
   "name": "hoc-toan-ai",
   "version": "0.1.0",
   "private": true,
-  "description": "Nguyên mẫu NCKH — học Toán 12 (đơn điệu và cực trị) với gia sư AI",
+  "description": "MathL+ — học toán với gia sư AI",
   "license": "MIT",
   "homepage": "https://hoc-toan-ai.onrender.com",
   "bugs": {
@@ -13,7 +13,7 @@
     "url": "git+https://github.com/meiiie/du_an_em_linh.git"
   },
   "engines": {
-    "node": ">=22"
+    "node": "^22.22.3 || ^24.15.0 || >=26"
   },
   "packageManager": "pnpm@10.33.3",
   "pnpm": {
@@ -28,17 +28,22 @@
     ]
   },
   "scripts": {
-    "dev:web": "pnpm --filter web dev",
+    "dev:frontend": "pnpm --filter frontend dev",
+    "dev:core": "cd services/core && ./mvnw spring-boot:run -Dspring-boot.run.profiles=dev",
     "dev:math": "cd services/math && .venv/bin/uvicorn app.main:app --host 127.0.0.1 --port 8000",
-    "seed": "pnpm --filter web seed",
-    "db:migrate": "pnpm --filter web db:migrate",
+    "build": "pnpm --filter frontend build",
+    "lint": "node scripts/kiem-khoa.mjs && node scripts/check-flat.mjs && node scripts/tuong-phan-token.mjs",
+    "lint:flat": "node scripts/check-flat.mjs",
+    "typecheck": "pnpm --filter frontend exec tsc --noEmit -p tsconfig.app.json",
+    "test:unit": "pnpm --filter frontend test",
+    "test:frontend": "pnpm --filter frontend build && pnpm --filter frontend test",
+    "test:core": "cd services/core && ./mvnw verify",
     "test:math": "cd services/math && .venv/bin/pytest",
-    "lint": "node scripts/kiem-khoa.mjs && pnpm --filter web lint",
-    "typecheck": "pnpm --filter web typecheck",
-    "test:unit": "pnpm --filter web test:unit",
-    "test:do": "pnpm --filter web test:do",
-    "test:web": "pnpm typecheck && pnpm lint && pnpm test:unit",
+    "test:scripts": "node --test scripts/*.test.mjs",
     "test:version": "node scripts/kiem-phien-ban.mjs && node scripts/kiem-khoa.mjs",
-    "test:khoa": "node scripts/kiem-khoa.mjs"
+    "test:khoa": "node scripts/kiem-khoa.mjs",
+    "e2e": "pnpm --filter frontend e2e",
+    "compose:up": "docker compose up --build --wait",
+    "compose:smoke": "bash scripts/khoi-v2.sh"
   }
 }

@@ -71,6 +71,7 @@ const BAT_BUOC = [
   chu("wait", "canvas"),
   chu("mark", "canvas"),
   chu("mark", "wash"),
+  chu("mark", "raise"),
   dk("accent", "canvas"),
   dk("accent", "wash"),
   chu("#FFFFFF", "action"),
@@ -84,7 +85,6 @@ const DOI_CHUNG = [
   { ...dk("line", "canvas"), ly: "kẻ chia trang trí" },
   { ...dk("board-line", "board"), ly: "kẻ trang trí trên bảng" },
   { ...dk("accent", "raise"), cheDo: ["dark"], ly: "vì thế có token focus" },
-  { ...chu("mark", "raise"), cheDo: ["dark"], ly: "chữ mark không trên raise tối" },
   { ...chu("#FFFFFF", "accent"), ly: "vì thế nền nút là action" },
   { ...chu("#FFFFFF", "action-hover"), cheDo: ["dark"], ly: "vì thế chữ nút khi trỏ ở tối là mực" },
 ];

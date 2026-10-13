@@ -1,8 +1,14 @@
 # Hệ thống thiết kế — Phòng Wiii, bảng phấn 3b1b
 
-**Hướng từ 2026-10-06 (chủ repo):** giao diện v2 (`apps/frontend`, Angular) theo kiểu ứng dụng Wiii của chủ repo, pha toán học kiểu 3Blue1Brown. Khung ứng dụng ấm như Wiii (sáng mặc định, tối theo máy hoặc nút đổi); mọi vùng toán (công thức lớn, bảng xét dấu, đồ thị) là tấm bảng tối kiểu 3b1b ở cả hai chế độ. Nghiên cứu, ảnh mô phỏng và lý do: `labs/design/studies/2026-10-06-wiii-3b1b.md`. Cấu trúc trang (phiếu, hàng việc, mục lục năm bước, quy tắc chữ) giữ như dưới; màu, chữ, bán kính, bóng đổi theo hướng mới. v0 (`apps/web`) đóng băng, giữ giao diện cũ.
+**Hướng từ 2026-10-06 (chủ repo):** giao diện v2 (`apps/frontend`, Angular) theo kiểu ứng dụng Wiii của chủ repo, pha toán học kiểu 3Blue1Brown. Khung ứng dụng ấm như Wiii (sáng mặc định, tối theo máy hoặc nút đổi); mọi vùng toán (công thức lớn, bảng xét dấu, đồ thị) là tấm bảng tối kiểu 3b1b ở cả hai chế độ. Nghiên cứu, ảnh mô phỏng và lý do: `labs/design/studies/2026-10-06-wiii-3b1b.md`. Cấu trúc trang (phiếu, hàng việc, mục lục năm bước, quy tắc chữ) giữ như dưới; màu, chữ và bán kính theo hướng mới; `apps/web` đã gỡ theo yêu cầu chủ repo ngày 2026-10-13.
 
 Không dùng kit Figma EduPlus / Eduva / EduTracker / EduFlow (Poppins, thẻ KPI, gradient). Đó chính là slop. Nghiên cứu **sản phẩm đang chạy**, lấy cấu trúc chứ không lấy thương hiệu.
+
+## FLAT — chỉ đạo ưu tiên của chủ repo ngày 2026-10-13
+
+Không bóng đổ, kể cả inset, token `--shadow-*` hay utility shadow. Không viền nhấn trái/inline-start, không dải màu ở mép hoặc khối 3D. Phân cấp bằng nền `canvas`/`wash`/`raise`, viền 1 px đều bốn cạnh, khoảng trắng và chữ. Focus dùng `outline` 2 px. Luật này thay mọi chỉ dẫn bóng/vạch trái cũ trong docs, rule, skill và nguyên mẫu.
+
+Cổng `node scripts/check-flat.mjs` quét CSS, HTML và `styles`/`template` nội tuyến TypeScript ở `apps/frontend/src`; báo tệp/dòng, thất bại khi phát hiện vi phạm. Scanner là kiểm tĩnh, nên rà giao diện vẫn cần kiểm dải màu tạo bằng hình ảnh hoặc CSS động. Test: `node --test scripts/check-flat.test.mjs`.
 
 ## Nguồn đã xem
 
@@ -13,7 +19,7 @@ Không dùng kit Figma EduPlus / Eduva / EduTracker / EduFlow (Poppins, thẻ KP
 | [Canvas InstUI](https://instructure.design/) | Ray điều hướng đặc, việc là danh sách/bảng | Electric brand, widget KPI |
 | [Google Classroom](https://support.google.com/chrome/a/answer/15210733) | Hàng việc 2 dòng (tên + meta), không lưới thẻ khóa học | Material purple |
 | Linear / Stripe Dashboard | Kẻ 1 px, không bóng mềm dưới mọi thẻ | — |
-| Wiii desktop (`github.com/meiiie/wiii`, `wiii-desktop/src/styles/globals.css`, commit `6b1c30b`; đọc mã 2026-10-06, độ tin cao cho giá trị CSS; phần thẻ thương hiệu là nhận định từ ảnh, độ tin trung bình) | Bảng màu ấm sáng / tối theo biến CSS, đất nung cho hành động, bóng ba mức rất nhẹ, easing `cubic-bezier(0.165, 0.85, 0.45, 1)`, thanh bên 260 px, vệt màu mờ ở góc nền; thẻ thương hiệu: lưới mờ trên nền than, nhãn chữ hoa giãn chữ màu xanh nhạt | Mascot Neko, logo, chữ «Wiii» |
+| Wiii desktop (`github.com/meiiie/wiii`, `wiii-desktop/src/styles/globals.css`, commit `6b1c30b`; đọc mã 2026-10-06, độ tin cao cho giá trị CSS; phần thẻ thương hiệu là nhận định từ ảnh, độ tin trung bình) | Bảng màu ấm sáng / tối theo biến CSS, đất nung cho hành động, easing `cubic-bezier(0.165, 0.85, 0.45, 1)`, thanh bên 260 px, vệt màu mờ ở góc nền; thẻ thương hiệu: lưới mờ trên nền than, nhãn chữ hoa giãn chữ màu xanh nhạt | Mascot Neko, logo, chữ «Wiii» |
 | 3Blue1Brown / Manim (stencil `github.com/ghanemja/stencil`, `pptx-math-3b1b/scripts/style.py`, commit `8f5c5a2`; mã màu đối chiếu 3b1b/manim `fafa083` và ManimCE `8dbfd3b` ngày 2026-10-06, độ tin cao; nền `#1C1C1C` là lựa chọn của stencil, Manim mặc định `#333333`) | Nền bảng `#1C1C1C`, màu nhấn BLUE_C `#58C4DD`, TEAL_C `#5CD0B3`, YELLOW_D `#F4D345`, RED_C `#FC6255`, GOLD_C `#F0AC5F`, GREEN_C `#83C167`, GREY_C `#888888` cho kẻ mang nghĩa; nét cong dày bo tròn; công thức serif Computer Modern (KaTeX) | Video, nhân vật Pi |
 | Desmos (`www.desmos.com/calculator`; xem bằng Chromium 2026-10-06, một hàm, độ tin trung bình) | Đồ thị là đối tượng chính, lưới mờ, điểm đặc biệt có chấm, bấm thì hiện tọa độ | Màu, logo |
 
@@ -31,19 +37,19 @@ Chữ đạt ≥ 4,5 : 1, thành phần giao diện ≥ 3 : 1. Bảng ghi ngư�
 | --- | --- | --- | --- |
 | `canvas` | `#FAF9F5` | `#1E1D1B` | Nền trang (Wiii `--surface`) |
 | `wash` | `#F0EEE6` | `#282724` | Thanh bên (cả khi là ngăn kéo trên điện thoại), khối phụ |
-| `raise` | `#FFFFFF` | `#353330` | Thẻ nổi, ô nhập. Không đặt `accent` hay `mark` làm chữ / biểu tượng trên `raise` tối (dưới ngưỡng) |
+| `raise` | `#FFFFFF` | `#353330` | Bề mặt phụ, ô nhập. Không đặt `accent` hay `mark` làm chữ / biểu tượng trên `raise` tối (dưới ngưỡng) |
 | `line` | `#D8D5CD` | `#3A3935` | Kẻ chia 1 px (trang trí, không phải ranh giới duy nhất của một điều khiển) |
 | `line-strong` | `#8A877F` | `#82807A` | Viền ô nhập, nút phụ, ranh giới điều khiển: ≥ 3 : 1 trên `canvas`, `wash`, `raise` (WCAG 1.4.11) |
 | `ink` | `#141413` | `#E8E8E4` | Chữ chính |
 | `ink-2` | `#3D3D3A` | `#C9C8C2` | Chữ phụ đậm |
 | `muted` | `#5F5E58` | `#A8A7A2` | Chữ phụ (Wiii `--text-tertiary` chỉnh đậm cho AA) |
-| `accent` | `#C75B39` | `#C75B39` | Vạch mục đang chọn, dấu «+» của chữ hiệu (sáng) |
+| `accent` | `#C75B39` | `#C75B39` | Màu chữ/ký hiệu mục đang chọn, dấu «+» của chữ hiệu (sáng) |
 | `focus` | `#C75B39` (≥ 3 : 1 trên `wash`, `canvas`, `raise`) | `#D78970` = `accent` 72 % pha trắng như Wiii (`#C75B39` dưới 3 : 1 trên `raise` tối) | Viền focus 2 px, `outline-offset: 2px` để viền không chạm nền nút. Hai chỗ vẽ viền vào trong (`-2px`), `focus` vẫn ≥ 3 : 1 với nền nút: mọi điều khiển trong thanh trên 48 px (cao 44 px, viền ngoài bị cắt ở mép trên màn) và nút nằm trong ô nhập (viền ngoài sẽ đè viền ô) |
 | `action` | `#AE5630` | `#AE5630` | Nền nút chính, chữ trắng (`#C75B39` với chữ trắng dưới 4,5 : 1 nên không làm nền nút) |
 | `action-hover` | `#9A4A28`, chữ trắng | `#C4633A`, chữ `#141413` | Nút chính khi trỏ; trên nền tối chữ trắng dưới 4,5 : 1 nên đổi sang chữ mực |
 | `label` | `#2C6FB0` | `#58C4DD` | Nhãn khu vực chữ hoa nhỏ giãn chữ; dấu «+» của chữ hiệu (tối) |
 | `pass` | `#1A7A45` | `#5CD0B3` | Đạt |
-| `mark` | `#B83B2E` | `#FC6255` | Bút đỏ: sai — vẫn **một** màu nhớ. Chữ `mark` chỉ trên `canvas`, `wash` (trên `raise` tối dưới 4,5 : 1) |
+| `mark` | `#B83B2E` | `#FF756B` | Bút đỏ: sai — vẫn **một** màu nhớ. Chữ `mark` trên `canvas`, `wash`, `raise` (tối điều chỉnh sáng hơn để đạt AA) |
 | `wait` | `#8A5A00` | `#F0AC5F` | Chờ |
 | `board` | `#1C1C1C` | `#161615` | Tấm bảng toán (luôn tối) |
 | `board-line` | `#3A3A3A` | `#34332F` | Kẻ trang trí trên bảng (lưới đồ thị, viền tấm bảng): dưới 3 : 1, không mang nghĩa |
@@ -71,7 +77,7 @@ Bảng này là nguồn chuẩn của giá trị và việc; `apps/frontend/src/
 +--------+--------------------------------+
 ```
 
-Desktop: không top bar. Điện thoại: top bar + ngăn kéo (cùng khối thanh bên, nền `wash`, bóng `lg`). Mục đang chọn: nền nhạt theo `accent` và vạch trái 3 px `accent`. Nền trang có vệt màu mờ ở góc như Wiii; chế độ tối thêm lưới mờ 32 px như thẻ thương hiệu Wiii. Bóng ba mức của Wiii chỉ cho thẻ nổi và ngăn kéo, không đặt dưới mọi thẻ. Skip `#noi-dung`.
+Desktop: thanh bên 260 px. Điện thoại: thanh điều hướng đáy 4–5 mục, có safe-area; mục bổ sung trong ngăn kéo. Mục đang chọn dùng nền nhạt, chữ đậm và `aria-current`, không vạch mép. Nền trang có vệt màu mờ ở góc như Wiii; chế độ tối thêm lưới mờ 32 px. Mọi thẻ và ngăn kéo phẳng, không bóng. Skip `#noi-dung`.
 
 Thẻ không còn là đơn vị mặc định. Việc = hàng (Classroom). Bài đang làm = một phiếu (Brilliant). Thành thạo = hàng ô (Khan).
 
@@ -104,7 +110,7 @@ Desktop (`lg`): cột phiếu `1fr` | kẻ 1 px | cột sổ `18–24rem`. Đi�
 
 **Trang công khai:** `/` theo trang Wiii trong meiiie-design-kit (chủ repo, 2026-10-06; đối chiếu: `labs/design/audits/2026-10-06-trang-chu.md`). Nền `raise` (tối: `canvas`), thẻ `canvas` / `wash`, nút viên `.vien-dam` (mực) và `.vien-kem` (kem) chỉ ở trang này. Mở đầu căn giữa: nhãn «Toán 12 · Đơn điệu và cực trị», tiêu đề hai dòng nét thường «Học toán theo từng bước. Tự mình hiểu ra.» với từ gạch chân màu Manim đổi lần lượt (trình đọc màn hình nghe câu cố định), hai nút viên, một dòng giới hạn của bản thử. «Xem MathL+ làm việc»: thẻ cảnh minh họa việc có thật (phiếu năm bước, gia sư, bảng toán kéo được, bảng công thức, mức hiểu), ghi «Minh họa». Rồi «Một bài. Năm bước.», dải bảng 3b1b (tổng riêng Fourier), «Chọn cách bắt đầu.» (học sinh / giáo viên, ảnh minh họa vẽ riêng), «Trước khi dùng», chân trang. Nền phần mở đầu là ảnh vẽ riêng (sáng / tối), giữa để trống cho chữ. Mọi chuyển động tự dừng trong 5 giây (từ xoay một vòng, đổi lần cuối ở 4 s, chuyển tiếp xong ở 4,56 s; dải vẽ một lần khi vào tầm nhìn, xong trong 2,4 s) nên không cần nút tạm dừng (WCAG 2.2.2); giảm chuyển động thì đứng yên. SEO ở `index.html`: mô tả, canonical, Open Graph / Twitter với ảnh 1200 × 630, JSON-LD, manifest, `robots.txt`, `sitemap.xml`; URL tuyệt đối là `__SITE_URL__`, nginx thay bằng biến `SITE_URL`. Hàm minh họa `y = 2x/(x² + 1)` (SP-10: không dùng hàm có trong ngân hàng bài). `data-testid=vao-hoc` chỉ một nút trên header. Không số học sinh giả, không lời khen giả, không khung trình duyệt, không SymPy, không gắn nhãn cực trị trên hình. `/dang-nhap`: không câu «tài khoản thử» dưới tiêu đề; mật khẩu thử chỉ khi sai.
 
-**Trang làm bài** (`/hs/luyen`): từ `sm` mục lục trái — số mono, tên bước, vạch trái 2 px ở bước đang làm (bút đỏ nếu sai). Dưới `sm` cùng mục lục thành một dòng phía trên, vạch dưới, tên ngắn, để công thức lấy hết chiều ngang. Không nền mực cho cả hàng. Trang: `02 / Đạo hàm`, một câu việc của bước, công thức lớn căn trái, chỗ viết ngay dưới. Phản hồi một câu ngay dưới chỗ viết (vạch `mark` hoặc `pass`), không thẻ màu. Nút chính `Kiểm tra` / `Kiểm tra lại`; `Cần gợi ý?` là phụ và mới mở tờ gia sư. Không đồ thị bài đang chấm. Không cột gia sư khi chưa hỏi.
+**Trang làm bài** (`/hs/luyen`): từ `sm` mục lục trái — số mono, tên bước, nền nhạt và chữ đậm ở bước đang làm (chữ bút đỏ nếu sai). Dưới `sm` cùng mục lục thành một dòng phía trên, nền nhạt cho mục đang chọn, tên ngắn, để công thức lấy hết chiều ngang. Không nền mực cho cả hàng. Trang: `02 / Đạo hàm`, một câu việc của bước, công thức lớn căn trái, chỗ viết ngay dưới. Phản hồi một câu ngay dưới chỗ viết (biểu tượng và chữ `mark` hoặc `pass`), không thẻ màu. Nút chính `Kiểm tra` / `Kiểm tra lại`; `Cần gợi ý?` là phụ và mới mở tờ gia sư. Không đồ thị bài đang chấm. Không cột gia sư khi chưa hỏi.
 
 ## Lưới và nhịp (SOTA 2026-09-27)
 
@@ -140,8 +146,8 @@ Thanh công cụ điện thoại 48 px (`h-12`) — Material touch 48 dp, cao h�
 ## Thành phần
 
 - Nút primary = nền `action` (đất nung), chữ trắng, bán kính 8 px, giải phẫu trên. Nút phụ: nền `raise`, viền `line-strong` (≥ 3 : 1; `line` chỉ là kẻ chia).
-- Bước 5 bước = mục lục tên + số mono, vạch 2 px ở bước hiện tại. Mỗi hàng `min-h-11`. Không chip viên thuốc, không tô nền đặc cả hàng.
-- Sai = vạch `mark` trên mục và dòng phản hồi ngay dưới chỗ viết. Ô sai trong bảng vẫn `cell-bad`.
+- Bước 5 bước = mục lục tên + số mono, nền nhạt và chữ đậm ở bước hiện tại. Mỗi hàng `min-h-11`. Không chip viên thuốc, không tô nền đặc cả hàng.
+- Sai = chữ và biểu tượng `mark` trên mục và dòng phản hồi ngay dưới chỗ viết. Ô sai trong bảng vẫn `cell-bad`.
 - Composer gia sư: chỉ khi bấm `Cần gợi ý?`. Dưới `lg` là tờ full màn; `lg+` là tờ phải 24 rem, có Đóng. Không chiếm cột khi đóng. Thanh đáy điện thoại: **Kiểm tra + Cần gợi ý?** Chip «Sai chỗ nào?» (gửi vẫn «Em sai chỗ nào?»). `visualViewport` khi bàn phím, composer đáy, Đóng 44. `textarea` tối thiểu 44, nút Gửi **luôn** 44×44, Enter gửi / Shift+Enter dòng / Escape Dừng hoặc đóng tờ. Ô vẫn gõ được lúc đang nghĩ. Cuộn theo đáy (Open WebUI); kéo lên thì giữ chỗ, có «Xuống». Lỗi: «Hỏi lại» đổ câu vào ô — không tự gửi. SSE `trang_thai` kho/gọi/lọc rồi `xong` — **không** xả token. Chờ = 3 ô CSS (bước đang làm nhịp, scale 0,85↔1) + chữ `Đang nghĩ…` / `Đang mở công thức…` / `Đang hỏi gia sư…` / `Đang kiểm lời…`. Câu mới và dòng chấm vào bằng `phieu-vao` (180 ms, 6 px); tờ dưới `lg` dùng `to-len` (200 ms, 16 px). Không khối SVG trang trí, không bong bóng gradient, không gọi lại model khi SSE lỗi. Hình trang chủ là đồ thị của hàm minh họa, không phải họa tiết.
 - Lời gia sư: Markdown + KaTeX (nhịp Claude / assistant-ui / Open WebUI — flush trái trên `canvas`, học sinh mới có bong bóng `wash` (sáng) / `raise` (tối) như Wiii). Cột hẹp: đoạn ngắn, danh sách, công thức căn trái cuộn ngang. Chuẩn hóa `\[ \]`, `\(...\)`, `align` trần, hàng rào `latex`. KaTeX lỗi thì chữ mờ, không hộp đỏ. Tiêu đề `#` thành chữ đậm cùng cỡ. Không HTML thô; lời gia sư không có bong bóng. Không tự giới thiệu trên mặt («Chào em», «Mình là AI…») — lời mở chỉ việc: đọc công thức, không đáp án. Trích dẫn: số `[n]` trong lời là badge (không lẫn số danh sách). Bấm số / chip = xem đúng đoạn trên phiếu. **Mở công thức** / **Mở tài liệu** mới về `#ct-` / `#tl-`. Một đoạn, không chồng 5–6.
 - Kết nối tài khoản: hai bước như Notion/Linear (mở trang chính thức → dán một lần). Không nút xanh ChatGPT, không logo.
