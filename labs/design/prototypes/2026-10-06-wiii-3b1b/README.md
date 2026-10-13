@@ -1,5 +1,7 @@
 # MathL+ — Nghiên cứu giao diện Wiii × 3b1b
 
+> **Cập nhật bảng màu 2026-10-13:** [ADR 018](../../../../docs/adr/018-bang-mau-xanh-trang.md) thay bảng màu ấm bằng xanh–trắng (sáng) / navy–xanh (tối). Token thực thi chỉ nằm trong `apps/frontend/src/styles.css`; `docs/DESIGN.md` là bản đối chiếu. Màu, prompt, ảnh và số đo bên dưới là hồ sơ lịch sử ngày 2026-10-06, không phải nghiệm thu bảng màu hiện hành. Khi tạo ảnh mới, dùng token hiện hành; điều hướng chọn nền xanh nhạt, nút chính xanh, bốn mức xanh / teal / amber / indigo, luôn FLAT.
+
 > **FLAT, chủ repo 2026-10-13:** ảnh là tư liệu lịch sử, không là mẫu bóng/vạch trái để hiện thực. Quy tắc hiện hành: không bóng, inset, viền nhấn trái hay dải màu mép; nền/chữ/viền đều 1 px. Lời nhắc dưới đây đã bỏ chỉ dẫn bóng.
 Tạo bằng công cụ imagegen tích hợp. Phạm vi: 12 ảnh mô phỏng. Nội dung tương ứng giữ nhất quán giữa ba phương án.
 

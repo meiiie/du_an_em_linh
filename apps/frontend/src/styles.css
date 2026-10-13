@@ -1,44 +1,46 @@
-/* Token và nguyên thủy chung — «Phòng Wiii, bảng phấn 3b1b»: labs/design/studies/2026-10-06-wiii-3b1b.md (sáng = A,
-   tối = B; vùng toán luôn là bảng tối). Chế độ do `data-theme` trên <html> quyết: index.html đặt trước lần vẽ đầu,
+/* Token và nguyên thủy chung — «Xanh–trắng, bảng toán navy»: docs/adr/018-bang-mau-xanh-trang.md
+   (nguồn duy nhất của giá trị màu; vùng toán luôn là bảng tối). Chế độ do `data-theme` trên <html> quyết: index.html đặt trước lần vẽ đầu,
    `GiaoDien` (core/giao-dien.ts) giữ đồng bộ với lựa chọn và với máy. */
 
 :root {
   color-scheme: light;
-  --canvas: #faf9f5;
-  --wash: #f0eee6;
+  --canvas: #f8fafc;
+  --wash: #eff6ff;
   --raise: #ffffff;
-  --line: #d8d5cd;
-  /* Viền ô nhập: ≥ 3 : 1 với nền quanh ô (WCAG 1.4.11); `--line` chỉ để kẻ chia. */
-  --line-strong: #8a877f;
-  --ink: #141413;
-  --ink-2: #3d3d3a;
-  --muted: #5f5e58;
-  --accent: #c75b39;
-  --focus: #c75b39;
-  --action: #ae5630;
+  --line: #cbd5e1;
+  --line-strong: #64748b;
+  --ink: #0f172a;
+  --ink-2: #334155;
+  --muted: #475569;
+  --accent: #1d4ed8;
+  --focus: #1d4ed8;
+  --action: #1d4ed8;
   --action-ink: #ffffff;
-  --action-hover: #9a4a28;
+  --action-hover: #1e40af;
   --action-hover-ink: #ffffff;
-  --label: #2c6fb0;
+  --label: #1d4ed8;
+  --pass: #166534;
+  --mark: #b91c1c;
+  --wait: #92400e;
+  --selection: #dbeafe;
+  --level-0: #1d4ed8;
+  --level-1: #0f766e;
+  --level-2: #92400e;
+  --level-3: #4338ca;
+  --board: #0b1220;
+  --board-line: #263449;
+  --board-rule: #94a3b8;
+  --board-ink: #e2e8f0;
+  --m-blue: #60a5fa;
+  --m-teal: #5eead4;
+  --m-yellow: #fde047;
+  --m-red: #fca5a5;
+  --m-gold: #fcd34d;
+  --m-green: #86efac;
   --brand-plus: var(--accent);
-  --pass: #1a7a45;
-  --mark: #b83b2e;
-  --wait: #8a5a00;
-  --board: #1c1c1c;
-  --board-line: #3a3a3a;
-  /* Kẻ mang nghĩa trên bảng (bảng xét dấu): ≥ 3 : 1 với `--board`; `--board-line` chỉ để trang trí. */
-  --board-rule: #888888;
-  --board-ink: #f2efe6;
-  --m-blue: #58c4dd;
-  --m-teal: #5cd0b3;
-  --m-yellow: #f4d345;
-  --m-red: #fc6255;
-  --m-gold: #f0ac5f;
-  --m-green: #83c167;
+  --mask: #000000;
   --grid-line: transparent;
-  --scrim: rgb(20 20 19 / 0.4);
-
-
+  --scrim: rgb(15 23 42 / 0.4);
 
   --ease: cubic-bezier(0.165, 0.85, 0.45, 1);
   --space-1: 4px;
@@ -58,29 +60,43 @@
 
 :root[data-theme='dark'] {
   color-scheme: dark;
-  --canvas: #1e1d1b;
-  --wash: #282724;
-  --raise: #353330;
-  --line: #3a3935;
-  --line-strong: #82807a;
-  --ink: #e8e8e4;
-  --ink-2: #c9c8c2;
-  --muted: #a8a7a2;
-  /* `--accent` trên `--raise` tối chỉ 2,99 : 1. */
-  --focus: #d78970;
-  --action-hover: #c4633a;
-  --action-hover-ink: #141413;
-  --label: #58c4dd;
-  --brand-plus: var(--label);
-  --pass: #5cd0b3;
-  --mark: #ff756b;
-  --wait: #f0ac5f;
-  --board: #161615;
-  --board-line: #34332f;
-  --grid-line: rgb(255 255 255 / 0.03);
+  --canvas: #0b1220;
+  --wash: #111a2e;
+  --raise: #17233a;
+  --line: #334155;
+  --line-strong: #64748b;
+  --ink: #e2e8f0;
+  --ink-2: #cbd5e1;
+  --muted: #94a3b8;
+  --accent: #60a5fa;
+  --focus: #60a5fa;
+  --action: #60a5fa;
+  --action-ink: #0b1220;
+  --action-hover: #3b82f6;
+  --action-hover-ink: #0b1220;
+  --label: #60a5fa;
+  --pass: #86efac;
+  --mark: #fca5a5;
+  --wait: #fcd34d;
+  --selection: #1e3656;
+  --level-0: #60a5fa;
+  --level-1: #5eead4;
+  --level-2: #fcd34d;
+  --level-3: #a5b4fc;
+  --board: #0b1220;
+  --board-line: #263449;
+  --board-rule: #94a3b8;
+  --board-ink: #e2e8f0;
+  --m-blue: #60a5fa;
+  --m-teal: #5eead4;
+  --m-yellow: #fde047;
+  --m-red: #fca5a5;
+  --m-gold: #fcd34d;
+  --m-green: #86efac;
+  --brand-plus: var(--accent);
+  --mask: #000000;
+  --grid-line: rgb(226 232 240 / 0.03);
   --scrim: rgb(0 0 0 / 0.55);
-
-
 
 }
 
@@ -223,7 +239,7 @@ body {
   background: var(--wash);
 }
 
-/* Nút viên của trang công khai, theo trang Wiii (meiiie-design-kit, examples/wiii): chính màu mực, phụ màu kem. */
+/* Nút viên trang công khai: chính xanh, phụ nền xanh nhạt. */
 .vien {
   display: inline-flex;
   align-items: center;
@@ -244,12 +260,13 @@ body {
 }
 
 .vien-dam {
-  background: var(--ink);
-  color: var(--raise);
+  background: var(--action);
+  color: var(--action-ink);
 }
 
 .vien-dam:hover {
-  background: color-mix(in srgb, var(--ink) 86%, var(--raise));
+  background: var(--action-hover);
+  color: var(--action-hover-ink);
 }
 
 .vien-kem {
@@ -407,13 +424,13 @@ app-katex.bang .katex-display > .katex {
 .row-list{list-style:none;margin:0;padding:0}.row-list>li{padding:16px 0}.row-list>li+li{border-top:1px solid var(--line)}.row-list p{margin:8px 0}.row-list .actions{margin-top:8px}.badge{display:inline-flex;gap:4px;padding:4px 8px;background:var(--wash);border:1px solid var(--line);border-radius:8px;font-size:12px;color:var(--ink-2)}
 .kpi-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}.so-do{display:grid;gap:8px;padding:24px;border:1px solid var(--line);border-radius:12px;background:var(--raise);color:var(--ink);text-decoration:none}.so-do strong{font-size:32px;font-weight:600}.so-do:hover{background:var(--wash)}
 .khung-cho{display:grid;gap:16px;padding:24px;border:1px solid var(--line);border-radius:12px}.khung-cho i{height:24px;max-width:80%;background:var(--wash);border-radius:8px;animation:cho-mo 1.4s ease-in-out infinite alternate}.khung-cho i:first-of-type{max-width:40%}.khung-cho i:last-of-type{max-width:65%}@keyframes cho-mo{to{opacity:.5}}
-.hop-thoai{padding:0;max-width:min(560px,calc(100vw - 32px));width:560px;max-height:calc(100dvh - 48px);border:1px solid var(--line-strong);border-radius:12px;color:var(--ink);background:var(--canvas);overflow:auto}.hop-thoai::backdrop{background:rgb(0 0 0 / .45)}.hop-thoai[open]{animation:hien-mat 180ms var(--ease)}.hop-thoai>header{display:flex;align-items:center;gap:16px;padding:16px 24px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--canvas);z-index:1}.hop-thoai h2{font-size:20px;margin:0;flex:1}.hop-noi-dung{padding:24px}
+.hop-thoai{padding:0;max-width:min(560px,calc(100vw - 32px));width:560px;max-height:calc(100dvh - 48px);border:1px solid var(--line-strong);border-radius:12px;color:var(--ink);background:var(--canvas);overflow:auto}.hop-thoai::backdrop{background:var(--scrim)}.hop-thoai[open]{animation:hien-mat 180ms var(--ease)}.hop-thoai>header{display:flex;align-items:center;gap:16px;padding:16px 24px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--canvas);z-index:1}.hop-thoai h2{font-size:20px;margin:0;flex:1}.hop-noi-dung{padding:24px}
 .thong-bao-nhanh{position:fixed;z-index:100;right:24px;bottom:24px;display:grid;gap:8px;width:min(400px,calc(100vw - 32px));pointer-events:none}.toast{display:flex;align-items:center;gap:12px;padding:8px 16px;border:1px solid var(--line-strong);border-radius:12px;background:var(--raise);color:var(--ink);pointer-events:auto;animation:hien-mat 160ms var(--ease)}.toast p{flex:1;margin:0}.toast[data-loai=dat]>span{color:var(--pass)}.toast[data-loai=loi]>span{color:var(--mark)}
 @keyframes hien-mat{from{opacity:0}to{opacity:1}}
 router-outlet+*{animation:hien-mat 180ms var(--ease)}
 @media(max-width:640px){.hop-thoai{margin:auto 0 0;max-width:100%;width:100%;max-height:90dvh;border-radius:12px 12px 0 0;padding-bottom:env(safe-area-inset-bottom)}.hop-noi-dung{padding:16px}.kpi-grid{grid-template-columns:1fr}.surface{padding:16px}.thong-bao-nhanh{right:16px;bottom:calc(80px + env(safe-area-inset-bottom))}.data-table td,.data-table th{padding:12px}}
 @media(prefers-reduced-motion:reduce){.hop-thoai[open],.toast,.khung-cho i,router-outlet+*{animation:none}}
-.bottom-nav{position:fixed;z-index:35;bottom:0;left:0;right:0;display:flex;justify-content:space-around;border-top:1px solid var(--line);background:var(--canvas);padding:8px max(8px,env(safe-area-inset-right)) max(8px,env(safe-area-inset-bottom)) max(8px,env(safe-area-inset-left))}.bottom-nav a,.bottom-nav button{display:grid;justify-items:center;gap:4px;align-content:center;min-height:44px;padding:4px 8px;border:0;border-radius:8px;background:transparent;color:var(--muted);font:inherit;font-size:11px;text-decoration:none}.bottom-nav app-bieu-tuong{width:20px;height:20px}.bottom-nav .dang-mo{background:var(--wash);color:var(--ink);font-weight:600}
+.bottom-nav{position:fixed;z-index:35;bottom:0;left:0;right:0;display:flex;justify-content:space-around;border-top:1px solid var(--line);background:var(--canvas);padding:8px max(8px,env(safe-area-inset-right)) max(8px,env(safe-area-inset-bottom)) max(8px,env(safe-area-inset-left))}.bottom-nav a,.bottom-nav button{display:grid;justify-items:center;gap:4px;align-content:center;min-height:44px;padding:4px 8px;border:0;border-radius:8px;background:transparent;color:var(--muted);font:inherit;font-size:11px;text-decoration:none}.bottom-nav app-bieu-tuong{width:20px;height:20px}.bottom-nav .dang-mo{background:var(--selection);color:var(--accent);font-weight:600}
 @media(max-width:1023px){app-khung-trang .noi-dung{padding-bottom:calc(112px + env(safe-area-inset-bottom))}}
 .choice-list{display:grid;gap:12px;border:1px solid var(--line);border-radius:8px;padding:16px;max-height:320px;overflow:auto}.choice-list legend{padding:0 8px;font-weight:600}.text-link{margin-inline-start:16px;color:var(--label)}.document-preview{max-height:160px;overflow:auto;white-space:pre-wrap}
 .practice-grid{display:grid;gap:24px;align-items:start;min-width:0}.practice-grid .phieu{min-width:0}@media(min-width:1200px){.practice-grid.co-gia-su{grid-template-columns:minmax(0,1fr) 320px}}
@@ -611,10 +628,10 @@ app-luyen .practice-grid .da-nop .phu { margin-bottom: 16px; }
 .bank-table .badge { white-space: nowrap; }
 .distribution-bar { display: flex; height: 24px; overflow: hidden; border: 1px solid var(--line); border-radius: 8px; background: var(--wash); }
 .distribution-bar span { min-width: 0; flex-basis: 0; }
-[data-level='0'] { background: var(--label); }
-[data-level='1'] { background: var(--pass); }
-[data-level='2'] { background: var(--action); }
-[data-level='3'] { background: var(--ink-2); }
+[data-level='0'] { background: var(--level-0); }
+[data-level='1'] { background: var(--level-1); }
+[data-level='2'] { background: var(--level-2); }
+[data-level='3'] { background: var(--level-3); }
 .distribution-legend { display: flex; flex-wrap: wrap; gap: 16px 24px; padding: 0; margin: 24px 0 0; list-style: none; }
 .distribution-legend a { display: flex; align-items: center; gap: 8px; color: var(--ink); text-decoration: none; font-size: 14px; }
 .distribution-legend i { width: 12px; height: 12px; border-radius: 2px; }

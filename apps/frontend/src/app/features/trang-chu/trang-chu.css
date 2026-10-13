@@ -93,7 +93,7 @@ main {
   inset: calc(-65px - env(safe-area-inset-top)) 0 0;
   z-index: -1;
   background: var(--tc-nen-mo-dau) center top / cover no-repeat;
-  mask-image: linear-gradient(to bottom, #000 70%, transparent);
+  mask-image: linear-gradient(to bottom, var(--mask) 70%, transparent);
 }
 
 .mo-dau {
