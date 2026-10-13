@@ -172,5 +172,17 @@
     "chu_de": "XS11",
     "ten": "Xác suất chọn mẫu không hoàn lại",
     "lop": 11
+  },
+  {
+    "ma": "T10.NT.XS.L",
+    "chu_de": "XS10",
+    "ten": "Xác suất chọn mẫu không hoàn lại · luyện tập",
+    "lop": 10
+  },
+  {
+    "ma": "T11.NT.LG.L",
+    "chu_de": "LG11",
+    "ten": "Giá trị lượng giác · luyện tập",
+    "lop": 11
   }
 ]

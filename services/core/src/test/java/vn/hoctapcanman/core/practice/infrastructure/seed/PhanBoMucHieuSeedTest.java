@@ -32,6 +32,7 @@ class PhanBoMucHieuSeedTest {
                 .map(c -> c.get("ma").toString()).toList();
             var tasks = exercises.stream().filter(e -> topicCodes.contains(e.get("chu_de")))
                 .filter(e -> !Boolean.TRUE.equals(e.get("kiem_tra_seed")))
+                .filter(e -> !Boolean.TRUE.equals(e.get("luyen_hien_tai_seed")))
                 .filter(e -> "DA_DUYET".equals(((Map<?,?>)e.get("duyet_seed")).get("trang_thai")))
                 .sorted(Comparator.<Map<String,Object>,String>comparing(e -> e.get("ky_nang_chinh").toString())
                     .thenComparing(e -> level(e.get("muc_do_4").toString()))

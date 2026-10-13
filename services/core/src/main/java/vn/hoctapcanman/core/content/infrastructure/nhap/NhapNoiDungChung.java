@@ -144,7 +144,7 @@ public class NhapNoiDungChung {
             return new BaiNhap(chu(ex.get("id")), chu(ex.get("ky_nang_chinh")), List.of(), muc4(muc),
                 muc3(chu(ex.get("muc_do_bo_3")), muc), bloom(chu(ex.get("muc_bloom"))), chu(de.get("van_ban")),
                 chu(de.get("latex")), chuNeuCo(de.get("ham_so_sympy")), chu(ex.get("dang_cau")), null,
-                "GIAO_VIEN_NGUYEN_TRAI", loiGiai, ex.get("su_kien"), List.of());
+                "GIAO_VIEN_NGUYEN_TRAI", loiGiai, ex.get("su_kien"), danhSach(ex.get("thang_goi_y")));
         }).toList();
         giaoDich.executeWithoutResult(t -> {
             for (Map<String, @Nullable Object> cd : chuDe) {
@@ -161,6 +161,7 @@ public class NhapNoiDungChung {
                 moi.put("skillCode", "T12.NT.HS");
                 ghiKhungBuoc(List.of(moi));
             }
+            ghiKhungBuoc(nguon.danhSach("dev/nguyen-trai/khung-buoc.json"));
             Instant luc = clock.instant();
             for (int i = 0; i < bai.size(); i++) {
                 BaiNhap b = bai.get(i);

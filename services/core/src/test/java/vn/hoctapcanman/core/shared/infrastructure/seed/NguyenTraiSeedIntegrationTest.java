@@ -53,10 +53,10 @@ class NguyenTraiSeedIntegrationTest {
             assertThat(count("users")).isEqualTo(35);
             assertThat(count("classes")).isEqualTo(3);
             assertThat(count("enrollments")).isEqualTo(36);
-            assertThat(count("problems")).isEqualTo(68);
+            assertThat(count("problems")).isEqualTo(74);
             assertThat(count("documents")).isEqualTo(21);
             assertThat(count("formula_sheets")).isEqualTo(6);
-            assertThat(count("assignments")).isEqualTo(630);
+            assertThat(count("assignments")).isEqualTo(690);
             assertThat(count("submissions")).isEqualTo(390);
             assertThat(count("study_sessions")).isEqualTo(120);
             assertThat(count("mastery_states")).isEqualTo(160);
@@ -70,7 +70,7 @@ class NguyenTraiSeedIntegrationTest {
             assertThat(db.sql("SELECT count(*) FROM assignments WHERE mode='KIEM_TRA' AND due_at>now() AND due_at<now()+interval '24 hours'").query(Integer.class).single()).isEqualTo(240);
             assertThat(db.sql("SELECT count(*) FROM submissions WHERE result='KHONG_KIEM_DUOC'").query(Integer.class).single()).isEqualTo(68);
             assertThat(db.sql("SELECT count(*) FROM problem_releases WHERE status='CHO_GIAO_VIEN_DUYET'").query(Integer.class).single()).isEqualTo(5);
-            assertThat(count("content_reviews")).isEqualTo(55);
+            assertThat(count("content_reviews")).isEqualTo(61);
             assertThat(db.sql("""
                 SELECT count(*) FROM assignments a JOIN classes c ON c.id=a.class_id
                 JOIN problems p ON p.id=a.problem_id JOIN skills sk ON sk.code=p.skill_code
@@ -83,7 +83,7 @@ class NguyenTraiSeedIntegrationTest {
                 int skillCount = db.sql("SELECT count(*) FROM skills WHERE grade=:grade AND is_core")
                     .param("grade",grade).query(Integer.class).single();
                 assertThat(dashboard.distribution().values().stream().mapToLong(Long::longValue).sum()).isEqualTo(skillCount*10L);
-                assertThat(dashboard.deadlines()).hasSize(name.equals("10A1") ? 3 : name.equals("11A2") ? 6 : 4);
+                assertThat(dashboard.deadlines()).hasSize(name.equals("10A1") ? 4 : name.equals("11A2") ? 7 : 5);
                 var test = dashboard.deadlines().stream().filter(row -> row.status().equals("KIEM_TRA")).findFirst().orElseThrow();
                 assertThat(test.title()).isEqualTo("Kiểm tra hàm số — 45 phút");
                 assertThat(test.details()).containsEntry("problemCount",8).containsEntry("assignmentCount",80)
@@ -100,6 +100,16 @@ class NguyenTraiSeedIntegrationTest {
                 assertThat(workspace.assignments(TruongNguyenTrai.id("lop:"+name)))
                     .allSatisfy(row -> assertThat(row.title()).doesNotStartWith("NT-"));
             }
+            assertThat(db.sql("""
+                SELECT count(*) FROM (
+                    SELECT a.student_id FROM assignments a JOIN problems p ON p.id=a.problem_id
+                    WHERE p.code LIKE 'NT-LUYEN%' AND a.mode='ON_TAP' AND a.due_at>now()
+                    AND EXISTS(SELECT 1 FROM step_templates st WHERE st.skill_code=p.skill_code)
+                    AND NOT EXISTS(SELECT 1 FROM submissions s WHERE s.student_id=a.student_id
+                        AND s.class_id=a.class_id AND s.problem_id=a.problem_id AND s.status='DA_NOP')
+                    GROUP BY a.student_id HAVING count(*) BETWEEN 2 AND 4
+                ) ready
+                """).query(Integer.class).single()).isEqualTo(30);
             Map<String,List<String>> before=snapshot();
             for(ApplicationRunner seed:List.of(accounts,classes,content,assignments,history,mastery)) seed.run(new DefaultApplicationArguments());
             assertThat(snapshot()).isEqualTo(before);

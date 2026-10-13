@@ -68,9 +68,10 @@ class WorkspacePersistenceTest {
     }
 
     @Test
-    void activeTestAlsoBlocksTutorForAnotherProblemButExpiredTestDoesNot() {
+    void activeTestBlocksTutorOnlyOnItsOwnProblems() {
         store.assign(teacher, new Assign(cl, List.of(student), List.of(problem), "KIEM_TRA", now.plusSeconds(3600), "Kiểm tra"), List.of(student), now);
-        assertThat(store.testMode(student, cl, "BAI_KHAC")).isTrue();
+        assertThat(store.testMode(student, cl, code)).isTrue();
+        assertThat(store.testMode(student, cl, "BAI_KHAC")).isFalse();
         assertThat(store.testMode(teacher, cl, "BAI_KHAC")).isFalse();
         store.assign(teacher, new Assign(cl, List.of(student), List.of(problem), "KIEM_TRA", now.minusSeconds(1), "Đã hết hạn"), List.of(student), now);
         assertThat(store.testMode(student, cl, "BAI_KHAC")).isFalse();

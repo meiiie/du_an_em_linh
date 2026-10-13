@@ -286,7 +286,7 @@ import vn.hoctapcanman.core.workspace.application.exception.WorkspaceException;
             SELECT count(*) FROM assignments a JOIN problems p ON p.id=a.problem_id
             WHERE a.student_id=:student AND a.class_id=:cl AND a.status='DA_GIAO'
             AND ((p.code=:code AND a.due_at<=now()) OR
-                (a.mode='KIEM_TRA' AND (a.due_at IS NULL OR a.due_at>now())
+                (a.mode='KIEM_TRA' AND p.code=:code AND (a.due_at IS NULL OR a.due_at>now())
                 AND NOT EXISTS(SELECT 1 FROM submissions s WHERE s.student_id=a.student_id
                     AND s.class_id=a.class_id AND s.problem_id=a.problem_id AND s.content_version=p.content_version
                     AND s.status='DA_NOP' AND s.submitted_at>=a.assigned_at)))

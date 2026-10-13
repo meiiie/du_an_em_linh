@@ -26,3 +26,7 @@ Chỉ ẩn UI hoặc tin `mode` client dễ bị vượt. Chặn ở controller 
 Test core với Clock/latch cố định: ôn hợp lệ, kiểm tra, không giao, mode giả, hạn null/ranh giới/quá hạn, chéo lớp, đổi giao lúc đang chờ CAS, phiên hết hạn. Assert 403 trước SSE/provider và không ghi bài sau hạn. Playwright kiểm tab cũ, gọi API trực tiếp và đổi giờ client. Không dùng sleep để chứng minh cạnh tranh.
 
 Chưa có auto-submit, chống gian lận, ma trận đề hay ngoại lệ gia sư trong kiểm tra. Nếu cần nhiều lượt ôn/thi đồng thời trên cùng bài, phải đổi hợp đồng sang ID lượt/giao cụ thể qua đặc tả riêng; không cấp quyền theo mã bài mơ hồ.
+
+## Phạm vi khoá gia sư (cập nhật 2026-10-13)
+
+Gia sư chỉ bị khoá trên chính các câu thuộc bài kiểm tra đang mở (và câu đã quá hạn). Các bài luyện khác vẫn dùng gia sư bình thường, vì bài kiểm tra có thể mở nhiều ngày và khoá toàn bộ sẽ làm học sinh mất hỗ trợ luyện tập.

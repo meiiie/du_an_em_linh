@@ -70,7 +70,7 @@ public class LichSuNguyenTraiSeeder implements ApplicationRunner {
                 schedule(cl, student, anchor);
                 List<String> codes = db.sql("""
                     SELECT p.code FROM assignments a JOIN problems p ON p.id=a.problem_id
-                    WHERE a.class_id=:cl AND a.student_id=:hs AND a.mode='ON_TAP'
+                    WHERE a.class_id=:cl AND a.student_id=:hs AND a.mode='ON_TAP' AND p.code NOT LIKE 'NT-LUYEN%'
                     ORDER BY p.skill_code, CASE p.level4 WHEN 'NHAN_BIET' THEN 0 WHEN 'THONG_HIEU' THEN 1
                         WHEN 'VAN_DUNG' THEN 2 ELSE 3 END,p.code
                     """).param("cl",cl).param("hs",student).query(String.class).list();
