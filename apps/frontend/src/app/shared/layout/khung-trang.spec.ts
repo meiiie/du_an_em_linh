@@ -128,6 +128,21 @@ describe('KhungTrang', () => {
     expect(t.el.querySelector('[role="alert"]')).toBeNull();
   });
 
+  it('điện thoại: thanh trên chỉ thương hiệu và tên trang, Tôi chứa tài khoản', async () => {
+    vi.stubGlobal('matchMedia', (q: string) => ({ matches: q === '(max-width: 600px)', addEventListener: () => undefined, removeEventListener: () => undefined }));
+    const t = await mo('/hs/bai');
+    expect(t.el.querySelector('.thanh-tren')?.textContent).toContain('Đề bài');
+    expect(t.el.querySelector('.thanh-tren button')).toBeNull();
+    expect(t.el.querySelector('.thanh-tren app-doi-giao-dien')).toBeNull();
+    expect(t.tim('sidebar')?.hasAttribute('inert')).toBe(true);
+    t.tim('mo-sidebar')!.click(); await t.on();
+    expect(t.tim('sidebar')?.hasAttribute('inert')).toBe(false);
+    expect(t.tim('dang-xuat')?.closest('.ray')).not.toBeNull();
+    expect(t.tim('doi-giao-dien')?.closest('.ray')).not.toBeNull();
+    t.tim('dong-sidebar')!.click(); await t.on();
+    expect(document.activeElement).toBe(t.tim('mo-sidebar'));
+  });
+
   it('màn hẹp: ray là ngăn kéo — đóng thì inert; mở, đóng bằng nút, Esc hay chọn mục', async () => {
     manHinh(false);
     const t = await mo('/hs');

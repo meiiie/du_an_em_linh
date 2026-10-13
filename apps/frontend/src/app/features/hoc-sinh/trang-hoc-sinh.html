@@ -16,7 +16,7 @@
         <h2 id="tieu-de-ke-tiep" class="nhan-muc">Bài tiếp theo</h2>
         @if(goiBai.hasValue() && goiBai.value()[0]?.id === ke.maBai){<p class="phu">{{goiBai.value()[0].subtitle}}</p>}
         <p class="ky-nang">{{ ke.tenKyNang }}</p>
-        <p class="cau-hoi">{{ thanDe(ke.deBai) }}</p>
+        <p class="cau-hoi"><app-van-ban-toan [text]="thanDe(ke.deBai)" /></p>
         <div class="tien-do" role="img" [attr.aria-label]="'Đã đạt ' + ke.soBuocDat + ' trên ' + ke.soBuoc + ' bước'">
           @for (dat of vach(ke); track $index) {
             <i [class.dat]="dat"></i>
@@ -45,7 +45,7 @@
   </div>
   <aside class="hoc-so" aria-label="Sổ học tập">
   @if(nhac.isLoading()){<app-khung-cho nhan="Đang tải lịch nhắc học" />}
-  @if(nhac.hasValue() && nhac.value().length){<section class="surface"><h2 class="nhan-muc">Hôm nay và hạn sắp tới</h2><ul class="row-list" tabindex="0" aria-label="Lịch nhắc học và hạn nộp">@for(n of nhac.value();track n.id){<li><strong>{{n.title}}</strong><p class="muted">{{gio(n.details.startsAt)}}</p></li>}</ul><a routerLink="/hs/lich">Xem lịch học →</a></section>}
+  @if(nhac.hasValue() && nhac.value().length){<section class="surface"><h2 class="nhan-muc">Hôm nay và hạn sắp tới</h2><ul class="row-list" tabindex="0" aria-label="Lịch nhắc học và hạn nộp">@for(n of nhac.value();track n.id){<li><strong>{{nhacTen(n)}}</strong><p class="muted">{{nhacNgay(n)}}</p></li>}</ul><a routerLink="/hs/lich">Xem lịch học →</a></section>}
   @if(nhac.error()){<app-loi-tai [loi]="nhac.error()" moTa="Chưa tải được lịch nhắc học." (thuLai)="nhac.reload()" />}
   @if(th.isLoading()){<app-khung-cho nhan="Đang tải mức hiểu" />}@else if(th.error()){<app-loi-tai [loi]="th.error()" moTa="Chưa tải được mức hiểu. Bài được giao vẫn làm được." (thuLai)="th.reload()" />}
   @if (th.hasValue()) {

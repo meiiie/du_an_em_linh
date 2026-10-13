@@ -1,3 +1,4 @@
+import { VanBanToan } from '../../../shared/toan/van-ban-toan';
 import { ngayViet } from '../../../shared/ui/dinh-dang';
 import { ApiLopHoc } from '../../../api/lop-hoc';
 import { HttpClient, HttpErrorResponse, httpResource } from '@angular/common/http';
@@ -53,7 +54,7 @@ const TEN_TRANG_THAI: Record<TrangThaiBuoc, string> = {
  */
 @Component({
   selector: 'app-luyen',
-  imports: [KhungCho, LoiTai, GiaSu, BangXetDau, Button, Katex, OCongThuc, RouterLink],
+  imports: [VanBanToan,KhungCho, LoiTai, GiaSu, BangXetDau, Button, Katex, OCongThuc, RouterLink],
   templateUrl: './luyen.html',
   styleUrl: './luyen.css',
 })
@@ -72,7 +73,8 @@ export class Luyen {
   protected readonly cheDo = this.api.cheDo();
   protected readonly goiBai = this.api.goiBai(()=>this.daNop());
   protected readonly mode = computed(()=>(this.cheDo.hasValue()?this.cheDo.value():[]).find(x=>x.id===this.maBai()));
-  protected readonly coGiaSu = computed(()=>this.cheDo.hasValue() && this.mode()?.status !== 'KIEM_TRA' && !this.daNop());
+  protected readonly giaSu = viewChild(GiaSu);
+  protected readonly coGiaSu = computed(()=>this.cheDo.hasValue() && this.mode()?.status !== 'KIEM_TRA');
   protected readonly han = computed(()=>this.mode()?.details.dueAt ? ngayViet(this.mode()!.details.dueAt!, true) : '');
   protected readonly tenMuc = TEN_MUC;
   protected readonly deBang = deBang;

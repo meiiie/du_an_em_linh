@@ -83,6 +83,16 @@ describe('Luyen', () => {
     return { fixture, http, el, $, chu, go, bam, xong };
   }
 
+  it('nút gợi ý nằm cạnh luồng bước và mở cột gia sư trên desktop', async () => {
+    const t = await mo(chiTiet());
+    expect(t.$('[data-testid="mo-gia-su"]')?.closest('.lam')).not.toBeNull();
+    await t.bam('[data-testid="mo-gia-su"]');
+    expect(t.$('.practice-grid')?.classList).toContain('co-gia-su');
+    expect(t.$('.tutor-panel')).not.toBeNull();
+    await t.bam('[aria-label="Đóng gia sư"]');
+    expect(t.$('.practice-grid')?.classList).not.toContain('co-gia-su');
+  });
+
   it('vào lại bài mở bước đầu chưa đạt; «Kiểm tra» gửi đúng bước, đạt thì sang bước kế và báo bước vừa đạt', async () => {
     const t = await mo(chiTiet({ cacBuoc: [daDat('B.DH.TXD')] }));
     expect(t.chu('.tieu-de')).toBe('Bước 2/5 Đạo hàm');
