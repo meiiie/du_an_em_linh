@@ -215,8 +215,7 @@ import vn.hoctapcanman.core.shared.infrastructure.math.*;
             var gate=math.call(MathJob.KIEM_LOI_GIANG,Map.of("cau",draft,"bang_cong_thuc",formulas,"ham",function,"bai_lam_hoc_sinh",submittedLines));
             String sach=gate instanceof MathResult.Ok clean&&Boolean.FALSE.equals(clean.body().get("thay_bang_goi_y"))&&clean.body().get("cau_sach") instanceof String c?c.strip():"";
             if(!draft.equals(sach))db.sql("INSERT INTO tutor_review_queue(id,class_id,problem_id,draft,reason,created_at) VALUES(:id,:cl,:problem,:draft,:reason,:now) ON CONFLICT(class_id,problem_id,draft) DO NOTHING").param("id",UUID.randomUUID()).param("cl",classId).param("problem",problemId).param("draft",draft).param("reason","Cổng công thức chưa xác minh được lời gợi ý; câu này chưa gửi cho học sinh.").param("now",java.sql.Timestamp.from(clock.instant())).update();
-            if(sach.isBlank())return Optional.empty();
-            return Optional.of(Character.toUpperCase(sach.charAt(0))+sach.substring(1));
+            return sach.isBlank()?Optional.empty():Optional.of(sach);
         }
         catch(RuntimeException ex) {
             return Optional.empty();

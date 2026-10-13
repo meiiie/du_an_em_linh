@@ -72,7 +72,11 @@ public final class WorkspaceDto {
     public record TutorRequest(@NotBlank @Size(max=64) String maBai,@NotBlank @Size(max=32) String maBuoc,@Min(1) @Max(3) int cap,@NotNull @Size(max=2000) String cauHoi) {
     }
 
-    public record TutorEvent(String status,String message) {
+    /** nguon: MO_HINH, THANG, CO_DINH, TU_CHOI hoặc null (sự kiện trạng thái); không chứa dữ liệu cá nhân. */
+    public record TutorEvent(String status,String message,@org.jspecify.annotations.Nullable String nguon) {
+        public TutorEvent(String status,String message) {
+            this(status,message,null);
+        }
     }
 
     public record TutorFormula(int number,String code,String title,String latex,String statement) {

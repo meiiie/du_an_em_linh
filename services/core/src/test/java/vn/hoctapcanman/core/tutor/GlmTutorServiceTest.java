@@ -43,22 +43,22 @@ class GlmTutorServiceTest {
     @Test void gateKeepsOnlyVerifiedSentencesOfModelDraft() {
         when(model.draft(any())).thenReturn(Optional.of("Em xét mẫu số chưa? Câu bị bỏ."));
         when(gate.sanitize(cl, problem, "Em xét mẫu số chưa? Câu bị bỏ.", "Em bị kẹt", List.of())).thenReturn(Optional.of("Em xét mẫu số chưa?"));
-        assertEquals(new TutorEvent("xong", "Em xét mẫu số chưa?"), tutor.answer(student, request("Em bị kẹt")));
+        assertEquals(new TutorEvent("xong", "Em xét mẫu số chưa?", "MO_HINH"), tutor.answer(student, request("Em bị kẹt")));
     }
     @Test void draftWithForeignScriptFallsBackToLadder() {
         when(model.draft(any())).thenReturn(Optional.of("Em tách từng项 rồi thử nhé?"));
         when(gate.sanitize(cl, problem, hint, "Em bị kẹt", List.of())).thenReturn(Optional.of(hint));
-        assertEquals(new TutorEvent("xong", hint), tutor.answer(student, request("Em bị kẹt")));
+        assertEquals(new TutorEvent("xong", hint, "THANG"), tutor.answer(student, request("Em bị kẹt")));
     }
     @Test void fullyBlockedDraftRetriesModelOnceWithStricterPrompt() {
         when(model.draft(any())).thenReturn(Optional.of("Bản nháp bị chặn"), Optional.of("Em đã xét bước này chưa?"));
         when(gate.sanitize(cl, problem, "Em đã xét bước này chưa?", "Em bị kẹt", List.of())).thenReturn(Optional.of("Em đã xét bước này chưa?"));
-        assertEquals(new TutorEvent("xong", "Em đã xét bước này chưa?"), tutor.answer(student, request("Em bị kẹt")));
+        assertEquals(new TutorEvent("xong", "Em đã xét bước này chưa?", "MO_HINH"), tutor.answer(student, request("Em bị kẹt")));
         verify(model, times(2)).draft(any());
     }
     @Test void personalDataNeverReachesModel() {
         when(gate.sanitize(cl, problem, hint, "Em là Nguyễn Văn An, bị kẹt", List.of())).thenReturn(Optional.of(hint));
-        assertEquals(new TutorEvent("xong", hint), tutor.answer(student, request("Em là Nguyễn Văn An, bị kẹt")));
+        assertEquals(new TutorEvent("xong", hint, "THANG"), tutor.answer(student, request("Em là Nguyễn Văn An, bị kẹt")));
         verify(model, never()).draft(any());
     }
     @Test void cancelledDuringModelCallIsNotReleased() {
@@ -67,10 +67,20 @@ class GlmTutorServiceTest {
         when(store.tutorContext(eq(student), eq(cl), any())).thenReturn(Optional.of(new TutorContext(problem, "DH1", "Đề bài", "x**2", "B.DH.TXD", hint)), Optional.empty());
         assertThrows(vn.hoctapcanman.core.workspace.application.exception.WorkspaceException.class, () -> tutor.answer(student, request("Em bị kẹt")));
     }
+    @Test void formulaSheetChangedDuringModelCallIsNotReleased() {
+        when(model.draft(any())).thenReturn(Optional.of("Em xem [1] nhé?"));
+        when(gate.sanitize(eq(cl), eq(problem), anyString(), anyString(), anyList())).thenAnswer(a -> Optional.of(a.<String>getArgument(2)));
+        var f1 = List.of(new TutorFormula(1, "CT1", "Lũy thừa", "x^n", "Quy tắc"));
+        var f2 = List.of(new TutorFormula(1, "CT2", "Tổng", "u+v", "Quy tắc khác"));
+        when(store.tutorContext(eq(student), eq(cl), any())).thenReturn(
+            Optional.of(new TutorContext(problem, "DH1", "Đề bài", "x**2", "B.DH.TXD", hint, "Tập xác định", f1, List.of())),
+            Optional.of(new TutorContext(problem, "DH1", "Đề bài", "x**2", "B.DH.TXD", hint, "Tập xác định", f2, List.of())));
+        assertEquals(409, assertThrows(WorkspaceException.class, () -> tutor.answerAuthorized(student, cl, request("Em bị kẹt"), x -> {})).status());
+    }
     @Test void blockedModelDraftFallsBackThroughGate() {
         when(model.draft(any())).thenReturn(Optional.of("Bản nháp bị chặn"));
         when(gate.sanitize(cl, problem, hint, "Em bị kẹt", List.of())).thenAnswer(i -> java.util.Optional.of(i.<String>getArgument(2)));
-        assertEquals(new TutorEvent("xong", hint), tutor.answer(student, request("Em bị kẹt")));
+        assertEquals(new TutorEvent("xong", hint, "THANG"), tutor.answer(student, request("Em bị kẹt")));
         var order = inOrder(model, gate);
         order.verify(model).draft(any());
         order.verify(gate).sanitize(cl, problem, "Bản nháp bị chặn", "Em bị kẹt", List.of());
@@ -100,7 +110,7 @@ class GlmTutorServiceTest {
         }
         assertEquals(List.of("kho", "goi", "mô hình", "loc", "cổng"), timeline.subList(0, 5));
         assertEquals(429, assertThrows(WorkspaceException.class, () -> tutor.authorize(student, r)).status());
-        verify(store, times(24)).tutorContext(student, cl, r); // đọc ngữ cảnh + kiểm lại trước khi phát
+        verify(store, times(37)).tutorContext(student, cl, r); // kiểm trước hạn mức + đọc ngữ cảnh + kiểm lại trước khi phát
     }
     @Test void modelCannotReferOutsideSheetOrExceedThreeSentences() {
         when(gate.sanitize(eq(cl), eq(problem), anyString(), anyString(), anyList())).thenAnswer(i -> java.util.Optional.of(i.<String>getArgument(2)));

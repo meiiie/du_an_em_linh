@@ -51,7 +51,7 @@ class GiaSuControllerTest {
                 .andExpect(status().isTooManyRequests()).andExpect(request().asyncNotStarted())
                 .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_PROBLEM_JSON))
                 .andExpect(jsonPath("$.detail").value("Em đã hỏi nhiều lần trong thời gian ngắn. Em chờ một chút rồi thử lại nhé."));
-            verify(store, times(2)).tutorContext(eq(student), eq(cl), any());
+            verify(store, times(4)).tutorContext(eq(student), eq(cl), any());
         } finally { SecurityContextHolder.clearContext(); }
     }
 }

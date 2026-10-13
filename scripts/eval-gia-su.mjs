@@ -159,6 +159,7 @@ function proseSentenceCount(message) {
 
 export function evaluateResponse(c, response, answer, maxLatencyMs) {
   const errors = [];
+  let nguon = null;
   if (response.status !== c.expectedStatus) errors.push(`HTTP ${response.status}, cần ${c.expectedStatus}.`);
   if (response.latencyMs > maxLatencyMs) errors.push('Vượt giới hạn độ trễ.');
   if (c.expectedStatus === 200 && response.status === 200) {
@@ -171,13 +172,14 @@ export function evaluateResponse(c, response, answer, maxLatencyMs) {
     if (events.some(e => e.data?.status !== e.event)) errors.push('Trạng thái JSON không khớp tên sự kiện.');
     if (events.some(e => ![...STATES, ...TERMINAL].includes(e.event))) errors.push('Có sự kiện SSE ngoài hợp đồng.');
     errors.push(...checkLeaks(events, answer));
+    nguon = terminal[0]?.data?.nguon ?? null;
     const finalMessage = terminal[0]?.data?.message;
     if (typeof finalMessage === 'string') {
       if (proseSentenceCount(finalMessage) > 3) errors.push('Gợi ý vượt ba câu văn.');
       if (/đúng\s*không/iu.test(c.request?.cauHoi ?? '') && /^\s*(?:đúng\s+rồi|chính\s+xác|kết\s*quả\s+(?:đúng|chính\s+xác))/iu.test(finalMessage)) errors.push('Xác nhận trực tiếp kết quả học sinh đưa ra.');
     }
   }
-  return { name: c.name, expectedStatus: c.expectedStatus, status: response.status, latencyMs: response.latencyMs, passed: errors.length === 0, errors };
+  return { name: c.name, expectedStatus: c.expectedStatus, status: response.status, latencyMs: response.latencyMs, nguon, passed: errors.length === 0, errors };
 }
 
 async function loadAnswers() {
@@ -257,7 +259,10 @@ export async function runEvaluation({ env = process.env, fetchImpl = fetch, slee
     const result = results.at(-1);
     log(`${result.passed ? 'ĐẠT' : 'TRƯỢT'} · ${c.name} · HTTP ${result.status ?? '—'} · ${result.latencyMs} ms`);
   }
-  const report = { skipped: false, passed: results.every(result => result.passed), generatedAt: new Date(now()).toISOString(), intervalMs, maxLatencyMs, results };
+  // Chứng cứ phía server: phải có ít nhất một gợi ý do GLM tạo và qua cổng (nguon MO_HINH); không thì core đang chạy offline.
+  const modelUsed = results.some(result => result.nguon === 'MO_HINH');
+  if (!modelUsed) log('TRƯỢT · Không ca nào có nguon=MO_HINH: core chưa gọi được GLM (thiếu khóa, khóa sai hoặc không kết nối).');
+  const report = { skipped: false, modelUsed, passed: modelUsed && results.every(result => result.passed), generatedAt: new Date(now()).toISOString(), intervalMs, maxLatencyMs, results };
   log('Ca | HTTP | Độ trễ (ms) | Kết quả | Kiểm tra');
   for (const result of results) log(`${result.name} | ${result.status ?? '—'} | ${result.latencyMs ?? '—'} | ${result.passed ? 'ĐẠT' : 'TRƯỢT'} | ${result.errors.join(' ')}`);
   if (out) await writeFile(out, `${JSON.stringify(report, null, 2)}\n`, { mode: 0o600 });

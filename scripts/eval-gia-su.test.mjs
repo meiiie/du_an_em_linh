@@ -6,7 +6,7 @@ import { join } from 'node:path';
 import { parseSse, checkLeaks, buildCases, pacingMilliseconds, evaluateResponse, runEvaluation, selectPracticeProblem } from './eval-gia-su.mjs';
 
 const khung = (event, message = '', them = {}) => ({ event, data: { status: event, message, ...them } });
-const luong = (message) => [khung('kho'), khung('goi'), khung('loc'), khung('xong', message)];
+const luong = (message) => [khung('kho'), khung('goi'), khung('loc'), khung('xong', message, { nguon: 'MO_HINH' })];
 
 test('đọc SSE có CRLF, chú thích, dữ liệu nhiều dòng và khung cuối', () => {
   const text = ': nhịp\r\nevent: kho\r\ndata: {"status":"kho","message":""}\r\n\r\n'
@@ -181,4 +181,9 @@ test('đăng nhập lại sau mười phút bằng tài khoản môi trường t
   assert.deepEqual(logins[1].body, { email: env.MATHL_EVAL_EMAIL, password: env.MATHL_EVAL_PASSWORD });
   assert.equal(tutorTokens[0], 'Bearer phiên-1');
   assert.equal(tutorTokens.at(-1), 'Bearer phiên-2');
+});
+
+test('evaluateResponse ghi nguồn để chứng minh core thật sự gọi GLM', () => {
+  const kq = evaluateResponse({ name: 'ca', expectedStatus: 200 }, { status: 200, latencyMs: 10, events: luong('Em thử xét dấu.') }, null, 1000);
+  assert.equal(kq.nguon, 'MO_HINH');
 });

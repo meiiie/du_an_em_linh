@@ -44,6 +44,9 @@ public class OfflineTutorService {
         UUID cl = membership.lopHoc(student).orElseThrow(() -> new WorkspaceException(404, "Em chưa có lớp."));
         if (store.testMode(student, cl, request.maBai())) throw new WorkspaceException(403,
             "Gia sư không mở trong bài kiểm tra hoặc bài đã hết hạn.");
+        // Chỉ tính lượt khi bài, bước và cấp còn hợp lệ: yêu cầu cũ hay sai không ăn hạn mức.
+        if (store.tutorContext(student, cl, request).isEmpty()) throw new WorkspaceException(404,
+            "Chưa có gợi ý phù hợp cho bước này. Em có thể nhờ giáo viên.");
         limiter.acquire(student);
         return cl;
     }
@@ -73,7 +76,7 @@ public class OfflineTutorService {
             if (refusal) {
                 // Câu từ chối cố định, không chứa toán: không cần qua mô hình.
                 outcome = "TU_CHOI";
-                return release(student, cl, request, "xong", REFUSAL);
+                return release(student, cl, request, context, "xong", REFUSAL, "TU_CHOI");
             }
             Optional<String> fromModel = draft.filter(d -> hasSafeShape(context, d)).flatMap(d -> allowed(cl, context, d, request));
             if (fromModel.isEmpty() && draft.isPresent()) {
@@ -86,16 +89,16 @@ public class OfflineTutorService {
             }
             if (fromModel.isPresent()) {
                 outcome = "DAT_MO_HINH";
-                return release(student, cl, request, "xong", fromModel.get());
+                return release(student, cl, request, context, "xong", fromModel.get(), "MO_HINH");
             }
             Optional<String> ladder = hasSafeShape(context, context.hint()) ? allowed(cl, context, context.hint(), request) : Optional.empty();
             if (ladder.isPresent()) {
                 outcome = "THANG";
-                return release(student, cl, request, "xong", ladder.get());
+                return release(student, cl, request, context, "xong", ladder.get(), "THANG");
             }
             // ADR 013 §6: không còn câu nào qua cổng thì dùng câu cố định không chứa toán.
             outcome = "CAU_CO_DINH";
-            return release(student, cl, request, "xong", SAFE);
+            return release(student, cl, request, context, "xong", SAFE, "CO_DINH");
         } catch (RuntimeException ex) {
             outcome = "LOI";
             throw ex;
@@ -106,14 +109,17 @@ public class OfflineTutorService {
         }
     }
 
-    private TutorEvent release(UUID student, UUID cl, TutorRequest request, String status, String text) {
+    private TutorEvent release(UUID student, UUID cl, TutorRequest request, TutorContext asked, String status, String text, String nguon) {
         if (!membership.lopHoc(student).filter(cl::equals).isPresent()) throw new WorkspaceException(404, "Em chưa có lớp.");
         if (store.testMode(student, cl, request.maBai())) throw new WorkspaceException(403,
             "Gia sư không mở trong bài kiểm tra hoặc bài đã hết hạn.");
         // Gọi ngoài có thể lâu: kiểm lại toàn bộ điều kiện giao bài (hủy, gỡ phát hành, hết hạn) trước khi phát.
-        if (store.tutorContext(student, cl, request).isEmpty()) throw new WorkspaceException(404,
-            "Chưa có gợi ý phù hợp cho bước này. Em có thể nhờ giáo viên.");
-        return new TutorEvent(status, text);
+        TutorContext now = store.tutorContext(student, cl, request).orElseThrow(() -> new WorkspaceException(404,
+            "Chưa có gợi ý phù hợp cho bước này. Em có thể nhờ giáo viên."));
+        // Bảng công thức đổi giữa lúc dựng prompt và lúc phát thì mã [n] có thể trỏ sai dòng: không phát.
+        if (!now.formulas().equals(asked.formulas())) throw new WorkspaceException(409,
+            "Bảng công thức của lớp vừa cập nhật. Em hỏi lại nhé.");
+        return new TutorEvent(status, text, nguon);
     }
 
     private static boolean hasSafeShape(TutorContext context, String draft) {
