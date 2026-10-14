@@ -22,7 +22,11 @@ export function docSse(raw: string, eof = false): { events: SuKienSse[]; rest: s
       if (name === 'data') data.push(value);
     }
     if (data.length) {
-      try { events.push({ event, id, data: JSON.parse(data.join('\n')) }); }
+      try {
+        if (['start', 'delta', 'regen', 'done', 'error', 'heartbeat'].includes(event)) {
+          events.push({ event, id, data: JSON.parse(data.join('\n')) } as SuKienSse);
+        }
+      }
       catch { throw new Error('Kết nối bị gián đoạn. Bấm Kết nối lại để tiếp tục.'); }
     }
     lines.length = 0;

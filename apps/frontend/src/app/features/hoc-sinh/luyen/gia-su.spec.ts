@@ -1,12 +1,16 @@
 import { TestBed } from '@angular/core/testing';
-import { API_GIA_SU } from '../../../api/gia-su';
+import { API_GIA_SU, SessionGiaSuV2 } from '../../../api/gia-su';
 import { Phien } from '../../../core/auth/phien';
 import { GiaSu } from './gia-su';
 import { GiaSuMarkdown } from './gia-su-markdown';
 import { NOI_LAI_GIA_SU } from './gia-su-phien';
 
+const session: SessionGiaSuV2 = {id:'s1',studentId:'synthetic-student',assignmentId:'assignment-1',classId:'synthetic-class',tomTat:'',summaryThrough:0,contextVersion:'1:synthetic',lastSeq:0,revision:1,tokenCount:0};
 const json=(body:unknown)=>new Response(JSON.stringify(body),{headers:{'Content-Type':'application/json'}});
-const event=(name:string,seq:number,data:object={})=>`id: s1:${seq}\nevent: ${name}\ndata: ${JSON.stringify({v:2,sessionId:'s1',turnId:'t1',seq,...data})}\n\n`;
+const eventFields = (name: string) => name === 'start' ? {maBuoc:'B.DH.TXD',cap:1,contextVersion:'1:synthetic'}
+  : name === 'regen' ? {attempt:1,mode:'rewrite'} : name === 'done' ? {lastSentenceIndex:1,tokens:10,durationMs:20}
+  : name === 'error' ? {code:'MODEL_UNAVAILABLE'} : {};
+const event=(name:string,seq:number,data:object={})=>`id: s1:${seq}\nevent: ${name}\ndata: ${JSON.stringify({v:2,...eventFields(name),sessionId:'s1',turnId:'t1',seq,...data})}\n\n`;
 const settle=async()=>{await new Promise(r=>setTimeout(r,5));};
 
 describe('Sidebar gia sư',()=>{
@@ -14,11 +18,11 @@ describe('Sidebar gia sư',()=>{
   let response:(init:RequestInit)=>Response;
   beforeEach(()=>{
     localStorage.clear();
-    response=init=>new Response(event('start',1,{requestId:JSON.parse(init.body as string).requestId})+event('delta',2,{sentenceIndex:0,text:'**Câu đã kiểm** $x^2$.'})+event('done',3,{status:'completed'}),{headers:{'Content-Type':'text/event-stream'}});
+    response=init=>new Response(event('start',1,{requestId:JSON.parse(init.body as string).requestId})+event('delta',2,{sentenceIndex:1,text:'**Câu đã kiểm** $x^2$.'})+event('done',3,{status:'completed'}),{headers:{'Content-Type':'text/event-stream'}});
     fetchMock=vi.fn(async(url:string,init:RequestInit={})=>{
-      if(url===API_GIA_SU)return json({sessionId:'s1',lastSeq:0});
-      if(url.endsWith('/luot')&&!init.method)return json({sessionId:'s1',lastSeq:0,turns:[]});
-      if(url.endsWith('/cancel'))return json({status:'cancelled',seq:3});
+      if(url===API_GIA_SU)return json({sessionId:'s1',lastSeq:0,turnId:null,status:'idle'});
+      if(url.includes('/luot?')&&!init.method)return json({session,turns:[]});
+      if(url.endsWith('/cancel'))return json({sessionId:'s1',turnId:'t1',status:'cancelled',lastSeq:3});
       return response(init);
     });
     vi.stubGlobal('fetch',fetchMock);
@@ -66,18 +70,28 @@ describe('Sidebar gia sư',()=>{
     expect(t.el.querySelectorAll('article')).toHaveLength(2);
   });
   it('Escape khi đang sinh POST cancel đúng lượt, giữ câu và đóng panel',async()=>{
-    response=init=>new Response(new ReadableStream({start(c){c.enqueue(new TextEncoder().encode(event('start',1,{requestId:JSON.parse(init.body as string).requestId})+event('delta',2,{sentenceIndex:0,text:'Câu đã kiểm.'})));}}),{headers:{'Content-Type':'text/event-stream'}});
+    response=init=>new Response(new ReadableStream({start(c){c.enqueue(new TextEncoder().encode(event('start',1,{requestId:JSON.parse(init.body as string).requestId})+event('delta',2,{sentenceIndex:1,text:'Câu đã kiểm.'})));}}),{headers:{'Content-Type':'text/event-stream'}});
     const t=await setup();await t.fill('Em hỏi');await t.click('Gửi câu hỏi');
     expect(t.el.querySelector('article.cau-cua-ai')?.textContent).toContain('Câu đã kiểm');
     document.dispatchEvent(new KeyboardEvent('keydown',{key:'Escape'}));await settle();await t.f.whenStable();
     const cancel=fetchMock.mock.calls.find(c=>String(c[0]).endsWith('/cancel'))!;
     expect(JSON.parse(cancel[1].body)).toEqual({turnId:'t1'});expect(t.el.querySelector('[data-testid="gia-su-panel"]')).toBeNull();
   });
+  it('nút gửi nhận câu hỏi tới 2000 ký tự theo Ask, chặn câu dài hơn',async()=>{
+    const t=await setup();
+    const send=()=>[...t.el.querySelectorAll('button')].find(b=>b.textContent?.trim()==='Gửi câu hỏi')!;
+    await t.fill('x'.repeat(2001));
+    expect(send().disabled).toBe(true);
+    await t.fill('x'.repeat(2000));
+    expect(send().disabled).toBe(false);
+    await t.click('Gửi câu hỏi');
+    expect(JSON.parse(fetchMock.mock.calls[2][1].body)).toEqual({requestId:expect.any(String),maBuoc:'B.DH.TXD',cap:1,cauHoi:'x'.repeat(2000)});
+  });
   it('Hỏi lại giữ câu để sửa, không tự POST; Thử lại không lặp câu hỏi',async()=>{
     response=init=>new Response(event('start',1,{requestId:JSON.parse(init.body as string).requestId})+event('error',2,{message:'Chưa có lời đã kiểm.',retryable:true}),{headers:{'Content-Type':'text/event-stream'}});
     const t=await setup();await t.fill('Câu hỏi của em');await t.click('Gửi câu hỏi');
     await t.click('Hỏi lại');expect(t.el.querySelector('textarea')!.value).toBe('Câu hỏi của em');expect(fetchMock).toHaveBeenCalledTimes(3);
-    response=init=>new Response(event('start',3,{turnId:'t2',requestId:JSON.parse(init.body as string).requestId})+event('delta',4,{turnId:'t2',sentenceIndex:0,text:'Câu mới đã kiểm.'})+event('done',5,{turnId:'t2',status:'completed'}),{headers:{'Content-Type':'text/event-stream'}});
+    response=init=>new Response(event('start',3,{turnId:'t2',requestId:JSON.parse(init.body as string).requestId})+event('delta',4,{turnId:'t2',sentenceIndex:1,text:'Câu mới đã kiểm.'})+event('done',5,{turnId:'t2',status:'completed'}),{headers:{'Content-Type':'text/event-stream'}});
     await t.click('Thử lại');
     expect(t.el.querySelectorAll('.cau-cua-em')).toHaveLength(1);expect(t.el.textContent).toContain('Câu mới đã kiểm.');
   });
@@ -88,12 +102,12 @@ describe('Sidebar gia sư',()=>{
   });
   it('em cuộn lên thì delta không kéo xuống đáy; nút Xuống tiếp tục theo dõi',async()=>{
     let writer!: ReadableStreamDefaultController<Uint8Array>;
-    response=init=>new Response(new ReadableStream({start(c){writer=c;c.enqueue(new TextEncoder().encode(event('start',1,{requestId:JSON.parse(init.body as string).requestId})+event('delta',2,{sentenceIndex:0,text:'Câu đầu. '})));}}),{headers:{'Content-Type':'text/event-stream'}});
+    response=init=>new Response(new ReadableStream({start(c){writer=c;c.enqueue(new TextEncoder().encode(event('start',1,{requestId:JSON.parse(init.body as string).requestId})+event('delta',2,{sentenceIndex:1,text:'Câu đầu. '})));}}),{headers:{'Content-Type':'text/event-stream'}});
     const t=await setup();await t.fill('Em hỏi');await t.click('Gửi câu hỏi');
     const thread=t.el.querySelector<HTMLElement>('.tutor-messages')!;
     Object.defineProperties(thread,{scrollHeight:{value:1200,configurable:true},clientHeight:{value:300,configurable:true}});
     thread.scrollTop=200;thread.dispatchEvent(new Event('scroll'));await t.f.whenStable();
-    writer.enqueue(new TextEncoder().encode(event('delta',3,{sentenceIndex:1,text:'Câu sau.'})));await settle();await t.f.whenStable();
+    writer.enqueue(new TextEncoder().encode(event('delta',3,{sentenceIndex:2,text:'Câu sau.'})));await settle();await t.f.whenStable();
     expect(thread.scrollTop).toBe(200);expect(t.el.querySelector('[data-testid="gia-su-xuong"]')).not.toBeNull();
     await t.click('Xuống');expect(thread.scrollTop).toBe(1200);
     writer.enqueue(new TextEncoder().encode(event('done',4,{status:'completed'})));await settle();await t.f.whenStable();

@@ -1,5 +1,5 @@
 import { computed, inject, Injectable, InjectionToken, signal } from '@angular/core';
-import { API_GIA_SU, LichSuGiaSuV2, LuotGiaSuV2, PhienGiaSuV2, SuKienSse } from '../../../api/gia-su';
+import { API_GIA_SU, LichSuGiaSuV2, LuotGiaSuV2, PhienGiaSuV2, TurnGiaSuV2, HoiGiaSuV2, HuyGiaSuV2, XacNhanHuyGiaSuV2, SuKienSse } from '../../../api/gia-su';
 import { Phien } from '../../../core/auth/phien';
 import { docSse } from './gia-su-sse';
 
@@ -39,14 +39,15 @@ export class GiaSuPhien {
   readonly choDung = signal(false);
   readonly biKhoa = signal(false);
   readonly retryAt = signal(0);
-  readonly coLichSuCu = computed(() => !!this.cursor());
+  readonly coLichSuCu = signal(false);
   readonly sanSang = computed(() => !!this.sessionId() && !this.dangTai() && !this.dangHoi()
     && !this.matKetNoi() && !this.choDung() && !this.biKhoa() && !this.retryAt());
   readonly thongBaoCau = signal<readonly { seq: number; text: string }[]>([]);
   private readonly auth = inject(Phien);
   private readonly backoff = inject(NOI_LAI_GIA_SU);
   private readonly sessionId = signal('');
-  private readonly cursor = signal<string | null>(null);
+  private readonly pageSize = 50;
+  private historyOffset = 0;
   private lastSeq = 0;
   private epoch = 0;
   private active: KetNoi | null = null;
@@ -71,7 +72,8 @@ export class GiaSuPhien {
     this.assignment = giaoBaiId;
     this.sessionId.set('');
     this.lastSeq = 0;
-    this.cursor.set(null);
+    this.historyOffset = 0;
+    this.coLichSuCu.set(false);
     this.dangTaiCu.set(false);
     this.loi.set('');
     this.biKhoa.set(false);
@@ -84,17 +86,18 @@ export class GiaSuPhien {
       if (!giaoBaiId) throw new Error('Chưa mở được phiên gia sư. Hãy tải lại bài được giao.');
       const response = await this.request(API_GIA_SU, { method: 'POST', body: JSON.stringify({ giaoBaiId }), signal: abort.signal });
       const session: PhienGiaSuV2 = await response.json();
-      const historyResponse = await this.request(this.path(session.sessionId, 'luot'), { signal: abort.signal });
+      const historyResponse = await this.request(this.path(session.sessionId, 'luot') + `?offset=0&limit=${this.pageSize}`, { signal: abort.signal });
       const history: LichSuGiaSuV2 = await historyResponse.json();
       if (epoch !== this.epoch || abort.signal.aborted) return;
-      if (history.sessionId !== session.sessionId) throw new Error('Chưa tải được lịch sử. Bấm Tải lại phiên.');
+      if (history.session.id !== session.sessionId) throw new Error('Chưa tải được lịch sử. Bấm Tải lại phiên.');
       this.sessionId.set(session.sessionId);
-      this.luot.set(history.turns);
-      this.lastSeq = history.lastSeq;
-      this.cursor.set(history.nextCursor ?? null);
-      const running = history.turns.find(t => t.status === 'running');
-      if (running || session.currentTurn?.status === 'running') {
-        const active = this.connection(session.sessionId, running?.requestId ?? '', running?.turnId ?? session.currentTurn!.turnId);
+      this.luot.set(this.mapHistory(history.turns));
+      this.lastSeq = history.session.lastSeq;
+      this.historyOffset = history.turns.length;
+      this.coLichSuCu.set(history.turns.length === this.pageSize);
+      const running = history.turns.find(t => t.status === 'generating');
+      if (running) {
+        const active = this.connection(session.sessionId, running.requestId, running.id);
         this.active = active;
         void this.stream(active);
       }
@@ -106,16 +109,17 @@ export class GiaSuPhien {
   }
 
   async taiCu(): Promise<void> {
-    const cursor = this.cursor(), session = this.sessionId(), epoch = this.epoch;
-    if (!cursor || this.dangTaiCu()) return;
+    const session = this.sessionId(), epoch = this.epoch;
+    if (!this.coLichSuCu() || this.dangTaiCu()) return;
     this.dangTaiCu.set(true);
     try {
-      const response = await this.request(this.path(session, 'luot') + '?cursor=' + encodeURIComponent(cursor));
+      const response = await this.request(this.path(session, 'luot') + `?offset=${this.historyOffset}&limit=${this.pageSize}`);
       const page: LichSuGiaSuV2 = await response.json();
       if (epoch !== this.epoch) return;
-      if (page.sessionId !== session) throw new Error('Chưa tải được lịch sử. Hãy thử lại.');
-      this.luot.update(turns => [...page.turns.filter(t => !turns.some(x => x.turnId === t.turnId)), ...turns]);
-      this.cursor.set(page.nextCursor ?? null);
+      if (page.session.id !== session) throw new Error('Chưa tải được lịch sử. Hãy thử lại.');
+      this.luot.update(turns => [...this.mapHistory(page.turns).filter(t => !turns.some(x => x.turnId === t.turnId)), ...turns]);
+      this.historyOffset += page.turns.length;
+      this.coLichSuCu.set(page.turns.length === this.pageSize);
     } catch (error) { if (epoch === this.epoch) this.showError(error); }
     finally { if (epoch === this.epoch) this.dangTaiCu.set(false); }
   }
@@ -123,14 +127,14 @@ export class GiaSuPhien {
   async hoi(cauHoi: string, maBuoc: string, cap: number, retry?: LuotGiaSuV2): Promise<void> {
     if (!this.sanSang()) return;
     const requestId = crypto.randomUUID();
-    const turn: LuotGiaSuV2 = { requestId, turnId: '', maBuoc, cap, cauHoi, sentences: [], status: 'running',
+    const turn: LuotGiaSuV2 = { requestId, turnId: '', maBuoc, cap, cauHoi, sentences: [], status: 'generating',
       ...(retry ? { retryOfTurnId: retry.turnId || retry.requestId } : {}) };
     // Thử lại gắn với lượt lỗi, chỉ giữ một câu hỏi trong UI; phần đã kiểm vẫn ở lượt cũ.
     this.luot.update(turns => [...turns, turn]);
     const active = this.connection(this.sessionId(), requestId, '');
     this.active = active;
     this.loi.set('');
-    await this.stream(active, { requestId, maBuoc, cap, cauHoi, ...(retry?.turnId ? { retryOfTurnId: retry.turnId } : {}) });
+    await this.stream(active, { requestId, maBuoc, cap, cauHoi });
   }
 
   thuLai(turn: LuotGiaSuV2): void {
@@ -173,11 +177,11 @@ export class GiaSuPhien {
     a.stopping = true;
     const cancel = async () => {
       try {
-        const response = await this.request(this.path(a.sessionId, 'cancel'), { method: 'POST', body: JSON.stringify({ turnId: a.turnId }) });
-        const ack: { status: 'cancelled' | 'completed'; seq: number } = await response.json();
-        if (!['cancelled', 'completed'].includes(ack.status) || !Number.isSafeInteger(ack.seq)) throw new Error('Chưa xác nhận được việc dừng. Bấm Dừng để thử lại.');
+        const response = await this.request(this.path(a.sessionId, 'cancel'), { method: 'POST', body: JSON.stringify({ turnId: a.turnId } satisfies HuyGiaSuV2) });
+        const ack: XacNhanHuyGiaSuV2 = await response.json();
+        if (ack.sessionId !== a.sessionId || ack.turnId !== a.turnId || !['cancelled', 'completed', 'error'].includes(ack.status) || !Number.isSafeInteger(ack.lastSeq)) throw new Error('Chưa xác nhận được việc dừng. Bấm Dừng để thử lại.');
         // ACK completed có thể thắng race: replay phần còn thiếu trước khi đóng stream.
-        if (ack.status === 'completed') {
+        if (ack.status !== 'cancelled') {
           a.stopping = false;
           if (this.current(a)) {
             // Worker đã xong trước cancel nhưng client có thể chưa nhận hết delta/done.
@@ -194,7 +198,7 @@ export class GiaSuPhien {
         a.terminal = true;
         a.abort.abort();
         if (this.current(a)) {
-          this.lastSeq = Math.max(this.lastSeq, ack.seq);
+          this.lastSeq = Math.max(this.lastSeq, ack.lastSeq);
           this.update(a, t => ({ ...t, status: 'cancelled' }));
           this.dangHoi.set(false);
           this.matKetNoi.set(false);
@@ -214,7 +218,7 @@ export class GiaSuPhien {
     return a.cancelRequest;
   }
 
-  private async stream(a: KetNoi, body?: object): Promise<void> {
+  private async stream(a: KetNoi, body?: HoiGiaSuV2): Promise<void> {
     if (!this.current(a) || a.terminal || this.dangHoi()) return;
     this.dangHoi.set(true);
     this.matKetNoi.set(false);
@@ -292,44 +296,60 @@ export class GiaSuPhien {
   }
 
   private event(event: SuKienSse, a: KetNoi): void {
-    const d = event.data;
-    if (d.sessionId !== a.sessionId) return;
+    if (event.data.sessionId !== a.sessionId) return;
     if (event.event === 'heartbeat') return; // lastSeq của heartbeat không phải cursor đã nhận.
-    if (!['start','delta','regen','done','error'].includes(event.event)) return;
+    const d = event.data;
     if (d.v !== 2 || !Number.isSafeInteger(d.seq) || event.id !== `${a.sessionId}:${d.seq}`) throw new Error('Kết nối bị gián đoạn.');
-    const seq = d.seq!;
+    const seq = d.seq;
     if (seq <= this.lastSeq) return;
     if (seq !== this.lastSeq + 1) throw new Error('Kết nối bị gián đoạn.');
-    if (!a.turnId && event.event === 'start' && d.requestId === a.requestId) a.turnId = d.turnId;
+    if (!a.turnId && event.event === 'start' && event.data.requestId === a.requestId) {
+      a.turnId = d.turnId;
+      this.historyOffset++;
+    }
     if (d.turnId !== a.turnId) throw new Error('Phiên đã thay đổi.');
-    if (event.event === 'delta' && (typeof d.text !== 'string' || !Number.isSafeInteger(d.sentenceIndex) || d.sentenceIndex! < 0)) throw new Error('Kết nối bị gián đoạn.');
-    if (event.event === 'done' && d.status !== 'completed' && d.status !== 'cancelled') throw new Error('Kết nối bị gián đoạn.');
+    if (event.event === 'delta' && (typeof event.data.text !== 'string' || !Number.isSafeInteger(event.data.sentenceIndex) || event.data.sentenceIndex < 1)) throw new Error('Kết nối bị gián đoạn.');
+    if (event.event === 'done' && event.data.status !== 'completed' && event.data.status !== 'cancelled') throw new Error('Kết nối bị gián đoạn.');
     this.lastSeq = seq;
     switch (event.event) {
       case 'start':
-        this.update(a, t => ({ ...t, turnId: d.turnId, references: d.references ?? t.references }));
+        this.update(a, t => ({ ...t, turnId: d.turnId }));
         if (a.stopping) void this.huy(a);
         break;
-      case 'delta':
-        if (this.luot().some(t => t.turnId === a.turnId && t.sentences.some(s => s.sentenceIndex === d.sentenceIndex))) break;
-        this.update(a, t => t.sentences.some(s => s.sentenceIndex === d.sentenceIndex) ? t : {
-          ...t, sentences: [...t.sentences, { sentenceIndex: d.sentenceIndex!, text: d.text! }],
+      case 'delta': {
+        const { sentenceIndex, text } = event.data;
+        if (this.luot().some(t => t.turnId === a.turnId && t.sentences.some(s => s.sentenceIndex === sentenceIndex))) break;
+        this.update(a, t => t.sentences.some(s => s.sentenceIndex === sentenceIndex) ? t : {
+          ...t, sentences: [...t.sentences, { sentenceIndex, text }],
         });
-        this.thongBaoCau.update(cau => [...cau, { seq, text: d.text! }]);
+        this.thongBaoCau.update(cau => [...cau, { seq, text }]);
         if (!a.stopping) this.trangThai.set('Đang soạn lời gợi ý…');
         break;
+      }
       case 'regen': if (!a.stopping) this.trangThai.set('Đang viết lại lời gợi ý…'); break;
       case 'done':
         a.terminal = true;
-        this.update(a, t => ({ ...t, status: d.status === 'cancelled' ? 'cancelled' : 'completed' }));
+        this.update(a, t => ({ ...t, status: event.data.status === 'cancelled' ? 'cancelled' : 'completed' }));
         this.choDung.set(false);
         break;
-      case 'error':
+      case 'error': {
+        const { message, retryable } = event.data;
         a.terminal = true;
-        this.update(a, t => ({ ...t, status: 'error', error: { message: d.message ?? 'Chưa hoàn tất lời gợi ý. Hãy thử lại.', retryable: d.retryable === true } }));
+        this.update(a, t => ({ ...t, status: 'error', error: { message, retryable: retryable === true } }));
         this.choDung.set(false);
         break;
+      }
     }
+  }
+
+  private mapHistory(turns: readonly TurnGiaSuV2[]): LuotGiaSuV2[] {
+    return [...turns].reverse().map(t => ({
+      requestId: t.requestId, turnId: t.id, maBuoc: t.step, cap: t.level, cauHoi: t.question, status: t.status,
+      // answer đã ghép các delta; giữ nguyên Markdown và dùng chỉ số 0 cho snapshot
+      // để không trùng sentenceIndex (1-based) khi nối lại lượt đang sinh.
+      sentences: t.answer ? [{ sentenceIndex: 0, text: t.answer }] : [],
+      ...(t.status === 'error' ? { error: { message: 'Lượt hỏi chưa hoàn tất. Em có thể hỏi lại.', retryable: true } } : {}),
+    }));
   }
 
   private async request(url: string, init: RequestInit = {}): Promise<Response> {

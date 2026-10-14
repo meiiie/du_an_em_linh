@@ -112,7 +112,7 @@ export class GiaSu {
     protected readonly rong = signal(false);
     protected readonly cap = signal(0);
     protected readonly model = signal({ cauHoi: '' });
-    protected readonly f = form(this.model, p => maxLength(p.cauHoi, 1000));
+    protected readonly f = form(this.model, p => maxLength(p.cauHoi, 2000));
     private daMo = false;
     private baiCu = '';
     constructor() {
@@ -224,7 +224,7 @@ export class GiaSu {
     protected gui(e: Event) {
         e.preventDefault();
         const q = this.model().cauHoi.trim();
-        if (!q || q.length > 1000 || !this.chat.sanSang()) return;
+        if (!q || q.length > 2000 || !this.chat.sanSang()) return;
         this.model.set({ cauHoi: '' });
         this.oDay.set(true);
         queueMicrotask(() => this.gianO());

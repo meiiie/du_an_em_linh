@@ -15,7 +15,7 @@
     @if(chat.coLichSuCu()){<button appButton variant="secondary" type="button" [disabled]="chat.dangTaiCu()" (click)="chat.taiCu()">Xem các lượt trước</button>}
     @for(t of chat.luot(); track t.requestId){
       @if(!t.retryOfTurnId){<article class="cau-cua-em"><span class="sr-only">Em hỏi</span><span class="tutor-text">{{t.cauHoi}}</span></article>}
-      @if(t.sentences.length){<article class="cau-cua-ai"><span class="sr-only">Gia sư trả lời</span><app-gia-su-markdown [text]="t.sentences | noiCau" [references]="t.references ?? []" /></article>}
+      @if(t.sentences.length){<article class="cau-cua-ai"><span class="sr-only">Gia sư trả lời</span><app-gia-su-markdown [text]="t.sentences | noiCau" /></article>}
       @if(t.status==='cancelled'){<p class="muted turn-status">Đã dừng lượt này.</p>}
       @if(t.status==='error'){
         <div class="turn-error" role="alert"><p>{{t.error?.message || 'Chưa hoàn tất lời gợi ý.'}}</p>
@@ -44,7 +44,7 @@
     <textarea #soan id="gia-su-cau-hoi" data-testid="gia-su-composer" [formField]="f.cauHoi" placeholder="Viết câu hỏi" rows="1" (input)="gianO()" (keydown)="goPhim($event)"></textarea>
     <div class="actions"><span class="muted">Enter để gửi · Shift+Enter xuống dòng</span>
       @if(chat.dangHoi() || chat.choDung() || chat.matKetNoi()){<button appButton variant="secondary" type="button" data-testid="gia-su-dung" (click)="dung()">Dừng</button>}
-      @else{<button appButton type="submit" [disabled]="!chat.sanSang() || !model().cauHoi.trim() || model().cauHoi.length>1000">Gửi câu hỏi</button>}
+      @else{<button appButton type="submit" [disabled]="!chat.sanSang() || !model().cauHoi.trim() || model().cauHoi.length>2000">Gửi câu hỏi</button>}
     </div>
   </form>
 </ng-template>

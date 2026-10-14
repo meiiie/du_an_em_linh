@@ -76,7 +76,9 @@ test('Gia sư: KaTeX, Enter và Shift+Enter, chọn mức hỗ trợ', async ({ 
   await composer.press('Enter');
   await expect(panel.locator('article')).toHaveCount(8);
   await expect(panel.locator('.katex').first()).toBeVisible();
-  expect(api.calls.filter(c=>c.path.endsWith('/luot') && c.method==='POST').map(c=>c.body.cap)).toEqual([1,2,3,3]);
+  const asks=api.calls.filter(c=>c.path.endsWith('/luot') && c.method==='POST');
+  expect(asks.map(c=>c.body.cap)).toEqual([1,2,3,3]);
+  for(const call of asks) expect(Object.keys(call.body).sort()).toEqual(['cap','cauHoi','maBuoc','requestId']);
 });
 
 test('Kiểm tra: toggle/FAB tạm tắt kể cả khi đã lưu trạng thái mở', async ({ page, api }) => {
@@ -88,7 +90,7 @@ test('Kiểm tra: toggle/FAB tạm tắt kể cả khi đã lưu trạng thái m
   await expect(page.getByTestId('mo-gia-su')).toHaveAttribute('title','Đang kiểm tra — gia sư tạm tắt');
   await page.keyboard.press('Control+/');
   await expect(page.getByTestId('gia-su-panel')).toHaveCount(0);
-  expect(api.calls.filter(c=>c.path==='/api/hs/gia-su')).toEqual([]);
+  expect(api.calls.filter(c=>c.path.startsWith('/api/hs/gia-su/v2/phien'))).toEqual([]);
   expect((await new AxeBuilder({page}).exclude('math-field').analyze()).violations.filter(v=>v.impact==='serious'||v.impact==='critical')).toEqual([]);
 });
 
@@ -96,12 +98,12 @@ test('Gia sư: chờ, reduced motion và sửa câu hỏi sau lỗi', async ({ p
   await page.emulateMedia({ reducedMotion:'reduce' });
   let release!: () => void;
   const pending = new Promise<void>(resolve => release = resolve);
-  await page.route('**/api/hs/gia-su/v2/phien/e2e-session/luot', async route => {
+  await page.route('**/api/hs/gia-su/v2/phien/e2e-session/luot*', async route => {
     if(route.request().method()==='GET'){await route.fallback();return;}
     const body = route.request().postDataJSON();
     api.calls.push({method:'POST',path:'/api/hs/gia-su/v2/phien/e2e-session/luot',body});
     await pending;
-    await route.fulfill({contentType:'text/event-stream',body:`id: e2e-session:1\nevent: start\ndata: ${JSON.stringify({v:2,sessionId:'e2e-session',turnId:'error-turn',requestId:body.requestId,seq:1})}\n\nid: e2e-session:2\nevent: error\ndata: {"v":2,"sessionId":"e2e-session","turnId":"error-turn","seq":2,"message":"Chưa hoàn tất. Hãy thử lại.","retryable":true}\n\n`});
+    await route.fulfill({contentType:'text/event-stream',body:`id: e2e-session:1\nevent: start\ndata: ${JSON.stringify({v:2,sessionId:'e2e-session',turnId:'error-turn',requestId:body.requestId,maBuoc:body.maBuoc,cap:body.cap,contextVersion:'1:synthetic',seq:1})}\n\nid: e2e-session:2\nevent: error\ndata: {"v":2,"sessionId":"e2e-session","turnId":"error-turn","seq":2,"code":"MODEL_UNAVAILABLE","message":"Chưa hoàn tất. Hãy thử lại.","retryable":true}\n\n`});
   });
   await page.goto('/hs/luyen/E2E-01');
   await page.getByTestId('mo-gia-su').click();
