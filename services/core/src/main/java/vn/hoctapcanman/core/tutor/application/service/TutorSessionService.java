@@ -56,7 +56,24 @@ public class TutorSessionService {
     public History history(UUID student,UUID id,int offset,int limit) {
         if(offset<0 || limit<1 || limit>100)throw new WorkspaceException(400,"Khoảng lịch sử chưa hợp lệ.");
         Session s=owned(student,id);
-        return sessions.history(s.id(),offset,limit);
+        var history=sessions.history(s.id(),offset,limit);
+        var a=assignment(student,s.assignmentId());
+        // Lượt cũ trước khi có snapshot chỉ dùng bảng hiện tại khi vẫn cùng phiên bản.
+        var cache=new HashMap<String,List<Reference>>();
+        var turns=history.turns().stream().map(t -> {
+            if(!t.references().isEmpty())return t;
+            String turnVersion=t.contextVersion().isBlank()
+                ? (t.ordinal()>history.session().summaryThrough()?history.session().contextVersion():"") : t.contextVersion();
+            if(!turnVersion.equals(history.session().contextVersion()))return t;
+            var refs=cache.computeIfAbsent(t.step(),step -> {
+                try {
+                    var c=pipeline.context(student,a.classId(),new TutorRequest(a.code(),step,t.level(),""));
+                    return version(a,c).equals(history.session().contextVersion())?references(c):List.of();
+                } catch(WorkspaceException ex) { return List.of(); }
+            });
+            return new Turn(t.id(),t.sessionId(),t.requestId(),t.ordinal(),t.step(),t.level(),t.question(),t.answer(),t.status(),t.createdAt(),refs,t.contextVersion());
+        }).toList();
+        return new History(history.session(),turns);
     }
     public Accepted ask(UUID student,UUID session,Ask request) {
         Session s=owned(student,session);
@@ -66,7 +83,7 @@ public class TutorSessionService {
         String question=TutorPrompt.withoutIdentifiers(request.cauHoi());
         if(!TutorPrompt.safeContext(c,question))
             throw new WorkspaceException(400,"Em bỏ thông tin cá nhân khỏi câu hỏi rồi thử lại nhé.");
-        Accepted accepted=sessions.accept(s,request,question,version(a,c));
+        Accepted accepted=sessions.accept(s,request,question,version(a,c),references(c));
         if(accepted.created()) {
             try { pipeline.authorize(student,r); }
             catch(RuntimeException ex) { fail(s.id(),accepted.turn().id(),ex); throw ex; }
@@ -76,6 +93,9 @@ public class TutorSessionService {
             worker.start();
         }
         return accepted;
+    }
+    private static List<Reference> references(TutorContext context) {
+        return context.formulas().stream().map(f -> new Reference(f.number(),f.title()+" — "+f.statement(),f.latex())).toList();
     }
     private void run(Accepted accepted,Assignment assignment,TutorContext context,TutorRequest request,HintModel.Cancellation cancellation) {
         UUID id=accepted.session().id(),turn=accepted.turn().id();
@@ -108,7 +128,7 @@ public class TutorSessionService {
         };
         try {
             checkpoint.run();
-            var base=TutorPrompt.compose(context,request);
+            var base=pipeline.termPrompt(TutorPrompt.compose(context,request),context,request);
             HintPrompt prompt=memory(accepted,assignment,base);
             pipeline.generate(assignment.studentId(),assignment.classId(),request,context,prompt,
                 text -> {
@@ -144,6 +164,7 @@ public class TutorSessionService {
             }).orElse("");
         if(!opener.isEmpty())base=new HintPrompt(base.system()+"\nLượt trước bạn mở đầu bằng: «"
             +opener.substring(0,Math.min(120,opener.length()))+"». Mở đầu khác.",base.user());
+        base=avoidRefusalFrames(base,window);
         int from=0;
         HintPrompt prompt=TutorPrompt.withMemory(base,a.level(),render(s.tomTat(),window));
         // Dự trữ đầu ra; chỉ bỏ lượt cũ nhất, không cắt system/đề/câu hỏi/summary.
@@ -151,6 +172,18 @@ public class TutorSessionService {
             prompt=TutorPrompt.withMemory(base,a.level(),render(s.tomTat(),window.subList(++from,window.size())));
         if(estimate(prompt)+600>budget)throw new WorkspaceException(413,"Ngữ cảnh đã vượt giới hạn. Em thử câu hỏi ngắn hơn hoặc nhờ giáo viên.");
         return prompt;
+    }
+    /** Tối đa hai khung gần đây, chỉ một mảnh câu ngắn đã kiểm dữ liệu cá nhân. */
+    public static HintPrompt avoidRefusalFrames(HintPrompt prompt,List<Turn> turns) {
+        var pattern=java.util.regex.Pattern.compile("(?iu)không(?:[^.!?\\n]{0,60}?được đâu|\\s+thể\\s+(?:xác nhận|kiểm tra))[^.!?\\n]{0,40}");
+        var frames=new LinkedHashSet<String>();
+        for(var turn:turns.reversed().stream().limit(3).toList()) {
+            var matcher=pattern.matcher(memoryText(turn.answer()));
+            if(matcher.find()) frames.add(matcher.group().replaceAll("[«»\\p{Cntrl}]"," ").strip());
+            if(frames.size()==2)break;
+        }
+        if(frames.isEmpty())return prompt;
+        return new HintPrompt(prompt.system()+"\nĐừng lặp khung từ chối: «"+String.join("»; «",frames)+"».",prompt.user());
     }
     private void compactAfterDone(Accepted accepted,Assignment a,TutorContext c,TutorRequest r,HintPrompt base) {
         UUID id=accepted.session().id();

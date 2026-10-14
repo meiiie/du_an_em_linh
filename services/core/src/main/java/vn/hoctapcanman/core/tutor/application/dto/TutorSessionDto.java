@@ -19,8 +19,14 @@ public final class TutorSessionDto {
         long summaryThrough, String contextVersion, long lastSeq, long revision, int tokenCount) {
         @Override public String toString(){return "Session[id="+id+"]";}
     }
+    public record Reference(int index, String text, String latex) {}
     public record Turn(UUID id, UUID sessionId, UUID requestId, long ordinal, String step, int level,
-        String question, String answer, String status, Instant createdAt) {
+        String question, String answer, String status, Instant createdAt, List<Reference> references, String contextVersion) {
+        public Turn { references=List.copyOf(references); }
+        public Turn(UUID id,UUID sessionId,UUID requestId,long ordinal,String step,int level,
+            String question,String answer,String status,Instant createdAt) {
+            this(id,sessionId,requestId,ordinal,step,level,question,answer,status,createdAt,List.of(),"");
+        }
         @Override public String toString(){return "Turn[id="+id+",status="+status+"]";}
     }
     public record Event(int v, UUID sessionId, UUID turnId, long seq, String type, Map<String,Object> data) {}

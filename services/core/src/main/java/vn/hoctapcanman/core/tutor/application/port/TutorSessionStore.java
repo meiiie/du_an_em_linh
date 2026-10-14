@@ -11,6 +11,9 @@ public interface TutorSessionStore {
     Optional<Session> find(UUID student, UUID session);
     Session snapshot(UUID session);
     Accepted accept(Session session, Ask request, String question, String contextVersion);
+    default Accepted accept(Session session,Ask request,String question,String contextVersion,List<Reference> references) {
+        return accept(session,request,question,contextVersion);
+    }
     List<Turn> turns(UUID session, int offset, int limit);
     default List<Turn> memory(UUID session,long after,UUID exclude) { return turns(session,0,1000).stream().filter(t -> t.ordinal()>after && !t.id().equals(exclude) && !t.status().equals("generating")).sorted(java.util.Comparator.comparingLong(Turn::ordinal)).toList(); }
     default Optional<Turn> turn(UUID session, UUID turn) { return turns(session,0,1000).stream().filter(t -> t.id().equals(turn)).findFirst(); }

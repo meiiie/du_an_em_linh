@@ -8,6 +8,7 @@ import java.time.Duration;
  */
 public enum MathJob {
     EXTRACT("/v1/extract", Duration.ofSeconds(22)),
+    SO_HANG("/v1/so-hang", Duration.ofSeconds(6)),
     GRADE("/v1/grade", Duration.ofSeconds(12)),
     VERIFY("/v1/verify", Duration.ofSeconds(20)),
     FILTER("/v1/filter", Duration.ofSeconds(12)),

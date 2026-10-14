@@ -116,6 +116,19 @@ class TutorSessionPersistenceTest {
         assertEquals(List.of("start","error"),store.events(session.id(),0).stream().map(Event::type).toList());
         assertEquals("error",store.turns(session.id(),0,1).getFirst().status());
     }
+    @Test void formulaSnapshotSurvivesStartReplayAndHistoryAfterContextChange() {
+        var references=List.of(new Reference(1,"Lũy thừa — Quy tắc đã khóa","x^n"));
+        var q=ask(UUID.randomUUID());
+        var a=store.accept(session,q,q.cauHoi(),"1:snapshot",references);
+        store.append(session.id(),a.turn().id(),"done",Map.of("status","completed"));
+        var next=ask(UUID.randomUUID());
+        store.accept(store.snapshot(session.id()),next,next.cauHoi(),"2:snapshot",List.of(new Reference(1,"Bảng mới","x")));
+        assertEquals(references,store.turns(session.id(),0,50).getLast().references());
+        assertEquals(references,store.history(session.id(),0,50).turns().getLast().references());
+        assertEquals("start",store.events(session.id(),0).getFirst().type());
+        var snapshot=store.events(session.id(),0).getFirst().data().get("references");
+        assertTrue(snapshot.toString().contains("Quy tắc đã khóa"));
+    }
     @Test void changedContentInvalidatesSummaryButKeepsOriginalHistory() {
         Accepted a=accept();store.append(session.id(),a.turn().id(),"done",Map.of("status","completed"));
         store.compact(store.snapshot(session.id()),"Tóm tắt đã kiểm",1,5);

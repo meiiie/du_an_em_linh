@@ -62,9 +62,26 @@ public class TutorSessionStoreAdapter implements TutorSessionStore {
         return new Session(r.getObject("id",UUID.class),r.getObject("hoc_sinh_id",UUID.class),r.getObject("giao_bai_id",UUID.class),r.getObject("lop_id",UUID.class),r.getString("tom_tat"),r.getLong("summary_den_luot"),r.getString("context_version"),r.getLong("last_seq"),r.getLong("revision"),r.getInt("token_count"));
     }
     private static Turn turn(ResultSet r,int n)throws SQLException {
-        return new Turn(r.getObject("id",UUID.class),r.getObject("phien_id",UUID.class),r.getObject("request_id",UUID.class),r.getLong("thu_tu"),r.getString("ma_buoc"),r.getInt("cap"),r.getString("cau_hoi"),r.getString("tra_loi"),r.getString("trang_thai"),r.getTimestamp("created_at").toInstant());
+        return new Turn(r.getObject("id",UUID.class),r.getObject("phien_id",UUID.class),r.getObject("request_id",UUID.class),r.getLong("thu_tu"),r.getString("ma_buoc"),r.getInt("cap"),r.getString("cau_hoi"),r.getString("tra_loi"),r.getString("trang_thai"),r.getTimestamp("created_at").toInstant(),references(r.getString("su_kien")),turnVersion(r.getString("su_kien")));
+    }
+    private static String turnVersion(String events) {
+        for(var event:JSON.readTree(events))
+            if("start".equals(event.path("type").asString()))return event.path("data").path("contextVersion").asString("");
+        return "";
+    }
+    private static List<Reference> references(String events) {
+        var refs=new ArrayList<Reference>();
+        for(var event:JSON.readTree(events)) {
+            if(!"start".equals(event.path("type").asString()))continue;
+            for(var ref:event.path("data").path("references"))
+                refs.add(new Reference(ref.path("index").asInt(),ref.path("text").asString(),ref.path("latex").asString()));
+        }
+        return refs;
     }
     @Override public Accepted accept(Session session,Ask request,String question,String version) {
+        return accept(session,request,question,version,List.of());
+    }
+    @Override public Accepted accept(Session session,Ask request,String question,String version,List<Reference> references) {
         return Objects.requireNonNull(tx.execute(s -> {
             Session current=read(session.id(),true);
             var existing=db.sql("SELECT * FROM yeu_cau_gia_su WHERE phien_id=:s AND request_id=:r").param("s",session.id()).param("r",request.requestId()).query(TutorSessionStoreAdapter::turn).optional();
@@ -83,7 +100,7 @@ public class TutorSessionStoreAdapter implements TutorSessionStore {
                 .param("id",id).param("s",session.id()).param("n",ordinal).param("r",request.requestId()).param("step",request.maBuoc()).param("cap",request.cap()).param("q",question).update();
             db.sql("INSERT INTO luot_gia_su(id,phien_id,luot_id,seq,role,content,tokens) VALUES(:id,:s,:t,:n,'user',:q,:tokens)").param("id",UUID.randomUUID()).param("s",session.id()).param("t",id).param("n",ordinal*2-1).param("q",question).param("tokens",HintModel.estimate(question)).update();
             db.sql("UPDATE phien_gia_su SET token_count=token_count+:tokens WHERE id=:s").param("s",session.id()).param("tokens",HintModel.estimate(question)).update();
-            append(session.id(),id,"start",Map.of("requestId",request.requestId().toString(),"maBuoc",request.maBuoc(),"cap",request.cap(),"contextVersion",version));
+            append(session.id(),id,"start",Map.of("requestId",request.requestId().toString(),"maBuoc",request.maBuoc(),"cap",request.cap(),"contextVersion",version,"references",references));
             Turn t=db.sql("SELECT * FROM yeu_cau_gia_su WHERE id=:id").param("id",id).query(TutorSessionStoreAdapter::turn).single();
             return new Accepted(read(session.id(),false),t,true);
         }));
