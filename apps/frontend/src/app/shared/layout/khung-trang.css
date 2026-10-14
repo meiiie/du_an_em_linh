@@ -221,7 +221,7 @@
       }
     }
 
-    @media (min-width: 64rem) {
+    @media (min-width: 1024px) {
       .ray {
         transform: none;
         visibility: visible;

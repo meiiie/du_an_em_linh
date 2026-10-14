@@ -117,3 +117,41 @@ describe('Tạo người dùng theo ràng buộc máy chủ', () => {
     t.http.verify();
   });
 });
+
+async function adminPage(trang:'lop'|'nguoi-dung', rows:unknown[]){
+ TestBed.configureTestingModule({providers:[provideHttpClient(),provideHttpClientTesting()]});
+ const f=TestBed.createComponent(QuanTri);f.componentRef.setInput('trang',trang);f.detectChanges();const http=TestBed.inject(HttpTestingController);http.expectOne('/api/qt/'+trang).flush(rows);await f.whenStable();const el=f.nativeElement as HTMLElement;
+ for(const d of el.querySelectorAll<HTMLDialogElement>('dialog')){d.showModal=()=>{d.open=true;};d.close=()=>{d.open=false;};}
+ const button=(name:string)=>[...el.querySelectorAll<HTMLButtonElement>('button')].find(b=>b.textContent?.trim()===name)!;
+ return {f,http,el,button};
+}
+const cls=(status='MO')=>({id:'lop1',title:'12A1',subtitle:'2026-2027',status,details:{enabled:status==='MO'}});
+describe('Khóa lớp và xác nhận thao tác quản trị',()=>{
+ it.each([true,false])('khóa=%s chỉ gửi PUT sau xác nhận và tải lại trạng thái',async locked=>{
+  const t=await adminPage('lop',[cls(locked?'MO':'KHOA')]);t.button(locked?'Khóa lớp':'Mở khóa lớp').click();await t.f.whenStable();
+  expect(t.el.querySelector('dialog[open]')?.textContent).toContain('lớp 12A1?');t.http.expectNone(r=>r.method==='PUT');
+  t.button('Hủy').click();await t.f.whenStable();t.http.expectNone(r=>r.method==='PUT');
+  t.button(locked?'Khóa lớp':'Mở khóa lớp').click();await t.f.whenStable();t.button('Xác nhận').click();
+  const r=t.http.expectOne('/api/qt/lop/lop1/khoa');expect(r.request.method).toBe('PUT');expect(r.request.body).toEqual({locked});
+  // Nhấn hai lần không gửi thêm.
+  t.f.componentInstance['thucHien']();t.http.expectNone(r=>r.method==='PUT');
+  r.flush({message:'Đã lưu',count:1});await new Promise(r=>setTimeout(r,0));TestBed.tick();t.http.expectOne('/api/qt/lop').flush([cls(locked?'KHOA':'MO')]);await t.f.whenStable();
+  expect(t.el.querySelector('dialog[open]')).toBeNull();expect(t.el.querySelector('tbody')?.textContent).toContain(locked?'Đã khóa':'Đang mở');t.http.verify();
+ });
+ it('lỗi khóa giữ hộp thoại và cho thử lại, không báo thành công',async()=>{
+  const t=await adminPage('lop',[cls()]);t.button('Khóa lớp').click();await t.f.whenStable();t.button('Xác nhận').click();t.http.expectOne('/api/qt/lop/lop1/khoa').flush({detail:'Không có quyền quản lý lớp.'},{status:403,statusText:'Forbidden'});await t.f.whenStable();
+  expect(t.el.querySelector('dialog[open] [role=alert]')?.textContent).toBe('Không có quyền quản lý lớp.');expect(t.button('Xác nhận').disabled).toBe(false);t.http.expectNone('/api/qt/lop');t.http.verify();
+ });
+ it.each([true,false])('bulk enabled=%s cần xác nhận; hủy giữ lựa chọn và không gửi',async enabled=>{
+  const t=await adminPage('nguoi-dung',[{id:'hs1',title:'An',subtitle:'',status:'STUDENT',details:{enabled:true}}]);t.el.querySelector<HTMLInputElement>('[type=checkbox]')!.click();await t.f.whenStable();
+  const action=enabled?'Mở tài khoản':'Khóa tài khoản';t.button(action).click();await t.f.whenStable();t.http.expectNone(r=>r.method==='POST');
+  t.button('Hủy').click();await t.f.whenStable();expect(t.el.querySelector<HTMLInputElement>('[type=checkbox]')!.checked).toBe(true);
+  t.button(action).click();await t.f.whenStable();t.button('Xác nhận').click();const r=t.http.expectOne('/api/qt/nguoi-dung/bulk');expect(r.request.body).toEqual({ids:['hs1'],enabled});r.flush({message:'Đã lưu',count:1});await new Promise(r=>setTimeout(r,0));TestBed.tick();t.http.expectOne('/api/qt/nguoi-dung').flush([]);await t.f.whenStable();expect(t.el.querySelector('dialog[open]')).toBeNull();t.http.verify();
+ });
+ it('báo cáo AI chỉ tải khi chọn lớp, đúng endpoint quản trị và tên học sinh',async()=>{
+  const t=await adminPage('lop',[cls()]);t.http.expectNone(r=>r.url.includes('su-dung'));t.button('Sử dụng AI').click();TestBed.tick();
+  t.http.expectOne('/api/qt/nguoi-dung').flush([{id:'hs1',title:'An',subtitle:'',status:'STUDENT',details:{enabled:true}}]);
+  t.http.expectOne('/api/qt/lop/lop1/gia-su/su-dung').flush({classId:'lop1',requests:1,inputTokens:10,outputTokens:20,estimatedTokens:0,students:[{studentId:'hs1',requests:1,inputTokens:10,outputTokens:20,estimatedTokens:0}]});await t.f.whenStable();
+  expect(t.el.querySelector('app-su-dung-gia-su tbody th')?.textContent).toBe('An');t.http.verify();
+ });
+});

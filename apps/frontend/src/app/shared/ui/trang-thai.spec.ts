@@ -1,6 +1,6 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { TestBed } from '@angular/core/testing';
-import { LoiTai } from './trang-thai';
+import { KhungCho, LoiTai } from './trang-thai';
 
 describe('LoiTai', () => {
   it('lỗi tải có thông báo và nút thử lại trong cùng vùng cảnh báo', async () => {
@@ -22,4 +22,15 @@ describe('LoiTai', () => {
     fixture.nativeElement.querySelector('button').click();
     expect(retry).toHaveBeenCalledOnce();
   });
+});
+
+
+describe('Khung chờ',()=>{
+ it('xung chỉ chạy 3 lượt (4,2 giây), giữ thông báo đang tải sau khi dừng',async()=>{
+  const f=TestBed.createComponent(KhungCho);f.componentRef.setInput('nhan','Đang tải bài');await f.whenStable();
+  const el=f.nativeElement as HTMLElement;
+  expect(getComputedStyle(el.querySelector('i')!).animation).toMatch(/cho-mo 1\.4s ease-in-out 3 alternate$/);
+  expect(el.querySelector('[role=status]')?.getAttribute('aria-busy')).toBe('true');
+  expect(el.querySelector('[role=status]')?.textContent).toContain('Đang tải bài');
+ });
 });

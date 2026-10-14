@@ -1,3 +1,4 @@
+import { SuDungGiaSu } from '../../shared/ui/su-dung-gia-su';
 import { KichThuocTrang } from '../../shared/ui/kich-thuoc-trang';
 import { PhanTrang } from '../../shared/ui/phan-trang';
 import { gomHan, hanTheoBo, tenBai, tenKyNang, tenTrangThai } from './trinh-bay';
@@ -20,15 +21,16 @@ import { ThongBaoNhanh } from '../../shared/ui/thong-bao';
 import { KhungCho, LoiTai, SoDo, TrangRong } from '../../shared/ui/trang-thai';
 export type TrangGv='tong-quan'|'tien-do'|'hoc-sinh'|'ngan-hang'|'tai-lieu'|'cong-thuc'|'duyet'|'giao'|'cai-dat'|'ket-noi-ai';
 const TIEU_DE:Record<TrangGv,string>={'tong-quan':'Tổng quan','tien-do':'Mức lớp','hoc-sinh':'Học sinh','ngan-hang':'Đề bài','tai-lieu':'Tài liệu','cong-thuc':'Công thức','duyet':'Duyệt','giao':'Giao bài','cai-dat':'Cài đặt lớp','ket-noi-ai':'Gia sư'};
-@Component({selector:'app-phong-giao-vien',imports:[PhanTrang,VanBanToan,RouterLink,Button,HopThoai,Katex,OCongThuc,FormField,KhungCho,LoiTai,SoDo,TrangRong,DinhDangSo],templateUrl:'./phong-giao-vien.html'})
+@Component({selector:'app-phong-giao-vien',imports:[SuDungGiaSu,PhanTrang,VanBanToan,RouterLink,Button,HopThoai,Katex,OCongThuc,FormField,KhungCho,LoiTai,SoDo,TrangRong,DinhDangSo],templateUrl:'./phong-giao-vien.html'})
 export class PhongGiaoVien{
  protected readonly soMoiTrang = inject(KichThuocTrang).soMuc;
  readonly trang=input<TrangGv>('tong-quan');readonly id=input('');protected readonly lop=inject(LopDangChon);protected readonly tieuDe=computed(()=>this.trang()==='tong-quan'&&this.lop.ds().find(l=>l.id===this.lop.id()) ? 'Lớp '+this.lop.ds().find(l=>l.id===this.lop.id())!.title : TIEU_DE[this.trang()]);protected readonly tenMuc=TEN_MUC;protected readonly cacMuc=Object.keys(TEN_MUC) as Muc4[];protected readonly tim=signal('');protected readonly timBaiGiao=signal('');protected readonly timHsGiao=signal('');protected readonly mucLoc=signal('');protected readonly congLoc=signal('');protected readonly ban=signal(false);protected readonly loi=signal('');protected readonly hop=signal<'duyet'|'muc'|'cong-thuc'|'bai'|'bai-ke'|'tai-lieu'|'soan-nhap'|null>(null);protected readonly mucDangChon=signal<Item|null>(null);protected readonly chapThuan=signal(true);protected readonly lyDo=signal('');protected readonly kyNang=signal('');protected readonly mucMoi=signal<Muc4>('NHAN_BIET');protected readonly chonBai=signal<readonly string[]>([]);protected readonly chonHs=signal<readonly string[]>([]);protected readonly file=signal<File|null>(null);private readonly http=inject(HttpClient);private readonly api=inject(ApiLopHoc);private readonly toast=inject(ThongBaoNhanh);
  private url(path:string){return this.api.duongGv(path,this.lop.id());}
  protected readonly tongQuan=this.api.trangTongQuan(()=>this.trang()==='tong-quan'?this.lop.id():undefined);
  protected readonly canhBao=this.api.canhBao(()=>this.trang()==='tong-quan'?this.lop.id():undefined);
- protected readonly tienDo=this.api.tienDo(()=>['tien-do','giao','ngan-hang'].includes(this.trang())?this.lop.id():undefined);
+ protected readonly tienDo=this.api.tienDo(()=>['tien-do','giao','ngan-hang','ket-noi-ai'].includes(this.trang())?this.lop.id():undefined);
  protected readonly hocSinh=this.api.hocSinh(()=>this.lop.id(),()=>this.trang()==='hoc-sinh'?this.id():undefined);
+ protected readonly kyNangLop=this.api.kyNangGv(()=>this.trang()==='ngan-hang'?this.lop.id():undefined);
  protected readonly nganHang=this.api.nganHang(()=>['ngan-hang','giao','hoc-sinh','duyet'].includes(this.trang())?this.lop.id():undefined);
  protected readonly ds=this.api.danhSachGv(()=>{const t=this.trang();return t==='duyet'||t==='giao'||t==='cong-thuc'?t:undefined;},()=>this.lop.id());
  protected readonly kho=this.api.khoGv(()=>this.trang()==='tai-lieu'?this.lop.id():undefined);
@@ -65,7 +67,15 @@ export class PhongGiaoVien{
  protected readonly caiModel=linkedSignal(()=>({revealSolutionAfterSubmit:this.caiDat.hasValue()?this.caiDat.value().revealSolutionAfterSubmit:false,aiProvider:this.caiDat.hasValue()&&this.caiDat.value().aiProvider==='glm'?'glm':'offline'}));protected readonly caiForm=form(this.caiModel);
  protected readonly giaoModel=signal<{setName:string;mode:CheDoHoc;dueAt:string}>({setName:'',mode:'ON_TAP',dueAt:''});protected readonly giaoForm=form(this.giaoModel,p=>{required(p.setName);maxLength(p.setName,120);});
  protected readonly congModel=signal({title:'',latex:'',statement:''});protected readonly congForm=form(this.congModel,p=>{required(p.title);maxLength(p.title,120);required(p.latex);maxLength(p.latex,2000);required(p.statement);maxLength(p.statement,2000);});
- protected readonly baiModel=signal({code:'',skillCode:'T12.DH.03',level4:'NHAN_BIET',statement:'',latex:'',function:''});protected readonly baiForm=form(this.baiModel,p=>{required(p.code);required(p.skillCode);required(p.statement);required(p.latex);required(p.function);maxLength(p.code,120);maxLength(p.statement,2000);maxLength(p.latex,2000);maxLength(p.function,2000);});
+ protected readonly baiModel=linkedSignal({source:()=>this.lop.id(),computation:()=>({code:'',skillCode:'',level4:'NHAN_BIET',statement:'',latex:'',function:''})});protected readonly baiForm=form(this.baiModel,p=>{required(p.code);required(p.skillCode);required(p.statement);required(p.latex);required(p.function);maxLength(p.code,120);maxLength(p.statement,2000);maxLength(p.latex,2000);maxLength(p.function,2000);});
+ protected readonly danhMucKyNang=computed(()=>{
+  const skills=new Map<string,string>();
+  for(const k of this.kyNangLop.value()??[])skills.set(k.id,tenKyNang(k.id,k.title));
+  for(const b of this.nganHang.value()??[])if(b.details.skillCode)skills.set(b.details.skillCode,tenKyNang(b.details.skillCode,b.details.skillName));
+  for(const hs of this.tienDo.value()??[])for(const k of hs.details.skills)skills.set(k.code,k.name);
+  return [...skills].map(([code,name])=>({code,name})).sort((a,b)=>a.name.localeCompare(b.name,'vi'));
+ });
+ protected readonly kyNangHopLe=computed(()=>this.danhMucKyNang().some(k=>k.code===this.baiModel().skillCode));
  protected readonly baiKeId=signal('');
  protected readonly docModel=signal({title:'',licenseStatus:'tu_soan'});protected readonly docForm=form(this.docModel,p=>{required(p.title);maxLength(p.title,120);});
  protected readonly baiLoc=computed(()=>{const ds=this.nganHang.hasValue()?this.nganHang.value():[];const q=this.tim().toLocaleLowerCase('vi');return ds.filter(b=>(!q||(b.title+' '+b.subtitle+' '+b.details.skillCode+' '+tenKyNang(b.details.skillCode,b.details.skillName||this.tenKyNangTheoMa().get(b.details.skillCode))).toLocaleLowerCase('vi').includes(q))&&(!this.mucLoc()||b.details.level4===this.mucLoc())&&(!this.congLoc()||b.details.gate===this.congLoc()));});
@@ -115,7 +125,7 @@ export class PhongGiaoVien{
    this.hop.set(null);this.ds.reload();this.toast.hien('Đã đưa bản nháp vào hàng chờ duyệt.');
   }
  }
- protected async themBai(e:Event){e.preventDefault();if(this.baiForm().invalid())return;if(await this.ghi('/api/gv/ngan-hang',{lopId:this.lop.id(),...this.baiModel()})){this.hop.set(null);this.nganHang.reload();}}
+ protected async themBai(e:Event){e.preventDefault();if(this.baiForm().invalid()||!this.kyNangHopLe())return;if(await this.ghi('/api/gv/ngan-hang',{lopId:this.lop.id(),...this.baiModel()})){this.hop.set(null);this.nganHang.reload();}}
  protected async ghiBaiKe(e:Event){e.preventDefault();if(!this.lyDo().trim()||!this.baiKeId())return;if(await this.ghi('/api/gv/goi-bai',{lopId:this.lop.id(),studentId:this.id(),problemId:this.baiKeId(),reason:this.lyDo()}))this.hop.set(null);}
  protected async themCong(e:Event){e.preventDefault();if(this.congForm().invalid())return;if(await this.ghi('/api/gv/cong-thuc',{lopId:this.lop.id(),...this.congModel()})){this.hop.set(null);this.congModel.set({title:'',latex:'',statement:''});this.ds.reload();}}
  protected async kiemCong(){if(await this.ghi(this.url('cong-thuc/kiem'),{}))this.ds.reload();}

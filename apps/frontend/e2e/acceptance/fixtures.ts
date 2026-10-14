@@ -40,6 +40,8 @@ export class MockApi {
     constructor(private page: Page) {
     }
     async install() {
+        // Các ca xác thực mô phỏng một trình duyệt đã đăng nhập trước đó.
+        await this.page.addInitScript(() => localStorage.setItem('mathl-co-phien', '1'));
         await this.page.route('**/api/**', async (route) => {
             const req = route.request();
             const path = new URL(req.url()).pathname;
@@ -102,7 +104,7 @@ export class MockApi {
                 response = { ketQua: 'DAT', mucHieu: [{ kyNang: problem.kyNang, muc4Truoc: 'NHAN_BIET', muc4Sau: 'THONG_HIEU' }] };
             }
             else if (path === '/api/hs/che-do')
-                response = [item(problem.maBai, 'Bài thử', '', this.mode, { dueAt: '2026-10-20T12:00:00Z' })];
+                response = [problem.maBai,'E2E-NEXT'].map(id=>item(id, 'Bài thử', '', this.mode, { dueAt: '2026-10-20T12:00:00Z' }));
             else if (path === '/api/hs/goi-bai')
                 response = [item(this.mastered ? 'E2E-NEXT' : problem.maBai, 'Bài kế', 'Nâng 1 nấc', 'NANG_1_NAC', { level4: this.mastered ? 'THONG_HIEU' : 'NHAN_BIET', skillCode: problem.kyNang })];
             else if (path === '/api/hs/kho' || path === '/api/gv/kho')
@@ -116,7 +118,13 @@ export class MockApi {
             else if (path === '/api/hs/lich' || path === '/api/hs/nhac')
                 response = method === 'GET' ? [] : { message: 'Đã thêm buổi học.', count: 1 };
             else if (path === '/api/gv/lop' || path === '/api/qt/lop')
-                response = [item('lop1', '12A1 thử', '2026-2027', 'DANG_HOC')];
+                response = [item('lop1', '12A1 thử', '2026-2027', 'MO', {enabled:true})];
+            else if (/^\/api\/(gv|qt)\/lop\/[^/]+\/gia-su\/su-dung$/.test(path))
+                response = {classId:'lop1',requests:0,inputTokens:0,outputTokens:0,estimatedTokens:0,students:[]};
+            else if (/^\/api\/qt\/lop\/[^/]+\/khoa$/.test(path) && method === 'PUT')
+                response = {message:'Đã lưu.',count:1};
+            else if (path === '/api/gv/ky-nang')
+                response = [item(problem.kyNang, 'Hàm số', '', 'KY_NANG', {})];
             else if (path === '/api/gv/tong-quan')
                 response = { students: 3, stuck: 1, pending: 1, assignments: 6, distribution: Object.fromEntries(levels.map(l => [l, 1])), deadlines: [deadline] };
             else if (path === '/api/gv/tien-do')

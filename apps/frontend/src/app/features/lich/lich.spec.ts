@@ -138,3 +138,18 @@ describe('Lịch theo giờ Việt Nam', () => {
     t.http.verify();
   });
 });
+
+
+describe('Điều khiển lịch trên màn hẹp',()=>{
+ it('nút thông báo có kiểu nút và tuần trước/sau cùng nhóm, không ghép phần rỗng',async()=>{
+  const t=await setup([{id:'r',title:'Ôn xen kẽ — công thức các chương · ',subtitle:'',status:'',details:{}}]);
+  const push=t.button('Bật thông báo trình duyệt');
+  expect(push.classList.contains('btn-secondary')).toBe(true);
+  expect(push.classList.contains('nut-thong-bao')).toBe(true);
+  expect(push.getAttribute('aria-pressed')).toBe('false');
+  expect(t.el.querySelector('.chon-tuan')?.querySelectorAll('button')).toHaveLength(2);
+  expect(t.el.textContent).toContain('Ôn xen kẽ — công thức các chương');
+  expect(t.el.textContent).not.toContain('các chương ·');
+  t.http.verify();
+ });
+});

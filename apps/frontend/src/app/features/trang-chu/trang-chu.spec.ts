@@ -66,6 +66,11 @@ describe('TrangChu', () => {
     expect(t.tuDangHien()).toBe('hiểu ra');
   });
 
+  it('câu kiểm công thức nói rõ thuộc bài tập',async()=>{
+    const t=await mo();expect(t.el.textContent).toContain('Công thức trong bài tập được kiểm trước khi dùng');
+    expect(t.el.textContent).not.toContain('Công thức được kiểm trước khi dùng');
+  });
+
   it('ảnh minh họa có chữ thay thế, kích thước khai sẵn (không xô bố cục) và tải lười', async () => {
     const t = await mo();
     const anh = [...t.el.querySelectorAll<HTMLImageElement>('img.minh-hoa')];

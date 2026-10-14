@@ -32,7 +32,7 @@ import { DoiGiaoDien } from '../ui/doi-giao-dien';
 import { DIEU_HUONG, KhuVuc, laTrangChuKhuVuc, TEN_KHU_VUC } from './dieu-huong';
 
 /** Cỡ `lg` của docs/DESIGN.md: từ đây thanh bên luôn hiện, dưới đây là ngăn kéo. */
-const MAN_HINH_RONG = '(min-width: 64rem)';
+const MAN_HINH_RONG = '(min-width: 1024px)';
 
 /**
  * Khung sau đăng nhập của `/hs` và `/gv` (route cha, các trang con hiện trong `<router-outlet>`), như `AppShell` của
