@@ -106,7 +106,7 @@ Kết quả: **112 JUnit đạt**, 0 lỗi/bỏ qua (gồm ArchUnit, tự kiểm
 
 ## Vận hành sau audit mục 9
 
-Cấu hình mẫu đã bao phủ stack v2; Compose đồng bộ timeout GLM 45 giây và truyền biến gia sư, VAPID, soạn nháp. Image core không chép `data/dev`; demo dùng mount chỉ đọc. Khóa JWT hợp lệ tối thiểu 32 byte giải mã bắt buộc ngoài dev/test, thiếu hoặc sai sẽ dừng khởi động.
+Cấu hình mẫu đã bao phủ stack v2; Compose đồng bộ timeout GLM 45 giây và truyền biến gia sư, VAPID, soạn nháp. Image core không chép `data/dev`; demo dùng mount chỉ đọc. Profile `prod` bắt buộc khóa JWT (thiếu thì dừng khởi động); khóa sai base64 hoặc dưới 32 byte bị từ chối ở mọi profile; profile khác thiếu khóa thì dùng khóa tạm.
 
 Script sao lưu custom PostgreSQL, kiểm thử và hướng dẫn cron, sao chép ngoài máy, phục hồi vào CSDL riêng nằm trong [TRIEN-KHAI.md](TRIEN-KHAI.md). HTTPS/reverse proxy, giám sát, đích offsite và diễn tập production vẫn chờ thông tin máy chủ; chưa cài hoặc nghiệm thu các phần đó. Chạy kiểm thử ops bằng `node --test ops/backup-postgres.test.mjs` và `./mvnw test -Dtest=JwtConfigTest` trong services/core. Profile `prod` bắt buộc `APP_IDENTITY_JWT_SECRET`; profile khác dùng khóa tạm và cảnh báo.
 
