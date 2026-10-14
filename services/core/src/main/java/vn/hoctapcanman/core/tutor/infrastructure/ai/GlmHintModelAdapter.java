@@ -17,6 +17,8 @@ import vn.hoctapcanman.core.tutor.application.port.HintModel;
 /** SSE của nhà → token nội dung nội bộ; không công bố reasoning, bản nháp hay lỗi chứa khóa. */
 public final class GlmHintModelAdapter implements HintModel {
     private static final JsonMapper JSON=JsonMapper.builder().build();
+    private static final org.slf4j.Logger LOG=org.slf4j.LoggerFactory.getLogger(GlmHintModelAdapter.class);
+    private final io.micrometer.core.instrument.Counter unexpectedReasoning;
     private final RestClient client;
     private final String key;
     private final String model;
@@ -34,6 +36,10 @@ public final class GlmHintModelAdapter implements HintModel {
         this(client,key,model,timeout,maxTokens,firstTokenTimeout,0.8,0.9);
     }
     public GlmHintModelAdapter(RestClient client,String key,String model,Duration timeout,int maxTokens,Duration firstTokenTimeout,double temperature,double topP) {
+        this(client,key,model,timeout,maxTokens,firstTokenTimeout,temperature,topP,io.micrometer.core.instrument.Metrics.globalRegistry);
+    }
+    public GlmHintModelAdapter(RestClient client,String key,String model,Duration timeout,int maxTokens,Duration firstTokenTimeout,double temperature,double topP,io.micrometer.core.instrument.MeterRegistry meters) {
+        unexpectedReasoning=meters.counter("gia_su_glm.reasoning_khong_mong_doi");
         if(timeout.isZero() || timeout.isNegative() || firstTokenTimeout.isZero() || firstTokenTimeout.isNegative())
             throw new IllegalArgumentException("Thời gian chờ phải dương.");
         if(!Double.isFinite(temperature) || temperature<=0 || temperature>1 || !Double.isFinite(topP) || topP<=0 || topP>1)
@@ -113,7 +119,13 @@ public final class GlmHintModelAdapter implements HintModel {
         final Cancellation cancellation=new Cancellation();
         private final long deadline;
         private long idleDeadline=System.nanoTime()+boundedNanos(firstTokenTimeout);
-        private boolean emitted,stopped;
+        private boolean emitted,stopped,reasoningReported;
+        synchronized void reasoningWithoutContent() {
+            if(reasoningReported)return;
+            reasoningReported=true;
+            LOG.warn("gia_su_glm reasoning_khong_mong_doi");
+            unexpectedReasoning.increment();
+        }
         Attempt(long deadline) { this.deadline=deadline; }
         synchronized boolean emitted() { return emitted; }
         synchronized long remaining() { return Math.min(deadline,idleDeadline)-System.nanoTime(); }
@@ -205,6 +217,8 @@ public final class GlmHintModelAdapter implements HintModel {
                 var delta=choice.path("delta");
                 if(delta.has("tool_calls") || delta.has("function_call"))throw unavailable();
                 var text=delta.path("content");
+                if(delta.path("reasoning_content").isString() && !delta.path("reasoning_content").asString().isBlank()
+                    && (!text.isString() || text.asString().isEmpty()))attempt.reasoningWithoutContent();
                 if(text.isString() && !text.asString().isEmpty()) {
                     if(content.length()+text.asString().length()>12000)throw unavailable();
                     if(finish)throw unavailable();

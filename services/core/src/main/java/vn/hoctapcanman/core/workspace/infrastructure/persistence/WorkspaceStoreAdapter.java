@@ -57,7 +57,7 @@ import vn.hoctapcanman.core.workspace.application.exception.WorkspaceException;
             }
         }
         List<Item> deadlines=upcomingDeadlines(assignments(cl)).stream().limit(10).toList();
-        return new Dashboard(count("SELECT count(*) FROM enrollments WHERE class_id=:cl AND role_in_class='STUDENT'",cl),count("SELECT count(DISTINCT student_id) FROM escalations WHERE class_id=:cl AND handled_at IS NULL",cl),reviews(cl).size(),count("SELECT count(*) FROM assignments WHERE class_id=:cl AND status='DA_GIAO'",cl),levels,deadlines);
+        return new Dashboard(count("SELECT count(*) FROM enrollments WHERE class_id=:cl AND role_in_class='STUDENT'",cl),count("SELECT count(DISTINCT student_id) FROM escalations WHERE class_id=:cl AND handled_at IS NULL",cl),reviews(cl).size()+count("SELECT count(*) FROM content_drafts WHERE class_id=:cl AND decision IS NULL",cl),count("SELECT count(*) FROM assignments WHERE class_id=:cl AND status='DA_GIAO'",cl),levels,deadlines);
     }
 
     /** Lọc hạn đã qua trước khi gom bộ hoặc giới hạn số hàng; so sánh theo thời điểm thật. */
@@ -93,7 +93,8 @@ import vn.hoctapcanman.core.workspace.application.exception.WorkspaceException;
         var rows = db.sql("""
             SELECT p.*,sk.name skill_name,t.grade,
                 CASE WHEN EXISTS(SELECT 1 FROM review_blocks b WHERE b.run_id=v.id)
-                    THEN 'BI_CHAN' ELSE r.status END release_status,v.overall_status
+                    THEN 'BI_CHAN'
+                    ELSE r.status END release_status,v.overall_status
             FROM problems p JOIN skills sk ON sk.code=p.skill_code JOIN topics t ON t.code=sk.topic_code
             JOIN problem_releases r ON r.problem_id=p.id AND r.class_id=:cl
             LEFT JOIN LATERAL(SELECT id,overall_status FROM verification_runs
@@ -167,36 +168,40 @@ import vn.hoctapcanman.core.workspace.application.exception.WorkspaceException;
                 "Đang kẹt ở "+r.getString("skill_name")+". "+r.getString("reason"),"KET",details("studentId",r.getString("student_id")))).list();
     }
 
+    // SC-107: căn cứ mới chỉ lọc nội dung cho tự học/gợi ý mới; bài đã giao vẫn theo trạng thái phát hành (ADR 005).
     public List<Item> topics(UUID student,UUID cl) {
-        return db.sql("SELECT DISTINCT t.code,t.name FROM topics t JOIN skills sk ON sk.topic_code=t.code JOIN problems p ON p.skill_code=sk.code JOIN problem_releases r ON r.problem_id=p.id AND r.class_id=:cl AND r.status='DA_PHAT_HANH' JOIN classes c ON c.id=:cl AND c.grade=t.grade AND coalesce(sk.grade,t.grade)=c.grade ORDER BY t.code")
+        return db.sql("SELECT DISTINCT t.code,t.name FROM topics t JOIN skills sk ON sk.topic_code=t.code JOIN problems p ON p.skill_code=sk.code JOIN problem_releases r ON r.problem_id=p.id AND r.class_id=:cl AND r.status='DA_PHAT_HANH' AND EXISTS(SELECT 1 FROM verification_runs fresh WHERE fresh.id=r.run_id AND NOT fresh.stale AND fresh.content_version=p.content_version AND fresh.content_hash=p.content_hash) JOIN classes c ON c.id=:cl AND c.grade=t.grade AND coalesce(sk.grade,t.grade)=c.grade ORDER BY t.code")
             .param("cl",cl).query((r,n)->new Item(r.getString("code"),r.getString("name"),"","",Map.of())).list();
     }
     public List<Item> selfStudy(UUID student,UUID cl,String topic) {
         var rows=db.sql("""
-            SELECT p.code,p.statement,sk.name,p.skill_code,p.level4 FROM problems p JOIN skills sk ON sk.code=p.skill_code
+            SELECT p.code,p.statement_text,sk.name,p.skill_code,p.level4 FROM problems p JOIN skills sk ON sk.code=p.skill_code
             JOIN topics t ON t.code=sk.topic_code JOIN classes c ON c.id=:cl AND c.grade=t.grade AND coalesce(sk.grade,t.grade)=c.grade
-            JOIN problem_releases r ON r.problem_id=p.id AND r.class_id=:cl AND r.status='DA_PHAT_HANH'
+            JOIN problem_releases r ON r.problem_id=p.id AND r.class_id=:cl AND r.status='DA_PHAT_HANH' AND EXISTS(SELECT 1 FROM verification_runs fresh WHERE fresh.id=r.run_id AND NOT fresh.stale AND fresh.content_version=p.content_version AND fresh.content_hash=p.content_hash)
             WHERE sk.topic_code=:topic AND p.answer_form='TU_LUAN_5_BUOC' AND NOT EXISTS(
                 SELECT 1 FROM assignments a WHERE a.student_id=:student AND a.problem_id=p.id AND a.status='DA_GIAO'
                 AND (a.mode='KIEM_TRA' OR a.due_at<=:now)) ORDER BY p.code
             """).param("cl",cl).param("topic",topic).param("student",student).param("now",java.sql.Timestamp.from(clock.instant()))
-            .query((r,n)->new Item(r.getString("code"),r.getString("name"),r.getString("statement"),r.getString("level4"),Map.<String,Object>of("skillCode",r.getString("skill_code")))).list();
+            .query((r,n)->new Item(r.getString("code"),r.getString("name"),r.getString("statement_text"),r.getString("level4"),Map.<String,Object>of("skillCode",r.getString("skill_code")))).list();
         var recommendation=PersonalLearningRules.choose(learningSkills(student,cl),rows.stream().map(row->
             new Candidate(row.id(),(String)row.details().get("skillCode"),Level4.valueOf(row.status()),"")).toList());
-        return rows.stream().map(row->new Item(row.id(),row.title(),row.subtitle(),row.status(),
-            recommendation.filter(rec->rec.code().equals(row.id())).map(rec->Map.<String,Object>of("recommended",true,"reason",rec.reason())).orElse(Map.of())))
+        return rows.stream().map(row->{
+            var metadata=new LinkedHashMap<String,Object>(row.details());
+            recommendation.filter(rec->rec.code().equals(row.id())).ifPresent(rec->{metadata.put("recommended",true);metadata.put("reason",rec.reason());});
+            return new Item(row.id(),row.title(),row.subtitle(),row.status(),metadata);
+        })
             .sorted(Comparator.comparing(row->!Boolean.TRUE.equals(row.details().get("recommended")))).toList();
     }
     public void chooseStudy(UUID student,UUID cl,String code,Instant now) {
         int count=db.sql("""
             INSERT INTO assignments(id,class_id,problem_id,student_id,status,assigned_by,assigned_at,mode,set_name)
             SELECT :id,:cl,p.id,:student,'DA_GIAO',:student,:now,'ON_TAP','Tự học'
-            FROM problems p JOIN problem_releases r ON r.problem_id=p.id AND r.class_id=:cl AND r.status='DA_PHAT_HANH'
+            FROM problems p JOIN problem_releases r ON r.problem_id=p.id AND r.class_id=:cl AND r.status='DA_PHAT_HANH' AND EXISTS(SELECT 1 FROM verification_runs fresh WHERE fresh.id=r.run_id AND NOT fresh.stale AND fresh.content_version=p.content_version AND fresh.content_hash=p.content_hash)
             JOIN skills sk ON sk.code=p.skill_code JOIN topics t ON t.code=sk.topic_code
             JOIN classes c ON c.id=:cl AND c.grade=t.grade AND coalesce(sk.grade,t.grade)=c.grade WHERE p.code=:code AND p.answer_form='TU_LUAN_5_BUOC'
             ON CONFLICT(class_id,problem_id,student_id) DO NOTHING
             """).param("id",UUID.randomUUID()).param("cl",cl).param("code",code).param("student",student).param("now",java.sql.Timestamp.from(now)).update();
-        if(count==0 && db.sql("SELECT count(*) FROM assignments a JOIN problems p ON p.id=a.problem_id WHERE a.class_id=:cl AND a.student_id=:student AND p.code=:code AND a.status='DA_GIAO' AND a.mode='ON_TAP' AND (a.due_at IS NULL OR a.due_at>:now)")
+        if(count==0 && db.sql("SELECT count(*) FROM assignments a JOIN problems p ON p.id=a.problem_id JOIN problem_releases r ON r.problem_id=p.id AND r.class_id=a.class_id AND r.status='DA_PHAT_HANH' AND EXISTS(SELECT 1 FROM verification_runs fresh WHERE fresh.id=r.run_id AND NOT fresh.stale AND fresh.content_version=p.content_version AND fresh.content_hash=p.content_hash) WHERE a.class_id=:cl AND a.student_id=:student AND p.code=:code AND a.status='DA_GIAO' AND a.mode='ON_TAP' AND (a.due_at IS NULL OR a.due_at>:now)")
             .param("cl",cl).param("student",student).param("code",code).param("now",java.sql.Timestamp.from(now)).query(Integer.class).single()==0)
             throw new vn.hoctapcanman.core.workspace.application.exception.WorkspaceException(409,"Bài này chưa mở để tự học.");
     }
@@ -210,7 +215,7 @@ import vn.hoctapcanman.core.workspace.application.exception.WorkspaceException;
                 WHERE student_id=a.student_id AND problem_id=p.id AND consumed_at IS NULL
                 ORDER BY created_at DESC,id DESC LIMIT 1)o ON true
             WHERE a.student_id=:student AND a.class_id=:cl AND a.status='DA_GIAO' AND a.mode='ON_TAP'
-                AND pr.status='DA_PHAT_HANH' AND p.answer_form='TU_LUAN_5_BUOC'
+                AND pr.status='DA_PHAT_HANH' AND EXISTS(SELECT 1 FROM verification_runs fresh WHERE fresh.id=pr.run_id AND NOT fresh.stale AND fresh.content_version=p.content_version AND fresh.content_hash=p.content_hash) AND p.answer_form='TU_LUAN_5_BUOC'
                 AND (a.due_at IS NULL OR a.due_at>:now)
                 AND NOT EXISTS(SELECT 1 FROM submissions s WHERE s.student_id=a.student_id
                     AND s.problem_id=p.id AND s.class_id=a.class_id AND s.content_version=p.content_version
@@ -219,7 +224,9 @@ import vn.hoctapcanman.core.workspace.application.exception.WorkspaceException;
             .query((r,n)->new Candidate(r.getString("code"),r.getString("skill_code"),Level4.valueOf(r.getString("level4")),r.getString("teacher_reason"))).list();
         return PersonalLearningRules.choose(learningSkills(student,cl),candidates)
             .map(r->List.of(new Item(r.code(),r.code().isEmpty()?"Gửi thầy cô":r.code(),r.reason(),r.kind(),
-                details("level4",r.level().name(),"skillCode",r.skillCode())))).orElse(List.of());
+                details("level4",r.level().name(),"skillCode",r.skillCode(),"noCandidate",r.code().isEmpty()))))
+            // Same Item[] contract. An empty id and noCandidate=true explicitly signal no permitted next exercise.
+            .orElseGet(()->List.of(new Item("","Chưa có bài phù hợp","Thầy cô sẽ bổ sung bài phù hợp với mức hiện tại.","KHONG_CO_BAI",details("noCandidate",true))));
     }
 
     public Library library(UUID cl,boolean teacher) {
@@ -240,7 +247,7 @@ import vn.hoctapcanman.core.workspace.application.exception.WorkspaceException;
  AND v.content_hash=p.content_hash AND v.id=(SELECT z.id FROM verification_runs z WHERE z.class_id=v.class_id AND z.subject_id=v.subject_id AND z.subject_kind='PROBLEM' ORDER BY z.created_at DESC,z.id DESC LIMIT 1)
  ORDER BY p.code
  """).param("cl",cl).query((rs,n)->new Item(rs.getString("id"),rs.getString("code"),"Máy chưa xác minh được đủ ba tầng. Cần giáo viên đọc căn cứ.",rs.getString("overall_status"),details("kind","PROBLEM","tiers",reviewEvidence(UUID.fromString(rs.getString("id")))))).list());
-        result.addAll(db.sql("SELECT q.*,p.code FROM tutor_review_queue q JOIN problems p ON p.id=q.problem_id WHERE q.class_id=:cl AND q.decision IS NULL ORDER BY q.created_at DESC").param("cl",cl).query((rs,n)->new Item(rs.getString("id"),"Gợi ý · "+rs.getString("code"),rs.getString("reason"),"KHONG_KIEM_DUOC",details("kind","TUTOR","draft",rs.getString("draft")))).list());
+        result.addAll(db.sql("SELECT q.*,p.code FROM tutor_review_queue q JOIN problems p ON p.id=q.problem_id WHERE q.class_id=:cl AND q.decision IS NULL AND q.reason NOT LIKE 'Cổng công thức chưa xác minh được lời gợi ý%' ORDER BY q.created_at DESC").param("cl",cl).query((rs,n)->new Item(rs.getString("id"),"Gợi ý · "+rs.getString("code"),rs.getString("reason"),"KHONG_KIEM_DUOC",details("kind","TUTOR","draft",rs.getString("draft")))).list());
         return result;
     }
 

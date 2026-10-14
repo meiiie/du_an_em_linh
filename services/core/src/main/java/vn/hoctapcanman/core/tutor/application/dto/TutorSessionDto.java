@@ -32,6 +32,10 @@ public final class TutorSessionDto {
     public record Event(int v, UUID sessionId, UUID turnId, long seq, String type, Map<String,Object> data) {}
     public record History(Session session, List<Turn> turns) {}
     public record Accepted(Session session, Turn turn, boolean created) {}
+    /** Counts tutor reply + summary calls; class totals are the sums of students, including zero-use enrolled students.
+     * estimatedTokens is the subset of inputTokens + outputTokens estimated locally, not an additional charge.
+     * Authoring/explanation calls in ai_usage have no student attribution and are not included here. JSON stays unchanged.
+     */
     public record Usage(UUID studentId, long requests, long inputTokens, long outputTokens, long estimatedTokens) {}
     public record UsageReport(UUID classId,long requests,long inputTokens,long outputTokens,long estimatedTokens,List<Usage> students) {}
     public record ModelUsage(int inputTokens, int outputTokens, boolean estimated) {}

@@ -61,14 +61,21 @@ public record ProblemRelease(UUID classId, UUID problemId, ReleaseStatus status,
         return new ProblemRelease(classId, problemId, ReleaseStatus.NHAP, null, now);
     }
 
-    /** Học sinh của lớp thấy bài này (kể cả khi lượt kiểm của nó đã cũ vì đổi bảng: bài không bị gỡ tự động, ADR 005). */
+    /** Trạng thái phát hành cho bài đã giao; đổi bảng chỉ đánh dấu cần kiểm lại (ADR 005). */
     public boolean visibleToStudents() {
         return status == ReleaseStatus.DA_PHAT_HANH;
     }
 
+    /** Bài cho danh sách tự học và gợi ý mới phải có căn cứ còn mới (spec 002 SC-107). */
+    public boolean visibleToStudents(VerificationRun run,int currentContentVersion,String currentContentHash) {
+        return visibleToStudents() && run.id().equals(runId) && run.classId().equals(classId)
+            && run.subjectKind()==SubjectKind.PROBLEM && run.subjectId().equals(problemId) && !run.stale()
+            && Objects.equals(run.contentVersion(),currentContentVersion) && run.contentHash().equals(currentContentHash);
+    }
+
     /**
      * Phát hành này cần kiểm lại: còn gắn một lượt kiểm, và lượt đó đã {@code stale} (lớp đổi bảng công thức). Giáo viên
-     * thấy cờ này; học sinh vẫn thấy bài {@code DA_PHAT_HANH} tới khi lượt mới được áp.
+     * thấy cờ này; danh sách tự học và gợi ý mới ẩn bài tới khi có căn cứ kiểm mới, bài đã giao giữ trạng thái phát hành.
      */
     public boolean needsRecheck(VerificationRun run) {
         if (!run.id().equals(runId)) {

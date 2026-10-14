@@ -70,6 +70,10 @@ class ProblemReleaseTest {
         assertThat(phatHanh.needsRecheck(dat)).isFalse();
         assertThat(phatHanh.needsRecheck(dat.markStale())).isTrue();
         assertThat(phatHanh.visibleToStudents()).isTrue();
+        assertThat(phatHanh.visibleToStudents(dat,1,Mau.BAM)).isTrue();
+        assertThat(phatHanh.visibleToStudents(dat.markStale(),1,Mau.BAM)).isFalse();
+        assertThat(phatHanh.visibleToStudents(dat,2,Mau.BAM)).isFalse();
+        assertThat(phatHanh.visibleToStudents(dat,1,"b".repeat(64))).isFalse();
         assertThatThrownBy(() -> phatHanh.needsRecheck(Mau.luot(DAT, DAT, DAT))).isInstanceOf(IllegalArgumentException.class);
     }
 

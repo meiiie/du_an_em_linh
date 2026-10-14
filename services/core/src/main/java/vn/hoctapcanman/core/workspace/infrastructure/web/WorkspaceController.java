@@ -64,6 +64,10 @@ import vn.hoctapcanman.core.workspace.application.service.WorkspaceService;
         return service.recommend(actor(jwt),request);
     }
 
+    @GetMapping("/api/gv/ky-nang") public List<Item> skills(@AuthenticationPrincipal Jwt jwt,@RequestParam UUID lopId) {
+        return service.skillCatalog(actor(jwt),lopId);
+    }
+
     @GetMapping("/api/gv/ngan-hang") public List<Item> bank(@AuthenticationPrincipal Jwt jwt,@RequestParam UUID lopId,
         @RequestParam(defaultValue="") String q,@RequestParam(defaultValue="") String level4,
         @RequestParam(defaultValue="") String skillCode,@RequestParam(defaultValue="") String gate) {
