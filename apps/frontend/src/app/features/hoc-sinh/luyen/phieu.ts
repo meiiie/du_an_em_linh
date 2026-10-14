@@ -7,6 +7,18 @@ export const NGHIEM = 'B.DH.NGHIEM';
 export const XET_DAU = 'B.DH.XETDAU';
 export const KET_LUAN = 'B.DH.KETLUAN';
 
+/** Máy chủ quyết định kiểu nhập; mặc định để đọc được metadata khung cũ. */
+export function kieuNhap(buoc: { maBuoc: string; kieu?: string }): string {
+  return buoc.kieu ?? ({ [TXD]: 'TXD', [DAO_HAM]: 'DAO_HAM', [NGHIEM]: 'NGHIEM', [XET_DAU]: 'BANG_XET_DAU', [KET_LUAN]: 'KET_LUAN_DH' }[buoc.maBuoc] ?? 'BIEU_THUC');
+}
+
+export function goiYNhap(kieu: string): string {
+  if (kieu === 'TAP_HUU_HAN') return 'Nhập tập dạng {a; b}. Thứ tự phần tử không quan trọng.';
+  if (kieu === 'DAY_GIA_TRI') return 'Nhập dãy dạng a; b theo đúng thứ tự yêu cầu.';
+  if (kieu === 'MIEN') return 'Nhập miền xác định, ví dụ R hoặc (a; b).';
+  return 'Nhập biểu thức bằng bàn phím, có thể dùng phân số hoặc LaTeX.';
+}
+
 /** Hàng của bảng xét dấu như v0 (`docs/chi-so-o-bang.md`): mốc theo chỉ số, ô dấu và ô mũi tên theo `k` (chẵn: khoảng). */
 export const HANG_X = 'X';
 export const HANG_DAU = 'DAU_YPHAY';
@@ -39,6 +51,7 @@ export function oKetLuan(khaiBao: readonly string[]): OKetLuan[] {
 
 /** Những gì học sinh đã nhập ở năm bước (nháp hiện trên màn). */
 export interface NhapPhieu {
+  dongTheoBuoc?: Record<string, string>;
   txd: string;
   dh: string[];
   nghiem: { latex: string; loai: LoaiNghiem }[];
@@ -55,21 +68,24 @@ const TIEN_TO_KHONG_XD = "y' không xác định tại ";
 export function nhapTuBaiLam(bai: ChiTietBai): NhapPhieu {
   const buoc = (ma: string) => bai.baiLam.cacBuoc.find((b) => b.maBuoc === ma);
   const dong = (ma: string) => [...(buoc(ma)?.dong ?? [])].sort((a, b) => a.dong - b.dong);
-  const bang = buoc(XET_DAU)?.bang ?? [];
+  const ma = (kieu: string, cu: string) => bai.cacBuoc.find(s => kieuNhap(s) === kieu)?.maBuoc ?? cu;
+  const bang = buoc(ma('BANG_XET_DAU', XET_DAU))?.bang ?? [];
+  const chung = bai.cacBuoc.filter(s => !['TXD', 'DAO_HAM', 'NGHIEM', 'BANG_XET_DAU', 'KET_LUAN_DH'].includes(kieuNhap(s)));
+  const dongTheoBuoc = Object.fromEntries(chung.map(s => [s.maBuoc, dong(s.maBuoc)[0]?.latex ?? '']));
   const khai = oKetLuan(bai.khaiBaoKetLuan);
   const kl: Record<string, string> = {};
-  for (const d of dong(KET_LUAN)) {
+  for (const d of dong(ma('KET_LUAN_DH', KET_LUAN))) {
     const o = khai.find((x) => x.loai === d.loai);
     if (o) kl[o.ma] = d.latex === o.trongThi ? '' : d.latex;
   }
   // Dòng đạo hàm về đúng hàng đã gửi (hàng trống để trống): gửi lại không đổi số dòng, nên không đổi băm của core.
   const hang: string[] = [];
-  for (const d of dong(DAO_HAM)) {
+  for (const d of dong(ma('DAO_HAM', DAO_HAM))) {
     if (d.dong < 50) hang[d.dong] = d.latex;
     else hang.push(d.latex);
   }
   const dh = Array.from(hang, (x) => x ?? '');
-  const nghiem = dong(NGHIEM)
+  const nghiem = dong(ma('NGHIEM', NGHIEM))
     .filter((d) => d.latex !== 'không có nghiệm')
     .map((d) =>
       d.loai === 'KHONG_XD'
@@ -78,7 +94,8 @@ export function nhapTuBaiLam(bai: ChiTietBai): NhapPhieu {
     );
   const cua = (hang: string) => bang.filter((o) => o.hang === hang);
   return {
-    txd: dong(TXD)[0]?.latex ?? '',
+    ...(chung.length ? { dongTheoBuoc } : {}),
+    txd: dong(ma('TXD', TXD))[0]?.latex ?? '',
     dh: dh.length ? dh : [''],
     nghiem: nghiem.length ? nghiem : [{ latex: '', loai: 'NGHIEM' }],
     moc: cua(HANG_X)
@@ -97,28 +114,28 @@ export function dongNghiem(n: NhapPhieu, i: number): number | undefined {
 }
 
 /** Thân `POST /api/hs/bai/{maBai}/buoc` cho một bước, như payload của v0 (`apps/web/components/solve-client.tsx`). */
-export function yeuCauNop(maBuoc: string, n: NhapPhieu, khaiBao: readonly string[]): NopBuoc {
-  switch (maBuoc) {
-    case TXD:
+export function yeuCauNop(maBuoc: string, n: NhapPhieu, khaiBao: readonly string[], kieu = kieuNhap({ maBuoc })): NopBuoc {
+  switch (kieu) {
+    case 'TXD':
       return { maBuoc, dong: [{ dong: 0, latex: n.txd }] };
-    case DAO_HAM: {
+    case 'DAO_HAM': {
       const dong = n.dh.map((latex, i) => ({ dong: i, latex })).filter((d) => d.latex.trim());
       return { maBuoc, dong: dong.length ? dong : [{ dong: 0, latex: '' }] };
     }
-    case NGHIEM: {
+    case 'NGHIEM': {
       const dong = n.nghiem
         .filter((r) => r.latex.trim())
         .map((r, i) => ({ dong: i, latex: r.loai === 'KHONG_XD' ? TIEN_TO_KHONG_XD + r.latex : r.latex, loai: r.loai }));
       return { maBuoc, dong: dong.length ? dong : [{ dong: 0, latex: 'không có nghiệm', loai: 'NGHIEM' }] };
     }
-    case XET_DAU: {
+    case 'BANG_XET_DAU': {
       const bang: OBang[] = n.moc.map((giaTri, k) => ({ hang: HANG_X, k, giaTri }));
       for (let j = 0; j <= n.moc.length; j++) bang.push({ hang: HANG_DAU, k: 2 * j, giaTri: n.dau[2 * j] ?? '' });
       for (let j = 0; j < n.moc.length; j++) if (n.dau[2 * j + 1]) bang.push({ hang: HANG_DAU, k: 2 * j + 1, giaTri: n.dau[2 * j + 1] });
       for (let j = 0; j <= n.moc.length; j++) if (n.mui[2 * j]) bang.push({ hang: HANG_MUI, k: 2 * j, giaTri: n.mui[2 * j] });
       return { maBuoc, bang };
     }
-    case KET_LUAN:
+    case 'KET_LUAN_DH':
       return {
         maBuoc,
         dong: oKetLuan(khaiBao).map((o, i) => {
@@ -127,6 +144,6 @@ export function yeuCauNop(maBuoc: string, n: NhapPhieu, khaiBao: readonly string
         }),
       };
     default:
-      return { maBuoc };
+      return { maBuoc, dong: [{ dong: 0, latex: n.dongTheoBuoc?.[maBuoc] ?? '' }] };
   }
 }

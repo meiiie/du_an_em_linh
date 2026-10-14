@@ -33,7 +33,9 @@ public record ChiTietBai(
     public record De(String text, String latex) {}
 
     /** Một bước của khung, theo thứ tự: tên bước và việc em làm ở bước đó, viết cho học sinh. */
-    public record BuocKhung(String maBuoc, String ten, String viec) {}
+    public record BuocKhung(String maBuoc, String ten, String viec, String kieu) {
+        public BuocKhung(String maBuoc, String ten, String viec) { this(maBuoc, ten, viec, "GIAY"); }
+    }
 
     /** Bài làm em đang thấy: các bước đã lưu, theo thứ tự khung. */
     public record BaiLam(TrangThaiBaiLam trangThai, List<BuocDaLam> cacBuoc) {

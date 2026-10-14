@@ -8,11 +8,11 @@ import { Luyen } from './luyen';
 
 const MA = 'GEN-bac_ba-11';
 const CAC_BUOC = [
-  { maBuoc: 'B.DH.TXD', ten: 'Tập xác định', viec: 'Tìm tập xác định D của hàm số.' },
-  { maBuoc: 'B.DH.DAOHAM', ten: 'Đạo hàm', viec: 'Tính y′.' },
-  { maBuoc: 'B.DH.NGHIEM', ten: 'Nghiệm', viec: 'Giải y′ = 0 và tìm điểm y′ không xác định.' },
-  { maBuoc: 'B.DH.XETDAU', ten: 'Xét dấu', viec: 'Lập bảng xét dấu y′ và bảng biến thiên.' },
-  { maBuoc: 'B.DH.KETLUAN', ten: 'Kết luận', viec: 'Kết luận khoảng đơn điệu và cực trị.' },
+  { maBuoc: 'B.DH.TXD', kieu: 'TXD', ten: 'Tập xác định', viec: 'Tìm tập xác định D của hàm số.' },
+  { maBuoc: 'B.DH.DAOHAM', kieu: 'DAO_HAM', ten: 'Đạo hàm', viec: 'Tính y′.' },
+  { maBuoc: 'B.DH.NGHIEM', kieu: 'NGHIEM', ten: 'Nghiệm', viec: 'Giải y′ = 0 và tìm điểm y′ không xác định.' },
+  { maBuoc: 'B.DH.XETDAU', kieu: 'BANG_XET_DAU', ten: 'Xét dấu', viec: 'Lập bảng xét dấu y′ và bảng biến thiên.' },
+  { maBuoc: 'B.DH.KETLUAN', kieu: 'KET_LUAN_DH', ten: 'Kết luận', viec: 'Kết luận khoảng đơn điệu và cực trị.' },
 ];
 
 function chiTiet(baiLam: Partial<ChiTietBai['baiLam']> = {}, khac: Partial<ChiTietBai> = {}): ChiTietBai {
@@ -84,6 +84,52 @@ describe('Luyen', () => {
     return { fixture, http, el, $, chu, go, bam, xong };
   }
 
+  it.each(['B.GT', 'B.XS'])('phiếu %s dùng metadata, gửi từng dòng và nộp ở bước cuối', async (family) => {
+    const codes = family === 'B.GT' ? ['MIEN', 'BIENDOI', 'TRUNGGIAN', 'TINH', 'KETLUAN'] : ['DUKIEN', 'THANHPHAN1', 'THANHPHAN2', 'KETHOP', 'KETLUAN'];
+    const kinds = ['DAY_GIA_TRI', 'BIEU_THUC', 'TAP_HUU_HAN', 'NGUYEN_HAM', 'BIEU_THUC'];
+    const steps = codes.map((code, i) => ({ maBuoc: `${family}.${code}`, ten: `Tên theo đề ${i + 1}`, viec: `Việc theo đề ${i + 1}`, kieu: kinds[i] }));
+    const t = await mo(chiTiet({}, { cacBuoc: steps, khaiBaoKetLuan: [] }));
+    const values = ['0; 2', 'x^3 + 1', '{2; 1}', 'x^2', '3/4'];
+    for (let i = 0; i < steps.length; i++) {
+      expect(t.chu('.tieu-de')).toContain(steps[i].ten);
+      expect(t.chu('.viec')).toBe(steps[i].viec);
+      if (i === 0) expect(t.chu('#huong-dan-nhap')).toContain('theo đúng thứ tự');
+      if (i === 2) expect(t.chu('#huong-dan-nhap')).toContain('{a; b}');
+      await t.go(`latex-${steps[i].maBuoc}`, values[i]);
+      await t.bam('[data-testid="nop-buoc"]');
+      const request = t.http.expectOne({ method: 'POST', url: API_HS.nopBuoc(MA) });
+      expect(request.request.body).toEqual({ maBuoc: steps[i].maBuoc, dong: [{ dong: 0, latex: values[i] }] });
+      request.flush({ ketQua: i === 4 ? 'KHONG_KIEM_DUOC' : 'DAT', thongBao: 'Máy đã kiểm bước.', oSai: [] });
+      await t.xong();
+    }
+    expect(t.$('[data-testid="nop-bai"]')).not.toBeNull();
+    await t.bam('[data-testid="nop-bai"]');
+    t.http.expectOne({ method: 'POST', url: API_HS.nopBai(MA) }).flush({ ketQua: 'KHONG_KIEM_DUOC', mucHieu: [] });
+    await t.xong();
+    expect(t.chu('[data-testid="da-nop"]')).toContain('thầy cô sẽ xem');
+  });
+
+  it('đề họ mới giữ đầy đủ yêu cầu và không tự thêm y = vào biểu thức', async () => {
+    const t = await mo(chiTiet({}, {
+      de: { text: 'Tìm giá trị nhỏ nhất của hàm số $y = x^2 - 4x + 3$ bằng cách hoàn thành bình phương.', latex: 'x^{2} - 4x + 3' },
+      cacBuoc: [{ maBuoc: 'B.GT.MIEN', ten: 'Miền', viec: 'Xác định miền', kieu: 'MIEN' }],
+      khaiBaoKetLuan: [],
+    }));
+    expect(t.chu('.cau-hoi')).toContain('bằng cách hoàn thành bình phương');
+    expect(t.$('.de app-katex.bang annotation')?.textContent).toBe('x^{2} - 4x + 3');
+  });
+
+  it('khôi phục khung mới và đánh dấu kết quả cần kiểm lại khi sửa bước trước', async () => {
+    const steps = ['MIEN', 'BIENDOI', 'TRUNGGIAN', 'TINH', 'KETLUAN'].map(code => ({ maBuoc: `B.GT.${code}`, ten: 'Theo đề', viec: 'Theo đề', kieu: 'BIEU_THUC' }));
+    const saved = steps.map(s => daDat(s.maBuoc, [{ dong: 0, latex: '1/2' }]));
+    const t = await mo(chiTiet({ cacBuoc: saved }, { cacBuoc: steps, khaiBaoKetLuan: [] }));
+    await t.bam('[data-testid="step-B.GT.MIEN"]');
+    expect(t.$<HTMLInputElement>('[data-testid="latex-B.GT.MIEN"]')?.value).toBe('1/2');
+    await t.go('latex-B.GT.MIEN', '2/3');
+    expect(t.$('[data-testid="nop-bai"]')).toBeNull();
+    expect(t.chu('.canh-bao')).toContain('Kiểm tra');
+  });
+
   it('bài ôn không có bước vẫn mở gia sư', async () => {
     const t = await mo(chiTiet({}, { cacBuoc: [], dangTraLoi: 'TU_LUAN' }));
     expect(t.$('[data-testid="mo-gia-su"]')).not.toBeNull();
@@ -93,8 +139,8 @@ describe('Luyen', () => {
 
   it('bài luyện trên giấy cho chọn bước gợi mở bằng tên tiếng Việt', async () => {
     const t = await mo(chiTiet({}, { dangTraLoi: 'TU_LUAN', cacBuoc: [
-      {maBuoc:'B.L10.PHANTICH',ten:'B.L10.PHANTICH',viec:''},
-      {maBuoc:'B.L10.LAPLUAN',ten:'B.L10.LAPLUAN',viec:''},
+      {maBuoc:'B.L10.PHANTICH',ten:'Phân tích đề',viec:''},
+      {maBuoc:'B.L10.LAPLUAN',ten:'Lập luận',viec:''},
     ] }));
     expect(t.chu('[aria-label="Các bước gợi mở"]')).toContain('Phân tích đề');
     await t.bam('[aria-label="Các bước gợi mở"] button:nth-child(2)');

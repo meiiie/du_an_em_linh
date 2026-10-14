@@ -22,6 +22,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
 import vn.hoctapcanman.core.content.domain.event.BaiDaNhap;
+import vn.hoctapcanman.core.content.application.port.KhungChamTheoBai;
 import vn.hoctapcanman.core.content.domain.model.BloomLevel;
 import vn.hoctapcanman.core.content.domain.model.ErrorType;
 import vn.hoctapcanman.core.content.domain.model.HintLevel;
@@ -79,10 +80,12 @@ public class NhapNoiDungChung {
     private final TransactionTemplate giaoDich;
     private final ApplicationEventPublisher su;
     private final Clock clock;
+    private final KhungChamTheoBai frames;
 
     public NhapNoiDungChung(NguonNoiDung nguon, GiaiToan toan, TopicCatalogRepository catalog, ProblemRepository problems,
             SolutionRepository solutions, HintLevelRepository hints, PlatformTransactionManager tx, ApplicationEventPublisher su,
-            Clock clock) {
+            Clock clock, KhungChamTheoBai frames) {
+        this.frames = frames;
         this.nguon = nguon;
         this.toan = toan;
         this.catalog = catalog;
@@ -137,6 +140,7 @@ public class NhapNoiDungChung {
         List<Map<String, @Nullable Object>> chuDe = nguon.danhSach("dev/nguyen-trai/danh-muc.json");
         List<Map<String, @Nullable Object>> tap = nguon.danhSach("dev/nguyen-trai/bai-tap.json");
         List<Map<String, @Nullable Object>> kyNang = nguon.danhSach("dev/nguyen-trai/ky-nang.json");
+        var khungCham = DocKhungCham.doc(nguon);
         List<BaiNhap> bai = tap.stream().map(ex -> {
             Map<String, @Nullable Object> de = doiTuong(ex.get("de_bai"));
             String muc = chu(ex.get("muc_do_4"));
@@ -162,11 +166,26 @@ public class NhapNoiDungChung {
                 ghiKhungBuoc(List.of(moi));
             }
             ghiKhungBuoc(nguon.danhSach("dev/nguyen-trai/khung-buoc.json"));
+            // Mã dùng làm khóa ngoại của bài làm; không gán kỹ năng DH cho họ mới.
+            for (String family : List.of("B.GT", "B.XS")) {
+                String topic = family.equals("B.GT") ? "KHUNG_GT" : "KHUNG_XS";
+                catalog.saveTopic(new Topic(topic, family.equals("B.GT") ? "Khung giải tích" : "Khung xác suất", 12));
+                var steps = khungCham.values().stream().filter(f -> f.cacBuoc().getFirst().maBuoc().startsWith(family + "."))
+                    .findFirst().orElseThrow().cacBuoc();
+                for (int i = 0; i < steps.size(); i++) {
+                    catalog.saveStepTemplate(new StepTemplate(steps.get(i).maBuoc(), topic, i + 1, InputKind.DONG, null, "Bước " + (i + 1)));
+                }
+            }
             Instant luc = clock.instant();
             for (int i = 0; i < bai.size(); i++) {
                 BaiNhap b = bai.get(i);
                 Object answer = doiTuong(tap.get(i).get("loi_giai")).get("dap_an");
-                ghiBai(b, luc, JsonKieuJs.stringify(answer));
+                var frame = khungCham.get(b.ma());
+                ghiBai(b, luc, JsonKieuJs.stringify(answer), frame == null ? null : DocKhungCham.noiDung(frame));
+                if (frame != null) {
+                    var problem = problems.findByCode(b.ma()).orElseThrow();
+                    frames.ghi(problem.id(), problems.findContentVersion(problem.id()).orElseThrow(), frame);
+                }
             }
         });
         return new DaNhap(new KetQua(kyNang.size(), 0, 5, bai.stream().map(BaiNhap::ma).toList()), bai);
@@ -343,11 +362,15 @@ public class NhapNoiDungChung {
     }
 
     private void ghiBai(BaiNhap b, Instant luc, @Nullable String answer) {
+        ghiBai(b, luc, answer, null);
+    }
+
+    private void ghiBai(BaiNhap b, Instant luc, @Nullable String answer, @Nullable String frame) {
         Optional<Problem> daCo = problems.findByCode(b.ma());
         UUID id = daCo.map(Problem::id).orElseGet(UUID::randomUUID);
         Instant taoLuc = daCo.map(Problem::createdAt).orElse(luc);
         Problem moi = new Problem(id, b.ma(), b.kyNang(), b.kyNangPhu(), b.muc4(), b.muc3(), b.bloom(), 0.5, b.deBai(), b.latex(), b.ham(),
-            b.dangTraLoi(), b.buocBatDau(), b.nguonBai(), dauVanTay(b), null, taoLuc, daCo.map(Problem::updatedAt).orElse(luc));
+            b.dangTraLoi(), b.buocBatDau(), b.nguonBai(), frame == null ? dauVanTay(b) : sha256(dauVanTay(b) + frame), null, taoLuc, daCo.map(Problem::updatedAt).orElse(luc));
         // Nhập lại bài không đổi thì không ghi, để lúc sửa giữ nguyên (T014: nhập hai lần cùng kết quả).
         if (!daCo.map(moi::equals).orElse(false)) {
             problems.save(new Problem(id, moi.code(), moi.skillCode(), moi.extraSkillCodes(), moi.level4(), moi.level3(), moi.bloomLevel(),

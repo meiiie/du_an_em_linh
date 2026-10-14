@@ -1,6 +1,7 @@
 package vn.hoctapcanman.core.content.application.port;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import vn.hoctapcanman.core.content.application.dto.hocsinh.BaiChoLamBai;
@@ -17,4 +18,6 @@ public interface BaiDeLam {
 
     /** Mọi bài đang phát hành ở lớp, theo mã bài. */
     List<BaiChoLamBai> baiDaPhatHanh(UUID lopId);
+    /** Chỉ máy chủ dùng, sau khi kiểm quyền và đọc bài đã phát hành; không trả dữ kiện này cho trình duyệt. */
+    default Map<String, Object> duKienCham(UUID problemId, int phienBan) { return Map.of(); }
 }

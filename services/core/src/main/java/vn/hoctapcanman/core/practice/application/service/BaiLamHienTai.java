@@ -32,10 +32,12 @@ import vn.hoctapcanman.core.practice.domain.repository.SubmissionRepository;
 @Service
 public class BaiLamHienTai {
 
+    private final vn.hoctapcanman.core.content.application.port.BaiDeLam content;
     private final SubmissionRepository submissions;
     private final GradingResultRepository grades;
 
-    public BaiLamHienTai(SubmissionRepository submissions, GradingResultRepository grades) {
+    public BaiLamHienTai(SubmissionRepository submissions, GradingResultRepository grades, vn.hoctapcanman.core.content.application.port.BaiDeLam content) {
+        this.content = content;
         this.submissions = submissions;
         this.grades = grades;
     }
@@ -53,14 +55,14 @@ public class BaiLamHienTai {
     }
 
     /** Các bước đã lưu theo thứ tự khung, mỗi bước kèm lần chấm của nội dung hiện tại tới bước đó, nếu có. */
-    static List<Buoc> chamHienTai(BaiChoLamBai bai, List<StepWork> daLuu, List<GradingResult> lanCham) {
+    private List<Buoc> chamHienTai(BaiChoLamBai bai, List<StepWork> daLuu, List<GradingResult> lanCham) {
         List<String> khung = bai.cacBuoc();
         int dau = YeuCauCham.batDau(khung, bai.buocBatDau());
         List<Buoc> ra = new ArrayList<>();
         for (StepWork b : daLuu) {
             GradingResult cham = null;
-            if (bai.ham() != null && khung.indexOf(b.stepCode()) >= dau) {
-                String bam = YeuCauCham.bam(YeuCauCham.dung(bai.ham(), khung, bai.khaiBaoKetLuan(), bai.buocBatDau(), b.stepCode(), daLuu));
+            if (bai.chamTungBuoc() && khung.indexOf(b.stepCode()) >= dau) {
+                String bam = YeuCauCham.bam(YeuCauCham.dung(bai, content, b.stepCode(), daLuu));
                 cham = lanCham.stream()
                     .filter(g -> g.stepCode().equals(b.stepCode()) && g.requestHash().equals(bam))
                     .max(Comparator.comparing((GradingResult g) -> g.result() != GradeStatus.KHONG_CHAM_DUOC)

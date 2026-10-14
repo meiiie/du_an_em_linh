@@ -34,6 +34,10 @@ public class BaiLuyenNguyenTraiSeedAdapter implements BaiDeLam {
         return delegate.baiDaPhatHanh(lop).stream().map(this::buocGoiMo).toList();
     }
 
+    @Override public java.util.Map<String, Object> duKienCham(UUID id, int version) {
+        return delegate.duKienCham(id, version);
+    }
+
     private BaiChoLamBai buocGoiMo(BaiChoLamBai b) {
         if (!b.ma().startsWith("NT-LUYEN") || !b.cacBuoc().isEmpty()) return b;
         var skill = catalog.findSkillsInTopicsOf(List.of(b.kyNang())).stream().filter(s -> s.code().equals(b.kyNang())).findFirst();
