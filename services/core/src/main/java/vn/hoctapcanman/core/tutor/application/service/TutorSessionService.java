@@ -154,6 +154,15 @@ public class TutorSessionService {
             }
         }
         // Dự trữ feedback regen + đầu ra, không cắt system, đề hoặc câu hỏi.
+        // Nén chưa đủ: giữ tóm tắt, bỏ dần lượt cũ nhất khỏi bộ nhớ (cửa sổ trượt) thay vì báo lỗi.
+        if(estimate(prompt)+600>budget) {
+            Session latest=sessions.snapshot(s.id());
+            var window=sessions.memory(latest.id(),latest.summaryThrough(),accepted.turn().id());
+            int from=0;
+            do { prompt=TutorPrompt.withMemory(base,a.level(),render(latest.tomTat(),window.subList(from,window.size()))); }
+            while(estimate(prompt)+600>budget && from++<window.size());
+            if(estimate(prompt)+600>budget)prompt=TutorPrompt.withMemory(base,a.level(),render(latest.tomTat(),List.of()));
+        }
         if(estimate(prompt)+600>budget)throw new WorkspaceException(413,"Ngữ cảnh đã vượt giới hạn. Em thử câu hỏi ngắn hơn hoặc nhờ giáo viên.");
         return prompt;
     }
