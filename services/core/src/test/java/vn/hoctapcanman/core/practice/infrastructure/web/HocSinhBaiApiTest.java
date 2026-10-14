@@ -55,11 +55,11 @@ class HocSinhBaiApiTest {
     private static final String BI_MAT = "BIMAT";
     private static final String DE = "Xét tính đơn điệu của y = x^3 - 3x^2 + 2.";
     private static final String KHUNG = """
-            [{"maBuoc":"B.DH.TXD","ten":"Tập xác định","viec":"Viết tập xác định của hàm số"},
-             {"maBuoc":"B.DH.DAOHAM","ten":"Đạo hàm","viec":"Tính đạo hàm của hàm số"},
-             {"maBuoc":"B.DH.NGHIEM","ten":"Nghiệm y′","viec":"Tìm nghiệm y′ = 0 và điểm y′ không xác định"},
-             {"maBuoc":"B.DH.XETDAU","ten":"Xét dấu","viec":"Xét dấu y′ và chiều biến thiên"},
-             {"maBuoc":"B.DH.KETLUAN","ten":"Kết luận","viec":"Kết luận khoảng đơn điệu và cực trị"}]""";
+            [{"maBuoc":"B.DH.TXD","ten":"Tập xác định","viec":"Viết tập xác định của hàm số","kieu":"TXD"},
+             {"maBuoc":"B.DH.DAOHAM","ten":"Đạo hàm","viec":"Tính đạo hàm của hàm số","kieu":"DAO_HAM"},
+             {"maBuoc":"B.DH.NGHIEM","ten":"Nghiệm y′","viec":"Tìm nghiệm y′ = 0 và điểm y′ không xác định","kieu":"NGHIEM"},
+             {"maBuoc":"B.DH.XETDAU","ten":"Xét dấu","viec":"Xét dấu y′ và chiều biến thiên","kieu":"BANG_XET_DAU"},
+             {"maBuoc":"B.DH.KETLUAN","ten":"Kết luận","viec":"Kết luận khoảng đơn điệu và cực trị","kieu":"KET_LUAN_DH"}]""";
     private static final String KHONG_CO_BAI = "Bài chưa mở hoặc không chấm được.";
     /** Bài đầu tiên của em, đạt, ở bài mức Thông hiểu: BKT của v0 đưa mastery 0,3 lên 0,6995 và mức lên đúng một nấc. */
     private static final String NOP_DAT_LEN_THONG_HIEU = """

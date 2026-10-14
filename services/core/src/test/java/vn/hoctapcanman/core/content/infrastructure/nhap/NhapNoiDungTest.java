@@ -79,6 +79,7 @@ import vn.hoctapcanman.core.content.infrastructure.persistence.VerificationRunRe
     VerificationRunRepositoryAdapter.class,
     ProblemReleaseRepositoryAdapter.class,
     NguonNoiDung.class,
+    vn.hoctapcanman.core.content.infrastructure.persistence.KhungChamRepositoryAdapter.class,
     NhapNoiDungChung.class,
     NhapTheoLop.class,
     NhapNoiDungTest.PhatLai.class

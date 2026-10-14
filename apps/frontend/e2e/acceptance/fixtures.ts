@@ -10,7 +10,7 @@ export const deadline = item<DeadlineDetails>('han1', 'Ôn đơn điệu', 'Hạ
     tenBo: 'Ôn đơn điệu', setKey: 'bo1', classId: 'lop1', mode: 'ON_TAP', dueAt: '2026-10-20T12:00:00Z',
     problemCodes: ['E2E-01', 'E2E-NEXT'], problemCount: 2, studentCount: 3, assignmentCount: 6, submittedCount: 1,
 });
-const steps = ['TXD', 'DAOHAM', 'NGHIEM', 'XETDAU', 'KETLUAN'].map((s, i) => ({ maBuoc: `B.DH.${s}`, ten: ['Tập xác định', 'Đạo hàm', 'Nghiệm', 'Xét dấu', 'Kết luận'][i], viec: 'Trình bày bước đang làm.' }));
+const steps = ['TXD', 'DAOHAM', 'NGHIEM', 'XETDAU', 'KETLUAN'].map((s, i) => ({ maBuoc: `B.DH.${s}`, ten: ['Tập xác định', 'Đạo hàm', 'Nghiệm', 'Xét dấu', 'Kết luận'][i], viec: 'Trình bày bước đang làm.', kieu: ['TXD', 'DAO_HAM', 'NGHIEM', 'BANG_XET_DAU', 'KET_LUAN_DH'][i] }));
 export const detail: ChiTietBai = { maBai: problem.maBai, giaoBaiId: 'assignment-01', de: { text: problem.deBai, latex: problem.deBaiLatex }, kyNang: problem.kyNang, tenKyNang: problem.tenKyNang, muc4: problem.muc4, dangTraLoi: 'TU_LUAN_5_BUOC', buocBatDau: null, khaiBaoKetLuan: ['dong_bien', 'nghich_bien'], cacBuoc: steps, baiLam: { trangThai: 'DANG_LAM', cacBuoc: [] }, coTheMoLoiGiai: false };
 export const formula = item('ct1', 'Đạo hàm, hàm đa thức', 'y=x^n', 'KHOA', { statement: 'Định nghĩa "đạo hàm", có dấu phẩy', tier1: 'DAT', tier2: 'DAT', version: 1 });
 export const csv = '"thuật ngữ","định nghĩa"\r\n"Đạo hàm, hàm đa thức","y=x^n — Định nghĩa ""đạo hàm"", có dấu phẩy"\r\n';

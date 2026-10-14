@@ -184,3 +184,18 @@ describe('oKetLuan', () => {
     ]);
   });
 });
+
+
+describe('khung theo bài', () => {
+  it('khôi phục và gửi tập/dãy nguyên văn, chỉ một dòng 0, không dữ kiện đề', () => {
+    const steps = [
+      { maBuoc: 'B.GT.MIEN', ten: 'Cận', viec: 'Viết cận', kieu: 'DAY_GIA_TRI' },
+      { maBuoc: 'B.GT.KETLUAN', ten: 'Tập nghiệm', viec: 'Viết tập nghiệm', kieu: 'TAP_HUU_HAN' },
+    ];
+    const bai = { maBai: 'THU', cacBuoc: steps, khaiBaoKetLuan: [], baiLam: { trangThai: 'DANG_LAM', cacBuoc: steps.map((s, i) => ({ maBuoc: s.maBuoc, dong: [{ dong: 0, latex: i ? '{pi/2; pi}' : '0; 2*pi' }], bang: [], ketQua: null, thongBao: null, oSai: [] })) } } as unknown as ChiTietBai;
+    const n = nhapTuBaiLam(bai);
+    expect(n.dongTheoBuoc).toEqual({ 'B.GT.MIEN': '0; 2*pi', 'B.GT.KETLUAN': '{pi/2; pi}' });
+    expect(yeuCauNop('B.GT.MIEN', n, [], 'DAY_GIA_TRI')).toEqual({ maBuoc: 'B.GT.MIEN', dong: [{ dong: 0, latex: '0; 2*pi' }] });
+    expect(yeuCauNop('B.GT.KETLUAN', n, [], 'TAP_HUU_HAN')).toEqual({ maBuoc: 'B.GT.KETLUAN', dong: [{ dong: 0, latex: '{pi/2; pi}' }] });
+  });
+});

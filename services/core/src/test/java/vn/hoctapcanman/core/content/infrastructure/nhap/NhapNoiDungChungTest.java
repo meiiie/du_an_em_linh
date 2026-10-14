@@ -52,6 +52,7 @@ import vn.hoctapcanman.core.shared.infrastructure.math.MathResult;
     SolutionRepositoryAdapter.class,
     HintLevelRepositoryAdapter.class,
     NguonNoiDung.class,
+    vn.hoctapcanman.core.content.infrastructure.persistence.KhungChamRepositoryAdapter.class,
     NhapNoiDungChung.class,
     NhapNoiDungChungTest.ToanGia.class
 })

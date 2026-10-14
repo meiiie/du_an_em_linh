@@ -85,7 +85,7 @@ export interface ChiTietBai {
   readonly buocBatDau: string | null;
   /** Các ô của bước kết luận em phải khai (core suy từ đề như v0 SP-03), vd `dong_bien`, `cuc_dai`. Không chứa đáp án. */
   readonly khaiBaoKetLuan: readonly string[];
-  readonly cacBuoc: readonly { readonly maBuoc: string; readonly ten: string; readonly viec: string }[];
+  readonly cacBuoc: readonly { readonly maBuoc: string; readonly ten: string; readonly viec: string; readonly kieu?: string }[];
   readonly baiLam: {
     readonly trangThai: TrangThaiBai;
     readonly cacBuoc: readonly {
