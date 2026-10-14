@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """Mô hình Pydantic cho API. Tiến trình HTTP không import SymPy."""
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 
 class HealthOut(BaseModel):
@@ -33,3 +33,19 @@ class VerifyOut(BaseModel):
     model_config = ConfigDict(extra="allow")
     trang_thai_tong: str | None = None
     trang_thai_phat_hanh: str | None = None
+
+
+class SoHangIn(BaseModel):
+    """Đối chiếu expected, hoặc đạo hàm của function; không trả biểu thức đối chiếu."""
+    model_config = ConfigDict(extra="forbid")
+    expected: str | None = Field(default=None, min_length=1, max_length=300)
+    function: str | None = Field(default=None, min_length=1, max_length=300)
+    student: str = Field(min_length=1, max_length=300)
+    variable: str = Field(default="x", pattern=r"^[a-df-z]$")
+    timeout_s: int = Field(default=4, ge=1, le=4)
+
+    @model_validator(mode="after")
+    def one_reference(self):
+        if (self.expected is None) == (self.function is None):
+            raise ValueError("Cần đúng một biểu thức đối chiếu hoặc hàm để lấy đạo hàm.")
+        return self
