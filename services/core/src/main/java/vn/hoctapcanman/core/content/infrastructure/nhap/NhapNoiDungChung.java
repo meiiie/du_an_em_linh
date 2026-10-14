@@ -244,7 +244,7 @@ public class NhapNoiDungChung {
     private BaiNhap baiMayGiai(String ma, String ham) {
         Map<String, @Nullable Object> giai = giaiBatBuoc(Map.of("ham", ham), ma);
         String latex = Objects.requireNonNullElse(chuNeuCo(giai.get("latex")), ham);
-        return new BaiNhap(ma, "T12.DH.03", List.of(), Level4.VAN_DUNG, Level3.VAN_DUNG, BloomLevel.VAN_DUNG,
+        return new BaiNhap(ma, kyNangMacDinh(), List.of(), Level4.VAN_DUNG, Level3.VAN_DUNG, BloomLevel.VAN_DUNG,
             "Tìm các khoảng đồng biến, nghịch biến và cực trị của hàm số y = " + latex + ".", latex, ham, Problem.TU_LUAN_5_BUOC,
             null, "MAY_GIAI", giai.get("bai_lam"), Objects.requireNonNullElse(giai.get("su_kien"), List.of()),
             danhSach(giai.get("thang_goi_y")));
@@ -263,7 +263,7 @@ public class NhapNoiDungChung {
         String ham = chu(g.get("ham"));
         String muc4 = Objects.requireNonNullElse(chuNeuCo(g.get("muc_do_4")), "VAN_DUNG");
         return Optional.of(new BaiNhap("GEN-" + dang + "-" + hatGiong,
-            Objects.requireNonNullElse(chuNeuCo(g.get("ky_nang_chinh")), "T12.DH.03"), List.of(), muc4(muc4),
+            kyNangSinh(chuNeuCo(g.get("ky_nang_chinh"))), List.of(), muc4(muc4),
             muc3(Objects.requireNonNullElse(chuNeuCo(g.get("muc_do_bo_3")), "VAN_DUNG"), muc4), bloom(chuNeuCo(g.get("muc_bloom"))),
             Objects.requireNonNullElse(chuNeuCo(g.get("de_bai")), "").replace("$", ""),
             Objects.requireNonNullElse(chuNeuCo(g.get("latex")), ham), ham, Problem.TU_LUAN_5_BUOC, null, "THAM_SO_HOA",
@@ -294,10 +294,22 @@ public class NhapNoiDungChung {
         Map<String, @Nullable Object> giai = giaiBatBuoc(Map.of("ham", "x**2"), "DH12-DEMO-CHAN-01");
         Map<String, @Nullable Object> baiLam = new LinkedHashMap<>(doiTuong(giai.get("bai_lam")));
         baiLam.put("dao_ham", "3*x");
-        return new BaiNhap("DH12-DEMO-CHAN-01", "T12.DH.03", List.of(), Level4.NHAN_BIET, Level3.BIET, bloom("NHAN_BIET"),
+        return new BaiNhap("DH12-DEMO-CHAN-01", kyNangMacDinh(), List.of(), Level4.NHAN_BIET, Level3.BIET, bloom("NHAN_BIET"),
             "Ví dụ cổng chặn (không giao cho học sinh): lời giải của y = x² bị sửa đạo hàm thành 3x.", "x^{2}", "x**2",
             Problem.TU_LUAN_5_BUOC, null, "VI_DU_CONG", baiLam, Objects.requireNonNullElse(giai.get("su_kien"), List.of()),
             danhSach(giai.get("thang_goi_y")));
+    }
+
+    /** Defaults come from the catalog being imported, never from an assumed legacy code. */
+    private String kyNangMacDinh() {
+        var skills=danhSach(nguon.doiTuong("supham/danh-muc-ky-nang-DH.json").get("ky_nang"));
+        return skills.stream().map(k->chu(k.get("ma"))).filter(k->k.endsWith(".03")).findFirst()
+            .orElseGet(()->skills.stream().map(k->chu(k.get("ma"))).findFirst().orElseThrow());
+    }
+
+    private String kyNangSinh(@Nullable String proposed) {
+        var skills=danhSach(nguon.doiTuong("supham/danh-muc-ky-nang-DH.json").get("ky_nang"));
+        return skills.stream().map(k->chu(k.get("ma"))).filter(k->k.equals(proposed)).findFirst().orElseGet(this::kyNangMacDinh);
     }
 
     private Map<String, @Nullable Object> giaiBatBuoc(Map<String, ?> yeuCau, String ma) {

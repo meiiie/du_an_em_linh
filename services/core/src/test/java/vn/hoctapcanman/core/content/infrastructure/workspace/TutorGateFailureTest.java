@@ -15,7 +15,8 @@ class TutorGateFailureTest {
     final UUID cl=UUID.randomUUID(),problem=UUID.randomUUID();
     final SolutionRepository solutions=mock(SolutionRepository.class);
     final MathServiceClient math=mock(MathServiceClient.class);
-    final ContentWorkflowAdapter gate=new ContentWorkflowAdapter(mock(JdbcClient.class,RETURNS_DEEP_STUBS),mock(VerificationRunRepository.class),
+    final JdbcClient db=mock(JdbcClient.class,RETURNS_DEEP_STUBS);
+    final ContentWorkflowAdapter gate=new ContentWorkflowAdapter(db,mock(VerificationRunRepository.class),
         mock(ProblemRepository.class),mock(ProblemReleaseRepository.class),mock(FormulaSheetRepository.class),mock(DocumentRepository.class),solutions,math,Clock.systemUTC());
     @BeforeEach void setup(){when(solutions.findByProblemId(problem)).thenReturn(Optional.of(new Solution(problem,null,"[\"dữ kiện tổng hợp\"]",null)));}
     Optional<String> check(){return gate.sanitize(cl,problem,"Em cần tìm điều gì?","Em bị kẹt",List.of());}
@@ -27,6 +28,11 @@ class TutorGateFailureTest {
         for(Map<String,Object> response:List.<Map<String,Object>>of(Map.of(),Map.of("loi","KIEM_LOI","thay_bang_goi_y",true,"cau_sach",""))) {
             when(math.call(eq(MathJob.KIEM_LOI_GIANG),anyMap())).thenReturn(new MathResult.Ok(response));assertEquals(503,assertThrows(WorkspaceException.class,this::check).status());
         }
+    }
+    @Test void obsoleteGateNoLongerProducesReviewItems() {
+        when(math.call(eq(MathJob.FILTER),anyMap())).thenReturn(new MathResult.Ok(Map.of("loi",false,"cho_phep",true)));
+        when(math.call(eq(MathJob.KIEM_LOI_GIANG),anyMap())).thenReturn(new MathResult.Ok(Map.of("loi",false,"thay_bang_goi_y",true,"cau_sach","")));
+        assertTrue(check().isEmpty());verifyNoInteractions(db);
     }
     @Test void validWholeSentenceReachesBothGates(){
         when(math.call(eq(MathJob.FILTER),anyMap())).thenReturn(new MathResult.Ok(Map.of("loi",false,"cho_phep",true)));

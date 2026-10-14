@@ -24,6 +24,7 @@ public interface ProblemRepository {
      * Các bài đang phát hành ({@code DA_PHAT_HANH}) ở lớp {@code classId}, theo mã bài. Bài và trạng thái phát hành đọc trong
      * một câu lệnh (một ảnh chụp CSDL): sửa nội dung bài rút phát hành trong cùng giao dịch (V5), nên không bao giờ trả nội
      * dung vừa sửa, chưa kiểm, kèm phát hành cũ.
+     * Lượt kiểm cũ vì đổi bảng không rút phát hành (ADR 005); lọc căn cứ mới chỉ ở danh sách tự học và gợi ý mới.
      */
     List<Problem> findReleasedInClass(UUID classId);
 
