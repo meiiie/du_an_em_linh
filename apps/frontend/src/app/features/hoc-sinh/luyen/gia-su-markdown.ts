@@ -39,9 +39,8 @@ export class GiaSuMarkdown {
   constructor() {
     afterRenderEffect(() => {
       const math: { latex: string; block: boolean }[] = [];
-      const refs = this.references();
       const marked = new Marked({
-        gfm: true, breaks: false,
+        gfm: true, breaks: true,
         renderer: {
           html: token => escapeHtml(token.text),
           image: () => '',
@@ -75,9 +74,8 @@ export class GiaSuMarkdown {
           },
           renderer: token => {
             const n = Number(token['index']);
-            // Chỉ dòng trong snapshot của lượt được bấm; không có URL từ lời model.
-            return refs.some(r => r.index === n)
-              ? `<span class="tutor-source source-${n}">[${n}]</span>` : `[${n}]`;
+            // Mọi trích dẫn là nút; chỉ snapshot thật được mở thành công thức.
+            return `<span class="tutor-source source-${n}">[${n}]</span>`;
           },
         }],
       });
@@ -89,7 +87,7 @@ export class GiaSuMarkdown {
         button.type = 'button';
         button.className = node.className;
         button.textContent = node.textContent;
-        button.setAttribute('aria-label', 'Mở nguồn ' + node.textContent?.replace(/[\[\]]/g, ''));
+        button.setAttribute('aria-label', 'Mở công thức ' + node.textContent?.replace(/[\[\]]/g, ''));
         node.replaceWith(button);
       });
       root.querySelectorAll<HTMLElement>('.tutor-math').forEach((node, index) => {
@@ -113,6 +111,6 @@ export class GiaSuMarkdown {
     if (!button) return;
     const cls = [...button.classList].find(c => /^source-\d+$/.test(c));
     const index = Number(cls?.slice(7));
-    this.nguonDangMo.set(this.references().find(r => r.index === index) ?? null);
+    this.nguonDangMo.set(this.references().find(r => r.index === index) ?? { index, text: 'Chưa có công thức của nguồn này trong lượt hỏi. Em có thể xem bảng công thức của bước đang làm.' });
   }
 }

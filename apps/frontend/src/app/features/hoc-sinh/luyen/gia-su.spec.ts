@@ -69,6 +69,33 @@ describe('Sidebar gia sư',()=>{
     expect(t.el.querySelector('article strong')?.textContent).toBe('Câu đã kiểm');expect(t.el.querySelector('.katex')).not.toBeNull();
     expect(t.el.querySelectorAll('article')).toHaveLength(2);
   });
+  it('trích dẫn streamed mở đúng công thức và giữ in đậm/xuống dòng',async()=>{
+    response=init=>new Response(event('start',1,{requestId:JSON.parse(init.body as string).requestId,
+      references:[{index:1,text:'Lũy thừa của lượt mới.',latex:'x^n'}]})
+      +event('delta',2,{text:'Xem **căn cứ** [1].\nEm chọn thao tác nào?'})
+      +event('done',3,{status:'completed'}),{headers:{'Content-Type':'text/event-stream'}});
+    const t=await setup();await t.fill('Em hỏi về căn cứ');await t.click('Gửi câu hỏi');
+    const button=t.el.querySelector<HTMLButtonElement>('.tutor-source')!;
+    expect(button.type).toBe('button');expect(button.getAttribute('aria-label')).toBe('Mở công thức 1');
+    expect(t.el.querySelector('article strong')?.textContent).toBe('căn cứ');
+    expect(t.el.querySelector('article br')).not.toBeNull();
+    button.click();await t.f.whenStable();
+    expect(t.el.querySelector('[role="note"]')?.textContent).toContain('Lũy thừa của lượt mới.');
+    expect(t.el.querySelector('[role="note"] .katex')).not.toBeNull();
+  });
+  it('trích dẫn trong lịch sử dùng snapshot của từng lượt, không dùng bảng mới',async()=>{
+    fetchMock.mockImplementation(async(url:string,init:RequestInit={})=>{
+      if(url===API_GIA_SU)return json({sessionId:'s1',lastSeq:3,turnId:null,status:'idle'});
+      if(url.includes('/luot?'))return json({session:{...session,lastSeq:3},turns:[{
+        id:'t0',sessionId:'s1',requestId:'r0',ordinal:1,step:'B.DH.DAOHAM',level:2,
+        question:'Em hỏi căn cứ',answer:'Xem [2].',status:'completed',createdAt:'2026-10-14T00:00:00Z',
+        references:[{index:2,text:'Quy tắc của bảng cũ.',latex:'x^2'}],
+      }]});
+      return response(init);
+    });
+    const t=await setup();t.el.querySelector<HTMLButtonElement>('.tutor-source')!.click();await t.f.whenStable();
+    expect(t.el.querySelector('[role="note"]')?.textContent).toContain('Quy tắc của bảng cũ.');
+  });
   it('hiện trạng thái chờ polite đến token thô đầu tiên và giữ nút Dừng',async()=>{
     let writer!: ReadableStreamDefaultController<Uint8Array>;
     response=()=>new Response(new ReadableStream({start(c){writer=c;}}),{headers:{'Content-Type':'text/event-stream'}});
@@ -182,6 +209,16 @@ describe('Markdown gia sư',()=>{
     expect(el.querySelectorAll('img,script,a,[onerror]')).toHaveLength(0);expect(el.querySelectorAll('.katex')).toHaveLength(3);expect(el.querySelector('math')).not.toBeNull();
     el.querySelector<HTMLButtonElement>('.tutor-source')!.click();await f.whenStable();
     expect(el.querySelector('[role="note"]')?.textContent).toContain('Dòng đã khóa của lượt cũ.');
+  });
+  it('mọi [n] là nút bàn phím kể cả khi thiếu nguồn, không bịa công thức',async()=>{
+    const f=TestBed.createComponent(GiaSuMarkdown);
+    f.componentRef.setInput('text','Xem [1] và [2].');f.detectChanges();await f.whenStable();
+    const el=f.nativeElement as HTMLElement;
+    const buttons=el.querySelectorAll<HTMLButtonElement>('.tutor-source');
+    expect(buttons).toHaveLength(2);expect(buttons[1].getAttribute('aria-label')).toBe('Mở công thức 2');
+    buttons[1].click();await f.whenStable();
+    expect(el.querySelector('[role="note"]')?.textContent).toContain('Chưa có công thức');
+    expect(el.querySelector('.katex')).toBeNull();
   });
   it('cấu trúc chưa kín và LaTeX lỗi vẫn giữ chữ, code không bị render thành toán',async()=>{
     const f=TestBed.createComponent(GiaSuMarkdown);
