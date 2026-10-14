@@ -38,7 +38,7 @@ Flyway mới: `V16__confirmed_client_decisions.sql`; V14/V15 để lane khác s�
 
 `compose.v2.yaml` là **demo**, cố định profile `dev`, mật khẩu CSDL cục bộ và mount `./data/dev:/app/noi-dung/dev:ro`; không dùng nguyên cấu hình đó cho người dùng thật. Image core chỉ chép `data/supham` và `data/v0`, không chứa `data/dev`. Script khói vẫn đọc tệp mật khẩu trong container core như [SEED.md](SEED.md).
 
-Production đặt `SPRING_PROFILES_ACTIVE=prod`, cấp CSDL và mật khẩu riêng, không bật `dev` hay gắn `data/dev`. `application-prod.yaml` tắt nhập nội dung lúc khởi động và giữ cookie refresh `Secure`. Ngoài profile `dev`/`test`, core dừng khởi động với thông báo tiếng Việt nếu thiếu `APP_IDENTITY_JWT_SECRET`, sai base64 hoặc giải mã dưới 32 byte. `prod` luôn yêu cầu khóa kể cả khi bật thêm dev/test. Tạo khóa bằng `openssl rand -base64 32`, lưu trong kho bí mật của bên vận hành; thay khóa sẽ làm access token cũ hết hiệu lực. Render Blueprint yêu cầu cấp khóa này, không tự sinh chuỗi chưa được kiểm định dạng. Profile `test` chỉ dùng khi chạy kiểm thử.
+Production đặt `SPRING_PROFILES_ACTIVE=prod`, cấp CSDL và mật khẩu riêng, không bật `dev` hay gắn `data/dev`. `application-prod.yaml` tắt nhập nội dung lúc khởi động và giữ cookie refresh `Secure`. Khi profile `prod` bật (kể cả cùng dev/test), core dừng khởi động với thông báo tiếng Việt nếu thiếu `APP_IDENTITY_JWT_SECRET`; khóa sai base64 hoặc dưới 32 byte bị từ chối ở mọi profile. Profile khác (mặc định, dev, test, staging) thiếu khóa thì dùng khóa tạm, phiên mất khi khởi động lại, nên mọi môi trường có người dùng thật, kể cả staging, phải bật `prod`. Tạo khóa bằng `openssl rand -base64 32`, lưu trong kho bí mật của bên vận hành; thay khóa sẽ làm access token cũ hết hiệu lực. Render Blueprint yêu cầu cấp khóa này, không tự sinh chuỗi chưa được kiểm định dạng. Profile `test` chỉ dùng khi chạy kiểm thử.
 
 Các mặc định Compose khớp core: `GLM_TIMEOUT=45s`, `GLM_FIRST_TOKEN_TIMEOUT=20s`, `GLM_MAX_TOKENS=700`, `GIA_SU_TEMPERATURE=0.8`, `GIA_SU_TOP_P=0.9`, `GIA_SU_TOKEN_BUDGET=6000`; truyền cả giới hạn lượt GLM, khóa VAPID và cấu hình soạn nháp. Khóa API trống không cản khởi động. Khi thay biến môi trường, tạo lại container core. Cặp VAPID và subject chỉ cấp khi bật Web Push.
 
@@ -71,7 +71,7 @@ Sau mỗi lần thành công, tác vụ vận hành riêng sao chép dump qua SS
 Mỗi tháng và trước thay đổi schema lớn, lấy một bản từ kho ngoài máy, kiểm mục lục rồi phục hồi vào **CSDL mới, riêng biệt**. Không phục hồi đè hệ đang chạy. Ví dụ demo trên service db:
 
 ```bash
-pg_restore --list /var/backups/mathl/BAN_DA_CHON.dump > /dev/null
+docker compose -f compose.v2.yaml exec -T db pg_restore --list < /var/backups/mathl/BAN_DA_CHON.dump > /dev/null
 docker compose -f compose.v2.yaml exec -T db createdb -U hoc_toan mathl_restore_drill
 docker compose -f compose.v2.yaml exec -T db pg_restore \
   --username=hoc_toan --dbname=mathl_restore_drill --no-owner --no-privileges \
