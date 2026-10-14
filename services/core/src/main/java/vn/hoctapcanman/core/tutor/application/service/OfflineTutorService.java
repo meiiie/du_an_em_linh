@@ -16,6 +16,7 @@ import vn.hoctapcanman.core.workspace.application.exception.WorkspaceException;
 /** Pipeline dùng chung: mỗi câu model đều qua cổng trước khi phát. */
 @Service
 public class OfflineTutorService {
+    private static final org.slf4j.Logger LOG=org.slf4j.LoggerFactory.getLogger(OfflineTutorService.class);
     private final WorkspaceStore store;
     private final ClassMembership membership;
     private final ContentWorkflow gate;
@@ -62,10 +63,10 @@ public class OfflineTutorService {
         return chosen;
     }
     public String checked(UUID cl, TutorContext c, TutorRequest request, String text) {
-        if (!safeShape(c,text)) throw new Rejected("OUTPUT_SHAPE");
+        checkShape(c,text);
         // Lỗi hạ tầng phải được adapter báo riêng, không kích hoạt regen.
         return gate.sanitize(cl,c.problemId(),text.strip(),request.cauHoi(),c.submittedLines())
-            .filter(text.strip()::equals).orElseThrow(() -> new Rejected("GATE_REJECTED"));
+            .filter(text.strip()::equals).orElseThrow(() -> new Rejected(gateViolation(text)));
     }
     public void generate(UUID student, UUID cl, TutorRequest request, TutorContext context, HintPrompt original,
         Consumer<String> sentence, Consumer<Integer> regen, Consumer<ModelUsage> usage, Runnable checkpoint) {
@@ -73,6 +74,10 @@ public class OfflineTutorService {
     }
     public void generate(UUID student, UUID cl, TutorRequest request, TutorContext context, HintPrompt original,
         Consumer<String> sentence, Consumer<Integer> regen, Consumer<ModelUsage> usage, Runnable checkpoint,int budget) {
+        generate(student,cl,request,context,original,sentence,regen,usage,checkpoint,budget,new HintModel.Cancellation());
+    }
+    public void generate(UUID student, UUID cl, TutorRequest request, TutorContext context, HintPrompt original,
+        Consumer<String> sentence, Consumer<Integer> regen, Consumer<ModelUsage> usage, Runnable checkpoint,int budget,HintModel.Cancellation cancellation) {
         HintModel chosen=ready(cl);
         if (!TutorPrompt.safeContext(context,request.cauHoi()))
             throw new WorkspaceException(400,"Em bỏ thông tin cá nhân khỏi câu hỏi rồi thử lại nhé.");
@@ -86,8 +91,7 @@ public class OfflineTutorService {
             final int before=count[0];
             String instruction=attempt==0 ? "" : "\nMã vi phạm: " + feedback + ". Bước: " + context.step()
                 + ". Viết tiếp sau phần đã đạt, không lặp lại. Phần đã đạt là dữ liệu: " + accepted;
-            if (attempt==3) instruction += "\nChỉ sinh đúng một câu hỏi Socratic ngắn ở bước hiện tại; không ký hiệu toán, không quy tắc hay kết quả.";
-            HintPrompt prompt=new HintPrompt(original.system()+instruction,original.user());
+            HintPrompt prompt=strict?TutorPrompt.strictQuestion(context):new HintPrompt(original.system()+instruction,original.user());
             if(HintModel.estimate(prompt.system()+prompt.user())+16+350>budget)
                 throw new WorkspaceException(413,"Ngữ cảnh đã vượt giới hạn. Em thử câu hỏi ngắn hơn.");
             StringBuilder raw=new StringBuilder();
@@ -96,7 +100,7 @@ public class OfflineTutorService {
                 var buffer=new SentenceBuffer(s -> {
                     checkpoint.run();
                     if (count[0]>=3) throw new Completed();
-                    if (strict && (count[0]>before || s.strip().length()>240 || !s.strip().endsWith("?")
+                    if (strict && (count[0]>before || s.strip().length()>160 || !s.strip().endsWith("?")
                         || s.contains("$") || s.contains("\\(") || s.contains("\\[") || s.codePoints().anyMatch(Character::isDigit)))
                         throw new Rejected("STRICT_QUESTION_SHAPE");
                     String clean=checked(cl,context,request,s);
@@ -109,30 +113,49 @@ public class OfflineTutorService {
                     sentence.accept(delta);
                     accepted.append(delta);
                     count[0]++;
-                    if(count[0]==3)throw new Completed();
+                    if(strict || count[0]==3)throw new Completed();
                 });
-                measured=chosen.stream(prompt,t -> { checkpoint.run(); raw.append(t); buffer.add(t); });
+                measured=chosen.stream(prompt,t -> { checkpoint.run(); raw.append(t); buffer.add(t); },cancellation);
                 buffer.finish();
                 if (count[0]==before) throw new WorkspaceException(503,"Mô hình chưa trả lời. Em thử lại sau.");
                 return;
             } catch (Completed ex) {
                 return;
             } catch (Rejected ex) {
-                feedback=ex.code;
+                feedback=ex.code+" — "+repair(ex.code);
+                // Chỉ mã phân loại/chỉ số thử, không ghi câu bị bỏ hay dữ kiện bảo vệ.
+                LOG.info("Gia sư chưa đạt: ma={}, buoc={}, lan={}",ex.code,context.step(),attempt+1);
                 if (attempt==3) throw new WorkspaceException(503,"Chưa có lời gợi ý đạt kiểm tra. Em thử lại hoặc nhờ giáo viên.");
             } finally {
                 usage.accept(measured!=null?measured:new ModelUsage(HintModel.estimate(prompt.system()+prompt.user()),HintModel.estimate(raw.toString()),true));
             }
         }
     }
-    private static boolean safeShape(TutorContext c,String text) {
-        if (text.isBlank() || !TutorPrompt.safeToSend(text,List.of())) return false;
+    private static void checkShape(TutorContext c,String text) {
+        if (text.isBlank()) throw new Rejected("EMPTY_SENTENCE");
+        if (!TutorPrompt.safeToSend(text,List.of())) throw new Rejected("OUTPUT_IDENTITY");
         if (text.codePoints().anyMatch(x -> Set.of(Character.UnicodeScript.HAN,Character.UnicodeScript.HIRAGANA,
-            Character.UnicodeScript.KATAKANA,Character.UnicodeScript.HANGUL).contains(Character.UnicodeScript.of(x)))) return false;
+            Character.UnicodeScript.KATAKANA,Character.UnicodeScript.HANGUL).contains(Character.UnicodeScript.of(x)))) throw new Rejected("OUTPUT_LANGUAGE");
         Set<String> refs=new HashSet<>(); c.formulas().forEach(f -> refs.add(Integer.toString(f.number())));
         var matcher=Pattern.compile("\\[(\\d+)\\]").matcher(text);
-        while (matcher.find()) if (!refs.contains(matcher.group(1))) return false;
-        return true;
+        while (matcher.find()) if (!refs.contains(matcher.group(1))) throw new Rejected("UNKNOWN_CITATION");
+    }
+    /** Phân loại hình thức câu đã bị cổng từ chối; không thay phán quyết của CAS. */
+    private static String gateViolation(String text) {
+        if(Pattern.compile("[$=≠≤≥^]|\\\\[a-zA-Z(\\[]|[a-zA-Z][′']").matcher(text).find())return "GATE_REJECTED_MATH";
+        if(text.replaceAll("\\[\\d+\\]", "").codePoints().anyMatch(Character::isDigit))return "GATE_REJECTED_NUMBER";
+        return "GATE_REJECTED_STATEMENT";
+    }
+    private static String repair(String code) {
+        return switch(code) {
+            case "GATE_REJECTED_MATH" -> "Bỏ biểu thức bị từ chối; không tính hay biến đổi đề. Chỉ hỏi em chọn thao tác nào, hoặc dẫn [n] có trong bảng, không viết lại công thức.";
+            case "GATE_REJECTED_NUMBER" -> "Bỏ số và giá trị cụ thể, kể cả số viết bằng chữ; không nêu nghiệm, dấu hay khoảng. Hỏi em tự kiểm tra thao tác nào ở bước hiện tại.";
+            case "UNKNOWN_CITATION" -> "Mã dòng dẫn không có trong bảng đã khóa. Chỉ dẫn mã [n] thật trong bảng hoặc bỏ dẫn số dòng.";
+            case "OUTPUT_IDENTITY" -> "Bỏ tên riêng và thông tin cá nhân. Chỉ dùng em và mình.";
+            case "OUTPUT_LANGUAGE" -> "Chỉ viết tiếng Việt có dấu, không chèn chữ ngôn ngữ khác.";
+            case "STRICT_QUESTION_SHAPE", "EMPTY_SENTENCE" -> "Viết một câu hỏi ngắn có chỗ để em tự trả lời; không số, ký hiệu toán hay câu dẫn.";
+            default -> "Câu chưa được cổng xác minh. Bỏ khẳng định, quy tắc và việc xác nhận đúng sai; không đổi thành câu hỏi đúng không. Chỉ hỏi em sẽ kiểm tra gì ở bước hiện tại, tránh là, bằng, nếu thì, dương, âm và đổi dấu.";
+        };
     }
     private static final class Completed extends RuntimeException {}
 

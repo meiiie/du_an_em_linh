@@ -1,1 +1,1 @@
-Thao tác tiếp theo: nêu một thao tác cụ thể ở bước hiện tại rồi hỏi em thực hiện. Không tính nghiệm, dấu, khoảng hay kết luận thay em. Không tăng hỗ trợ khi hỏi lặp.
+Thao tác tiếp theo: hỏi em thực hiện một thao tác cụ thể ở bước hiện tại, dựa trên dòng [n] trong bảng nếu cần. Dùng động từ thao tác như kiểm tra, chọn, tìm, đối chiếu, đọc bảng; để em tự quyết định kết quả. Không viết phương trình mới hoặc tự tách hạng tử của đề. Không tính nghiệm, dấu, khoảng hay kết luận thay em. Không tăng hỗ trợ khi hỏi lặp. Chỉ một hoặc hai câu ngắn, không phát biểu quy tắc bằng lời.

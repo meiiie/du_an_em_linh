@@ -73,6 +73,31 @@ class TutorSessionServiceTest {
         assertEquals("cancelled",terminal(a).status());assertEquals(cancelled.lastSeq(),service.cancel(student,a.session().id(),a.turn().id()).lastSeq());
         assertEquals(List.of("start","done"),store.events(a.session().id(),0).stream().map(Event::type).toList());
     }
+    @Test void cancellationAndStreamErrorNeverInterruptPersistenceWrite() throws Exception {
+        for(boolean streamError:List.of(false,true)) {
+            var writing=new CountDownLatch(1);var release=new CountDownLatch(1);var finished=new CountDownLatch(1);
+            var interrupted=new java.util.concurrent.atomic.AtomicBoolean();
+            var db=new MemoryStore(store.a) {
+                @Override public void usage(UUID student,UUID cl,UUID turn,String provider,String purpose,ModelUsage usage) {
+                    writing.countDown();
+                    try { release.await(3,TimeUnit.SECONDS); }
+                    catch(InterruptedException ex) { interrupted.set(true); }
+                    finally { finished.countDown(); }
+                    super.usage(student,cl,turn,provider,purpose,usage);
+                }
+            };
+            var svc=new TutorSessionService(db,pipeline,members,workspace,6000);
+            var s=svc.open(student,assignment);var accepted=svc.ask(student,s.id(),request(UUID.randomUUID()));
+            try {
+                assertTrue(writing.await(3,TimeUnit.SECONDS));
+                if(streamError)svc.streamError(student,s.id(),accepted.turn().id(),new WorkspaceException(403,"Quyền vừa đổi"));
+                else svc.cancel(student,s.id(),accepted.turn().id());
+            } finally { release.countDown(); }
+            assertTrue(finished.await(3,TimeUnit.SECONDS));
+            assertFalse(interrupted.get(),"Không được ngắt thread đang ghi JDBC");
+            assertEquals(streamError?"error":"cancelled",svc.history(student,s.id(),0,1).turns().getFirst().status());
+        }
+    }
     @Test void cancelAckKeepsOldTerminalSeqWhenNewTurnHasStarted() throws Exception {
         Accepted first=ask();terminal(first);long terminalSeq=store.events(first.session().id(),0).getLast().seq();
         Accepted next=ask();terminal(next);
@@ -101,6 +126,24 @@ class TutorSessionServiceTest {
         assertFalse(prompts.getLast().user().contains("Lượt 1 —"));assertTrue(prompts.getLast().user().contains("Lượt 8 —"));
         assertEquals(11,store.turns(store.s.id(),0,100).size());assertEquals(2,store.calls.size());
     }
+    @Test void compactsAtSeventyPercentIncludingFailedAndCancelledQuestions() throws Exception {
+        service.open(student,assignment);
+        // ~4,300 token including the system prompt: above 70%, below the old 75%.
+        for(int i=0;i<7;i++)store.seed("Em thử "+"cách ".repeat(280),"Em kiểm tra nhé?");
+        for(int i=0;i<3;i++)store.seed("Em đã thử "+"cách ".repeat(300),"");
+        for(int i=7;i<10;i++) {
+            Turn t=store.turns.get(i);
+            store.turns.set(i,new Turn(t.id(),t.sessionId(),t.requestId(),t.ordinal(),t.step(),t.level(),t.question(),t.answer(),i==8?"cancelled":"error",t.createdAt()));
+        }
+        var prompts=new CopyOnWriteArrayList<HintPrompt>();when(model.draft(any())).thenAnswer(i -> {
+            HintPrompt p=i.getArgument(0);prompts.add(p);
+            return Optional.of(p.system().startsWith("Tóm tắt")?summary("Em đang thử cách đã chọn."):"Em cần tìm điều gì?");
+        });
+        Accepted a=ask();assertEquals("completed",terminal(a).status());
+        History h=service.history(student,a.session().id(),0,50);
+        assertEquals(7,h.session().summaryThrough());assertFalse(h.session().tomTat().isBlank());
+        assertTrue(prompts.getLast().user().contains("Lượt 8 —"));assertTrue(prompts.getLast().user().contains("Lượt 10 —"));
+    }
     @Test void rejectedSummaryIsNeverSavedOrIncludedAsMemory() throws Exception {
         service.open(student,assignment);for(int i=0;i<10;i++)store.seed("Em thử "+"cách ".repeat(250),"Em làm "+"tiếp ".repeat(250));
         when(model.draft(any())).thenAnswer(i -> Optional.of(((HintPrompt)i.getArgument(0)).system().startsWith("Tóm tắt")?summary("Tóm tắt bị chặn."):"Em cần tìm gì?"));
@@ -115,7 +158,7 @@ class TutorSessionServiceTest {
         return "{\"mucTieuBuoc\":\""+goal+"\",\"cachDaThu\":\"\",\"loiDaDuocCham\":\"\",\"cauHoiConMo\":\"\",\"goiYDaDung\":\"\",\"dieuDaSua\":\"\",\"luotNguon\":[1,2,3,4,5,6,7]}";
     }
     /** Test double for orchestration only; persistence is tested separately on PostgreSQL. */
-    static final class MemoryStore implements TutorSessionStore {
+    static class MemoryStore implements TutorSessionStore {
         final Assignment a;Session s;final List<Turn> turns=new ArrayList<>();final List<Event> log=new ArrayList<>();final List<ModelUsage> calls=new ArrayList<>();
         MemoryStore(Assignment a){this.a=a;}
         @Override public Optional<Assignment> assignment(UUID student,UUID id){return a.studentId().equals(student)&&a.id().equals(id)?Optional.of(a):Optional.empty();}

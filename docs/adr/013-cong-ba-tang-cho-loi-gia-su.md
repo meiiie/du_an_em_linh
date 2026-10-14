@@ -142,3 +142,13 @@ Summary JSON có sáu trường văn bản `mucTieuBuoc,cachDaThu,loiDaDuocCham,
 Unit/mock kiểm giao thức và đường lỗi; Testcontainers kiểm persistence/migration trên PostgreSQL. Những kiểm này không thay eval GLM thật hoặc kiểm toán/sư phạm độc lập; không sửa dữ liệu lab đã khóa.
 
 Bằng chứng core tại mốc nền `b9d50f32dce34eeb0f43cba0c552dcb9ab585828`, snapshot nguồn SHA-256 `716262789c73984d0ea5272f4cc67b32bcc6e49f0099e2de1c6643504e95d9da`: lệnh, 360 ca đạt, 54 ca ArchUnit, các ca Docker/seed bị skip và lỗi socket của full verify được ghi trong [phụ lục kiểm ADR 010](010-sse-trang-thai-gia-su.md#bằng-chứng-backend). Không suy ra số đo sư phạm/GLM từ test mock.
+
+## Bổ sung 2026-10-14 — phát câu sớm, nén và hủy hợp tác
+
+Câu tiếng Việt được kiểm ngay khi dấu kết thúc tới, không chờ EOF; giữ delimiter LaTeX, số thập phân và không tính dấu câu nối tiếp thành câu mới. Hai cổng phải trả nguyên văn trước khi lưu `delta`; `SseEmitter.send` phát/flush từng sự kiện trong lúc model còn stream. Không đổi cổng toán/chống lộ của `services/math`.
+
+Feedback phân biệt định danh/ngôn ngữ/dẫn bảng và hình thức toán/số/khẳng định chưa xác minh, không chứa nháp bị chặn. Prompt theo cấp và tín hiệu jailbreak ưu tiên hỏi thao tác hiện tại. Lần Socratic cuối dùng prompt riêng chỉ mang tên bước, yêu cầu một câu hỏi ngắn không số/kết quả; vẫn qua hai cổng, không câu cố định.
+
+Nén từ **70%** ngân sách ước lượng toàn prompt, tính cả system và mọi lượt cũ đã kết thúc (kể cả lỗi/hủy); giữ ba lượt gần nhất và mọi bản gốc. Lịch sử API xuất `session.tomTat`, `session.summaryThrough`, `session.tokenCount`. Hủy/lỗi SSE/deadline dùng cờ hợp tác và đóng HTTP, không `Thread.interrupt`/`Future.cancel(true)` vào kiểm cổng/JDBC. Trước khi có header HTTP, cờ chặn callback và timeout vận chuyển giới hạn yêu cầu còn chờ.
+
+Kiểm JDK 25.0.4.1 trên nền `77ca4624a9cb6d8e1a5b83782e9680bc32adfd82`; SHA-256 snapshot các tệp core đã đổi, gồm prompt mới: `632377e7563464f47612dea9324383552b850f686f9380031ada1b72b5f7b016` (ghép theo đường dẫn tăng dần: tên + NUL + nội dung + NUL). `./mvnw -B -q -Dtest='*Tutor*,*GiaSu*,*Sentence*,*Glm*,Architecture*' -Dsurefire.failIfNoSpecifiedTests=false test`: **71 đạt, 9 skip Docker**; thêm `-DargLine=-javaagent:<mockito-core-5.23.0.jar>` vì sandbox chặn tự attach. `-Dtest='*Architecture*,KienTruc*,NullMarkedPackagesTest'`: **54 đạt**. Runtime tạm SymPy 1.14.0: **362 ca công thức + 60 ca chống lộ đạt**; chạy ba tệp `test_loi_giang*.py` KD-0006 với `-k 'not router_kiem_loi_giang'`, và `test_leakfilter_fail_closed.py`, `test_leak_san_pham.py`, `test_leak.py`. Ca router đã dừng do chờ socket. Sandbox chặn PostgreSQL/math bind socket; chưa chạy lại eval GLM v2, chưa xác nhận lỗi ≤2/30, regen <25% hay TTFT thật.

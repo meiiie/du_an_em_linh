@@ -35,6 +35,14 @@ class TutorSessionControllerTest {
             .andExpect(jsonPath("$.status").value("idle"));
         org.mockito.Mockito.verify(fixture.model,org.mockito.Mockito.never()).draft(org.mockito.ArgumentMatchers.any());
     }
+    @Test void historyExposesCompactionSummaryAndSourceCursor() throws Exception {
+        var current=fixture.store.snapshot(session);
+        fixture.store.compact(current,"Tóm tắt đã kiểm.",7,120);
+        mvc.perform(get("/api/hs/gia-su/v2/phien/{id}/luot",session))
+            .andExpect(status().isOk()).andExpect(jsonPath("$.session.summaryThrough").value(7))
+            .andExpect(jsonPath("$.session.tomTat").value("Tóm tắt đã kiểm."))
+            .andExpect(jsonPath("$.session.tokenCount").value(120));
+    }
     @Test void durableStartDeltaDoneAndResumeFromEitherCursor() throws Exception {
         var response=mvc.perform(post("/api/hs/gia-su/v2/phien/{id}/luot",session).contentType(MediaType.APPLICATION_JSON).content(body(UUID.randomUUID())))
             .andExpect(request().asyncStarted()).andReturn();response.getAsyncResult(5000);
@@ -45,6 +53,32 @@ class TutorSessionControllerTest {
             .andExpect(request().asyncStarted()).andReturn();resumed.getAsyncResult(5000);
         String replay=mvc.perform(asyncDispatch(resumed)).andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
         assertFalse(replay.contains("event:start"));assertTrue(replay.contains("event:delta"));assertTrue(replay.contains("event:done"));
+    }
+    @Test void flushesVerifiedSentenceWhileProviderIsStillStreaming() throws Exception {
+        var inGate=new java.util.concurrent.CountDownLatch(1);
+        var verifySentence=new java.util.concurrent.CountDownLatch(1);
+        var finishProvider=new java.util.concurrent.CountDownLatch(1);
+        org.mockito.Mockito.when(fixture.gate.sanitize(org.mockito.ArgumentMatchers.any(),org.mockito.ArgumentMatchers.any(),org.mockito.ArgumentMatchers.anyString(),org.mockito.ArgumentMatchers.anyString(),org.mockito.ArgumentMatchers.anyList()))
+            .thenAnswer(i -> {inGate.countDown();assertTrue(verifySentence.await(5,java.util.concurrent.TimeUnit.SECONDS));return Optional.of(i.<String>getArgument(2));});
+        org.mockito.Mockito.doAnswer(i -> {
+            java.util.function.Consumer<String> chunks=i.getArgument(1);
+            chunks.accept("Em đã thử gì?");
+            assertTrue(finishProvider.await(5,java.util.concurrent.TimeUnit.SECONDS));
+            return new vn.hoctapcanman.core.tutor.application.dto.TutorSessionDto.ModelUsage(20,10,false);
+        }).when(fixture.model).stream(org.mockito.ArgumentMatchers.any(),org.mockito.ArgumentMatchers.any());
+        try {
+            var response=mvc.perform(post("/api/hs/gia-su/v2/phien/{id}/luot",session).contentType(MediaType.APPLICATION_JSON).content(body(UUID.randomUUID())))
+                .andExpect(request().asyncStarted()).andReturn();
+            assertTrue(inGate.await(3,java.util.concurrent.TimeUnit.SECONDS));
+            assertFalse(response.getResponse().getContentAsString().contains("event:delta"));
+            verifySentence.countDown();
+            long deadline=System.nanoTime()+java.util.concurrent.TimeUnit.SECONDS.toNanos(3);
+            while(!response.getResponse().getContentAsString(java.nio.charset.StandardCharsets.UTF_8).contains("Em đã thử gì?") && System.nanoTime()<deadline)Thread.sleep(10);
+            String partial=response.getResponse().getContentAsString(java.nio.charset.StandardCharsets.UTF_8);
+            assertTrue(partial.contains("event:delta"));assertTrue(partial.contains("Em đã thử gì?"));assertFalse(partial.contains("event:done"));
+            finishProvider.countDown();response.getAsyncResult(5000);
+            mvc.perform(asyncDispatch(response)).andExpect(status().isOk());
+        } finally {verifySentence.countDown();finishProvider.countDown();}
     }
     @Test void mismatchedOrFutureCursorReturns409BeforeStream() throws Exception {
         mvc.perform(get("/api/hs/gia-su/v2/phien/{id}/su-kien",session).param("lastSeq","0").header("Last-Event-ID",session+":1"))

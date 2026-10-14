@@ -76,6 +76,48 @@ class GlmHintModelAdapterTest {
         });
         assertTimeout(Duration.ofMillis(200),() -> assertThrows(IllegalStateException.class,() -> adapter.stream(prompt,ignored -> {})));server.verify();
     }
+    @Test void transportTimeoutDoesNotInterruptConsumerDoingDatabaseWork() throws Exception {
+        var builder=RestClient.builder().baseUrl(BASE);server=MockRestServiceServer.bindTo(builder).build();
+        adapter=new GlmHintModelAdapter(builder.build(),"khóa-thử","glm-4.7",Duration.ofMillis(100),350);
+        server.expect(requestTo(BASE+"/chat/completions")).andRespond(withSuccess(SUCCESS,MediaType.TEXT_EVENT_STREAM));
+        var release=new java.util.concurrent.CountDownLatch(1);var finished=new java.util.concurrent.CountDownLatch(1);
+        var interrupted=new java.util.concurrent.atomic.AtomicBoolean();
+        try {
+            assertThrows(IllegalStateException.class,() -> adapter.stream(prompt,ignored -> {
+                try { release.await(3,java.util.concurrent.TimeUnit.SECONDS); }
+                catch(InterruptedException ex) { interrupted.set(true); }
+                finally { finished.countDown(); }
+            }));
+        } finally { release.countDown(); }
+        assertTrue(finished.await(3,java.util.concurrent.TimeUnit.SECONDS));
+        assertFalse(interrupted.get(),"Deadline không được ngắt callback đang ghi JDBC");server.verify();
+    }
+    @Test void cooperativeCancellationClosesBlockedHttpStreamWithoutInterruptingReader() throws Exception {
+        var reading=new java.util.concurrent.CountDownLatch(1);var closed=new java.util.concurrent.CountDownLatch(1);
+        var interrupted=new java.util.concurrent.atomic.AtomicBoolean();
+        var input=new java.io.InputStream() {
+            @Override public int read() {
+                reading.countDown();
+                try { closed.await(3,java.util.concurrent.TimeUnit.SECONDS); }
+                catch(InterruptedException ex) { interrupted.set(true); }
+                return -1;
+            }
+            @Override public void close() { closed.countDown(); }
+        };
+        server.expect(requestTo(BASE+"/chat/completions")).andRespond(request -> {
+            var response=new org.springframework.mock.http.client.MockClientHttpResponse(input,HttpStatus.OK);
+            response.getHeaders().setContentType(MediaType.TEXT_EVENT_STREAM);return response;
+        });
+        var cancellation=new vn.hoctapcanman.core.tutor.application.port.HintModel.Cancellation();
+        var result=new java.util.concurrent.FutureTask<>(() -> adapter.stream(prompt,ignored -> fail("Không được phát delta"),cancellation));
+        Thread.startVirtualThread(result);
+        assertTrue(reading.await(3,java.util.concurrent.TimeUnit.SECONDS));
+        cancellation.cancel();
+        assertTrue(closed.await(1,java.util.concurrent.TimeUnit.SECONDS));
+        var failure=assertThrows(java.util.concurrent.ExecutionException.class,() -> result.get(1,java.util.concurrent.TimeUnit.SECONDS));
+        assertInstanceOf(java.util.concurrent.CancellationException.class,failure.getCause());
+        assertFalse(interrupted.get());server.verify();
+    }
     @Test void rejectsNonSseSuccessAndToolCalls() {
         server.expect(requestTo(BASE+"/chat/completions")).andRespond(withSuccess("{}",MediaType.APPLICATION_JSON));assertTrue(adapter.draft(prompt).isEmpty());server.verify();
         setup();server.expect(requestTo(BASE+"/chat/completions")).andRespond(withSuccess("data: {\"choices\":[{\"delta\":{\"tool_calls\":[]}}]}\n\n",MediaType.TEXT_EVENT_STREAM));

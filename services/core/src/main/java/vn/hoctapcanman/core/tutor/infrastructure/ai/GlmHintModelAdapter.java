@@ -31,17 +31,27 @@ public final class GlmHintModelAdapter implements HintModel {
         catch(RuntimeException ex){return Optional.empty();}
     }
     @Override public ModelUsage stream(HintPrompt prompt,Consumer<String> tokens) {
-        FutureTask<ModelUsage> task=new FutureTask<>(() -> call(prompt,tokens));
-        Thread.startVirtualThread(task);
-        try {return task.get(timeout.toNanos(),TimeUnit.NANOSECONDS);}
+        return stream(prompt,tokens,new Cancellation());
+    }
+    @Override public ModelUsage stream(HintPrompt prompt,Consumer<String> tokens,Cancellation cancellation) {
+        cancellation.check();
+        FutureTask<ModelUsage> task=new FutureTask<>(() -> call(prompt,tokens,cancellation));
+        AutoCloseable stop=() -> task.cancel(false);
+        cancellation.attach(stop);
+        try {
+            Thread.startVirtualThread(task);
+            return task.get(timeout.toNanos(),TimeUnit.NANOSECONDS);
+        }
         catch(ExecutionException ex) {
+            cancellation.check();
             if(ex.getCause() instanceof RuntimeException runtime)throw runtime;
             throw unavailable();
-        } catch(InterruptedException ex){Thread.currentThread().interrupt();throw new CancellationException();}
-        catch(TimeoutException ex){throw unavailable();}
-        finally {if(!task.isDone())task.cancel(true);}
+        } catch(InterruptedException ex){cancellation.cancel();Thread.currentThread().interrupt();throw new CancellationException();}
+        catch(TimeoutException ex){cancellation.cancel();throw unavailable();}
+        finally {cancellation.detach(stop);if(!task.isDone())task.cancel(false);}
     }
-    private ModelUsage call(HintPrompt prompt,Consumer<String> tokens) {
+    private ModelUsage call(HintPrompt prompt,Consumer<String> tokens,Cancellation cancellation) {
+        cancellation.check();
         Map<String,Object> body=Map.of("model",model,"max_tokens",maxTokens,"stream",true,
             "thinking",Map.of("type","disabled"),"messages",List.of(
                 Map.of("role","system","content",prompt.system()),Map.of("role","user","content",prompt.user())));
@@ -51,18 +61,20 @@ public final class GlmHintModelAdapter implements HintModel {
             .exchange((request,response) -> {
                 if(!response.getStatusCode().is2xxSuccessful())throw unavailable();
                 if(response.getHeaders().getContentType()==null || !MediaType.TEXT_EVENT_STREAM.isCompatibleWith(response.getHeaders().getContentType()))throw unavailable();
-                try(var reader=new BufferedReader(new InputStreamReader(response.getBody(),StandardCharsets.UTF_8.newDecoder()
+                InputStream bodyStream=response.getBody();
+                cancellation.attach(bodyStream);
+                try(var reader=new BufferedReader(new InputStreamReader(bodyStream,StandardCharsets.UTF_8.newDecoder()
                     .onMalformedInput(java.nio.charset.CodingErrorAction.REPORT).onUnmappableCharacter(java.nio.charset.CodingErrorAction.REPORT)))) {
-                    return parse(reader,prompt,tokens);
-                }
+                    return parse(reader,prompt,tokens,cancellation);
+                } finally {cancellation.detach(bodyStream);}
             });
     }
-    private ModelUsage parse(BufferedReader reader,HintPrompt prompt,Consumer<String> tokens)throws IOException {
+    private ModelUsage parse(BufferedReader reader,HintPrompt prompt,Consumer<String> tokens,Cancellation cancellation)throws IOException {
         StringBuilder event=new StringBuilder(),content=new StringBuilder();
         ModelUsage usage=null;
         boolean finish=false;
         for(String line;(line=reader.readLine())!=null;) {
-            if(Thread.currentThread().isInterrupted())throw new CancellationException();
+            cancellation.check();
             if(line.length()>65536)throw unavailable();
             if(line.startsWith("data:")) {
                 if(!event.isEmpty())event.append('\n');
@@ -101,6 +113,7 @@ public final class GlmHintModelAdapter implements HintModel {
             }
         }
         // EOF thiếu [DONE] là lỗi.
+        cancellation.check();
         throw unavailable();
     }
     private static IllegalStateException unavailable(){return new IllegalStateException("MODEL_UNAVAILABLE");}

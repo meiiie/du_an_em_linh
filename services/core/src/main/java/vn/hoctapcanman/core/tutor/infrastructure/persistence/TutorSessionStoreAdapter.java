@@ -93,7 +93,7 @@ public class TutorSessionStoreAdapter implements TutorSessionStore {
         return db.sql("SELECT * FROM yeu_cau_gia_su WHERE phien_id=:s ORDER BY thu_tu DESC LIMIT :limit OFFSET :offset").param("s",session).param("limit",limit).param("offset",offset).query(TutorSessionStoreAdapter::turn).list();
     }
     @Override public List<Turn> memory(UUID session,long after,UUID exclude) {
-        return db.sql("SELECT * FROM yeu_cau_gia_su WHERE phien_id=:s AND thu_tu>:after AND id<>:exclude AND trang_thai='completed' ORDER BY thu_tu")
+        return db.sql("SELECT * FROM yeu_cau_gia_su WHERE phien_id=:s AND thu_tu>:after AND id<>:exclude AND trang_thai<>'generating' ORDER BY thu_tu")
             .param("s",session).param("after",after).param("exclude",exclude).query(TutorSessionStoreAdapter::turn).list();
     }
     @Override public Optional<Turn> turn(UUID session,UUID turn) {

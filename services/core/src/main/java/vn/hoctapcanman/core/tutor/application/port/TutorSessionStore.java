@@ -12,7 +12,7 @@ public interface TutorSessionStore {
     Session snapshot(UUID session);
     Accepted accept(Session session, Ask request, String question, String contextVersion);
     List<Turn> turns(UUID session, int offset, int limit);
-    default List<Turn> memory(UUID session,long after,UUID exclude) { return turns(session,0,1000).stream().filter(t -> t.ordinal()>after && !t.id().equals(exclude) && t.status().equals("completed")).sorted(java.util.Comparator.comparingLong(Turn::ordinal)).toList(); }
+    default List<Turn> memory(UUID session,long after,UUID exclude) { return turns(session,0,1000).stream().filter(t -> t.ordinal()>after && !t.id().equals(exclude) && !t.status().equals("generating")).sorted(java.util.Comparator.comparingLong(Turn::ordinal)).toList(); }
     default Optional<Turn> turn(UUID session, UUID turn) { return turns(session,0,1000).stream().filter(t -> t.id().equals(turn)).findFirst(); }
     default History history(UUID session,int offset,int limit) { return new History(snapshot(session),turns(session,offset,limit)); }
     List<Event> events(UUID session, long after);

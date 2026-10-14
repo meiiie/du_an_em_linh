@@ -20,16 +20,23 @@ public final class SentenceBuffer {
             int end = -1;
             for (int i = 0; i < text.length(); i++) {
                 if (!math.isEmpty()) {
-                    if (text.startsWith(math, i)) { i += math.length()-1; math = ""; }
+                    if (text.startsWith(math, i) && !escaped(text,i)) { i += math.length()-1; math = ""; }
                     continue;
                 }
+                if (escaped(text,i)) continue;
                 if (text.startsWith("$$", i)) { math="$$"; i++; continue; }
-                if (text.charAt(i)=='$' && (i==0 || text.charAt(i-1)!='\\')) { math="$"; continue; }
+                if (text.charAt(i)=='$') { math="$"; continue; }
                 if (text.startsWith("\\(", i)) { math="\\)"; i++; continue; }
                 if (text.startsWith("\\[", i)) { math="\\]"; i++; continue; }
                 char c = text.charAt(i);
-                if ((c=='.' || c=='?' || c=='!') && (i+1<text.length() ? Character.isWhitespace(text.charAt(i+1)) : finished)) {
+                // ?/! kết thúc câu ngay, kể cả token cuối chưa có khoảng trắng.
+                // Dấu chấm sau chữ cũng vậy; sau số phải chờ để không cắt 1.5.
+                boolean terminal=c=='?' || c=='!' || c=='.' &&
+                    (i+1<text.length() ? Character.isWhitespace(text.charAt(i+1)) :
+                        finished || i>0 && !Character.isDigit(text.charAt(i-1)));
+                if (terminal) {
                     end=i+1;
+                    while (end<text.length() && ".?!".indexOf(text.charAt(end))>=0) end++;
                     while (end<text.length() && Character.isWhitespace(text.charAt(end))) end++;
                     break;
                 }
@@ -41,7 +48,13 @@ public final class SentenceBuffer {
             }
             String sentence=text.substring(0,end);
             pending.delete(0,end);
-            if (!sentence.isBlank()) sentences.accept(sentence);
+            // Punctuation có thể tới sau khi câu vừa phát; không tính nó là câu mới.
+            if (sentence.codePoints().anyMatch(c -> !Character.isWhitespace(c) && ".?!".indexOf(c)<0)) sentences.accept(sentence);
         }
+    }
+    private static boolean escaped(String text,int at) {
+        int slashes=0;
+        for(int i=at-1;i>=0 && text.charAt(i)=='\\';i--)slashes++;
+        return slashes%2!=0;
     }
 }
