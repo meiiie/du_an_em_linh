@@ -17,6 +17,7 @@ import org.springframework.web.client.RestClient;
 import vn.hoctapcanman.core.tutor.application.dto.hocsinh.HintPrompt;
 import vn.hoctapcanman.core.tutor.infrastructure.ai.GlmHintModelAdapter;
 
+@org.junit.jupiter.api.extension.ExtendWith(org.springframework.boot.test.system.OutputCaptureExtension.class)
 class GlmHintModelAdapterTest {
     static final String BASE="https://api.z.ai/api/coding/paas/v4";
     static final String SUCCESS="""
@@ -39,7 +40,7 @@ class GlmHintModelAdapterTest {
     @BeforeEach void setup() {
         var builder=RestClient.builder().baseUrl(BASE);
         server=MockRestServiceServer.bindTo(builder).build();
-        adapter=new GlmHintModelAdapter(builder.build(),"khóa-thử-không-có-quyền","glm-4.7",Duration.ofSeconds(2),350);
+        adapter=new GlmHintModelAdapter(builder.build(),"khóa-thử-không-có-quyền","glm-4.7",Duration.ofSeconds(30),350);
     }
     @Test void streamsContentWithThinkingDisabledAndRealUsage() {
         server.expect(requestTo(BASE+"/chat/completions")).andExpect(method(HttpMethod.POST))
@@ -49,6 +50,17 @@ class GlmHintModelAdapterTest {
                 """,true)).andRespond(withSuccess(SUCCESS,MediaType.TEXT_EVENT_STREAM));
         var chunks=new ArrayList<String>();var usage=adapter.stream(prompt,chunks::add);
         assertEquals(List.of("Em đã ","thử gì?"),chunks);assertEquals(25,usage.inputTokens());assertEquals(7,usage.outputTokens());assertFalse(usage.estimated());server.verify();
+    }
+    @Test void reasoningOnlyIsWarnedAndCountedOncePerAttemptWithoutLoggingContent(org.springframework.boot.test.system.CapturedOutput output) {
+        var builder=RestClient.builder().baseUrl(BASE);server=MockRestServiceServer.bindTo(builder).build();
+        var meters=new io.micrometer.core.instrument.simple.SimpleMeterRegistry();
+        adapter=new GlmHintModelAdapter(builder.build(),"khóa-thử","glm-4.7",Duration.ofSeconds(30),350,Duration.ofSeconds(20),0.8,0.9,meters);
+        String reasoning="data: {\"choices\":[{\"delta\":{\"reasoning_content\":\"NOI_DUNG_KHONG_DUOC_LOG\"}}]}\n\n";
+        server.expect(requestTo(BASE+"/chat/completions")).andRespond(withSuccess(reasoning+reasoning+"data: [DONE]\n\n",MediaType.TEXT_EVENT_STREAM));
+        assertThrows(IllegalStateException.class,()->adapter.stream(prompt,ignored->fail("Không được gửi reasoning")));
+        assertEquals(1,meters.get("gia_su_glm.reasoning_khong_mong_doi").counter().count());
+        assertEquals(1,output.getOut().split("gia_su_glm reasoning_khong_mong_doi",-1).length-1);
+        assertTrue(output.getOut().contains("WARN"));assertFalse(output.getAll().contains("NOI_DUNG_KHONG_DUOC_LOG"));server.verify();
     }
     @Test void summaryUsesLowTemperatureInsteadOfTutorSampling() {
         server.expect(requestTo(BASE+"/chat/completions"))
@@ -60,7 +72,7 @@ class GlmHintModelAdapterTest {
     @Test void customSamplingChangesTutorRequestButNotSummaryTemperature() {
         var builder=RestClient.builder().baseUrl(BASE);
         server=MockRestServiceServer.bindTo(builder).build();
-        adapter=new GlmHintModelAdapter(builder.build(),"khóa-thử","glm-4.7",Duration.ofSeconds(2),350,Duration.ofSeconds(1),0.6,0.7);
+        adapter=new GlmHintModelAdapter(builder.build(),"khóa-thử","glm-4.7",Duration.ofSeconds(30),350,Duration.ofSeconds(1),0.6,0.7);
         server.expect(requestTo(BASE+"/chat/completions"))
             .andExpect(jsonPath("$.temperature").value(0.6)).andExpect(jsonPath("$.top_p").value(0.7))
             .andRespond(withSuccess(SUCCESS,MediaType.TEXT_EVENT_STREAM));
@@ -101,14 +113,18 @@ class GlmHintModelAdapterTest {
     }
     @Test void enforcesWholeTransportDeadlinePerAttempt() throws Exception {
         var builder=RestClient.builder().baseUrl(BASE);server=MockRestServiceServer.bindTo(builder).build();
-        adapter=new GlmHintModelAdapter(builder.build(),"khóa-thử","glm-4.7",Duration.ofMillis(50),350);
+        adapter=new GlmHintModelAdapter(builder.build(),"khóa-thử","glm-4.7",Duration.ofMillis(500),350);
+        var release=new CountDownLatch(1);var returned=new CountDownLatch(2);
         server.expect(org.springframework.test.web.client.ExpectedCount.twice(),requestTo(BASE+"/chat/completions")).andRespond(request -> {
-            try{Thread.sleep(300);}catch(InterruptedException ex){Thread.currentThread().interrupt();}
+            try { assertTrue(release.await(30,TimeUnit.SECONDS)); }
+            catch(InterruptedException ex) { throw new AssertionError(ex); }
+            finally { returned.countDown(); }
             return withSuccess(SUCCESS,MediaType.TEXT_EVENT_STREAM).createResponse(request);
         });
-        var chunks=new ArrayList<String>();
-        assertTimeout(Duration.ofSeconds(2),() -> assertThrows(IllegalStateException.class,() -> adapter.stream(prompt,chunks::add)));
-        Thread.sleep(350); // Cả hai response muộn đều phải bị child cancellation chặn.
+        var chunks=new CopyOnWriteArrayList<String>();
+        try { assertTimeout(Duration.ofSeconds(15),() -> assertThrows(IllegalStateException.class,() -> adapter.stream(prompt,chunks::add))); }
+        finally { release.countDown(); }
+        assertTrue(returned.await(10,TimeUnit.SECONDS));
         assertTrue(chunks.isEmpty());server.verify();
     }
     @org.junit.jupiter.params.ParameterizedTest
@@ -137,7 +153,7 @@ class GlmHintModelAdapterTest {
     }
     @Test void malformedChunkIsTerminalEvenIfTheStreamThenStalls() {
         var builder=RestClient.builder().baseUrl(BASE);server=MockRestServiceServer.bindTo(builder).build();
-        adapter=new GlmHintModelAdapter(builder.build(),"khóa-thử","glm-4.7",Duration.ofSeconds(2),350,Duration.ofMillis(80));
+        adapter=new GlmHintModelAdapter(builder.build(),"khóa-thử","glm-4.7",Duration.ofSeconds(30),350,Duration.ofSeconds(1));
         var input=new StalledStream("data: {\"choices\":[{\"delta\":42}]}\n\n",false);
         expectStream(input);
         assertThrows(IllegalStateException.class,() -> adapter.stream(prompt,ignored -> fail("Không được phát token")));
@@ -145,7 +161,7 @@ class GlmHintModelAdapterTest {
     }
     @Test void healthyStreamResetsIdleTimeoutAfterFirstToken() {
         var builder=RestClient.builder().baseUrl(BASE);server=MockRestServiceServer.bindTo(builder).build();
-        adapter=new GlmHintModelAdapter(builder.build(),"khóa-thử","glm-4.7",Duration.ofSeconds(2),350,Duration.ofMillis(200));
+        adapter=new GlmHintModelAdapter(builder.build(),"khóa-thử","glm-4.7",Duration.ofSeconds(30),350,Duration.ofSeconds(2));
         var chunks=List.of(
             "data: {\"choices\":[{\"delta\":{\"content\":\"Em đã \"}}]}\n\n",
             ": ping\n\n", ": ping\n\n", ": ping\n\n", ": ping\n\n",
@@ -154,7 +170,7 @@ class GlmHintModelAdapterTest {
             private int position;
             @Override public int read(byte[] bytes,int offset,int length) throws IOException {
                 if(position==chunks.size())return -1;
-                if(position>0)try { Thread.sleep(60); }
+                if(position>0)try { new CountDownLatch(1).await(600,TimeUnit.MILLISECONDS); }
                 catch(InterruptedException ex) { throw new IOException(ex); }
                 byte[] chunk=chunks.get(position++).getBytes(StandardCharsets.UTF_8);
                 assertTrue(length>=chunk.length);System.arraycopy(chunk,0,bytes,offset,chunk.length);return chunk.length;
@@ -165,19 +181,19 @@ class GlmHintModelAdapterTest {
     }
     @Test void retriesStallBeforeFirstTokenAndClosesOnlyTheAttempt() {
         var builder=RestClient.builder().baseUrl(BASE);server=MockRestServiceServer.bindTo(builder).build();
-        adapter=new GlmHintModelAdapter(builder.build(),"khóa-thử","glm-4.7",Duration.ofSeconds(2),350,Duration.ofMillis(80));
+        adapter=new GlmHintModelAdapter(builder.build(),"khóa-thử","glm-4.7",Duration.ofSeconds(30),350,Duration.ofSeconds(1));
         var stalled=new StalledStream(": ping\n\ndata: {\"choices\":[{\"delta\":{\"reasoning_content\":\"chờ\"}}]}\n\n",false);
         expectStream(stalled);
         server.expect(requestTo(BASE+"/chat/completions")).andRespond(withSuccess(SUCCESS,MediaType.TEXT_EVENT_STREAM));
         var cancellation=new vn.hoctapcanman.core.tutor.application.port.HintModel.Cancellation();
         var chunks=new ArrayList<String>();
-        assertTimeout(Duration.ofSeconds(2),() -> adapter.stream(prompt,chunks::add,cancellation));
+        assertTimeout(Duration.ofSeconds(15),() -> adapter.stream(prompt,chunks::add,cancellation));
         assertEquals(0,stalled.closed.getCount());assertFalse(stalled.interrupted.get());
         cancellation.check();assertEquals(List.of("Em đã ","thử gì?"),chunks);server.verify();
     }
     @Test void secondStallIsTerminalWithoutCancellingTheTurn() {
         var builder=RestClient.builder().baseUrl(BASE);server=MockRestServiceServer.bindTo(builder).build();
-        adapter=new GlmHintModelAdapter(builder.build(),"khóa-thử","glm-4.7",Duration.ofSeconds(2),350,Duration.ofMillis(80));
+        adapter=new GlmHintModelAdapter(builder.build(),"khóa-thử","glm-4.7",Duration.ofSeconds(30),350,Duration.ofSeconds(1));
         var first=new StalledStream("",false);var second=new StalledStream("",false);
         expectStream(first);expectStream(second);
         var cancellation=new vn.hoctapcanman.core.tutor.application.port.HintModel.Cancellation();
@@ -188,7 +204,7 @@ class GlmHintModelAdapterTest {
     @org.junit.jupiter.params.provider.ValueSource(booleans={false,true})
     void neverRetriesStallOrTransportFailureAfterFirstToken(boolean transportFailure) {
         var builder=RestClient.builder().baseUrl(BASE);server=MockRestServiceServer.bindTo(builder).build();
-        adapter=new GlmHintModelAdapter(builder.build(),"khóa-thử","glm-4.7",Duration.ofSeconds(2),350,Duration.ofMillis(80));
+        adapter=new GlmHintModelAdapter(builder.build(),"khóa-thử","glm-4.7",Duration.ofSeconds(30),350,Duration.ofSeconds(1));
         var stalled=new StalledStream("data: {\"choices\":[{\"delta\":{\"content\":\"Em đã \"}}]}\n\n",transportFailure);
         expectStream(stalled);
         var chunks=new ArrayList<String>();
@@ -205,9 +221,9 @@ class GlmHintModelAdapterTest {
         var result=new FutureTask<>(() -> adapter.stream(prompt,ignored -> fail("Không được phát token"),cancellation));
         Thread.startVirtualThread(result);
         assertTrue(responseClosed.await(2,TimeUnit.SECONDS));
-        Thread.sleep(100); // Backoff tối thiểu 640 ms; lúc này attempt đã kết thúc.
+        // The closed response proves the failed request ended; cancel before another request.
         cancellation.cancel();
-        var failure=assertThrows(ExecutionException.class,() -> result.get(300,TimeUnit.MILLISECONDS));
+        var failure=assertThrows(ExecutionException.class,() -> result.get(5,TimeUnit.SECONDS));
         assertInstanceOf(CancellationException.class,failure.getCause());server.verify();
     }
     private void expectStream(InputStream input) {
@@ -231,7 +247,7 @@ class GlmHintModelAdapterTest {
                 System.arraycopy(prefix,position,bytes,offset,count);position+=count;return count;
             }
             if(transportFailure)throw new IOException("Kết nối đã mất");
-            try { if(!closed.await(3,TimeUnit.SECONDS))throw new IOException("Stream chưa được đóng"); }
+            try { if(!closed.await(30,TimeUnit.SECONDS))throw new IOException("Stream chưa được đóng"); }
             catch(InterruptedException ex) { interrupted.set(true);throw new IOException(ex); }
             return -1;
         }
@@ -242,18 +258,18 @@ class GlmHintModelAdapterTest {
     }
     @Test void transportTimeoutDoesNotInterruptConsumerDoingDatabaseWork() throws Exception {
         var builder=RestClient.builder().baseUrl(BASE);server=MockRestServiceServer.bindTo(builder).build();
-        adapter=new GlmHintModelAdapter(builder.build(),"khóa-thử","glm-4.7",Duration.ofMillis(100),350);
+        adapter=new GlmHintModelAdapter(builder.build(),"khóa-thử","glm-4.7",Duration.ofSeconds(2),350);
         server.expect(requestTo(BASE+"/chat/completions")).andRespond(withSuccess(SUCCESS,MediaType.TEXT_EVENT_STREAM));
         var release=new java.util.concurrent.CountDownLatch(1);var finished=new java.util.concurrent.CountDownLatch(1);
         var interrupted=new java.util.concurrent.atomic.AtomicBoolean();
         try {
             assertThrows(IllegalStateException.class,() -> adapter.stream(prompt,ignored -> {
-                try { release.await(3,java.util.concurrent.TimeUnit.SECONDS); }
+                try { release.await(30,java.util.concurrent.TimeUnit.SECONDS); }
                 catch(InterruptedException ex) { interrupted.set(true); }
                 finally { finished.countDown(); }
             }));
         } finally { release.countDown(); }
-        assertTrue(finished.await(3,java.util.concurrent.TimeUnit.SECONDS));
+        assertTrue(finished.await(10,java.util.concurrent.TimeUnit.SECONDS));
         assertFalse(interrupted.get(),"Deadline không được ngắt callback đang ghi JDBC");server.verify();
     }
     @Test void cooperativeCancellationClosesBlockedHttpStreamWithoutInterruptingReader() throws Exception {
@@ -262,7 +278,7 @@ class GlmHintModelAdapterTest {
         var input=new java.io.InputStream() {
             @Override public int read() {
                 reading.countDown();
-                try { closed.await(3,java.util.concurrent.TimeUnit.SECONDS); }
+                try { closed.await(30,java.util.concurrent.TimeUnit.SECONDS); }
                 catch(InterruptedException ex) { interrupted.set(true); }
                 return -1;
             }

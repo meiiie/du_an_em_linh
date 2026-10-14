@@ -12,6 +12,14 @@ public class ContentDraftStoreAdapter implements ContentDraftStore {
     private final JdbcClient db;
     private static final JsonMapper JSON=JsonMapper.builder().build();
     public ContentDraftStoreAdapter(JdbcClient db) {this.db=db;}
+    @Override public List<Item> authoringSkillCatalog(UUID cl) {
+        return db.sql("SELECT sk.code,sk.name FROM skills sk JOIN topics t ON t.code=sk.topic_code JOIN classes c ON c.id=:cl WHERE t.code='DH12' AND t.grade=c.grade AND coalesce(sk.grade,t.grade)=c.grade ORDER BY sk.code")
+            .param("cl",cl).query((rs,i)->new Item(rs.getString("code"),rs.getString("name"),"","KY_NANG",Map.of())).list();
+    }
+    public List<String> authoringSkills(UUID cl) {
+        return db.sql("SELECT sk.code FROM skills sk JOIN topics t ON t.code=sk.topic_code JOIN classes c ON c.id=:cl WHERE t.code='DH12' AND t.grade=c.grade AND coalesce(sk.grade,t.grade)=c.grade ORDER BY sk.code")
+            .param("cl",cl).query(String.class).list();
+    }
     public Optional<String> material(UUID cl,UUID doc) {
         return db.sql("SELECT text_content FROM documents WHERE id=:id AND class_id=:cl AND license_status IN ('tu_soan','duoc_phep','cong_khai')")
             .param("id",doc).param("cl",cl).query(String.class).optional();

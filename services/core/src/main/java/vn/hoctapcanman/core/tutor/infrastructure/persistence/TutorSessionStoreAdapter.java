@@ -184,7 +184,7 @@ public class TutorSessionStoreAdapter implements TutorSessionStore {
             .param("id",UUID.randomUUID()).param("s",student).param("c",cl).param("t",turn).param("p",provider).param("purpose",purpose).param("input",usage.inputTokens()).param("output",usage.outputTokens()).param("estimated",usage.estimated()).update());
     }
     @Override public List<Usage> usage(UUID cl) {
-        return db.sql("SELECT hoc_sinh_id,count(*) requests,sum(input_tokens) input,sum(output_tokens) output,sum(CASE WHEN estimated THEN input_tokens+output_tokens ELSE 0 END) estimate FROM gia_su_usage WHERE lop_id=:cl GROUP BY hoc_sinh_id ORDER BY hoc_sinh_id")
+        return db.sql("SELECT people.id hoc_sinh_id,count(u.id) requests,coalesce(sum(u.input_tokens),0) input,coalesce(sum(u.output_tokens),0) output,coalesce(sum(CASE WHEN u.estimated THEN u.input_tokens+u.output_tokens ELSE 0 END),0) estimate FROM (SELECT user_id id FROM enrollments WHERE class_id=:cl AND role_in_class='STUDENT' UNION SELECT hoc_sinh_id FROM gia_su_usage WHERE lop_id=:cl) people LEFT JOIN gia_su_usage u ON u.hoc_sinh_id=people.id AND u.lop_id=:cl GROUP BY people.id ORDER BY people.id")
             .param("cl",cl).query((r,n)->new Usage(r.getObject("hoc_sinh_id",UUID.class),r.getLong("requests"),r.getLong("input"),r.getLong("output"),r.getLong("estimate"))).list();
     }
     @Override public void expire() {
