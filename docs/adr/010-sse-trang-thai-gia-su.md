@@ -41,6 +41,8 @@ Theo chỉ đạo hiện thực backend của chủ repo, bổ sung này **thay*
 - `/api/hs/gia-su` giữ SSE tương thích, kể cả fetch không có header Accept của frontend hiện hành; JSON đồng bộ ở `/api/hs/gia-su/tra-loi`. Cả hai chạy cùng service phiên bền vững và cổng với v2. SSE cũ trả `goi → xong|loi`; frontend hiện hành chưa nhận hợp đồng v2. HTTP 429 có `Retry-After` theo cửa sổ giới hạn.
 - Đồng hồ sử dụng: `GET /api/gv/lop/{cl}/gia-su/su-dung` hoặc `/api/qt/lop/{cl}/gia-su/su-dung` trả tổng lớp và từng học sinh. Giáo viên phải có quyền lớp, ADMIN được đọc; ghi mỗi lần sinh/regen/nén, gồm request lỗi. Không có thanh toán.
 
+Bổ sung retry ngày 2026-10-14 thay quy định không retry HTTP tự động ở trên: đúng một lần cùng nhà, backoff 800 ms ±20% (mẫu neko-core), chỉ khi lỗi transport, HTTP 429/5xx hoặc stall trước token nội dung đầu tiên; không retry sau token, 4xx khác 429, hủy, hay phản hồi hỏng/tool-call. `GLM_FIRST_TOKEN_TIMEOUT=20s` tách khỏi `GLM_TIMEOUT=45s` mỗi attempt; child cancellation đóng stream riêng, không hủy cả lượt hay interrupt consumer, hủy backoff dừng ngay; tổng lời gọi kể cả backoff bị chặn ở 110s trong deadline lượt 120s.
+
 ### Bằng chứng backend
 
 Mốc nền: `b9d50f32dce34eeb0f43cba0c552dcb9ab585828`; thay đổi để trong worktree, chưa commit. JDK dùng `JAVA_HOME=$HOME/.local/jdk/jdk-25.0.4.1+1`. Số đo cuối và giới hạn môi trường được ghi dưới đây. Không chạy 30 kịch bản GLM thật, không tuyên bố leaks/TTFT/regen trên nhà thật.
