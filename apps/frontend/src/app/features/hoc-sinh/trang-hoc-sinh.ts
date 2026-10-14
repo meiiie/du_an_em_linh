@@ -40,7 +40,7 @@ export class TrangHocSinh {
   protected readonly baiHopLe = computed(() => (this.ds.value() ?? []).filter(b => {
     const mode=(this.cheDo.value() ?? []).find(m=>m.id===b.maBai);
     // Hạn tính theo giờ máy chủ: che-do chỉ trả bài còn làm được, không so với đồng hồ thiết bị.
-    return b.trangThai !== 'DA_NOP' && !!mode;
+    return b.trangThai !== 'DA_NOP' && !!mode && mode.details.conHan !== false;
   }));
   protected readonly deXuat = computed(() => (this.goiBai.value() ?? []).filter(r => r.status === 'GUI_THAY_CO'
     || this.baiHopLe().some(b => b.maBai === r.id && !this.laKiemTra(b.maBai))));

@@ -116,7 +116,7 @@ describe('TrangHocSinh', () => {
   });
 
   /** `trangHoc`: thân trả cho `GET /api/hs/trang-hoc` (null: lỗi 500); mặc định chưa có kỹ năng nào. */
-  async function mo(trangHoc: TrangHoc | null = { ten: 'An', soKyNang: [], hoanThanh: { kyNang: [], chuDe: [] } }, nhac: unknown[] = [], modes = BAI.map(b => ({id:b.maBai,status:'ON_TAP',details:{dueAt:b.han}})), recommendations: unknown[] = []) {
+  async function mo(trangHoc: TrangHoc | null = { ten: 'An', soKyNang: [], hoanThanh: { kyNang: [], chuDe: [] } }, nhac: unknown[] = [], modes = BAI.map(b => ({id:b.maBai,status:'ON_TAP',details:{dueAt:b.han} as {dueAt:string|null;conHan?:boolean}})), recommendations: unknown[] = []) {
     TestBed.configureTestingModule({ providers: [provideHttpClient(), provideHttpClientTesting(), provideRouter([])] });
     const fixture = TestBed.createComponent(TrangHocSinh);
     fixture.detectChanges();
@@ -183,6 +183,14 @@ describe('TrangHocSinh', () => {
     t.http.expectOne(API_HS.bai).flush([BAI[0]]);
     await t.fixture.whenStable();
     expect(t.el.querySelector('.ke-tiep')).toBeNull();
+  });
+
+  it('bài máy chủ báo quá hạn (conHan=false) không thành bài kế dù đồng hồ máy còn hạn', async () => {
+    const b={...BAI[2],trangThai:'DANG_LAM',han:'2999-01-01T00:00:00Z'};
+    const t=await mo(undefined,[],[{id:b.maBai,status:'ON_TAP',details:{dueAt:b.han,conHan:false}}],[{id:b.maBai,status:'CUNG_CO',details:{}}]);
+    t.http.expectOne(API_HS.bai).flush([b]);await t.fixture.whenStable();
+    expect(t.el.querySelector('[data-testid=lam-buoc-tiep]')).toBeNull();
+    t.http.verify();
   });
 
   it.each(['missing','submitted','review','unknown-mode'])('không dùng gợi bài %s làm bài kế', async reason => {

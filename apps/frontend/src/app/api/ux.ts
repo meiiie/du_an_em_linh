@@ -5,7 +5,7 @@ export interface Result{message:string;count:number;}
 export interface Skill{code:string;name:string;level4:Muc4;level3:string;mastery:number;overridden:boolean;}
 export interface StudentDetails{skills:Skill[];submitted:number;reveals?:number;}
 export interface BankDetails{code:string;skillCode:string;skillName?:string;level4:Muc4;gate:string;latex:string;}
-export interface ModeDetails{dueAt:string|null;}
+export interface ModeDetails{dueAt:string|null;/** Máy chủ tính theo giờ của nó; false là đã quá hạn. */conHan?:boolean;}
 export interface RecommendationDetails{level4:Muc4;skillCode:string;}
 export interface WeeklyPlan {sessions:Item<ScheduleDetails>[];loiKhuyen:string;}
 export interface AlertDetails {studentId:string;}
