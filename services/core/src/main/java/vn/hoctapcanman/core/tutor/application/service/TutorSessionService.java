@@ -78,7 +78,8 @@ public class TutorSessionService {
         },120,TimeUnit.SECONDS);
         int[] index={0};
         int[] tokens={0};
-        Runnable checkpoint=() -> {
+        long[] lastFull={0};
+        Runnable fullCheckpoint=() -> {
             cancellation.check();
             if(System.nanoTime()>deadline)throw new WorkspaceException(503,"Lượt hỏi đã hết thời gian. Em có thể hỏi lại.");
             var active=sessions.turn(id,turn);
@@ -87,6 +88,13 @@ public class TutorSessionService {
             var c=pipeline.context(assignment.studentId(),assignment.classId(),request);
             if(!pipeline.ready(assignment.classId()).provider().equals(provider))throw new WorkspaceException(403,"Cài đặt gia sư vừa đổi. Em hỏi lại nhé.");
             if(!version(now,c).equals(accepted.session().contextVersion()))throw new WorkspaceException(409,"Đề hoặc bảng công thức vừa đổi. Em hỏi lại nhé.");
+        };
+        // Mỗi token chỉ kiểm hủy/hạn (rẻ); kiểm DB/ngữ cảnh đầy đủ tối đa mỗi giây. Câu vẫn kiểm ngữ cảnh trước khi phát.
+        Runnable checkpoint=() -> {
+            cancellation.check();
+            if(System.nanoTime()>deadline)throw new WorkspaceException(503,"Lượt hỏi đã hết thời gian. Em có thể hỏi lại.");
+            long t=System.nanoTime();
+            if(t-lastFull[0]>=1_000_000_000L){lastFull[0]=t;fullCheckpoint.run();}
         };
         try {
             checkpoint.run();
