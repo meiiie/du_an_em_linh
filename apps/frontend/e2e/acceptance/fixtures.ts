@@ -76,6 +76,14 @@ export class MockApi {
                 response = {};
             else if (path === '/api/hs/trang-hoc')
                 response = { ten: 'An', soKyNang: [{ kyNang: problem.kyNang, tenKyNang: 'Đơn điệu', muc4: this.mastered ? 'THONG_HIEU' : 'NHAN_BIET', ket: false }], hoanThanh: { kyNang: [], chuDe: [] } };
+            else if (path === '/api/hs/chu-de')
+                response = [item('DH12','Đơn điệu và cực trị')];
+            else if (path === '/api/hs/tu-hoc')
+                response = [item(problem.maBai,'Đơn điệu',problem.deBai)];
+            else if (path.startsWith('/api/hs/tu-hoc/') && method === 'POST')
+                response = {message:'Đã chọn bài tự học.',count:1};
+            else if (path === '/api/hs/nhac/push')
+                response = {available:false,publicKey:''};
             else if (path === '/api/hs/bai')
                 response = [problem, { ...problem, maBai: 'E2E-NEXT', muc4: 'THONG_HIEU' }];
             else if (/^\/api\/hs\/bai\/[^/]+$/.test(path))

@@ -37,14 +37,16 @@ public class HocSinhBaiController {
     private final GetChiTietBaiUseCase chiTiet;
     private final NopBuocUseCase nopBuoc;
     private final NopBaiUseCase nopBai;
+    private final vn.hoctapcanman.core.practice.application.service.MoLoiGiai solution;
 
     public HocSinhBaiController(ClassMembership membership, GetBaiCuaHocSinhUseCase danhSach, GetChiTietBaiUseCase chiTiet,
-            NopBuocUseCase nopBuoc, NopBaiUseCase nopBai) {
+            NopBuocUseCase nopBuoc, NopBaiUseCase nopBai, vn.hoctapcanman.core.practice.application.service.MoLoiGiai solution) {
         this.membership = membership;
         this.danhSach = danhSach;
         this.chiTiet = chiTiet;
         this.nopBuoc = nopBuoc;
         this.nopBai = nopBai;
+        this.solution = solution;
     }
 
     @GetMapping
@@ -69,6 +71,12 @@ public class HocSinhBaiController {
     public KetQuaNopBai nopBai(@AuthenticationPrincipal Jwt jwt, @PathVariable String maBai) {
         UUID hocSinh = UUID.fromString(jwt.getSubject());
         return nopBai.execute(hocSinh, lopCua(hocSinh), maBai);
+    }
+
+    @PostMapping("/{maBai}/loi-giai")
+    public vn.hoctapcanman.core.practice.application.dto.RevealedSolution reveal(@AuthenticationPrincipal Jwt jwt, @PathVariable String maBai) {
+        UUID student=UUID.fromString(jwt.getSubject());
+        return solution.reveal(student,lopCua(student),maBai);
     }
 
     private UUID lopCua(UUID hocSinh) {

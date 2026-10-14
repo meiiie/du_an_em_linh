@@ -49,6 +49,8 @@ class WorkspaceApiTest {
     @MockitoBean vn.hoctapcanman.core.tutor.application.port.HintModel hintModel;
     @MockitoBean ClassMembership membership;
     @MockitoBean ContentWorkflow content;
+    @MockitoBean vn.hoctapcanman.core.workspace.application.port.ContentDraftStore drafts;
+    @MockitoBean vn.hoctapcanman.core.workspace.application.port.ContentDraftModel draftModel;
     @MockitoBean PasswordHasher hasher;
     @MockitoBean JwtDecoder decoder;
     @MockitoBean vn.hoctapcanman.core.identity.infrastructure.web.RefreshCookie refreshCookie;

@@ -38,7 +38,12 @@ import vn.hoctapcanman.core.shared.infrastructure.math.*;
         this.clock=clock;
     }
 
-    public void createProblem(UUID actor,NewProblem request) {
+    public void createApprovedDraft(UUID actor,NewProblem request,String solution) {
+        // CAS verifies the exercise; approval never turns an incorrect verification into a release.
+        createProblem(actor,request,solution);
+    }
+    public void createProblem(UUID actor,NewProblem request) { createProblem(actor,request,null); }
+    private void createProblem(UUID actor,NewProblem request,@Nullable String explanation) {
         db.sql("SELECT id FROM classes WHERE id=:id FOR UPDATE").param("id",request.lopId()).query(UUID.class).single();
         if(problems.findByCode(request.code()).isPresent())throw new WorkspaceException(409,"Mã bài đã có. Hãy chọn mã khác.");
         if(db.sql("SELECT count(*) FROM skills WHERE code=:code AND topic_code='DH12'").param("code",request.skillCode()).query(Integer.class).single()!=1)throw new WorkspaceException(400,"Chọn kỹ năng của chủ đề đang học.");
@@ -47,7 +52,7 @@ import vn.hoctapcanman.core.shared.infrastructure.math.*;
         Map<String,Object> body=map(solvedOk.body());
         String hash;
         try {
-            hash=HexFormat.of().formatHex(java.security.MessageDigest.getInstance("SHA-256").digest(JSON.writeValueAsString(Map.of("request",request,"solution",body)).getBytes(java.nio.charset.StandardCharsets.UTF_8)));
+            hash=HexFormat.of().formatHex(java.security.MessageDigest.getInstance("SHA-256").digest(JSON.writeValueAsString(Map.of("request",request,"solution",body,"explanation",Objects.requireNonNullElse(explanation,""))).getBytes(java.nio.charset.StandardCharsets.UTF_8)));
         }
         catch(java.security.NoSuchAlgorithmException ex) {
             throw new IllegalStateException(ex);
@@ -56,7 +61,9 @@ import vn.hoctapcanman.core.shared.infrastructure.math.*;
         var now=clock.instant();
         Problem problem=new Problem(id,request.code(),request.skillCode(),List.of(),Level4.valueOf(request.level4()),null,null,0.5,request.statement(),request.latex(),request.function(),Problem.TU_LUAN_5_BUOC,null,"GIAO_VIEN",hash,actor,now,now);
         problems.save(problem);
-        solutions.save(new Solution(id,JSON.writeValueAsString(body.get("bai_lam")),JSON.writeValueAsString(body.getOrDefault("su_kien",List.of())),null));
+        var worked=new LinkedHashMap<>(map(body.get("bai_lam")));
+        if(explanation!=null)worked.put("giai_thich_giao_vien",explanation);
+        solutions.save(new Solution(id,JSON.writeValueAsString(worked),JSON.writeValueAsString(body.getOrDefault("su_kien",List.of())),null));
         for(Object block:list(body.get("thang_goi_y"))) {
             Map<String,Object> b=map(block);
             for(Object level:list(b.get("cac_cap"))) {

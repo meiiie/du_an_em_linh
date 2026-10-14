@@ -54,4 +54,14 @@ Danh sách `GET /api/hs/bai` bổ sung `tenBo: string | null` từ `assignments.
 - Công thức nháp/chặn/stale không xuất cho học sinh hoặc CSV. CSV phải escape dấu phẩy/nháy/xuống dòng, bảo vệ ô có thể thực thi công thức bảng tính; nhập Quizlet thủ công qua bảng tính, không API ghi.
 - Nhắc chỉ trong app, lịch đã hoàn thành không nhắc lại; không đồng nghĩa đã gửi push/email/Zalo. Bulk quản trị kiểm toàn tập trước ghi, không cập nhật một phần khi có ID ngoài quyền.
 
-Các thay đổi cần schema chỉ thêm Flyway V12+ còn trống; V1–V10 bất biến, không dùng V11. Không nới cổng ADR 013 khi giáo viên xác nhận đã xem lời gia sư.
+Các thay đổi của lane quyết định khách chỉ thêm Flyway V16 trở lên; V14/V15 dành cho lane khác, migration đã có bất biến. Không nới cổng ADR 013 khi giáo viên xác nhận đã xem lời gia sư.
+
+
+## Quyết định khách xác nhận ngày 2026-10-14
+
+- `POST /api/hs/bai/{maBai}/loi-giai` là thao tác xác nhận xem toàn bộ, trả `{loiGiai, nguon: "GIAO_VIEN" | "MO_HINH"}`. Cần bài đang phát hành đúng phiên bản, ghi danh, lần nộp đủ đã commit và không đang làm lại cùng phiên bản. Kiểm tra còn hạn hoặc không có hạn trả 403; chưa nộp trả 409. `POST …/nop` không còn trả nội dung lời giải. `solution_reveals` ghi lần xem đầu tiên theo bài làm; `details.reveals` ở tiến độ và `details.revealedAt` ở lịch sử giúp giáo viên phân biệt học có xem lời giải. BKT không được cập nhật lần hai khi xem.
+- `POST /api/gv/soan-nhap` nhận `{lopId, documentId}`. Tài liệu phải thuộc lớp giáo viên quản lý và có quyền dùng. AI không nhận dữ liệu học sinh. Đề/lời giải chưa dùng được cho học sinh cho đến khi giáo viên duyệt trong `GET /api/gv/duyet`, loại `CONTENT_DRAFT`, qua `POST /api/gv/duyet/{id}` với lý do. Duyệt tạo bài qua bộ kiểm hiện có; kết quả sai vẫn bị chặn. Token nhà trả về được lưu trong `ai_usage`.
+- `GET /api/hs/chu-de`, `GET /api/hs/tu-hoc?chuDe=…` chỉ trả nội dung đã phát hành thuộc khối của lớp. `POST /api/hs/tu-hoc/{code}` thêm lượt ôn tập nếu chưa giao; không ghi đè chế độ/hạn của giáo viên. Gợi ý cá nhân tiếp tục qua `/api/hs/goi-bai`.
+- `GET /api/hs/nhac/push` chỉ trả `{available, publicKey}`. POST đăng ký, DELETE hủy trên thiết bị với `{endpoint, keys: {p256dh, auth}}`; người nhận lấy từ phiên. Không đưa khóa riêng VAPID ra frontend. Nhắc lịch trong ứng dụng vẫn hoạt động khi không cấu hình hoặc thiết bị từ chối.
+
+Sau cổng xác nhận, nhánh giải thích tái sử dụng `HintModel` bằng đề công khai, không đưa lời giải chuẩn hay định danh vào prompt. Chỉ JSON đủ năm bước và toàn văn được cổng công thức giữ nguyên mới hiển thị với nguồn `MO_HINH`; lỗi, thiếu bước, `offline` hoặc chưa xác minh được dùng lời giải đã lưu với nguồn `GIAO_VIEN`. Gia sư đang làm bài không thay đổi. `ai_usage` đếm lượt gọi giải thích; token là NULL khi `HintModel` không cung cấp số đo, không giả định bằng 0.

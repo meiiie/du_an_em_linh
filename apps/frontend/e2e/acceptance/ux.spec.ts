@@ -47,6 +47,7 @@ test('U4 trang Học gọi mastery và hiện bốn mức', async ({ page, api }
 test('U5/U6 Kho: KaTeX, keyboard flashcard, focus trap, CSV UTF-8', async ({ page, api }) => {
     await page.goto('/hs/kho');
     await expect(page.locator('#ct-ct1 .katex')).toBeVisible();
+    await page.getByText('Công cụ ôn thêm', {exact:true}).click();
     await page.getByRole('button', { name: 'Ôn bằng thẻ' }).click();
     const dialog = page.getByRole('dialog', { name: 'Ôn công thức' });
     await expect(dialog).toBeVisible();

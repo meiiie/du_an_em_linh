@@ -236,10 +236,13 @@
                 Mức hiểu {{ m.kyNang === b.kyNang ? b.tenKyNang : m.kyNang }}: {{ tenMuc[m.muc4Truoc] }} → {{ tenMuc[m.muc4Sau] }}
               </p>
             }
+            @if (!loiGiai()) {
+              <button appButton variant="secondary" type="button" data-testid="xem-toan-bo-loi-giai" (click)="xacNhanLoiGiai.set(true)">Xem toàn bộ lời giải</button>
+            }
             @if (loiGiai(); as lg) {
               <div class="loi-giai" data-testid="loi-giai-sau-nop">
                 <p class="nhan-muc">Lời giải</p>
-                <p>{{ lg }}</p>
+                <p><app-van-ban-toan [text]="lg" /></p>
               </div>
             }
             @if (goiBai.hasValue() && goiBai.value().length) {
@@ -279,3 +282,10 @@
     @if (coGiaSu()) { <app-gia-su [anNut]="true" (moChange)="giaSuMo.set($event)" (rongChange)="giaSuDesktop.set($event)" (rongGiaSu)="giaSuRong.set($event)" [maBai]="b.maBai" [giaoBaiId]="b.giaoBaiId ?? ''" [maBuoc]="buocHien()?.maBuoc ?? ''" [tenBuoc]="buocHien()?.ten ?? ''" /> }
     </div>
 }
+
+<app-hop-thoai [mo]="xacNhanLoiGiai()" tieuDe="Xem toàn bộ lời giải" [ban]="dangGui()" (dong)="xacNhanLoiGiai.set(false)">
+  <p>Em đã nộp bài. Việc xem lời giải sẽ được ghi nhận để thầy cô theo dõi quá trình học.</p>
+  <p>Bài kiểm tra chỉ mở lời giải sau hạn nộp.</p>
+  @if(loiGui()){<p role="alert" class="field-error">{{loiGui()}}</p>}
+  <button appButton type="button" [disabled]="dangGui()" (click)="xemLoiGiai()">Xác nhận xem lời giải</button>
+</app-hop-thoai>

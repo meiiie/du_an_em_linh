@@ -24,6 +24,23 @@ import vn.hoctapcanman.core.workspace.application.port.*;
         this.clock=clock;
     }
 
+    @org.springframework.beans.factory.annotation.Autowired private ContentDraftStore drafts;
+    @org.springframework.beans.factory.annotation.Autowired private ContentDraftModel draftModel;
+    @org.springframework.beans.factory.annotation.Autowired private jakarta.validation.Validator validator;
+
+    public Result draft(UUID actor,DraftRequest request) {
+        teacher(actor,request.lopId());
+        String material=drafts.material(request.lopId(),request.documentId()).orElseThrow(()->new WorkspaceException(404,"Chọn tài liệu có quyền sử dụng trong lớp."));
+        if(material.length()>20000)throw new WorkspaceException(400,"Chọn tài liệu tối đa 20.000 ký tự để soạn nháp.");
+        var generated=draftModel.generate(request.lopId(),material).orElseThrow(()->new WorkspaceException(503,"AI soạn nháp chưa sẵn sàng. Thầy cô có thể nhập bài thủ công."));
+        var p=generated.problem();
+        var problem=new NewProblem(request.lopId(),"AI."+UUID.randomUUID().toString().replace("-",""),p.skillCode(),p.level4(),p.statement(),p.latex(),p.function());
+        if(!validator.validate(problem).isEmpty()||generated.solution()==null||generated.solution().isBlank()||generated.solution().length()>10000||generated.inputTokens()<0||generated.outputTokens()<0)
+            throw new WorkspaceException(422,"Bản nháp chưa đủ nội dung. Hãy thử lại.");
+        drafts.save(actor,request,new GeneratedDraft(problem,generated.solution(),generated.provider(),generated.inputTokens(),generated.outputTokens()),clock.instant());
+        return ok("Đã đưa đề và lời giải nháp vào hàng chờ duyệt.",1);
+    }
+
     public UUID studentClass(UUID student) {
         return membership.lopHoc(student).orElseThrow(()->new WorkspaceException(404,"Em chưa được ghi danh vào lớp."));
     }
@@ -139,6 +156,13 @@ import vn.hoctapcanman.core.workspace.application.port.*;
         return ok("Đã ghi nhận mức và lý do.",1);
     }
 
+    public List<Item> topics(UUID student) { return store.topics(student,studentClass(student)); }
+    public List<Item> selfStudy(UUID student,String topic) { return store.selfStudy(student,studentClass(student),topic); }
+    public Result chooseStudy(UUID student,String code) {
+        store.chooseStudy(student,studentClass(student),code,clock.instant());
+        return ok("Đã chọn bài tự học.",1);
+    }
+
     public List<Item> modes(UUID student) {
         return store.modes(student,studentClass(student));
     }
@@ -196,12 +220,18 @@ import vn.hoctapcanman.core.workspace.application.port.*;
 
     public List<Item> reviews(UUID actor,UUID cl) {
         teacher(actor,cl);
-        return store.reviews(cl);
+        var result=new ArrayList<>(store.reviews(cl));
+        result.addAll(drafts.pending(cl));
+        return result;
     }
 
     public Result review(UUID actor,UUID id,Review r) {
         teacher(actor,r.lopId());
-        content.review(actor,id,r);
+        var draft=drafts.lock(r.lopId(),id);
+        if(draft.isPresent()) {
+            if(r.approve())content.createApprovedDraft(actor,draft.get().problem(),draft.get().solution());
+            drafts.decide(actor,id,r,clock.instant());
+        } else content.review(actor,id,r);
         store.log(actor,r.approve()?"DUYET":"CHAN",id.toString(),r.reason(),clock.instant());
         return ok("Đã lưu quyết định.",1);
     }

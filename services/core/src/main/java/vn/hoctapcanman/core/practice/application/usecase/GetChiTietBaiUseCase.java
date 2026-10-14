@@ -3,7 +3,6 @@ package vn.hoctapcanman.core.practice.application.usecase;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
-import vn.hoctapcanman.core.classroom.application.dto.CaiDatChoHocSinh;
 import vn.hoctapcanman.core.classroom.application.port.ClassMembership;
 import vn.hoctapcanman.core.content.application.dto.hocsinh.BaiChoLamBai;
 import vn.hoctapcanman.core.content.application.port.BaiDeLam;
@@ -47,7 +46,7 @@ public class GetChiTietBaiUseCase {
         Submission bl = xem.baiLam();
         boolean nghiDoanMo = bl != null && bl.guessSuspected();
         List<BuocDaLam> cacBuoc = xem.cacBuoc().stream().map(b -> buoc(b, bai.cacBuoc(), nghiDoanMo)).toList();
-        boolean coTheMoLoiGiai = membership.caiDatChoHocSinh(hocSinhId, lopId).map(CaiDatChoHocSinh::moLoiGiaiSauKhiNop).orElse(false);
+        boolean coTheMoLoiGiai = bl != null && !bl.isOpen();
         return new ChiTietBai(bai.ma(), new ChiTietBai.De(bai.deBai(), bai.deBaiLatex()), bai.kyNang(), bai.tenKyNang(), bai.mucDo(),
             bai.dangTraLoi(), bai.buocBatDau(), bai.khaiBaoKetLuan(), bai.cacBuoc().stream().map(TenBuoc::cua).toList(),
             new ChiTietBai.BaiLam(xem.trangThai(), cacBuoc), coTheMoLoiGiai);

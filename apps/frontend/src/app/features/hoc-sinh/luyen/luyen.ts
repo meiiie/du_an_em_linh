@@ -23,6 +23,7 @@ import { Katex } from '../../../shared/toan/katex';
 import { OCongThuc } from '../../../shared/toan/o-cong-thuc';
 import { Button } from '../../../shared/ui/button';
 import { deBang, thanDe } from '../hang-bai';
+import { HopThoai } from '../../../shared/ui/hop-thoai';
 import { GiaSu } from './gia-su';
 import { BangXetDau, SuKienO } from './bang-xet-dau';
 import { DAO_HAM, dongNghiem, KET_LUAN, Mui, NGHIEM, NhapPhieu, nhapTuBaiLam, oKetLuan, TXD, XET_DAU, yeuCauNop } from './phieu';
@@ -54,7 +55,7 @@ const TEN_TRANG_THAI: Record<TrangThaiBuoc, string> = {
  */
 @Component({
   selector: 'app-luyen',
-  imports: [VanBanToan,KhungCho, LoiTai, GiaSu, BangXetDau, Button, Katex, OCongThuc, RouterLink],
+  imports: [HopThoai,VanBanToan,KhungCho, LoiTai, GiaSu, BangXetDau, Button, Katex, OCongThuc, RouterLink],
   templateUrl: './luyen.html',
   styleUrl: './luyen.css',
 })
@@ -229,10 +230,17 @@ export class Luyen {
         return 'Đã nộp. Thầy cô sẽ xem các bước chưa đạt.';
     }
   });
-  protected readonly loiGiai = computed(() => {
-    const l = this.ketQuaNop()?.loiGiai;
-    return typeof l === 'string' && l.trim() ? l : null;
-  });
+  protected readonly loiGiai = signal<string | null>(null);
+  protected readonly xacNhanLoiGiai = signal(false);
+  protected async xemLoiGiai(): Promise<void> {
+    if(this.dangGui())return;
+    this.dangGui.set(true);this.loiGui.set(null);
+    try {
+      const result=await firstValueFrom(this.http.post<{loiGiai:string}>(`${API_HS.chiTietBai(this.maBai())}/loi-giai`,{}));
+      this.loiGiai.set(result.loiGiai);this.xacNhanLoiGiai.set(false);
+    } catch(e) { this.loiGui.set(loiDeDoc(e,'Chưa mở được lời giải. Hãy thử lại.')); }
+    finally {this.dangGui.set(false);}
+  }
 
   /** Sự kiện nhập ở bảng xét dấu chưa gửi (hợp đồng: tối đa 500 mỗi lần nộp). */
   private suKien: SuKien[] = [];

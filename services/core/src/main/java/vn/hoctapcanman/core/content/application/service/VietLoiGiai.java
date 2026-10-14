@@ -24,6 +24,21 @@ public final class VietLoiGiai {
 
     private VietLoiGiai() {}
 
+    /** Explicit full reveal uses all stored work, even if a short final answer also exists. */
+    public static Optional<String> toanBo(Solution solution) {
+        String worked=solution.workedSolutionJson();
+        if(worked!=null) {
+            var root=JSON.readTree(worked);
+            var explanation=root.path("giai_thich_giao_vien");
+            if(explanation.isString()&&!explanation.asString().isBlank())return Optional.of(explanation.asString());
+            try {
+                var lines=cau(root,true);
+                if(!lines.isEmpty())return Optional.of(String.join("\n",lines));
+            } catch(LechKieu ignored) { return Optional.empty(); }
+        }
+        return viet(solution);
+    }
+
     public static Optional<String> viet(Solution loiGiai) {
         return viet(loiGiai.workedSolutionJson(), loiGiai.finalAnswer());
     }
@@ -47,7 +62,9 @@ public final class VietLoiGiai {
         }
     }
 
-    private static List<String> cau(JsonNode bl) {
+    private static List<String> cau(JsonNode bl) { return cau(bl,false); }
+
+    private static List<String> cau(JsonNode bl,boolean includeTable) {
         List<String> cau = new ArrayList<>();
         String txd = chu(bl.get("TXD"));
         if (txd != null && !txd.isEmpty()) {
@@ -64,6 +81,21 @@ public final class VietLoiGiai {
         List<String> khongXd = mang(bl.get("y_phay_khong_xd"));
         if (!khongXd.isEmpty()) {
             cau.add("y′ không xác định tại " + String.join(", ", khongXd) + ".");
+        }
+        if(includeTable && bl.has("bang")) {
+            var table=bl.path("bang");
+            var points=mang(table.get("moc"));var signs=mang(table.get("dau"));
+            if(points.size()!=signs.size()+1)throw new LechKieu();
+            for(int i=0;i<signs.size();i++) {
+                String meaning=switch(signs.get(i)) {
+                    case "+" -> "y′ > 0";
+                    case "-" -> "y′ < 0";
+                    case "0" -> "y′ = 0";
+                    case "||" -> "hàm số không xác định";
+                    default -> throw new LechKieu();
+                };
+                cau.add("Xét dấu trên ("+points.get(i)+"; "+points.get(i+1)+"): "+meaning+".");
+            }
         }
         JsonNode kl = bl.get("ket_luan");
         if (kl == null || kl.isNull()) {

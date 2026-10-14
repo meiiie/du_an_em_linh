@@ -1,5 +1,6 @@
+import { NhacHoc } from '../../core/nhac-hoc';
 import { ApiLopHoc } from '../../api/lop-hoc';
-import { Component, computed, inject, signal } from '@angular/core';
+import { afterNextRender, Component, computed, inject, signal } from '@angular/core';
 import { form, FormField, required, maxLength } from '@angular/forms/signals';
 import { firstValueFrom } from 'rxjs';
 import { Button } from '../../shared/ui/button';
@@ -20,6 +21,7 @@ function ngayTruong(value: string | Date | null | undefined): string | null {
 }
 
 @Component({selector:'app-lich',imports:[Button,HopThoai,FormField,KhungCho,LoiTai],template:`<div class="page"><header class="toolbar"><div><h1>Lịch học</h1><p>Chọn một khoảng rảnh để học đều mỗi tuần.</p></div><button appButton type="button" (click)="mo.set(true)">Thêm buổi học</button></header>
+<section class="surface"><h2>Nhắc học</h2><button appButton variant="secondary" type="button" [disabled]="push.ban()" [attr.aria-pressed]="push.bat()" (click)="push.doi()">{{push.bat()?'Tắt thông báo trình duyệt':'Bật thông báo trình duyệt'}}</button><p role="status">{{push.thongBao()}}</p>@for(r of nhac.value() ?? [];track r.id){<p>{{r.title}} · {{r.subtitle}}</p>}</section>
 @if(ds.isLoading()){<app-khung-cho kieu="lich" nhan="Đang tải lịch học" />}@else if(ds.error()){<app-loi-tai [loi]="ds.error()" (thuLai)="ds.reload()" />}@else{
 @if(keHoach.isLoading()){<app-khung-cho nhan="Đang lập lịch gợi ý" />}
 @if(keHoach.error()){<app-loi-tai [loi]="keHoach.error()" moTa="Chưa tải được lịch gợi ý. Buổi tự thêm vẫn dùng được." (thuLai)="keHoach.reload()" />}
@@ -28,6 +30,8 @@ function ngayTruong(value: string | Date | null | undefined): string | null {
 @if(nhac.error()){<app-loi-tai [loi]="nhac.error()" moTa="Chưa tải được hạn nộp. Lịch học của em vẫn dùng được." (thuLai)="nhac.reload()" />}<div class="week-grid" data-testid="lich-tuan">@for(ngay of cacNgay();track ngay.iso){<section class="surface"><h2>{{ngay.ten}}</h2><p class="muted">{{ngay.nhan}}</p>@for(b of ngay.buoi;track b.id){<article class="schedule-item"><span class="badge">{{gio(b.details.startsAt)}}–{{gio(b.details.endsAt)}}</span><h3>{{b.title}}</h3>@if(b.status==='GOI_Y'){<p class="muted">Buổi học gợi ý</p>}@else if(b.status==='XONG'){<p>✓ Đã học</p>}@else{<button appButton variant="secondary" type="button" [disabled]="ban()" (click)="xong(b.id)">Đánh dấu đã học</button>}</article>}@empty{<p class="muted">Chưa có buổi học</p>}@for(h of ngay.han;track h.id){<p class="schedule-item"><span class="badge">Hạn nộp</span> {{h.title}} · {{gio(h.details.dueAt!)}}</p>}</section>}</div>}
 </div><app-hop-thoai [mo]="mo()" tieuDe="Thêm buổi học" [ban]="ban()" (dong)="mo.set(false)"><form class="form-grid" (submit)="luu($event)"><label>Việc học<input [formField]="f.title" placeholder="Ôn xét dấu đạo hàm" /></label><label>Bắt đầu<input type="datetime-local" [formField]="f.startsAt" /></label><label>Kết thúc<input type="datetime-local" [formField]="f.endsAt" /></label>@if(loi()){<p class="field-error" role="alert">{{loi()}}</p>}<button appButton type="submit" [disabled]="ban() || f().invalid()">{{ban()?'Đang lưu…':'Lưu buổi học'}}</button></form></app-hop-thoai>`,styles:`.week-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:8px;min-width:0}.week-grid .surface{padding:16px}.week-grid h2{font-size:16px;margin-bottom:8px}.schedule-item{padding-top:16px;margin-top:16px;border-top:1px solid var(--line)}.schedule-item h3{font-size:14px;font-weight:600;line-height:1.6;margin:8px 0}.schedule-item .btn{width:100%;font-size:12px;padding-inline:8px}.week-grid .surface{overflow-wrap:anywhere}.week-grid .badge{font-variant-numeric:tabular-nums;font-size:11px}@media(min-width:641px) and (max-width:1199px){.week-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}@media(max-width:640px){.week-grid{grid-template-columns:1fr;overflow:visible}}`})
 export class Lich{
+ protected readonly push=inject(NhacHoc);
+ constructor(){afterNextRender(()=>{void this.push.khoiPhuc();});}
  private readonly api=inject(ApiLopHoc);
 
  protected readonly ds=this.api.lich();protected readonly nhac=this.api.nhac();protected readonly tuan=signal(0);protected readonly mo=signal(false);protected readonly ban=signal(false);protected readonly loi=signal('');protected readonly model=signal({title:'',startsAt:'',endsAt:''});protected readonly f=form(this.model,p=>{required(p.title);maxLength(p.title,120);required(p.startsAt);required(p.endsAt);});private readonly toast=inject(ThongBaoNhanh);protected readonly giam=(n:number)=>n-1;protected readonly tang=(n:number)=>n+1;

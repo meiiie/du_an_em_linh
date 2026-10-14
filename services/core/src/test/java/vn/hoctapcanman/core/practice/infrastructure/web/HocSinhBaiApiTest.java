@@ -348,10 +348,9 @@ class HocSinhBaiApiTest {
         assertThat(daThay).allSatisfy(p -> assertThat(p.status()).isEqualTo(200));
         assertThat(daThay).allSatisfy(p -> assertThat(p.than()).doesNotContain(BI_MAT));
 
-        // Lớp bật «mở lời giải sau khi nộp»: chỉ phản hồi nộp bài mang lời giải; đề và bài làm vẫn không.
+        // Nộp bài không tự mở lời giải, kể cả khi cờ cũ của lớp được bật.
         jdbc.sql("insert into class_settings (class_id, reveal_solution_after_submit, updated_at) values (?, true, now())").params(lop).update();
-        assertThat(nopBai(ma1).json().path("loiGiai").asString()).as("lời giải viết như v0: có đáp án cuối thì dùng đáp án cuối")
-            .isEqualTo("BIMAT_DAP_AN");
+        assertThat(nopBai(ma1).than()).doesNotContain(BI_MAT);
         Phan chiTiet = get("/api/hs/bai/" + ma1, an);
         assertThat(chiTiet.json().path("coTheMoLoiGiai").asBoolean()).isTrue();
         assertThat(chiTiet.than()).doesNotContain(BI_MAT);
