@@ -27,7 +27,7 @@
         </div>
       }
     }
-    @if(chat.dangHoi() || chat.choDung()){<p class="typing" role="status"><span aria-hidden="true">•••</span> {{chat.trangThai()}}</p>}
+    @if(chat.dangHoi() || chat.choDung()){<p class="typing" role="status" aria-live="polite"><span aria-hidden="true">•••</span> {{chat.trangThai()}}</p>}
   </div>
   <div class="sr-only" aria-live="polite" aria-relevant="additions">@for(c of chat.thongBaoCau(); track c.seq){<p>{{c.text}}</p>}</div>
   @if(!oDay()){<button appButton variant="secondary" type="button" data-testid="gia-su-xuong" (click)="xuong()">Xuống</button>}

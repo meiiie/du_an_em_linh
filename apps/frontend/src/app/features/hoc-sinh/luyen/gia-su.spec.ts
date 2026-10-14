@@ -69,6 +69,42 @@ describe('Sidebar gia sư',()=>{
     expect(t.el.querySelector('article strong')?.textContent).toBe('Câu đã kiểm');expect(t.el.querySelector('.katex')).not.toBeNull();
     expect(t.el.querySelectorAll('article')).toHaveLength(2);
   });
+  it('hiện trạng thái chờ polite, regen trước delta và lời đã kiểm khi delta tới',async()=>{
+    let writer!: ReadableStreamDefaultController<Uint8Array>;
+    response=()=>new Response(new ReadableStream({start(c){writer=c;}}),{headers:{'Content-Type':'text/event-stream'}});
+    const t=await setup();await t.fill('Em hỏi');await t.click('Gửi câu hỏi');
+    const status=()=>t.el.querySelector<HTMLElement>('.typing')!;
+    expect(status().textContent).toContain('Đang suy nghĩ…');
+    expect(status().getAttribute('role')).toBe('status');
+    expect(status().getAttribute('aria-live')).toBe('polite');
+    expect(status().querySelector('span')?.getAttribute('aria-hidden')).toBe('true');
+    expect(t.el.querySelector('.cau-cua-ai')).toBeNull();
+    const requestId=JSON.parse(fetchMock.mock.calls[2][1].body).requestId;
+    writer.enqueue(new TextEncoder().encode(event('start',1,{requestId})+event('regen',2)));
+    await settle();await t.f.whenStable();
+    expect(status().textContent).toContain('Đang viết lại cho đúng yêu cầu…');
+    expect(t.el.querySelector('.cau-cua-ai')).toBeNull();
+    writer.enqueue(new TextEncoder().encode(event('delta',3,{sentenceIndex:1,text:'Câu đã kiểm.'})));
+    await settle();await t.f.whenStable();
+    expect(status().textContent).toContain('Đang soạn lời gợi ý…');
+    expect(t.el.querySelector('.cau-cua-ai')?.textContent).toContain('Câu đã kiểm.');
+    writer.enqueue(new TextEncoder().encode(event('done',4,{status:'completed'})));
+    await settle();await t.f.whenStable();
+    expect(t.el.querySelector('.typing')).toBeNull();
+  });
+  it.each(['done','error','cancel'])('bỏ trạng thái chờ khi %s trước delta đầu tiên',async(terminal)=>{
+    let writer!: ReadableStreamDefaultController<Uint8Array>;
+    response=init=>new Response(new ReadableStream({start(c){writer=c;c.enqueue(new TextEncoder().encode(event('start',1,{requestId:JSON.parse(init.body as string).requestId})));}}),{headers:{'Content-Type':'text/event-stream'}});
+    const t=await setup();await t.fill('Em hỏi');await t.click('Gửi câu hỏi');
+    expect(t.el.querySelector('.typing')?.textContent).toContain('Đang suy nghĩ…');
+    if(terminal==='cancel')await t.click('Dừng');
+    else {
+      writer.enqueue(new TextEncoder().encode(terminal==='done'?event('done',2,{status:'completed'}):event('error',2,{message:'Chưa có lời đã kiểm.',retryable:true})));
+      await settle();await t.f.whenStable();
+    }
+    expect(t.el.querySelector('.typing')).toBeNull();
+    expect(t.el.querySelector('.cau-cua-ai')).toBeNull();
+  });
   it('Escape khi đang sinh POST cancel đúng lượt, giữ câu và đóng panel',async()=>{
     response=init=>new Response(new ReadableStream({start(c){c.enqueue(new TextEncoder().encode(event('start',1,{requestId:JSON.parse(init.body as string).requestId})+event('delta',2,{sentenceIndex:1,text:'Câu đã kiểm.'})));}}),{headers:{'Content-Type':'text/event-stream'}});
     const t=await setup();await t.fill('Em hỏi');await t.click('Gửi câu hỏi');

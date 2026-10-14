@@ -56,6 +56,30 @@ async function emit(page:Page,name:string,seq:number,extra:Record<string,unknown
   await page.evaluate(({name,seq,extra})=>window.tutorStream.emit(name,seq,extra),{name,seq,extra});
 }
 
+for(const reducedMotion of ['no-preference','reduce'] as const){
+  test(`SSE: chờ delta đầu tiên và regen trước delta (${reducedMotion})`,async({page})=>{
+    await page.emulateMedia({reducedMotion});
+    await installStream(page);
+    const panel=await open(page);await ask(page);
+    const status=panel.locator('.typing');
+    await expect(status).toContainText('Đang suy nghĩ…');
+    await expect(status).toHaveAttribute('role','status');
+    await expect(status).toHaveAttribute('aria-live','polite');
+    await expect(status.locator('span')).toHaveAttribute('aria-hidden','true');
+    expect(await status.locator('span').evaluate(el=>getComputedStyle(el).animationName)).toBe(reducedMotion==='reduce'?'none':'pense');
+    await expect(panel.locator('.cau-cua-ai')).toHaveCount(0);
+    await flat(page);await noOverflow(page);
+    await emit(page,'regen',2,{attempt:1,mode:'rewrite'});
+    await expect(status).toContainText('Đang viết lại cho đúng yêu cầu…');
+    await expect(panel.locator('.cau-cua-ai')).toHaveCount(0);
+    await emit(page,'delta',3,{sentenceIndex:1,text:'Câu đầu đã kiểm.'});
+    await expect(panel.locator('.cau-cua-ai')).toContainText('Câu đầu đã kiểm.');
+    await expect(status).toContainText('Đang soạn lời gợi ý…');
+    await emit(page,'done',4,{status:'completed'});
+    await expect(status).toHaveCount(0);
+  });
+}
+
 test('SSE: tải lịch sử, delta tăng dần, Markdown/KaTeX, sanitize, regen, heartbeat và seq trùng',async({page})=>{
   await installStream(page,3);
   await page.route('**/api/hs/gia-su/v2/phien/e2e-session/luot*',async route=>{

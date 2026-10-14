@@ -222,7 +222,7 @@ export class GiaSuPhien {
     if (!this.current(a) || a.terminal || this.dangHoi()) return;
     this.dangHoi.set(true);
     this.matKetNoi.set(false);
-    this.trangThai.set(a.stopping ? 'Đang xác nhận dừng…' : body ? 'Đang soạn lời gợi ý…' : 'Đang kết nối lại…');
+    this.trangThai.set(a.stopping ? 'Đang xác nhận dừng…' : body ? 'Đang suy nghĩ…' : 'Đang kết nối lại…');
     let attempt = 0;
     try {
       while (this.current(a) && !a.terminal) {
@@ -326,7 +326,7 @@ export class GiaSuPhien {
         if (!a.stopping) this.trangThai.set('Đang soạn lời gợi ý…');
         break;
       }
-      case 'regen': if (!a.stopping) this.trangThai.set('Đang viết lại lời gợi ý…'); break;
+      case 'regen': if (!a.stopping) this.trangThai.set('Đang viết lại cho đúng yêu cầu…'); break;
       case 'done':
         a.terminal = true;
         this.update(a, t => ({ ...t, status: event.data.status === 'cancelled' ? 'cancelled' : 'completed' }));

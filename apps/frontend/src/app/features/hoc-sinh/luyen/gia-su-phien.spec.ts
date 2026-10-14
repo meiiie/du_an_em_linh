@@ -79,6 +79,34 @@ describe('Phiên gia sư v2', () => {
     expect(service.luot().at(-1)?.status).toBe('completed');
   });
 
+  it('nghĩ ngay khi gửi, regen trước delta đổi trạng thái rồi delta chuyển sang soạn lời', async()=>{
+    let respond!: (response: Response) => void;
+    let writer!: ReadableStreamDefaultController<Uint8Array>;
+    handler=()=>new Promise(resolve=>respond=resolve);
+    await service.mo('assignment-1');
+    const done=service.hoi('Em cần giúp', 'B.DH.TXD',1);
+    expect(service.dangHoi()).toBe(true);
+    expect(service.trangThai()).toBe('Đang suy nghĩ…');
+    expect(service.luot()[0].sentences).toEqual([]);
+    respond(new Response(new ReadableStream({start(c){writer=c;}}),{headers:{'Content-Type':'text/event-stream'}}));
+    const requestId=service.luot()[0].requestId;
+    writer.enqueue(new TextEncoder().encode(event('start',1,{requestId})));
+    await settle();
+    expect(service.trangThai()).toBe('Đang suy nghĩ…');
+    writer.enqueue(new TextEncoder().encode(event('regen',2)));
+    await settle();
+    expect(service.trangThai()).toBe('Đang viết lại cho đúng yêu cầu…');
+    expect(service.luot()[0].sentences).toEqual([]);
+    writer.enqueue(new TextEncoder().encode(event('delta',3,{sentenceIndex:1,text:'Câu đã kiểm.'})));
+    await settle();
+    expect(service.trangThai()).toBe('Đang soạn lời gợi ý…');
+    expect(service.luot()[0].sentences).toHaveLength(1);
+    writer.enqueue(new TextEncoder().encode(event('done',4,{status:'completed'})));
+    await done;
+    expect(service.dangHoi()).toBe(false);
+    expect(service.trangThai()).toBe('');
+  });
+
   it('delta hiện trước done; UTF-8 cắt từng byte, regen/heartbeat không chèn lời, loại seq trùng', async()=>{
     let writer!: ReadableStreamDefaultController<Uint8Array>;
     handler=(_url,init)=>{
