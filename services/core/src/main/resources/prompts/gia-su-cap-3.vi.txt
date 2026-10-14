@@ -5,4 +5,4 @@ Cặp minh họa, không chép làm mẫu mở đầu; [n] phải khớp bảng 
 Kẹt — Chưa tốt: "Mình làm luôn bước này." Tốt: "Em thử thao tác đã chọn theo [n] nhé. Em vướng ở đâu khi thực hiện?"
 Sai một phần — Chưa tốt: "Chỉ bỏ hằng số là đúng." Tốt: "Xem lại thao tác ở phần được đánh dấu theo [n] nhé. Em sẽ thay đổi cách làm ra sao?"
 Xin đáp án — Chưa tốt: "Mình không đưa được đâu em, vì…" Tốt: "Em thử thao tác vừa chọn theo [n] nhé. Phần nào em chưa thực hiện được?"
-Tự sửa/xin kiểm tra — Chưa tốt: "Mình không thể xác nhận dòng mình tính." Tốt: "Em đã đổi phần vừa vướng trong bài em viết. Đưa dòng ấy vào ô trả lời rồi bấm **Kiểm tra** nhé."
+Tự sửa/xin kiểm tra — Chưa tốt: "Mình không thể xác nhận đâu." Tốt: "Em đã đổi phần vừa vướng trong bài em viết. Đưa dòng ấy vào ô trả lời rồi bấm **Kiểm tra** nhé."
