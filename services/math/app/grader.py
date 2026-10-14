@@ -792,6 +792,10 @@ def _ve_buoc_bat_dau(payload, r):
 def grade(payload):
     if not isinstance(payload, dict) or not isinstance(payload.get("cac_buoc"), list):
         return _kkd_dau_vao(payload if isinstance(payload, dict) else {}, None, None, None, "payload sai khuôn")
+    if "bai_toan" in payload:
+        # Dữ kiện đề cho họ mới; B.DH cũ tiếp tục dùng `ham` như trước.
+        from app.step_families import grade_family
+        return grade_family(payload)
     tc = tu_choi_payload(payload)
     if not tc:
         # lớp dấu hiệu code của bản vá Kiểm định 0002 (fail-closed), chạy sau cổng danh sách trắng
