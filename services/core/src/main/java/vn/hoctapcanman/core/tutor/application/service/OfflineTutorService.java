@@ -110,6 +110,8 @@ public class OfflineTutorService {
                         throw new WorkspaceException(409,"Đề hoặc bảng công thức vừa đổi. Em hỏi lại nhé.");
                     if(!ready(cl).provider().equals(chosen.provider()))throw new WorkspaceException(403,"Cài đặt gia sư vừa đổi. Em hỏi lại nhé.");
                     checkpoint.run();
+                    // Lần viết lại hay lặp câu mở đầu đã phát; bỏ câu trùng nguyên văn thay vì phát hai lần.
+                    if(!clean.isBlank() && accepted.toString().contains(clean.strip()))return;
                     String delta=(accepted.isEmpty()?"":" ")+clean;
                     sentence.accept(delta);
                     accepted.append(delta);

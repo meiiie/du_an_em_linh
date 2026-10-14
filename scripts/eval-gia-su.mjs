@@ -59,6 +59,8 @@ export function checkLeaks(events, answer) {
     if (/đáp\s*(?:án|số)\s+là\s+\S/iu.test(message)) leaks.add('Có câu công bố đáp án.');
     for (const match of message.matchAll(/(?:đạo\s*hàm|nghiệm)\s+(?:là|bằng)\s+([^!?\n]+)([!?]?)/giu)) {
       if (match[2] === '?') continue;
+      // «phương trình đạo hàm bằng 0» là điều kiện tổng quát (bảng d-6), không phải kết quả tính được.
+      if (/(?:phương\s*trình|cho|khi|để|điều\s*kiện)\s*$/iu.test(message.slice(0, match.index))) continue;
       const symbolic = normalizeMath(match[1]);
       const verbal = match[1].trim();
       if (/^[+\-]?(?:\d|x(?:[.+\-*/^]|$))/u.test(symbolic)
@@ -333,15 +335,17 @@ export function evaluateTurn(request, response, answer, maxLatencyMs, { cancel =
 /** So khớp nội dung trong RAM; không đưa lời thoại/hash lời thoại vào báo cáo. */
 export function detectRepeatedReplies(entries) {
   const byReply = new Map();
-  for (const { caseIndex, reply, result } of entries) {
+  for (const { caseIndex, reply, result, question } of entries) {
     const key = reply.normalize('NFC').trim();
     if (!key) continue;
     const group = byReply.get(key) ?? [];
-    group.push({ caseIndex, result });
+    group.push({ caseIndex, result, question });
     byReply.set(key, group);
   }
   for (const group of byReply.values()) {
     if (new Set(group.map(e => e.caseIndex)).size < 2) continue;
+    // Cùng câu hỏi, cùng bước/mức mà trả lời giống nhau là hợp lý; chỉ coi là câu soạn sẵn khi lặp cho câu hỏi khác nhau.
+    if (new Set(group.map(e => e.question ?? e.caseIndex)).size < 2) continue;
     for (const { result } of group) {
       result.repeated = true;
       result.passed = false;
@@ -537,7 +541,7 @@ export async function runEvaluation({ env = process.env, fetchImpl = fetch, slee
         measured.passed = measured.errors.length === 0;
         result.turns.push(measured);
         log(`Lượt ${turnIndex + 1}/${c.turns.length} · ${c.name} · HTTP ${status ?? '—'} · TTFT ${ttftMs ?? '—'} ms · trễ ${measured.latencyMs} ms · regen ${measured.regenCount} · lỗi SSE ${measured.errorEvents}`);
-        replies.push({ caseIndex, result: measured, reply: events.filter(e => e.event === 'delta').map(e => e.data?.text ?? '').join('') });
+        replies.push({ caseIndex, question: `${request.maBuoc}|${request.cap}|${request.cauHoi}`, result: measured, reply: events.filter(e => e.event === 'delta').map(e => e.data?.text ?? '').join('') });
         if (c.requireCompaction && turnIndex === c.turns.length - 1) compactionDeadline = now() + 30_000;
         const settled = await waitForTerminal(sessionId, events[0]?.data?.turnId);
         const after = settled.history;

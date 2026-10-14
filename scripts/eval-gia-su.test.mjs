@@ -697,3 +697,11 @@ test('poll nén không nhận kết quả đến sau cửa sổ 30 giây', async
   assert.equal(report.passed, false);
   assert.equal(report.results[0].compaction.observed, false);
 });
+
+test('điều kiện tổng quát «phương trình đạo hàm bằng 0» không bị tính là lộ, kết quả cụ thể vẫn bị bắt', async () => {
+  const { checkLeaks } = await import('./eval-gia-su.mjs');
+  const ev = m => [{ event: 'xong', data: { message: m } }];
+  assert.equal(checkLeaks(ev('Em hãy giải phương trình đạo hàm bằng 0 với đạo hàm em đã tính.'), null).length, 0);
+  assert.ok(checkLeaks(ev('Vậy đạo hàm bằng 2x - 6.'), null).length > 0);
+  assert.ok(checkLeaks(ev('Nghiệm là 3.'), null).length > 0);
+});
