@@ -16,7 +16,7 @@ import { DinhDangSo, ngayViet } from '../../shared/ui/dinh-dang';
 
 /**
  * `/hs`: trang chủ học sinh theo ảnh mô phỏng A (labs/design/prototypes/2026-10-06-wiii-3b1b/A-hoc-1280): «Chào <tên>»
- * (heading như v0), thẻ «Bài tiếp theo» (bài đang làm dở, không có thì bài chưa làm đầu tiên) với đề trên bảng 3b1b, và
+ * (heading như v0), thẻ «Bài tiếp theo» (bài đang làm dở hoặc bài kế do máy chủ chọn) với đề trên bảng 3b1b, và
  * «Bài được giao». Dữ liệu từ `GET /api/hs/bai` của core.
  */
 @Component({
@@ -37,8 +37,13 @@ export class TrangHocSinh {
   protected readonly laKiemTra = (ma: string) => this.cheDo.hasValue() && this.cheDo.value().find(m => m.id === ma)?.status === 'KIEM_TRA';
   protected readonly goiBai = this.api.goiBai();
   protected readonly nhac = this.api.nhac();
+  protected readonly baiHopLe = computed(() => (this.ds.value() ?? []).filter(b => {
+    const mode=(this.cheDo.value() ?? []).find(m=>m.id===b.maBai);
+    const dueAt=mode?.details.dueAt ?? b.han;
+    return b.trangThai !== 'DA_NOP' && !!mode && (!dueAt || Date.parse(dueAt)>Date.now());
+  }));
   protected readonly deXuat = computed(() => (this.goiBai.value() ?? []).filter(r => r.status === 'GUI_THAY_CO'
-    || (this.ds.value() ?? []).some(b => b.maBai === r.id && b.trangThai !== 'DA_NOP')));
+    || this.baiHopLe().some(b => b.maBai === r.id && !this.laKiemTra(b.maBai))));
   protected tenBaiGoiY(id: string): string { return (this.ds.value() ?? []).find(b => b.maBai === id)?.tenKyNang ?? 'Bài được giao'; }
   protected readonly gio = (s:string)=>ngayViet(s, true);
   protected nhacTen(n: Item<ReminderDetails>): string {
@@ -53,11 +58,10 @@ export class TrangHocSinh {
   /** Bài ôn chưa nộp trước bài kiểm tra; không dùng gợi bài đã nộp làm lối vào làm lại. */
   protected readonly ke = computed(() => {
     if (!this.cheDo.hasValue()) return undefined;
-    const bai = (this.ds.value() ?? []).filter(b => b.trangThai !== 'DA_NOP');
+    const bai = this.baiHopLe();
     const on = bai.filter(b => !this.laKiemTra(b.maBai));
-    const recommend = this.goiBai.hasValue() ? this.goiBai.value()[0]?.id : undefined;
-    return on.find(b => b.trangThai === 'DANG_LAM') ?? on.find(b => b.maBai === recommend) ?? on[0]
-      ?? bai.find(b => this.laKiemTra(b.maBai));
+    const recommend = this.goiBai.hasValue() ? this.goiBai.value().filter(r=>r.status!=='GUI_THAY_CO').map(r=>r.id) : [];
+    return on.find(b => b.trangThai === 'DANG_LAM') ?? recommend.map(id=>on.find(b=>b.maBai===id)).find(Boolean) ?? bai.find(b=>this.laKiemTra(b.maBai));
   });
   protected readonly kiemTraKe = computed(() => {
     const ke = this.ke();

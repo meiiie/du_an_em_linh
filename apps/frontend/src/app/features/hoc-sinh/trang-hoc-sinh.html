@@ -42,6 +42,10 @@
       </div>
       <app-katex class="ke-bang" bang [latex]="deBang(ke.deBaiLatex)" />
     </section>
+  } @else if (cheDo.isLoading() || goiBai.isLoading()) {
+    <app-khung-cho nhan="Đang tìm bài tiếp theo" />
+  } @else if (!cheDo.error() && !goiBai.error() && ds.value()?.length) {
+    <app-trang-rong tieuDe="Chưa có bài tiếp theo phù hợp" moTa="Em có thể ôn công thức hoặc xem bài thầy cô giao."><a appButton variant="secondary" routerLink="/hs/kho">Ôn công thức</a></app-trang-rong>
   }
 
   <section aria-labelledby="tieu-de-bai-giao">

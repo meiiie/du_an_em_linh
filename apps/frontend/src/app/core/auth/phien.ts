@@ -1,4 +1,4 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { computed, inject, Injectable, signal } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { API_AUTH, HEADER_CHONG_CSRF, NguoiDung, PhienDangNhap, VaiTro } from '../../api/auth';
@@ -42,11 +42,12 @@ export class Phien {
   /** Đổi cookie refresh token lấy access token mới; `false` khi phiên đã hết (không cookie, bị thu hồi, hết hạn). */
   lamMoi(): Promise<boolean> {
     this.lamMoiDangChay ??= theoKhoa(async () => {
+      if (!this.accessToken && !coGoiYPhien()) return false;
       try {
         this.nhan(await firstValueFrom(this.http.post<PhienDangNhap>(API_AUTH.lamMoi, null, { headers: HEADER_CHONG_CSRF })));
         return true;
-      } catch {
-        this.xoa();
+      } catch (e) {
+        this.xoa(e instanceof HttpErrorResponse && (e.status === 401 || e.status === 403));
         return false;
       }
     }).finally(() => {
@@ -67,11 +68,13 @@ export class Phien {
   }
 
   private nhan(phien: PhienDangNhap): void {
+    ghiGoiYPhien(true);
     this.accessToken = phien.accessToken;
     this.hienTai.set(phien.user);
   }
 
-  private xoa(): void {
+  private xoa(xoaGoiY = true): void {
+    if (xoaGoiY) ghiGoiYPhien(false);
     this.accessToken = null;
     this.hienTai.set(null);
   }
@@ -81,4 +84,13 @@ export class Phien {
 function theoKhoa<T>(viec: () => Promise<T>): Promise<T> {
   const khoa = typeof navigator === 'undefined' ? undefined : navigator.locks;
   return khoa ? khoa.request('hta-phien', viec) : viec();
+}
+
+/** Chỉ lưu dấu có phiên, không lưu token hay thông tin tài khoản. Đọc khi giữ Web Lock để các tab thấy đăng xuất mới nhất. */
+const GOI_Y_PHIEN = 'mathl-co-phien';
+function coGoiYPhien(): boolean {
+  try { return localStorage.getItem(GOI_Y_PHIEN) === '1'; } catch { return false; }
+}
+function ghiGoiYPhien(co: boolean): void {
+  try { if (co) localStorage.setItem(GOI_Y_PHIEN, '1'); else localStorage.removeItem(GOI_Y_PHIEN); } catch { /* Trình duyệt có thể tắt lưu trữ. */ }
 }

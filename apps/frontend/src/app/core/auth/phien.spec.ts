@@ -13,12 +13,13 @@ describe('Phien', () => {
   let http: HttpTestingController;
 
   beforeEach(() => {
+    localStorage.removeItem('mathl-co-phien');
     TestBed.configureTestingModule({ providers: [provideHttpClient(), provideHttpClientTesting()] });
     phien = TestBed.inject(Phien);
     http = TestBed.inject(HttpTestingController);
   });
 
-  afterEach(() => http.verify());
+  afterEach(() => { http.verify(); localStorage.removeItem('mathl-co-phien'); });
 
   async function dangNhapAn(): Promise<void> {
     const xong = phien.dangNhap('hs.an@demo.local', 'hocsinh123');
@@ -39,6 +40,7 @@ describe('Phien', () => {
   });
 
   it('làm mới chạy một luồng: hai lời gọi cùng lúc chỉ gửi một yêu cầu, kèm header chống CSRF, không thân', async () => {
+    localStorage.setItem('mathl-co-phien','1');
     const a = phien.lamMoi();
     const b = phien.lamMoi();
     const req = http.expectOne('/api/auth/refresh');
@@ -104,6 +106,37 @@ describe('Phien', () => {
     } finally {
       delete (navigator as { locks?: unknown }).locks;
     }
+  });
+
+  it('khách không có dấu phiên không gửi refresh, kể cả gọi đồng thời', async () => {
+    expect(await Promise.all([phien.lamMoi(),phien.lamMoi()])).toEqual([false,false]);
+    http.expectNone('/api/auth/refresh');
+  });
+
+  it('đăng nhập lưu dấu phiên để tải lại, đăng xuất xóa dấu', async () => {
+    await dangNhapAn();
+    expect(localStorage.getItem('mathl-co-phien')).toBe('1');
+    // Một tab vừa tải lại chỉ có dấu phiên, không có access token trong bộ nhớ.
+    const moi=TestBed.runInInjectionContext(()=>new Phien());
+    const refresh=moi.lamMoi();http.expectOne('/api/auth/refresh').flush(phienAn('a2'));
+    expect(await refresh).toBe(true);
+    const logout=moi.dangXuat();http.expectOne('/api/auth/logout').flush(null);await logout;
+    expect(localStorage.getItem('mathl-co-phien')).toBeNull();
+    expect(await moi.lamMoi()).toBe(false);http.expectNone('/api/auth/refresh');
+  });
+
+  it('401 xóa dấu hết hạn; lỗi mạng giữ dấu để thử lại', async () => {
+    localStorage.setItem('mathl-co-phien','1');
+    const failed=phien.lamMoi();http.expectOne('/api/auth/refresh').error(new ProgressEvent('error'));
+    expect(await failed).toBe(false);expect(localStorage.getItem('mathl-co-phien')).toBe('1');
+    const expired=phien.lamMoi();http.expectOne('/api/auth/refresh').flush({},LOI_401);
+    expect(await expired).toBe(false);expect(localStorage.getItem('mathl-co-phien')).toBeNull();
+    expect(await phien.lamMoi()).toBe(false);http.expectNone('/api/auth/refresh');
+  });
+
+  it('lưu trữ bị tắt: khách vẫn không gửi refresh', async () => {
+    const read=vi.spyOn(Storage.prototype,'getItem').mockImplementation(()=>{throw new Error('Không cho lưu trữ');});
+    try{expect(await phien.lamMoi()).toBe(false);http.expectNone('/api/auth/refresh');}finally{read.mockRestore();}
   });
 
   it('trang chủ theo vai trò', () => {

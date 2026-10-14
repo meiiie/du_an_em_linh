@@ -52,7 +52,7 @@ import { Button } from '../../shared/ui/button';
           <p>Chuẩn bị nội dung của lớp và theo dõi từng em.</p>
           <ul>
             <li>Tài liệu và bảng công thức của lớp</li>
-            <li>Công thức được kiểm trước khi dùng</li>
+            <li>Công thức trong bài tập được kiểm trước khi dùng</li>
             <li>Hàng duyệt cho phần máy không kiểm được</li>
             <li>Mức của từng học sinh</li>
           </ul>

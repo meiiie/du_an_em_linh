@@ -222,6 +222,7 @@ test('U14 quản trị bulk khóa và phân công lớp', async ({ page, api }) 
     await expect(page.getByRole('table').locator('tbody tr')).toHaveCount(1);
     await page.getByRole('checkbox', { name: 'Chọn An' }).check();
     await page.getByRole('button', { name: 'Khóa tài khoản' }).click();
+    await page.getByRole('dialog').getByRole('button', { name: 'Xác nhận', exact: true }).click();
     await expect(page.getByRole('button', { name: 'Bỏ chọn' })).toHaveCount(0);
     expect(api.calls.find(c => c.path.endsWith('/bulk'))?.body).toEqual({ ids: ['hs1'], enabled: false });
     await navigate(page, 'nav-qt-lop');
@@ -412,6 +413,8 @@ test('Học ưu tiên bài ôn dù có bài kiểm tra đang làm và được g
         item('E2E-01', '', '', 'KIEM_TRA', {dueAt: problem.han}),
         item('E2E-NEXT', '', '', 'ON_TAP', {dueAt: problem.han}),
     ]});
+    // Máy chủ gợi bài ôn; bài kiểm tra đang làm không được chen lên trước.
+    api.overrides.set('GET /api/hs/goi-bai', {body: [item('E2E-NEXT', 'Bài kế', '', 'CUNG_CO', {})]});
     await page.goto('/hs');
     await expect(page.getByTestId('lam-buoc-tiep')).toHaveAttribute('href', '/hs/luyen/E2E-NEXT');
     await page.getByTestId('lam-buoc-tiep').click();
