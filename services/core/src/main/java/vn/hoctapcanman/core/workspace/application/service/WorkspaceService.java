@@ -32,8 +32,14 @@ import vn.hoctapcanman.core.workspace.application.port.*;
         teacher(actor,request.lopId());
         String material=drafts.material(request.lopId(),request.documentId()).orElseThrow(()->new WorkspaceException(404,"Chọn tài liệu có quyền sử dụng trong lớp."));
         if(material.length()>20000)throw new WorkspaceException(400,"Chọn tài liệu tối đa 20.000 ký tự để soạn nháp.");
-        var generated=draftModel.generate(request.lopId(),material).orElseThrow(()->new WorkspaceException(503,"AI soạn nháp chưa sẵn sàng. Thầy cô có thể nhập bài thủ công."));
+        var skills=drafts.authoringSkills(request.lopId());
+        String skill=request.skillCode()==null||request.skillCode().isBlank()?skills.stream().findFirst()
+            .orElseThrow(()->new WorkspaceException(400,"Lớp chưa có kỹ năng của chủ đề đang học.")):request.skillCode();
+        if(!skills.contains(skill))throw new WorkspaceException(400,"Chọn kỹ năng trong danh mục của lớp.");
+        var generated=draftModel.generate(request.lopId(),material,skill).orElseThrow(()->new WorkspaceException(503,"AI soạn nháp chưa sẵn sàng. Thầy cô có thể nhập bài thủ công."));
         var p=generated.problem();
+        if(!skills.contains(p.skillCode())||!skill.equals(p.skillCode()))
+            throw new WorkspaceException(422,"AI chưa dùng đúng kỹ năng đã chọn. Hãy thử lại.");
         var problem=new NewProblem(request.lopId(),"AI."+UUID.randomUUID().toString().replace("-",""),p.skillCode(),p.level4(),p.statement(),p.latex(),p.function());
         if(!validator.validate(problem).isEmpty()||generated.solution()==null||generated.solution().isBlank()||generated.solution().length()>10000||generated.inputTokens()<0||generated.outputTokens()<0)
             throw new WorkspaceException(422,"Bản nháp chưa đủ nội dung. Hãy thử lại.");
@@ -82,6 +88,11 @@ import vn.hoctapcanman.core.workspace.application.port.*;
         if(store.bank(r.lopId()).stream().noneMatch(i->i.id().equals(r.problemId().toString())&&i.status().equals("DA_PHAT_HANH")))throw new WorkspaceException(400,"Chọn bài đã phát hành cho lớp.");
         store.recommend(actor,r,clock.instant());
         return ok("Đã chọn bài tiếp theo cho học sinh.",1);
+    }
+
+    public List<Item> skillCatalog(UUID actor,UUID cl) {
+        teacher(actor,cl);
+        return drafts.authoringSkillCatalog(cl);
     }
 
     public List<Item> bank(UUID actor,UUID cl) {

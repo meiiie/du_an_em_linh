@@ -46,7 +46,7 @@ import vn.hoctapcanman.core.shared.infrastructure.math.*;
     private void createProblem(UUID actor,NewProblem request,@Nullable String explanation) {
         db.sql("SELECT id FROM classes WHERE id=:id FOR UPDATE").param("id",request.lopId()).query(UUID.class).single();
         if(problems.findByCode(request.code()).isPresent())throw new WorkspaceException(409,"Mã bài đã có. Hãy chọn mã khác.");
-        if(db.sql("SELECT count(*) FROM skills WHERE code=:code AND topic_code='DH12'").param("code",request.skillCode()).query(Integer.class).single()!=1)throw new WorkspaceException(400,"Chọn kỹ năng của chủ đề đang học.");
+        if(db.sql("SELECT count(*) FROM skills sk JOIN topics t ON t.code=sk.topic_code JOIN classes c ON c.id=:cl WHERE sk.code=:code AND t.code='DH12' AND t.grade=c.grade AND coalesce(sk.grade,t.grade)=c.grade").param("cl",request.lopId()).param("code",request.skillCode()).query(Integer.class).single()!=1)throw new WorkspaceException(400,"Chọn kỹ năng của chủ đề đang học.");
         var solved=math.call(MathJob.SOLVE,Map.of("ham",request.function(),"de_bai",request.statement()));
         if(!(solved instanceof MathResult.Ok solvedOk)||!Boolean.TRUE.equals(solvedOk.body().get("dat"))||solvedOk.body().get("bai_lam")==null)throw new WorkspaceException(422,"Bộ kiểm chưa xác minh được hàm này; hãy kiểm tra lại đề.");
         Map<String,Object> body=map(solvedOk.body());
@@ -208,7 +208,7 @@ import vn.hoctapcanman.core.shared.infrastructure.math.*;
         return sanitize(classId,problemId,draft,question,submittedLines).filter(draft::equals).isPresent();
     }
 
-    /** ADR 013 §4: câu bị cổng bỏ được rút khỏi lời gia sư (và vào hàng duyệt); phần còn lại đã kiểm mới được trả. */
+    /** ADR 013 §4: câu bị cổng bỏ được rút khỏi lời gia sư; phần còn lại đã kiểm mới được trả. */
     public Optional<String> sanitize(UUID classId,UUID problemId,String draft,String question,List<String> submittedLines) {
         try {
             var solution=solutions.findByProblemId(problemId);
@@ -226,7 +226,6 @@ import vn.hoctapcanman.core.shared.infrastructure.math.*;
                 || !(cleanResult.body().get("thay_bang_goi_y") instanceof Boolean) || !(cleanResult.body().get("cau_sach") instanceof String))
                 throw new WorkspaceException(503,"Cổng kiểm toán chưa sẵn sàng. Em thử lại sau.");
             String sach=gate instanceof MathResult.Ok clean&&Boolean.FALSE.equals(clean.body().get("thay_bang_goi_y"))&&clean.body().get("cau_sach") instanceof String c?c.strip():"";
-            if(!draft.equals(sach))db.sql("INSERT INTO tutor_review_queue(id,class_id,problem_id,draft,reason,created_at) VALUES(:id,:cl,:problem,:draft,:reason,:now) ON CONFLICT(class_id,problem_id,draft) DO NOTHING").param("id",UUID.randomUUID()).param("cl",classId).param("problem",problemId).param("draft",draft).param("reason","Cổng công thức chưa xác minh được lời gợi ý; câu này chưa gửi cho học sinh.").param("now",java.sql.Timestamp.from(clock.instant())).update();
             return sach.isBlank()?Optional.empty():Optional.of(sach);
         }
         catch(WorkspaceException ex) { throw ex; }
