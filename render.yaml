@@ -34,6 +34,8 @@ services:
     envVars:
       - key: SERVER_PORT
         value: "8080"
+      - key: SPRING_PROFILES_ACTIVE
+        value: prod
       - key: PGHOST
         fromDatabase:
           name: hoc-toan-pg
@@ -60,7 +62,8 @@ services:
           name: hoc-toan-math
           property: hostport
       - key: APP_IDENTITY_JWT_SECRET
-        generateValue: true
+        # Cấp base64 của ít nhất 32 byte; không giả định chuỗi Render sinh có định dạng base64.
+        sync: false
 
   - type: pserv
     name: hoc-toan-math

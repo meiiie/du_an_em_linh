@@ -3,7 +3,6 @@
 !services/core/
 !data/supham/
 !data/v0/
-!data/dev/
 services/core/target/
 services/core/.mvn/wrapper/maven-wrapper.jar
 services/core/.idea/

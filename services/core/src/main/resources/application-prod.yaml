@@ -1,0 +1,6 @@
+# Production không chạy runner seed; JWT được kiểm bắt buộc trong JwtConfig.
+app:
+  content:
+    import-on-startup: false
+  identity:
+    refresh-cookie-secure: true
