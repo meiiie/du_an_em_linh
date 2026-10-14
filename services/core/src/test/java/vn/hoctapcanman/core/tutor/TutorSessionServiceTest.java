@@ -41,6 +41,7 @@ class TutorSessionServiceTest {
     @Test void remembersEarlierTurnsAndReplayNeverCallsModel() throws Exception {
         var prompts=new CopyOnWriteArrayList<HintPrompt>();when(model.draft(any())).thenAnswer(i -> {prompts.add(i.getArgument(0));return Optional.of("Em cần tìm điều gì?");});
         Accepted first=ask();assertEquals("completed",terminal(first).status());
+        assertFalse(prompts.getFirst().system().contains("Lượt trước bạn mở đầu bằng:"));
         var initial=service.events(student,first.session().id(),0);
         assertEquals(List.of("start","delta","done"),initial.stream().map(Event::type).toList());
         assertEquals(List.of(1L,2L,3L),initial.stream().map(Event::seq).toList());
@@ -49,6 +50,7 @@ class TutorSessionServiceTest {
         Accepted next=ask();assertEquals(first.session().id(),next.session().id());terminal(next);
         assertTrue(prompts.getLast().user().contains("Gia sư: Em cần tìm điều gì?"));
         assertTrue(prompts.getLast().system().contains("giải thích lựa chọn"));
+        assertTrue(prompts.getLast().system().contains("Lượt trước bạn mở đầu bằng: «Em cần tìm điều gì?». Mở đầu khác."));
     }
     @Test void uncheckedLiveIdentityIsKeptInHistoryButNeverResentToModel() throws Exception {
         String raw="Em liên hệ Nguyễn Văn An qua www.example.test nhé.";
@@ -58,9 +60,20 @@ class TutorSessionServiceTest {
         Accepted next=ask();assertEquals(raw,terminal(next).answer());
         assertFalse(prompts.getLast().user().contains("Nguyễn Văn An"));
         assertFalse(prompts.getLast().user().contains("www.example.test"));
+        assertFalse(prompts.getLast().system().contains("Nguyễn Văn An"));
+        assertFalse(prompts.getLast().system().contains("www.example.test"));
         assertTrue(prompts.getLast().user().contains("[đã ẩn nội dung có thông tin cá nhân]"));
         assertEquals(raw,store.turn(first.session().id(),first.turn().id()).orElseThrow().answer());
         verifyNoInteractions(gate);
+    }
+    @Test void openerNoteUsesSixWordsOfLastAssistantEvenWhenNewerTurnHasNoAnswer() throws Exception {
+        service.open(student,assignment);
+        store.seed("Em chưa biết cách làm.","Em muốn tự kiểm tra điều gì ở bước này?");
+        store.seed("Em đã thử cách khác.","");
+        var prompts=new CopyOnWriteArrayList<HintPrompt>();
+        when(model.draft(any())).thenAnswer(i -> {prompts.add(i.getArgument(0));return Optional.of("Em chọn gì?");});
+        Accepted a=ask();assertEquals("completed",terminal(a).status());
+        assertTrue(prompts.getFirst().system().endsWith("Lượt trước bạn mở đầu bằng: «Em muốn tự kiểm tra điều». Mở đầu khác.\nYêu cầu em giải thích lựa chọn bằng ngôn ngữ rõ ràng."));
     }
     @Test void duplicateRequestIsIdempotentAndDifferentPayloadConflicts() throws Exception {
         Accepted first=ask();terminal(first);
@@ -259,7 +272,7 @@ class TutorSessionServiceTest {
                     finally {cancel.detach(resource);}
                 }
                 chunks.accept(summaryAfterDone("Em đang thử cách đã chọn."));
-            } else chunks.accept("Mình cùng em làm rõ bước đang vướng nhé.");
+            } else chunks.accept("Em muốn tự kiểm tra điều gì ở bước này?");
             return new ModelUsage(50,20,false);
         }).when(model).stream(any(),any(),any());
         Accepted a=svc.ask(student,s.id(),request(UUID.randomUUID()));

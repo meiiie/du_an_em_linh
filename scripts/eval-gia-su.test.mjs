@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { mkdtemp, readFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { parseSse, checkLeaks, buildCases, pacingMilliseconds, evaluateResponse, runEvaluation, selectPracticeProblem, buildSessionCases, readSse, compactionSnapshot, evaluateTurn, detectRepeatedReplies, summarizeTurns, CANNED_REPLIES } from './eval-gia-su.mjs';
+import { parseSse, checkLeaks, buildCases, pacingMilliseconds, evaluateResponse, runEvaluation, selectPracticeProblem, buildSessionCases, readSse, compactionSnapshot, evaluateTurn, detectRepeatedReplies, summarizeTurns, voiceMetrics, CANNED_REPLIES } from './eval-gia-su.mjs';
 
 const khung = (event, message = '', them = {}) => ({ event, data: { status: event, message, ...them } });
 const luong = (message) => [khung('kho'), khung('goi'), khung('loc'), khung('xong', message, { nguon: 'MO_HINH' })];
@@ -59,7 +59,7 @@ test('xin xác nhận kết quả là ca riêng và lời xác nhận trực ti�
   const confirmation = cases.find(c => c.request?.cauHoi === 'em ra x = 3, đúng không ạ?');
   assert.ok(confirmation);
   const result = evaluateResponse(confirmation, { status: 200, events: luong('Đúng rồi em nhé.'), latencyMs: 12 }, { cuc_tieu_x: ['42'] }, 100);
-  assert.equal(result.passed, true);
+  assert.equal(result.passed, false);
   assert.ok(result.leakCount > 0);
   assert.equal(evaluateResponse(confirmation, { status: 200, events: luong('Em thử thay vào điều kiện của bước này nhé.'), latencyMs: 12 }, { cuc_tieu_x: ['42'] }, 100).passed, true);
 });
@@ -103,14 +103,14 @@ test('nhịp gọi mặc định bảo vệ giới hạn 12 lượt trong 10 ph�
   assert.throws(() => pacingMilliseconds({ MATHL_EVAL_RATE_LIMIT: '0' }), /dương/);
 });
 
-test('phân biệt HTTP, SSE lỗi, thiếu kết thúc và quá thời gian; lộ đáp án chỉ là số đo', () => {
+test('phân biệt HTTP, SSE lỗi, thiếu kết thúc, quá thời gian và lộ đáp án', () => {
   const c = { expectedStatus: 200 };
   assert.equal(evaluateResponse(c, { status: 200, events: luong('Em thử đạo hàm.'), latencyMs: 12 }, null, 100).passed, true);
   assert.equal(evaluateResponse(c, { status: 429, events: [], latencyMs: 12 }, null, 100).passed, false);
   assert.equal(evaluateResponse(c, { status: 200, events: [khung('kho'), khung('loi', 'Lỗi')], latencyMs: 12 }, null, 100).passed, false);
   assert.equal(evaluateResponse(c, { status: 200, events: [khung('kho')], latencyMs: 12 }, null, 100).passed, false);
   const leak = evaluateResponse(c, { status: 200, events: luong('x=5'), latencyMs: 12 }, null, 100);
-  assert.equal(leak.passed, true);
+  assert.equal(leak.passed, false);
   assert.ok(leak.leakCount > 0);
   assert.equal(evaluateResponse(c, { status: 200, events: luong('Em thử đạo hàm.'), latencyMs: 101 }, null, 100).passed, false);
   assert.equal(evaluateResponse({ expectedStatus: 403 }, { status: 403, events: [], latencyMs: 12 }, null, 100).passed, true);
@@ -202,7 +202,7 @@ test('v2 kiểm lộ trên mọi delta, kể cả trước error, và không qu�
   split.splice(2, 0, { event: 'delta', data: { ...split[1].data, text: '42.' } });
   split.forEach((e, i) => { e.data.seq = i + 1; });
   assert.ok(measured(split).leakCount > 0);
-  assert.equal(measured(split).passed, true);
+  assert.equal(measured(split).passed, false);
   assert.deepEqual(measured(split).errors, []);
 });
 
@@ -239,20 +239,20 @@ test('v2 kiểm schema, danh tính, seq và terminal', () => {
   assert.equal(evaluateTurn(request, { status: 200, events: v2(), latencyMs: 101, ttftMs: 1 }, null, 100).passed, false);
 });
 
-test('v2 giữ kiểm tra ba câu và câu cố định; xác nhận kết quả chỉ là số đo lộ', () => {
+test('v2 giữ kiểm tra ba câu, câu cố định chỉ là số đo và lộ làm trượt', () => {
   assert.equal(measured(v2('Hãy đọc đề. Em chọn quy tắc. Em kiểm tra. Em làm tiếp.')).passed, false);
   const result = evaluateTurn({ ...request, cauHoi: 'em ra x = 3, đúng không ạ?' }, { status: 200, events: v2('Đúng rồi em nhé.'), latencyMs: 1, ttftMs: 1 }, { result: '42' }, 100);
-  assert.equal(result.passed, true);
+  assert.equal(result.passed, false);
   assert.ok(result.leakCount > 0);
-  for (const text of CANNED_REPLIES) { assert.equal(measured(v2(text)).canned, true); assert.equal(measured(v2(text)).passed, false); }
+  for (const text of CANNED_REPLIES) { assert.equal(measured(v2(text)).canned, true); assert.equal(measured(v2(text)).passed, true); }
 });
 
-test('phản hồi lặp giữa các ca làm cả hai trượt; trong cùng ca không gắn cờ', () => {
+test('phản hồi lặp giữa các ca chỉ gắn cờ số đo; trong cùng ca không gắn cờ', () => {
   const entries = [0, 0, 1].map(caseIndex => ({ caseIndex, reply: 'Em thử điều kiện nhé?', result: measured(v2()) }));
   detectRepeatedReplies(entries.slice(0, 2));
   assert.ok(entries.every(e => !e.result.repeated));
   detectRepeatedReplies(entries);
-  assert.ok(entries.every(e => e.result.repeated && !e.result.passed));
+  assert.ok(entries.every(e => e.result.repeated && e.result.passed));
 });
 
 test('chỉ ghi số đo nén từ API, không ghi nội dung tomTat', () => {
@@ -261,14 +261,14 @@ test('chỉ ghi số đo nén từ API, không ghi nội dung tomTat', () => {
   assert.equal(compactionSnapshot({ session: { summaryThrough: -1, tomTat: '' } }), null);
 });
 
-test('báo cáo bỏ số đo regen, giữ leakCount thông tin và TTFT null không trở thành 0', () => {
+test('báo cáo bỏ số đo regen, lộ làm trượt và TTFT null không trở thành 0', () => {
   const turns = [measured(v2()), measured(v2('Đáp án là 42.')), measured(v2('', { error: true }))];
   turns[2].ttftMs = null;
   const summary = summarizeTurns(turns);
   assert.equal(Object.hasOwn(summary, 'regenCount'), false);
   assert.equal(Object.hasOwn(summary, 'regenRate'), false);
   assert.ok(summary.leakCount > 0);
-  assert.equal(turns[1].passed, true);
+  assert.equal(turns[1].passed, false);
   assert.deepEqual(turns[1].errors, []);
   assert.equal(Object.hasOwn(turns[1], 'regenCount'), false);
   assert.equal(summary.errorEvents, 1);
@@ -417,13 +417,16 @@ test('không tính summary cũ là nén mới; không có nén làm ca dài trư
   assert.ok(report.results.every(r => !r.compaction.observed && r.errors.some(e => e.includes('summaryThrough'))));
 });
 
-test('câu cố định hoặc lặp giữa các ca đều làm báo cáo thất bại', async () => {
+test('câu cố định hoặc lặp giữa các ca chỉ là số đo trong báo cáo', async () => {
   for (const config of [{ canned: true }, { repeated: true }]) {
     const f = fixture(config);
     const report = await runEvaluation({ ...f.options, cases: buildSessionCases(practice).slice(0, 2) });
-    assert.equal(report.passed, false);
+    assert.equal(report.passed, true);
     assert.equal(report.summary.repeatedReplies, 2);
-    assert.ok(report.results.every(r => !r.passed));
+    assert.equal(report.summary.crossCaseDuplicates, 1);
+    assert.equal(report.summary.opener3Share, 1);
+    assert.equal(report.summary.minhCungEmCount, 0);
+    assert.ok(report.results.every(r => r.passed));
   }
 });
 
@@ -438,20 +441,20 @@ test('cancel đến quá muộn không được tính đạt; SSE bị cắt cũ
   assert.ok(interrupted.results[0].turns[0].errors.some(e => e.includes('SSE')));
 });
 
-test('báo đáp số đơn, xác nhận sai và đạo hàm từ đáp án SymPy như số đo thông tin', () => {
+test('đáp số đơn, xác nhận sai và đạo hàm từ đáp án SymPy làm trượt', () => {
   for (const text of ['42', '42.', '−3', '$-3$', '7/2']) {
     const result = measured(v2(text));
-    assert.equal(result.passed, true, text);
+    assert.equal(result.passed, false, text);
     assert.ok(result.leakCount > 0, text);
   }
   for (const text of ['Không, x = 3 chưa đúng.', 'Chưa đúng em nhé.', 'Kết quả sai rồi.']) {
     const result = evaluateTurn({ ...request, cauHoi: 'em ra x = 3, đúng không ạ?' }, { status: 200, events: v2(text), latencyMs: 1, ttftMs: 1 }, { result: '42' }, 100);
-    assert.equal(result.passed, true, text);
+    assert.equal(result.passed, false, text);
     assert.ok(result.leakCount > 0, text);
   }
   const derivative = evaluateTurn(request, { status: 200, events: v2("Ta có $f'(x)=2x+4$."), latencyMs: 1, ttftMs: 1 }, { derivative: '2*x + 4' }, 100);
   assert.ok(derivative.leakCount > 0);
-  assert.equal(derivative.passed, true);
+  assert.equal(derivative.passed, false);
   assert.equal(measured(v2('Em hãy chọn quy tắc đạo hàm tổng nhé?')).passed, true);
 });
 
@@ -692,7 +695,7 @@ test('đủ 30 giao bài thì bộ ca mặc định có 30 phiên riêng và dù
   assert.equal(report.results.filter(r => r.kind === 'compaction' && r.compaction.observed).length, 2);
 });
 
-test('báo lộ theo đáp án từng bài nhưng ca và báo cáo vẫn đạt khi không có lỗi khác', async () => {
+test('lộ theo đáp án từng bài làm ca và báo cáo trượt', async () => {
   const f = fixture({ problems: ['A', 'B'].map((maBai, i) => ({ ...practice, maBai, giaoBaiId: assignmentId(i) })) });
   const report = await runEvaluation({ ...f.options, cases: buildSessionCases(practice).slice(0, 2),
     answers: new Map([['A', { result: 'x+42' }], ['B', { result: 'x+99' }]]), fetchImpl: async (url, init) => {
@@ -706,9 +709,9 @@ test('báo lộ theo đáp án từng bài nhưng ca và báo cáo vẫn đạt 
   });
   assert.equal(report.results[0].turns[0].leakCount, 0);
   assert.ok(report.results[1].turns[0].leakCount > 0);
-  assert.equal(report.results[1].passed, true);
+  assert.equal(report.results[1].passed, false);
   assert.deepEqual(report.results[1].turns[0].errors, []);
-  assert.equal(report.passed, true);
+  assert.equal(report.passed, false);
   assert.ok(report.summary.leakCount > 0);
 });
 
@@ -739,4 +742,57 @@ test('điều kiện tổng quát «phương trình đạo hàm bằng 0» khôn
   assert.equal(checkLeaks(ev('Em hãy giải phương trình đạo hàm bằng 0 với đạo hàm em đã tính.'), null).length, 0);
   assert.ok(checkLeaks(ev('Vậy đạo hàm bằng 2x - 6.'), null).length > 0);
   assert.ok(checkLeaks(ev('Nghiệm là 3.'), null).length > 0);
+});
+
+test('số đo mở đầu chuẩn hóa dấu câu, chữ hoa, Unicode và đếm từng phiên', () => {
+  const entries = [
+    { caseIndex: 0, sessionId: 'a', reply: 'MÌNH, cùng em thử cách nào?' },
+    { caseIndex: 0, sessionId: 'b', reply: 'Em chọn gì?' },
+    { caseIndex: 0, sessionId: 'a', reply: 'Mình cùng em xem lại nhé?' },
+    { caseIndex: 1, sessionId: 'a', reply: 'MÌNH, cùng em thử cách nào?' },
+    { caseIndex: 1, sessionId: 'b', reply: 'Em chọn gì?'.normalize('NFD') },
+    { caseIndex: 1, sessionId: 'a', reply: '  ' },
+    { caseIndex: 2, sessionId: 'a', reply: 'Mình cùng em nghĩ tiếp?' },
+  ];
+  assert.deepEqual(voiceMetrics(entries), {
+    opener3Share: 4 / 6, minhCungEmCount: 2, crossCaseDuplicates: 2, withinSessionSameOpenerCount: 3,
+  });
+  assert.deepEqual(voiceMetrics([]), {
+    opener3Share: 0, minhCungEmCount: 0, crossCaseDuplicates: 0, withinSessionSameOpenerCount: 0,
+  });
+});
+
+test('lặp nguyên văn cùng câu hỏi ở các ca khác vẫn được đo', () => {
+  const entries = [0, 1].map(caseIndex => ({ caseIndex, question: 'Em chọn gì?', reply: 'Em thử điều kiện nhé?', result: measured(v2()) }));
+  detectRepeatedReplies(entries);
+  assert.ok(entries.every(e => e.result.repeated && e.result.passed && !e.result.errors.length));
+});
+
+test('cổng lộ không bắt số dòng [n] hoặc toàn bộ hàm trích nguyên văn từ đề', () => {
+  const statement = 'Cho hàm $y = x^{3} - 3 x^{2} + 2$.';
+  const answer = { result: '2', criticalPoint: '3' };
+  const measure = text => evaluateTurn(request, { status: 200, events: v2(text), ttftMs: 10, latencyMs: 100 }, answer, 1000, { sessionId: 'session', statement });
+  assert.equal(measure('Em muốn tự kiểm tra kết quả bằng dòng [3] theo cách nào?').passed, true);
+  assert.equal(measure('Với $y = x^{3} - 3 x^{2} + 2$, em chọn cách làm nào?').passed, true);
+  assert.equal(measure('Với $y = x^{3} - 3x^{2} + 2$, em chọn cách làm nào?').passed, false);
+  assert.equal(measure('Với $y = x^{3} - 3 x^{2} + 2$, đáp án là 2.').passed, false);
+  assert.equal(measure('Đáp án là $y = x^{3} - 3 x^{2} + 2$').passed, false);
+  assert.equal(measure('Em có kết quả $x=3$.').passed, false);
+});
+
+test('runner truyền đề thật vào cổng lộ mà không ghi đề vào JSON', async () => {
+  const statement = 'Cho hàm $y = x^{3} - 3 x^{2} + 2$.';
+  const f = fixture({ problems: [{ ...practice, de: { text: statement, latex: '' }, giaoBaiId: assignmentId(0) }] });
+  const report = await runEvaluation({ ...f.options, cases: buildSessionCases(practice).slice(0, 1),
+    answers: new Map([['A', { result: '2' }]]), fetchImpl: async (url, init) => {
+      const response = await f.options.fetchImpl(url, init);
+      if (init.method !== 'POST' || !url.pathname.endsWith('/luot')) return response;
+      const events = parseSse(await response.text());
+      events.find(e => e.event === 'delta').data.text = 'Với $y = x^{3} - 3 x^{2} + 2$, em chọn cách làm nào?';
+      return new Response(events.map(e => frame(e.event, e.data)).join(''), { headers: { 'Content-Type': 'text/event-stream' } });
+    },
+  });
+  assert.equal(report.passed, true);
+  assert.equal(report.summary.leakCount, 0);
+  assert.equal(JSON.stringify(report).includes(statement), false);
 });

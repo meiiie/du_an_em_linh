@@ -137,6 +137,13 @@ public class TutorSessionService {
     private HintPrompt memory(Accepted accepted,Assignment a,HintPrompt base) {
         Session s=sessions.snapshot(accepted.session().id());
         var window=sessions.memory(s.id(),s.summaryThrough(),accepted.turn().id());
+        String opener=window.reversed().stream().map(Turn::answer).filter(text -> !text.isBlank())
+            .findFirst().map(TutorSessionService::memoryText).map(text -> {
+                String clean=text.replaceAll("[«»\\p{Cntrl}]"," ").strip();
+                return String.join(" ",Arrays.stream(clean.split("(?U)\\s+")).limit(6).toList());
+            }).orElse("");
+        if(!opener.isEmpty())base=new HintPrompt(base.system()+"\nLượt trước bạn mở đầu bằng: «"
+            +opener.substring(0,Math.min(120,opener.length()))+"». Mở đầu khác.",base.user());
         int from=0;
         HintPrompt prompt=TutorPrompt.withMemory(base,a.level(),render(s.tomTat(),window));
         // Dự trữ đầu ra; chỉ bỏ lượt cũ nhất, không cắt system/đề/câu hỏi/summary.
