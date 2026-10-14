@@ -400,7 +400,7 @@ export async function runEvaluation({ env = process.env, fetchImpl = fetch, slee
   const jsonCall = async (path, init, deadline) => {
     const response = await call(path, init, undefined, deadline);
     if (!response) return null;
-    if (!response.ok) { await response.body?.cancel(); throw new Error('HTTP API chưa thành công.'); }
+    if (!response.ok) { await response.body?.cancel(); throw Object.assign(new Error('HTTP API chưa thành công.'), { httpStatus: response.status }); }
     try {
       const data = await response.json();
       return now() >= deadline ? null : data;
@@ -420,7 +420,7 @@ export async function runEvaluation({ env = process.env, fetchImpl = fetch, slee
   const problems = await jsonCall('/api/hs/bai');
   if (!Array.isArray(problems)) throw new Error('Danh sách bài không đúng hợp đồng.');
   const preferred = problem => /^(?:NT-LUYEN-?12|NT-DH12)/.test(problem.maBai);
-  const pool = [];
+  const pool = [], skippedAssignments = [];
   for (const candidate of [...problems].sort((a, b) => Number(preferred(b)) - Number(preferred(a)))) {
     await refresh();
     const detail = await jsonCall(`/api/hs/bai/${encodeURIComponent(candidate.maBai)}`);
@@ -428,8 +428,39 @@ export async function runEvaluation({ env = process.env, fetchImpl = fetch, slee
     // UUID và bước đều lấy từ chi tiết bài của học sinh, không suy đoán từ mã bài.
     if (typeof detail.giaoBaiId === 'string' && /^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i.test(detail.giaoBaiId)
       && Array.isArray(detail.cacBuoc) && detail.cacBuoc.some(step => typeof step.maBuoc === 'string' && step.maBuoc)
-      && !pool.some(p => p.giaoBaiId === detail.giaoBaiId)) pool.push(detail);
+      && !pool.some(p => p.giaoBaiId === detail.giaoBaiId)) {
+      // /api/hs/bai gồm cả giao bài chưa được mở gia sư; open là nguồn chuẩn
+      // cho chế độ ôn tập, hạn giao, phát hành, quyền lớp và cài đặt hiện hành.
+      try {
+        await refresh();
+        const opened = await jsonCall(API, post({ giaoBaiId: detail.giaoBaiId }));
+        if (typeof opened?.sessionId !== 'string' || !opened.sessionId) throw new Error('Thiếu phiên.');
+        pool.push({ ...detail, sessionId: opened.sessionId });
+      } catch (error) {
+        const reason = Number.isInteger(error.httpStatus) ? `Open bị từ chối (HTTP ${error.httpStatus}).` : 'Open thất bại hoặc phản hồi phiên không đúng hợp đồng.';
+        skippedAssignments.push({ maBai: detail.maBai, giaoBaiId: detail.giaoBaiId, reason });
+        log(`Bỏ giao bài · ${detail.maBai} · ${reason}`);
+      }
+    }
   }
+  const terminalStatuses = ['completed', 'cancelled', 'error'];
+  const waitForTerminal = async (sessionId, expectedTurnId) => {
+    await refresh();
+    const deadline = now() + 60_000;
+    let history;
+    while (now() < deadline) {
+      if (!await refresh(deadline)) break;
+      const next = await jsonCall(`${API}/${encodeURIComponent(sessionId)}/luot?offset=0&limit=1`, undefined, deadline);
+      if (!next) break;
+      if (!compactionSnapshot(next) || next.session.id !== sessionId || !Array.isArray(next.turns) || next.turns.length > 1
+        || next.turns.some(t => typeof t.id !== 'string' || !['generating', ...terminalStatuses].includes(t.status))) throw new Error('Thiếu dữ liệu lịch sử.');
+      history = next;
+      // offset=0 là lượt MỚI NHẤT, không phải lượt đầu của hội thoại.
+      const last = history.turns[0];
+      if ((!expectedTurnId || last?.id === expectedTurnId) && (!last || terminalStatuses.includes(last.status))) return { history, terminal: true };
+    }
+    return { history, terminal: false };
+  };
   const knownAnswers = answers ?? await loadAnswers();
   const cases = suppliedCases ?? buildSessionCases();
   const results = [], replies = [], seenSessions = new Map(), usedAssignments = new Map();
@@ -447,29 +478,26 @@ export async function runEvaluation({ env = process.env, fetchImpl = fetch, slee
       continue;
     }
     const previous = usedAssignments.get(giaoBaiId);
-    if (previous && !previous.sessionFinished) {
-      result.errors.push(`Ca ${previous.index} cùng giao bài chưa kết thúc; không tái dùng phiên.`);
-      continue;
-    }
     usedAssignments.set(giaoBaiId, result);
     let sessionId;
     try {
-      await refresh();
-      const opened = await jsonCall(API, post({ giaoBaiId }));
-      if (typeof opened.sessionId !== 'string' || !opened.sessionId) throw new Error('Thiếu phiên.');
-      sessionId = opened.sessionId;
+      sessionId = problem.sessionId;
       result.sessionId = sessionId;
       result.sessionReused = seenSessions.has(sessionId);
       const shared = seenSessions.get(sessionId) ?? [];
-      if (shared.length && !shared.at(-1).sessionFinished) throw new Error('Phiên trước chưa kết thúc.');
       shared.push(result);
       seenSessions.set(sessionId, shared);
       const path = `${API}/${encodeURIComponent(sessionId)}/luot`;
-      const before = await jsonCall(`${path}?offset=0&limit=1`);
+      const ready = await waitForTerminal(sessionId);
+      if (!ready.terminal) {
+        result.errors.push(`${previous ? `Ca ${previous.index} cùng giao bài` : 'Lượt trước của phiên'} chưa kết thúc sau khi chờ lịch sử tối đa 60 giây; không tái dùng phiên.`);
+        continue;
+      }
+      const before = ready.history;
+      for (const prior of shared.slice(0, -1)) prior.sessionFinished = true;
       result.compaction.before = compactionSnapshot(before);
       if (!result.compaction.before || before.session.id !== sessionId || !Array.isArray(before.turns)) throw new Error('Thiếu dữ liệu lịch sử.');
       result.preexistingHistory = before.turns.length > 0;
-      if (before.turns.some(t => t.status === 'generating')) throw new Error('Phiên còn lượt đang sinh.');
       result.sessionFinished = true; // Lịch sử rỗng hoặc lượt trước đã kết thúc.
       let compactionDeadline;
       const recordCompaction = snapshot => {
@@ -511,12 +539,16 @@ export async function runEvaluation({ env = process.env, fetchImpl = fetch, slee
         log(`Lượt ${turnIndex + 1}/${c.turns.length} · ${c.name} · HTTP ${status ?? '—'} · TTFT ${ttftMs ?? '—'} ms · trễ ${measured.latencyMs} ms · regen ${measured.regenCount} · lỗi SSE ${measured.errorEvents}`);
         replies.push({ caseIndex, result: measured, reply: events.filter(e => e.event === 'delta').map(e => e.data?.text ?? '').join('') });
         if (c.requireCompaction && turnIndex === c.turns.length - 1) compactionDeadline = now() + 30_000;
-        const after = await jsonCall(`${path}?offset=0&limit=1`);
+        const settled = await waitForTerminal(sessionId, events[0]?.data?.turnId);
+        const after = settled.history;
+        if (!after) {
+          result.errors.push('Không nhận được lịch sử trong thời gian chờ terminal tối đa 60 giây.');
+          break;
+        }
         const snapshot = compactionSnapshot(after);
         if (!snapshot || after.session.id !== sessionId || !Array.isArray(after.turns)) throw new Error('Thiếu dữ liệu lịch sử.');
         const persisted = after.turns.find(turn => turn.id === events[0]?.data?.turnId);
-        result.sessionFinished = Boolean(persisted && ['completed', 'cancelled', 'error'].includes(persisted.status))
-          && !after.turns.some(t => t.status === 'generating');
+        result.sessionFinished = settled.terminal;
         const terminal = events.at(-1);
         if (terminal?.event === 'done' && persisted?.status !== terminal.data?.status) {
           measured.errors.push('Trạng thái lịch sử chưa khớp sự kiện done.');
@@ -560,7 +592,7 @@ export async function runEvaluation({ env = process.env, fetchImpl = fetch, slee
     const reasons = [...new Set([...r.errors, ...r.turns.flatMap(t => t.errors)])].join(' ');
     log(`${r.passed ? 'ĐẠT' : 'TRƯỢT'} · ${r.name} · TTFT p50 ${r.metrics.ttftMs.p50 ?? '—'} ms · tổng trễ ${r.metrics.totalLatencyMs} ms · regen ${r.metrics.regenCount} · lỗi SSE ${r.metrics.errorEvents} · lộ ${r.metrics.leakCount} · câu cố định/lặp ${r.metrics.cannedReplies}/${r.metrics.repeatedReplies} · nén ${r.compaction.observed ? 'có' : 'chưa'}${reasons ? ` · ${reasons}` : ''}`);
   }
-  const report = { skipped: false, passed: results.every(r => r.passed), generatedAt: new Date(now()).toISOString(), intervalMs, maxLatencyMs, sharedSessions,
+  const report = { skipped: false, passed: results.every(r => r.passed), generatedAt: new Date(now()).toISOString(), intervalMs, maxLatencyMs, skippedAssignments, sharedSessions,
     summary: { cases: results.length, passedCases: results.filter(r => r.passed).length,
       compactionCases: results.filter(r => r.compaction.observed).length, ...summarizeTurns(results.flatMap(r => r.turns)) }, results };
   log(`Tổng: ${report.summary.passedCases}/${report.summary.cases} ca đạt · TTFT p50/p95 ${report.summary.ttftMs.p50 ?? '—'}/${report.summary.ttftMs.p95 ?? '—'} ms · trễ ${report.summary.totalLatencyMs} ms · regen ${report.summary.regenCount} (${Math.round(report.summary.regenRate * 100)}% lượt) · lỗi SSE ${report.summary.errorEvents} · lộ ${report.summary.leakCount} · câu cố định/lặp ${report.summary.cannedReplies}/${report.summary.repeatedReplies}`);
@@ -585,10 +617,12 @@ hai ca 16 lượt gửi câu hỏi dài dưới 2000 ký tự để kích hoạt
 Không cần khóa nhà AI trong script; model được cấu hình tại core.
 Mọi HTTP call giãn ít nhất 2200 ms, mặc định 51 giây để tôn trọng giới hạn
 12/10 phút. Đăng nhập lại mỗi 10 phút. Dùng tài khoản tổng hợp riêng.
-Mỗi ca lấy một giaoBaiId từ chi tiết bài trong toàn bộ /api/hs/bai,
+Probe open từng giaoBaiId từ chi tiết bài trong toàn bộ /api/hs/bai;
+chỉ chọn giao bài mở được, skippedAssignments ghi lý do bỏ qua an toàn.
 ưu tiên NT-LUYEN12*, NT-LUYEN-12*, NT-DH12*, rồi luân phiên khi hết bài.
 Bước lấy từ cacBuoc của chính bài đó. Chỉ tái dùng phiên sau khi lịch sử
-xác nhận lượt trước kết thúc; sharedSessions/sharedWithCases ghi các ca dùng chung.
+xác nhận lượt mới nhất kết thúc (poll tối đa 60 giây, giữ nhịp HTTP);
+sharedSessions/sharedWithCases ghi các ca dùng chung.
 Nén chỉ đạt khi session.summaryThrough từ GET lịch sử tăng trong ca dài;
 chờ nén async tối đa 30 giây sau done, giữ nguyên nhịp HTTP.
 TTFT đo ngay khi delta đầu tới; regenRate = số lượt có regen / số lượt đo.

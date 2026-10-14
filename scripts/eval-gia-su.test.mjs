@@ -250,7 +250,7 @@ test('regenRate là tỷ lệ lượt có regen, TTFT null không trở thành 0
 
 const assignmentId = index => `11111111-1111-4111-8111-${String(index + 1).padStart(12, '0')}`;
 function fixture({ compact = true, canned = false, repeated = false, cancelWins = true, failStream = false, initialSummaryThrough = 0,
-  problems = [{ ...practice, giaoBaiId: assignmentId(0) }], compactionDelayMs = 0, omitSummary = false, stuck = false } = {}) {
+  problems = [{ ...practice, giaoBaiId: assignmentId(0) }], compactionDelayMs = 0, omitSummary = false, stuck = false, terminalDelayMs = 0 } = {}) {
   let current = Date.parse('2026-10-14T00:00:00Z'), count = 0;
   let cancelStream, activeTurn, lastStatus = 'completed';
   const calls = [], logins = [], logs = [], sessions = new Map();
@@ -284,6 +284,7 @@ function fixture({ compact = true, canned = false, repeated = false, cancelWins 
     state = [...sessions.values()].find(s => path === `/api/hs/gia-su/v2/phien/${s.id}/luot`);
     assert.ok(state, `Đường dẫn phiên không hợp lệ: ${path}`);
     if (init.method !== 'POST') {
+      for (const turn of state.turns) if (turn.terminalAt !== undefined && current >= turn.terminalAt) turn.status = 'completed';
       if (state.pendingSummary && current >= state.pendingSummary.at) {
         state.summaryThrough = state.pendingSummary.through;
         state.pendingSummary = null;
@@ -298,8 +299,8 @@ function fixture({ compact = true, canned = false, repeated = false, cancelWins 
     assert.ok(state.turns.every(t => t.status !== 'generating'), 'Không chồng lượt đang sinh');
     count++;
     activeTurn = `turn-${count}`;
-    lastStatus = stuck ? 'generating' : 'completed';
-    state.turns.unshift({ id: activeTurn, status: lastStatus });
+    lastStatus = stuck || terminalDelayMs ? 'generating' : 'completed';
+    state.turns.unshift({ id: activeTurn, status: lastStatus, ...(!stuck && terminalDelayMs ? { terminalAt: current + terminalDelayMs } : {}) });
     if (compact && state.turns.length >= 5) state.pendingSummary = { through: state.turns.length - 3, at: current + compactionDelayMs };
     const isCancel = body.cauHoi === 'Em cần một gợi ý để tự tìm cách làm bước này.';
     const text = canned ? CANNED_REPLIES[0] : repeated ? 'Em hãy tự chọn quy tắc phù hợp nhé?' : `Em hãy tự kiểm tra lựa chọn ${'a'.repeat(count)} nhé?`;
@@ -485,7 +486,7 @@ test('ít assignment hơn ca thì luân phiên, chỉ tái dùng phiên đã k�
   assert.ok(f.logs.some(line => line.includes('Chia sẻ phiên') && line.includes('1, 3, 5')));
 });
 
-test('không tái dùng assignment nếu ca trước chưa xác nhận kết thúc trong lịch sử', async () => {
+test('chờ tối đa 60 giây và không tái dùng assignment nếu lượt trước vẫn đang sinh', async () => {
   const f = fixture({ failStream: true, stuck: true });
   const report = await runEvaluation({ ...f.options, cases: buildSessionCases(practice).slice(0, 2) });
   assert.equal(report.passed, false);
@@ -493,6 +494,109 @@ test('không tái dùng assignment nếu ca trước chưa xác nhận kết th�
   assert.equal(report.results[1].turns.length, 0);
   assert.ok(report.results[1].errors.some(e => e.includes('chưa kết thúc')));
   assert.equal(f.calls.filter(c => c.path === '/api/hs/gia-su/v2/phien').length, 1);
+  const asks = f.calls.filter(c => c.init.method === 'POST' && c.path.endsWith('/luot'));
+  const polls = f.calls.filter(c => c.init.method !== 'POST' && c.path.endsWith('/luot') && c.at > asks[0].at);
+  assert.ok(polls.length > 2);
+  assert.ok(polls.at(-1).at - polls[0].at <= 120_000, 'hai lần chờ đều có hạn 60 giây');
+});
+
+test('probe open bỏ giao bài bị từ chối, ghi lý do an toàn và chỉ dùng phiên mở được', async () => {
+  const problems = ['NT-DH12-KIEM-TRA', 'NT-LUYEN12-HET-HAN', 'NT-LUYEN12-HOP-LE'].map((maBai, i) => ({ ...practice, maBai, giaoBaiId: assignmentId(i) }));
+  const f = fixture({ problems });
+  const report = await runEvaluation({ ...f.options, cases: buildSessionCases(practice).slice(0, 2), fetchImpl: async (url, init) => {
+    const response = await f.options.fetchImpl(url, init);
+    if (url.pathname === '/api/hs/gia-su/v2/phien' && JSON.parse(init.body).giaoBaiId !== assignmentId(2))
+      return Response.json({ message: 'bí mật server không được ghi' }, { status: 404 });
+    return response;
+  } });
+  assert.equal(report.passed, true);
+  assert.deepEqual(report.results.map(r => r.maBai), ['NT-LUYEN12-HOP-LE', 'NT-LUYEN12-HOP-LE']);
+  assert.equal(report.skippedAssignments.length, 2);
+  assert.ok(report.skippedAssignments.every(a => a.reason.includes('404')));
+  assert.equal(JSON.stringify(report).includes('bí mật server'), false);
+  assert.equal(f.logs.join('\n').includes('bí mật server'), false);
+  assert.ok(f.logs.some(line => line.includes('Bỏ giao bài') && line.includes('404')));
+  assert.deepEqual(report.sharedSessions[0].cases.map(c => c.index), [1, 2]);
+});
+
+test('mọi probe bị từ chối thì không gửi lượt hỏi', async () => {
+  const f = fixture();
+  const report = await runEvaluation({ ...f.options, cases: buildSessionCases(practice).slice(0, 2), fetchImpl: async (url, init) => {
+    const response = await f.options.fetchImpl(url, init);
+    return url.pathname === '/api/hs/gia-su/v2/phien' ? Response.json({}, { status: 403 }) : response;
+  } });
+  assert.equal(report.passed, false);
+  assert.equal(report.skippedAssignments.length, 1);
+  assert.ok(report.results.every(r => r.turns.length === 0));
+  assert.equal(f.calls.some(c => c.init.method === 'POST' && c.path.endsWith('/luot')), false);
+});
+
+test('lịch sử trễ sau done được poll đến terminal trước lượt tiếp và ca dùng chung', async () => {
+  const f = fixture({ terminalDelayMs: 12_000 });
+  const report = await runEvaluation({ ...f.options, cases: buildSessionCases(practice).filter(c => c.kind === 'multi').slice(0, 2) });
+  assert.ok(report.results.length > 0);
+  assert.equal(report.passed, true);
+  assert.ok(report.results.every(r => r.sessionFinished));
+  const asks = f.calls.filter(c => c.init.method === 'POST' && c.path.endsWith('/luot'));
+  assert.ok(asks.length > 2);
+  assert.ok(asks.slice(1).every((c, i) => c.at - asks[i].at >= 12_000));
+});
+
+test('phiên có lượt đang sinh từ trước eval được chờ terminal thay vì báo lỗi ngay', async () => {
+  const f = fixture();
+  let firstHistoryAt;
+  const report = await runEvaluation({ ...f.options, cases: buildSessionCases(practice).slice(0, 1), fetchImpl: async (url, init) => {
+    const response = await f.options.fetchImpl(url, init);
+    if (init.method !== 'POST' && url.pathname.endsWith('/luot')) {
+      firstHistoryAt ??= f.options.now();
+      const history = await response.json();
+      if (!history.turns.length) history.turns = [{ id: 'preexisting', status: f.options.now() - firstHistoryAt < 12_000 ? 'generating' : 'completed' }];
+      return Response.json(history);
+    }
+    return response;
+  } });
+  assert.equal(report.passed, true);
+  const ask = f.calls.find(c => c.init.method === 'POST' && c.path.endsWith('/luot'));
+  assert.ok(ask.at - firstHistoryAt >= 12_000);
+});
+
+test('ca sau vẫn dùng lại phiên khi SSE ca trước hỏng nhưng lịch sử đã terminal', async () => {
+  const f = fixture({ terminalDelayMs: 12_000 });
+  let asks = 0;
+  const report = await runEvaluation({ ...f.options, cases: buildSessionCases(practice).slice(0, 2), fetchImpl: async (url, init) => {
+    const response = await f.options.fetchImpl(url, init);
+    if (init.method !== 'POST' || !url.pathname.endsWith('/luot') || ++asks !== 1) return response;
+    return new Response((await response.text()).replace(/event: done[\s\S]*/, 'event: done\ndata: {'), { headers: { 'Content-Type': 'text/event-stream' } });
+  } });
+  assert.equal(report.results[0].passed, false);
+  assert.equal(report.results[0].sessionFinished, true);
+  assert.equal(report.results[1].passed, true);
+  assert.deepEqual(report.results.map(r => r.sharedWithCases), [[2], [1]]);
+});
+
+test('poll terminal không nhận dữ liệu đến sau cửa sổ 60 giây', async () => {
+  const f = fixture();
+  let firstHistoryAt;
+  const report = await runEvaluation({ ...f.options, cases: buildSessionCases(practice).slice(0, 1), fetchImpl: async (url, init) => {
+    const response = await f.options.fetchImpl(url, init);
+    if (init.method !== 'POST' && url.pathname.endsWith('/luot')) {
+      const history = await response.json();
+      if (firstHistoryAt === undefined) {
+        firstHistoryAt = f.options.now();
+        history.turns = [{ id: 'preexisting', status: 'generating' }];
+      } else {
+        assert.ok(init.signal instanceof AbortSignal);
+        await f.options.sleep(60_000);
+        history.turns = [{ id: 'preexisting', status: 'completed' }];
+      }
+      return Response.json(history);
+    }
+    return response;
+  } });
+  assert.equal(report.passed, false);
+  assert.equal(report.results[0].sessionFinished, false);
+  assert.ok(report.results[0].errors.some(e => e.includes('60 giây')));
+  assert.equal(f.calls.some(c => c.init.method === 'POST' && c.path.endsWith('/luot')), false);
 });
 
 test('nén async sau done: chỉ summaryThrough từ lịch sử cũng đủ, poll tối đa 30 giây', async () => {

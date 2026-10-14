@@ -187,7 +187,7 @@ public class OfflineTutorService {
             case "OUTPUT_LANGUAGE" -> "Chỉ viết tiếng Việt có dấu, không chèn chữ ngôn ngữ khác.";
             case "STRICT_QUESTION_SHAPE" -> "Chỉ viết đúng một câu hỏi tiếng Việt tối đa 160 ký tự, kết thúc bằng dấu hỏi. Bỏ số, ký hiệu, dẫn [n], biểu thức và câu dẫn; hỏi thao tác em tự làm.";
             case "EMPTY_SENTENCE" -> "Bản trả lời chưa có câu có nội dung. Viết một câu hỏi tiếng Việt ngắn về thao tác ở bước hiện tại, kết thúc bằng dấu hỏi.";
-            case "GATE_REJECTED_STATEMENT" -> "Bỏ khẳng định, quy tắc, dấu và kết luận, kể cả xác nhận đúng sai bằng câu hỏi. Chỉ mô tả thao tác như lấy đạo hàm từng hạng tử hoặc xét dấu trên từng khoảng; không nói thao tác cho ra điều gì.";
+            case "GATE_REJECTED_STATEMENT" -> "Bỏ khẳng định, quy tắc, dấu và kết luận, kể cả xác nhận đúng sai bằng câu hỏi. Thao tác bằng lời vẫn có thể hàm ý quy tắc: chỉ nêu hành động áp dụng quy tắc kèm [n] phù hợp trong cùng câu, dùng đúng số dòng của bảng đã khóa, không chép hay diễn đạt lại công thức. Ví dụ nếu lũy thừa ở [1]: Em hãy áp dụng quy tắc đạo hàm của lũy thừa [1] cho từng hạng tử. Nếu thiếu căn cứ, chuyển thành câu hỏi mở về lựa chọn hoặc tiến độ của em, như: Em định chọn quy tắc nào cho bước hiện tại? Không chỉ thêm dấu hỏi vào chỉ dẫn tính toán; không nói thao tác cho ra điều gì.";
             default -> "Viết lại bằng một câu hỏi ngắn về thao tác em cần tự làm; bỏ mọi biểu thức, số, nghiệm, dấu, kết luận và xác nhận đúng sai.";
         };
     }

@@ -95,6 +95,24 @@ class GlmTutorServiceTest {
         tutor.generate(student,cl,r,c,TutorPrompt.compose(c,r),emitted::add,ignored -> {},ignored -> {},() -> {});
         assertEquals("Em đã thử gì? Em muốn kiểm tra điều gì tiếp?",String.join("",emitted));
     }
+    @Test void statementRepairRequiresCitedActionOrProcessQuestion() {
+        when(store.tutorContext(eq(student),eq(cl),any())).thenReturn(Optional.of(new TutorContext(problem,"DH1","Đề bài","x**2","B.DH.DAOHAM","",
+            "Đạo hàm",List.of(new TutorFormula(1,"F1","Lũy thừa","(x^n)'=nx^{n-1}","Quy tắc lũy thừa")),List.of())));
+        String rejected="Em hãy lấy đạo hàm từng hạng tử của hàm số rồi cộng lại.";
+        String cited="Em hãy áp dụng quy tắc đạo hàm của lũy thừa [1] cho từng hạng tử.";
+        when(model.draft(any())).thenReturn(Optional.of(rejected),Optional.of(cited));
+        when(gate.sanitize(any(),any(),anyString(),anyString(),anyList())).thenAnswer(i ->
+            i.<String>getArgument(2).equals(cited)?Optional.of(cited):Optional.empty());
+        assertEquals(cited,tutor.answer(student,new TutorRequest("DH1","B.DH.DAOHAM",3,"Em bị kẹt")).message());
+        var prompts=ArgumentCaptor.forClass(HintPrompt.class);verify(model,times(2)).draft(prompts.capture());
+        String feedback=prompts.getValue().system().substring(prompts.getAllValues().getFirst().system().length());
+        assertTrue(feedback.contains("GATE_REJECTED_STATEMENT"));
+        assertTrue(feedback.contains("[n]"));
+        assertTrue(feedback.contains("cùng câu"));
+        assertTrue(feedback.contains("câu hỏi"));
+        assertFalse(feedback.contains(rejected));
+        verify(gate).sanitize(any(),any(),eq(cited),anyString(),anyList());
+    }
     @Test void rewriteFeedbackDescribesRejectedMathWithoutRepeatingTheDraft() {
         when(model.draft(any())).thenReturn(Optional.of("Kết quả là $x=3$."),Optional.of("Em đã thử gì?"));
         when(gate.sanitize(any(),any(),anyString(),anyString(),anyList())).thenAnswer(i ->
