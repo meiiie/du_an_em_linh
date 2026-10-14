@@ -111,7 +111,7 @@ describe('Danh sách giáo viên trên màn hẹp', () => {
       const f=TestBed.createComponent(PhongGiaoVien);f.componentRef.setInput('trang',trang);f.detectChanges();
       const http=TestBed.inject(HttpTestingController);
       http.expectOne('/api/gv/tien-do?lopId=lop1').flush(Array.from({length:21},(_,i)=>({id:'hs'+i,title:'Học sinh '+i,subtitle:'',status:'',details:{skills:[],submitted:0}})));
-      if(trang==='ngan-hang')http.expectOne('/api/gv/ngan-hang?lopId=lop1').flush(Array.from({length:21},(_,i)=>({id:'b'+i,title:'Bài '+i,subtitle:'',status:'DA_PHAT_HANH',details:{code:'CODE'+i,skillCode:'HS',level4:'NHAN_BIET',gate:'DAT',latex:'x'}})));
+      if(trang==='ngan-hang')http.expectOne('/api/gv/ky-nang?lopId=lop1').flush([]);if(trang==='ngan-hang')http.expectOne('/api/gv/ngan-hang?lopId=lop1').flush(Array.from({length:21},(_,i)=>({id:'b'+i,title:'Bài '+i,subtitle:'',status:'DA_PHAT_HANH',details:{code:'CODE'+i,skillCode:'HS',level4:'NHAN_BIET',gate:'DAT',latex:'x'}})));
       await f.whenStable();
       const el=f.nativeElement as HTMLElement;
       expect(el.querySelectorAll('tbody tr')).toHaveLength(10);
@@ -224,7 +224,7 @@ const catalogStudent={id:'hs1',title:'An',subtitle:'',status:'',details:{skills:
 const catalogBank={id:'p1',title:'Câu hỏi',subtitle:'',status:'DA_PHAT_HANH',details:{skillCode:'T12.NT.HS',skillName:'Hàm số',level4:'NHAN_BIET',gate:'DAT',latex:'x'}};
 describe('Nhập câu hỏi theo danh mục lớp',()=>{
  it('chọn kỹ năng có thật, không mã mặc định; gửi đúng mã và đổi lớp xóa lựa chọn',async()=>{
-  const t=await teacherPage('ngan-hang');t.http.expectOne('/api/gv/tien-do?lopId=lop1').flush([catalogStudent]);t.http.expectOne('/api/gv/ngan-hang?lopId=lop1').flush([catalogBank]);await t.f.whenStable();
+  const t=await teacherPage('ngan-hang');t.http.expectOne('/api/gv/tien-do?lopId=lop1').flush([catalogStudent]);t.http.expectOne('/api/gv/ngan-hang?lopId=lop1').flush([catalogBank]);t.http.expectOne('/api/gv/ky-nang?lopId=lop1').flush([]);await t.f.whenStable();
   t.button('Nhập câu hỏi').click();await t.f.whenStable();
   const form=t.el.querySelector('app-hop-thoai[tieuDe="Nhập câu hỏi"] form') ?? [...t.el.querySelectorAll('form')].find(f=>f.textContent?.includes('Hàm số cần kiểm'))!;
   const select=form.querySelector<HTMLSelectElement>('select')!;expect(select.value).toBe('');expect([...select.options].map(o=>o.value)).toEqual(['','T12.NT.HS']);
@@ -235,11 +235,11 @@ describe('Nhập câu hỏi theo danh mục lớp',()=>{
   expect(t.f.componentInstance['baiForm']().invalid()).toBe(false);
   form.dispatchEvent(new Event('submit',{cancelable:true}));const r=t.http.expectOne(req=>req.method==='POST');expect(r.request.body.skillCode).toBe('T12.NT.HS');r.flush({message:'Đã nhập',count:1});
   await new Promise(r=>setTimeout(r,0));TestBed.tick();t.http.expectOne('/api/gv/ngan-hang?lopId=lop1').flush([catalogBank]);await t.f.whenStable();
-  const cls=t.el.querySelector<HTMLSelectElement>('[aria-label="Chọn lớp"]')!;cls.value='lop2';cls.dispatchEvent(new Event('change'));TestBed.tick();t.http.expectOne('/api/gv/tien-do?lopId=lop2').flush([]);t.http.expectOne('/api/gv/ngan-hang?lopId=lop2').flush([]);await t.f.whenStable();
+  const cls=t.el.querySelector<HTMLSelectElement>('[aria-label="Chọn lớp"]')!;cls.value='lop2';cls.dispatchEvent(new Event('change'));TestBed.tick();t.http.expectOne('/api/gv/tien-do?lopId=lop2').flush([]);t.http.expectOne('/api/gv/ngan-hang?lopId=lop2').flush([]);t.http.expectOne('/api/gv/ky-nang?lopId=lop2').flush([]);await t.f.whenStable();
   expect(select.value).toBe('');expect(select.options).toHaveLength(1);expect(form.textContent).toContain('Lớp chưa có danh mục kỹ năng');expect(form.querySelector<HTMLButtonElement>('[type=submit]')?.disabled).toBe(true);t.http.verify();
  });
- it('lớp chưa có học sinh vẫn lấy kỹ năng từ đề bài, không cho nhập mã tùy ý',async()=>{
-  const t=await teacherPage('ngan-hang');t.http.expectOne('/api/gv/tien-do?lopId=lop1').flush([]);t.http.expectOne('/api/gv/ngan-hang?lopId=lop1').flush([catalogBank]);await t.f.whenStable();
+ it('lớp mới chưa có học sinh hay bài vẫn lấy kỹ năng từ danh mục lớp, không cho nhập mã tùy ý',async()=>{
+  const t=await teacherPage('ngan-hang');t.http.expectOne('/api/gv/tien-do?lopId=lop1').flush([]);t.http.expectOne('/api/gv/ngan-hang?lopId=lop1').flush([]);t.http.expectOne('/api/gv/ky-nang?lopId=lop1').flush([{id:'T12.NT.HS',title:'Hàm số',subtitle:'',status:'KY_NANG',details:{}}]);await t.f.whenStable();
   const select=t.el.querySelector<HTMLSelectElement>('app-hop-thoai select[aria-label]') ?? [...t.el.querySelectorAll<HTMLSelectElement>('app-hop-thoai select')].find(s=>s.options[0]?.text==='Chọn kỹ năng')!;
   expect([...select.options].map(o=>o.value)).toEqual(['','T12.NT.HS']);t.http.verify();
  });

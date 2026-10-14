@@ -30,6 +30,7 @@ export class PhongGiaoVien{
  protected readonly canhBao=this.api.canhBao(()=>this.trang()==='tong-quan'?this.lop.id():undefined);
  protected readonly tienDo=this.api.tienDo(()=>['tien-do','giao','ngan-hang','ket-noi-ai'].includes(this.trang())?this.lop.id():undefined);
  protected readonly hocSinh=this.api.hocSinh(()=>this.lop.id(),()=>this.trang()==='hoc-sinh'?this.id():undefined);
+ protected readonly kyNangLop=this.api.kyNangGv(()=>this.trang()==='ngan-hang'?this.lop.id():undefined);
  protected readonly nganHang=this.api.nganHang(()=>['ngan-hang','giao','hoc-sinh','duyet'].includes(this.trang())?this.lop.id():undefined);
  protected readonly ds=this.api.danhSachGv(()=>{const t=this.trang();return t==='duyet'||t==='giao'||t==='cong-thuc'?t:undefined;},()=>this.lop.id());
  protected readonly kho=this.api.khoGv(()=>this.trang()==='tai-lieu'?this.lop.id():undefined);
@@ -69,6 +70,7 @@ export class PhongGiaoVien{
  protected readonly baiModel=linkedSignal({source:()=>this.lop.id(),computation:()=>({code:'',skillCode:'',level4:'NHAN_BIET',statement:'',latex:'',function:''})});protected readonly baiForm=form(this.baiModel,p=>{required(p.code);required(p.skillCode);required(p.statement);required(p.latex);required(p.function);maxLength(p.code,120);maxLength(p.statement,2000);maxLength(p.latex,2000);maxLength(p.function,2000);});
  protected readonly danhMucKyNang=computed(()=>{
   const skills=new Map<string,string>();
+  for(const k of this.kyNangLop.value()??[])skills.set(k.id,tenKyNang(k.id,k.title));
   for(const b of this.nganHang.value()??[])if(b.details.skillCode)skills.set(b.details.skillCode,tenKyNang(b.details.skillCode,b.details.skillName));
   for(const hs of this.tienDo.value()??[])for(const k of hs.details.skills)skills.set(k.code,k.name);
   return [...skills].map(([code,name])=>({code,name})).sort((a,b)=>a.name.localeCompare(b.name,'vi'));

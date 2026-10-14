@@ -123,6 +123,8 @@ export class MockApi {
                 response = {classId:'lop1',requests:0,inputTokens:0,outputTokens:0,estimatedTokens:0,students:[]};
             else if (/^\/api\/qt\/lop\/[^/]+\/khoa$/.test(path) && method === 'PUT')
                 response = {message:'Đã lưu.',count:1};
+            else if (path === '/api/gv/ky-nang')
+                response = [item(problem.kyNang, 'Hàm số', '', 'KY_NANG', {})];
             else if (path === '/api/gv/tong-quan')
                 response = { students: 3, stuck: 1, pending: 1, assignments: 6, distribution: Object.fromEntries(levels.map(l => [l, 1])), deadlines: [deadline] };
             else if (path === '/api/gv/tien-do')

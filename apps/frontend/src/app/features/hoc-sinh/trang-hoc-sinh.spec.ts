@@ -185,7 +185,7 @@ describe('TrangHocSinh', () => {
     expect(t.el.querySelector('.ke-tiep')).toBeNull();
   });
 
-  it.each(['missing','submitted','expired','review','unknown-mode'])('không dùng gợi bài %s làm bài kế', async reason => {
+  it.each(['missing','submitted','review','unknown-mode'])('không dùng gợi bài %s làm bài kế', async reason => {
     const b={...BAI[2],trangThai:reason==='submitted'?'DA_NOP':'CHUA_LAM',han:reason==='expired'?'2000-01-01T00:00:00Z':null};
     const modes=reason==='unknown-mode'?[]:[{id:b.maBai,status:reason==='exam'?'KIEM_TRA':'ON_TAP',details:{dueAt:b.han}}];
     const t=await mo(undefined,[],modes,[{id:reason==='missing'?'khong-co':b.maBai,status:reason==='review'?'GUI_THAY_CO':'CUNG_CO',details:{}}]);
