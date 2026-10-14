@@ -22,11 +22,22 @@ public class TutorSessionService {
     private final ClassMembership members;
     private final WorkspaceStore workspace;
     private final int budget;
+    private final int compactionTimeoutSeconds;
+    // putIfAbsent/remove tạo khóa độc quyền mỗi phiên, không giữ khóa JDBC hay chặn lượt hỏi.
+    private final ConcurrentMap<UUID,HintModel.Cancellation> compactions=new ConcurrentHashMap<>();
     private final ConcurrentMap<UUID,HintModel.Cancellation> workers=new ConcurrentHashMap<>();
     public TutorSessionService(TutorSessionStore sessions,OfflineTutorService pipeline,
-        ClassMembership members,WorkspaceStore workspace,@Value("${mathl.gia-su.token-budget:6000}") int budget) {
+        ClassMembership members,WorkspaceStore workspace,int budget) {
+        this(sessions,pipeline,members,workspace,budget,30);
+    }
+    @org.springframework.beans.factory.annotation.Autowired
+    public TutorSessionService(TutorSessionStore sessions,OfflineTutorService pipeline,
+        ClassMembership members,WorkspaceStore workspace,@Value("${mathl.gia-su.token-budget:6000}") int budget,
+        @Value("${mathl.gia-su.compaction-timeout-seconds:30}") int compactionTimeoutSeconds) {
         if(budget<1000 || budget>8192)throw new IllegalArgumentException("Ngân sách gia sư phải từ 1000 đến 8192 token.");
+        if(compactionTimeoutSeconds<1 || compactionTimeoutSeconds>120)throw new IllegalArgumentException("Hạn nén phải từ 1 đến 120 giây.");
         this.sessions=sessions;this.pipeline=pipeline;this.members=members;this.workspace=workspace;this.budget=budget;
+        this.compactionTimeoutSeconds=compactionTimeoutSeconds;
     }
     public Session open(UUID student,UUID assignment) {
         return sessions.open(assignment(student,assignment));
@@ -99,7 +110,7 @@ public class TutorSessionService {
         try {
             checkpoint.run();
             var base=TutorPrompt.compose(context,request);
-            HintPrompt prompt=memory(accepted,assignment,context,request,base,checkpoint,u -> tokens[0]+=u.inputTokens()+u.outputTokens(),cancellation);
+            HintPrompt prompt=memory(accepted,assignment,base);
             pipeline.generate(assignment.studentId(),assignment.classId(),request,context,prompt,
                 text -> {
                     checkpoint.run();
@@ -107,7 +118,8 @@ public class TutorSessionService {
                     index[0]++;
                 }, attempt -> sessions.append(id,turn,"regen",Map.of("attempt",attempt,"mode",attempt==3?"strict_question":"rewrite")),
                 usage -> {tokens[0]+=usage.inputTokens()+usage.outputTokens(); sessions.usage(assignment.studentId(),assignment.classId(),turn,provider,"reply",usage);},checkpoint,budget,cancellation);
-            sessions.append(id,turn,"done",Map.of("status","completed","lastSentenceIndex",index[0],"tokens",tokens[0],"durationMs",TimeUnit.NANOSECONDS.toMillis(System.nanoTime()-started)));
+            if(sessions.append(id,turn,"done",Map.of("status","completed","lastSentenceIndex",index[0],"tokens",tokens[0],"durationMs",TimeUnit.NANOSECONDS.toMillis(System.nanoTime()-started))).isPresent())
+                compactAfterDone(accepted,assignment,context,request,base);
         } catch(CancellationException ex) {
             sessions.append(id,turn,"error",Map.of("code","TURN_INTERRUPTED","message","Lượt hỏi đã dừng trước khi hoàn tất.","retryable",true));
         } catch(RuntimeException ex) { fail(id,turn,ex); }
@@ -123,56 +135,73 @@ public class TutorSessionService {
                 + " luotNguon là mảng số đúng thứ tự các lượt cần nén. Không có dữ kiện thì để chuỗi rỗng, không bịa kết quả chấm.",
                 render(tomTat,older)+"\nNguồn lượt cần nén: "+older.stream().map(Turn::ordinal).toList());
     }
-    private HintPrompt memory(Accepted accepted,Assignment a,TutorContext c,TutorRequest r,HintPrompt base,Runnable checkpoint,java.util.function.Consumer<ModelUsage> summaryUsage,HintModel.Cancellation cancellation) {
+    /** Lượt hỏi chỉ đọc memory đã có; tuyệt đối không gọi model tóm tắt. */
+    private HintPrompt memory(Accepted accepted,Assignment a,HintPrompt base) {
         Session s=sessions.snapshot(accepted.session().id());
-        var turns=sessions.memory(s.id(),s.summaryThrough(),accepted.turn().id());
-        String memory=render(s.tomTat(),turns);
-        HintPrompt prompt=TutorPrompt.withMemory(base,a.level(),memory);
-        // Toàn bộ prompt: system, đề/bảng, câu hỏi mới, tóm tắt và mọi lượt cũ,
-        // kể cả câu hỏi của lượt lỗi/hủy (chỉ câu gia sư đã kiểm được lưu).
-        if(estimate(prompt)>=budget*7/10 && turns.size()>3) {
-            int cut=turns.size()-3;
-            var older=turns.subList(0,cut);
-            HintPrompt summaryPrompt=summaryPrompt(s.tomTat(),older,budget);
-            // Nén dần: lịch sử quá dài thì chỉ nén phần cũ nhất vừa ngân sách, lượt sau nén tiếp.
-            while(estimate(summaryPrompt)+350>budget && cut>1){cut--;older=turns.subList(0,cut);summaryPrompt=summaryPrompt(s.tomTat(),older,budget);}
-            if(estimate(summaryPrompt)+350>budget)return prompt;
-            HintModel summaryModel=pipeline.ready(a.classId());
-            StringBuilder text=new StringBuilder();
-            ModelUsage measured=null;
-            try {
-                checkpoint.run();
-                measured=summaryModel.stream(summaryPrompt,t -> {checkpoint.run();text.append(t);},cancellation);
-                String summary=TutorSummary.checked(text.toString().strip(),older.stream().map(Turn::ordinal).toList(),
-                    sentence -> pipeline.checked(a.classId(),c,r,sentence));
-                if(HintModel.estimate(summary)>Math.min(600,budget/10))throw new IllegalStateException("SUMMARY_SHAPE");
-                checkpoint.run();
-                sessions.compact(s,summary,older.getLast().ordinal(),HintModel.estimate(render(summary,turns.subList(cut,turns.size()))));
-                var fresh=sessions.snapshot(s.id());
-                if(fresh.summaryThrough()==older.getLast().ordinal()) {
-                    memory=render(fresh.tomTat(),turns.subList(cut,turns.size()));
-                    prompt=TutorPrompt.withMemory(base,a.level(),memory);
-                }
-            } catch(OfflineTutorService.Rejected | IllegalStateException | tools.jackson.core.JacksonException ex) {
-                // Giữ bản tóm tắt cũ và toàn bộ lịch sử nếu nén lỗi.
-            } finally {
-                ModelUsage summaryTokens=measured!=null?measured:new ModelUsage(estimate(summaryPrompt),HintModel.estimate(text.toString()),true);
-                sessions.usage(a.studentId(),a.classId(),accepted.turn().id(),summaryModel.provider(),"summary",summaryTokens);
-                summaryUsage.accept(summaryTokens);
-            }
-        }
-        // Dự trữ feedback regen + đầu ra, không cắt system, đề hoặc câu hỏi.
-        // Nén chưa đủ: giữ tóm tắt, bỏ dần lượt cũ nhất khỏi bộ nhớ (cửa sổ trượt) thay vì báo lỗi.
-        if(estimate(prompt)+600>budget) {
-            Session latest=sessions.snapshot(s.id());
-            var window=sessions.memory(latest.id(),latest.summaryThrough(),accepted.turn().id());
-            int from=0;
-            do { prompt=TutorPrompt.withMemory(base,a.level(),render(latest.tomTat(),window.subList(from,window.size()))); }
-            while(estimate(prompt)+600>budget && from++<window.size());
-            if(estimate(prompt)+600>budget)prompt=TutorPrompt.withMemory(base,a.level(),render(latest.tomTat(),List.of()));
-        }
+        var window=sessions.memory(s.id(),s.summaryThrough(),accepted.turn().id());
+        int from=0;
+        HintPrompt prompt=TutorPrompt.withMemory(base,a.level(),render(s.tomTat(),window));
+        // Dự trữ feedback regen + đầu ra; chỉ bỏ lượt cũ nhất, không cắt system/đề/câu hỏi/summary.
+        while(estimate(prompt)+600>budget && from<window.size())
+            prompt=TutorPrompt.withMemory(base,a.level(),render(s.tomTat(),window.subList(++from,window.size())));
         if(estimate(prompt)+600>budget)throw new WorkspaceException(413,"Ngữ cảnh đã vượt giới hạn. Em thử câu hỏi ngắn hơn hoặc nhờ giáo viên.");
         return prompt;
+    }
+    private void compactAfterDone(Accepted accepted,Assignment a,TutorContext c,TutorRequest r,HintPrompt base) {
+        UUID id=accepted.session().id();
+        var cancellation=new HintModel.Cancellation();
+        if(compactions.putIfAbsent(id,cancellation)!=null)return;
+        Thread.ofVirtual().start(() -> {
+            ScheduledExecutorService timer=Executors.newSingleThreadScheduledExecutor(Thread.ofVirtual().factory());
+            var timeout=timer.schedule(cancellation::cancel,compactionTimeoutSeconds,TimeUnit.SECONDS);
+            try { compact(accepted,a,c,r,base,cancellation); }
+            catch(RuntimeException ex) { /* Nén lỗi giữ memory cũ; không sửa terminal/SSE của lượt đã xong. */ }
+            finally {timeout.cancel(false);timer.shutdown();compactions.remove(id,cancellation);}
+        });
+    }
+    private void compact(Accepted accepted,Assignment a,TutorContext c,TutorRequest r,HintPrompt base,HintModel.Cancellation cancellation) {
+        Session s=sessions.snapshot(accepted.session().id());
+        if(!s.contextVersion().equals(accepted.session().contextVersion()))return;
+        // Gồm cả lượt vừa done, giữ ít nhất ba lượt kết thúc gần nhất và mọi bản gốc trong DB.
+        var turns=new ArrayList<>(sessions.memory(s.id(),s.summaryThrough(),accepted.turn().id()));
+        sessions.turn(s.id(),accepted.turn().id()).filter(t -> t.ordinal()>s.summaryThrough() && t.status().equals("completed")).ifPresent(turns::add);
+        turns.sort(Comparator.comparingLong(Turn::ordinal));
+        if(turns.size()<=3 || estimate(TutorPrompt.withMemory(base,a.level(),render(s.tomTat(),turns)))<budget*7/10)return;
+        int cut=turns.size()-3;
+        var older=turns.subList(0,cut);
+        HintPrompt prompt=summaryPrompt(s.tomTat(),older,budget);
+        while(estimate(prompt)+350>budget && cut>1){older=turns.subList(0,--cut);prompt=summaryPrompt(s.tomTat(),older,budget);}
+        if(estimate(prompt)+350>budget)return;
+        HintModel chosen=pipeline.ready(a.classId());
+        String provider=chosen.provider();
+        Runnable checkpoint=() -> {
+            cancellation.check();
+            var current=assignment(a.studentId(),a.id());
+            var context=pipeline.context(a.studentId(),a.classId(),r);
+            if(!version(current,context).equals(s.contextVersion()) || !pipeline.ready(a.classId()).provider().equals(provider))
+                throw new CancellationException();
+            cancellation.check();
+        };
+        StringBuilder text=new StringBuilder();
+        ModelUsage measured=null;
+        boolean attempted=false;
+        try {
+            checkpoint.run();
+            cancellation.check();
+            attempted=true;
+            measured=chosen.stream(prompt,t -> {cancellation.check();text.append(t);},cancellation);
+            String summary=TutorSummary.checked(text.toString().strip(),older.stream().map(Turn::ordinal).toList(),
+                sentence -> {checkpoint.run();return pipeline.checked(a.classId(),c,r,sentence);});
+            if(HintModel.estimate(summary)>Math.min(600,budget/10))throw new IllegalStateException("SUMMARY_SHAPE");
+            checkpoint.run();
+            // CAS revision ở persistence loại summary cũ nếu một lượt mới/context mới đã tới.
+            sessions.compact(s,summary,older.getLast().ordinal(),HintModel.estimate(render(summary,turns.subList(cut,turns.size()))));
+        } finally {
+            if(attempted) {
+                ModelUsage usage=measured!=null?measured:new ModelUsage(estimate(prompt),HintModel.estimate(text.toString()),true);
+                sessions.usage(a.studentId(),a.classId(),accepted.turn().id(),provider,"summary",usage);
+            }
+        }
     }
     private static int estimate(HintPrompt p){return HintModel.estimate(p.system()+p.user())+16;}
     private static String render(String summary,List<Turn> turns) {

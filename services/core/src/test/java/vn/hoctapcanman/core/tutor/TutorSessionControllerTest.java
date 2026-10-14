@@ -62,7 +62,7 @@ class TutorSessionControllerTest {
             .thenAnswer(i -> {inGate.countDown();assertTrue(verifySentence.await(5,java.util.concurrent.TimeUnit.SECONDS));return Optional.of(i.<String>getArgument(2));});
         org.mockito.Mockito.doAnswer(i -> {
             java.util.function.Consumer<String> chunks=i.getArgument(1);
-            chunks.accept("Em đã thử gì?");
+            chunks.accept("Em xét khoảng nào?");
             assertTrue(finishProvider.await(5,java.util.concurrent.TimeUnit.SECONDS));
             return new vn.hoctapcanman.core.tutor.application.dto.TutorSessionDto.ModelUsage(20,10,false);
         }).when(fixture.model).stream(org.mockito.ArgumentMatchers.any(),org.mockito.ArgumentMatchers.any());
@@ -73,9 +73,9 @@ class TutorSessionControllerTest {
             assertFalse(response.getResponse().getContentAsString().contains("event:delta"));
             verifySentence.countDown();
             long deadline=System.nanoTime()+java.util.concurrent.TimeUnit.SECONDS.toNanos(3);
-            while(!response.getResponse().getContentAsString(java.nio.charset.StandardCharsets.UTF_8).contains("Em đã thử gì?") && System.nanoTime()<deadline)Thread.sleep(10);
+            while(!response.getResponse().getContentAsString(java.nio.charset.StandardCharsets.UTF_8).contains("Em xét khoảng nào?") && System.nanoTime()<deadline)Thread.sleep(10);
             String partial=response.getResponse().getContentAsString(java.nio.charset.StandardCharsets.UTF_8);
-            assertTrue(partial.contains("event:delta"));assertTrue(partial.contains("Em đã thử gì?"));assertFalse(partial.contains("event:done"));
+            assertTrue(partial.contains("event:delta"));assertTrue(partial.contains("Em xét khoảng nào?"));assertFalse(partial.contains("event:done"));
             finishProvider.countDown();response.getAsyncResult(5000);
             mvc.perform(asyncDispatch(response)).andExpect(status().isOk());
         } finally {verifySentence.countDown();finishProvider.countDown();}

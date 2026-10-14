@@ -65,6 +65,7 @@ class TutorSessionServiceTest {
     }
     @Test void cancellationWinsAgainstUnreleasedSentenceAndIsIdempotent() throws Exception {
         CountDownLatch inGate=new CountDownLatch(1),release=new CountDownLatch(1);
+        when(model.draft(any())).thenReturn(Optional.of("Em xét khoảng nào?"));
         when(gate.sanitize(any(),any(),anyString(),anyString(),anyList())).thenAnswer(i -> {
             inGate.countDown();release.await(3,TimeUnit.SECONDS);return Optional.of(i.<String>getArgument(2));
         });
@@ -113,18 +114,149 @@ class TutorSessionServiceTest {
         assertEquals("error",terminal(a).status());assertEquals(List.of("start","error"),store.events(a.session().id(),0).stream().map(Event::type).toList());
         verify(model,never()).draft(any());assertTrue(store.calls.isEmpty());
     }
+    @Test void donePrecedesCompactionAndNextTurnDoesNotWaitForSummary() throws Exception {
+        service.open(student,assignment);
+        for(int i=0;i<10;i++)store.seed("Em thử "+"cách ".repeat(250),"Em làm "+"tiếp ".repeat(250));
+        var summarizing=new CountDownLatch(1);var release=new CountDownLatch(1);
+        var summaries=new java.util.concurrent.atomic.AtomicInteger();
+        var prompts=new CopyOnWriteArrayList<HintPrompt>();
+        when(model.draft(any())).thenAnswer(i -> {
+            HintPrompt p=i.getArgument(0);prompts.add(p);
+            if(p.system().startsWith("Tóm tắt")) {
+                summaries.incrementAndGet();summarizing.countDown();
+                assertTrue(Thread.currentThread().isVirtual());
+                assertTrue(release.await(5,TimeUnit.SECONDS));
+                return Optional.of(summaryAfterDone("Em đang thử cách đã chọn."));
+            }
+            assertTrue(HintModel.estimate(p.system()+p.user())+16+600<=6000);
+            return Optional.of("Em cần tìm điều gì?");
+        });
+        Accepted first=ask();
+        try {
+            assertTrue(summarizing.await(3,TimeUnit.SECONDS));
+            assertEquals("completed",store.turn(first.session().id(),first.turn().id()).orElseThrow().status());
+            assertEquals("done",store.events(first.session().id(),0).getLast().type());
+            Accepted next=ask();assertEquals("completed",terminal(next).status());
+            assertEquals(1,summaries.get(),"Mỗi phiên chỉ có một worker nén");
+            assertFalse(prompts.getFirst().system().startsWith("Tóm tắt"));
+        } finally { release.countDown(); }
+        awaitSummaryUsage();
+        assertEquals("",store.snapshot(first.session().id()).tomTat(),"Revision đã đổi: bỏ summary cũ");
+    }
+    void awaitSummaryUsage() throws Exception {
+        long end=System.nanoTime()+TimeUnit.SECONDS.toNanos(5);
+        while(System.nanoTime()<end){if(store.purposes.contains("summary"))return;Thread.sleep(10);}
+        fail("Worker nén không ghi usage");
+    }
+    @Test void preSendRevocationDoesNotBillSummaryOrChangeDone() throws Exception {
+        var rejected=new CountDownLatch(1);var billed=new CountDownLatch(1);
+        var db=new MemoryStore(store.a) {
+            @Override public synchronized void usage(UUID student,UUID cl,UUID turn,String provider,String purpose,ModelUsage usage) {
+                super.usage(student,cl,turn,provider,purpose,usage);
+                if(purpose.equals("summary"))billed.countDown();
+            }
+        };
+        var guarded=new OfflineTutorService(workspace,members,gate,model,new TutorRateLimiter(Clock.systemUTC(),100,Duration.ofMinutes(10))) {
+            @Override public HintModel ready(UUID classId) {
+                var selected=super.ready(classId);
+                if(db.snapshot(db.s.id()).lastSeq()>0 && db.events(db.s.id(),0).getLast().type().equals("done"))
+                    when(workspace.testMode(student,cl,"DH1")).thenAnswer(i -> {rejected.countDown();return true;});
+                return selected;
+            }
+        };
+        var svc=new TutorSessionService(db,guarded,members,workspace,6000);
+        var s=svc.open(student,assignment);
+        for(int i=0;i<10;i++)db.seed("Em thử "+"cách ".repeat(250),"Em làm "+"tiếp ".repeat(250));
+        Accepted a=svc.ask(student,s.id(),request(UUID.randomUUID()));
+        assertTrue(rejected.await(3,TimeUnit.SECONDS));
+        assertFalse(billed.await(300,TimeUnit.MILLISECONDS),"Không gọi model thì không tính usage summary");
+        assertEquals(List.of("reply"),db.purposes);assertEquals("done",db.events(s.id(),0).getLast().type());
+        assertEquals("completed",db.turn(s.id(),a.turn().id()).orElseThrow().status());
+        verify(model,times(1)).draft(any());
+    }
+    @Test void compactionHasOwnTimeoutUsageAndReleasesSessionLock() throws Exception {
+        var summaries=new CopyOnWriteArrayList<Thread>();var billed=new CountDownLatch(1);
+        var db=new MemoryStore(store.a) {
+            @Override public synchronized void usage(UUID student,UUID cl,UUID turn,String provider,String purpose,ModelUsage usage) {
+                super.usage(student,cl,turn,provider,purpose,usage);
+                if(purpose.equals("summary")){summaries.add(Thread.currentThread());billed.countDown();}
+            }
+        };
+        var svc=new TutorSessionService(db,pipeline,members,workspace,6000,1);
+        var s=svc.open(student,assignment);
+        for(int i=0;i<10;i++)db.seed("Em thử "+"cách ".repeat(250),"Em làm "+"tiếp ".repeat(250));
+        var summarizing=new CountDownLatch(1);var closed=new CountDownLatch(1);
+        var summaryCalls=new java.util.concurrent.atomic.AtomicInteger();
+        doAnswer(i -> {
+            HintPrompt p=i.getArgument(0);
+            java.util.function.Consumer<String> chunks=i.getArgument(1);
+            HintModel.Cancellation cancel=i.getArgument(2);
+            if(p.system().startsWith("Tóm tắt")) {
+                if(summaryCalls.incrementAndGet()==1) {
+                    AutoCloseable resource=closed::countDown;cancel.attach(resource);summarizing.countDown();
+                    try { assertTrue(closed.await(3,TimeUnit.SECONDS));cancel.check(); }
+                    finally {cancel.detach(resource);}
+                }
+                chunks.accept(summaryAfterDone("Em đang thử cách đã chọn."));
+            } else chunks.accept("Mình cùng em làm rõ bước đang vướng nhé.");
+            return new ModelUsage(50,20,false);
+        }).when(model).stream(any(),any(),any());
+        Accepted a=svc.ask(student,s.id(),request(UUID.randomUUID()));
+        assertTrue(summarizing.await(3,TimeUnit.SECONDS));
+        assertEquals("completed",db.turn(s.id(),a.turn().id()).orElseThrow().status());
+        assertTrue(closed.await(3,TimeUnit.SECONDS));assertTrue(billed.await(3,TimeUnit.SECONDS));
+        summaries.getFirst().join(3000);assertFalse(summaries.getFirst().isAlive());
+        assertEquals("",db.snapshot(s.id()).tomTat());
+        assertEquals(List.of("start","delta","done"),db.events(s.id(),0).stream().map(Event::type).toList());
+        assertEquals(70,db.events(s.id(),0).getLast().data().get("tokens"));
+        assertEquals(List.of("reply","summary"),db.purposes);assertTrue(db.calls.getLast().estimated());
+        Accepted next=svc.ask(student,s.id(),request(UUID.randomUUID()));
+        long deadline=System.nanoTime()+TimeUnit.SECONDS.toNanos(3);
+        while(summaries.size()<2 && System.nanoTime()<deadline)Thread.sleep(10);
+        assertEquals(2,summaries.size(),"Timeout phải giải phóng khóa cho lần nén tiếp");
+        summaries.getLast().join(3000);assertFalse(summaries.getLast().isAlive());
+        // Phần nguồn nén phải vừa ngân sách: nhóm này giữ bốn lượt gần nhất.
+        assertEquals(8,db.snapshot(s.id()).summaryThrough());assertEquals("completed",db.turn(s.id(),next.turn().id()).orElseThrow().status());
+        assertFalse(db.calls.getLast().estimated());
+    }
+    @Test void changedSheetDuringCompactionDiscardsSummaryWithoutTurnError() throws Exception {
+        service.open(student,assignment);
+        for(int i=0;i<10;i++)store.seed("Em thử "+"cách ".repeat(250),"Em làm "+"tiếp ".repeat(250));
+        var summarizing=new CountDownLatch(1);var release=new CountDownLatch(1);
+        when(model.draft(any())).thenAnswer(i -> {
+            HintPrompt p=i.getArgument(0);
+            if(p.system().startsWith("Tóm tắt")) {
+                summarizing.countDown();assertTrue(release.await(3,TimeUnit.SECONDS));
+                return Optional.of(summaryAfterDone("Em đang thử cách đã chọn."));
+            }
+            return Optional.of("Em cần tìm điều gì?");
+        });
+        Accepted a=ask();
+        try {
+            assertTrue(summarizing.await(3,TimeUnit.SECONDS));assertEquals("completed",terminal(a).status());
+            when(workspace.tutorContext(eq(student),eq(cl),any())).thenReturn(Optional.of(new TutorContext(problem,"DH1","Đề vừa đổi","x**2","B.DH.TXD","")));
+        } finally {release.countDown();}
+        awaitSummaryUsage();assertEquals("",store.snapshot(a.session().id()).tomTat());
+        assertEquals("done",store.events(a.session().id(),0).getLast().type());
+    }
     @Test void compactionUsesModelGatesSummaryAndKeepsThreeRecentPairs() throws Exception {
         service.open(student,assignment);
         for(int i=0;i<10;i++)store.seed("Em thử "+"cách ".repeat(250),"Em làm "+"tiếp ".repeat(250));
         var prompts=new CopyOnWriteArrayList<HintPrompt>();when(model.draft(any())).thenAnswer(i -> {
             HintPrompt p=i.getArgument(0);prompts.add(p);
-            return Optional.of(p.system().startsWith("Tóm tắt")?summary("Em đang thử cách đã chọn."):"Em cần tìm điều gì?");
+            return Optional.of(p.system().startsWith("Tóm tắt")?summaryAfterDone("Em đang thử cách đã chọn."):"Em cần tìm điều gì?");
         });
         Accepted a=ask();assertEquals("completed",terminal(a).status());
-        assertEquals(2,prompts.size());assertTrue(prompts.getFirst().system().startsWith("Tóm tắt"));
-        assertFalse(store.s.tomTat().isEmpty());assertEquals(7,store.s.summaryThrough());
-        assertFalse(prompts.getLast().user().contains("Lượt 1 —"));assertTrue(prompts.getLast().user().contains("Lượt 8 —"));
+        awaitSummaryUsage();
+        assertEquals(2,prompts.size());assertTrue(prompts.getLast().system().startsWith("Tóm tắt"));
+        assertFalse(store.s.tomTat().isEmpty());assertEquals(8,store.s.summaryThrough());
+        assertFalse(prompts.getFirst().user().contains("Lượt 1 —"));assertTrue(prompts.getFirst().user().contains("Lượt 8 —"));
         assertEquals(11,store.turns(store.s.id(),0,100).size());assertEquals(2,store.calls.size());
+        verify(gate).sanitize(any(),any(),eq("Em đang thử cách đã chọn."),anyString(),anyList());
+        // Lượt sau dùng summary đã kiểm, không đưa lại phần nguồn đã nén vào cửa sổ.
+        Accepted next=ask();assertEquals("completed",terminal(next).status());
+        assertTrue(prompts.getLast().user().contains(store.snapshot(store.s.id()).tomTat()));
+        assertFalse(prompts.getLast().user().contains("Lượt 8 —"));assertTrue(prompts.getLast().user().contains("Lượt 9 —"));
     }
     @Test void compactsAtSeventyPercentIncludingFailedAndCancelledQuestions() throws Exception {
         service.open(student,assignment);
@@ -137,29 +269,33 @@ class TutorSessionServiceTest {
         }
         var prompts=new CopyOnWriteArrayList<HintPrompt>();when(model.draft(any())).thenAnswer(i -> {
             HintPrompt p=i.getArgument(0);prompts.add(p);
-            return Optional.of(p.system().startsWith("Tóm tắt")?summary("Em đang thử cách đã chọn."):"Em cần tìm điều gì?");
+            return Optional.of(p.system().startsWith("Tóm tắt")?summaryAfterDone("Em đang thử cách đã chọn."):"Em cần tìm điều gì?");
         });
         Accepted a=ask();assertEquals("completed",terminal(a).status());
+        awaitSummaryUsage();
         History h=service.history(student,a.session().id(),0,50);
-        assertEquals(7,h.session().summaryThrough());assertFalse(h.session().tomTat().isBlank());
-        assertTrue(prompts.getLast().user().contains("Lượt 8 —"));assertTrue(prompts.getLast().user().contains("Lượt 10 —"));
+        assertEquals(8,h.session().summaryThrough());assertFalse(h.session().tomTat().isBlank());
+        assertTrue(prompts.getFirst().user().contains("Lượt 8 —"));assertTrue(prompts.getFirst().user().contains("Lượt 10 —"));
     }
     @Test void rejectedSummaryIsNeverSavedOrIncludedAsMemory() throws Exception {
         service.open(student,assignment);for(int i=0;i<10;i++)store.seed("Em thử "+"cách ".repeat(250),"Em làm "+"tiếp ".repeat(250));
-        when(model.draft(any())).thenAnswer(i -> Optional.of(((HintPrompt)i.getArgument(0)).system().startsWith("Tóm tắt")?summary("Tóm tắt bị chặn."):"Em cần tìm gì?"));
+        when(model.draft(any())).thenAnswer(i -> Optional.of(((HintPrompt)i.getArgument(0)).system().startsWith("Tóm tắt")?summaryAfterDone("Tóm tắt bị chặn."):"Em cần tìm gì?"));
         when(gate.sanitize(any(),any(),eq("Tóm tắt bị chặn."),anyString(),anyList())).thenReturn(Optional.empty());
-        Accepted a=ask();terminal(a);assertEquals("",store.s.tomTat());assertEquals(0,store.s.summaryThrough());
+        Accepted a=ask();terminal(a);awaitSummaryUsage();assertEquals("",store.s.tomTat());assertEquals(0,store.s.summaryThrough());
     }
     @Test void usageRequiresTeacherClassMembershipOrAdmin() {
         when(workspace.accountRole(student)).thenReturn("TEACHER");service.usage(student,cl);verify(members).kiemGiaoVien(student,cl);
         UUID admin=UUID.randomUUID();when(workspace.accountRole(admin)).thenReturn("ADMIN");service.usage(admin,cl);verify(members,never()).kiemGiaoVien(admin,cl);
+    }
+    static String summaryAfterDone(String goal) {
+        return summary(goal).replace("[1,2,3,4,5,6,7]","[1,2,3,4,5,6,7,8]");
     }
     static String summary(String goal) {
         return "{\"mucTieuBuoc\":\""+goal+"\",\"cachDaThu\":\"\",\"loiDaDuocCham\":\"\",\"cauHoiConMo\":\"\",\"goiYDaDung\":\"\",\"dieuDaSua\":\"\",\"luotNguon\":[1,2,3,4,5,6,7]}";
     }
     /** Test double for orchestration only; persistence is tested separately on PostgreSQL. */
     static class MemoryStore implements TutorSessionStore {
-        final Assignment a;Session s;final List<Turn> turns=new ArrayList<>();final List<Event> log=new ArrayList<>();final List<ModelUsage> calls=new ArrayList<>();
+        final Assignment a;Session s;final List<Turn> turns=new ArrayList<>();final List<Event> log=new ArrayList<>();final List<ModelUsage> calls=new CopyOnWriteArrayList<>();final List<String> purposes=new CopyOnWriteArrayList<>();
         MemoryStore(Assignment a){this.a=a;}
         @Override public Optional<Assignment> assignment(UUID student,UUID id){return a.studentId().equals(student)&&a.id().equals(id)?Optional.of(a):Optional.empty();}
         @Override public Optional<Assignment> assignmentByCode(UUID student,String code){return assignment(student,a.id()).filter(x -> x.code().equals(code));}
@@ -186,7 +322,7 @@ class TutorSessionServiceTest {
             }return Optional.empty();
         }
         @Override public synchronized void compact(Session expected,String summary,long through,int tokens){if(s.revision()==expected.revision())s=new Session(s.id(),s.studentId(),s.assignmentId(),s.classId(),summary,through,s.contextVersion(),s.lastSeq(),s.revision()+1,tokens);}
-        @Override public synchronized void usage(UUID student,UUID cl,UUID turn,String provider,String purpose,ModelUsage usage){calls.add(usage);}
+        @Override public synchronized void usage(UUID student,UUID cl,UUID turn,String provider,String purpose,ModelUsage usage){calls.add(usage);purposes.add(purpose);}
         @Override public List<Usage> usage(UUID cl){return List.of();}
         @Override public void expire(){}
     }

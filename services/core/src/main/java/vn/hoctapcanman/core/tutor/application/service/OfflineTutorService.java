@@ -13,7 +13,7 @@ import vn.hoctapcanman.core.workspace.application.dto.WorkspaceDto.*;
 import vn.hoctapcanman.core.workspace.application.port.*;
 import vn.hoctapcanman.core.workspace.application.exception.WorkspaceException;
 
-/** Pipeline dùng chung: mỗi câu model đều qua cổng trước khi phát. */
+/** Pipeline dùng chung: chỉ lời thuần không toán/đáp án được bỏ qua cổng. */
 @Service
 public class OfflineTutorService {
     private static final org.slf4j.Logger LOG=org.slf4j.LoggerFactory.getLogger(OfflineTutorService.class);
@@ -103,7 +103,8 @@ public class OfflineTutorService {
                     if (strict && (count[0]>before || s.strip().length()>160 || !s.strip().endsWith("?")
                         || s.contains("$") || s.contains("\\(") || s.contains("\\[") || s.codePoints().anyMatch(Character::isDigit)))
                         throw new Rejected("STRICT_QUESTION_SHAPE");
-                    String clean=checked(cl,context,request,s);
+                    checkShape(context,s);
+                    String clean=!strict && plainSentence(s)?s.strip():checked(cl,context,request,s);
                     var now=context(student,cl,request);
                     if (!now.statement().equals(context.statement()) || !now.formulas().equals(context.formulas()))
                         throw new WorkspaceException(409,"Đề hoặc bảng công thức vừa đổi. Em hỏi lại nhé.");
@@ -140,6 +141,37 @@ public class OfflineTutorService {
         var matcher=Pattern.compile("\\[(\\d+)\\]").matcher(text);
         while (matcher.find()) if (!refs.contains(matcher.group(1))) throw new Rejected("UNKNOWN_CITATION");
     }
+    /** Chỉ prose Latin với dấu câu thường; nghi toán/đáp án bất kỳ thì chuyển cổng hiện có. */
+    private static boolean plainSentence(String text) {
+        String normalized=Normalizer.normalize(text,Normalizer.Form.NFKC);
+        if(normalized.isBlank())return false;
+        // Kiểm cả bản gốc: NFKC không được biến số La Mã/ký hiệu thành chữ rồi cho đi tắt.
+        for(String candidate:List.of(Normalizer.normalize(text,Normalizer.Form.NFC),normalized))
+            if(!candidate.codePoints().allMatch(cp ->
+                Character.isLetter(cp) && Character.UnicodeScript.of(cp)==Character.UnicodeScript.LATIN
+                || Character.isWhitespace(cp) || ",.!?".indexOf(cp)>=0))return false;
+        if(LATIN_VARIABLE.matcher(normalized).find())return false;
+        String words=Normalizer.normalize(normalized,Normalizer.Form.NFD).replaceAll("\\p{M}","")
+            .toLowerCase(Locale.ROOT).replace('đ','d').replaceAll("[^a-z]+"," ").strip();
+        if(ANSWER_WORDS.matcher(words).find())return false;
+        // Blacklist không bao phủ được mọi cách xác nhận/diễn đạt đáp án bằng lời.
+        // Đây chỉ là tập nhận dạng để bỏ cổng, không phải nguồn sinh câu trả lời.
+        return NEUTRAL_SENTENCES.contains(Normalizer.normalize(text,Normalizer.Form.NFC)
+            .strip().replaceAll("\\s+"," ").toLowerCase(Locale.ROOT));
+    }
+    private static final Set<String> NEUTRAL_SENTENCES=Set.of(
+        "mình cùng em làm rõ bước đang vướng nhé.", "em cứ bình tĩnh rồi thử lại nhé.",
+        "em đã thử gì?", "em đã thử cách nào?", "em cần tìm điều gì?", "em cần tìm gì?",
+        "em cần tìm gì tiếp theo?", "em muốn kiểm tra điều gì tiếp?", "em định kiểm tra điều gì?",
+        "em sẽ chọn cách làm nào?", "em sẽ kiểm tra điều kiện nào?", "em đang tìm điều gì?",
+        "mình có thể cùng em chọn bước cần làm, em đã thử gì?");
+    private static final Pattern LATIN_VARIABLE=Pattern.compile("(?<![\\p{L}\\p{M}\\p{N}_])[\\p{IsLatin}&&\\p{L}](?![\\p{L}\\p{M}\\p{N}_])");
+    private static final Pattern ANSWER_WORDS=Pattern.compile("\\b(?:dong bien|nghich bien|cuc dai|cuc tieu|cuc tri|nghiem|bang|duong|am|tang|giam|"
+        + "lon hon|nho hon|khoang|gia tri|ket qua|dap an|dap so|tap xac dinh|dao ham la|"
+        + "la|neu|thi|suy ra|doi dau|nhan|chia|cong|tru|binh phuong|hang so|vo cuc|"
+        + "mot|hai|ba|bon|nam|sau|bay|tam|chin|muoi|tram|nghin|trieu|"
+        + "increasing|decreasing|positive|negative|equals|roots?|solutions?|answers?)\\b");
+
     /** Phân loại hình thức câu đã bị cổng từ chối; không thay phán quyết của CAS. */
     private static String gateViolation(String text) {
         if(Pattern.compile("[$=≠≤≥^]|\\\\[a-zA-Z(\\[]|[a-zA-Z][′']").matcher(text).find())return "GATE_REJECTED_MATH";
@@ -153,8 +185,10 @@ public class OfflineTutorService {
             case "UNKNOWN_CITATION" -> "Mã dòng dẫn không có trong bảng đã khóa. Chỉ dẫn mã [n] thật trong bảng hoặc bỏ dẫn số dòng.";
             case "OUTPUT_IDENTITY" -> "Bỏ tên riêng và thông tin cá nhân. Chỉ dùng em và mình.";
             case "OUTPUT_LANGUAGE" -> "Chỉ viết tiếng Việt có dấu, không chèn chữ ngôn ngữ khác.";
-            case "STRICT_QUESTION_SHAPE", "EMPTY_SENTENCE" -> "Viết một câu hỏi ngắn có chỗ để em tự trả lời; không số, ký hiệu toán hay câu dẫn.";
-            default -> "Câu chưa được cổng xác minh. Bỏ khẳng định, quy tắc và việc xác nhận đúng sai; không đổi thành câu hỏi đúng không. Chỉ hỏi em sẽ kiểm tra gì ở bước hiện tại, tránh là, bằng, nếu thì, dương, âm và đổi dấu.";
+            case "STRICT_QUESTION_SHAPE" -> "Chỉ viết đúng một câu hỏi tiếng Việt tối đa 160 ký tự, kết thúc bằng dấu hỏi. Bỏ số, ký hiệu, dẫn [n], biểu thức và câu dẫn; hỏi thao tác em tự làm.";
+            case "EMPTY_SENTENCE" -> "Bản trả lời chưa có câu có nội dung. Viết một câu hỏi tiếng Việt ngắn về thao tác ở bước hiện tại, kết thúc bằng dấu hỏi.";
+            case "GATE_REJECTED_STATEMENT" -> "Bỏ khẳng định, quy tắc, dấu và kết luận, kể cả xác nhận đúng sai bằng câu hỏi. Chỉ mô tả thao tác như lấy đạo hàm từng hạng tử hoặc xét dấu trên từng khoảng; không nói thao tác cho ra điều gì.";
+            default -> "Viết lại bằng một câu hỏi ngắn về thao tác em cần tự làm; bỏ mọi biểu thức, số, nghiệm, dấu, kết luận và xác nhận đúng sai.";
         };
     }
     private static final class Completed extends RuntimeException {}
