@@ -25,7 +25,7 @@ const escapeHtml = (s: string) => s.replace(/[&<>"']/g, c => ({ '&':'&amp;', '<'
     app-gia-su-markdown .markdown ul,app-gia-su-markdown .markdown ol{padding-inline-start:24px}
     app-gia-su-markdown .markdown pre,app-gia-su-markdown .markdown table{display:block;max-width:100%;overflow:auto}
     app-gia-su-markdown .tutor-math-block{display:block;max-width:100%;overflow-x:auto;overflow-y:hidden}
-    app-gia-su-markdown .tutor-source{min-width:44px;min-height:44px;border:1px solid var(--line-strong);border-radius:8px;background:var(--wash);color:var(--ink);font:inherit;cursor:pointer}
+    app-gia-su-markdown .tutor-source{position:relative;display:inline-flex;align-items:center;justify-content:center;min-width:26px;height:22px;padding:0 5px;margin:0 1px;vertical-align:1px;border:1px solid var(--line-strong);border-radius:6px;background:var(--wash);color:var(--ink);font:inherit;font-size:.85em;line-height:1;cursor:pointer}app-gia-su-markdown .tutor-source::after{content:'';position:absolute;inset:-11px -9px}
     app-gia-su-markdown :focus-visible{outline:2px solid var(--focus);outline-offset:2px}
   `,
 })
