@@ -72,7 +72,7 @@ Các mặc định và phần để sau: [ASSUMPTIONS.md](ASSUMPTIONS.md). Phạ
 
 ## Gia sư AI (GLM)
 
-Gia sư v2 có adapter GLM qua Z.ai Coding Plan, giữ Spring AI autoconfig tắt. Cấp `GLM_API_KEY` ở môi trường core; mặc định `GLM_BASE_URL=https://api.z.ai/api/coding/paas/v4`, `GLM_MODEL=glm-5.3`, `GLM_TIMEOUT=20s`, `GLM_MAX_TOKENS=350`. URL/model rỗng dùng mặc định; khóa rỗng dùng thang offline. Coding Plan chỉ dùng cho dev với dữ liệu tổng hợp; không ghi khóa vào mã, trình duyệt, image hay log.
+Gia sư v2 có adapter GLM qua Z.ai Coding Plan, giữ Spring AI autoconfig tắt. Cấp `GLM_API_KEY` ở môi trường core; mặc định `GLM_BASE_URL=https://api.z.ai/api/coding/paas/v4`, `GLM_MODEL=glm-5.3`, `GLM_TIMEOUT=20s`, `GLM_MAX_TOKENS=350`. URL/model rỗng dùng mặc định; khóa rỗng thì lớp chọn GLM báo gia sư chưa sẵn sàng (không có câu soạn sẵn). Coding Plan chỉ dùng cho dev với dữ liệu tổng hợp; không ghi khóa vào mã, trình duyệt, image hay log.
 
 Luật xin đáp án/đổi vai chạy trước nhà. Bản nháp đủ câu mới đi qua bộ lọc lộ đáp án và cổng công thức ADR 013; lỗi/chặn/hết giờ chuyển về thang cũng qua cổng, sau cùng là câu cố định không chứa toán. Retry tối đa một lần cho 429/500/502/503/504, chờ `Retry-After` trong ngân sách; không retry lỗi khóa/timeout, không đổi nhà. SSE giữ `kho → goi → loc → xong|loi`; không có token chưa kiểm duyệt. Quyền lớp, chế độ kiểm tra và hạn được kiểm lại trước khi phát kết quả.
 
