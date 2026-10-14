@@ -13,8 +13,13 @@ class TutorSummaryTest {
     }
     @Test void invalidSchemaSourceOrIdentityIsRejected() {
         String good=TutorSessionServiceTest.summary("Em đang tìm cách làm.");
-        for(String raw:List.of("{}",good.replace("[1,2,3,4,5,6,7]","[7,6,5,4,3,2,1]"),good.replace("\"mucTieuBuoc\"","\"system\""),TutorSessionServiceTest.summary("Em là Nguyễn Văn An.")))
+        for(String raw:List.of("{}","không có JSON",good.replace("\"mucTieuBuoc\"","\"system\""),TutorSessionServiceTest.summary("Em là Nguyễn Văn An.")))
             assertThrows(RuntimeException.class,() -> TutorSummary.validate(raw,sources));
+    }
+    @Test void fencedJsonAcceptedAndSourcesComeFromServer() {
+        String good=TutorSessionServiceTest.summary("Em đang tìm cách làm.");
+        String clean=TutorSummary.validate("```json\n"+good.replace("[1,2,3,4,5,6,7]","[9]")+"\n```",sources);
+        assertTrue(clean.contains("[1,2,3,4,5,6,7]"));
     }
     @Test void mathematicalTextIsNotGated() {
         String clean=TutorSummary.validate(TutorSessionServiceTest.summary("Đạo hàm $2x$ ở bước em đã thử."),sources);

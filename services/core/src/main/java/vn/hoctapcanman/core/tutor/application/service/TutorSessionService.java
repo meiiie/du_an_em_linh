@@ -130,8 +130,8 @@ public class TutorSessionService {
                 + " Tóm tắt trung thực dữ liệu nguồn, không tự tính hoặc bổ sung kết quả toán."
                 + " Không khẳng định lời học sinh đúng/sai; không có kết quả chấm trong nguồn thì loiDaDuocCham để rỗng."
                 + " Chỉ trả JSON, không Markdown: sáu trường chuỗi mucTieuBuoc,cachDaThu,loiDaDuocCham,cauHoiConMo,goiYDaDung,dieuDaSua;"
-                + " luotNguon là mảng số đúng thứ tự các lượt cần nén. Không có dữ kiện thì để chuỗi rỗng, không bịa kết quả chấm.",
-                render(tomTat,older)+"\nNguồn lượt cần nén: "+older.stream().map(Turn::ordinal).toList());
+                + " Mỗi trường tối đa 30 từ. Không có dữ kiện thì để chuỗi rỗng, không bịa kết quả chấm.",
+                render(tomTat,older));
     }
     /** Lượt hỏi chỉ đọc memory đã có; tuyệt đối không gọi model tóm tắt. */
     private HintPrompt memory(Accepted accepted,Assignment a,HintPrompt base) {
