@@ -27,7 +27,7 @@ test('AI soạn nháp từ tài liệu vào hàng duyệt, giáo viên đọc c�
  await page.goto('/gv/duyet');await expect(page.getByText('Lời giải nháp đầy đủ.')).toBeVisible();await noOverflow(page);await flat(page);
 });
 test('tự học chọn chủ đề, công cụ thẻ và CSV nằm trong phần ôn thêm',async({page,api})=>{
- await page.goto('/hs/bai');await page.getByText('Tự học theo chủ đề',{exact:true}).click();await page.getByLabel('Chủ đề',{exact:true}).selectOption('DH12');
+ await page.goto('/hs/bai');await page.getByText('Tự học theo chủ đề',{exact:true}).click();await page.getByRole('combobox',{name:'Chủ đề',exact:true}).selectOption('DH12');
  await page.getByRole('button',{name:'Chọn bài tự học',exact:true}).click();await expect(page).toHaveURL('/hs/luyen/E2E-01');
  expect(api.calls.some(c=>c.method==='POST'&&c.path==='/api/hs/tu-hoc/E2E-01')).toBe(true);
  await page.goto('/hs/kho');await expect(page.getByRole('button',{name:'Xuất CSV'})).not.toBeVisible();await page.getByText('Công cụ ôn thêm',{exact:true}).click();await expect(page.getByRole('button',{name:'Xuất CSV'})).toBeVisible();await noOverflow(page);

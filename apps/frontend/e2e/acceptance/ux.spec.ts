@@ -181,10 +181,10 @@ test('U11 phân trang ngân hàng và tìm kiếm đặt lại trang', async ({ 
 
 test('U4 đề bài nhóm theo tên bộ và đếm bài đã nộp', async ({ page, api }) => {
     await page.goto('/hs/bai');
-    await expect(page.locator('details')).toHaveCount(1);
-    await expect(page.locator('summary')).toContainText('Ôn đơn điệu');
-    await expect(page.locator('summary')).toContainText('2 bài · 0/2 đã nộp · Hạn:');
-    await expect(page.locator('details li')).toHaveCount(2);
+    await expect(page.locator('details.nhom-chu-de')).toHaveCount(1);
+    await expect(page.locator('details.nhom-chu-de summary')).toContainText('Ôn đơn điệu');
+    await expect(page.locator('details.nhom-chu-de summary')).toContainText('2 bài · 0/2 đã nộp · Hạn:');
+    await expect(page.locator('details.nhom-chu-de li')).toHaveCount(2);
 });
 for (const approve of [true, false])
     test(`U12 ${approve ? 'duyệt' : 'chặn'} cần lý do`, async ({ page, api }) => {
