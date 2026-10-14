@@ -15,8 +15,10 @@ import vn.hoctapcanman.core.practice.application.exception.BaiKhongTimThayExcept
 import vn.hoctapcanman.core.practice.application.service.BaiLamHienTai;
 import vn.hoctapcanman.core.practice.application.service.DocKetQuaCham;
 import vn.hoctapcanman.core.practice.application.service.TenBuoc;
+import vn.hoctapcanman.core.practice.domain.model.Assignment;
 import vn.hoctapcanman.core.practice.domain.model.StepWork;
 import vn.hoctapcanman.core.practice.domain.model.Submission;
+import vn.hoctapcanman.core.practice.domain.repository.AssignmentRepository;
 
 /**
  * Đề và bài làm của học sinh cho một bài ở lớp (T021, FR-006–010, {@code GET /api/hs/bai/{maBai}}). Không phải học sinh của
@@ -29,11 +31,13 @@ public class GetChiTietBaiUseCase {
 
     private final ClassMembership membership;
     private final BaiDeLam baiDeLam;
+    private final AssignmentRepository assignments;
     private final BaiLamHienTai baiLam;
 
-    public GetChiTietBaiUseCase(ClassMembership membership, BaiDeLam baiDeLam, BaiLamHienTai baiLam) {
+    public GetChiTietBaiUseCase(ClassMembership membership, BaiDeLam baiDeLam, AssignmentRepository assignments, BaiLamHienTai baiLam) {
         this.membership = membership;
         this.baiDeLam = baiDeLam;
+        this.assignments = assignments;
         this.baiLam = baiLam;
     }
 
@@ -47,7 +51,9 @@ public class GetChiTietBaiUseCase {
         boolean nghiDoanMo = bl != null && bl.guessSuspected();
         List<BuocDaLam> cacBuoc = xem.cacBuoc().stream().map(b -> buoc(b, bai.cacBuoc(), nghiDoanMo)).toList();
         boolean coTheMoLoiGiai = bl != null && !bl.isOpen();
-        return new ChiTietBai(bai.ma(), new ChiTietBai.De(bai.deBai(), bai.deBaiLatex()), bai.kyNang(), bai.tenKyNang(), bai.mucDo(),
+        UUID giaoBaiId = assignments.forStudent(lopId, hocSinhId).stream()
+            .filter(a -> a.problemId().equals(bai.problemId())).map(Assignment::id).findFirst().orElse(null);
+        return new ChiTietBai(bai.ma(), giaoBaiId, new ChiTietBai.De(bai.deBai(), bai.deBaiLatex()), bai.kyNang(), bai.tenKyNang(), bai.mucDo(),
             bai.dangTraLoi(), bai.buocBatDau(), bai.khaiBaoKetLuan(), bai.cacBuoc().stream().map(TenBuoc::cua).toList(),
             new ChiTietBai.BaiLam(xem.trangThai(), cacBuoc), coTheMoLoiGiai);
     }

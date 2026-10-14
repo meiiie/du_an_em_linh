@@ -1,6 +1,7 @@
 package vn.hoctapcanman.core.practice.application.dto.hocsinh;
 
 import java.util.List;
+import java.util.UUID;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -8,9 +9,11 @@ import org.jspecify.annotations.Nullable;
  * ({@code coTheMoLoiGiai}, cờ đọc lúc trả lời; lời giải chỉ đi trong phản hồi nộp bài). {@code khaiBaoKetLuan} là các ô bước
  * kết luận đề hỏi ({@code dong_bien}, {@code nghich_bien}, thêm {@code cuc_dai}, {@code cuc_tieu} khi đề hỏi cực trị): chỉ là
  * ô nào có, không mang giá trị nào. Bài không làm theo khung bước thì {@code cacBuoc} và {@code khaiBaoKetLuan} rỗng.
+ * {@code giaoBaiId} là id giao bài của em ở lớp để mở phiên gia sư v2, hoặc {@code null} khi chưa giao.
  */
 public record ChiTietBai(
         String maBai,
+        @Nullable UUID giaoBaiId,
         De de,
         String kyNang,
         String tenKyNang,
