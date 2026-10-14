@@ -1,0 +1,3249 @@
+{
+  "phien_ban": 1,
+  "bai": [
+    {
+      "ma_bai": "NT-DH12-NB-01",
+      "ho": "B.DH",
+      "san_sang_ui": true,
+      "payload_dung": {
+        "ham": "x**2+4*x+1",
+        "nop_toi": "B.DH.KETLUAN",
+        "cac_buoc": [
+          {
+            "ma_buoc": "B.DH.TXD",
+            "cac_dong": [
+              {
+                "dong": 0,
+                "latex": "R"
+              }
+            ]
+          },
+          {
+            "ma_buoc": "B.DH.DAOHAM",
+            "cac_dong": [
+              {
+                "dong": 0,
+                "latex": "2*x + 4"
+              }
+            ]
+          },
+          {
+            "ma_buoc": "B.DH.NGHIEM",
+            "cac_dong": [
+              {
+                "dong": 0,
+                "latex": "x = -2",
+                "loai": "NGHIEM"
+              }
+            ]
+          },
+          {
+            "ma_buoc": "B.DH.XETDAU",
+            "bang": {
+              "loai_bang": "XET_DAU",
+              "cac_o": [
+                {
+                  "hang": "X",
+                  "k": 0,
+                  "gia_tri": "-2"
+                },
+                {
+                  "hang": "DAU_YPHAY",
+                  "k": 0,
+                  "gia_tri": "-"
+                },
+                {
+                  "hang": "DAU_YPHAY",
+                  "k": 2,
+                  "gia_tri": "+"
+                },
+                {
+                  "hang": "DAU_YPHAY",
+                  "k": 1,
+                  "gia_tri": "0"
+                },
+                {
+                  "hang": "BIEN_THIEN",
+                  "k": 0,
+                  "gia_tri": "GIAM"
+                },
+                {
+                  "hang": "BIEN_THIEN",
+                  "k": 2,
+                  "gia_tri": "TANG"
+                }
+              ]
+            }
+          },
+          {
+            "ma_buoc": "B.DH.KETLUAN",
+            "khai_bao": [
+              "dong_bien",
+              "nghich_bien",
+              "cuc_dai",
+              "cuc_tieu"
+            ],
+            "cac_dong": [
+              {
+                "dong": 0,
+                "latex": "đồng biến trên (-2; +oo)"
+              },
+              {
+                "dong": 1,
+                "latex": "nghịch biến trên (-oo; -2)"
+              },
+              {
+                "dong": 2,
+                "latex": "không có cực đại"
+              },
+              {
+                "dong": 3,
+                "latex": "cực tiểu tại x = -2, y = -3"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "ma_bai": "NT-DH12-NB-02",
+      "ho": "B.DH",
+      "san_sang_ui": true,
+      "payload_dung": {
+        "ham": "-x**2+6*x-2",
+        "nop_toi": "B.DH.KETLUAN",
+        "cac_buoc": [
+          {
+            "ma_buoc": "B.DH.TXD",
+            "cac_dong": [
+              {
+                "dong": 0,
+                "latex": "R"
+              }
+            ]
+          },
+          {
+            "ma_buoc": "B.DH.DAOHAM",
+            "cac_dong": [
+              {
+                "dong": 0,
+                "latex": "6 - 2*x"
+              }
+            ]
+          },
+          {
+            "ma_buoc": "B.DH.NGHIEM",
+            "cac_dong": [
+              {
+                "dong": 0,
+                "latex": "x = 3",
+                "loai": "NGHIEM"
+              }
+            ]
+          },
+          {
+            "ma_buoc": "B.DH.XETDAU",
+            "bang": {
+              "loai_bang": "XET_DAU",
+              "cac_o": [
+                {
+                  "hang": "X",
+                  "k": 0,
+                  "gia_tri": "3"
+                },
+                {
+                  "hang": "DAU_YPHAY",
+                  "k": 0,
+                  "gia_tri": "+"
+                },
+                {
+                  "hang": "DAU_YPHAY",
+                  "k": 2,
+                  "gia_tri": "-"
+                },
+                {
+                  "hang": "DAU_YPHAY",
+                  "k": 1,
+                  "gia_tri": "0"
+                },
+                {
+                  "hang": "BIEN_THIEN",
+                  "k": 0,
+                  "gia_tri": "TANG"
+                },
+                {
+                  "hang": "BIEN_THIEN",
+                  "k": 2,
+                  "gia_tri": "GIAM"
+                }
+              ]
+            }
+          },
+          {
+            "ma_buoc": "B.DH.KETLUAN",
+            "khai_bao": [
+              "dong_bien",
+              "nghich_bien",
+              "cuc_dai",
+              "cuc_tieu"
+            ],
+            "cac_dong": [
+              {
+                "dong": 0,
+                "latex": "đồng biến trên (-oo; 3)"
+              },
+              {
+                "dong": 1,
+                "latex": "nghịch biến trên (3; +oo)"
+              },
+              {
+                "dong": 2,
+                "latex": "cực đại tại x = 3, y = 7"
+              },
+              {
+                "dong": 3,
+                "latex": "không có cực tiểu"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "ma_bai": "NT-DH12-TH-03",
+      "ho": "B.DH",
+      "san_sang_ui": true,
+      "payload_dung": {
+        "ham": "x**3-12*x+5",
+        "nop_toi": "B.DH.KETLUAN",
+        "cac_buoc": [
+          {
+            "ma_buoc": "B.DH.TXD",
+            "cac_dong": [
+              {
+                "dong": 0,
+                "latex": "R"
+              }
+            ]
+          },
+          {
+            "ma_buoc": "B.DH.DAOHAM",
+            "cac_dong": [
+              {
+                "dong": 0,
+                "latex": "3*x**2 - 12"
+              }
+            ]
+          },
+          {
+            "ma_buoc": "B.DH.NGHIEM",
+            "cac_dong": [
+              {
+                "dong": 0,
+                "latex": "x = -2",
+                "loai": "NGHIEM"
+              },
+              {
+                "dong": 1,
+                "latex": "x = 2",
+                "loai": "NGHIEM"
+              }
+            ]
+          },
+          {
+            "ma_buoc": "B.DH.XETDAU",
+            "bang": {
+              "loai_bang": "XET_DAU",
+              "cac_o": [
+                {
+                  "hang": "X",
+                  "k": 0,
+                  "gia_tri": "-2"
+                },
+                {
+                  "hang": "X",
+                  "k": 1,
+                  "gia_tri": "2"
+                },
+                {
+                  "hang": "DAU_YPHAY",
+                  "k": 0,
+                  "gia_tri": "+"
+                },
+                {
+                  "hang": "DAU_YPHAY",
+                  "k": 2,
+                  "gia_tri": "-"
+                },
+                {
+                  "hang": "DAU_YPHAY",
+                  "k": 4,
+                  "gia_tri": "+"
+                },
+                {
+                  "hang": "DAU_YPHAY",
+                  "k": 1,
+                  "gia_tri": "0"
+                },
+                {
+                  "hang": "DAU_YPHAY",
+                  "k": 3,
+                  "gia_tri": "0"
+                },
+                {
+                  "hang": "BIEN_THIEN",
+                  "k": 0,
+                  "gia_tri": "TANG"
+                },
+                {
+                  "hang": "BIEN_THIEN",
+                  "k": 2,
+                  "gia_tri": "GIAM"
+                },
+                {
+                  "hang": "BIEN_THIEN",
+                  "k": 4,
+                  "gia_tri": "TANG"
+                }
+              ]
+            }
+          },
+          {
+            "ma_buoc": "B.DH.KETLUAN",
+            "khai_bao": [
+              "dong_bien",
+              "nghich_bien",
+              "cuc_dai",
+              "cuc_tieu"
+            ],
+            "cac_dong": [
+              {
+                "dong": 0,
+                "latex": "đồng biến trên (-oo; -2) và (2; +oo)"
+              },
+              {
+                "dong": 1,
+                "latex": "nghịch biến trên (-2; 2)"
+              },
+              {
+                "dong": 2,
+                "latex": "cực đại tại x = -2, y = 21"
+              },
+              {
+                "dong": 3,
+                "latex": "cực tiểu tại x = 2, y = -11"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "ma_bai": "NT-DH12-TH-04",
+      "ho": "B.DH",
+      "san_sang_ui": true,
+      "payload_dung": {
+        "ham": "(2*x+5)/(x-3)",
+        "nop_toi": "B.DH.KETLUAN",
+        "cac_buoc": [
+          {
+            "ma_buoc": "B.DH.TXD",
+            "cac_dong": [
+              {
+                "dong": 0,
+                "latex": "R \\ {3}"
+              }
+            ]
+          },
+          {
+            "ma_buoc": "B.DH.DAOHAM",
+            "cac_dong": [
+              {
+                "dong": 0,
+                "latex": "-11/(x - 3)**2"
+              }
+            ]
+          },
+          {
+            "ma_buoc": "B.DH.NGHIEM",
+            "cac_dong": [
+              {
+                "dong": 0,
+                "latex": "không có nghiệm",
+                "loai": "NGHIEM"
+              }
+            ]
+          },
+          {
+            "ma_buoc": "B.DH.XETDAU",
+            "bang": {
+              "loai_bang": "XET_DAU",
+              "cac_o": [
+                {
+                  "hang": "X",
+                  "k": 0,
+                  "gia_tri": "3"
+                },
+                {
+                  "hang": "DAU_YPHAY",
+                  "k": 0,
+                  "gia_tri": "-"
+                },
+                {
+                  "hang": "DAU_YPHAY",
+                  "k": 2,
+                  "gia_tri": "-"
+                },
+                {
+                  "hang": "DAU_YPHAY",
+                  "k": 1,
+                  "gia_tri": "||"
+                },
+                {
+                  "hang": "BIEN_THIEN",
+                  "k": 0,
+                  "gia_tri": "GIAM"
+                },
+                {
+                  "hang": "BIEN_THIEN",
+                  "k": 2,
+                  "gia_tri": "GIAM"
+                }
+              ]
+            }
+          },
+          {
+            "ma_buoc": "B.DH.KETLUAN",
+            "khai_bao": [
+              "dong_bien",
+              "nghich_bien",
+              "cuc_dai",
+              "cuc_tieu"
+            ],
+            "cac_dong": [
+              {
+                "dong": 0,
+                "latex": "không đồng biến trên khoảng nào"
+              },
+              {
+                "dong": 1,
+                "latex": "nghịch biến trên (-oo; 3) và (3; +oo)"
+              },
+              {
+                "dong": 2,
+                "latex": "không có cực đại"
+              },
+              {
+                "dong": 3,
+                "latex": "không có cực tiểu"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "ma_bai": "NT-DH12-VD-05",
+      "ho": "B.DH",
+      "san_sang_ui": true,
+      "payload_dung": {
+        "ham": "x**4-8*x**2+7",
+        "nop_toi": "B.DH.KETLUAN",
+        "cac_buoc": [
+          {
+            "ma_buoc": "B.DH.TXD",
+            "cac_dong": [
+              {
+                "dong": 0,
+                "latex": "R"
+              }
+            ]
+          },
+          {
+            "ma_buoc": "B.DH.DAOHAM",
+            "cac_dong": [
+              {
+                "dong": 0,
+                "latex": "4*x*(x**2 - 4)"
+              }
+            ]
+          },
+          {
+            "ma_buoc": "B.DH.NGHIEM",
+            "cac_dong": [
+              {
+                "dong": 0,
+                "latex": "x = -2",
+                "loai": "NGHIEM"
+              },
+              {
+                "dong": 1,
+                "latex": "x = 0",
+                "loai": "NGHIEM"
+              },
+              {
+                "dong": 2,
+                "latex": "x = 2",
+                "loai": "NGHIEM"
+              }
+            ]
+          },
+          {
+            "ma_buoc": "B.DH.XETDAU",
+            "bang": {
+              "loai_bang": "XET_DAU",
+              "cac_o": [
+                {
+                  "hang": "X",
+                  "k": 0,
+                  "gia_tri": "-2"
+                },
+                {
+                  "hang": "X",
+                  "k": 1,
+                  "gia_tri": "0"
+                },
+                {
+                  "hang": "X",
+                  "k": 2,
+                  "gia_tri": "2"
+                },
+                {
+                  "hang": "DAU_YPHAY",
+                  "k": 0,
+                  "gia_tri": "-"
+                },
+                {
+                  "hang": "DAU_YPHAY",
+                  "k": 2,
+                  "gia_tri": "+"
+                },
+                {
+                  "hang": "DAU_YPHAY",
+                  "k": 4,
+                  "gia_tri": "-"
+                },
+                {
+                  "hang": "DAU_YPHAY",
+                  "k": 6,
+                  "gia_tri": "+"
+                },
+                {
+                  "hang": "DAU_YPHAY",
+                  "k": 1,
+                  "gia_tri": "0"
+                },
+                {
+                  "hang": "DAU_YPHAY",
+                  "k": 3,
+                  "gia_tri": "0"
+                },
+                {
+                  "hang": "DAU_YPHAY",
+                  "k": 5,
+                  "gia_tri": "0"
+                },
+                {
+                  "hang": "BIEN_THIEN",
+                  "k": 0,
+                  "gia_tri": "GIAM"
+                },
+                {
+                  "hang": "BIEN_THIEN",
+                  "k": 2,
+                  "gia_tri": "TANG"
+                },
+                {
+                  "hang": "BIEN_THIEN",
+                  "k": 4,
+                  "gia_tri": "GIAM"
+                },
+                {
+                  "hang": "BIEN_THIEN",
+                  "k": 6,
+                  "gia_tri": "TANG"
+                }
+              ]
+            }
+          },
+          {
+            "ma_buoc": "B.DH.KETLUAN",
+            "khai_bao": [
+              "dong_bien",
+              "nghich_bien",
+              "cuc_dai",
+              "cuc_tieu"
+            ],
+            "cac_dong": [
+              {
+                "dong": 0,
+                "latex": "đồng biến trên (-2; 0) và (2; +oo)"
+              },
+              {
+                "dong": 1,
+                "latex": "nghịch biến trên (-oo; -2) và (0; 2)"
+              },
+              {
+                "dong": 2,
+                "latex": "cực đại tại x = 0, y = 7"
+              },
+              {
+                "dong": 3,
+                "latex": "cực tiểu tại x = -2, y = -9; x = 2, y = -9"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "ma_bai": "NT-DH12-VD-06",
+      "ho": "B.DH",
+      "san_sang_ui": true,
+      "payload_dung": {
+        "ham": "x+9/x",
+        "nop_toi": "B.DH.KETLUAN",
+        "cac_buoc": [
+          {
+            "ma_buoc": "B.DH.TXD",
+            "cac_dong": [
+              {
+                "dong": 0,
+                "latex": "R \\ {0}"
+              }
+            ]
+          },
+          {
+            "ma_buoc": "B.DH.DAOHAM",
+            "cac_dong": [
+              {
+                "dong": 0,
+                "latex": "1 - 9/x**2"
+              }
+            ]
+          },
+          {
+            "ma_buoc": "B.DH.NGHIEM",
+            "cac_dong": [
+              {
+                "dong": 0,
+                "latex": "x = -3",
+                "loai": "NGHIEM"
+              },
+              {
+                "dong": 1,
+                "latex": "x = 3",
+                "loai": "NGHIEM"
+              }
+            ]
+          },
+          {
+            "ma_buoc": "B.DH.XETDAU",
+            "bang": {
+              "loai_bang": "XET_DAU",
+              "cac_o": [
+                {
+                  "hang": "X",
+                  "k": 0,
+                  "gia_tri": "-3"
+                },
+                {
+                  "hang": "X",
+                  "k": 1,
+                  "gia_tri": "0"
+                },
+                {
+                  "hang": "X",
+                  "k": 2,
+                  "gia_tri": "3"
+                },
+                {
+                  "hang": "DAU_YPHAY",
+                  "k": 0,
+                  "gia_tri": "+"
+                },
+                {
+                  "hang": "DAU_YPHAY",
+                  "k": 2,
+                  "gia_tri": "-"
+                },
+                {
+                  "hang": "DAU_YPHAY",
+                  "k": 4,
+                  "gia_tri": "-"
+                },
+                {
+                  "hang": "DAU_YPHAY",
+                  "k": 6,
+                  "gia_tri": "+"
+                },
+                {
+                  "hang": "DAU_YPHAY",
+                  "k": 1,
+                  "gia_tri": "0"
+                },
+                {
+                  "hang": "DAU_YPHAY",
+                  "k": 3,
+                  "gia_tri": "||"
+                },
+                {
+                  "hang": "DAU_YPHAY",
+                  "k": 5,
+                  "gia_tri": "0"
+                },
+                {
+                  "hang": "BIEN_THIEN",
+                  "k": 0,
+                  "gia_tri": "TANG"
+                },
+                {
+                  "hang": "BIEN_THIEN",
+                  "k": 2,
+                  "gia_tri": "GIAM"
+                },
+                {
+                  "hang": "BIEN_THIEN",
+                  "k": 4,
+                  "gia_tri": "GIAM"
+                },
+                {
+                  "hang": "BIEN_THIEN",
+                  "k": 6,
+                  "gia_tri": "TANG"
+                }
+              ]
+            }
+          },
+          {
+            "ma_buoc": "B.DH.KETLUAN",
+            "khai_bao": [
+              "dong_bien",
+              "nghich_bien",
+              "cuc_dai",
+              "cuc_tieu"
+            ],
+            "cac_dong": [
+              {
+                "dong": 0,
+                "latex": "đồng biến trên (-oo; -3) và (3; +oo)"
+              },
+              {
+                "dong": 1,
+                "latex": "nghịch biến trên (-3; 0) và (0; 3)"
+              },
+              {
+                "dong": 2,
+                "latex": "cực đại tại x = -3, y = -6"
+              },
+              {
+                "dong": 3,
+                "latex": "cực tiểu tại x = 3, y = 6"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "ma_bai": "NT-DH12-VDC-07",
+      "ho": "B.DH",
+      "san_sang_ui": true,
+      "payload_dung": {
+        "ham": "2*x**3-15*x**2+36*x-24",
+        "nop_toi": "B.DH.KETLUAN",
+        "cac_buoc": [
+          {
+            "ma_buoc": "B.DH.TXD",
+            "cac_dong": [
+              {
+                "dong": 0,
+                "latex": "R"
+              }
+            ]
+          },
+          {
+            "ma_buoc": "B.DH.DAOHAM",
+            "cac_dong": [
+              {
+                "dong": 0,
+                "latex": "6*x**2 - 30*x + 36"
+              }
+            ]
+          },
+          {
+            "ma_buoc": "B.DH.NGHIEM",
+            "cac_dong": [
+              {
+                "dong": 0,
+                "latex": "x = 2",
+                "loai": "NGHIEM"
+              },
+              {
+                "dong": 1,
+                "latex": "x = 3",
+                "loai": "NGHIEM"
+              }
+            ]
+          },
+          {
+            "ma_buoc": "B.DH.XETDAU",
+            "bang": {
+              "loai_bang": "XET_DAU",
+              "cac_o": [
+                {
+                  "hang": "X",
+                  "k": 0,
+                  "gia_tri": "2"
+                },
+                {
+                  "hang": "X",
+                  "k": 1,
+                  "gia_tri": "3"
+                },
+                {
+                  "hang": "DAU_YPHAY",
+                  "k": 0,
+                  "gia_tri": "+"
+                },
+                {
+                  "hang": "DAU_YPHAY",
+                  "k": 2,
+                  "gia_tri": "-"
+                },
+                {
+                  "hang": "DAU_YPHAY",
+                  "k": 4,
+                  "gia_tri": "+"
+                },
+                {
+                  "hang": "DAU_YPHAY",
+                  "k": 1,
+                  "gia_tri": "0"
+                },
+                {
+                  "hang": "DAU_YPHAY",
+                  "k": 3,
+                  "gia_tri": "0"
+                },
+                {
+                  "hang": "BIEN_THIEN",
+                  "k": 0,
+                  "gia_tri": "TANG"
+                },
+                {
+                  "hang": "BIEN_THIEN",
+                  "k": 2,
+                  "gia_tri": "GIAM"
+                },
+                {
+                  "hang": "BIEN_THIEN",
+                  "k": 4,
+                  "gia_tri": "TANG"
+                }
+              ]
+            }
+          },
+          {
+            "ma_buoc": "B.DH.KETLUAN",
+            "khai_bao": [
+              "dong_bien",
+              "nghich_bien",
+              "cuc_dai",
+              "cuc_tieu"
+            ],
+            "cac_dong": [
+              {
+                "dong": 0,
+                "latex": "đồng biến trên (-oo; 2) và (3; +oo)"
+              },
+              {
+                "dong": 1,
+                "latex": "nghịch biến trên (2; 3)"
+              },
+              {
+                "dong": 2,
+                "latex": "cực đại tại x = 2, y = 4"
+              },
+              {
+                "dong": 3,
+                "latex": "cực tiểu tại x = 3, y = 3"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "ma_bai": "NT-DH12-VDC-08",
+      "ho": "B.DH",
+      "san_sang_ui": true,
+      "payload_dung": {
+        "ham": "-x**4+18*x**2-24",
+        "nop_toi": "B.DH.KETLUAN",
+        "cac_buoc": [
+          {
+            "ma_buoc": "B.DH.TXD",
+            "cac_dong": [
+              {
+                "dong": 0,
+                "latex": "R"
+              }
+            ]
+          },
+          {
+            "ma_buoc": "B.DH.DAOHAM",
+            "cac_dong": [
+              {
+                "dong": 0,
+                "latex": "4*x*(9 - x**2)"
+              }
+            ]
+          },
+          {
+            "ma_buoc": "B.DH.NGHIEM",
+            "cac_dong": [
+              {
+                "dong": 0,
+                "latex": "x = -3",
+                "loai": "NGHIEM"
+              },
+              {
+                "dong": 1,
+                "latex": "x = 0",
+                "loai": "NGHIEM"
+              },
+              {
+                "dong": 2,
+                "latex": "x = 3",
+                "loai": "NGHIEM"
+              }
+            ]
+          },
+          {
+            "ma_buoc": "B.DH.XETDAU",
+            "bang": {
+              "loai_bang": "XET_DAU",
+              "cac_o": [
+                {
+                  "hang": "X",
+                  "k": 0,
+                  "gia_tri": "-3"
+                },
+                {
+                  "hang": "X",
+                  "k": 1,
+                  "gia_tri": "0"
+                },
+                {
+                  "hang": "X",
+                  "k": 2,
+                  "gia_tri": "3"
+                },
+                {
+                  "hang": "DAU_YPHAY",
+                  "k": 0,
+                  "gia_tri": "+"
+                },
+                {
+                  "hang": "DAU_YPHAY",
+                  "k": 2,
+                  "gia_tri": "-"
+                },
+                {
+                  "hang": "DAU_YPHAY",
+                  "k": 4,
+                  "gia_tri": "+"
+                },
+                {
+                  "hang": "DAU_YPHAY",
+                  "k": 6,
+                  "gia_tri": "-"
+                },
+                {
+                  "hang": "DAU_YPHAY",
+                  "k": 1,
+                  "gia_tri": "0"
+                },
+                {
+                  "hang": "DAU_YPHAY",
+                  "k": 3,
+                  "gia_tri": "0"
+                },
+                {
+                  "hang": "DAU_YPHAY",
+                  "k": 5,
+                  "gia_tri": "0"
+                },
+                {
+                  "hang": "BIEN_THIEN",
+                  "k": 0,
+                  "gia_tri": "TANG"
+                },
+                {
+                  "hang": "BIEN_THIEN",
+                  "k": 2,
+                  "gia_tri": "GIAM"
+                },
+                {
+                  "hang": "BIEN_THIEN",
+                  "k": 4,
+                  "gia_tri": "TANG"
+                },
+                {
+                  "hang": "BIEN_THIEN",
+                  "k": 6,
+                  "gia_tri": "GIAM"
+                }
+              ]
+            }
+          },
+          {
+            "ma_buoc": "B.DH.KETLUAN",
+            "khai_bao": [
+              "dong_bien",
+              "nghich_bien",
+              "cuc_dai",
+              "cuc_tieu"
+            ],
+            "cac_dong": [
+              {
+                "dong": 0,
+                "latex": "đồng biến trên (-oo; -3) và (0; 3)"
+              },
+              {
+                "dong": 1,
+                "latex": "nghịch biến trên (-3; 0) và (3; +oo)"
+              },
+              {
+                "dong": 2,
+                "latex": "cực đại tại x = -3, y = 57; x = 3, y = 57"
+              },
+              {
+                "dong": 3,
+                "latex": "cực tiểu tại x = 0, y = -24"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "ma_bai": "NT-LG11-VDC-05",
+      "ho": "B.GT",
+      "san_sang_ui": false,
+      "bai_toan": {
+        "loai": "trig_roots",
+        "du_kien": {
+          "ham": "2*sin(x)**2-3*sin(x)+1",
+          "can_duoi": "0",
+          "can_tren": "2*pi"
+        }
+      },
+      "cac_buoc": [
+        {
+          "ten": "Miền nghiệm",
+          "viec": "Viết hai đầu mút của đoạn xét nghiệm theo thứ tự tăng dần.",
+          "kieu": "DAY_GIA_TRI",
+          "dap_an": [
+            "0",
+            "2*pi"
+          ],
+          "ma_buoc": "B.GT.MIEN"
+        },
+        {
+          "ten": "Đưa về sin",
+          "viec": "Viết biểu thức vế trái hoàn toàn theo sin(x), đặt bằng 0.",
+          "kieu": "BIEU_THUC",
+          "dap_an": [
+            "2*sin(x)**2 - 3*sin(x) + 1"
+          ],
+          "ma_buoc": "B.GT.BIENDOI"
+        },
+        {
+          "ten": "Giá trị sin",
+          "viec": "Tìm tập giá trị sin(x) thỏa phương trình và thuộc [−1; 1].",
+          "kieu": "TAP_HUU_HAN",
+          "dap_an": [
+            "1/2",
+            "1"
+          ],
+          "ma_buoc": "B.GT.TRUNGGIAN"
+        },
+        {
+          "ten": "Giải nhánh đầu",
+          "viec": "Tìm tập nghiệm trên đoạn đã cho ứng với giá trị sin(x) nhỏ nhất ở bước trước.",
+          "kieu": "TAP_HUU_HAN",
+          "dap_an": [
+            "pi/6",
+            "5*pi/6"
+          ],
+          "ma_buoc": "B.GT.TINH"
+        },
+        {
+          "ten": "Tập nghiệm",
+          "viec": "Kết luận tập tất cả nghiệm trên đoạn đã cho.",
+          "kieu": "TAP_HUU_HAN",
+          "dap_an": [
+            "pi/6",
+            "pi/2",
+            "5*pi/6"
+          ],
+          "ma_buoc": "B.GT.KETLUAN"
+        }
+      ]
+    },
+    {
+      "ma_bai": "NT-LG11-VDC-06",
+      "ho": "B.GT",
+      "san_sang_ui": false,
+      "bai_toan": {
+        "loai": "trig_roots",
+        "du_kien": {
+          "ham": "cos(2*x)-sin(x)",
+          "can_duoi": "0",
+          "can_tren": "2*pi"
+        }
+      },
+      "cac_buoc": [
+        {
+          "ten": "Miền nghiệm",
+          "viec": "Viết hai đầu mút của đoạn xét nghiệm theo thứ tự tăng dần.",
+          "kieu": "DAY_GIA_TRI",
+          "dap_an": [
+            "0",
+            "2*pi"
+          ],
+          "ma_buoc": "B.GT.MIEN"
+        },
+        {
+          "ten": "Đưa về sin",
+          "viec": "Viết biểu thức vế trái hoàn toàn theo sin(x), đặt bằng 0.",
+          "kieu": "BIEU_THUC",
+          "dap_an": [
+            "-2*sin(x)**2 - sin(x) + 1"
+          ],
+          "ma_buoc": "B.GT.BIENDOI"
+        },
+        {
+          "ten": "Giá trị sin",
+          "viec": "Tìm tập giá trị sin(x) thỏa phương trình và thuộc [−1; 1].",
+          "kieu": "TAP_HUU_HAN",
+          "dap_an": [
+            "-1",
+            "1/2"
+          ],
+          "ma_buoc": "B.GT.TRUNGGIAN"
+        },
+        {
+          "ten": "Giải nhánh đầu",
+          "viec": "Tìm tập nghiệm trên đoạn đã cho ứng với giá trị sin(x) nhỏ nhất ở bước trước.",
+          "kieu": "TAP_HUU_HAN",
+          "dap_an": [
+            "3*pi/2"
+          ],
+          "ma_buoc": "B.GT.TINH"
+        },
+        {
+          "ten": "Tập nghiệm",
+          "viec": "Kết luận tập tất cả nghiệm trên đoạn đã cho.",
+          "kieu": "TAP_HUU_HAN",
+          "dap_an": [
+            "pi/6",
+            "5*pi/6",
+            "3*pi/2"
+          ],
+          "ma_buoc": "B.GT.KETLUAN"
+        }
+      ]
+    },
+    {
+      "ma_bai": "NT-DH11-NB-01",
+      "ho": "B.GT",
+      "san_sang_ui": false,
+      "bai_toan": {
+        "loai": "derivative_value",
+        "du_kien": {
+          "ham": "4*x**3-5*x+2",
+          "tai": 1
+        }
+      },
+      "cac_buoc": [
+        {
+          "ten": "Điều kiện",
+          "viec": "Viết tập xác định của hàm số.",
+          "kieu": "MIEN",
+          "dap_an": [
+            "R"
+          ],
+          "ma_buoc": "B.GT.MIEN"
+        },
+        {
+          "ten": "Áp dụng quy tắc",
+          "viec": "Tính đạo hàm của hạng tử có bậc cao nhất.",
+          "kieu": "BIEU_THUC",
+          "dap_an": [
+            "12*x**2"
+          ],
+          "ma_buoc": "B.GT.BIENDOI"
+        },
+        {
+          "ten": "Đạo hàm",
+          "viec": "Tính và rút gọn đạo hàm của hàm số.",
+          "kieu": "BIEU_THUC",
+          "dap_an": [
+            "12*x**2 - 5"
+          ],
+          "ma_buoc": "B.GT.TRUNGGIAN"
+        },
+        {
+          "ten": "Giá trị hàm tại điểm",
+          "viec": "Tính giá trị hàm số tại điểm đã cho, phân biệt với giá trị đạo hàm.",
+          "kieu": "BIEU_THUC",
+          "dap_an": [
+            "1"
+          ],
+          "ma_buoc": "B.GT.TINH"
+        },
+        {
+          "ten": "Giá trị đạo hàm",
+          "viec": "Thay điểm đã cho vào đạo hàm và kết luận.",
+          "kieu": "BIEU_THUC",
+          "dap_an": [
+            "7"
+          ],
+          "ma_buoc": "B.GT.KETLUAN"
+        }
+      ]
+    },
+    {
+      "ma_bai": "NT-DH11-TH-02",
+      "ho": "B.GT",
+      "san_sang_ui": false,
+      "bai_toan": {
+        "loai": "derivative_value",
+        "du_kien": {
+          "ham": "(x+4)/(x-2)",
+          "tai": 3
+        }
+      },
+      "cac_buoc": [
+        {
+          "ten": "Điều kiện",
+          "viec": "Viết tập xác định của hàm số.",
+          "kieu": "MIEN",
+          "dap_an": [
+            "R \\ {2}"
+          ],
+          "ma_buoc": "B.GT.MIEN"
+        },
+        {
+          "ten": "Áp dụng quy tắc",
+          "viec": "Tính tử số theo quy tắc đạo hàm của thương, chưa chia cho bình phương mẫu.",
+          "kieu": "BIEU_THUC",
+          "dap_an": [
+            "-6"
+          ],
+          "ma_buoc": "B.GT.BIENDOI"
+        },
+        {
+          "ten": "Đạo hàm",
+          "viec": "Tính và rút gọn đạo hàm của hàm số.",
+          "kieu": "BIEU_THUC",
+          "dap_an": [
+            "1/(x - 2) - (x + 4)/(x - 2)**2"
+          ],
+          "ma_buoc": "B.GT.TRUNGGIAN"
+        },
+        {
+          "ten": "Giá trị hàm tại điểm",
+          "viec": "Tính giá trị hàm số tại điểm đã cho, phân biệt với giá trị đạo hàm.",
+          "kieu": "BIEU_THUC",
+          "dap_an": [
+            "7"
+          ],
+          "ma_buoc": "B.GT.TINH"
+        },
+        {
+          "ten": "Giá trị đạo hàm",
+          "viec": "Thay điểm đã cho vào đạo hàm và kết luận.",
+          "kieu": "BIEU_THUC",
+          "dap_an": [
+            "-6"
+          ],
+          "ma_buoc": "B.GT.KETLUAN"
+        }
+      ]
+    },
+    {
+      "ma_bai": "NT-DH11-TH-03",
+      "ho": "B.GT",
+      "san_sang_ui": false,
+      "bai_toan": {
+        "loai": "derivative_value",
+        "du_kien": {
+          "ham": "sin(3*x)",
+          "tai": 0
+        }
+      },
+      "cac_buoc": [
+        {
+          "ten": "Điều kiện",
+          "viec": "Viết tập xác định của hàm số.",
+          "kieu": "MIEN",
+          "dap_an": [
+            "R"
+          ],
+          "ma_buoc": "B.GT.MIEN"
+        },
+        {
+          "ten": "Áp dụng quy tắc",
+          "viec": "Tính đạo hàm của biểu thức trong hàm sin.",
+          "kieu": "BIEU_THUC",
+          "dap_an": [
+            "3"
+          ],
+          "ma_buoc": "B.GT.BIENDOI"
+        },
+        {
+          "ten": "Đạo hàm",
+          "viec": "Tính và rút gọn đạo hàm của hàm số.",
+          "kieu": "BIEU_THUC",
+          "dap_an": [
+            "3*cos(3*x)"
+          ],
+          "ma_buoc": "B.GT.TRUNGGIAN"
+        },
+        {
+          "ten": "Giá trị hàm tại điểm",
+          "viec": "Tính giá trị hàm số tại điểm đã cho, phân biệt với giá trị đạo hàm.",
+          "kieu": "BIEU_THUC",
+          "dap_an": [
+            "0"
+          ],
+          "ma_buoc": "B.GT.TINH"
+        },
+        {
+          "ten": "Giá trị đạo hàm",
+          "viec": "Thay điểm đã cho vào đạo hàm và kết luận.",
+          "kieu": "BIEU_THUC",
+          "dap_an": [
+            "3"
+          ],
+          "ma_buoc": "B.GT.KETLUAN"
+        }
+      ]
+    },
+    {
+      "ma_bai": "NT-DH11-VD-04",
+      "ho": "B.GT",
+      "san_sang_ui": false,
+      "bai_toan": {
+        "loai": "derivative_value",
+        "du_kien": {
+          "ham": "x**3-6*x**2+15*x",
+          "tai": 4
+        }
+      },
+      "cac_buoc": [
+        {
+          "ten": "Điều kiện",
+          "viec": "Viết tập xác định của hàm số.",
+          "kieu": "MIEN",
+          "dap_an": [
+            "R"
+          ],
+          "ma_buoc": "B.GT.MIEN"
+        },
+        {
+          "ten": "Áp dụng quy tắc",
+          "viec": "Tính đạo hàm của hạng tử có bậc cao nhất.",
+          "kieu": "BIEU_THUC",
+          "dap_an": [
+            "3*x**2"
+          ],
+          "ma_buoc": "B.GT.BIENDOI"
+        },
+        {
+          "ten": "Đạo hàm",
+          "viec": "Tính và rút gọn đạo hàm của hàm số.",
+          "kieu": "BIEU_THUC",
+          "dap_an": [
+            "3*x**2 - 12*x + 15"
+          ],
+          "ma_buoc": "B.GT.TRUNGGIAN"
+        },
+        {
+          "ten": "Giá trị hàm tại điểm",
+          "viec": "Tính giá trị hàm số tại điểm đã cho, phân biệt với giá trị đạo hàm.",
+          "kieu": "BIEU_THUC",
+          "dap_an": [
+            "28"
+          ],
+          "ma_buoc": "B.GT.TINH"
+        },
+        {
+          "ten": "Giá trị đạo hàm",
+          "viec": "Thay điểm đã cho vào đạo hàm và kết luận.",
+          "kieu": "BIEU_THUC",
+          "dap_an": [
+            "15"
+          ],
+          "ma_buoc": "B.GT.KETLUAN"
+        }
+      ]
+    },
+    {
+      "ma_bai": "NT-DH11-VDC-05",
+      "ho": "B.GT",
+      "san_sang_ui": false,
+      "bai_toan": {
+        "loai": "tangent_through",
+        "du_kien": {
+          "ham": "x**3-3*x**2+2",
+          "P": [
+            0,
+            2
+          ]
+        }
+      },
+      "cac_buoc": [
+        {
+          "ten": "Điều kiện",
+          "viec": "Viết tập xác định của hàm số.",
+          "kieu": "MIEN",
+          "dap_an": [
+            "R"
+          ],
+          "ma_buoc": "B.GT.MIEN"
+        },
+        {
+          "ten": "Đạo hàm",
+          "viec": "Tính hệ số góc tiếp tuyến theo hoành độ tiếp điểm.",
+          "kieu": "BIEU_THUC",
+          "dap_an": [
+            "3*x**2 - 6*x"
+          ],
+          "ma_buoc": "B.GT.BIENDOI"
+        },
+        {
+          "ten": "Điều kiện đi qua điểm",
+          "viec": "Viết f(x) + (hoành độ P − x)f′(x) − tung độ P, đặt biểu thức này bằng 0.",
+          "kieu": "BIEU_THUC",
+          "dap_an": [
+            "-2*x**3 + 3*x**2"
+          ],
+          "ma_buoc": "B.GT.TRUNGGIAN"
+        },
+        {
+          "ten": "Hệ số góc",
+          "viec": "Tính tập hệ số góc tại tất cả nghiệm của điều kiện đi qua P.",
+          "kieu": "TAP_HUU_HAN",
+          "dap_an": [
+            "0",
+            "-9/4"
+          ],
+          "ma_buoc": "B.GT.TINH"
+        },
+        {
+          "ten": "Hoành độ tiếp điểm",
+          "viec": "Kết luận tập tất cả hoành độ tiếp điểm, kể cả tiếp tuyến ngang.",
+          "kieu": "TAP_HUU_HAN",
+          "dap_an": [
+            "0",
+            "3/2"
+          ],
+          "ma_buoc": "B.GT.KETLUAN"
+        }
+      ]
+    },
+    {
+      "ma_bai": "NT-DH11-VDC-06",
+      "ho": "B.GT",
+      "san_sang_ui": false,
+      "bai_toan": {
+        "loai": "maximum",
+        "du_kien": {
+          "ham": "x*(26-x)",
+          "can_duoi": 0,
+          "can_tren": 26
+        }
+      },
+      "cac_buoc": [
+        {
+          "ten": "Miền của biến",
+          "viec": "Viết hai đầu mút của miền chiều rộng theo thứ tự tăng dần.",
+          "kieu": "DAY_GIA_TRI",
+          "dap_an": [
+            "0",
+            "26"
+          ],
+          "ma_buoc": "B.GT.MIEN"
+        },
+        {
+          "ten": "Đạo hàm",
+          "viec": "Tính đạo hàm của diện tích theo chiều rộng.",
+          "kieu": "BIEU_THUC",
+          "dap_an": [
+            "26 - 2*x"
+          ],
+          "ma_buoc": "B.GT.BIENDOI"
+        },
+        {
+          "ten": "Điểm tới hạn",
+          "viec": "Tìm tập nghiệm đạo hàm bằng 0 trong miền.",
+          "kieu": "TAP_HUU_HAN",
+          "dap_an": [
+            "13"
+          ],
+          "ma_buoc": "B.GT.TRUNGGIAN"
+        },
+        {
+          "ten": "So sánh giá trị",
+          "viec": "Tính diện tích tại đầu mút trái, điểm tới hạn, đầu mút phải theo thứ tự này.",
+          "kieu": "DAY_GIA_TRI",
+          "dap_an": [
+            "0",
+            "169",
+            "0"
+          ],
+          "ma_buoc": "B.GT.TINH"
+        },
+        {
+          "ten": "Cực đại toàn cục",
+          "viec": "Viết chiều rộng và diện tích lớn nhất theo thứ tự này.",
+          "kieu": "DAY_GIA_TRI",
+          "dap_an": [
+            "13",
+            "169"
+          ],
+          "ma_buoc": "B.GT.KETLUAN"
+        }
+      ]
+    },
+    {
+      "ma_bai": "NT-TP12-NB-01",
+      "ho": "B.GT",
+      "san_sang_ui": false,
+      "bai_toan": {
+        "loai": "integral",
+        "du_kien": {
+          "ham": "3*x**2",
+          "can_duoi": 0,
+          "can_tren": 2
+        }
+      },
+      "cac_buoc": [
+        {
+          "ten": "Miền tích phân",
+          "viec": "Viết hai cận theo thứ tự cận dưới; cận trên.",
+          "kieu": "DAY_GIA_TRI",
+          "dap_an": [
+            "0",
+            "2"
+          ],
+          "ma_buoc": "B.GT.MIEN"
+        },
+        {
+          "ten": "Nguyên hàm",
+          "viec": "Tìm một nguyên hàm trên đoạn tích phân.",
+          "kieu": "NGUYEN_HAM",
+          "dap_an": [
+            "x**3"
+          ],
+          "ma_buoc": "B.GT.BIENDOI"
+        },
+        {
+          "ten": "Giá trị tại cận dưới",
+          "viec": "Thay cận dưới vào nguyên hàm em đã chọn.",
+          "kieu": "BIEU_THUC",
+          "dap_an": [
+            "0"
+          ],
+          "ma_buoc": "B.GT.TRUNGGIAN"
+        },
+        {
+          "ten": "Giá trị tại cận trên",
+          "viec": "Thay cận trên vào nguyên hàm em đã chọn.",
+          "kieu": "BIEU_THUC",
+          "dap_an": [
+            "8"
+          ],
+          "ma_buoc": "B.GT.TINH"
+        },
+        {
+          "ten": "Tích phân",
+          "viec": "Lấy giá trị tại cận trên trừ giá trị tại cận dưới.",
+          "kieu": "BIEU_THUC",
+          "dap_an": [
+            "8"
+          ],
+          "ma_buoc": "B.GT.KETLUAN"
+        }
+      ]
+    },
+    {
+      "ma_bai": "NT-TP12-TH-02",
+      "ho": "B.GT",
+      "san_sang_ui": false,
+      "bai_toan": {
+        "loai": "integral",
+        "du_kien": {
+          "ham": "2*x+5",
+          "can_duoi": 1,
+          "can_tren": 4
+        }
+      },
+      "cac_buoc": [
+        {
+          "ten": "Miền tích phân",
+          "viec": "Viết hai cận theo thứ tự cận dưới; cận trên.",
+          "kieu": "DAY_GIA_TRI",
+          "dap_an": [
+            "1",
+            "4"
+          ],
+          "ma_buoc": "B.GT.MIEN"
+        },
+        {
+          "ten": "Nguyên hàm",
+          "viec": "Tìm một nguyên hàm trên đoạn tích phân.",
+          "kieu": "NGUYEN_HAM",
+          "dap_an": [
+            "x**2 + 5*x"
+          ],
+          "ma_buoc": "B.GT.BIENDOI"
+        },
+        {
+          "ten": "Giá trị tại cận dưới",
+          "viec": "Thay cận dưới vào nguyên hàm em đã chọn.",
+          "kieu": "BIEU_THUC",
+          "dap_an": [
+            "6"
+          ],
+          "ma_buoc": "B.GT.TRUNGGIAN"
+        },
+        {
+          "ten": "Giá trị tại cận trên",
+          "viec": "Thay cận trên vào nguyên hàm em đã chọn.",
+          "kieu": "BIEU_THUC",
+          "dap_an": [
+            "36"
+          ],
+          "ma_buoc": "B.GT.TINH"
+        },
+        {
+          "ten": "Tích phân",
+          "viec": "Lấy giá trị tại cận trên trừ giá trị tại cận dưới.",
+          "kieu": "BIEU_THUC",
+          "dap_an": [
+            "30"
+          ],
+          "ma_buoc": "B.GT.KETLUAN"
+        }
+      ]
+    },
+    {
+      "ma_bai": "NT-TP12-TH-03",
+      "ho": "B.GT",
+      "san_sang_ui": false,
+      "bai_toan": {
+        "loai": "integral",
+        "du_kien": {
+          "ham": "cos(x)",
+          "can_duoi": 0,
+          "can_tren": "pi/2"
+        }
+      },
+      "cac_buoc": [
+        {
+          "ten": "Miền tích phân",
+          "viec": "Viết hai cận theo thứ tự cận dưới; cận trên.",
+          "kieu": "DAY_GIA_TRI",
+          "dap_an": [
+            "0",
+            "pi/2"
+          ],
+          "ma_buoc": "B.GT.MIEN"
+        },
+        {
+          "ten": "Nguyên hàm",
+          "viec": "Tìm một nguyên hàm trên đoạn tích phân.",
+          "kieu": "NGUYEN_HAM",
+          "dap_an": [
+            "sin(x)"
+          ],
+          "ma_buoc": "B.GT.BIENDOI"
+        },
+        {
+          "ten": "Giá trị tại cận dưới",
+          "viec": "Thay cận dưới vào nguyên hàm em đã chọn.",
+          "kieu": "BIEU_THUC",
+          "dap_an": [
+            "0"
+          ],
+          "ma_buoc": "B.GT.TRUNGGIAN"
+        },
+        {
+          "ten": "Giá trị tại cận trên",
+          "viec": "Thay cận trên vào nguyên hàm em đã chọn.",
+          "kieu": "BIEU_THUC",
+          "dap_an": [
+            "1"
+          ],
+          "ma_buoc": "B.GT.TINH"
+        },
+        {
+          "ten": "Tích phân",
+          "viec": "Lấy giá trị tại cận trên trừ giá trị tại cận dưới.",
+          "kieu": "BIEU_THUC",
+          "dap_an": [
+            "1"
+          ],
+          "ma_buoc": "B.GT.KETLUAN"
+        }
+      ]
+    },
+    {
+      "ma_bai": "NT-TP12-VD-04",
+      "ho": "B.GT",
+      "san_sang_ui": false,
+      "bai_toan": {
+        "loai": "area",
+        "du_kien": {
+          "ham": "x**2-4*x",
+          "can_duoi": 0,
+          "can_tren": 4
+        }
+      },
+      "cac_buoc": [
+        {
+          "ten": "Miền tích phân",
+          "viec": "Viết hai cận theo thứ tự cận dưới; cận trên.",
+          "kieu": "DAY_GIA_TRI",
+          "dap_an": [
+            "0",
+            "4"
+          ],
+          "ma_buoc": "B.GT.MIEN"
+        },
+        {
+          "ten": "Nguyên hàm",
+          "viec": "Tìm một nguyên hàm trên đoạn tích phân.",
+          "kieu": "NGUYEN_HAM",
+          "dap_an": [
+            "x**3/3 - 2*x**2"
+          ],
+          "ma_buoc": "B.GT.BIENDOI"
+        },
+        {
+          "ten": "Giá trị tại cận dưới",
+          "viec": "Thay cận dưới vào nguyên hàm em đã chọn.",
+          "kieu": "BIEU_THUC",
+          "dap_an": [
+            "0"
+          ],
+          "ma_buoc": "B.GT.TRUNGGIAN"
+        },
+        {
+          "ten": "Giá trị tại cận trên",
+          "viec": "Thay cận trên vào nguyên hàm em đã chọn.",
+          "kieu": "BIEU_THUC",
+          "dap_an": [
+            "-32/3"
+          ],
+          "ma_buoc": "B.GT.TINH"
+        },
+        {
+          "ten": "Diện tích",
+          "viec": "Lấy trị tuyệt đối của hiệu hai giá trị.",
+          "kieu": "BIEU_THUC",
+          "dap_an": [
+            "32/3"
+          ],
+          "ma_buoc": "B.GT.KETLUAN"
+        }
+      ]
+    },
+    {
+      "ma_bai": "NT-TP12-VDC-06",
+      "ho": "B.GT",
+      "san_sang_ui": false,
+      "bai_toan": {
+        "loai": "between_area",
+        "du_kien": {
+          "f": "x**2",
+          "g": "2*x+3"
+        }
+      },
+      "cac_buoc": [
+        {
+          "ten": "Giao điểm",
+          "viec": "Tìm tập hoành độ giao điểm.",
+          "kieu": "TAP_HUU_HAN",
+          "dap_an": [
+            "-1",
+            "3"
+          ],
+          "ma_buoc": "B.GT.MIEN"
+        },
+        {
+          "ten": "Hiệu hai hàm",
+          "viec": "Viết hàm thứ hai trừ hàm thứ nhất.",
+          "kieu": "BIEU_THUC",
+          "dap_an": [
+            "-x**2 + 2*x + 3"
+          ],
+          "ma_buoc": "B.GT.BIENDOI"
+        },
+        {
+          "ten": "Nguyên hàm",
+          "viec": "Tìm một nguyên hàm của hiệu hai hàm.",
+          "kieu": "NGUYEN_HAM",
+          "dap_an": [
+            "-x**3/3 + x**2 + 3*x"
+          ],
+          "ma_buoc": "B.GT.TRUNGGIAN"
+        },
+        {
+          "ten": "Tích phân",
+          "viec": "Tính tích phân của hiệu trên miền giữa hai giao điểm.",
+          "kieu": "BIEU_THUC",
+          "dap_an": [
+            "32/3"
+          ],
+          "ma_buoc": "B.GT.TINH"
+        },
+        {
+          "ten": "Diện tích",
+          "viec": "Lấy trị tuyệt đối để kết luận diện tích.",
+          "kieu": "BIEU_THUC",
+          "dap_an": [
+            "32/3"
+          ],
+          "ma_buoc": "B.GT.KETLUAN"
+        }
+      ]
+    },
+    {
+      "ma_bai": "NT-XS10-NB-01",
+      "ho": "B.XS",
+      "san_sang_ui": false,
+      "bai_toan": {
+        "loai": "hypergeom",
+        "du_kien": {
+          "good": 5,
+          "bad": 7,
+          "draw": 1,
+          "want": 1
+        }
+      },
+      "cac_buoc": [
+        {
+          "ten": "Không gian mẫu",
+          "viec": "Đếm mọi cách chọn không xét thứ tự.",
+          "kieu": "BIEU_THUC",
+          "dap_an": [
+            "12"
+          ],
+          "ma_buoc": "B.XS.DUKIEN"
+        },
+        {
+          "ten": "Chọn phần tử thuận lợi",
+          "viec": "Đếm cách chọn đúng số phần tử thuận lợi đề yêu cầu.",
+          "kieu": "BIEU_THUC",
+          "dap_an": [
+            "5"
+          ],
+          "ma_buoc": "B.XS.THANHPHAN1"
+        },
+        {
+          "ten": "Chọn phần tử còn lại",
+          "viec": "Đếm cách chọn các phần tử còn lại từ nhóm kia.",
+          "kieu": "BIEU_THUC",
+          "dap_an": [
+            "1"
+          ],
+          "ma_buoc": "B.XS.THANHPHAN2"
+        },
+        {
+          "ten": "Biến cố",
+          "viec": "Nhân hai số cách chọn để đếm biến cố.",
+          "kieu": "BIEU_THUC",
+          "dap_an": [
+            "5"
+          ],
+          "ma_buoc": "B.XS.KETHOP"
+        },
+        {
+          "ten": "Xác suất",
+          "viec": "Lấy số kết quả thuận lợi chia tổng số kết quả.",
+          "kieu": "BIEU_THUC",
+          "dap_an": [
+            "5/12"
+          ],
+          "ma_buoc": "B.XS.KETLUAN"
+        }
+      ]
+    },
+    {
+      "ma_bai": "NT-XS10-TH-02",
+      "ho": "B.XS",
+      "san_sang_ui": false,
+      "bai_toan": {
+        "loai": "hypergeom",
+        "du_kien": {
+          "good": 4,
+          "bad": 6,
+          "draw": 2,
+          "want": 2
+        }
+      },
+      "cac_buoc": [
+        {
+          "ten": "Không gian mẫu",
+          "viec": "Đếm mọi cách chọn không xét thứ tự.",
+          "kieu": "BIEU_THUC",
+          "dap_an": [
+            "45"
+          ],
+          "ma_buoc": "B.XS.DUKIEN"
+        },
+        {
+          "ten": "Chọn phần tử thuận lợi",
+          "viec": "Đếm cách chọn đúng số phần tử thuận lợi đề yêu cầu.",
+          "kieu": "BIEU_THUC",
+          "dap_an": [
+            "6"
+          ],
+          "ma_buoc": "B.XS.THANHPHAN1"
+        },
+        {
+          "ten": "Chọn phần tử còn lại",
+          "viec": "Đếm cách chọn các phần tử còn lại từ nhóm kia.",
+          "kieu": "BIEU_THUC",
+          "dap_an": [
+            "1"
+          ],
+          "ma_buoc": "B.XS.THANHPHAN2"
+        },
+        {
+          "ten": "Biến cố",
+          "viec": "Nhân hai số cách chọn để đếm biến cố.",
+          "kieu": "BIEU_THUC",
+          "dap_an": [
+            "6"
+          ],
+          "ma_buoc": "B.XS.KETHOP"
+        },
+        {
+          "ten": "Xác suất",
+          "viec": "Lấy số kết quả thuận lợi chia tổng số kết quả.",
+          "kieu": "BIEU_THUC",
+          "dap_an": [
+            "2/15"
+          ],
+          "ma_buoc": "B.XS.KETLUAN"
+        }
+      ]
+    },
+    {
+      "ma_bai": "NT-XS10-TH-03",
+      "ho": "B.XS",
+      "san_sang_ui": false,
+      "bai_toan": {
+        "loai": "binomial",
+        "du_kien": {
+          "n": 2,
+          "k": 1,
+          "p": "1/2"
+        }
+      },
+      "cac_buoc": [
+        {
+          "ten": "Vị trí thành công",
+          "viec": "Đếm cách chọn vị trí các lần thành công.",
+          "kieu": "BIEU_THUC",
+          "dap_an": [
+            "2"
+          ],
+          "ma_buoc": "B.XS.DUKIEN"
+        },
+        {
+          "ten": "Các lần thành công",
+          "viec": "Tính tích xác suất các lần thành công.",
+          "kieu": "BIEU_THUC",
+          "dap_an": [
+            "1/2"
+          ],
+          "ma_buoc": "B.XS.THANHPHAN1"
+        },
+        {
+          "ten": "Các lần thất bại",
+          "viec": "Tính tích xác suất các lần thất bại.",
+          "kieu": "BIEU_THUC",
+          "dap_an": [
+            "1/2"
+          ],
+          "ma_buoc": "B.XS.THANHPHAN2"
+        },
+        {
+          "ten": "Một cách sắp xếp",
+          "viec": "Tính xác suất một cách sắp xếp cụ thể.",
+          "kieu": "BIEU_THUC",
+          "dap_an": [
+            "1/4"
+          ],
+          "ma_buoc": "B.XS.KETHOP"
+        },
+        {
+          "ten": "Xác suất",
+          "viec": "Nhân với số cách sắp xếp.",
+          "kieu": "BIEU_THUC",
+          "dap_an": [
+            "1/2"
+          ],
+          "ma_buoc": "B.XS.KETLUAN"
+        }
+      ]
+    },
+    {
+      "ma_bai": "NT-XS10-VD-04",
+      "ho": "B.XS",
+      "san_sang_ui": false,
+      "bai_toan": {
+        "loai": "hypergeom",
+        "du_kien": {
+          "good": 7,
+          "bad": 5,
+          "draw": 3,
+          "want": 2
+        }
+      },
+      "cac_buoc": [
+        {
+          "ten": "Không gian mẫu",
+          "viec": "Đếm mọi cách chọn không xét thứ tự.",
+          "kieu": "BIEU_THUC",
+          "dap_an": [
+            "220"
+          ],
+          "ma_buoc": "B.XS.DUKIEN"
+        },
+        {
+          "ten": "Chọn phần tử thuận lợi",
+          "viec": "Đếm cách chọn đúng số phần tử thuận lợi đề yêu cầu.",
+          "kieu": "BIEU_THUC",
+          "dap_an": [
+            "21"
+          ],
+          "ma_buoc": "B.XS.THANHPHAN1"
+        },
+        {
+          "ten": "Chọn phần tử còn lại",
+          "viec": "Đếm cách chọn các phần tử còn lại từ nhóm kia.",
+          "kieu": "BIEU_THUC",
+          "dap_an": [
+            "5"
+          ],
+          "ma_buoc": "B.XS.THANHPHAN2"
+        },
+        {
+          "ten": "Biến cố",
+          "viec": "Nhân hai số cách chọn để đếm biến cố.",
+          "kieu": "BIEU_THUC",
+          "dap_an": [
+            "105"
+          ],
+          "ma_buoc": "B.XS.KETHOP"
+        },
+        {
+          "ten": "Xác suất",
+          "viec": "Lấy số kết quả thuận lợi chia tổng số kết quả.",
+          "kieu": "BIEU_THUC",
+          "dap_an": [
+            "21/44"
+          ],
+          "ma_buoc": "B.XS.KETLUAN"
+        }
+      ]
+    },
+    {
+      "ma_bai": "NT-XS12-VDC-07",
+      "ho": "B.XS",
+      "san_sang_ui": false,
+      "bai_toan": {
+        "loai": "conditional_group",
+        "du_kien": {
+          "good": 6,
+          "bad": 4,
+          "draw": 3
+        }
+      },
+      "cac_buoc": [
+        {
+          "ten": "Không gian mẫu",
+          "viec": "Đếm mọi cách chọn.",
+          "kieu": "BIEU_THUC",
+          "dap_an": [
+            "120"
+          ],
+          "ma_buoc": "B.XS.DUKIEN"
+        },
+        {
+          "ten": "Trường hợp bị loại",
+          "viec": "Đếm cách chọn toàn phần tử không thuận lợi.",
+          "kieu": "BIEU_THUC",
+          "dap_an": [
+            "4"
+          ],
+          "ma_buoc": "B.XS.THANHPHAN1"
+        },
+        {
+          "ten": "Biến cố điều kiện",
+          "viec": "Đếm cách chọn có ít nhất một phần tử thuận lợi.",
+          "kieu": "BIEU_THUC",
+          "dap_an": [
+            "116"
+          ],
+          "ma_buoc": "B.XS.THANHPHAN2"
+        },
+        {
+          "ten": "Trường hợp thuận lợi",
+          "viec": "Đếm cách chọn toàn phần tử thuận lợi.",
+          "kieu": "BIEU_THUC",
+          "dap_an": [
+            "20"
+          ],
+          "ma_buoc": "B.XS.KETHOP"
+        },
+        {
+          "ten": "Xác suất có điều kiện",
+          "viec": "Chia số trường hợp thuận lợi cho số trường hợp của biến cố điều kiện.",
+          "kieu": "BIEU_THUC",
+          "dap_an": [
+            "5/29"
+          ],
+          "ma_buoc": "B.XS.KETLUAN"
+        }
+      ]
+    },
+    {
+      "ma_bai": "NT-XS12-VDC-08",
+      "ho": "B.XS",
+      "san_sang_ui": false,
+      "bai_toan": {
+        "loai": "bayes",
+        "du_kien": {
+          "g1": 3,
+          "b1": 2,
+          "g2": 2,
+          "b2": 4,
+          "prior": "1/2"
+        }
+      },
+      "cac_buoc": [
+        {
+          "ten": "Giả thuyết thứ nhất",
+          "viec": "Ghi xác suất giả thuyết thứ nhất.",
+          "kieu": "BIEU_THUC",
+          "dap_an": [
+            "1/2"
+          ],
+          "ma_buoc": "B.XS.DUKIEN"
+        },
+        {
+          "ten": "Điều kiện theo giả thuyết thứ nhất",
+          "viec": "Tính xác suất quan sát được biến cố khi giả thuyết thứ nhất đúng.",
+          "kieu": "BIEU_THUC",
+          "dap_an": [
+            "3/5"
+          ],
+          "ma_buoc": "B.XS.THANHPHAN1"
+        },
+        {
+          "ten": "Điều kiện theo giả thuyết thứ hai",
+          "viec": "Tính xác suất quan sát được biến cố khi giả thuyết thứ hai đúng.",
+          "kieu": "BIEU_THUC",
+          "dap_an": [
+            "1/3"
+          ],
+          "ma_buoc": "B.XS.THANHPHAN2"
+        },
+        {
+          "ten": "Xác suất toàn phần",
+          "viec": "Tính xác suất quan sát được biến cố bằng công thức xác suất toàn phần.",
+          "kieu": "BIEU_THUC",
+          "dap_an": [
+            "7/15"
+          ],
+          "ma_buoc": "B.XS.KETHOP"
+        },
+        {
+          "ten": "Xác suất hậu nghiệm",
+          "viec": "Áp dụng công thức Bayes cho giả thuyết thứ nhất.",
+          "kieu": "BIEU_THUC",
+          "dap_an": [
+            "9/14"
+          ],
+          "ma_buoc": "B.XS.KETLUAN"
+        }
+      ]
+    },
+    {
+      "ma_bai": "NT-BH10-NB-01",
+      "ho": "B.GT",
+      "san_sang_ui": false,
+      "bai_toan": {
+        "loai": "quadratic_min",
+        "du_kien": {
+          "ham": "x**2 - 4*x + 3"
+        }
+      },
+      "cac_buoc": [
+        {
+          "ten": "Hệ số bậc hai",
+          "viec": "Xác định hệ số bậc hai và kiểm tra dấu dương.",
+          "kieu": "BIEU_THUC",
+          "dap_an": [
+            "1"
+          ],
+          "ma_buoc": "B.GT.MIEN"
+        },
+        {
+          "ten": "Hoành độ đỉnh",
+          "viec": "Tìm hoành độ đỉnh từ hai hệ số đầu.",
+          "kieu": "BIEU_THUC",
+          "dap_an": [
+            "2"
+          ],
+          "ma_buoc": "B.GT.BIENDOI"
+        },
+        {
+          "ten": "Tung độ đỉnh",
+          "viec": "Thay hoành độ đỉnh vào hàm số.",
+          "kieu": "BIEU_THUC",
+          "dap_an": [
+            "-1"
+          ],
+          "ma_buoc": "B.GT.TRUNGGIAN"
+        },
+        {
+          "ten": "Hoàn thành bình phương",
+          "viec": "Viết bình phương có dạng (x − hoành độ đỉnh)² để chứng minh giá trị nhỏ nhất.",
+          "kieu": "BINH_PHUONG",
+          "dap_an": [
+            "(x - 2)**2 - 1"
+          ],
+          "ma_buoc": "B.GT.TINH"
+        },
+        {
+          "ten": "Giá trị nhỏ nhất",
+          "viec": "Kết luận giá trị nhỏ nhất của hàm số.",
+          "kieu": "BIEU_THUC",
+          "dap_an": [
+            "-1"
+          ],
+          "ma_buoc": "B.GT.KETLUAN"
+        }
+      ]
+    },
+    {
+      "ma_bai": "NT-BH10-TH-02",
+      "ho": "B.GT",
+      "san_sang_ui": false,
+      "bai_toan": {
+        "loai": "quadratic_min",
+        "du_kien": {
+          "ham": "2*x**2 - 8*x + 3"
+        }
+      },
+      "cac_buoc": [
+        {
+          "ten": "Hệ số bậc hai",
+          "viec": "Xác định hệ số bậc hai và kiểm tra dấu dương.",
+          "kieu": "BIEU_THUC",
+          "dap_an": [
+            "2"
+          ],
+          "ma_buoc": "B.GT.MIEN"
+        },
+        {
+          "ten": "Hoành độ đỉnh",
+          "viec": "Tìm hoành độ đỉnh từ hai hệ số đầu.",
+          "kieu": "BIEU_THUC",
+          "dap_an": [
+            "2"
+          ],
+          "ma_buoc": "B.GT.BIENDOI"
+        },
+        {
+          "ten": "Tung độ đỉnh",
+          "viec": "Thay hoành độ đỉnh vào hàm số.",
+          "kieu": "BIEU_THUC",
+          "dap_an": [
+            "-5"
+          ],
+          "ma_buoc": "B.GT.TRUNGGIAN"
+        },
+        {
+          "ten": "Hoàn thành bình phương",
+          "viec": "Viết bình phương có dạng (x − hoành độ đỉnh)² để chứng minh giá trị nhỏ nhất.",
+          "kieu": "BINH_PHUONG",
+          "dap_an": [
+            "2*(x - 2)**2 - 5"
+          ],
+          "ma_buoc": "B.GT.TINH"
+        },
+        {
+          "ten": "Giá trị nhỏ nhất",
+          "viec": "Kết luận giá trị nhỏ nhất của hàm số.",
+          "kieu": "BIEU_THUC",
+          "dap_an": [
+            "-5"
+          ],
+          "ma_buoc": "B.GT.KETLUAN"
+        }
+      ]
+    },
+    {
+      "ma_bai": "NT-BH10-VD-03",
+      "ho": "B.GT",
+      "san_sang_ui": false,
+      "bai_toan": {
+        "loai": "quadratic_min",
+        "du_kien": {
+          "ham": "3*x**2 - 12*x + 3"
+        }
+      },
+      "cac_buoc": [
+        {
+          "ten": "Hệ số bậc hai",
+          "viec": "Xác định hệ số bậc hai và kiểm tra dấu dương.",
+          "kieu": "BIEU_THUC",
+          "dap_an": [
+            "3"
+          ],
+          "ma_buoc": "B.GT.MIEN"
+        },
+        {
+          "ten": "Hoành độ đỉnh",
+          "viec": "Tìm hoành độ đỉnh từ hai hệ số đầu.",
+          "kieu": "BIEU_THUC",
+          "dap_an": [
+            "2"
+          ],
+          "ma_buoc": "B.GT.BIENDOI"
+        },
+        {
+          "ten": "Tung độ đỉnh",
+          "viec": "Thay hoành độ đỉnh vào hàm số.",
+          "kieu": "BIEU_THUC",
+          "dap_an": [
+            "-9"
+          ],
+          "ma_buoc": "B.GT.TRUNGGIAN"
+        },
+        {
+          "ten": "Hoàn thành bình phương",
+          "viec": "Viết bình phương có dạng (x − hoành độ đỉnh)² để chứng minh giá trị nhỏ nhất.",
+          "kieu": "BINH_PHUONG",
+          "dap_an": [
+            "3*(x - 2)**2 - 9"
+          ],
+          "ma_buoc": "B.GT.TINH"
+        },
+        {
+          "ten": "Giá trị nhỏ nhất",
+          "viec": "Kết luận giá trị nhỏ nhất của hàm số.",
+          "kieu": "BIEU_THUC",
+          "dap_an": [
+            "-9"
+          ],
+          "ma_buoc": "B.GT.KETLUAN"
+        }
+      ]
+    },
+    {
+      "ma_bai": "NT-BH10-VDC-04",
+      "ho": "B.GT",
+      "san_sang_ui": false,
+      "bai_toan": {
+        "loai": "quadratic_min",
+        "du_kien": {
+          "ham": "4*x**2 - 16*x + 3"
+        }
+      },
+      "cac_buoc": [
+        {
+          "ten": "Hệ số bậc hai",
+          "viec": "Xác định hệ số bậc hai và kiểm tra dấu dương.",
+          "kieu": "BIEU_THUC",
+          "dap_an": [
+            "4"
+          ],
+          "ma_buoc": "B.GT.MIEN"
+        },
+        {
+          "ten": "Hoành độ đỉnh",
+          "viec": "Tìm hoành độ đỉnh từ hai hệ số đầu.",
+          "kieu": "BIEU_THUC",
+          "dap_an": [
+            "2"
+          ],
+          "ma_buoc": "B.GT.BIENDOI"
+        },
+        {
+          "ten": "Tung độ đỉnh",
+          "viec": "Thay hoành độ đỉnh vào hàm số.",
+          "kieu": "BIEU_THUC",
+          "dap_an": [
+            "-13"
+          ],
+          "ma_buoc": "B.GT.TRUNGGIAN"
+        },
+        {
+          "ten": "Hoàn thành bình phương",
+          "viec": "Viết bình phương có dạng (x − hoành độ đỉnh)² để chứng minh giá trị nhỏ nhất.",
+          "kieu": "BINH_PHUONG",
+          "dap_an": [
+            "4*(x - 2)**2 - 13"
+          ],
+          "ma_buoc": "B.GT.TINH"
+        },
+        {
+          "ten": "Giá trị nhỏ nhất",
+          "viec": "Kết luận giá trị nhỏ nhất của hàm số.",
+          "kieu": "BIEU_THUC",
+          "dap_an": [
+            "-13"
+          ],
+          "ma_buoc": "B.GT.KETLUAN"
+        }
+      ]
+    },
+    {
+      "ma_bai": "NT-XS11-NB-01",
+      "ho": "B.XS",
+      "san_sang_ui": false,
+      "bai_toan": {
+        "loai": "hypergeom",
+        "du_kien": {
+          "good": 5,
+          "bad": 10,
+          "draw": 1,
+          "want": 1
+        }
+      },
+      "cac_buoc": [
+        {
+          "ten": "Không gian mẫu",
+          "viec": "Đếm mọi cách chọn không xét thứ tự.",
+          "kieu": "BIEU_THUC",
+          "dap_an": [
+            "15"
+          ],
+          "ma_buoc": "B.XS.DUKIEN"
+        },
+        {
+          "ten": "Chọn phần tử thuận lợi",
+          "viec": "Đếm cách chọn đúng số phần tử thuận lợi đề yêu cầu.",
+          "kieu": "BIEU_THUC",
+          "dap_an": [
+            "5"
+          ],
+          "ma_buoc": "B.XS.THANHPHAN1"
+        },
+        {
+          "ten": "Chọn phần tử còn lại",
+          "viec": "Đếm cách chọn các phần tử còn lại từ nhóm kia.",
+          "kieu": "BIEU_THUC",
+          "dap_an": [
+            "1"
+          ],
+          "ma_buoc": "B.XS.THANHPHAN2"
+        },
+        {
+          "ten": "Biến cố",
+          "viec": "Nhân hai số cách chọn để đếm biến cố.",
+          "kieu": "BIEU_THUC",
+          "dap_an": [
+            "5"
+          ],
+          "ma_buoc": "B.XS.KETHOP"
+        },
+        {
+          "ten": "Xác suất",
+          "viec": "Lấy số kết quả thuận lợi chia tổng số kết quả.",
+          "kieu": "BIEU_THUC",
+          "dap_an": [
+            "1/3"
+          ],
+          "ma_buoc": "B.XS.KETLUAN"
+        }
+      ]
+    },
+    {
+      "ma_bai": "NT-XS11-TH-02",
+      "ho": "B.XS",
+      "san_sang_ui": false,
+      "bai_toan": {
+        "loai": "hypergeom",
+        "du_kien": {
+          "good": 6,
+          "bad": 4,
+          "draw": 2,
+          "want": 1
+        }
+      },
+      "cac_buoc": [
+        {
+          "ten": "Không gian mẫu",
+          "viec": "Đếm mọi cách chọn không xét thứ tự.",
+          "kieu": "BIEU_THUC",
+          "dap_an": [
+            "45"
+          ],
+          "ma_buoc": "B.XS.DUKIEN"
+        },
+        {
+          "ten": "Chọn phần tử thuận lợi",
+          "viec": "Đếm cách chọn đúng số phần tử thuận lợi đề yêu cầu.",
+          "kieu": "BIEU_THUC",
+          "dap_an": [
+            "6"
+          ],
+          "ma_buoc": "B.XS.THANHPHAN1"
+        },
+        {
+          "ten": "Chọn phần tử còn lại",
+          "viec": "Đếm cách chọn các phần tử còn lại từ nhóm kia.",
+          "kieu": "BIEU_THUC",
+          "dap_an": [
+            "4"
+          ],
+          "ma_buoc": "B.XS.THANHPHAN2"
+        },
+        {
+          "ten": "Biến cố",
+          "viec": "Nhân hai số cách chọn để đếm biến cố.",
+          "kieu": "BIEU_THUC",
+          "dap_an": [
+            "24"
+          ],
+          "ma_buoc": "B.XS.KETHOP"
+        },
+        {
+          "ten": "Xác suất",
+          "viec": "Lấy số kết quả thuận lợi chia tổng số kết quả.",
+          "kieu": "BIEU_THUC",
+          "dap_an": [
+            "8/15"
+          ],
+          "ma_buoc": "B.XS.KETLUAN"
+        }
+      ]
+    },
+    {
+      "ma_bai": "NT-XS11-VD-03",
+      "ho": "B.XS",
+      "san_sang_ui": false,
+      "bai_toan": {
+        "loai": "three_colors",
+        "du_kien": {
+          "counts": [
+            5,
+            4,
+            3
+          ],
+          "draw": 4
+        }
+      },
+      "cac_buoc": [
+        {
+          "ten": "Không gian mẫu",
+          "viec": "Đếm mọi cách chọn bốn thẻ.",
+          "kieu": "BIEU_THUC",
+          "dap_an": [
+            "495"
+          ],
+          "ma_buoc": "B.XS.DUKIEN"
+        },
+        {
+          "ten": "Màu thứ nhất lặp",
+          "viec": "Đếm trường hợp hai thẻ màu thứ nhất, mỗi màu còn lại một thẻ.",
+          "kieu": "BIEU_THUC",
+          "dap_an": [
+            "120"
+          ],
+          "ma_buoc": "B.XS.THANHPHAN1"
+        },
+        {
+          "ten": "Màu thứ hai lặp",
+          "viec": "Đếm trường hợp hai thẻ màu thứ hai, mỗi màu còn lại một thẻ.",
+          "kieu": "BIEU_THUC",
+          "dap_an": [
+            "90"
+          ],
+          "ma_buoc": "B.XS.THANHPHAN2"
+        },
+        {
+          "ten": "Màu thứ ba lặp",
+          "viec": "Đếm trường hợp hai thẻ màu thứ ba, mỗi màu còn lại một thẻ.",
+          "kieu": "BIEU_THUC",
+          "dap_an": [
+            "60"
+          ],
+          "ma_buoc": "B.XS.KETHOP"
+        },
+        {
+          "ten": "Xác suất đủ ba màu",
+          "viec": "Cộng ba trường hợp rời nhau rồi chia tổng số cách chọn.",
+          "kieu": "BIEU_THUC",
+          "dap_an": [
+            "6/11"
+          ],
+          "ma_buoc": "B.XS.KETLUAN"
+        }
+      ]
+    },
+    {
+      "ma_bai": "NT-XS11-VDC-04",
+      "ho": "B.XS",
+      "san_sang_ui": false,
+      "bai_toan": {
+        "loai": "committee_roles",
+        "du_kien": {
+          "women": 6,
+          "men": 5,
+          "draw": 4,
+          "min_women": 2
+        }
+      },
+      "cac_buoc": [
+        {
+          "ten": "Không gian mẫu",
+          "viec": "Đếm cách chọn hai chức vụ khác nhau rồi chọn các thành viên còn lại.",
+          "kieu": "BIEU_THUC",
+          "dap_an": [
+            "3960"
+          ],
+          "ma_buoc": "B.XS.DUKIEN"
+        },
+        {
+          "ten": "Trưởng nhóm",
+          "viec": "Đếm cách chọn trưởng nhóm là nữ.",
+          "kieu": "BIEU_THUC",
+          "dap_an": [
+            "6"
+          ],
+          "ma_buoc": "B.XS.THANHPHAN1"
+        },
+        {
+          "ten": "Thư ký",
+          "viec": "Đếm cách chọn thư ký là nam.",
+          "kieu": "BIEU_THUC",
+          "dap_an": [
+            "5"
+          ],
+          "ma_buoc": "B.XS.THANHPHAN2"
+        },
+        {
+          "ten": "Các thành viên còn lại",
+          "viec": "Đếm cách chọn các thành viên còn lại để đủ số nữ tối thiểu.",
+          "kieu": "BIEU_THUC",
+          "dap_an": [
+            "30"
+          ],
+          "ma_buoc": "B.XS.KETHOP"
+        },
+        {
+          "ten": "Xác suất",
+          "viec": "Nhân số cách thuận lợi rồi chia tổng số cách.",
+          "kieu": "BIEU_THUC",
+          "dap_an": [
+            "5/22"
+          ],
+          "ma_buoc": "B.XS.KETLUAN"
+        }
+      ]
+    },
+    {
+      "ma_bai": "NT-XS12-NB-01",
+      "ho": "B.XS",
+      "san_sang_ui": false,
+      "bai_toan": {
+        "loai": "bayes_given",
+        "du_kien": {
+          "joint": "1/5",
+          "evidence": "1/2"
+        }
+      },
+      "cac_buoc": [
+        {
+          "ten": "Biến cố điều kiện",
+          "viec": "Ghi xác suất biến cố điều kiện.",
+          "kieu": "BIEU_THUC",
+          "dap_an": [
+            "1/2"
+          ],
+          "ma_buoc": "B.XS.DUKIEN"
+        },
+        {
+          "ten": "Biến cố đối",
+          "viec": "Tính xác suất biến cố đối của điều kiện.",
+          "kieu": "BIEU_THUC",
+          "dap_an": [
+            "1/2"
+          ],
+          "ma_buoc": "B.XS.THANHPHAN1"
+        },
+        {
+          "ten": "Giao hai biến cố",
+          "viec": "Ghi xác suất giao hai biến cố.",
+          "kieu": "BIEU_THUC",
+          "dap_an": [
+            "1/5"
+          ],
+          "ma_buoc": "B.XS.THANHPHAN2"
+        },
+        {
+          "ten": "Phần còn lại",
+          "viec": "Tính xác suất điều kiện xảy ra nhưng biến cố cần tìm không xảy ra.",
+          "kieu": "BIEU_THUC",
+          "dap_an": [
+            "3/10"
+          ],
+          "ma_buoc": "B.XS.KETHOP"
+        },
+        {
+          "ten": "Xác suất có điều kiện",
+          "viec": "Áp dụng định nghĩa xác suất có điều kiện.",
+          "kieu": "BIEU_THUC",
+          "dap_an": [
+            "2/5"
+          ],
+          "ma_buoc": "B.XS.KETLUAN"
+        }
+      ]
+    },
+    {
+      "ma_bai": "NT-XS12-TH-02",
+      "ho": "B.XS",
+      "san_sang_ui": false,
+      "bai_toan": {
+        "loai": "bayes",
+        "du_kien": {
+          "g1": 4,
+          "b1": 2,
+          "g2": 1,
+          "b2": 5,
+          "prior": "1/3"
+        }
+      },
+      "cac_buoc": [
+        {
+          "ten": "Giả thuyết thứ nhất",
+          "viec": "Ghi xác suất giả thuyết thứ nhất.",
+          "kieu": "BIEU_THUC",
+          "dap_an": [
+            "1/3"
+          ],
+          "ma_buoc": "B.XS.DUKIEN"
+        },
+        {
+          "ten": "Điều kiện theo giả thuyết thứ nhất",
+          "viec": "Tính xác suất quan sát được biến cố khi giả thuyết thứ nhất đúng.",
+          "kieu": "BIEU_THUC",
+          "dap_an": [
+            "2/3"
+          ],
+          "ma_buoc": "B.XS.THANHPHAN1"
+        },
+        {
+          "ten": "Điều kiện theo giả thuyết thứ hai",
+          "viec": "Tính xác suất quan sát được biến cố khi giả thuyết thứ hai đúng.",
+          "kieu": "BIEU_THUC",
+          "dap_an": [
+            "1/6"
+          ],
+          "ma_buoc": "B.XS.THANHPHAN2"
+        },
+        {
+          "ten": "Xác suất toàn phần",
+          "viec": "Tính xác suất quan sát được biến cố bằng công thức xác suất toàn phần.",
+          "kieu": "BIEU_THUC",
+          "dap_an": [
+            "1/3"
+          ],
+          "ma_buoc": "B.XS.KETHOP"
+        },
+        {
+          "ten": "Xác suất hậu nghiệm",
+          "viec": "Áp dụng công thức Bayes cho giả thuyết thứ nhất.",
+          "kieu": "BIEU_THUC",
+          "dap_an": [
+            "2/3"
+          ],
+          "ma_buoc": "B.XS.KETLUAN"
+        }
+      ]
+    },
+    {
+      "ma_bai": "NT-XS12-VD-03",
+      "ho": "B.XS",
+      "san_sang_ui": false,
+      "bai_toan": {
+        "loai": "bayes_sample",
+        "du_kien": {
+          "g1": 5,
+          "b1": 3,
+          "g2": 2,
+          "b2": 6,
+          "prior": "2/5",
+          "draw": 2,
+          "want": 1
+        }
+      },
+      "cac_buoc": [
+        {
+          "ten": "Giả thuyết thứ nhất",
+          "viec": "Ghi xác suất giả thuyết thứ nhất.",
+          "kieu": "BIEU_THUC",
+          "dap_an": [
+            "2/5"
+          ],
+          "ma_buoc": "B.XS.DUKIEN"
+        },
+        {
+          "ten": "Điều kiện theo giả thuyết thứ nhất",
+          "viec": "Tính xác suất quan sát được biến cố khi giả thuyết thứ nhất đúng.",
+          "kieu": "BIEU_THUC",
+          "dap_an": [
+            "15/28"
+          ],
+          "ma_buoc": "B.XS.THANHPHAN1"
+        },
+        {
+          "ten": "Điều kiện theo giả thuyết thứ hai",
+          "viec": "Tính xác suất quan sát được biến cố khi giả thuyết thứ hai đúng.",
+          "kieu": "BIEU_THUC",
+          "dap_an": [
+            "3/7"
+          ],
+          "ma_buoc": "B.XS.THANHPHAN2"
+        },
+        {
+          "ten": "Xác suất toàn phần",
+          "viec": "Tính xác suất quan sát được biến cố bằng công thức xác suất toàn phần.",
+          "kieu": "BIEU_THUC",
+          "dap_an": [
+            "33/70"
+          ],
+          "ma_buoc": "B.XS.KETHOP"
+        },
+        {
+          "ten": "Xác suất hậu nghiệm",
+          "viec": "Áp dụng công thức Bayes cho giả thuyết thứ nhất.",
+          "kieu": "BIEU_THUC",
+          "dap_an": [
+            "5/11"
+          ],
+          "ma_buoc": "B.XS.KETLUAN"
+        }
+      ]
+    },
+    {
+      "ma_bai": "NT-XS12-VDC-04",
+      "ho": "B.XS",
+      "san_sang_ui": false,
+      "bai_toan": {
+        "loai": "bayes_transfer",
+        "du_kien": {
+          "source_green": 4,
+          "source_red": 3,
+          "target_green": 2,
+          "target_red": 4,
+          "draw": 2
+        }
+      },
+      "cac_buoc": [
+        {
+          "ten": "Giả thuyết thứ nhất",
+          "viec": "Ghi xác suất giả thuyết thứ nhất.",
+          "kieu": "BIEU_THUC",
+          "dap_an": [
+            "4/7"
+          ],
+          "ma_buoc": "B.XS.DUKIEN"
+        },
+        {
+          "ten": "Điều kiện theo giả thuyết thứ nhất",
+          "viec": "Tính xác suất quan sát được biến cố khi giả thuyết thứ nhất đúng.",
+          "kieu": "BIEU_THUC",
+          "dap_an": [
+            "1/7"
+          ],
+          "ma_buoc": "B.XS.THANHPHAN1"
+        },
+        {
+          "ten": "Điều kiện theo giả thuyết thứ hai",
+          "viec": "Tính xác suất quan sát được biến cố khi giả thuyết thứ hai đúng.",
+          "kieu": "BIEU_THUC",
+          "dap_an": [
+            "1/21"
+          ],
+          "ma_buoc": "B.XS.THANHPHAN2"
+        },
+        {
+          "ten": "Xác suất toàn phần",
+          "viec": "Tính xác suất quan sát được biến cố bằng công thức xác suất toàn phần.",
+          "kieu": "BIEU_THUC",
+          "dap_an": [
+            "5/49"
+          ],
+          "ma_buoc": "B.XS.KETHOP"
+        },
+        {
+          "ten": "Xác suất hậu nghiệm",
+          "viec": "Áp dụng công thức Bayes cho giả thuyết thứ nhất.",
+          "kieu": "BIEU_THUC",
+          "dap_an": [
+            "4/5"
+          ],
+          "ma_buoc": "B.XS.KETLUAN"
+        }
+      ]
+    },
+    {
+      "ma_bai": "NT-LUYEN10-NB-01",
+      "ho": "B.XS",
+      "san_sang_ui": false,
+      "bai_toan": {
+        "loai": "hypergeom",
+        "du_kien": {
+          "good": 8,
+          "bad": 5,
+          "draw": 1,
+          "want": 1
+        }
+      },
+      "cac_buoc": [
+        {
+          "ten": "Không gian mẫu",
+          "viec": "Đếm mọi cách chọn không xét thứ tự.",
+          "kieu": "BIEU_THUC",
+          "dap_an": [
+            "13"
+          ],
+          "ma_buoc": "B.XS.DUKIEN"
+        },
+        {
+          "ten": "Chọn phần tử thuận lợi",
+          "viec": "Đếm cách chọn đúng số phần tử thuận lợi đề yêu cầu.",
+          "kieu": "BIEU_THUC",
+          "dap_an": [
+            "8"
+          ],
+          "ma_buoc": "B.XS.THANHPHAN1"
+        },
+        {
+          "ten": "Chọn phần tử còn lại",
+          "viec": "Đếm cách chọn các phần tử còn lại từ nhóm kia.",
+          "kieu": "BIEU_THUC",
+          "dap_an": [
+            "1"
+          ],
+          "ma_buoc": "B.XS.THANHPHAN2"
+        },
+        {
+          "ten": "Biến cố",
+          "viec": "Nhân hai số cách chọn để đếm biến cố.",
+          "kieu": "BIEU_THUC",
+          "dap_an": [
+            "8"
+          ],
+          "ma_buoc": "B.XS.KETHOP"
+        },
+        {
+          "ten": "Xác suất",
+          "viec": "Lấy số kết quả thuận lợi chia tổng số kết quả.",
+          "kieu": "BIEU_THUC",
+          "dap_an": [
+            "8/13"
+          ],
+          "ma_buoc": "B.XS.KETLUAN"
+        }
+      ]
+    },
+    {
+      "ma_bai": "NT-LUYEN10-NB-02",
+      "ho": "B.XS",
+      "san_sang_ui": false,
+      "bai_toan": {
+        "loai": "hypergeom",
+        "du_kien": {
+          "good": 5,
+          "bad": 7,
+          "draw": 2,
+          "want": 2
+        }
+      },
+      "cac_buoc": [
+        {
+          "ten": "Không gian mẫu",
+          "viec": "Đếm mọi cách chọn không xét thứ tự.",
+          "kieu": "BIEU_THUC",
+          "dap_an": [
+            "66"
+          ],
+          "ma_buoc": "B.XS.DUKIEN"
+        },
+        {
+          "ten": "Chọn phần tử thuận lợi",
+          "viec": "Đếm cách chọn đúng số phần tử thuận lợi đề yêu cầu.",
+          "kieu": "BIEU_THUC",
+          "dap_an": [
+            "10"
+          ],
+          "ma_buoc": "B.XS.THANHPHAN1"
+        },
+        {
+          "ten": "Chọn phần tử còn lại",
+          "viec": "Đếm cách chọn các phần tử còn lại từ nhóm kia.",
+          "kieu": "BIEU_THUC",
+          "dap_an": [
+            "1"
+          ],
+          "ma_buoc": "B.XS.THANHPHAN2"
+        },
+        {
+          "ten": "Biến cố",
+          "viec": "Nhân hai số cách chọn để đếm biến cố.",
+          "kieu": "BIEU_THUC",
+          "dap_an": [
+            "10"
+          ],
+          "ma_buoc": "B.XS.KETHOP"
+        },
+        {
+          "ten": "Xác suất",
+          "viec": "Lấy số kết quả thuận lợi chia tổng số kết quả.",
+          "kieu": "BIEU_THUC",
+          "dap_an": [
+            "5/33"
+          ],
+          "ma_buoc": "B.XS.KETLUAN"
+        }
+      ]
+    },
+    {
+      "ma_bai": "NT-LUYEN12-NB-01",
+      "ho": "B.DH",
+      "san_sang_ui": true,
+      "payload_dung": {
+        "ham": "x**2-6*x+4",
+        "nop_toi": "B.DH.KETLUAN",
+        "cac_buoc": [
+          {
+            "ma_buoc": "B.DH.TXD",
+            "cac_dong": [
+              {
+                "dong": 0,
+                "latex": "R"
+              }
+            ]
+          },
+          {
+            "ma_buoc": "B.DH.DAOHAM",
+            "cac_dong": [
+              {
+                "dong": 0,
+                "latex": "2*x - 6"
+              }
+            ]
+          },
+          {
+            "ma_buoc": "B.DH.NGHIEM",
+            "cac_dong": [
+              {
+                "dong": 0,
+                "latex": "x = 3",
+                "loai": "NGHIEM"
+              }
+            ]
+          },
+          {
+            "ma_buoc": "B.DH.XETDAU",
+            "bang": {
+              "loai_bang": "XET_DAU",
+              "cac_o": [
+                {
+                  "hang": "X",
+                  "k": 0,
+                  "gia_tri": "3"
+                },
+                {
+                  "hang": "DAU_YPHAY",
+                  "k": 0,
+                  "gia_tri": "-"
+                },
+                {
+                  "hang": "DAU_YPHAY",
+                  "k": 2,
+                  "gia_tri": "+"
+                },
+                {
+                  "hang": "DAU_YPHAY",
+                  "k": 1,
+                  "gia_tri": "0"
+                },
+                {
+                  "hang": "BIEN_THIEN",
+                  "k": 0,
+                  "gia_tri": "GIAM"
+                },
+                {
+                  "hang": "BIEN_THIEN",
+                  "k": 2,
+                  "gia_tri": "TANG"
+                }
+              ]
+            }
+          },
+          {
+            "ma_buoc": "B.DH.KETLUAN",
+            "khai_bao": [
+              "dong_bien",
+              "nghich_bien",
+              "cuc_dai",
+              "cuc_tieu"
+            ],
+            "cac_dong": [
+              {
+                "dong": 0,
+                "latex": "đồng biến trên (3; +oo)"
+              },
+              {
+                "dong": 1,
+                "latex": "nghịch biến trên (-oo; 3)"
+              },
+              {
+                "dong": 2,
+                "latex": "không có cực đại"
+              },
+              {
+                "dong": 3,
+                "latex": "cực tiểu tại x = 3, y = -5"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "ma_bai": "NT-LUYEN12-NB-02",
+      "ho": "B.DH",
+      "san_sang_ui": true,
+      "payload_dung": {
+        "ham": "-x**2-2*x+5",
+        "nop_toi": "B.DH.KETLUAN",
+        "cac_buoc": [
+          {
+            "ma_buoc": "B.DH.TXD",
+            "cac_dong": [
+              {
+                "dong": 0,
+                "latex": "R"
+              }
+            ]
+          },
+          {
+            "ma_buoc": "B.DH.DAOHAM",
+            "cac_dong": [
+              {
+                "dong": 0,
+                "latex": "-2*x - 2"
+              }
+            ]
+          },
+          {
+            "ma_buoc": "B.DH.NGHIEM",
+            "cac_dong": [
+              {
+                "dong": 0,
+                "latex": "x = -1",
+                "loai": "NGHIEM"
+              }
+            ]
+          },
+          {
+            "ma_buoc": "B.DH.XETDAU",
+            "bang": {
+              "loai_bang": "XET_DAU",
+              "cac_o": [
+                {
+                  "hang": "X",
+                  "k": 0,
+                  "gia_tri": "-1"
+                },
+                {
+                  "hang": "DAU_YPHAY",
+                  "k": 0,
+                  "gia_tri": "+"
+                },
+                {
+                  "hang": "DAU_YPHAY",
+                  "k": 2,
+                  "gia_tri": "-"
+                },
+                {
+                  "hang": "DAU_YPHAY",
+                  "k": 1,
+                  "gia_tri": "0"
+                },
+                {
+                  "hang": "BIEN_THIEN",
+                  "k": 0,
+                  "gia_tri": "TANG"
+                },
+                {
+                  "hang": "BIEN_THIEN",
+                  "k": 2,
+                  "gia_tri": "GIAM"
+                }
+              ]
+            }
+          },
+          {
+            "ma_buoc": "B.DH.KETLUAN",
+            "khai_bao": [
+              "dong_bien",
+              "nghich_bien",
+              "cuc_dai",
+              "cuc_tieu"
+            ],
+            "cac_dong": [
+              {
+                "dong": 0,
+                "latex": "đồng biến trên (-oo; -1)"
+              },
+              {
+                "dong": 1,
+                "latex": "nghịch biến trên (-1; +oo)"
+              },
+              {
+                "dong": 2,
+                "latex": "cực đại tại x = -1, y = 6"
+              },
+              {
+                "dong": 3,
+                "latex": "không có cực tiểu"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}
