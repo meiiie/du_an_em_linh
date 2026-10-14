@@ -54,7 +54,7 @@ import vn.hoctapcanman.core.practice.domain.repository.SubmissionRepository;
  *       hồi, hai tab cùng nộp); bài làm bị xóa dây chuyền giữa chừng thì {@link BaiKhongTimThayException}. Không có lần nộp đó:
  *       còn bài làm đang làm ở phiên bản khác thì {@code DE_DA_DOI}, không thì {@code CHUA_LAM_DU_BUOC}.</li>
  *   <li>Cuối giao dịch: mọi {@link CapNhatMucHieu} (idempotent theo bài làm, nên phát lại trả đúng lần đầu).</li>
- *   <li>Sau commit: lời giải qua {@link MoLoiGiai} (đọc trong một ảnh chụp, giao dịch riêng).</li>
+ *   <li>Sau commit: trả kết quả và mức hiểu; lời giải chỉ qua endpoint xác nhận riêng của {@link MoLoiGiai}.</li>
  * </ol>
  * Không gọi dịch vụ toán. Chưa làm ở đây: giới hạn tần suất (web, T021b).
  */
@@ -99,7 +99,7 @@ public class NopBaiUseCase {
             BaiDaNop baiDaNop = baiDaNop(nop);
             return new DaNopVaMucHieu(nop.daNop(), mucHieu.stream().flatMap(m -> m.sauKhiNop(baiDaNop).stream()).toList());
         }));
-        return new KetQuaNopBai(ketQua(kq.daNop().ketQua()), kq.mucHieu(), moLoiGiai.cho(kq.daNop()).orElse(null));
+        return new KetQuaNopBai(ketQua(kq.daNop().ketQua()), kq.mucHieu(), null);
     }
 
     private CoCanCu nop(Submission dangLam, BaiChoLamBai bai) {

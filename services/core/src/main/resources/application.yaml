@@ -65,11 +65,13 @@ app:
 
 mathl:
   gia-su:
-    api-key: ${GLM_API_KEY:} # Trống hoặc chỉ khoảng trắng: dùng thang offline qua cổng toán.
+    api-key: ${GLM_API_KEY:} # Trống hoặc chỉ khoảng trắng: chỉ model test/demo offline; lớp chọn GLM báo chưa sẵn sàng.
     base-url: ${GLM_BASE_URL:https://api.z.ai/api/coding/paas/v4}
     model: ${GLM_MODEL:glm-5.3}
-    timeout: ${GLM_TIMEOUT:20s}
-    max-tokens: ${GLM_MAX_TOKENS:350}
+    timeout: ${GLM_TIMEOUT:45s}
+    first-token-timeout: ${GLM_FIRST_TOKEN_TIMEOUT:20s}
+    max-tokens: ${GLM_MAX_TOKENS:700}
+    token-budget: ${GIA_SU_TOKEN_BUDGET:6000}
     rate-limit:
       requests: ${GLM_RATE_LIMIT_REQUESTS:12}
       window: ${GLM_RATE_LIMIT_WINDOW:10m}

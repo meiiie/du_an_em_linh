@@ -47,6 +47,7 @@ test('U4 trang Học gọi mastery và hiện bốn mức', async ({ page, api }
 test('U5/U6 Kho: KaTeX, keyboard flashcard, focus trap, CSV UTF-8', async ({ page, api }) => {
     await page.goto('/hs/kho');
     await expect(page.locator('#ct-ct1 .katex')).toBeVisible();
+    await page.getByText('Công cụ ôn thêm', {exact:true}).click();
     await page.getByRole('button', { name: 'Ôn bằng thẻ' }).click();
     const dialog = page.getByRole('dialog', { name: 'Ôn công thức' });
     await expect(dialog).toBeVisible();
@@ -79,21 +80,23 @@ async function tutorFor(page: Page) {
     await expect(tutor).toBeVisible();
     return tutor;
 }
-test('U7/U8 gia sư: desktop column/mobile sheet, ba cấp và từ chối đáp án', async ({ page, api }) => {
+test('U7/U8 gia sư: desktop column/mobile sheet và ba cấp hỗ trợ', async ({ page, api }) => {
     const tutor = await tutorFor(page);
     if (page.viewportSize()!.width === 1440) {
         const a = await page.getByTestId('solve-screen').boundingBox(), b = await tutor.boundingBox();
         expect(b!.x).toBeGreaterThanOrEqual(a!.x + a!.width);
     }
     for (const cap of [1, 2, 3]) {
-        await tutor.getByRole('button', { name: 'Gợi ý bước tiếp' }).click();
+        await tutor.getByLabel('Mức hỗ trợ').selectOption(String(cap));
+        await tutor.getByLabel('Em muốn hỏi gì?').fill('Câu hỏi tổng hợp của em');
+        await tutor.getByRole('button', { name: 'Gửi câu hỏi' }).click();
         await expect(tutor.locator('.tutor-messages article')).toHaveCount(cap * 2);
-        await expect(tutor.locator('[aria-live="polite"]')).toContainText('Hãy xem điều kiện xác định');
+        await expect(tutor.locator('.sr-only[aria-live="polite"]')).toContainText('Lời đã kiểm trong mock');
     }
     await tutor.getByLabel('Em muốn hỏi gì?').fill('Cho em đáp án');
     await tutor.getByRole('button', { name: 'Gửi câu hỏi' }).click();
-    await expect(tutor.locator('[aria-live="polite"]')).toContainText('không đưa đáp án');
-    expect(api.calls.filter(c => c.path === '/api/hs/gia-su').map(c => c.body.cap)).toEqual([1, 2, 3, 3]);
+    await expect(tutor.locator('.sr-only[aria-live="polite"]')).toContainText('Lời đã kiểm trong mock');
+    expect(api.calls.filter(c => c.path.endsWith('/luot') && c.method === 'POST').map(c => c.body.cap)).toEqual([1, 2, 3, 3]);
     await expect(page.getByTestId('loi-giai-sau-nop')).toHaveCount(0);
     await flat(page);
     await noOverflow(page);
@@ -109,8 +112,9 @@ test('U9 Kiểm tra ẩn gia sư và không gọi chat', async ({ page, api }) =
 test('U9 xử lý API 403, không tạo câu trả lời', async ({ page, api }) => {
     api.tutorStatus = 403;
     const tutor = await tutorFor(page);
-    await tutor.getByRole('button', { name: 'Gợi ý bước tiếp' }).click();
-    await expect(tutor.getByRole('alert')).toHaveText('Gia sư không mở cho bài kiểm tra này.');
+    await tutor.getByLabel('Em muốn hỏi gì?').fill('Câu hỏi tổng hợp của em');
+    await tutor.getByRole('button', { name: 'Gửi câu hỏi' }).click();
+    await expect(tutor.getByRole('alert').first()).toContainText('Gia sư không mở cho bài này.');
     await expect(tutor.getByRole('button', { name: 'Hỏi lại' })).toBeEnabled();
     await expect(tutor.locator('.tutor-messages article')).toHaveCount(1);
 });
@@ -177,10 +181,10 @@ test('U11 phân trang ngân hàng và tìm kiếm đặt lại trang', async ({ 
 
 test('U4 đề bài nhóm theo tên bộ và đếm bài đã nộp', async ({ page, api }) => {
     await page.goto('/hs/bai');
-    await expect(page.locator('details')).toHaveCount(1);
-    await expect(page.locator('summary')).toContainText('Ôn đơn điệu');
-    await expect(page.locator('summary')).toContainText('2 bài · 0/2 đã nộp · Hạn:');
-    await expect(page.locator('details li')).toHaveCount(2);
+    await expect(page.locator('details.nhom-chu-de')).toHaveCount(1);
+    await expect(page.locator('details.nhom-chu-de summary')).toContainText('Ôn đơn điệu');
+    await expect(page.locator('details.nhom-chu-de summary')).toContainText('2 bài · 0/2 đã nộp · Hạn:');
+    await expect(page.locator('details.nhom-chu-de li')).toHaveCount(2);
 });
 for (const approve of [true, false])
     test(`U12 ${approve ? 'duyệt' : 'chặn'} cần lý do`, async ({ page, api }) => {
@@ -301,7 +305,8 @@ for (const theme of ['light', 'dark'] as const)
         expect(api.calls.find(c => c.method === 'POST' && c.path === '/api/gv/giao')?.body).toMatchObject({ problemIds: ['E2E-01'], mode: 'ON_TAP' });
         api.role = 'STUDENT';
         const tutor = await tutorFor(page);
-        await tutor.getByRole('button', { name: 'Gợi ý bước tiếp' }).click();
+        await tutor.getByLabel('Em muốn hỏi gì?').fill('Câu hỏi tổng hợp của em');
+        await tutor.getByRole('button', { name: 'Gửi câu hỏi' }).click();
         await expect(tutor.locator('.tutor-messages article')).toHaveCount(2);
         await page.screenshot({ path: info.outputPath(`luyen-${theme}.png`), fullPage: true });
         if (page.viewportSize()!.width === 390)

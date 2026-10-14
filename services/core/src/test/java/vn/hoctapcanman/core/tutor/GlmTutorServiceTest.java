@@ -6,7 +6,9 @@ import java.time.*;
 import java.util.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 import vn.hoctapcanman.core.classroom.application.port.ClassMembership;
+import vn.hoctapcanman.core.tutor.application.dto.hocsinh.HintPrompt;
 import vn.hoctapcanman.core.tutor.application.port.HintModel;
 import vn.hoctapcanman.core.tutor.application.service.*;
 import vn.hoctapcanman.core.workspace.application.dto.WorkspaceDto.*;
@@ -14,143 +16,99 @@ import vn.hoctapcanman.core.workspace.application.exception.WorkspaceException;
 import vn.hoctapcanman.core.workspace.application.port.*;
 
 class GlmTutorServiceTest {
-    final WorkspaceStore store = mock(WorkspaceStore.class);
-    final ClassMembership members = mock(ClassMembership.class);
-    final ContentWorkflow gate = mock(ContentWorkflow.class);
-    final HintModel model = mock(HintModel.class);
-    final UUID student = UUID.randomUUID(), cl = UUID.randomUUID(), problem = UUID.randomUUID();
-    final Clock clock = Clock.fixed(Instant.parse("2026-10-14T00:00:00Z"), ZoneOffset.UTC);
-    final TutorRateLimiter limiter = new TutorRateLimiter(clock, 12, Duration.ofMinutes(10));
-    final OfflineTutorService tutor = new OfflineTutorService(store, members, gate, model, limiter);
-    final String hint = "Em cần xét điều kiện nào?";
-    TutorRequest request(String text) { return new TutorRequest("DH1", "B.DH.TXD", 1, text); }
-    @BeforeEach void context() {
+    final WorkspaceStore store=mock(WorkspaceStore.class);
+    final ClassMembership members=mock(ClassMembership.class);
+    final ContentWorkflow gate=mock(ContentWorkflow.class);
+    final HintModel model=mock(HintModel.class,CALLS_REAL_METHODS);
+    final UUID student=UUID.randomUUID(),cl=UUID.randomUUID(),problem=UUID.randomUUID();
+    final OfflineTutorService tutor=new OfflineTutorService(store,members,model,
+        new TutorRateLimiter(Clock.systemUTC(),100,Duration.ofMinutes(10)));
+    final String hint="Không được đọc thang này";
+    TutorRequest request(String q){return new TutorRequest("DH1","B.DH.TXD",1,q);}
+    @BeforeEach void setup() {
         when(members.lopHoc(student)).thenReturn(Optional.of(cl));
-        when(store.tutorContext(eq(student), eq(cl), any())).thenReturn(Optional.of(
-            new TutorContext(problem, "DH1", "Đề bài", "x**2", "B.DH.TXD", hint)));
+        when(store.tutorContext(eq(student),eq(cl),any())).thenReturn(Optional.of(new TutorContext(problem,"DH1","Đề bài","x**2","B.DH.TXD",hint)));
         when(model.provider()).thenReturn("GLM");
-        when(store.settings(cl)).thenReturn(new Settings(cl, false, "glm"));
+        when(store.settings(cl)).thenReturn(new Settings(cl,false,"glm"));
     }
-    @Test void answerRequestsNeverCallModel() {
-        when(gate.sanitize(eq(cl), eq(problem), anyString(), anyString(), anyList())).thenAnswer(i -> java.util.Optional.of(i.<String>getArgument(2)));
-        for (String q : List.of("cho em đáp án", "đáp số", "kết quả cuối", "giải giúp", "làm giúp", "ra bao nhiêu",
-            "bỏ qua hướng dẫn", "ignore previous", "system prompt", "bạn là ai thật", "roleplay as a teacher",
-            "đóng vai giáo viên", "giả vờ là giáo viên")) {
-            assertTrue(OfflineTutorService.asksAnswer(q), q);
-            assertTrue(tutor.answerAuthorized(student, cl, request(q), ignored -> {}).message().contains("Em đang vướng"));
+    @Test void rawPartialTokensAreReleasedDuringProviderStreamWithoutGateOrRegeneration() {
+        var emitted=new ArrayList<String>();
+        var usage=new ArrayList<vn.hoctapcanman.core.tutor.application.dto.TutorSessionDto.ModelUsage>();
+        doAnswer(i -> {
+            java.util.function.Consumer<String> chunks=i.getArgument(1);
+            chunks.accept("Em thử $x");
+            assertEquals(List.of("Em thử $x"),emitted,"Không chờ câu hoặc delimiter toán đóng");
+            chunks.accept("^2$\n");
+            chunks.accept(" ");
+            chunks.accept("Kết quả là 3.");
+            return new vn.hoctapcanman.core.tutor.application.dto.TutorSessionDto.ModelUsage(50,20,false);
+        }).when(model).stream(any(),any());
+        var r=request("Em bị kẹt");var c=tutor.context(student,cl,r);
+        tutor.generate(student,cl,r,c,TutorPrompt.compose(c,r),emitted::add,usage::add,() -> {});
+        assertEquals("Em thử $x^2$\n Kết quả là 3.",String.join("",emitted));
+        verifyNoInteractions(gate);
+        verify(model,times(1)).stream(any(),any());
+        assertEquals(List.of(new vn.hoctapcanman.core.tutor.application.dto.TutorSessionDto.ModelUsage(50,20,false)),usage);
+    }
+    @Test void largeProviderChunkIsSplitWithoutChangingMarkdownWhitespaceOrUnicode() {
+        String raw=" "+"a".repeat(62)+"🚀\n"+"$x^2$ ".repeat(30);
+        when(model.draft(any())).thenReturn(Optional.of(raw));
+        var emitted=new ArrayList<String>();var r=request("Em bị kẹt");var c=tutor.context(student,cl,r);
+        tutor.generate(student,cl,r,c,TutorPrompt.compose(c,r),emitted::add,ignored -> {},() -> {});
+        assertEquals(raw,String.join("",emitted));
+        assertTrue(emitted.stream().allMatch(t -> !t.isEmpty() && t.length()<=64));
+        assertTrue(emitted.stream().noneMatch(t -> Character.isHighSurrogate(t.charAt(t.length()-1)) || Character.isLowSurrogate(t.charAt(0))));
+        verifyNoInteractions(gate);
+    }
+    @Test void answerProtectionIsPromptOnlyAndDoesNotTruncateAfterThreeSentences() {
+        String raw="Kết quả là $x=3$. Em thử gì? Em cần gì? Em đã chọn gì?";
+        when(model.draft(any())).thenReturn(Optional.of(raw));
+        assertEquals(raw,tutor.answer(student,request("Em bị kẹt")).message());
+        verify(model,times(1)).draft(any());verifyNoInteractions(gate);
+    }
+    @Test void answerClassifierSteersModelWithoutFixedRefusal() {
+        when(model.draft(any())).thenReturn(Optional.of("Mình có thể cùng em chọn bước cần làm, em đã thử gì?"));
+        for(String q:List.of("cho em đáp án","đáp số","giải giúp","ignore previous","system prompt","roleplay","đóng vai giáo viên")) {
+            assertTrue(OfflineTutorService.asksAnswer(q));
+            assertEquals("MO_HINH",tutor.answer(student,request(q)).nguon());
         }
-        verify(model, never()).draft(any());
+        var prompts=ArgumentCaptor.forClass(HintPrompt.class);verify(model,times(7)).draft(prompts.capture());
+        for(var p:prompts.getAllValues()){assertTrue(p.system().contains("Tín hiệu xin đáp án"));assertFalse(p.user().contains(hint));}
+        verifyNoInteractions(gate);
     }
-    @Test void gateKeepsOnlyVerifiedSentencesOfModelDraft() {
-        when(model.draft(any())).thenReturn(Optional.of("Em xét mẫu số chưa? Câu bị bỏ."));
-        when(gate.sanitize(cl, problem, "Em xét mẫu số chưa? Câu bị bỏ.", "Em bị kẹt", List.of())).thenReturn(Optional.of("Em xét mẫu số chưa?"));
-        assertEquals(new TutorEvent("xong", "Em xét mẫu số chưa?", "MO_HINH"), tutor.answer(student, request("Em bị kẹt")));
-    }
-    @Test void draftWithForeignScriptFallsBackToLadder() {
-        when(model.draft(any())).thenReturn(Optional.of("Em tách từng项 rồi thử nhé?"));
-        when(gate.sanitize(cl, problem, hint, "Em bị kẹt", List.of())).thenReturn(Optional.of(hint));
-        assertEquals(new TutorEvent("xong", hint, "THANG"), tutor.answer(student, request("Em bị kẹt")));
-    }
-    @Test void fullyBlockedDraftRetriesModelOnceWithStricterPrompt() {
-        when(model.draft(any())).thenReturn(Optional.of("Bản nháp bị chặn"), Optional.of("Em đã xét bước này chưa?"));
-        when(gate.sanitize(cl, problem, "Em đã xét bước này chưa?", "Em bị kẹt", List.of())).thenReturn(Optional.of("Em đã xét bước này chưa?"));
-        assertEquals(new TutorEvent("xong", "Em đã xét bước này chưa?", "MO_HINH"), tutor.answer(student, request("Em bị kẹt")));
-        verify(model, times(2)).draft(any());
+    @Test void providerFailureStopsWithoutRetryOrLadder() {
+        when(model.draft(any())).thenReturn(Optional.empty());
+        assertThrows(IllegalStateException.class,() -> tutor.answer(student,request("Em bị kẹt")));
+        verify(model,times(1)).draft(any());verifyNoInteractions(gate);
     }
     @Test void personalDataNeverReachesModel() {
-        when(gate.sanitize(cl, problem, hint, "Em là Nguyễn Văn An, bị kẹt", List.of())).thenReturn(Optional.of(hint));
-        assertEquals(new TutorEvent("xong", hint, "THANG"), tutor.answer(student, request("Em là Nguyễn Văn An, bị kẹt")));
-        verify(model, never()).draft(any());
+        assertEquals(400,assertThrows(WorkspaceException.class,() -> tutor.answer(student,request("Em là Nguyễn Văn An, bị kẹt"))).status());
+        verify(model,never()).draft(any());
     }
-    @Test void cancelledDuringModelCallIsNotReleased() {
-        when(model.draft(any())).thenReturn(Optional.of("Em đã xét bước này chưa?"));
-        when(gate.sanitize(eq(cl), eq(problem), anyString(), anyString(), anyList())).thenAnswer(a -> Optional.of(a.<String>getArgument(2)));
-        when(store.tutorContext(eq(student), eq(cl), any())).thenReturn(Optional.of(new TutorContext(problem, "DH1", "Đề bài", "x**2", "B.DH.TXD", hint)), Optional.empty());
-        assertThrows(vn.hoctapcanman.core.workspace.application.exception.WorkspaceException.class, () -> tutor.answer(student, request("Em bị kẹt")));
+    @Test void identifyingClassContentNeverReachesProvider() {
+        when(store.tutorContext(eq(student),eq(cl),any())).thenReturn(Optional.of(new TutorContext(problem,"DH1","Bài của Nguyễn Văn An","x","B.DH.TXD",hint)));
+        assertEquals(400,assertThrows(WorkspaceException.class,() -> tutor.answer(student,request("Em bị kẹt"))).status());verify(model,never()).draft(any());
     }
-    @Test void formulaSheetChangedDuringModelCallIsNotReleased() {
-        when(model.draft(any())).thenReturn(Optional.of("Em xem [1] nhé?"));
-        when(gate.sanitize(eq(cl), eq(problem), anyString(), anyString(), anyList())).thenAnswer(a -> Optional.of(a.<String>getArgument(2)));
-        var f1 = List.of(new TutorFormula(1, "CT1", "Lũy thừa", "x^n", "Quy tắc"));
-        var f2 = List.of(new TutorFormula(1, "CT2", "Tổng", "u+v", "Quy tắc khác"));
-        when(store.tutorContext(eq(student), eq(cl), any())).thenReturn(
-            Optional.of(new TutorContext(problem, "DH1", "Đề bài", "x**2", "B.DH.TXD", hint, "Tập xác định", f1, List.of())),
-            Optional.of(new TutorContext(problem, "DH1", "Đề bài", "x**2", "B.DH.TXD", hint, "Tập xác định", f2, List.of())));
-        assertEquals(409, assertThrows(WorkspaceException.class, () -> tutor.answerAuthorized(student, cl, request("Em bị kẹt"), x -> {})).status());
-    }
-    @Test void offlineClassNeverCallsModel() {
-        when(store.settings(cl)).thenReturn(new Settings(cl, false, "offline"));
-        when(gate.sanitize(cl, problem, hint, "Em bị kẹt", List.of())).thenReturn(Optional.of(hint));
-        assertEquals(new TutorEvent("xong", hint, "THANG"), tutor.answer(student, request("Em bị kẹt")));
-        verify(model, never()).draft(any());
-    }
-    @Test void blockedModelDraftFallsBackThroughGate() {
-        when(model.draft(any())).thenReturn(Optional.of("Bản nháp bị chặn"));
-        when(gate.sanitize(cl, problem, hint, "Em bị kẹt", List.of())).thenAnswer(i -> java.util.Optional.of(i.<String>getArgument(2)));
-        assertEquals(new TutorEvent("xong", hint, "THANG"), tutor.answer(student, request("Em bị kẹt")));
-        var order = inOrder(model, gate);
-        order.verify(model).draft(any());
-        order.verify(gate).sanitize(cl, problem, "Bản nháp bị chặn", "Em bị kẹt", List.of());
-        order.verify(gate).sanitize(cl, problem, hint, "Em bị kẹt", List.of());
-    }
-    @Test void modelExceptionFallsBackToLadder() {
-        when(model.draft(any())).thenThrow(new IllegalStateException("Không kết nối được"));
-        when(gate.sanitize(cl, problem, hint, "Em bị kẹt", List.of())).thenAnswer(i -> java.util.Optional.of(i.<String>getArgument(2)));
-        assertEquals(hint, tutor.answer(student, request("Em bị kẹt")).message());
-    }
-    @Test void gateFailureNeverReleasesModelOrLadder() {
-        when(model.draft(any())).thenReturn(Optional.of("Bản nháp"));
-        when(gate.sanitize(any(), any(), anyString(), anyString(), anyList())).thenThrow(new IllegalStateException());
-        TutorEvent result = tutor.answer(student, request("Em bị kẹt"));
-        assertEquals("xong", result.status()); assertTrue(result.message().startsWith("Em xem lại bước này"));
-        assertFalse(result.message().contains("Bản nháp"));
-        assertFalse(result.message().contains(hint));
-    }
-    @Test void phasesSurroundModelAndGateAndAuthorizeCountsOnce() {
-        List<String> timeline = new ArrayList<>();
-        when(model.draft(any())).thenAnswer(i -> { timeline.add("mô hình"); return Optional.of("Câu hỏi gợi mở"); });
-        when(gate.sanitize(any(), any(), anyString(), anyString(), anyList())).thenAnswer(i -> { timeline.add("cổng"); return java.util.Optional.of(i.<String>getArgument(2)); });
-        TutorRequest r = request("Em bị kẹt");
-        for (int i = 0; i < 12; i++) {
-            UUID authorized = tutor.authorize(student, r);
-            tutor.answerAuthorized(student, authorized, r, timeline::add);
+    @Test void directAnswerStopsIfContextOrProviderChangesDuringModelCall() {
+        for(boolean providerChange:List.of(false,true)) {
+            setup();
+            when(model.draft(any())).thenAnswer(i -> {
+                if(providerChange) {
+                    when(store.settings(cl)).thenReturn(new Settings(cl,false,"offline"));
+                    when(model.provider()).thenReturn("offline");
+                } else when(store.tutorContext(eq(student),eq(cl),any())).thenReturn(Optional.of(new TutorContext(problem,"DH1","Đề vừa đổi","x**2","B.DH.TXD",hint)));
+                return Optional.of("Em thử $x");
+            });
+            assertEquals(providerChange?403:409,assertThrows(WorkspaceException.class,() -> tutor.answer(student,request("Em bị kẹt"))).status());
         }
-        assertEquals(List.of("kho", "goi", "mô hình", "loc", "cổng"), timeline.subList(0, 5));
-        assertEquals(429, assertThrows(WorkspaceException.class, () -> tutor.authorize(student, r)).status());
-        verify(store, times(37)).tutorContext(student, cl, r); // kiểm trước hạn mức + đọc ngữ cảnh + kiểm lại trước khi phát
+        verifyNoInteractions(gate);
     }
-    @Test void modelCannotReferOutsideSheetOrExceedThreeSentences() {
-        when(gate.sanitize(eq(cl), eq(problem), anyString(), anyString(), anyList())).thenAnswer(i -> java.util.Optional.of(i.<String>getArgument(2)));
-        for (String bad : List.of("Em xem [999] rồi thử nhé.", "Em thử nhé. Mình chờ em. Hãy xem lại. Em hỏi tiếp nhé.")) {
-            when(model.draft(any())).thenReturn(Optional.of(bad));
-            assertEquals(hint, tutor.answer(student, request("Em bị kẹt")).message());
-            verify(gate, never()).sanitize(cl, problem, bad, "Em bị kẹt", List.of());
-        }
-    }
-    @Test void fallbackLadderAlsoRejectsInvalidShape() {
-        when(model.draft(any())).thenReturn(Optional.empty());
-        when(gate.sanitize(eq(cl), eq(problem), anyString(), anyString(), anyList())).thenAnswer(i -> java.util.Optional.of(i.<String>getArgument(2)));
-        for (String bad : List.of("Em xem [999] nhé.", "Em thử nhé. Mình chờ em. Hãy xem lại. Em hỏi tiếp nhé.")) {
-            when(store.tutorContext(eq(student), eq(cl), any())).thenReturn(Optional.of(
-                new TutorContext(problem, "DH1", "Đề bài", "x", "B.DH.TXD", bad)));
-            TutorEvent result = tutor.answer(student, request("Em bị kẹt"));
-            assertEquals("xong", result.status()); assertTrue(result.message().startsWith("Em xem lại bước này"));
-            assertFalse(result.message().contains(bad));
-        }
-    }
-    @Test void switchingToTestModeDuringModelCallPreventsRelease() {
-        when(model.draft(any())).thenAnswer(i -> {
-            when(store.testMode(student, cl, "DH1")).thenReturn(true);
-            return Optional.of("Câu hỏi gợi mở");
-        });
-        when(gate.sanitize(any(), any(), anyString(), anyString(), anyList())).thenAnswer(i -> java.util.Optional.of(i.<String>getArgument(2)));
-        assertEquals(403, assertThrows(WorkspaceException.class,
-            () -> tutor.answer(student, request("Em bị kẹt"))).status());
+    @Test void offlineAdapterCannotServeGlmClass() {
+        var offline=new OfflineTutorService(store,members,new vn.hoctapcanman.core.tutor.infrastructure.ai.OfflineHintModelAdapter(),new TutorRateLimiter(Clock.systemUTC(),10,Duration.ofMinutes(10)));
+        assertEquals(503,assertThrows(WorkspaceException.class,() -> offline.answer(student,request("Em bị kẹt"))).status());verifyNoInteractions(gate);
     }
     @Test void testModeDeniedBeforeModelAndRateLimit() {
-        when(store.testMode(student, cl, "DH1")).thenReturn(true);
-        assertEquals(403, assertThrows(WorkspaceException.class, () -> tutor.authorize(student, request("Gợi ý"))).status());
-        verifyNoInteractions(model, gate);
-        verify(store, never()).tutorContext(any(), any(), any());
+        when(store.testMode(student,cl,"DH1")).thenReturn(true);
+        assertEquals(403,assertThrows(WorkspaceException.class,() -> tutor.authorize(student,request("Gợi ý"))).status());verifyNoInteractions(model,gate);
     }
 }

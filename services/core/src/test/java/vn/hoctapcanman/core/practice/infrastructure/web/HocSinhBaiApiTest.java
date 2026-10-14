@@ -206,9 +206,11 @@ class HocSinhBaiApiTest {
     @Test
     void chiTietCoDeKhungVaBaiLamTheoNoiDungHienTai() {
         assertJson(get("/api/hs/bai/" + ma1, an), chiTiet1("CHUA_LAM", "[]", false));
+        assertThat(get("/api/hs/bai/" + ma1, an).json().path("giaoBaiId").asString()).isEqualTo(giaoBaiId(an).toString());
+        assertThat(get("/api/hs/bai/" + ma1, binh).json().path("giaoBaiId").asString()).isEqualTo(giaoBaiId(binh).toString());
         // Bài đang phát hành mà chưa giao vẫn xem được; đề hỏi cực trị thì bước kết luận khai thêm cực đại, cực tiểu.
         assertJson(get("/api/hs/bai/" + ma3, an), """
-            {"maBai":"%s","de":{"text":"Tìm cực trị của hàm số y = x^3 - 3x.","latex":"y = x^3 - 3x"},"kyNang":"T12.DH.02",
+            {"maBai":"%s","giaoBaiId":null,"de":{"text":"Tìm cực trị của hàm số y = x^3 - 3x.","latex":"y = x^3 - 3x"},"kyNang":"T12.DH.02",
              "tenKyNang":"Tính đạo hàm","muc4":"VAN_DUNG","dangTraLoi":"TU_LUAN_5_BUOC","buocBatDau":"B.DH.NGHIEM",
              "khaiBaoKetLuan":["dong_bien","nghich_bien","cuc_dai","cuc_tieu"],"cacBuoc":%s,
              "baiLam":{"trangThai":"CHUA_LAM","cacBuoc":[]},"coTheMoLoiGiai":false}""".formatted(ma3, KHUNG));
@@ -348,10 +350,9 @@ class HocSinhBaiApiTest {
         assertThat(daThay).allSatisfy(p -> assertThat(p.status()).isEqualTo(200));
         assertThat(daThay).allSatisfy(p -> assertThat(p.than()).doesNotContain(BI_MAT));
 
-        // Lớp bật «mở lời giải sau khi nộp»: chỉ phản hồi nộp bài mang lời giải; đề và bài làm vẫn không.
+        // Nộp bài không tự mở lời giải, kể cả khi cờ cũ của lớp được bật.
         jdbc.sql("insert into class_settings (class_id, reveal_solution_after_submit, updated_at) values (?, true, now())").params(lop).update();
-        assertThat(nopBai(ma1).json().path("loiGiai").asString()).as("lời giải viết như v0: có đáp án cuối thì dùng đáp án cuối")
-            .isEqualTo("BIMAT_DAP_AN");
+        assertThat(nopBai(ma1).than()).doesNotContain(BI_MAT);
         Phan chiTiet = get("/api/hs/bai/" + ma1, an);
         assertThat(chiTiet.json().path("coTheMoLoiGiai").asBoolean()).isTrue();
         assertThat(chiTiet.than()).doesNotContain(BI_MAT);
@@ -360,10 +361,15 @@ class HocSinhBaiApiTest {
 
     private String chiTiet1(String trangThai, String cacBuocDaLam, boolean coTheMoLoiGiai) {
         return """
-            {"maBai":"%s","de":{"text":"%s","latex":"y = x^3 - 3x^2 + 2"},"kyNang":"T12.DH.02","tenKyNang":"Tính đạo hàm",
+            {"maBai":"%s","giaoBaiId":"%s","de":{"text":"%s","latex":"y = x^3 - 3x^2 + 2"},"kyNang":"T12.DH.02","tenKyNang":"Tính đạo hàm",
              "muc4":"THONG_HIEU","dangTraLoi":"TU_LUAN_5_BUOC","buocBatDau":null,"khaiBaoKetLuan":["dong_bien","nghich_bien"],
              "cacBuoc":%s,"baiLam":{"trangThai":"%s","cacBuoc":%s},"coTheMoLoiGiai":%s}"""
-            .formatted(ma1, DE, KHUNG, trangThai, cacBuocDaLam, coTheMoLoiGiai);
+            .formatted(ma1, giaoBaiId(an), DE, KHUNG, trangThai, cacBuocDaLam, coTheMoLoiGiai);
+    }
+
+    private UUID giaoBaiId(UUID hocSinh) {
+        return jdbc.sql("select id from assignments where class_id = ? and problem_id = ? and student_id = ?")
+            .params(lop, p1, hocSinh).query(UUID.class).single();
     }
 
     private static String dongDanhSach(String ma, @Nullable String han, String trangThai, int soBuocDat, @Nullable String ketQua) {

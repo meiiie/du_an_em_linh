@@ -12,6 +12,9 @@ public interface WorkspaceStore {
     List<Item> bank(UUID classId);
     List<Item> assignments(UUID classId);
     List<Item> modes(UUID student,UUID classId);
+    List<Item> topics(UUID student,UUID classId);
+    List<Item> selfStudy(UUID student,UUID classId,String topic);
+    void chooseStudy(UUID student,UUID classId,String code,Instant now);
     List<Item> recommendations(UUID student,UUID classId);
     List<vn.hoctapcanman.core.workspace.domain.model.PersonalLearningRules.Skill> learningSkills(UUID student,UUID classId);
     List<Item> stuckAlerts(UUID classId);

@@ -38,6 +38,9 @@ public final class WorkspaceDto {
     public record Review(@NotNull UUID lopId,boolean approve,@NotBlank @Size(max=500) String reason) {
     }
 
+    public record DraftRequest(@NotNull UUID lopId, @NotNull UUID documentId) {}
+    public record GeneratedDraft(NewProblem problem, String solution, String provider, int inputTokens, int outputTokens) {}
+
     public record NewProblem(@NotNull UUID lopId,@NotBlank @Pattern(regexp="[A-Za-z0-9_.-]{1,64}") String code,@NotBlank @Size(max=32) String skillCode,@NotNull @Pattern(regexp="NHAN_BIET|THONG_HIEU|VAN_DUNG|VAN_DUNG_CAO") String level4,@NotBlank @Size(max=4000) String statement,@NotBlank @Size(max=4000) String latex,@NotBlank @Size(max=500) String function) {
     }
 
@@ -74,7 +77,7 @@ public final class WorkspaceDto {
     public record TutorRequest(@NotBlank @Size(max=64) String maBai,@NotBlank @Size(max=32) String maBuoc,@Min(1) @Max(3) int cap,@NotNull @Size(max=2000) String cauHoi) {
     }
 
-    /** nguon: MO_HINH, THANG, CO_DINH, TU_CHOI hoặc null (sự kiện trạng thái); không chứa dữ liệu cá nhân. */
+    /** nguon: MO_HINH hoặc null (sự kiện trạng thái); không chứa dữ liệu cá nhân. */
     public record TutorEvent(String status,String message,@org.jspecify.annotations.Nullable String nguon) {
         public TutorEvent(String status,String message) {
             this(status,message,null);

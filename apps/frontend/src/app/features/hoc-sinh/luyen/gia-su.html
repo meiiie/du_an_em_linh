@@ -2,24 +2,49 @@
 @if (mo() && rong()) {
   <aside class="tutor-panel" aria-label="Gia sư AI" data-testid="gia-su-panel">
     <div class="resize" role="separator" tabindex="0" aria-label="Độ rộng gia sư" aria-orientation="vertical" aria-valuemin="360" aria-valuemax="480" [attr.aria-valuenow]="chieuRong()" (pointerdown)="keo($event)" (keydown)="phimRong($event)">⋮</div>
-    <ng-container [ngTemplateOutlet]="chat" />
+    <ng-container [ngTemplateOutlet]="noiDung" />
   </aside>
 }
 @if (mo() && !rong()) {
-  <dialog #hop class="tutor-sheet" aria-label="Gia sư AI" data-testid="gia-su-panel" (cancel)="$event.preventDefault(); dong()" (keydown)="giuFocus($event)"><ng-container [ngTemplateOutlet]="chat" /></dialog>
+  <dialog #hop class="tutor-sheet" aria-label="Gia sư AI" data-testid="gia-su-panel" (cancel)="$event.preventDefault(); dong()" (keydown)="giuFocus($event)"><ng-container [ngTemplateOutlet]="noiDung" /></dialog>
 }
-<ng-template #chat>
+<ng-template #noiDung>
   <header><div><h2>Gia sư AI</h2><p class="muted">{{tenBuoc()}}</p></div><button type="button" class="nut-icon" aria-label="Đóng gia sư" (click)="dong()">×</button></header>
-  <div #thread class="tutor-messages" role="log" aria-label="Cuộc trò chuyện với gia sư" aria-live="polite" aria-atomic="false">
-    @if (!luot().length) {<div class="empty"><strong>Em đang vướng ở đâu?</strong><p>Gia sư chỉ gợi ý cách làm, không đưa đáp án</p><p class="muted">Chọn một gợi ý hoặc viết câu hỏi về bước đang làm.</p></div>}
-    @for(m of luot();track $index){<article [class.cau-cua-em]="m.vai==='em'"><span class="sr-only">{{m.vai==='em'?'Em hỏi':'Gia sư trả lời'}}</span>@for(p of tach(m.text);track $index){@if(p.math){<app-katex [latex]="p.text" />}@else{<span class="tutor-text">{{p.text}}</span>}}</article>}
-    @if(dangHoi()){<p class="typing"><span aria-hidden="true">•••</span> {{trangThai()}}</p>}
+  <div #thread class="tutor-messages" role="log" aria-label="Cuộc trò chuyện với gia sư" aria-live="off" (scroll)="cuon()">
+    @if(chat.dangTai()){<p role="status">Đang tải cuộc trò chuyện…</p>}
+    @if(chat.coLichSuCu()){<button appButton variant="secondary" type="button" [disabled]="chat.dangTaiCu()" (click)="chat.taiCu()">Xem các lượt trước</button>}
+    @for(t of chat.luot(); track t.requestId){
+      @if(!t.retryOfTurnId){<article class="cau-cua-em"><span class="sr-only">Em hỏi</span><span class="tutor-text">{{t.cauHoi}}</span></article>}
+      @if(t.text){<article class="cau-cua-ai"><span class="sr-only">Gia sư trả lời</span><app-gia-su-markdown [text]="t.text" /></article>}
+      @if(t.status==='cancelled'){<p class="muted turn-status">Đã dừng lượt này.</p>}
+      @if(t.status==='error'){
+        <div class="turn-error" role="alert"><p>{{t.error?.message || 'Chưa hoàn tất lời gợi ý.'}}</p>
+          @if(t.text){<p>Phần gợi ý trên chưa hoàn tất.</p>}
+          <div class="turn-actions">
+            @if(t.error?.retryable){<button appButton variant="secondary" type="button" [disabled]="!chat.sanSang()" (click)="chat.thuLai(t)">Thử lại</button>}
+            <button appButton variant="secondary" type="button" (click)="hoiLai(t.cauHoi)">Hỏi lại</button>
+          </div>
+        </div>
+      }
+    }
+    @if(chat.dangHoi() || chat.choDung()){<p class="typing" role="status" aria-live="polite"><span aria-hidden="true">•••</span> {{chat.trangThai()}}</p>}
   </div>
-  <div class="chips">@for(q of ['Gợi ý bước tiếp','Giải thích công thức','Em sai ở đâu?'];track q){<button appButton variant="secondary" type="button" data-testid="gia-su-chip" [disabled]="dangHoi()" (click)="goChip(q)">{{q}}</button>}</div>
+  <div class="sr-only" aria-live="polite" aria-relevant="additions">@for(c of chat.thongBaoCau(); track c.seq){<p>{{c.text}}</p>}</div>
+  @if(!oDay()){<button appButton variant="secondary" type="button" data-testid="gia-su-xuong" (click)="xuong()">Xuống</button>}
+  @if(chat.loi()){
+    <div class="field-error" role="alert"><p>{{chat.loi()}}</p>
+      @if(chat.matKetNoi()){<button appButton variant="secondary" type="button" [disabled]="chat.dangHoi() || !!chat.retryAt()" (click)="chat.noiLai()">Kết nối lại</button>}
+      @else if(!chat.biKhoa() && !chat.choDung() && !chat.luot().length){<button appButton variant="secondary" type="button" [disabled]="chat.dangTai() || !!chat.retryAt()" (click)="taiLai()">Tải lại phiên</button>}
+      @else if(chat.loi().includes('Tải lại phiên')){<button appButton variant="secondary" type="button" (click)="taiLai()">Tải lại phiên</button>}
+    </div>
+  }
   <form (submit)="gui($event)">
+    <div class="support"><label for="gia-su-cap">Mức hỗ trợ</label><select id="gia-su-cap" [value]="cap() || 1" (change)="doiCap($event)"><option value="1">Nhận diện vướng mắc</option><option value="2">Chọn căn cứ</option><option value="3">Thao tác tiếp theo</option></select></div>
     <label for="gia-su-cau-hoi">Em muốn hỏi gì?</label>
-    <textarea #soan id="gia-su-cau-hoi" data-testid="gia-su-composer" [formField]="f.cauHoi" placeholder="Em đang vướng ở đâu?" rows="1" (input)="gianO()" (keydown)="goPhim($event)"></textarea>
-    @if(loi()){<p role="alert" class="field-error">{{loi()}}</p>}
-    <div class="actions"><span class="muted">Enter để gửi · Shift+Enter xuống dòng</span>@if(dangHoi()){<button appButton variant="secondary" type="button" (click)="dung()">Dừng</button>}@else{ @if(loi()){<button appButton variant="secondary" type="button" (click)="hoiLai()">Hỏi lại</button>}<button appButton type="submit" [disabled]="!model().cauHoi.trim() || model().cauHoi.length>1000">Gửi câu hỏi</button>}</div>
+    <textarea #soan id="gia-su-cau-hoi" data-testid="gia-su-composer" [formField]="f.cauHoi" placeholder="Viết câu hỏi" rows="1" (input)="gianO()" (keydown)="goPhim($event)"></textarea>
+    <div class="actions"><span class="muted">Enter để gửi · Shift+Enter xuống dòng</span>
+      @if(chat.dangHoi() || chat.choDung() || chat.matKetNoi()){<button appButton variant="secondary" type="button" data-testid="gia-su-dung" (click)="dung()">Dừng</button>}
+      @else{<button appButton type="submit" [disabled]="!chat.sanSang() || !model().cauHoi.trim() || model().cauHoi.length>2000">Gửi câu hỏi</button>}
+    </div>
   </form>
 </ng-template>

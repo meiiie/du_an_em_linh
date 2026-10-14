@@ -193,7 +193,8 @@ Cấu hình trong `application.yaml` dưới `mathl.gia-su.*`:
 | `GLM_API_KEY` | Rỗng | Khóa Bearer phía core; rỗng là offline |
 | `GLM_BASE_URL` | `https://api.z.ai/api/coding/paas/v4` | URL gốc; core thêm `/chat/completions`; rỗng dùng mặc định |
 | `GLM_MODEL` | `glm-5.3` | Rỗng dùng mặc định |
-| `GLM_TIMEOUT` | `20s` | Ngân sách toàn lời gọi GLM, kể cả chờ gửi lại |
+| `GLM_TIMEOUT` | `45s` | Hạn toàn lời gọi cho mỗi attempt; tối đa hai attempt, tổng kể cả backoff bị chặn ở 110s trong deadline lượt 120s |
+| `GLM_FIRST_TOKEN_TIMEOUT` | `20s` | Hạn token nội dung đầu tiên và idle giữa các hoạt động stream sau đó; riêng với hạn toàn attempt |
 | `GLM_MAX_TOKENS` | `350` | Trần đầu ra, cho phép giảm xuống 1–350 |
 | `GLM_RATE_LIMIT_REQUESTS` | `12` | Lượt tối đa mỗi học sinh trong cửa sổ trượt |
 | `GLM_RATE_LIMIT_WINDOW` | `10m` | Độ dài cửa sổ, ví dụ `10m` hoặc `PT10M` |

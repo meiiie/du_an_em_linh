@@ -4,7 +4,6 @@ import java.time.*;
 import java.util.*;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import vn.hoctapcanman.core.workspace.application.exception.WorkspaceException;
 
 /** Cửa sổ trượt dùng chung giữa các lượt SSE của mỗi học sinh trong một tiến trình. */
 @Service
@@ -29,8 +28,8 @@ public class TutorRateLimiter {
         requests.values().forEach(times -> { while (!times.isEmpty() && !times.peekFirst().isAfter(cutoff)) times.removeFirst(); });
         requests.values().removeIf(Deque::isEmpty);
         Deque<Instant> times = requests.computeIfAbsent(student, ignored -> new ArrayDeque<>());
-        if (times.size() >= limit) throw new WorkspaceException(429,
-            "Em đã hỏi nhiều lần trong thời gian ngắn. Em chờ một chút rồi thử lại nhé.");
+        if (times.size() >= limit) throw new vn.hoctapcanman.core.tutor.application.exception.TutorLimitException(
+            Math.max(1,(Duration.between(now,times.getFirst().plus(window)).toMillis()+999)/1000));
         times.addLast(now);
     }
 }

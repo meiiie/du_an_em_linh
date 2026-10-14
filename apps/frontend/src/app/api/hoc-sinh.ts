@@ -75,6 +75,8 @@ export interface OBang {
 /** `GET /api/hs/bai/{maBai}`. */
 export interface ChiTietBai {
   readonly maBai: string;
+  /** ID giao bài thật dùng mở phiên gia sư v2; không thay bằng mã đề. */
+  readonly giaoBaiId?: string;
   readonly de: { readonly text: string; readonly latex: string };
   readonly kyNang: string;
   readonly tenKyNang: string;

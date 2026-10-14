@@ -84,6 +84,7 @@ import vn.hoctapcanman.core.shared.infrastructure.ClockConfig;
     NopBuocUseCaseTest.MayChamGia.class,
     NopBuocUseCase.class,
     MoLoiGiai.class,
+    vn.hoctapcanman.core.practice.infrastructure.persistence.SolutionRevealEventsAdapter.class,
     NopBaiUseCase.class
 })
 @Testcontainers(disabledWithoutDocker = true)
@@ -249,13 +250,13 @@ class NopBaiUseCaseTest {
     }
 
     @Test
-    void coLopDocLucGoiTatThiKhongCoLoiGiaiBatThiCoNhuV0() {
+    void nopBaiKhongTuMoLoiGiaiKeCaKhiCoCuCuaLopBat() {
         lamDuBuoc();
         assertThat(nopBai.execute(an, lop, ma)).as("lớp chưa có dòng cài: tắt").isEqualTo(DAT_KHONG_LOI_GIAI);
         datCo(false);
         assertThat(nopBai.execute(an, lop, ma)).isEqualTo(DAT_KHONG_LOI_GIAI);
         datCo(true);
-        assertThat(nopBai.execute(an, lop, ma)).isEqualTo(new KetQuaNopBai(KetQuaBai.DAT, List.of(), LOI_GIAI));
+        assertThat(nopBai.execute(an, lop, ma)).isEqualTo(DAT_KHONG_LOI_GIAI);
         datCo(false);
         assertThat(nopBai.execute(an, lop, ma)).isEqualTo(DAT_KHONG_LOI_GIAI);
     }
@@ -264,7 +265,7 @@ class NopBaiUseCaseTest {
     void lamLaiThiLoiGiaiDongVaNopLaiNhamBaiLamMoi() {
         datCo(true);
         lamDuBuoc();
-        assertThat(nopBai.execute(an, lop, ma).loiGiai()).isEqualTo(LOI_GIAI);
+        assertThat(nopBai.execute(an, lop, ma).loiGiai()).isNull();
         Submission.DaNop daNop = daNop();
         // Nộp một bước mở bài làm mới cùng phiên bản: em đang làm lại, lời giải đóng (FR-006).
         nopBuoc.execute(an, lop, ma, dong("B.DH.TXD", "D = R"));
@@ -396,7 +397,7 @@ class NopBaiUseCaseTest {
     void deDoiSauKhiNopThiLoiGiaiCuDongVaKhongPhatLaiChoDeMoi() {
         datCo(true);
         lamDuBuoc();
-        assertThat(nopBai.execute(an, lop, ma).loiGiai()).isEqualTo(LOI_GIAI);
+        assertThat(nopBai.execute(an, lop, ma).loiGiai()).isNull();
         Submission.DaNop daNop = daNop();
         doiDe();
         assertThat(moLoiGiai.cho(daNop)).isEmpty();

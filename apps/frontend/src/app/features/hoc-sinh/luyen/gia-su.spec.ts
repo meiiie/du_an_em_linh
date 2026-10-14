@@ -1,108 +1,192 @@
 import { TestBed } from '@angular/core/testing';
+import { API_GIA_SU, SessionGiaSuV2 } from '../../../api/gia-su';
 import { Phien } from '../../../core/auth/phien';
-import { GiaSu, docSse } from './gia-su';
+import { GiaSu } from './gia-su';
+import { GiaSuMarkdown } from './gia-su-markdown';
+import { NOI_LAI_GIA_SU } from './gia-su-phien';
 
-describe('GiaSu', () => {
-  beforeEach(() => localStorage.clear());
-  afterEach(() => vi.unstubAllGlobals());
+const session: SessionGiaSuV2 = {id:'s1',studentId:'synthetic-student',assignmentId:'assignment-1',classId:'synthetic-class',tomTat:'',summaryThrough:0,contextVersion:'1:synthetic',lastSeq:0,revision:1,tokenCount:0};
+const json=(body:unknown)=>new Response(JSON.stringify(body),{headers:{'Content-Type':'application/json'}});
+const eventFields = (name: string) => name === 'start' ? {maBuoc:'B.DH.TXD',cap:1,contextVersion:'1:synthetic'}
+  : name === 'done' ? {tokens:10,durationMs:20}
+  : name === 'error' ? {code:'MODEL_UNAVAILABLE'} : {};
+const event=(name:string,seq:number,data:object={})=>`id: s1:${seq}\nevent: ${name}\ndata: ${JSON.stringify({v:2,...eventFields(name),sessionId:'s1',turnId:'t1',seq,...data})}\n\n`;
+const settle=async()=>{await new Promise(r=>setTimeout(r,5));};
 
-  async function setup(open = true) {
-    TestBed.configureTestingModule({ providers: [{ provide: Phien, useValue: { tokenTruyCap: () => 'synthetic-token', lamMoi: async () => false } }] });
-    const f = TestBed.createComponent(GiaSu);
-    f.componentRef.setInput('maBai', 'BAI-THU');
-    f.componentRef.setInput('maBuoc', 'B.DH.TXD');
-    f.detectChanges();
-    await f.whenStable();
-    const el = f.nativeElement as HTMLElement;
-    if (open) { f.componentInstance.moGiaSu(); await f.whenStable(); }
-    const settle = async () => { await new Promise(r => setTimeout(r, 0)); await f.whenStable(); };
-    const click = async (name: string) => {
-      const b = [...el.querySelectorAll('button')].find(x => x.textContent?.trim() === name)!;
-      b.click(); await settle();
-    };
-    return { f, el, click, settle };
+describe('Sidebar gia sư',()=>{
+  let fetchMock: ReturnType<typeof vi.fn>;
+  let response:(init:RequestInit)=>Response;
+  beforeEach(()=>{
+    localStorage.clear();
+    response=init=>new Response(event('start',1,{requestId:JSON.parse(init.body as string).requestId})+event('delta',2,{text:'**Câu đã kiểm** $x^2$.'})+event('done',3,{status:'completed'}),{headers:{'Content-Type':'text/event-stream'}});
+    fetchMock=vi.fn(async(url:string,init:RequestInit={})=>{
+      if(url===API_GIA_SU)return json({sessionId:'s1',lastSeq:0,turnId:null,status:'idle'});
+      if(url.includes('/luot?')&&!init.method)return json({session,turns:[]});
+      if(url.endsWith('/cancel'))return json({sessionId:'s1',turnId:'t1',status:'cancelled',lastSeq:3});
+      return response(init);
+    });
+    vi.stubGlobal('fetch',fetchMock);
+    TestBed.configureTestingModule({providers:[{provide:Phien,useValue:{tokenTruyCap:()=> 'synthetic',lamMoi:async()=>false}},{provide:NOI_LAI_GIA_SU,useValue:[]}]});
+  });
+  afterEach(()=>vi.unstubAllGlobals());
+  async function setup(open=true){
+    const f=TestBed.createComponent(GiaSu);
+    f.componentRef.setInput('maBai','BAI-THU');f.componentRef.setInput('giaoBaiId','assignment-1');f.componentRef.setInput('maBuoc','B.DH.TXD');
+    f.detectChanges();await f.whenStable();
+    if(open)f.componentInstance.moGiaSu();
+    await settle();await f.whenStable();
+    const el=f.nativeElement as HTMLElement;
+    const click=async(name:string)=>{([...el.querySelectorAll('button')].find(b=>b.textContent?.trim()===name)!).click();await settle();await f.whenStable();};
+    const fill=async(q:string)=>{const t=el.querySelector('textarea')!;t.value=q;t.dispatchEvent(new Event('input'));await f.whenStable();return t;};
+    return {f,el,click,fill};
   }
-  const reply = (message: string) => new Response(`event: xong\ndata: ${JSON.stringify({ message })}\n\n`, { headers: { 'Content-Type': 'text/event-stream' } });
-
-  it('khôi phục trạng thái mở và độ rộng, phím tắt đóng/mở và Esc', async () => {
-    localStorage.setItem('mathl-gia-su-mo', 'true');
-    localStorage.setItem('mathl-gia-su-rong', '460');
-    const t = await setup(false);
+  it('mở mới tải lịch sử, giữ độ rộng, phím tắt và Escape trả focus',async()=>{
+    localStorage.setItem('mathl-gia-su-mo','true');localStorage.setItem('mathl-gia-su-rong','460');
+    const t=await setup(false);
     expect(t.el.querySelector('[data-testid="gia-su-panel"]')).not.toBeNull();
     expect(t.el.querySelector('[role="separator"]')?.getAttribute('aria-valuenow')).toBe('460');
-    document.dispatchEvent(new KeyboardEvent('keydown', { key: '/', ctrlKey: true }));
-    await t.settle();
+    expect(fetchMock.mock.calls[0][0]).toBe(API_GIA_SU);
+    document.dispatchEvent(new KeyboardEvent('keydown',{key:'Escape'}));await t.f.whenStable();
     expect(t.el.querySelector('[data-testid="gia-su-panel"]')).toBeNull();
-    expect(localStorage.getItem('mathl-gia-su-mo')).toBe('false');
-    document.dispatchEvent(new KeyboardEvent('keydown', { key: '/', metaKey: true }));
-    await t.settle();
+    document.dispatchEvent(new KeyboardEvent('keydown',{key:'/',ctrlKey:true}));await settle();await t.f.whenStable();
     expect(t.el.querySelector('[data-testid="gia-su-panel"]')).not.toBeNull();
-    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
-    await t.settle();
-    expect(t.el.querySelector('[data-testid="gia-su-panel"]')).toBeNull();
+    expect(fetchMock.mock.calls.filter(c=>c[0]===API_GIA_SU)).toHaveLength(2);
   });
-
-  it('ba chips gửi ngữ cảnh bước và chỉ tăng gợi ý tới cấp ba; render KaTeX', async () => {
-    const fetchMock = vi.fn(async () => reply('Hãy xét $x^2$ trước.'));
-    vi.stubGlobal('fetch', fetchMock);
-    const t = await setup();
-    for (let i = 0; i < 4; i++) await t.click('Gợi ý bước tiếp');
-    await t.click('Giải thích công thức');
-    await t.click('Em sai ở đâu?');
-    expect(fetchMock.mock.calls.map(call => JSON.parse((call as unknown as [string, RequestInit])[1].body as string).cap)).toEqual([1,2,3,3,3,3]);
-    const payload = JSON.parse((fetchMock.mock.calls[0] as unknown as [string, RequestInit])[1].body as string);
-    expect(payload).toMatchObject({ maBai:'BAI-THU', maBuoc:'B.DH.TXD', cauHoi:'Gợi ý bước tiếp' });
-    expect(t.el.querySelectorAll('article')).toHaveLength(12);
-    expect(t.el.querySelector('article .katex')).not.toBeNull();
-    expect(t.el.querySelector('[role="log"]')?.getAttribute('aria-live')).toBe('polite');
+  it('390 px không tự mở sheet dù đã lưu tùy chọn mở',async()=>{
+    vi.stubGlobal('matchMedia',()=>({matches:false,addEventListener:vi.fn(),removeEventListener:vi.fn()}));
+    localStorage.setItem('mathl-gia-su-mo','true');
+    const t=await setup(false);
+    expect(t.el.querySelector('[data-testid="gia-su-panel"]')).toBeNull();expect(fetchMock).not.toHaveBeenCalled();
   });
-
-  it('lỗi giữ câu hỏi để Hỏi lại sửa và gửi, không tự gọi API lại', async () => {
-    const fetchMock = vi.fn().mockResolvedValueOnce(new Response('', { status:503 })).mockResolvedValueOnce(reply('Xem điều kiện xác định.'));
-    vi.stubGlobal('fetch', fetchMock);
-    const t = await setup();
-    await t.click('Giải thích công thức');
-    expect(t.el.querySelector('[role="alert"]')?.textContent).toContain('Kiểm tra kết nối');
-    await t.click('Hỏi lại');
-    const o = t.el.querySelector<HTMLTextAreaElement>('textarea')!;
-    expect(o.value).toBe('Giải thích công thức');
-    expect(fetchMock).toHaveBeenCalledTimes(1);
-    await t.click('Gửi câu hỏi');
+  it('Enter gửi, Shift+Enter và IME không gửi; ngữ cảnh cấp và Markdown/KaTeX',async()=>{
+    const t=await setup();const input=await t.fill('Em hỏi về đạo hàm');
+    input.dispatchEvent(new KeyboardEvent('keydown',{key:'Enter',shiftKey:true,bubbles:true}));
+    input.dispatchEvent(new KeyboardEvent('keydown',{key:'Enter',isComposing:true,bubbles:true}));
     expect(fetchMock).toHaveBeenCalledTimes(2);
-    expect(t.el.querySelector('[role="alert"]')).toBeNull();
+    const cap=t.el.querySelector('select')!;cap.value='2';cap.dispatchEvent(new Event('change'));
+    input.dispatchEvent(new KeyboardEvent('keydown',{key:'Enter',bubbles:true,cancelable:true}));await settle();await t.f.whenStable();
+    expect(JSON.parse(fetchMock.mock.calls[2][1].body)).toMatchObject({maBuoc:'B.DH.TXD',cap:2,cauHoi:'Em hỏi về đạo hàm'});
+    expect(t.el.querySelector('article strong')?.textContent).toBe('Câu đã kiểm');expect(t.el.querySelector('.katex')).not.toBeNull();
+    expect(t.el.querySelectorAll('article')).toHaveLength(2);
   });
-
-  it('Enter gửi, Shift+Enter và phím IME giữ nội dung; chờ có trạng thái và chặn gửi trùng', async () => {
-    let resolve!: (r:Response) => void;
-    const fetchMock = vi.fn(() => new Promise<Response>(r => resolve = r));
-    vi.stubGlobal('fetch', fetchMock);
-    const t = await setup();
-    const o = t.el.querySelector<HTMLTextAreaElement>('textarea')!;
-    o.value='Em hỏi về $x^2$';o.dispatchEvent(new Event('input'));await t.settle();
-    o.dispatchEvent(new KeyboardEvent('keydown',{key:'Enter',shiftKey:true,bubbles:true}));
-    o.dispatchEvent(new KeyboardEvent('keydown',{key:'Enter',isComposing:true,bubbles:true}));
-    expect(fetchMock).not.toHaveBeenCalled();
-    o.dispatchEvent(new KeyboardEvent('keydown',{key:'Enter',bubbles:true,cancelable:true}));await t.settle();
-    expect(fetchMock).toHaveBeenCalledTimes(1);
-    expect(t.el.querySelector('.typing')?.textContent).toContain('Đang nghĩ');
-    expect([...t.el.querySelectorAll<HTMLButtonElement>('[data-testid="gia-su-chip"]')].every(b=>b.disabled)).toBe(true);
-    resolve(reply('Đọc công thức trước.'));await t.settle();
+  it('hiện trạng thái chờ polite đến token thô đầu tiên và giữ nút Dừng',async()=>{
+    let writer!: ReadableStreamDefaultController<Uint8Array>;
+    response=()=>new Response(new ReadableStream({start(c){writer=c;}}),{headers:{'Content-Type':'text/event-stream'}});
+    const t=await setup();await t.fill('Em hỏi');await t.click('Gửi câu hỏi');
+    const status=()=>t.el.querySelector<HTMLElement>('.typing')!;
+    expect(status().textContent).toContain('Đang suy nghĩ…');
+    expect(status().getAttribute('role')).toBe('status');
+    expect(status().getAttribute('aria-live')).toBe('polite');
+    expect(status().querySelector('span')?.getAttribute('aria-hidden')).toBe('true');
+    expect(t.el.querySelector('.cau-cua-ai')).toBeNull();
+    const requestId=JSON.parse(fetchMock.mock.calls[2][1].body).requestId;
+    writer.enqueue(new TextEncoder().encode(event('start',1,{requestId})));
+    await settle();await t.f.whenStable();
+    expect(status().textContent).toContain('Đang suy nghĩ…');
+    expect(t.el.querySelector('.cau-cua-ai')).toBeNull();
+    writer.enqueue(new TextEncoder().encode(event('delta',2,{text:'Câu'})));
+    await settle();await t.f.whenStable();
+    expect(status().textContent).toContain('Đang soạn lời gợi ý…');
+    expect(t.el.querySelector('.cau-cua-ai')?.textContent).toContain('Câu');
+    expect(t.el.querySelector('[data-testid="gia-su-dung"]')).not.toBeNull();
+    writer.enqueue(new TextEncoder().encode(event('done',3,{status:'completed'})));
+    await settle();await t.f.whenStable();
     expect(t.el.querySelector('.typing')).toBeNull();
   });
-
-  it('độ rộng có thể đổi bằng bàn phím và giới hạn ở 360–480', async () => {
-    const t = await setup();
-    const handle = t.el.querySelector<HTMLElement>('[role="separator"]')!;
-    for(let i=0;i<30;i++) handle.dispatchEvent(new KeyboardEvent('keydown',{key:'ArrowLeft',bubbles:true}));
-    await t.settle();expect(handle.getAttribute('aria-valuenow')).toBe('480');
-    for(let i=0;i<30;i++) handle.dispatchEvent(new KeyboardEvent('keydown',{key:'ArrowRight',bubbles:true}));
-    await t.settle();expect(localStorage.getItem('mathl-gia-su-rong')).toBe('360');
+  it.each(['done','error','cancel'])('bỏ trạng thái chờ khi %s trước delta đầu tiên',async(terminal)=>{
+    let writer!: ReadableStreamDefaultController<Uint8Array>;
+    response=init=>new Response(new ReadableStream({start(c){writer=c;c.enqueue(new TextEncoder().encode(event('start',1,{requestId:JSON.parse(init.body as string).requestId})));}}),{headers:{'Content-Type':'text/event-stream'}});
+    const t=await setup();await t.fill('Em hỏi');await t.click('Gửi câu hỏi');
+    expect(t.el.querySelector('.typing')?.textContent).toContain('Đang suy nghĩ…');
+    if(terminal==='cancel')await t.click('Dừng');
+    else {
+      writer.enqueue(new TextEncoder().encode(terminal==='done'?event('done',2,{status:'completed'}):event('error',2,{message:'Chưa có lời đã kiểm.',retryable:true})));
+      await settle();await t.f.whenStable();
+    }
+    expect(t.el.querySelector('.typing')).toBeNull();
+    expect(t.el.querySelector('.cau-cua-ai')).toBeNull();
   });
+  it('Escape khi đang sinh POST cancel đúng lượt, giữ câu và đóng panel',async()=>{
+    response=init=>new Response(new ReadableStream({start(c){c.enqueue(new TextEncoder().encode(event('start',1,{requestId:JSON.parse(init.body as string).requestId})+event('delta',2,{text:'Câu đã kiểm.'})));}}),{headers:{'Content-Type':'text/event-stream'}});
+    const t=await setup();await t.fill('Em hỏi');await t.click('Gửi câu hỏi');
+    expect(t.el.querySelector('article.cau-cua-ai')?.textContent).toContain('Câu đã kiểm');
+    document.dispatchEvent(new KeyboardEvent('keydown',{key:'Escape'}));await settle();await t.f.whenStable();
+    const cancel=fetchMock.mock.calls.find(c=>String(c[0]).endsWith('/cancel'))!;
+    expect(JSON.parse(cancel[1].body)).toEqual({turnId:'t1'});expect(t.el.querySelector('[data-testid="gia-su-panel"]')).toBeNull();
+  });
+  it('nút gửi nhận câu hỏi tới 2000 ký tự theo Ask, chặn câu dài hơn',async()=>{
+    const t=await setup();
+    const send=()=>[...t.el.querySelectorAll('button')].find(b=>b.textContent?.trim()==='Gửi câu hỏi')!;
+    await t.fill('x'.repeat(2001));
+    expect(send().disabled).toBe(true);
+    await t.fill('x'.repeat(2000));
+    expect(send().disabled).toBe(false);
+    await t.click('Gửi câu hỏi');
+    expect(JSON.parse(fetchMock.mock.calls[2][1].body)).toEqual({requestId:expect.any(String),maBuoc:'B.DH.TXD',cap:1,cauHoi:'x'.repeat(2000)});
+  });
+  it('Hỏi lại giữ câu để sửa, không tự POST; Thử lại không lặp câu hỏi',async()=>{
+    response=init=>new Response(event('start',1,{requestId:JSON.parse(init.body as string).requestId})+event('error',2,{message:'Chưa có lời đã kiểm.',retryable:true}),{headers:{'Content-Type':'text/event-stream'}});
+    const t=await setup();await t.fill('Câu hỏi của em');await t.click('Gửi câu hỏi');
+    await t.click('Hỏi lại');expect(t.el.querySelector('textarea')!.value).toBe('Câu hỏi của em');expect(fetchMock).toHaveBeenCalledTimes(3);
+    response=init=>new Response(event('start',3,{turnId:'t2',requestId:JSON.parse(init.body as string).requestId})+event('delta',4,{turnId:'t2',text:'Câu mới đã kiểm.'})+event('done',5,{turnId:'t2',status:'completed'}),{headers:{'Content-Type':'text/event-stream'}});
+    await t.click('Thử lại');
+    expect(t.el.querySelectorAll('.cau-cua-em')).toHaveLength(1);expect(t.el.textContent).toContain('Câu mới đã kiểm.');
+  });
+  it('đổi độ rộng bằng bàn phím, giới hạn 360–480',async()=>{
+    const t=await setup();const h=t.el.querySelector<HTMLElement>('[role="separator"]')!;
+    for(let i=0;i<30;i++)h.dispatchEvent(new KeyboardEvent('keydown',{key:'ArrowLeft',bubbles:true}));await t.f.whenStable();expect(h.getAttribute('aria-valuenow')).toBe('480');
+    for(let i=0;i<30;i++)h.dispatchEvent(new KeyboardEvent('keydown',{key:'ArrowRight',bubbles:true}));await t.f.whenStable();expect(h.getAttribute('aria-valuenow')).toBe('360');
+  });
+  it('em cuộn lên thì delta không kéo xuống đáy; nút Xuống tiếp tục theo dõi',async()=>{
+    let writer!: ReadableStreamDefaultController<Uint8Array>;
+    response=init=>new Response(new ReadableStream({start(c){writer=c;c.enqueue(new TextEncoder().encode(event('start',1,{requestId:JSON.parse(init.body as string).requestId})+event('delta',2,{text:'Câu đầu. '})));}}),{headers:{'Content-Type':'text/event-stream'}});
+    const t=await setup();await t.fill('Em hỏi');await t.click('Gửi câu hỏi');
+    const thread=t.el.querySelector<HTMLElement>('.tutor-messages')!;
+    Object.defineProperties(thread,{scrollHeight:{value:1200,configurable:true},clientHeight:{value:300,configurable:true}});
+    thread.scrollTop=200;thread.dispatchEvent(new Event('scroll'));await t.f.whenStable();
+    writer.enqueue(new TextEncoder().encode(event('delta',3,{text:'Câu sau.'})));await settle();await t.f.whenStable();
+    expect(thread.scrollTop).toBe(200);expect(t.el.querySelector('[data-testid="gia-su-xuong"]')).not.toBeNull();
+    await t.click('Xuống');expect(thread.scrollTop).toBe(1200);
+    writer.enqueue(new TextEncoder().encode(event('done',4,{status:'completed'})));await settle();await t.f.whenStable();
+  });
+});
 
-  it('SSE chỉ hiện lời gợi ý sau sự kiện xong hoàn chỉnh', () => {
-    const chunk = 'event: xong\ndata: {"message":"Gợi ý';
-    const first = docSse(chunk);
-    expect(first.events).toEqual([]);
-    expect(docSse(first.rest + ' đã kiểm."}\n\n').events[0].data.message).toBe('Gợi ý đã kiểm.');
+describe('Markdown gia sư',()=>{
+  it.each([
+    ['$','x_1 + \\frac{','x}{2}','$'],
+    ['$$','x_1 + \\frac{','x}{2}','$$'],
+    ['\\(','x_1 + \\frac{','x}{2}','\\)'],
+    ['\\[','x_1 + \\frac{','x}{2}','\\]'],
+  ])('giữ nguyên toán %s đang nhận và render KaTeX sau delimiter đóng',async(open,first,next,close)=>{
+    const f=TestBed.createComponent(GiaSuMarkdown);
+    const el=f.nativeElement as HTMLElement;
+    let text='**Xét** '+open;
+    for(const chunk of ['',first,next]){
+      text+=chunk;
+      f.componentRef.setInput('text',text);f.detectChanges();await f.whenStable();
+      expect(el.querySelector('strong')?.textContent).toBe('Xét');
+      expect(el.querySelector('.markdown')?.textContent).toBe('Xét '+text.slice(8)+'\n');
+      expect(el.querySelector('.katex,.katex-error')).toBeNull();
+    }
+    f.componentRef.setInput('text',text+close);f.detectChanges();await f.whenStable();
+    expect(el.querySelector('.katex')).not.toBeNull();
+    expect(el.querySelector('math')).not.toBeNull();
+    expect(el.querySelector('.katex-error')).toBeNull();
+  });
+  it('sanitize HTML, không ảnh hay URL model, toán/MathML và nguồn đúng snapshot',async()=>{
+    const f=TestBed.createComponent(GiaSuMarkdown);
+    f.componentRef.setInput('text','**Nhấn mạnh**\n\n- Xét $x^2$ và \\(f\\prime\\).\n- Nguồn [1].\n\n$$\\frac{1}{x}$$\n\n<img src="https://outside.invalid/a" onerror="alert(1)"><script>alert(1)</script> [liên kết](javascript:alert) ![ảnh](https://outside.invalid/b)');
+    f.componentRef.setInput('references',[{index:1,text:'Dòng đã khóa của lượt cũ.',latex:'x^2'}]);
+    f.detectChanges();await f.whenStable();const el=f.nativeElement as HTMLElement;
+    expect(el.querySelector('strong')?.textContent).toBe('Nhấn mạnh');expect(el.querySelectorAll('li')).toHaveLength(2);
+    expect(el.querySelectorAll('img,script,a,[onerror]')).toHaveLength(0);expect(el.querySelectorAll('.katex')).toHaveLength(3);expect(el.querySelector('math')).not.toBeNull();
+    el.querySelector<HTMLButtonElement>('.tutor-source')!.click();await f.whenStable();
+    expect(el.querySelector('[role="note"]')?.textContent).toContain('Dòng đã khóa của lượt cũ.');
+  });
+  it('cấu trúc chưa kín và LaTeX lỗi vẫn giữ chữ, code không bị render thành toán',async()=>{
+    const f=TestBed.createComponent(GiaSuMarkdown);
+    f.componentRef.setInput('text','Câu đã kiểm **chưa kín $x +\n\n`$x$`\n\n$\\frac{$');
+    f.detectChanges();await f.whenStable();const el=f.nativeElement as HTMLElement;
+    expect(el.textContent).toContain('Câu đã kiểm');expect(el.querySelector('code')?.textContent).toBe('$x$');expect(el.querySelector('.katex-error')).not.toBeNull();
   });
 });

@@ -120,13 +120,17 @@ class WorkspacePersistenceTest {
         var membership = mock(ClassMembership.class);
         when(membership.lopHoc(student)).thenReturn(java.util.Optional.of(cl));
         var gate = mock(ContentWorkflow.class);
-        var mvc = MockMvcBuilders.standaloneSetup(new OfflineTutorController(new OfflineTutorService(store,membership,gate,new vn.hoctapcanman.core.tutor.infrastructure.ai.OfflineHintModelAdapter(),new vn.hoctapcanman.core.tutor.application.service.TutorRateLimiter(java.time.Clock.systemUTC(),12,java.time.Duration.ofMinutes(10)))))
+        var tutorSessions = mock(vn.hoctapcanman.core.tutor.application.service.TutorSessionService.class);
+        when(tutorSessions.answer(eq(student),any())).thenAnswer(i -> {
+            return new OfflineTutorService(store,membership,new vn.hoctapcanman.core.tutor.infrastructure.ai.OfflineHintModelAdapter(),new vn.hoctapcanman.core.tutor.application.service.TutorRateLimiter(java.time.Clock.systemUTC(),12,java.time.Duration.ofMinutes(10))).answer(student,i.getArgument(1));
+        });
+        var mvc = MockMvcBuilders.standaloneSetup(new vn.hoctapcanman.core.tutor.infrastructure.web.TutorSessionController(tutorSessions))
             .setControllerAdvice(new WorkspaceExceptionHandler())
             .setCustomArgumentResolvers(new AuthenticationPrincipalArgumentResolver()).build();
         var jwt = Jwt.withTokenValue("synthetic-token").header("alg","none").subject(student.toString()).build();
         SecurityContextHolder.getContext().setAuthentication(new JwtAuthenticationToken(jwt));
         try {
-            mvc.perform(post("/api/hs/gia-su").contentType(org.springframework.http.MediaType.APPLICATION_JSON)
+            mvc.perform(post("/api/hs/gia-su/tra-loi").contentType(org.springframework.http.MediaType.APPLICATION_JSON)
                 .content("""
                     {"maBai":"%s","maBuoc":"B.DH.TXD","cap":1,"cauHoi":"Em cần gợi ý"}
                     """.formatted(code)))

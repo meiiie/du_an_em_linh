@@ -16,6 +16,14 @@ import vn.hoctapcanman.core.workspace.application.service.WorkspaceService;
         this.service=service;
     }
 
+    @PostMapping("/api/gv/soan-nhap") public Result draft(@AuthenticationPrincipal Jwt jwt,@Valid @RequestBody DraftRequest request) {
+        return service.draft(actor(jwt),request);
+    }
+
+    @GetMapping("/api/hs/chu-de") public List<Item> topics(@AuthenticationPrincipal Jwt jwt) {return service.topics(actor(jwt));}
+    @GetMapping("/api/hs/tu-hoc") public List<Item> selfStudy(@AuthenticationPrincipal Jwt jwt,@RequestParam String chuDe) {return service.selfStudy(actor(jwt),chuDe);}
+    @PostMapping("/api/hs/tu-hoc/{code}") public Result chooseStudy(@AuthenticationPrincipal Jwt jwt,@PathVariable String code) {return service.chooseStudy(actor(jwt),code);}
+
     private UUID actor(Jwt jwt) {
         return UUID.fromString(jwt.getSubject());
     }

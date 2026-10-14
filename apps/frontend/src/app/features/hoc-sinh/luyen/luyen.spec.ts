@@ -298,7 +298,7 @@ describe('Luyen', () => {
     t.http.verify();
   });
 
-  it('mở lại bài đã nộp: gửi lại POST …/nop để core phát lại kết quả, mức hiểu và lời giải', async () => {
+  it('mở lại bài đã nộp: lời giải chỉ mở sau khi học sinh xác nhận', async () => {
     // Không chờ ổn định: yêu cầu POST đang mở là việc dở của trang cho tới khi có phản hồi.
     const t = await mo(chiTiet({ trangThai: 'DA_NOP', cacBuoc: CAC_BUOC.map((s) => daDat(s.maBuoc)) }), false);
     TestBed.tick();
@@ -311,7 +311,17 @@ describe('Luyen', () => {
     await t.xong();
     expect(t.chu('[data-testid=da-nop] h3')).toBe('Đã nộp. Bài đạt.');
     expect(t.chu('[data-testid=da-nop] .phu')).toBe('Mức hiểu Tính đơn điệu của hàm số: Thông hiểu → Vận dụng');
-    expect(t.chu('[data-testid=loi-giai-sau-nop] p:last-child')).toBe('Hàm số đồng biến trên (−∞; 0) và (4; +∞).');
+    expect(t.$('[data-testid=loi-giai-sau-nop]')).toBeNull();
+    const dialog=t.el.querySelector('dialog') as HTMLDialogElement;
+    dialog.showModal=()=>{dialog.open=true;};dialog.close=()=>{dialog.open=false;};
+    t.$('[data-testid=xem-toan-bo-loi-giai]')!.click();
+    await t.xong();
+    const confirm=[...t.fixture.nativeElement.querySelectorAll('button')].find((b: any)=>b.textContent.trim()==='Xác nhận xem lời giải') as HTMLButtonElement;
+    confirm.click();
+    t.http.expectOne({method:'POST',url:API_HS.chiTietBai(MA)+'/loi-giai'}).flush({loiGiai:'Lời giải đầy đủ.',nguon:'GIAO_VIEN'});
+    await t.xong();
+    expect(t.chu('[data-testid=loi-giai-sau-nop]')).toContain('Lời giải đầy đủ.');
+    t.http.verify();
   });
 
   it('phát lại bài đã nộp hỏng (500): vẫn báo đã nộp theo kết luận đã lưu, trang không kẹt, xem lại được từng bước', async () => {

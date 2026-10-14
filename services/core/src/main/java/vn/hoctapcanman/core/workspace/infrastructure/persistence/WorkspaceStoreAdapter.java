@@ -69,7 +69,7 @@ import vn.hoctapcanman.core.workspace.application.exception.WorkspaceException;
     }
 
     public List<Item> students(UUID cl) {
-        return db.sql("SELECT u.id,u.display_name,(SELECT count(*) FROM submissions s WHERE s.student_id=u.id AND s.class_id=:cl AND s.status='DA_NOP') submitted FROM users u JOIN enrollments e ON e.user_id=u.id WHERE e.class_id=:cl AND e.role_in_class='STUDENT' ORDER BY u.display_name") .param("cl",cl).query((r,n)->new Item(r.getString("id"),r.getString("display_name"),"","",details("skills",skills(UUID.fromString(r.getString("id")),cl),"submitted",r.getInt("submitted")))).list();
+        return db.sql("SELECT u.id,u.display_name,(SELECT count(*) FROM submissions s WHERE s.student_id=u.id AND s.class_id=:cl AND s.status='DA_NOP') submitted,(SELECT count(*) FROM solution_reveals r JOIN submissions s ON s.id=r.submission_id WHERE s.student_id=u.id AND s.class_id=:cl) reveals FROM users u JOIN enrollments e ON e.user_id=u.id WHERE e.class_id=:cl AND e.role_in_class='STUDENT' ORDER BY u.display_name") .param("cl",cl).query((r,n)->new Item(r.getString("id"),r.getString("display_name"),"","",details("skills",skills(UUID.fromString(r.getString("id")),cl),"submitted",r.getInt("submitted"),"reveals",r.getInt("reveals")))).list();
     }
 
     private List<Map<String,Object>> skills(UUID student,UUID cl) {
@@ -85,7 +85,7 @@ import vn.hoctapcanman.core.workspace.application.exception.WorkspaceException;
     }
 
     public List<Item> history(UUID student,UUID cl) {
-        return db.sql("SELECT s.*,p.code FROM submissions s JOIN problems p ON p.id=s.problem_id WHERE s.student_id=:student AND s.class_id=:cl ORDER BY s.started_at DESC LIMIT 100") .param("student",student).param("cl",cl).query((r,n)->new Item(r.getString("id"),r.getString("code"),str(r,"result"),r.getString("status"),details("problemCode",r.getString("code"),"result",str(r,"result"),"submittedAt",instant(r,"submitted_at")))).list();
+        return db.sql("SELECT s.*,p.code,r.revealed_at FROM submissions s JOIN problems p ON p.id=s.problem_id LEFT JOIN solution_reveals r ON r.submission_id=s.id WHERE s.student_id=:student AND s.class_id=:cl ORDER BY s.started_at DESC LIMIT 100") .param("student",student).param("cl",cl).query((r,n)->new Item(r.getString("id"),r.getString("code"),str(r,"result"),r.getString("status"),details("problemCode",r.getString("code"),"result",str(r,"result"),"submittedAt",instant(r,"submitted_at"),"revealedAt",instant(r,"revealed_at")))).list();
     }
 
     public List<Item> bank(UUID cl) {
@@ -165,6 +165,40 @@ import vn.hoctapcanman.core.workspace.application.exception.WorkspaceException;
             WHERE e.class_id=:cl AND e.kind='KET' AND e.handled_at IS NULL ORDER BY e.created_at DESC,e.id
             """).param("cl",cl).query((r,n)->new Item(r.getString("id"),r.getString("display_name"),
                 "Đang kẹt ở "+r.getString("skill_name")+". "+r.getString("reason"),"KET",details("studentId",r.getString("student_id")))).list();
+    }
+
+    public List<Item> topics(UUID student,UUID cl) {
+        return db.sql("SELECT DISTINCT t.code,t.name FROM topics t JOIN skills sk ON sk.topic_code=t.code JOIN problems p ON p.skill_code=sk.code JOIN problem_releases r ON r.problem_id=p.id AND r.class_id=:cl AND r.status='DA_PHAT_HANH' JOIN classes c ON c.id=:cl AND c.grade=t.grade AND coalesce(sk.grade,t.grade)=c.grade ORDER BY t.code")
+            .param("cl",cl).query((r,n)->new Item(r.getString("code"),r.getString("name"),"","",Map.of())).list();
+    }
+    public List<Item> selfStudy(UUID student,UUID cl,String topic) {
+        var rows=db.sql("""
+            SELECT p.code,p.statement,sk.name,p.skill_code,p.level4 FROM problems p JOIN skills sk ON sk.code=p.skill_code
+            JOIN topics t ON t.code=sk.topic_code JOIN classes c ON c.id=:cl AND c.grade=t.grade AND coalesce(sk.grade,t.grade)=c.grade
+            JOIN problem_releases r ON r.problem_id=p.id AND r.class_id=:cl AND r.status='DA_PHAT_HANH'
+            WHERE sk.topic_code=:topic AND p.answer_form='TU_LUAN_5_BUOC' AND NOT EXISTS(
+                SELECT 1 FROM assignments a WHERE a.student_id=:student AND a.problem_id=p.id AND a.status='DA_GIAO'
+                AND (a.mode='KIEM_TRA' OR a.due_at<=:now)) ORDER BY p.code
+            """).param("cl",cl).param("topic",topic).param("student",student).param("now",java.sql.Timestamp.from(clock.instant()))
+            .query((r,n)->new Item(r.getString("code"),r.getString("name"),r.getString("statement"),r.getString("level4"),Map.<String,Object>of("skillCode",r.getString("skill_code")))).list();
+        var recommendation=PersonalLearningRules.choose(learningSkills(student,cl),rows.stream().map(row->
+            new Candidate(row.id(),(String)row.details().get("skillCode"),Level4.valueOf(row.status()),"")).toList());
+        return rows.stream().map(row->new Item(row.id(),row.title(),row.subtitle(),row.status(),
+            recommendation.filter(rec->rec.code().equals(row.id())).map(rec->Map.<String,Object>of("recommended",true,"reason",rec.reason())).orElse(Map.of())))
+            .sorted(Comparator.comparing(row->!Boolean.TRUE.equals(row.details().get("recommended")))).toList();
+    }
+    public void chooseStudy(UUID student,UUID cl,String code,Instant now) {
+        int count=db.sql("""
+            INSERT INTO assignments(id,class_id,problem_id,student_id,status,assigned_by,assigned_at,mode,set_name)
+            SELECT :id,:cl,p.id,:student,'DA_GIAO',:student,:now,'ON_TAP','Tự học'
+            FROM problems p JOIN problem_releases r ON r.problem_id=p.id AND r.class_id=:cl AND r.status='DA_PHAT_HANH'
+            JOIN skills sk ON sk.code=p.skill_code JOIN topics t ON t.code=sk.topic_code
+            JOIN classes c ON c.id=:cl AND c.grade=t.grade AND coalesce(sk.grade,t.grade)=c.grade WHERE p.code=:code AND p.answer_form='TU_LUAN_5_BUOC'
+            ON CONFLICT(class_id,problem_id,student_id) DO NOTHING
+            """).param("id",UUID.randomUUID()).param("cl",cl).param("code",code).param("student",student).param("now",java.sql.Timestamp.from(now)).update();
+        if(count==0 && db.sql("SELECT count(*) FROM assignments a JOIN problems p ON p.id=a.problem_id WHERE a.class_id=:cl AND a.student_id=:student AND p.code=:code AND a.status='DA_GIAO' AND a.mode='ON_TAP' AND (a.due_at IS NULL OR a.due_at>:now)")
+            .param("cl",cl).param("student",student).param("code",code).param("now",java.sql.Timestamp.from(now)).query(Integer.class).single()==0)
+            throw new vn.hoctapcanman.core.workspace.application.exception.WorkspaceException(409,"Bài này chưa mở để tự học.");
     }
 
     public List<Item> recommendations(UUID student,UUID cl) {
@@ -361,14 +395,13 @@ import vn.hoctapcanman.core.workspace.application.exception.WorkspaceException;
     @Transactional
     public Optional<TutorContext> tutorContext(UUID student,UUID cl,TutorRequest request) {
         Optional<TutorContext> context=db.sql("""
- SELECT p.id,p.code,p.statement_text,p.function_sympy,h.text,t.description step_name FROM assignments a
+ SELECT p.id,p.code,p.statement_text,p.function_sympy,t.description step_name FROM assignments a
  JOIN problems p ON p.id=a.problem_id JOIN problem_releases pr ON pr.problem_id=p.id AND pr.class_id=a.class_id
- JOIN hint_levels h ON h.problem_id=p.id AND h.step_code=:step AND h.level=:level
- JOIN step_templates t ON t.step_code=h.step_code
+ JOIN step_templates t ON t.step_code=:step AND t.topic_code=(SELECT topic_code FROM skills WHERE code=p.skill_code)
  WHERE a.student_id=:student AND a.class_id=:cl AND p.code=:code AND a.status='DA_GIAO' AND a.mode='ON_TAP' AND pr.status='DA_PHAT_HANH'
  AND (a.due_at IS NULL OR a.due_at>now())
  LIMIT 1 FOR SHARE OF a
- """).param("student",student).param("cl",cl).param("code",request.maBai()).param("step",request.maBuoc()).param("level",Math.clamp(request.cap(),1,3)).query((r,n)->new TutorContext(UUID.fromString(r.getString("id")),r.getString("code"),r.getString("statement_text"),str(r,"function_sympy"),request.maBuoc(),r.getString("text"),r.getString("step_name"),List.of(),List.of())).optional();
+ """).param("student",student).param("cl",cl).param("code",request.maBai()).param("step",request.maBuoc()).query((r,n)->new TutorContext(UUID.fromString(r.getString("id")),r.getString("code"),r.getString("statement_text"),str(r,"function_sympy"),request.maBuoc(),"",r.getString("step_name"),List.of(),List.of())).optional();
         // Không đọc bảng solutions: chỉ đề, bảng đã khóa và bài làm của chính em, đúng phiên bản đề.
         return context.map(c -> {
             List<TutorFormula> formulas=db.sql("""

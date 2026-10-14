@@ -31,6 +31,9 @@ importers:
       katex:
         specifier: ^0.16.47
         version: 0.16.47
+      marked:
+        specifier: ^17.0.1
+        version: 17.0.6
       mathlive:
         specifier: ^0.107.1
         version: 0.107.1
@@ -1740,6 +1743,11 @@ packages:
 
   magic-string@1.4.2:
     resolution: {integrity: sha512-vG+rjFRj1PqdIBozIxAGMjPlOhaVe+GXpbttY/iSK7rGcJRMlwNJO7dcUwmUqkymsFLJiNGI06t4D7Fr7yRC9g==}
+
+  marked@17.0.6:
+    resolution: {integrity: sha512-gB0gkNafnonOw0obSTEGZTT86IuhILt2Wfx0mWH/1Au83kybTayroZ/V6nS25mN7u8ASy+5fMhgB3XPNrOZdmA==}
+    engines: {node: '>= 20'}
+    hasBin: true
 
   mathlive@0.107.1:
     resolution: {integrity: sha512-CaE2eTwXLGXyOu1d+dIv10Vx98qNfHv9g4pBmqOtDJRPyELxbk9RZ2pT69cTRmOk7Yai/mpSBXQT2HwD/S32uQ==}
@@ -3849,6 +3857,8 @@ snapshots:
   magic-string@1.4.2:
     dependencies:
       '@jridgewell/sourcemap-codec': 1.6.0
+
+  marked@17.0.6: {}
 
   mathlive@0.107.1:
     dependencies:

@@ -35,6 +35,14 @@ class VietLoiGiaiTest {
     }
 
     @Test
+    void toanBoKhongRutGonThanhDapAnCuoi() {
+        var solution=new Solution(UUID.randomUUID(),"{\"TXD\":\"R\",\"dao_ham\":\"2x\",\"bang\":{\"moc\":[\"-oo\",\"0\",\"+oo\"],\"dau\":[\"-\",\"+\"]},\"ket_luan\":{\"dong_bien\":[\"(0; +oo)\"]}}","[]","Chỉ đáp án cuối");
+        assertThat(VietLoiGiai.toanBo(solution)).hasValueSatisfying(text->assertThat(text).contains("Tập xác định","Đạo hàm","Xét dấu","y′ > 0","Đồng biến"));
+        assertThat(VietLoiGiai.viet(solution)).contains("Chỉ đáp án cuối");
+        assertThat(VietLoiGiai.toanBo(new Solution(UUID.randomUUID(),"{\"giai_thich_giao_vien\":\"Lời giải từng bước đã được duyệt\"}","[]",null))).contains("Lời giải từng bước đã được duyệt");
+    }
+
+    @Test
     void khongCoLoiGiaiMauThiRong() {
         assertThat(VietLoiGiai.viet(new Solution(UUID.randomUUID(), null, "[\"x = 0\"]", null))).isEmpty();
         assertThat(VietLoiGiai.viet(new Solution(UUID.randomUUID(), null, "[\"x = 0\"]", "x = 0"))).contains("x = 0");

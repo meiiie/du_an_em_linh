@@ -1,6 +1,7 @@
 import { test as base, expect, type Page } from '@playwright/test';
 import type { VaiTro } from '../../src/app/api/auth';
 import type { BaiCuaHocSinh, ChiTietBai } from '../../src/app/api/hoc-sinh';
+import type { SessionGiaSuV2, TurnGiaSuV2 } from '../../src/app/api/gia-su';
 import type { DeadlineDetails } from '../../src/app/api/ux';
 export const item = <D extends object = Record<string, unknown>>(id: string, title: string, subtitle = '', status = 'DAT', details: D = {} as D) => ({ id, title, subtitle, status, details });
 export const levels = ['NHAN_BIET', 'THONG_HIEU', 'VAN_DUNG', 'VAN_DUNG_CAO'];
@@ -10,16 +11,22 @@ export const deadline = item<DeadlineDetails>('han1', 'Ôn đơn điệu', 'Hạ
     problemCodes: ['E2E-01', 'E2E-NEXT'], problemCount: 2, studentCount: 3, assignmentCount: 6, submittedCount: 1,
 });
 const steps = ['TXD', 'DAOHAM', 'NGHIEM', 'XETDAU', 'KETLUAN'].map((s, i) => ({ maBuoc: `B.DH.${s}`, ten: ['Tập xác định', 'Đạo hàm', 'Nghiệm', 'Xét dấu', 'Kết luận'][i], viec: 'Trình bày bước đang làm.' }));
-export const detail: ChiTietBai = { maBai: problem.maBai, de: { text: problem.deBai, latex: problem.deBaiLatex }, kyNang: problem.kyNang, tenKyNang: problem.tenKyNang, muc4: problem.muc4, dangTraLoi: 'TU_LUAN_5_BUOC', buocBatDau: null, khaiBaoKetLuan: ['dong_bien', 'nghich_bien'], cacBuoc: steps, baiLam: { trangThai: 'DANG_LAM', cacBuoc: [] }, coTheMoLoiGiai: false };
+export const detail: ChiTietBai = { maBai: problem.maBai, giaoBaiId: 'assignment-01', de: { text: problem.deBai, latex: problem.deBaiLatex }, kyNang: problem.kyNang, tenKyNang: problem.tenKyNang, muc4: problem.muc4, dangTraLoi: 'TU_LUAN_5_BUOC', buocBatDau: null, khaiBaoKetLuan: ['dong_bien', 'nghich_bien'], cacBuoc: steps, baiLam: { trangThai: 'DANG_LAM', cacBuoc: [] }, coTheMoLoiGiai: false };
 export const formula = item('ct1', 'Đạo hàm, hàm đa thức', 'y=x^n', 'KHOA', { statement: 'Định nghĩa "đạo hàm", có dấu phẩy', tier1: 'DAT', tier2: 'DAT', version: 1 });
 export const csv = '"thuật ngữ","định nghĩa"\r\n"Đạo hàm, hàm đa thức","y=x^n — Định nghĩa ""đạo hàm"", có dấu phẩy"\r\n';
 export const bank = [item('E2E-01', 'Bài nhận biết', problem.deBai, 'DA_PHAT_HANH', { code: 'E2E-01', skillCode: problem.kyNang, level4: 'NHAN_BIET', gate: 'DAT', latex: problem.deBaiLatex }), item('E2E-02', 'Bài thông hiểu', 'Xét cực trị', 'NHAP', { code: 'E2E-02', skillCode: problem.kyNang, level4: 'THONG_HIEU', gate: 'KHONG_KIEM_DUOC', latex: 'y=x^2' }), item('E2E-03', 'Bài cần sửa', '', 'BI_CHAN', { level4: 'VAN_DUNG', gate: 'SAI', skillCode: problem.kyNang, latex: 'y=x' })];
 export const student = item('hs1', 'An', 'hs.an@demo.local', 'STUDENT', { skills: [{ code: problem.kyNang, name: 'Đơn điệu', level4: 'NHAN_BIET', level3: 'Biết', mastery: 0.4, overridden: false }], submitted: 1 });
+export const tutorSession = (lastSeq=0): SessionGiaSuV2 => ({
+    id:'e2e-session',studentId:'synthetic-user',assignmentId:detail.giaoBaiId!,classId:'lop1',
+    tomTat:'',summaryThrough:0,contextVersion:'1:synthetic',lastSeq,revision:1,tokenCount:0,
+});
 export class MockApi {
     role: VaiTro = 'STUDENT';
     mode = 'ON_TAP';
     tutorStatus = 200;
     mastered = false;
+    tutorSeq = 0;
+    tutorTurns: TurnGiaSuV2[] = [];
     calls: {
         method: string;
         path: string;
@@ -44,9 +51,29 @@ export class MockApi {
                 await route.fulfill({ status: override.status ?? 200, json: override.body });
                 return;
             }
-            if (path === '/api/hs/gia-su' && method === 'POST') {
-                const message = body.cauHoi.includes('đáp án') ? 'Gia sư giúp em tự làm, không đưa đáp án.' : 'Hãy xem điều kiện xác định trước khi tính đạo hàm.';
-                await route.fulfill({ status: this.tutorStatus, contentType: 'text/event-stream', body: this.tutorStatus === 200 ? `event: kho\ndata: {}\n\nevent: xong\ndata: ${JSON.stringify({ message })}\n\n` : '' });
+            const tutorBase = '/api/hs/gia-su/v2/phien';
+            if (path === tutorBase) {
+                await route.fulfill({ json: {sessionId:'e2e-session',lastSeq:this.tutorSeq,turnId:this.tutorTurns[0]?.id ?? null,status:this.tutorTurns[0]?.status ?? 'idle'} });
+                return;
+            }
+            if (path === tutorBase + '/e2e-session/luot' && method === 'GET') {
+                await route.fulfill({ json: {session:tutorSession(this.tutorSeq),turns:this.tutorTurns.slice(Number(new URL(req.url()).searchParams.get('offset') ?? 0), Number(new URL(req.url()).searchParams.get('offset') ?? 0) + Number(new URL(req.url()).searchParams.get('limit') ?? 50))} });
+                return;
+            }
+            if (path === tutorBase + '/e2e-session/cancel') {
+                await route.fulfill({ json: {sessionId:'e2e-session',turnId:body.turnId,status:'cancelled',lastSeq:++this.tutorSeq} });
+                return;
+            }
+            if (path === tutorBase + '/e2e-session/luot' && method === 'POST') {
+                const turnId = 'turn-' + body.requestId;
+                const event = (name: string, extra: object) => {
+                    const seq = ++this.tutorSeq;
+                    return `id: e2e-session:${seq}\nevent: ${name}\ndata: ${JSON.stringify({v:2,sessionId:'e2e-session',turnId,seq,...extra})}\n\n`;
+                };
+                const text = '**Lời đã kiểm trong mock** $x^2$.';
+                await route.fulfill({ status:this.tutorStatus, contentType:'text/event-stream', body:this.tutorStatus === 200
+                    ? event('start',{requestId:body.requestId,maBuoc:body.maBuoc,cap:body.cap,contextVersion:'1:synthetic'}) + event('delta',{text}) + event('done',{status:'completed',tokens:10,durationMs:20}) : '' });
+                if (this.tutorStatus === 200) this.tutorTurns.unshift({id:turnId,sessionId:'e2e-session',requestId:body.requestId,ordinal:this.tutorTurns.length+1,step:body.maBuoc,level:body.cap,question:body.cauHoi,answer:text,status:'completed',createdAt:'2026-10-14T00:00:00Z'});
                 return;
             }
             let response: unknown;
@@ -56,6 +83,14 @@ export class MockApi {
                 response = {};
             else if (path === '/api/hs/trang-hoc')
                 response = { ten: 'An', soKyNang: [{ kyNang: problem.kyNang, tenKyNang: 'Đơn điệu', muc4: this.mastered ? 'THONG_HIEU' : 'NHAN_BIET', ket: false }], hoanThanh: { kyNang: [], chuDe: [] } };
+            else if (path === '/api/hs/chu-de')
+                response = [item('DH12','Đơn điệu và cực trị')];
+            else if (path === '/api/hs/tu-hoc')
+                response = [item(problem.maBai,'Đơn điệu',problem.deBai)];
+            else if (path.startsWith('/api/hs/tu-hoc/') && method === 'POST')
+                response = {message:'Đã chọn bài tự học.',count:1};
+            else if (path === '/api/hs/nhac/push')
+                response = {available:false,publicKey:''};
             else if (path === '/api/hs/bai')
                 response = [problem, { ...problem, maBai: 'E2E-NEXT', muc4: 'THONG_HIEU' }];
             else if (/^\/api\/hs\/bai\/[^/]+$/.test(path))

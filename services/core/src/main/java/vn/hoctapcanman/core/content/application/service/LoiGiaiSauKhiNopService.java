@@ -24,6 +24,6 @@ public class LoiGiaiSauKhiNopService implements LoiGiaiSauKhiNop {
 
     @Override
     public Optional<String> vanBan(UUID lopId, UUID problemId, int phienBan) {
-        return solutions.findReleased(lopId, problemId, phienBan).flatMap(VietLoiGiai::viet);
+        return solutions.findReleased(lopId, problemId, phienBan).flatMap(VietLoiGiai::toanBo);
     }
 }

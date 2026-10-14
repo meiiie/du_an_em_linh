@@ -126,3 +126,110 @@ SHA-256 corpus đầu giữ `7e861056065a594c9e57f0d1015e5116e6510476ee087c32e6c
 `tests/test_loi_giang_kd0006_tong_quat.py` bổ sung ca ngoài corpus cho các cấu trúc trên và ca đối kháng: quy tắc sai trong câu hỏi/chỉ dẫn dù có `[n]`, điều kiện có kết luận sai, giá trị `x=3`, khoảng `(3; +∞)`, đồng biến trên khoảng cụ thể, cực tiểu `-5`, số viết bằng chữ sau dấu hai chấm, và quan hệ sai chen vào chỗ hỏi. Kiểm bảng rỗng/thiếu mảnh/thiếu trích dẫn/sai tầng 1 cho cả ba điều kiện. Hai test corpus độc lập đều buộc tỷ lệ bỏ toàn bộ **≤20%**, tính tất định và không giữ câu có số đứng riêng trong `$…$`. Giữ nguyên toàn bộ tệp và assertion KD-0005/KD-0006 vòng đầu.
 
 Kết quả trên SHA-256 mã vòng tiếp nêu trên: **204/204 ca KD-0006 đạt** với `.venv/bin/pytest -q -p no:warnings tests/test_loi_giang_kd0006.py tests/test_loi_giang_kd0006_tong_quat.py` (122 ca cũ + 82 ca mới: 19 ca giữ, 49 ca phải bỏ, 12 ca bảng không dùng được, 2 test corpus). **2.211/2.211 ca toàn bộ đạt**, mã thoát 0, với `PYTHONPATH=/tmp/mathl-kd0006-runtime:. .venv/bin/pytest -q -p no:warnings`. Lệnh trần gặp lại chờ `TestClient`/AnyIO tại `test_bao_mat_dich_vu.py::test_tran_timeout_20s`; stack trace nằm ở portal/callback và selector. Dùng đúng polling tạm đã mô tả ở vòng đầu, không đổi test cũ, HTTP handler, sandbox CAS hay phụ thuộc. Rà độc lập bổ sung các ca chèn «đó/này» để nói lại phép toán sai, điều kiện có kết luận đã chốt và kết quả «ra ba» sau tên phương trình; tất cả đều bị bỏ. **0 ca phải-bỏ được giữ nhầm** trong các bộ ca đã chạy; đây là số đo kiểm thử, không phải chứng minh bao phủ mọi cách diễn đạt.
+
+## Bổ sung 2026-10-14 — chỉ model sinh lời thoại, sinh lại có giới hạn
+
+Theo chỉ đạo hiện thực gia sư v2 của chủ repo, bổ sung này thay cơ chế thang/câu cố định ở mục 4–6 và phần bổ sung GLM cũ. **Mọi lời thoại**, kể cả từ chối xin đáp án hay câu hỏi cuối sau nhiều lần bị chặn, đều do `HintModel` sinh và qua hai cổng. Không đọc `hint_levels` để dựng ngữ cảnh tutor, không nhúng thang vào prompt, không có nguồn trả lời `THANG/CO_DINH/TU_CHOI`. Bộ phân loại xin đáp án/jailbreak chỉ thêm chỉ dẫn để model từ chối bằng lời của mình.
+
+Mỗi câu được giữ nguyên tới `ContentWorkflow.sanitize`; chỉ phát nếu toàn câu được xác minh và trả nguyên văn. Rejection thêm feedback bằng mã vi phạm, bước và tiền tố đã đạt; tuyệt đối không đưa bản nháp bị chặn hoặc dữ kiện bảo vệ vào prompt. Tối đa hai lần viết lại, sau đó một lần yêu cầu đúng một câu hỏi Socratic ngắn, không ký hiệu/kết quả toán; câu cuối vẫn qua cổng. Phần đã phát không bị thay/xóa. Model không sẵn sàng, câu cuối bị chặn, lỗi vận chuyển/cổng hoặc hết deadline tạo `error` có thông báo giao diện, không câu gia sư mẫu và không đáp án. Adapter cổng phân biệt lỗi hạ tầng với rejection để tránh gọi model lặp khi cổng mất kết nối.
+
+Prompt nền và ba cấp hỗ trợ ở `services/core/src/main/resources/prompts/`, tiếng Việt có dấu. Bốn mức học tập lấy từ mastery/ghi đè giáo viên theo kỹ năng của bài, khác cấp hỗ trợ 1–3. Đề, bảng, bài làm, lịch sử và summary nằm trong phần dữ liệu có quyền thấp; không lời giải chuẩn/dữ kiện bảo vệ. Khử định danh trước lưu câu hỏi và trước lời gọi ngoài; còn nghi định danh thì báo lỗi để sửa câu hỏi. Không log prompt, nháp hay summary.
+
+`GIA_SU_TOKEN_BUDGET` mặc định **6000**, cấu hình từ 1000 đến 8192. Theo yêu cầu hiện thực, bộ đếm đầu vào dùng ước lượng ký tự/4 (cộng envelope và dự trữ đầu ra/feedback), tính lại trước từng lần sinh/regen/nén. Đây là ước lượng, không tokenizer chính xác; `gia_su_usage` phân biệt usage nhà trả về với estimate khi lỗi/hủy/không có usage. Đạt 75% ngân sách thì nén các lượt hoàn tất cũ qua cùng model, giữ ít nhất ba cặp gần nhất và câu hỏi mới. Không cắt system/công thức/câu hỏi để ép vừa.
+
+Summary JSON có sáu trường văn bản `mucTieuBuoc,cachDaThu,loiDaDuocCham,cauHoiConMo,goiYDaDung,dieuDaSua` và `luotNguon` đúng danh sách/thứ tự nguồn. Kiểm schema/định danh; từng câu trong từng trường qua cùng hai cổng, rồi kiểm giới hạn `min(600, budget/10)` token. Lưu text JSON vào `tom_tat` cùng con trỏ/revision nguyên tử; giữ mọi lượt gốc. Revision đổi thì bỏ summary cũ. Nén lỗi giữ memory cũ nếu còn vừa ngân sách, vượt giới hạn thì báo lỗi; không thay bằng tóm tắt mẫu. Đề hoặc bảng đổi làm mất hiệu lực summary/context cũ; lịch sử vẫn giữ bản gốc.
+
+Unit/mock kiểm giao thức và đường lỗi; Testcontainers kiểm persistence/migration trên PostgreSQL. Những kiểm này không thay eval GLM thật hoặc kiểm toán/sư phạm độc lập; không sửa dữ liệu lab đã khóa.
+
+Bằng chứng core tại mốc nền `b9d50f32dce34eeb0f43cba0c552dcb9ab585828`, snapshot nguồn SHA-256 `716262789c73984d0ea5272f4cc67b32bcc6e49f0099e2de1c6643504e95d9da`: lệnh, 360 ca đạt, 54 ca ArchUnit, các ca Docker/seed bị skip và lỗi socket của full verify được ghi trong [phụ lục kiểm ADR 010](010-sse-trang-thai-gia-su.md#bằng-chứng-backend). Không suy ra số đo sư phạm/GLM từ test mock.
+
+## Bổ sung 2026-10-14 — phát câu sớm, nén và hủy hợp tác
+
+Câu tiếng Việt được kiểm ngay khi dấu kết thúc tới, không chờ EOF; giữ delimiter LaTeX, số thập phân và không tính dấu câu nối tiếp thành câu mới. Hai cổng phải trả nguyên văn trước khi lưu `delta`; `SseEmitter.send` phát/flush từng sự kiện trong lúc model còn stream. Không đổi cổng toán/chống lộ của `services/math`.
+
+Feedback phân biệt định danh/ngôn ngữ/dẫn bảng và hình thức toán/số/khẳng định chưa xác minh, không chứa nháp bị chặn. Prompt theo cấp và tín hiệu jailbreak ưu tiên hỏi thao tác hiện tại. Lần Socratic cuối dùng prompt riêng chỉ mang tên bước, yêu cầu một câu hỏi ngắn không số/kết quả; vẫn qua hai cổng, không câu cố định.
+
+Nén từ **70%** ngân sách ước lượng toàn prompt, tính cả system và mọi lượt cũ đã kết thúc (kể cả lỗi/hủy); giữ ba lượt gần nhất và mọi bản gốc. Lịch sử API xuất `session.tomTat`, `session.summaryThrough`, `session.tokenCount`. Hủy/lỗi SSE/deadline dùng cờ hợp tác và đóng HTTP, không `Thread.interrupt`/`Future.cancel(true)` vào kiểm cổng/JDBC. Trước khi có header HTTP, cờ chặn callback và timeout vận chuyển giới hạn yêu cầu còn chờ.
+
+Kiểm JDK 25.0.4.1 trên nền `77ca4624a9cb6d8e1a5b83782e9680bc32adfd82`; SHA-256 snapshot các tệp core đã đổi, gồm prompt mới: `632377e7563464f47612dea9324383552b850f686f9380031ada1b72b5f7b016` (ghép theo đường dẫn tăng dần: tên + NUL + nội dung + NUL). `./mvnw -B -q -Dtest='*Tutor*,*GiaSu*,*Sentence*,*Glm*,Architecture*' -Dsurefire.failIfNoSpecifiedTests=false test`: **71 đạt, 9 skip Docker**; thêm `-DargLine=-javaagent:<mockito-core-5.23.0.jar>` vì sandbox chặn tự attach. `-Dtest='*Architecture*,KienTruc*,NullMarkedPackagesTest'`: **54 đạt**. Runtime tạm SymPy 1.14.0: **362 ca công thức + 60 ca chống lộ đạt**; chạy ba tệp `test_loi_giang*.py` KD-0006 với `-k 'not router_kiem_loi_giang'`, và `test_leakfilter_fail_closed.py`, `test_leak_san_pham.py`, `test_leak.py`. Ca router đã dừng do chờ socket. Sandbox chặn PostgreSQL/math bind socket; chưa chạy lại eval GLM v2, chưa xác nhận lỗi ≤2/30, regen <25% hay TTFT thật.
+
+
+## Bổ sung 2026-10-14 — nén sau `done`, lời thao tác và đường nhanh không toán
+
+Theo yêu cầu chủ repo, bổ sung này thay thời điểm nén trong lượt ở các bổ sung trước. **Không nới `services/math/kiem_loi_giang`; 0 lộ đáp án là điều kiện cứng.**
+
+- Trong lượt hỏi, không gọi model summary: chỉ dùng `tom_tat` đã kiểm và cửa sổ trượt các lượt kết thúc. Bỏ lượt cũ nhất khỏi prompt khi cần, dự trữ 600 token cho đầu ra/feedback; không cắt system, đề, bảng, câu hỏi hoặc summary. Không vừa sau khi bỏ toàn bộ cửa sổ thì báo lỗi giới hạn; giữ mọi bản gốc trong DB.
+- Sau khi lưu sự kiện `done` với trạng thái `completed`, một virtual thread riêng xét nén từ 70% ngân sách toàn ngữ cảnh. Khóa độc quyền theo phiên dùng `putIfAbsent/remove`; đang nén thì bỏ qua lịch nén mới, không chặn lượt hỏi tiếp. Giữ ít nhất ba lượt kết thúc gần nhất, gồm lượt vừa xong; lượt lỗi/hủy cũ vẫn là nguồn lịch sử. Prompt summary quá dài thì thu nhỏ nhóm lượt cũ cần nén.
+- Nén có cờ hủy và timeout riêng, mặc định 30 giây (`mathl.gia-su.compaction-timeout-seconds`, từ 1 đến 120). Hủy hợp tác/đóng HTTP, không ngắt thread có thể đang ghi JDBC. Lỗi/hết giờ/từ chối summary giữ memory cũ, không phát thêm hay sửa terminal của lượt đã xong. Usage summary ghi riêng với `purpose=summary`, dùng usage nhà hoặc estimate nếu không nhận được usage; không cộng vào token/thời gian trong `done` của lượt trả lời.
+- Summary vẫn kiểm schema, nguồn/thứ tự, định danh, giới hạn token và **từng câu qua đầy đủ cổng hiện có**, kể cả câu thuần lời. Kiểm lại quyền theo lớp, đề/bảng và nhà đã chọn trước khi gọi model/kiểm câu/lưu. Lưu bằng CAS revision hiện có; một lượt hoặc context mới làm revision đổi thì summary đang nén không được ghi đè memory mới.
+- Prompt lượt thường bắt đầu bằng đúng một câu định hướng ngắn không có nội dung toán, rồi tối đa hai câu gợi ý. Gợi ý mô tả thao tác bằng lời (lấy đạo hàm từng hạng tử, xét dấu trên từng khoảng), không thực hiện hộ, không biểu thức suy ra, số, nghiệm, dấu cụ thể hay kết luận. Chỉ có thể trích nguyên văn toàn bộ hàm đúng cách viết trong đề và dẫn `[n]` thật trong bảng; không chép công thức hoặc bài làm. Prompt Socratic cuối giữ ngoại lệ đúng một câu hỏi, không câu định hướng. Feedback viết lại nêu cách sửa cụ thể theo từng mã vi phạm, không đưa nháp bị chặn vào prompt.
+- Đường nhanh chỉ áp dụng câu trả lời thường sau kiểm hình thức/định danh/ngôn ngữ/dẫn bảng: chỉ chữ Latin và dấu câu thông thường, không chữ số, ký hiệu toán, LaTeX hoặc chữ biến Latin đơn. Chuẩn hóa Unicode/hoa thường/dấu để kiểm từ vựng kết luận/đáp án: đồng biến, nghịch biến, cực đại, cực tiểu, nghiệm, bằng, dương, âm, tăng, giảm, lớn hơn, nhỏ hơn, khoảng, giá trị, kết quả, đáp án, tập xác định, đạo hàm là; chặn thêm quan hệ/quy tắc và số viết bằng chữ theo hướng bắt thừa. Để không lọt khẳng định/đáp án gián tiếp mà blacklist chưa bao phủ, còn yêu cầu câu phải khớp nguyên câu trong tập nhỏ câu định hướng/câu hỏi trung tính đã duyệt, sau chuẩn hóa NFC, hoa thường và khoảng trắng; không có chỗ điền nội dung tùy ý. Đây chỉ là tập nhận dạng điều kiện bỏ cổng, không phải nguồn câu trả lời hay fallback. Mọi câu không khớp, ký hiệu lạ hoặc từ bị chặn đều chuyển qua cổng hiện có, không tự đánh giá đúng/sai bằng Java. Câu Socratic cuối và summary không dùng đường nhanh. Trước khi phát vẫn kiểm quyền, đề/bảng, nhà và hủy như trước.
+
+Unit test kiểm thứ tự `done`/nén, lượt kế không bị chặn, khóa theo phiên, timeout/usage riêng, revision/đề đổi, summary bị cổng từ chối và các câu đối kháng phải đi qua cổng. Đây là kiểm giao thức với model/cổng mock; không suy ra số đo GLM thật hoặc chứng minh mọi cách diễn đạt đều an toàn.
+
+## Bổ sung 2026-10-14 — KD-0007
+
+**Kiểm định:** một câu chỉ yêu cầu học sinh thao tác không tự tiết lộ kết quả. «Em hãy lấy đạo hàm từng hạng tử của hàm số rồi cộng lại.» giao việc, không cung cấp đạo hàm, nghiệm, dấu hoặc kết luận. Tuy nhiên, thể mệnh lệnh/câu hỏi không bảo đảm an toàn: «em hãy kết luận hàm đồng biến», «lấy đạo hàm rồi ghi âm một» và «đạo hàm của hằng số bằng không» vẫn chứa kết luận, giá trị hoặc quy tắc. KD-0007 chỉ thêm ngoại lệ **THAO_TAC_THUAN** trong `services/math/app/loi_giang.py`; không dùng nhận xét của mô hình để cấp ngoại lệ.
+
+### Định nghĩa đóng THAO_TAC_THUAN
+
+Một **câu nguyên vẹn**, sau NFC, chuyển chữ thường và gom khoảng trắng, phải khớp toàn bộ ngữ pháp dưới đây. Không bỏ dấu tiếng Việt, ký tự ẩn, dấu dẫn `[n]`, đoạn toán hoặc bất kỳ từ dư nào để tạo khớp.
+
+- **Thể câu hướng tới học sinh:** `Em hãy/thử/cần <chuỗi thao tác> [nhé][.!]`, `Hãy <chuỗi thao tác> [nhé][.!]`; câu hỏi `Em đã thử/đã/có thể <chuỗi thao tác> chưa/không?` hoặc `Em <chuỗi thao tác> thế nào/ra sao?`. `Em đã ….` chỉ kể việc đã làm không thuộc lớp. «Không» ở cuối khung hỏi là trợ từ nghi vấn, không phải số không.
+- **Chuỗi thao tác:** ít nhất một thao tác trong bảng dưới; có thể nối bằng `rồi`, `và`, `sau đó`, `để`, với dấu phẩy tùy chọn ngay trước từ nối. Không có chỗ điền tự do. Ký hiệu `[…]` trong bảng này chỉ phần có thể bỏ, không phải dấu dẫn được phép trong câu.
+
+| Thao tác | Bổ ngữ được phép, ngoài dạng không bổ ngữ |
+| --- | --- |
+| lấy/tính đạo hàm | `từng/các hạng tử [của hàm số]`, `của từng hạng tử`, `của hàm số` |
+| xét dấu | `[của] đạo hàm`, `[trên từng/mỗi khoảng]`; phần khoảng cũng dùng được khi không có phần đạo hàm |
+| lập bảng | `[xét dấu/dấu/biến thiên] [của hàm số]` |
+| giải phương trình | `đã cho`, `của đạo hàm` |
+| thay giá trị thử | `vào hàm số/đạo hàm/biểu thức` |
+| rút gọn | `hàm số`, `hàm số này`, `hàm số đã cho`, `đạo hàm`, `biểu thức`, `phương trình`, `bài làm` |
+| đối chiếu | `[bài làm] [với bảng công thức/đề bài]` |
+| kiểm tra lại | `bài làm`, `bước này`, `đạo hàm`, `bảng xét dấu`, `bảng biến thiên` |
+| tìm điểm tới hạn | `của hàm số` |
+| cộng lại | `các đạo hàm [vừa tìm]`, `các thành phần` |
+
+Các bổ ngữ chỉ gọi đối tượng chung để học sinh tự thao tác. Lớp này **không chứa biểu thức toán, chữ số, số viết bằng chữ, chữ biến đứng riêng, quan hệ so sánh/dấu/đơn điệu/cực trị/giá trị được khẳng định, kết quả cụ thể, xác nhận đúng bài làm hay nội dung quy tắc cho sẵn kết quả**. Ví dụ `hai`, `âm một`, `x bình trừ sáu x`, `dương`, `âm`, `đồng biến trên khoảng`, `cực đại tại`, `lớn hơn`, `đúng rồi` không có vị trí trong ngữ pháp. Không miễn quy tắc «đạo hàm của hằng số bằng không»: nó vẫn phải qua căn cứ bảng đã khóa như trước.
+
+`_thao_tac_thuan` dùng `fullmatch` trên câu gốc tại `_xet_cau`, trước khi che toán/dẫn bảng. Khớp thì giữ nguyên câu, không sinh phán quyết biểu thức và không cần `[n]` hoặc bảng công thức; đây là giao thao tác, không phải phát công thức. Không khớp thì tiếp tục cổng KD-0005/KD-0006. Giới hạn đầu vào, dựng ngữ cảnh bảng, tách câu, chặn lỗi và lọc lộ đáp án trước job vẫn giữ nguyên.
+
+Kiểm đối kháng phát hiện các câu nguy hiểm vốn lọt vì thiếu cặp thuật ngữ/quan hệ: số sau `ghi/điền/viết/chép/chọn`, dấu hoặc kết luận được chọn, biểu thức viết bằng chữ và xác nhận bài làm. KD-0007 thêm chúng làm **ứng viên phải kiểm**, không cấp ngoại lệ. Câu đã bị chặn giữ nguyên phán quyết cũ; câu hỏi/phân loại để ngỏ của KD-0006 vẫn đi đường cũ. Không sửa assertion cũ, dữ liệu `kiemdinh/`, `tests/data` hoặc các dịch vụ khác.
+
+### Bằng chứng kiểm định
+
+Nền Git: **`4672602898341e3d0d2df3601c995428c741e847`**. SHA-256 mã `app/loi_giang.py`: **`ce1f1ac7781e8b5985dc36003b04bae7b7732993ae3b773f85b66adace7b7280`**. SHA-256 bộ mới `tests/test_loi_giang_kd0007.py`: **`5ef73f5f2efa33ece2a2d8c0a4c04f3ce24701562f221f83964570cfc0fbb6ee`**. Các số dưới đây là đo trực tiếp bằng `kiem_loi_giang`, không tính sinh lại hoặc câu thay thế.
+
+`tests/test_loi_giang_kd0007.py` có **647 ca**:
+
+- **134 ca dương tính:** 31 thao tác/chuỗi × 2 thể câu × bảng rỗng/bảng khóa = 124, thêm 10 ca thể câu/NFC/hoa thường/khoảng trắng. Tất cả giữ nguyên câu sau NFC, không có biểu thức hay yêu cầu trích dẫn.
+- **487 ca đối kháng phải bỏ:** 115 nội dung nguy hiểm × 3 khung câu = 345; 115 biến thể có dẫn `[2]` với bảng khóa; 10 ca xác nhận, 9 ca Unicode/ký tự ẩn/không dấu, 8 ca chen nội dung vào chính câu thao tác mẫu. **0/487 ca được giữ nhầm**. Trên 345 ca không dẫn bảng, mã nền giữ nhầm **126/345**, mã KD-0007 giữ nhầm **0/345**.
+- **23 ca ngoài lớp:** quy tắc, ký hiệu, số, dẫn bảng, thao tác ngoài từ vựng, câu kể và kết luận; buộc không hưởng ngoại lệ, kể cả câu vốn được phép qua bảng/KD-0006.
+- **3 ca kiểm ranh giới:** câu kế tiếp/dấu chấm phẩy không được bao che, quy tắc phải qua bảng, lỗi/giới hạn đầu vào đóng mặc định.
+
+Rà độc lập theo skill `tutor-safety`: reviewer Sư phạm thử 240 tổ hợp thao tác/hậu tố nguy hiểm/từ nối, **0 khớp nhầm lớp thuần**; reviewer quyền riêng tư kiểm câu gốc/Unicode và fail-closed. Các ca viết/chép/chọn, xác nhận không có «rồi» và vô cực họ phát hiện đã được đưa vào bộ mới.
+
+| Corpus giữ nguyên | Bỏ toàn bộ trước → sau | Bỏ câu trước → sau | Đầu ra toàn bộ giống nền |
+| --- | ---: | ---: | ---: |
+| `ban-nhap-glm-2026-10-14.json` — 45 bản, 71 câu | 5/45 → 5/45 | 19/71 → 19/71 | 45/45 |
+| `ban-nhap-glm-2026-10-14b.json` — 42 bản, 73 câu | 8/42 → 8/42 | 33/73 → 33/73 | 42/42 |
+
+SHA-256 hai corpus vẫn lần lượt là `7e861056065a594c9e57f0d1015e5116e6510476ee087c32e6c409fcb25f45b4` và `c47677bb477786ea69394b886c451688bed8e8e4cb61e08a58722a9cc6b43f7d`. Tỷ lệ bỏ toàn bộ vẫn 11,11% và 19,05%, dưới ngưỡng KD-0006.
+
+Lệnh tập trung (từ `services/math`): `.venv/bin/pytest -p no:warnings -q tests/test_loi_giang_kd0007.py tests/test_loi_giang_kd0006.py tests/test_loi_giang_kd0006_tong_quat.py tests/test_loi_giang.py -k 'not router'`: **1.009/1.009 đạt**, mã thoát 0, gồm **204/204 ca KD-0006**. Kết luận **0 lộ** là số đo trên các ca đối kháng đã chạy và ranh giới ngữ pháp đóng; không phải tuyên bố chứng minh mọi câu tiếng Việt ngoài lớp hay mọi rò sư phạm theo ngữ cảnh đều bị bắt.
+
+Lệnh toàn bộ (từ `services/math`): `PYTHONPATH=/tmp/mathl-kd0007-runtime:. .venv/bin/pytest -p no:warnings -q`: **2.858/2.858 đạt**, không bỏ qua ca nào, mã thoát 0, **2 phút 36,479 giây**. Bao gồm cả router, KD-0005, KD-0006 và các corpus trong `tests/data`. Lệnh trần `.venv/bin/pytest -p no:warnings -q` lại kẹt ở `TestClient`/AnyIO và đã dừng bằng ngắt, mã thoát 130. Probe riêng `timeout 35s .venv/bin/pytest -p no:warnings -q -o faulthandler_timeout=20 tests/test_bao_mat_dich_vu.py::test_tran_timeout_20s` tái hiện chờ `selectors.select`/`BlockingPortal`, kết thúc timeout 124. Cùng probe với polling đạt. Tệp tạm `sitecustomize.py` chỉ giới hạn mỗi lần `EpollSelector.select` chờ tối đa 0,01 giây, như điều kiện chạy KD-0006 đã ghi ở trên; không đổi mã/assertion/phụ thuộc của repo hoặc hạn giờ sandbox CAS. Đây là điều kiện môi trường của số đo toàn bộ, không tuyên bố lệnh trần đã hoàn tất.
+
+## Bổ sung 2026-10-14 — Quyết định Darren: bỏ cổng từng câu khỏi luồng trực tiếp
+
+**Trạng thái: chấp nhận theo chỉ đạo trực tiếp của Darren.** Bổ sung này thay các yêu cầu kiểm từng câu, sinh lại và đường nhanh của lời gia sư **LIVE** ở các phần trên. Mục đích là giảm thời gian chờ và tránh cổng bỏ những hướng dẫn thao tác hữu ích vì nhận dạng quá chặt; đây là quyết định về hành vi, chưa phải số đo cải thiện độ trễ trên GLM thật.
+
+- Chunk nội dung từ nhà được lưu rồi phát trực tiếp thành `delta {text}`; không đợi ranh giới câu, không gọi `ContentWorkflow.sanitize` cho từng câu. Bỏ `SentenceBuffer`, sinh lại/attempt/event `regen`, câu hỏi strict dự phòng và lớp fast-path trong luồng LIVE. Cổng toán và bộ chấm dùng cho nội dung/bài làm vẫn giữ nguyên.
+- Bảo vệ đáp án của lời LIVE chuyển sang **system prompt**: gia sư Socratic, hướng học sinh tự thao tác; không đưa đáp án cuối, kết quả tính được hay xác nhận kết quả trước khi học sinh nộp đủ bài. Bộ phân loại jailbreak chỉ thêm chỉ dẫn chuyển lại nhiệm vụ học tập trong prompt, không chặn bằng lời từ chối cố định. Gia sư vẫn không nhận lời giải chuẩn hoặc dữ kiện đáp án được bảo vệ.
+- Quy tắc mở lời giải đầy đủ vẫn chỉ áp dụng sau khi nộp đủ bài; quyền/mode/hạn vẫn do server kiểm. Bài kiểm tra tiếp tục bị chặn hỏi gia sư trước hạn. Giữ `safeToSend` cho dữ liệu đầu vào, khử định danh, quyền lớp, giới hạn lượt và hủy.
+- Summary dùng cho trí nhớ không đi qua cổng lời giảng; vẫn kiểm dữ liệu đầu vào, cấu trúc/nguồn, phiên bản và revision trước lưu. Giữ phiên bền vững, lịch sử gốc, nén bất đồng bộ sau `done`, cancel/resume và thống kê usage. Giữ đúng một retry GLM cùng nhà trước token nội dung đầu tiên; không retry sau khi đã phát nội dung.
+
+**Rủi ro được chấp nhận:** prompt không bảo đảm tất định rằng mọi lời LIVE đều đúng toán hoặc không lộ đáp án. Nội dung sai/rò có thể tới học sinh ngay và không thể thu hồi sau khi gửi; summary cũng có thể giữ nội dung ấy. Darren chấp nhận rủi ro này để đổi lấy phản hồi trực tiếp. Eval tiếp tục báo `leakCount` như số đo thông tin, kể cả phần phát trước lỗi/hủy, nhưng rò đáp án không còn là tiêu chí đạt/trượt. Giữ TTFT tại delta đầu, độ trễ, lỗi SSE, câu cố định/lặp và quan sát nén; bỏ số đo và tiêu chí regen.
+
+**KD-0008 được bỏ:** không tiếp tục mở rộng ngoại lệ/ngữ pháp nhận dạng cho cổng lời LIVE theo hướng KD-0007. Mã kiểm định toán hiện có vẫn phục vụ các đường dùng cổng; quyết định này không sửa dữ liệu sư phạm hay corpus kiểm định.

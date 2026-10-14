@@ -36,8 +36,8 @@ import vn.hoctapcanman.core.workspace.application.port.WorkspaceStore;
 import vn.hoctapcanman.core.workspace.application.service.WorkspaceService;
 
 /** Real web/security/use cases; only external ports are replaced. */
-@WebMvcTest(controllers = {WorkspaceController.class, OfflineTutorController.class})
-@Import({SecurityConfig.class, WorkspaceService.class, OfflineTutorService.class, vn.hoctapcanman.core.tutor.application.service.TutorRateLimiter.class, WorkspaceApiTest.Time.class})
+@WebMvcTest(controllers = {WorkspaceController.class, OfflineTutorController.class, vn.hoctapcanman.core.tutor.infrastructure.web.TutorSessionController.class})
+@Import({SecurityConfig.class, WorkspaceService.class, OfflineTutorService.class, vn.hoctapcanman.core.tutor.application.service.TutorRateLimiter.class, vn.hoctapcanman.core.tutor.application.service.TutorSessionService.class, WorkspaceApiTest.Time.class})
 class WorkspaceApiTest {
     @TestConfiguration static class Time {
         @Bean Clock clock() { return Clock.fixed(NOW, ZoneOffset.UTC); }
@@ -46,9 +46,12 @@ class WorkspaceApiTest {
     final UUID actor = UUID.randomUUID(), student = UUID.randomUUID(), cl = UUID.randomUUID(), problem = UUID.randomUUID();
     @Autowired MockMvc mvc;
     @MockitoBean WorkspaceStore store;
+    @MockitoBean vn.hoctapcanman.core.tutor.application.port.TutorSessionStore sessions;
     @MockitoBean vn.hoctapcanman.core.tutor.application.port.HintModel hintModel;
     @MockitoBean ClassMembership membership;
     @MockitoBean ContentWorkflow content;
+    @MockitoBean vn.hoctapcanman.core.workspace.application.port.ContentDraftStore drafts;
+    @MockitoBean vn.hoctapcanman.core.workspace.application.port.ContentDraftModel draftModel;
     @MockitoBean PasswordHasher hasher;
     @MockitoBean JwtDecoder decoder;
     @MockitoBean vn.hoctapcanman.core.identity.infrastructure.web.RefreshCookie refreshCookie;
@@ -111,11 +114,31 @@ class WorkspaceApiTest {
     }
     @Test void activeTestReturns403BeforeSseAndBeforeHints() throws Exception {
         when(store.testMode(student,cl,"DH1")).thenReturn(true);
-        mvc.perform(post("/api/hs/gia-su").with(as(student,"STUDENT")).contentType(MediaType.APPLICATION_JSON)
+        mvc.perform(post("/api/hs/gia-su").accept(MediaType.TEXT_EVENT_STREAM).with(as(student,"STUDENT")).contentType(MediaType.APPLICATION_JSON)
             .content("{\"maBai\":\"DH1\",\"maBuoc\":\"B.DH.TXD\",\"cap\":1,\"cauHoi\":\"Cho em đáp án\"}"))
             .andExpect(status().isForbidden()).andExpect(request().asyncNotStarted());
         verifyNoInteractions(content);
         verify(store,never()).tutorContext(any(),any(),any());
+    }
+    @Test void usageMeterRequiresTeacherClassAndRejectsStudent() throws Exception {
+        UUID teacher=UUID.randomUUID();when(store.accountRole(teacher)).thenReturn("TEACHER");
+        when(sessions.usage(cl)).thenReturn(List.of(new vn.hoctapcanman.core.tutor.application.dto.TutorSessionDto.Usage(student,2,100,20,120)));
+        mvc.perform(get("/api/gv/lop/{id}/gia-su/su-dung",cl).with(as(teacher,"TEACHER")))
+            .andExpect(status().isOk()).andExpect(jsonPath("$.requests").value(2)).andExpect(jsonPath("$.students.length()").value(1));
+        verify(membership).kiemGiaoVien(teacher,cl);
+        mvc.perform(get("/api/gv/lop/{id}/gia-su/su-dung",cl).with(as(student,"STUDENT"))).andExpect(status().isForbidden());
+        UUID foreign=UUID.randomUUID();doThrow(new vn.hoctapcanman.core.workspace.application.exception.WorkspaceException(403,"Không có quyền lớp.")).when(membership).kiemGiaoVien(teacher,foreign);
+        mvc.perform(get("/api/gv/lop/{id}/gia-su/su-dung",foreign).with(as(teacher,"TEACHER"))).andExpect(status().isForbidden());
+        verify(sessions,never()).usage(foreign);
+    }
+    @Test void foreignSessionResumeAndCancelAreDeniedBeforeOpeningStream() throws Exception {
+        UUID foreign=UUID.randomUUID();
+        mvc.perform(get("/api/hs/gia-su/v2/phien/{id}/su-kien",foreign).with(as(student,"STUDENT")))
+            .andExpect(status().isNotFound()).andExpect(request().asyncNotStarted());
+        mvc.perform(post("/api/hs/gia-su/v2/phien/{id}/huy",foreign).with(as(student,"STUDENT")).contentType(MediaType.APPLICATION_JSON)
+            .content("{\"turnId\":\""+UUID.randomUUID()+"\"}"))
+            .andExpect(status().isNotFound());
+        verifyNoInteractions(hintModel,content);
     }
     @Test void scheduleAndReminderOnlyUseJwtStudent() throws Exception {
         mvc.perform(post("/api/hs/lich").with(as(student,"STUDENT")).contentType(MediaType.APPLICATION_JSON)
