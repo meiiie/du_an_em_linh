@@ -45,6 +45,7 @@ class WorkspaceApiTest {
     static final Instant NOW = Instant.parse("2026-10-13T10:00:00Z");
     final UUID actor = UUID.randomUUID(), student = UUID.randomUUID(), cl = UUID.randomUUID(), problem = UUID.randomUUID();
     @Autowired MockMvc mvc;
+    @MockitoBean vn.hoctapcanman.core.tutor.application.port.TermFeedback termFeedback;
     @MockitoBean WorkspaceStore store;
     @MockitoBean vn.hoctapcanman.core.tutor.application.port.TutorSessionStore sessions;
     @MockitoBean vn.hoctapcanman.core.tutor.application.port.HintModel hintModel;

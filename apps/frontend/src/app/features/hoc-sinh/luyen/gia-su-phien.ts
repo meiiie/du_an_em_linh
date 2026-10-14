@@ -316,7 +316,7 @@ export class GiaSuPhien {
     this.lastSeq = seq;
     switch (event.event) {
       case 'start':
-        this.update(a, t => ({ ...t, turnId: d.turnId }));
+        this.update(a, t => ({ ...t, turnId: d.turnId, references: event.data.references ?? t.references ?? [] }));
         if (a.stopping) void this.huy(a);
         break;
       case 'delta': {
@@ -345,7 +345,7 @@ export class GiaSuPhien {
     return [...turns].reverse().map(t => ({
       requestId: t.requestId, turnId: t.id, maBuoc: t.step, cap: t.level, cauHoi: t.question, status: t.status,
       // Snapshot đã ghép delta đến session.lastSeq; chỉ nối chữ sau cursor này.
-      text: t.answer,
+      text: t.answer, references: t.references ?? [],
       ...(t.status === 'error' ? { error: { message: 'Lượt hỏi chưa hoàn tất. Em có thể hỏi lại.', retryable: true } } : {}),
     }));
   }

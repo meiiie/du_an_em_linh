@@ -25,7 +25,7 @@ const escapeHtml = (s: string) => s.replace(/[&<>"']/g, c => ({ '&':'&amp;', '<'
     app-gia-su-markdown .markdown ul,app-gia-su-markdown .markdown ol{padding-inline-start:24px}
     app-gia-su-markdown .markdown pre,app-gia-su-markdown .markdown table{display:block;max-width:100%;overflow:auto}
     app-gia-su-markdown .tutor-math-block{display:block;max-width:100%;overflow-x:auto;overflow-y:hidden}
-    app-gia-su-markdown .tutor-source{min-width:44px;min-height:44px;border:1px solid var(--line-strong);border-radius:8px;background:var(--wash);color:var(--ink);font:inherit;cursor:pointer}
+    app-gia-su-markdown .tutor-source{position:relative;display:inline-flex;align-items:center;justify-content:center;min-width:26px;height:22px;padding:0 5px;margin:0 1px;vertical-align:1px;border:1px solid var(--line-strong);border-radius:6px;background:var(--wash);color:var(--ink);font:inherit;font-size:.85em;line-height:1;cursor:pointer}app-gia-su-markdown .tutor-source::after{content:'';position:absolute;inset:-11px -9px}
     app-gia-su-markdown :focus-visible{outline:2px solid var(--focus);outline-offset:2px}
   `,
 })
@@ -39,9 +39,8 @@ export class GiaSuMarkdown {
   constructor() {
     afterRenderEffect(() => {
       const math: { latex: string; block: boolean }[] = [];
-      const refs = this.references();
       const marked = new Marked({
-        gfm: true, breaks: false,
+        gfm: true, breaks: true,
         renderer: {
           html: token => escapeHtml(token.text),
           image: () => '',
@@ -75,9 +74,8 @@ export class GiaSuMarkdown {
           },
           renderer: token => {
             const n = Number(token['index']);
-            // Chỉ dòng trong snapshot của lượt được bấm; không có URL từ lời model.
-            return refs.some(r => r.index === n)
-              ? `<span class="tutor-source source-${n}">[${n}]</span>` : `[${n}]`;
+            // Mọi trích dẫn là nút; chỉ snapshot thật được mở thành công thức.
+            return `<span class="tutor-source source-${n}">[${n}]</span>`;
           },
         }],
       });
@@ -89,7 +87,7 @@ export class GiaSuMarkdown {
         button.type = 'button';
         button.className = node.className;
         button.textContent = node.textContent;
-        button.setAttribute('aria-label', 'Mở nguồn ' + node.textContent?.replace(/[\[\]]/g, ''));
+        button.setAttribute('aria-label', 'Mở công thức ' + node.textContent?.replace(/[\[\]]/g, ''));
         node.replaceWith(button);
       });
       root.querySelectorAll<HTMLElement>('.tutor-math').forEach((node, index) => {
@@ -113,6 +111,6 @@ export class GiaSuMarkdown {
     if (!button) return;
     const cls = [...button.classList].find(c => /^source-\d+$/.test(c));
     const index = Number(cls?.slice(7));
-    this.nguonDangMo.set(this.references().find(r => r.index === index) ?? null);
+    this.nguonDangMo.set(this.references().find(r => r.index === index) ?? { index, text: 'Chưa có công thức của nguồn này trong lượt hỏi. Em có thể xem bảng công thức của bước đang làm.' });
   }
 }

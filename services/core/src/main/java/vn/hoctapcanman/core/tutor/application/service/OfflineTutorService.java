@@ -19,8 +19,15 @@ public class OfflineTutorService {
     private final ClassMembership membership;
     private final HintModel model;
     private final TutorRateLimiter limiter;
+    private final vn.hoctapcanman.core.tutor.application.port.TermFeedback terms;
     public OfflineTutorService(WorkspaceStore store, ClassMembership membership,
         HintModel model, TutorRateLimiter limiter) {
+        this(store,membership,model,limiter,(function,expression) -> Optional.empty());
+    }
+    @org.springframework.beans.factory.annotation.Autowired
+    public OfflineTutorService(WorkspaceStore store, ClassMembership membership, HintModel model, TutorRateLimiter limiter,
+        vn.hoctapcanman.core.tutor.application.port.TermFeedback terms) {
+        this.terms=terms;
         this.store=store; this.membership=membership; this.model=model; this.limiter=limiter;
     }
     public UUID authorize(UUID student, TutorRequest request) {
@@ -43,13 +50,16 @@ public class OfflineTutorService {
         String provider=ready(cl).provider();
         var text=new StringBuilder();
         phase.accept("goi");
-        generate(student,cl,request,c,TutorPrompt.compose(c,request),text::append,ignored -> {},() -> {
+        generate(student,cl,request,c,termPrompt(TutorPrompt.compose(c,request),c,request),text::append,ignored -> {},() -> {
             var now=context(student,cl,request);
             if(!now.statement().equals(c.statement()) || !now.formulas().equals(c.formulas()))
                 throw new WorkspaceException(409,"Đề hoặc bảng công thức vừa đổi. Em hỏi lại nhé.");
             if(!ready(cl).provider().equals(provider))throw new WorkspaceException(403,"Cài đặt gia sư vừa đổi. Em hỏi lại nhé.");
         });
         return new TutorEvent("xong",text.toString().strip(),"MO_HINH");
+    }
+    public HintPrompt termPrompt(HintPrompt prompt, TutorContext context, TutorRequest request) {
+        return TutorTerms.add(prompt,context,request,terms);
     }
     public String provider(UUID cl) { return selected(cl).provider(); }
     private HintModel selected(UUID cl) {
@@ -93,6 +103,11 @@ public class OfflineTutorService {
         } finally {
             usage.accept(measured!=null?measured:new ModelUsage(HintModel.estimate(prompt.system()+prompt.user()),HintModel.estimate(raw.toString()),true));
         }
+    }
+    public static boolean asksCheck(String text) {
+        String s = Normalizer.normalize(text, Normalizer.Form.NFD).replaceAll("\\p{M}", "")
+            .toLowerCase(Locale.ROOT).replace('đ', 'd');
+        return s.matches("(?s).*(kiem\\s*tra|xac\\s*nhan|dung\\s*khong|dung\\s*chua|duoc\\s*chua|check|confirm).*" );
     }
     public static boolean asksAnswer(String text) {
         String s = Normalizer.normalize(text, Normalizer.Form.NFD).replaceAll("\\p{M}", "")

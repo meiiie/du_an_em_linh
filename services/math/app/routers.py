@@ -3,7 +3,7 @@
 from fastapi import APIRouter
 
 from app.sandbox import run_sympy_job
-from app.schemas import JobIn
+from app.schemas import JobIn, SoHangIn
 
 v1 = APIRouter(prefix="/v1", tags=["kiem-toan"])
 
@@ -67,3 +67,8 @@ def kiem_loi_giang(body: JobIn) -> dict:
 def trich_pdf(body: JobIn) -> dict:
     data = _payload(body)
     return run_sympy_job("extract_pdf", data, timeout=20)
+
+
+@v1.post("/so-hang")
+def kiem_so_hang(body: SoHangIn) -> dict:
+    return run_sympy_job("so_hang", body.model_dump(exclude_none=True), timeout=body.timeout_s)

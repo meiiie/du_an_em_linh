@@ -15,7 +15,7 @@
     @if(chat.coLichSuCu()){<button appButton variant="secondary" type="button" [disabled]="chat.dangTaiCu()" (click)="chat.taiCu()">Xem các lượt trước</button>}
     @for(t of chat.luot(); track t.requestId){
       @if(!t.retryOfTurnId){<article class="cau-cua-em"><span class="sr-only">Em hỏi</span><span class="tutor-text">{{t.cauHoi}}</span></article>}
-      @if(t.text){<article class="cau-cua-ai"><span class="sr-only">Gia sư trả lời</span><app-gia-su-markdown [text]="t.text" /></article>}
+      @if(t.text){<article class="cau-cua-ai"><span class="sr-only">Gia sư trả lời</span><app-gia-su-markdown [text]="t.text" [references]="t.references ?? []" /></article>}
       @if(t.status==='cancelled'){<p class="muted turn-status">Đã dừng lượt này.</p>}
       @if(t.status==='error'){
         <div class="turn-error" role="alert"><p>{{t.error?.message || 'Chưa hoàn tất lời gợi ý.'}}</p>

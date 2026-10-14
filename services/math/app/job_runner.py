@@ -6,6 +6,9 @@ import time
 
 
 def _run(kind, payload):
+    if kind == "so_hang":
+        from app.so_hang import so_hang
+        return so_hang(payload)
     if kind == "grade":
         from app.grader import grade
         return grade(payload)

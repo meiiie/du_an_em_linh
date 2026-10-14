@@ -75,6 +75,56 @@ class TutorSessionServiceTest {
         Accepted a=ask();assertEquals("completed",terminal(a).status());
         assertTrue(prompts.getFirst().system().endsWith("Lượt trước bạn mở đầu bằng: «Em muốn tự kiểm tra điều». Mở đầu khác.\nYêu cầu em giải thích lựa chọn bằng ngôn ngữ rõ ràng."));
     }
+    @Test void refusalFrameIsNotRepeatedEvenAfterADifferentOpener() throws Exception {
+        service.open(student,assignment);
+        store.seed("Em hỏi đáp án.","Mình không thể xác nhận đúng sai lúc này.");
+        store.seed("Em sửa lại.","Dòng em vừa gõ đã thay đổi. Mình không kiểm tra được đâu em, vì ứng dụng sẽ chấm.");
+        var prompts=new CopyOnWriteArrayList<HintPrompt>();
+        when(model.draft(any())).thenAnswer(i -> {prompts.add(i.getArgument(0));return Optional.of("Em chọn gì?");});
+        terminal(ask());
+        assertTrue(prompts.getFirst().system().contains("Đừng lặp khung từ chối: «không kiểm tra được đâu em, vì ứng dụng sẽ chấm»; «không thể xác nhận đúng sai lúc này»"));
+        assertFalse(prompts.getFirst().user().contains("Đừng lặp khung từ chối:"));
+    }
+    @Test void termNoteIsPrivateAndSessionGenerationCallsMathOnce() throws Exception {
+        var terms=mock(TermFeedback.class);
+        when(terms.derivative(any(),any())).thenReturn(Optional.of(new TermFeedback.Feedback(List.of(
+            new TermFeedback.Term(1,"2x","ok"),new TermFeedback.Term(2,"-6x","sai"),new TermFeedback.Term(3,"+4","thua")),0)));
+        var flow=new OfflineTutorService(workspace,members,model,new TutorRateLimiter(Clock.systemUTC(),100,Duration.ofMinutes(10)),terms);
+        var svc=new TutorSessionService(store,flow,members,workspace,6000);
+        when(workspace.tutorContext(eq(student),eq(cl),any())).thenReturn(Optional.of(new TutorContext(problem,"DH1","Đề","x**2-6*x+4","B.DH.DAOHAM","")));
+        var prompts=new CopyOnWriteArrayList<HintPrompt>();
+        when(model.draft(any())).thenAnswer(i -> {prompts.add(i.getArgument(0));return Optional.of("Em xem lại phần em gõ nhé?");});
+        var session=svc.open(student,assignment);
+        var a=svc.ask(student,session.id(),new Ask(UUID.randomUUID(),"B.DH.DAOHAM",1,"y' = 2x-6x+4"));
+        terminal(a);
+        verify(terms,times(1)).derivative("x**2-6*x+4","2x-6x+4");
+        assertTrue(prompts.getFirst().system().contains("hạng tử thứ 2 «-6x» cần xem lại"));
+        assertFalse(svc.events(student,session.id(),0).toString().contains("Ghi chú riêng"));
+        assertFalse(svc.history(student,session.id(),0,50).turns().getFirst().answer().contains("Ghi chú riêng"));
+    }
+    @Test void legacyHistoryUsesCurrentSheetOnlyAtMatchingVersionAndKeepsSnapshot() throws Exception {
+        var formula=new TutorFormula(1,"F1","Lũy thừa","x^n","Quy tắc lũy thừa");
+        when(workspace.tutorContext(eq(student),eq(cl),any())).thenReturn(Optional.of(new TutorContext(problem,"DH1","Đề","x**2","B.DH.TXD","","Tập xác định",List.of(formula),List.of())));
+        var a=ask();terminal(a);
+        var history=service.history(student,a.session().id(),0,50);
+        assertEquals(List.of(new Reference(1,"Lũy thừa — Quy tắc lũy thừa","x^n")),history.turns().getFirst().references());
+        when(workspace.tutorContext(eq(student),eq(cl),any())).thenReturn(Optional.of(new TutorContext(problem,"DH1","Đề mới","x**2","B.DH.TXD","")));
+        assertTrue(service.history(student,a.session().id(),0,50).turns().getFirst().references().isEmpty());
+    }
+    @Test void compactedLegacyTurnCanUseItsRecordedVersionButOldSheetCannot() throws Exception {
+        var formula=new TutorFormula(1,"F1","Lũy thừa","x^n","Quy tắc lũy thừa");
+        when(workspace.tutorContext(eq(student),eq(cl),any())).thenReturn(Optional.of(new TutorContext(problem,"DH1","Đề","x**2","B.DH.TXD","","Tập xác định",List.of(formula),List.of())));
+        var a=ask();terminal(a);
+        var current=store.turns.getFirst();
+        String version=store.snapshot(a.session().id()).contextVersion();
+        store.turns.set(0,new Turn(current.id(),current.sessionId(),current.requestId(),current.ordinal(),current.step(),current.level(),
+            current.question(),current.answer(),current.status(),current.createdAt(),List.of(),version));
+        store.compact(store.snapshot(a.session().id()),"Đã nén",1,10);
+        assertFalse(service.history(student,a.session().id(),0,50).turns().getFirst().references().isEmpty());
+        store.turns.set(0,new Turn(current.id(),current.sessionId(),current.requestId(),current.ordinal(),current.step(),current.level(),
+            current.question(),current.answer(),current.status(),current.createdAt(),List.of(),"bảng cũ"));
+        assertTrue(service.history(student,a.session().id(),0,50).turns().getFirst().references().isEmpty());
+    }
     @Test void duplicateRequestIsIdempotentAndDifferentPayloadConflicts() throws Exception {
         Accepted first=ask();terminal(first);
         var dup=service.ask(student,first.session().id(),request(first.turn().requestId()));
