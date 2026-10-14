@@ -49,10 +49,16 @@ class NoiDungNguyenTraiTest {
         when(manager.getTransaction(any())).thenAnswer(i -> new SimpleTransactionStatus());
         when(problems.findByCode(any())).thenAnswer(i -> Optional.ofNullable(saved.get(i.getArgument(0))));
         doAnswer(i -> {Problem p=i.getArgument(0);saved.put(p.code(),p);return null;}).when(problems).save(any());
+        when(problems.findContentVersion(any())).thenReturn(Optional.of(1));
+        var frames = mock(vn.hoctapcanman.core.content.application.port.KhungChamTheoBai.class);
         var source=new NguonNoiDung(new NoiDungProperties(Path.of("../../data").toString(),true));
-        var importer=new NhapNoiDungChung(source,math,catalog,problems,solutions,hints,manager,mock(ApplicationEventPublisher.class),Clock.systemUTC());
+        var importer=new NhapNoiDungChung(source,math,catalog,problems,solutions,hints,manager,mock(ApplicationEventPublisher.class),Clock.systemUTC(), frames);
         var first=importer.nhapTruong();
         assertThat(first.bai()).hasSize(74);
+        var khung = ArgumentCaptor.forClass(vn.hoctapcanman.core.content.application.dto.KhungCham.class);
+        verify(frames, times(43)).ghi(any(), eq(1), khung.capture());
+        assertThat(khung.getAllValues()).filteredOn(f -> f.cacBuoc().getFirst().maBuoc().startsWith("B.GT.")).hasSize(17);
+        assertThat(khung.getAllValues()).filteredOn(f -> f.cacBuoc().getFirst().maBuoc().startsWith("B.XS.")).hasSize(16);
         assertThat(saved.values()).filteredOn(Problem::isFiveStep).hasSize(10);
         assertThat(saved.values()).filteredOn(p -> !p.isFiveStep()).hasSize(64);
         var skills=ArgumentCaptor.forClass(vn.hoctapcanman.core.content.domain.model.Skill.class);

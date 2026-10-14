@@ -26,7 +26,7 @@ import { deBang, thanDe } from '../hang-bai';
 import { HopThoai } from '../../../shared/ui/hop-thoai';
 import { GiaSu } from './gia-su';
 import { BangXetDau, SuKienO } from './bang-xet-dau';
-import { DAO_HAM, dongNghiem, KET_LUAN, Mui, NGHIEM, NhapPhieu, nhapTuBaiLam, oKetLuan, TXD, XET_DAU, yeuCauNop } from './phieu';
+import { dongNghiem, goiYNhap, kieuNhap, Mui, NGHIEM, NhapPhieu, nhapTuBaiLam, oKetLuan, XET_DAU, yeuCauNop } from './phieu';
 
 interface KetQuaHien {
   readonly ketQua: KetQuaCham;
@@ -81,15 +81,12 @@ export class Luyen {
   protected readonly coGiaSu = computed(()=>this.mode()?.status === 'ON_TAP' && !this.daNop());
   protected readonly han = computed(()=>this.mode()?.details.dueAt ? ngayViet(this.mode()!.details.dueAt!, true) : '');
   protected readonly tenMuc = TEN_MUC;
-  protected tenBuocGiay(ma: string): string {
-    if (ma.endsWith('.PHANTICH')) return 'Phân tích đề';
-    if (ma.endsWith('.LAPLUAN')) return 'Lập luận';
-    if (ma.endsWith('.KETLUAN')) return 'Kết luận';
-    return 'Phân tích đề';
-  }
   protected readonly deBang = deBang;
   protected readonly thanDe = thanDe;
-  protected readonly ma = { TXD, DAO_HAM, NGHIEM, XET_DAU, KET_LUAN };
+  protected readonly kieuNhap = kieuNhap;
+  protected readonly khungDonDieu = computed(() => this.bai.value()?.cacBuoc.some(s => kieuNhap(s) === 'BANG_XET_DAU') ?? false);
+  protected readonly goiYNhap = goiYNhap;
+  private readonly maKetLuan = computed(() => this.bai.value()?.cacBuoc.at(-1)?.maBuoc ?? '');
 
   protected readonly khongTimThay = computed(() => (this.bai.error() as HttpErrorResponse | undefined)?.status === 404);
 
@@ -119,7 +116,7 @@ export class Luyen {
     computation: (b) => {
       if (!b) return {};
       const n = nhapTuBaiLam(b);
-      return Object.fromEntries(b.baiLam.cacBuoc.map((s) => [s.maBuoc, JSON.stringify(yeuCauNop(s.maBuoc, n, b.khaiBaoKetLuan))]));
+      return Object.fromEntries(b.baiLam.cacBuoc.map((s) => [s.maBuoc, JSON.stringify(yeuCauNop(s.maBuoc, n, b.khaiBaoKetLuan, kieuNhap(b.cacBuoc.find(x => x.maBuoc === s.maBuoc) ?? s)))]));
     },
   });
 
@@ -174,8 +171,8 @@ export class Luyen {
     return new Set(
       b.cacBuoc
         .slice(this.batDau())
-        .map((s) => s.maBuoc)
-        .filter((ma) => luu[ma] !== JSON.stringify(yeuCauNop(ma, n, b.khaiBaoKetLuan))),
+        .filter(s => luu[s.maBuoc] !== JSON.stringify(yeuCauNop(s.maBuoc, n, b.khaiBaoKetLuan, kieuNhap(s))))
+        .map(s => s.maBuoc),
     );
   });
 
@@ -187,7 +184,7 @@ export class Luyen {
   });
 
   private readonly ketLuanCoPhanQuyet = computed(() => {
-    const kq = this.ketQua()[KET_LUAN]?.ketQua;
+    const kq = this.ketQua()[this.maKetLuan()]?.ketQua;
     return !!kq && kq !== 'KHONG_CHAM_DUOC';
   });
 
@@ -221,7 +218,7 @@ export class Luyen {
   });
   protected readonly daNop = computed(() => !!this.ketQuaNop() || this.bai.value()?.baiLam.trangThai === 'DA_NOP');
   protected readonly chuDaNop = computed(() => {
-    switch (this.ketQuaNop()?.ketQua ?? this.ketQua()[KET_LUAN]?.ketQua) {
+    switch (this.ketQuaNop()?.ketQua ?? this.ketQua()[this.maKetLuan()]?.ketQua) {
       case 'DAT':
         return 'Đã nộp. Bài đạt.';
       case 'KHONG_KIEM_DUOC':
@@ -268,6 +265,10 @@ export class Luyen {
     this.vuaDat.set(null);
     this.loiGui.set(null);
     this.duaTieuDiem();
+  }
+
+  protected datDong(ma: string, v: string): void {
+    this.sua(n => ({ ...n, dongTheoBuoc: { ...n.dongTheoBuoc, [ma]: v } }));
   }
 
   protected datTxd(v: string): void {
@@ -356,7 +357,7 @@ export class Luyen {
     const buoc = this.buocHien();
     if (!b || !n || !buoc || this.dangGui()) return;
     const i = this.buoc();
-    const noiDung = yeuCauNop(buoc.maBuoc, n, b.khaiBaoKetLuan);
+    const noiDung = yeuCauNop(buoc.maBuoc, n, b.khaiBaoKetLuan, kieuNhap(buoc));
     // Chép, không giữ tham chiếu: sự kiện nhập trong lúc chờ phải ở lại cho lần gửi sau.
     const suKien = buoc.maBuoc === XET_DAU ? [...this.suKien] : [];
     this.dangGui.set(true);

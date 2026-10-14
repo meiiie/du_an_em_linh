@@ -67,6 +67,18 @@ public final class YeuCauCham {
         return yeuCau;
     }
 
+    /** Dữ kiện lấy từ port máy chủ bằng bài/phiên bản, không có trường tương ứng trong NopBuocRequest. */
+    public static Map<String, @Nullable Object> dung(
+            vn.hoctapcanman.core.content.application.dto.hocsinh.BaiChoLamBai bai,
+            vn.hoctapcanman.core.content.application.port.BaiDeLam content, String nopToi, List<StepWork> daLuu) {
+        var payload = dung(bai.ham() == null ? "" : bai.ham(), bai.cacBuoc(), bai.khaiBaoKetLuan(), bai.buocBatDau(), nopToi, daLuu);
+        if (bai.ham() == null) {
+            payload.remove("ham");
+            payload.put("bai_toan", content.duKienCham(bai.problemId(), bai.phienBan()));
+        }
+        return payload;
+    }
+
     /** SHA-256 hex chữ thường của JSON payload. */
     public static String bam(Map<String, ?> yeuCau) {
         try {
