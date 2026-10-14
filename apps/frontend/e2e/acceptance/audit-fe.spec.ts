@@ -33,9 +33,13 @@ test('audit: animation chờ hữu hạn và giảm chuyển động',async({pag
  release();await expect(page.getByRole('heading',{name:'Chưa có bài',exact:true})).toBeVisible();
 });
 
-guestTest('audit: khách không gọi refresh ở trang công khai và đăng nhập',async({page})=>{
+guestTest('audit: khách chỉ thử refresh một lần, sau 401 không gọi lại',async({page})=>{
+ // Trình duyệt chưa có dấu phiên (có thể còn cookie từ bản cũ) được thử một lần; 401 thì nhớ là khách.
  const requests:string[]=[];page.on('request',request=>{if(request.url().includes('/api/auth/refresh'))requests.push(request.url());});
+ await page.route('**/api/auth/refresh',route=>route.fulfill({status:401,json:{detail:'Chưa đăng nhập.'}}));
  await page.goto('/');await guestExpect(page.getByRole('heading',{level:1})).toBeVisible();
  await page.goto('/dang-nhap');await guestExpect(page.getByRole('heading',{level:1})).toBeVisible();
- guestExpect(requests).toEqual([]);
+ await page.goto('/');await guestExpect(page.getByRole('heading',{level:1})).toBeVisible();
+ guestExpect(requests.length).toBeLessThanOrEqual(1);
+ guestExpect(await page.evaluate(()=>localStorage.getItem('mathl-co-phien'))).toBe(requests.length?'0':null);
 });

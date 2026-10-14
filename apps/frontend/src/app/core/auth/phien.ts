@@ -86,11 +86,15 @@ function theoKhoa<T>(viec: () => Promise<T>): Promise<T> {
   return khoa ? khoa.request('hta-phien', viec) : viec();
 }
 
-/** Chỉ lưu dấu có phiên, không lưu token hay thông tin tài khoản. Đọc khi giữ Web Lock để các tab thấy đăng xuất mới nhất. */
+/**
+ * Chỉ lưu dấu có phiên, không lưu token hay thông tin tài khoản. Đọc khi giữ Web Lock để các tab thấy đăng xuất mới nhất.
+ * `'0'` là khách đã xác nhận (bỏ qua refresh); thiếu dấu hoặc không đọc được là chưa biết, vẫn thử refresh một lần để
+ * giữ phiên cookie tạo trước khi có dấu này.
+ */
 const GOI_Y_PHIEN = 'mathl-co-phien';
 function coGoiYPhien(): boolean {
-  try { return localStorage.getItem(GOI_Y_PHIEN) === '1'; } catch { return false; }
+  try { return localStorage.getItem(GOI_Y_PHIEN) !== '0'; } catch { return true; }
 }
 function ghiGoiYPhien(co: boolean): void {
-  try { if (co) localStorage.setItem(GOI_Y_PHIEN, '1'); else localStorage.removeItem(GOI_Y_PHIEN); } catch { /* Trình duyệt có thể tắt lưu trữ. */ }
+  try { localStorage.setItem(GOI_Y_PHIEN, co ? '1' : '0'); } catch { /* Trình duyệt có thể tắt lưu trữ. */ }
 }
