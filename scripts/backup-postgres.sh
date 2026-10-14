@@ -15,6 +15,9 @@ compose_service=${BACKUP_COMPOSE_SERVICE:-db}
 [[ $backup_mode == compose || $backup_mode == pg ]] || fail 'BACKUP_MODE phải là compose hoặc pg.'
 [[ $retention_days =~ ^[1-9][0-9]{0,3}$ ]] || fail 'BACKUP_RETENTION_DAYS phải từ 1 đến 9999.'
 [[ -n $backup_dir && $backup_dir != / ]] || fail 'BACKUP_DIR phải là thư mục sao lưu riêng.'
+# Chuẩn hóa vật lý (theo cả symlink) trước cả dry-run để lịch cron được kiểm đúng như lúc chạy thật.
+resolved_dir=$(realpath -m -- "$backup_dir")
+[[ $resolved_dir != / ]] || fail 'BACKUP_DIR phải là thư mục sao lưu riêng.'
 [[ $# -le 1 ]] || fail 'Dùng: backup-postgres.sh [--dry-run]'
 case ${1:-} in
   --dry-run)
@@ -25,7 +28,7 @@ case ${1:-} in
 esac
 
 mkdir -p -- "$backup_dir"
-backup_dir=$(cd -- "$backup_dir" && pwd)
+backup_dir=$(cd -P -- "$backup_dir" && pwd -P)
 [[ $backup_dir != / ]] || fail 'BACKUP_DIR phải là thư mục sao lưu riêng.'
 timestamp=$(date -u +%Y%m%dT%H%M%SZ)
 # mktemp tránh ghi đè khi hai lượt chạy cùng giây; tệp chưa hoàn tất không mang đuôi .dump.

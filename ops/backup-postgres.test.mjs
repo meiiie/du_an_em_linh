@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, readdirSync, statSync, utimesSync, existsSync, rmSync } from 'node:fs';
+import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, readdirSync, statSync, utimesSync, existsSync, rmSync, symlinkSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { spawnSync } from 'node:child_process';
@@ -101,5 +101,14 @@ test('BACKUP_DIR resolving to / after canonicalization is rejected before dump o
   const r = f.run({ BACKUP_DIR: `${f.root}/../../../../../../../..` });
   assert.notEqual(r.status, 0);
   assert.match(r.stderr, /BACKUP_DIR/);
+  assert.equal(existsSync(f.trace), false);
+});
+
+test('dry-run rejects BACKUP_DIR that canonicalizes or symlinks to /', t => {
+  const f = fixture(t);
+  assert.notEqual(f.run({ BACKUP_DIR: '/tmp/..' }, ['--dry-run']).status, 0);
+  symlinkSync('/', join(f.root, 'root-link'));
+  const r = f.run({ BACKUP_DIR: join(f.root, 'root-link') });
+  assert.notEqual(r.status, 0);
   assert.equal(existsSync(f.trace), false);
 });

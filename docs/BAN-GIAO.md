@@ -116,7 +116,7 @@ Script sao lưu custom PostgreSQL, kiểm thử và hướng dẫn cron, sao ch�
 SHA nền `a12b20d945e6f02815a2ae3b495267577d0df25b`; diff chưa commit.
 
 - Từ `services/core`: `SPRING_PROFILES_ACTIVE=test JAVA_HOME=$HOME/.local/jdk/jdk-25.0.4.1+1 ./mvnw -q -o -Dmaven.repo.local=/tmp/mathl-ops-m2 -Dtest=JwtConfigTest,AuthControllerTest,CleanArchitectureTest,DddArchitectureTest,NullMarkedPackagesTest -DargLine=-javaagent:/tmp/mathl-ops-m2/org/mockito/mockito-core/5.23.0/mockito-core-5.23.0.jar test`: **47/47 đạt**, 0 lỗi/0 bỏ qua, exit 0. Gồm 16 JWT, 13 API xác thực và 18 kiến trúc/gói.
-- Node 22.23.3: `node --test --experimental-test-isolation=none ops/backup-postgres.test.mjs`: **6/6 đạt**, exit 0. Kiểm chế độ PG/Compose, quyền tệp, giữ/xóa đúng bản, lỗi dump/mục lục, dry-run và cấu hình sai; dùng công cụ giả, chưa phục hồi archive thật.
+- Node 22.23.3: `node --test --experimental-test-isolation=none ops/backup-postgres.test.mjs`: **8/8 đạt**, exit 0. Kiểm chế độ PG/Compose, quyền tệp, giữ/xóa đúng bản, lỗi dump/mục lục, dry-run, cấu hình sai và BACKUP_DIR quy về `/`; dùng công cụ giả, chưa phục hồi archive thật.
 - `shellcheck scripts/backup-postgres.sh`, `bash -n scripts/backup-postgres.sh`: exit 0.
 - `docker compose --env-file /dev/null -f compose.v2.yaml config -q` và cùng lệnh với `docker-compose.yml`: exit 0, không đọc tệp bí mật. YAML Render/prod parse hợp lệ; đối chiếu 27 biến runtime tường minh trong core/math không thiếu biến ở `.env.example`. `node scripts/check-flat.mjs`: đạt; `git diff --check`: exit 0.
 

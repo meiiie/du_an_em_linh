@@ -38,6 +38,6 @@ Windows: `mvnw.cmd verify`. Cần JDK 25 (`JAVA_HOME`); wrapper tự tải Maven
 - Cần dữ liệu của module khác (người dùng, lớp, cài lớp…) thì thêm hàm vào cổng `application.port` của module đó, không import `domain` hay `repository` của nó: ArchUnit chặn (#111).
 - Test CSDL dùng `TestcontainersConfiguration` (PostgreSQL 18, `@ServiceConnection`); không mock `JpaRepository`.
 - Không ghi email, mật khẩu, token vào log: `toString()` của `User`, `Email`, DTO đăng nhập đã che.
-- Khóa JWT: `APP_IDENTITY_JWT_SECRET` (base64 ≥ 32 byte); trống thì dùng khóa tạm, token mất hiệu lực khi khởi động lại.
+- Khóa JWT: `APP_IDENTITY_JWT_SECRET` (base64 ≥ 32 byte); profile `prod` bắt buộc có khóa và từ chối khởi động nếu trống; profile khác trống thì dùng khóa tạm, token mất hiệu lực khi khởi động lại.
 - IP máy khách: `server.forward-headers-strategy: native`, Tomcat chỉ tin `X-Forwarded-For` từ proxy nội bộ. Triển khai sau proxy khác dải mặc định thì đặt `server.tomcat.remoteip.internal-proxies`, nếu không mọi người dùng chung IP của proxy và khóa F-10 lan sang nhau.
 - Spring Boot 4: test starter tách theo công nghệ (`spring-boot-starter-webmvc-test`, …); `@AutoConfigureMockMvc` ở `org.springframework.boot.webmvc.test.autoconfigure`; dùng `MockMvcTester`.

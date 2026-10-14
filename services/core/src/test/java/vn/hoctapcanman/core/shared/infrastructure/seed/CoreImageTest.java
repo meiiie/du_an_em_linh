@@ -21,15 +21,13 @@ class CoreImageTest {
         .withCommand("echo ready; sleep 300")
         .waitingFor(Wait.forLogMessage(".*ready.*\\n",1));
 
-    @Test void anhDocDuNoiDungSeedDevKhongCanGanThuMucMayChu() throws Exception {
+    /** Image production chỉ mang nội dung chuẩn; seed dev do Compose gắn chỉ đọc lúc chạy demo. */
+    @Test void anhChiMangNoiDungChuanKhongMangSeedDev() throws Exception {
         var source = core.execInContainer("printenv","APP_CONTENT_SOURCE");
         assertThat(source.getExitCode()).isZero();
         assertThat(source.getStdout().strip()).isEqualTo("/app/noi-dung");
-        for (String file : new String[]{"danh-muc.json","ky-nang.json","khung-buoc.json","tai-lieu.json",
-                "bang-dao-ham.json","bang-chuong.json","bai-tap.json","bai-lam-lich-su.json"}) {
-            assertThat(core.execInContainer("test","-r","/app/noi-dung/dev/nguyen-trai/"+file).getExitCode())
-                .as("Dữ liệu dev đọc được: %s",file).isZero();
-        }
+        assertThat(core.execInContainer("test","-e","/app/noi-dung/dev").getExitCode())
+            .as("Image production không được chứa data/dev").isNotZero();
         for (String directory : new String[]{"supham","v0"}) {
             assertThat(core.execInContainer("test","-d","/app/noi-dung/"+directory).getExitCode()).isZero();
         }
