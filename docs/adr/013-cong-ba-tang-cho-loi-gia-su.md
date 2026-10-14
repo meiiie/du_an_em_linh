@@ -220,3 +220,57 @@ SHA-256 hai corpus vẫn lần lượt là `7e861056065a594c9e57f0d1015e5116e651
 Lệnh tập trung (từ `services/math`): `.venv/bin/pytest -p no:warnings -q tests/test_loi_giang_kd0007.py tests/test_loi_giang_kd0006.py tests/test_loi_giang_kd0006_tong_quat.py tests/test_loi_giang.py -k 'not router'`: **1.009/1.009 đạt**, mã thoát 0, gồm **204/204 ca KD-0006**. Kết luận **0 lộ** là số đo trên các ca đối kháng đã chạy và ranh giới ngữ pháp đóng; không phải tuyên bố chứng minh mọi câu tiếng Việt ngoài lớp hay mọi rò sư phạm theo ngữ cảnh đều bị bắt.
 
 Lệnh toàn bộ (từ `services/math`): `PYTHONPATH=/tmp/mathl-kd0007-runtime:. .venv/bin/pytest -p no:warnings -q`: **2.858/2.858 đạt**, không bỏ qua ca nào, mã thoát 0, **2 phút 36,479 giây**. Bao gồm cả router, KD-0005, KD-0006 và các corpus trong `tests/data`. Lệnh trần `.venv/bin/pytest -p no:warnings -q` lại kẹt ở `TestClient`/AnyIO và đã dừng bằng ngắt, mã thoát 130. Probe riêng `timeout 35s .venv/bin/pytest -p no:warnings -q -o faulthandler_timeout=20 tests/test_bao_mat_dich_vu.py::test_tran_timeout_20s` tái hiện chờ `selectors.select`/`BlockingPortal`, kết thúc timeout 124. Cùng probe với polling đạt. Tệp tạm `sitecustomize.py` chỉ giới hạn mỗi lần `EpollSelector.select` chờ tối đa 0,01 giây, như điều kiện chạy KD-0006 đã ghi ở trên; không đổi mã/assertion/phụ thuộc của repo hoặc hạn giờ sandbox CAS. Đây là điều kiện môi trường của số đo toàn bộ, không tuyên bố lệnh trần đã hoàn tất.
+
+## Bổ sung — KD-0008 (2026-10-14)
+
+**Phạm vi được chủ repo giao:** giảm từ chối câu GLM chỉ giao thao tác/hỏi kế hoạch, đồng thời chặn kết quả cài trong câu hỏi. Không đổi dữ liệu sư phạm, kiểm định đóng băng hoặc dịch vụ khác.
+
+### Định nghĩa lớp an toàn
+
+Mở rộng `THAO_TAC_THUAN` bằng ngữ pháp **khớp toàn câu**, gồm các thao tác nối bằng `và/rồi/để/hay/sau đó`, với các vị trí chỉ nhận đối tượng chung:
+
+- Thể hỏi/kế hoạch `em định/sẽ/dự định … như thế nào/bằng cách nào`, `nhé?`, `chứ?`; thể `em đã …` chỉ được miễn theo lớp mới khi hỏi `chưa?`, không khi kể/xác nhận học sinh đã có kết quả.
+- `đặt/giải (phương trình) đạo hàm [em vừa tính] bằng không` chỉ gọi điều kiện, không cung cấp nghiệm. Phải có nguyên mảnh `y'=0` trong một dòng bảng dùng được, kiểm lại tầng 1 đạt và có trích dẫn tài liệu; phán quyết ghi dòng cùng ba tầng. Bảng rỗng, thiếu mảnh, thiếu trích dẫn hoặc sai không cấp ngoại lệ.
+- `một giá trị đại diện`, `một điểm thử`, `giá trị x`, `một/mỗi/từng khoảng`, `hai mốc` là đối tượng/định từ, không là giá trị. Không nhận vế phải sau điểm thử, tọa độ, dấu hay vị trí trái/phải/thứ tự.
+- `khoảng đồng biến`, `khoảng nghịch biến`, danh mục `khoảng đồng biến, nghịch biến [và cực trị]`, `chiều biến thiên`, `cực trị`, `loại cực trị` là bổ ngữ của việc tìm/đọc/xác định/kết luận. Không gán một chiều cụ thể cho khoảng/đoạn đã chỉ định. Hỏi `đồng biến hay nghịch biến` hoặc `ở điểm nào` vẫn để học sinh trả lời. `loại cực trị tại mỗi mốc` giao phân loại; `cực trị tại mỗi mốc` ngầm cho sẵn sự tồn tại nên bị chặn.
+- `[n]` chỉ đứng trong vị trí tham chiếu dòng/quy tắc, không phải giấy phép cho lời văn còn lại. Trích hàm phải đóng dấu phân cách, LaTeX hợp lệ và khớp **toàn hàm của đề** sau chuẩn hóa cách viết hiện có; không khai triển, đổi thứ tự, rút gọn hoặc dùng riêng tử/mẫu làm cả hàm. Ghi `TRICH_DE_BAI/DAT`. `$x$` chỉ có slot tên biến trong câu hỏi tập xác định, ghi `KY_HIEU/DAT`; không che đẳng thức, chỉ số hay giá trị.
+- Với các câu live mới: nhận lời nhắc tập trung vào bước tính đạo hàm, câu hỏi có phép chia/căn nào hạn chế tập xác định và lời yêu cầu học sinh tự kiểm kết quả. Đây không phải xác nhận đúng bài làm. Hỏi `hay dựa vào hệ số bậc hai?` chỉ nêu cách làm; cho dấu/giá trị hệ số hoặc kết luận đã chọn từ hệ số vẫn bị chặn.
+
+Không khớp lớp mới thì tiếp tục KD-0005/KD-0006, **không tự cho qua**. Bổ sung ứng viên phải kiểm trên đường này cho điểm thử/giá trị đại diện có vế phải, kết luận đơn điệu gán cho khoảng/đoạn, vị trí cực trị/nghiệm/điểm tới hạn bằng lời, xác nhận kết quả và kết luận được gợi qua hệ số. Phân biệt `cực trị ở [5]` (tham chiếu) với `cực trị ở mốc bên trái` (vị trí). Không nới quy tắc ngoài bảng, số, dấu, biểu thức viết bằng chữ hoặc xác nhận của gia sư.
+
+Ngữ pháp không có slot lời văn tùy ý. Nhánh thao tác chỉ được chốt sau khi khớp ranh giới; tránh quay lui tăng theo cấp số nhân khi lặp tiền tố thao tác. Giới hạn đầu vào, tách câu, xử lý lỗi đóng mặc định và `/v1/filter` trước job giữ nguyên.
+
+### Bằng chứng kiểm định
+
+Nền Git: **`8537bfb1febfee095ba58ffd960071af8c9ffccd`**. SHA-256:
+
+| Tệp | SHA-256 |
+| --- | --- |
+| `services/math/app/loi_giang.py` | `6476d3562b7fb4d41db000a6d7f93dd799157ce21a1d880e8cb2cb21df6ebcfd` |
+| `services/math/tests/test_loi_giang_kd0008.py` | `fb15c3b95d4b781c347c0b4b5c9e5668a1e43938f204213950f81a1bf7f6f18e` |
+| `services/math/tests/data/tu-choi-glm-2026-10-14c.tsv` | `16baee58afa43d7a8e510fa05db6a40ac33695aeb3ea4997810ebf450f2f5b4d` |
+
+TSV tăng từ 16 lên **35 dòng / 33 câu khác nhau** trong phiên. Đọc lại toàn bộ, gán nhãn thủ công và lý do trong `AN_TOAN`; **35/35 an toàn và được giữ nguyên** với hàm đề khớp/bảng khóa. **Không giữ từ chối câu TSV nào** (`GIU_TU_CHOI` rỗng). Mã nền giữ **0/35** trên cùng đầu vào. Dòng thêm mà chưa có nhãn sẽ làm test lỗi, không tự suy nhãn từ cổng.
+
+`tests/test_loi_giang_kd0008.py` có **1.571 ca**:
+
+| Nhóm | Số ca | Kỳ vọng |
+| --- | ---: | --- |
+| TSV, thao tác ở bốn thể câu, tên nhóm chưa điền, NFC, hai chiều để ngỏ, hỏi vị trí chưa điền | 90 | Giữ nguyên |
+| Lõi lộ × thể hỏi/kế hoạch × bảng rỗng/khóa | 568 | Bỏ |
+| Chen mệnh đề lộ vào 33 câu live × 6 hậu tố | 198 | Bỏ |
+| Gán đơn điệu cho khoảng qua 5 động từ × 2 chiều × 3 giới từ × 5 kiểu khoảng × 4 khung | 600 | Bỏ |
+| Vế phải điểm thử, Unicode/không dấu, ví dụ nguyên văn, hệ số, xác nhận, vị trí không dùng số và trích đề kèm kết luận | 95 | Bỏ |
+| Trích sai/hỏng và điều kiện thiếu bảng dùng được | 16 | Bỏ |
+| Chuỗi 120 thao tác, ba kiểu tiền tố, chèn kết quả cuối chuỗi; tiến trình thử có hạn 5 giây | 3 | Bỏ, không treo |
+| Câu kế tiếp và giới hạn đầu vào | 1 | Chỉ giữ câu an toàn; đầu vào quá dài đóng |
+
+Tổng **1.461 ca cài nội dung lộ: 0/1.461 được giữ nhầm**; bản nền giữ nhầm **492/1.461** trên cùng nhãn độc lập. Cộng 16 ca trích/bảng không hợp lệ và 3 ca chuỗi dài: **1.480 ca phải bỏ**. Kết luận 0 lộ là số đo trên các ca đã chạy, không phải chứng minh cho mọi câu tiếng Việt ngoài lớp.
+
+Hai reviewer độc lập theo `tutor-safety` đã rà phạm vi sư phạm và fail-closed/quyền riêng tư. Các lỗi họ phát hiện (vế phải điểm thử, vị trí không dùng số, gán đơn điệu qua đường KD-0006, kết luận từ hệ số, câu kể xác nhận và quay lui regex) đã được thêm ca trước khi sửa. Reviewer Sư phạm chạy lại 600 biến thể khoảng: **0 lộ**; đọc lại TSV: **35/35 được giữ**. Không sửa/xóa assertion cũ hay corpus cũ để đạt ngưỡng.
+
+Lệnh tập trung (từ `services/math`): `PYTHONPATH=. .venv/bin/pytest -p no:warnings -q -o addopts='' tests/test_loi_giang_kd0008.py tests/test_loi_giang_kd0007.py tests/test_loi_giang_kd0006.py tests/test_loi_giang_kd0006_tong_quat.py tests/test_loi_giang.py -k 'not router'`: **2.580 đạt, 1 router không chọn**, mã thoát 0, **7,94 giây**.
+
+Lệnh toàn bộ (từ `services/math`): `LD_PRELOAD=/tmp/kd0008-epoll.so PYTHONPATH=. .venv/bin/pytest -p no:warnings -q -o addopts='' -o faulthandler_timeout=60`: **4.429/4.429 đạt**, không bỏ qua ca nào, mã thoát 0, **158,94 giây**. `-o addopts=''` chỉ bỏ lần `-q` thêm trong cấu hình để hiện tổng số; faulthandler chỉ phục vụ chẩn đoán nếu kẹt. Toàn bộ 2.858 ca nền và 1.571 ca mới đều chạy.
+
+**Điều kiện môi trường:** lệnh không có hỗ trợ polling vẫn kẹt AnyIO/`TestClient` như KD-0006/KD-0007. Probe `PYTHONPATH=. .venv/bin/pytest -p no:warnings -q -o faulthandler_timeout=20 tests/test_bao_mat_dich_vu.py::test_tran_timeout_20s` ghi stack chờ `EpollSelector.select`/`BlockingPortal`, dừng bằng ngắt, mã thoát 130. Probe cùng ca với hỗ trợ polling đạt, **1/1**, **0,59 giây**. `/tmp/kd0008-epoll.so` chỉ giới hạn từng lượt `epoll_wait/epoll_pwait` xuống tối đa 10 ms; đồng hồ và hạn giờ gốc vẫn do event loop/sandbox kiểm. Không đổi mã HTTP, CAS, assertion, cấu hình pytest hay phụ thuộc của repo. SHA-256 nguồn tạm `/tmp/kd0008-epoll.c`: `993f1700016588b5946aa8ce0647b4bb5a3d9c869a0c89c96c5d4652cab92cc0`; thư viện: `47c2597c88748685c2631ba493310da5e076fa48ad0b2218596471e3ffe6d42b`. Không tuyên bố lệnh không có hỗ trợ môi trường đã hoàn tất.
