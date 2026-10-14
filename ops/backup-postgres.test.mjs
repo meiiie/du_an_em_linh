@@ -95,3 +95,11 @@ test('invalid retention/mode and unexpected arguments fail before side effects',
   assert.ok(!existsSync(f.trace));
   assert.deepEqual(readdirSync(f.backups), []);
 });
+
+test('BACKUP_DIR resolving to / after canonicalization is rejected before dump or deletion', t => {
+  const f = fixture(t);
+  const r = f.run({ BACKUP_DIR: `${f.root}/../../../../../../../..` });
+  assert.notEqual(r.status, 0);
+  assert.match(r.stderr, /BACKUP_DIR/);
+  assert.equal(existsSync(f.trace), false);
+});

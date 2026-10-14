@@ -26,6 +26,7 @@ esac
 
 mkdir -p -- "$backup_dir"
 backup_dir=$(cd -- "$backup_dir" && pwd)
+[[ $backup_dir != / ]] || fail 'BACKUP_DIR phải là thư mục sao lưu riêng.'
 timestamp=$(date -u +%Y%m%dT%H%M%SZ)
 # mktemp tránh ghi đè khi hai lượt chạy cùng giây; tệp chưa hoàn tất không mang đuôi .dump.
 partial=$(mktemp "$backup_dir/mathl-$timestamp-XXXXXX.partial")
