@@ -145,7 +145,8 @@ test('v2 có 30 ca: năm bước ở ba cấp, hội thoại 5–8 lượt, nén
   assert.ok(cases.filter(c => c.requireCompaction).every(c => c.turns.every(t => t.cauHoi.length >= 1800 && t.cauHoi.length <= 2000)));
   assert.equal(cases.at(-1).cancel, true);
   assert.ok(buildSessionCases().every(c => c.missing));
-  assert.ok(buildSessionCases({ maBai: 'A', cacBuoc: [steps[1]] }).some(c => c.missing));
+  assert.ok(buildSessionCases({ maBai: 'A', cacBuoc: [] }).every(c => c.missing));
+  assert.ok(buildSessionCases({ maBai: 'A', cacBuoc: [steps[1]] }).every(c => !c.missing && c.turns.every(t => t.maBuoc === 'B.DH.DAOHAM')));
 });
 
 test('pacing có sàn 2200ms dù cấu hình cho phép nhanh hơn', () => {
@@ -232,7 +233,7 @@ test('phản hồi lặp giữa các ca làm cả hai trượt; trong cùng ca k
 
 test('chỉ ghi số đo nén từ API, không ghi nội dung tomTat', () => {
   assert.deepEqual(compactionSnapshot({ session: { summaryThrough: 7, tomTat: 'nội dung bí mật', tokenCount: 100 } }), { summaryThrough: 7, summaryPresent: true, tokenCount: 100 });
-  assert.equal(compactionSnapshot({ session: { summaryThrough: 7 } }), null);
+  assert.deepEqual(compactionSnapshot({ session: { summaryThrough: 7 } }), { summaryThrough: 7, summaryPresent: null, tokenCount: null });
   assert.equal(compactionSnapshot({ session: { summaryThrough: -1, tomTat: '' } }), null);
 });
 
@@ -247,10 +248,13 @@ test('regenRate là tỷ lệ lượt có regen, TTFT null không trở thành 0
   assert.equal(summary.ttftMs.count, 2);
 });
 
-function fixture({ compact = true, canned = false, repeated = false, cancelWins = true, failStream = false, initialSummaryThrough = 0 } = {}) {
-  let current = Date.parse('2026-10-14T00:00:00Z'), count = 0, summaryThrough = initialSummaryThrough;
+const assignmentId = index => `11111111-1111-4111-8111-${String(index + 1).padStart(12, '0')}`;
+function fixture({ compact = true, canned = false, repeated = false, cancelWins = true, failStream = false, initialSummaryThrough = 0,
+  problems = [{ ...practice, giaoBaiId: assignmentId(0) }], compactionDelayMs = 0, omitSummary = false, stuck = false } = {}) {
+  let current = Date.parse('2026-10-14T00:00:00Z'), count = 0;
   let cancelStream, activeTurn, lastStatus = 'completed';
-  const calls = [], logins = [], logs = [];
+  const calls = [], logins = [], logs = [], sessions = new Map();
+  let state;
   const env = { MATHL_EVAL_EMAIL: 'hs-thu@example.test', MATHL_EVAL_PASSWORD: 'mật-khẩu-giả-lập', CORE_URL: 'http://core.example.test', GLM_RATE_LIMIT_REQUESTS: '10000', GLM_RATE_LIMIT_WINDOW: '1s', MATHL_EVAL_ASSIGNMENTS: '{"A":"11111111-1111-4111-8111-111111111111"}' };
   const fetchImpl = async (url, init) => {
     calls.push({ path: url.pathname, init, at: current });
@@ -258,31 +262,49 @@ function fixture({ compact = true, canned = false, repeated = false, cancelWins 
     const path = url.pathname;
     if (path === '/api/auth/login') { logins.push(current); return Response.json({ accessToken: `token-bí-mật-${logins.length}` }); }
     assert.equal(init.headers.Authorization, `Bearer token-bí-mật-${logins.length}`);
-    if (path === '/api/hs/bai') return Response.json([{ maBai: 'A' }]);
+    if (path === '/api/hs/bai') return Response.json(problems.map(({ maBai }) => ({ maBai })));
     if (path === '/api/hs/che-do') return Response.json([{ id: 'A', status: 'ON_TAP', details: {} }]);
-    if (path === '/api/hs/bai/A') return Response.json(practice);
+    if (path.startsWith('/api/hs/bai/')) return Response.json(problems.find(p => p.maBai === decodeURIComponent(path.split('/').at(-1))));
     if (path === '/api/hs/gia-su/v2/phien') {
-      assert.deepEqual(JSON.parse(init.body), { giaoBaiId: '11111111-1111-4111-8111-111111111111' });
-      return Response.json({ sessionId: 'session', lastSeq: count * 4 });
+      const { giaoBaiId } = JSON.parse(init.body);
+      const problem = problems.find(p => p.giaoBaiId === giaoBaiId);
+      assert.ok(problem, 'UUID phải lấy từ chi tiết bài');
+      if (!sessions.has(giaoBaiId)) sessions.set(giaoBaiId, { id: sessions.size ? `session-${sessions.size}` : 'session',
+        problem, turns: [], summaryThrough: initialSummaryThrough, pendingSummary: null });
+      state = sessions.get(giaoBaiId);
+      return Response.json({ sessionId: state.id, lastSeq: count * 4 });
     }
     if (path.endsWith('/cancel')) {
       assert.deepEqual(JSON.parse(init.body), { turnId: activeTurn });
       lastStatus = cancelWins ? 'cancelled' : 'completed';
       cancelStream();
-      return Response.json({ sessionId: 'session', turnId: activeTurn, status: lastStatus });
+      state.turns[0].status = lastStatus;
+      return Response.json({ sessionId: state.id, turnId: activeTurn, status: lastStatus });
     }
-    assert.equal(path, '/api/hs/gia-su/v2/phien/session/luot');
-    if (init.method !== 'POST') return Response.json({ session: { id: 'session', summaryThrough, tomTat: summaryThrough ? 'nội dung tóm tắt bí mật' : '', tokenCount: 99 }, turns: count ? [{ id: activeTurn, status: lastStatus }] : [] });
+    state = [...sessions.values()].find(s => path === `/api/hs/gia-su/v2/phien/${s.id}/luot`);
+    assert.ok(state, `Đường dẫn phiên không hợp lệ: ${path}`);
+    if (init.method !== 'POST') {
+      if (state.pendingSummary && current >= state.pendingSummary.at) {
+        state.summaryThrough = state.pendingSummary.through;
+        state.pendingSummary = null;
+      }
+      return Response.json({ session: { id: state.id, summaryThrough: state.summaryThrough,
+        ...(!omitSummary ? { tomTat: state.summaryThrough ? 'nội dung tóm tắt bí mật' : '' } : {}), tokenCount: 99 }, turns: state.turns.slice(0, 1) });
+    }
     const body = JSON.parse(init.body);
     assert.match(body.requestId, /^[0-9a-f-]{36}$/);
     assert.ok(body.cauHoi.length <= 2000);
+    assert.ok(state.problem.cacBuoc.some(s => s.maBuoc === body.maBuoc), 'Bước phải thuộc bài đang hỏi');
+    assert.ok(state.turns.every(t => t.status !== 'generating'), 'Không chồng lượt đang sinh');
     count++;
-    if (compact && count % 5 === 0) summaryThrough = count - 3;
     activeTurn = `turn-${count}`;
+    lastStatus = stuck ? 'generating' : 'completed';
+    state.turns.unshift({ id: activeTurn, status: lastStatus });
+    if (compact && state.turns.length >= 5) state.pendingSummary = { through: state.turns.length - 3, at: current + compactionDelayMs };
     const isCancel = body.cauHoi === 'Em cần một gợi ý để tự tìm cách làm bước này.';
     const text = canned ? CANNED_REPLIES[0] : repeated ? 'Em hãy tự chọn quy tắc phù hợp nhé?' : `Em hãy tự kiểm tra lựa chọn ${'a'.repeat(count)} nhé?`;
     const events = v2(text, { requestId: body.requestId, regen: count % 3 === 0 });
-    events.forEach(e => { e.data.turnId = activeTurn; e.data.seq += count * 10; });
+    events.forEach(e => { e.data.sessionId = state.id; e.data.turnId = activeTurn; e.data.seq += count * 10; });
     if (isCancel) {
       const stream = new ReadableStream({ start(controller) {
         controller.enqueue(new TextEncoder().encode(frame('start', events[0].data)));
@@ -322,6 +344,9 @@ test('toàn bộ 30 ca qua HTTP giả lập: v2, nén thật, hủy thật, JSON
     assert.ok(report.summary.regenCount > 0);
     assert.ok(report.summary.ttftMs.count > 70);
     assert.ok(report.results.slice(1).every(r => r.sessionReused));
+    assert.equal(report.sharedSessions.length, 1);
+    assert.deepEqual(report.sharedSessions[0].cases.map(c => c.index), Array.from({ length: 30 }, (_, i) => i + 1));
+    assert.ok(report.results.every(r => r.sessionFinished));
     assert.ok(f.calls.every((c, i) => i === 0 || c.at - f.calls[i - 1].at >= 2200));
     const asks = f.calls.filter(c => c.init.method === 'POST' && c.path.endsWith('/luot'));
     assert.equal(asks.length, report.summary.turns);
@@ -347,7 +372,7 @@ test('lượt đánh giá dài đăng nhập lại sau mười phút, mọi call
 });
 
 test('thiếu UUID giao bài báo trượt 30 ca, không dùng mã bài làm UUID', async () => {
-  const f = fixture();
+  const f = fixture({ problems: [practice] });
   delete f.env.MATHL_EVAL_ASSIGNMENTS;
   const report = await runEvaluation(f.options);
   assert.equal(report.passed, false);
@@ -432,4 +457,139 @@ test('runner vẫn đọc delta khi cancel đợi nhịp, không cộng thời g
   assert.equal(report.passed, true);
   assert.equal(report.summary.cancelledTurns, 1);
   assert.ok(report.results[0].turns[0].ttftMs < 2200);
+});
+
+
+test('mỗi ca chọn assignment khác, ưu tiên NT-LUYEN12/NT-DH12 rồi dùng toàn bộ danh sách', async () => {
+  const problems = ['KHAC', 'NT-DH12-02', 'NT-LUYEN12-01', 'NT-LUYEN-12-03'].map((maBai, i) => ({
+    maBai, giaoBaiId: assignmentId(i), cacBuoc: [{ maBuoc: `B.RIENG${i}.MOT` }, { maBuoc: `B.RIENG${i}.HAI` }],
+  }));
+  const f = fixture({ problems });
+  const report = await runEvaluation({ ...f.options, cases: buildSessionCases(practice).slice(0, 4) });
+  assert.equal(report.passed, true);
+  assert.deepEqual(report.results.map(r => r.maBai), ['NT-DH12-02', 'NT-LUYEN12-01', 'NT-LUYEN-12-03', 'KHAC']);
+  assert.equal(new Set(report.results.map(r => r.sessionId)).size, 4);
+  assert.ok(report.results.every(r => !r.sessionReused && r.sessionFinished));
+  assert.deepEqual(report.sharedSessions, []);
+  assert.equal(f.calls.filter(c => c.path.startsWith('/api/hs/bai/')).length, 4);
+});
+
+test('ít assignment hơn ca thì luân phiên, chỉ tái dùng phiên đã kết thúc và báo ca chia sẻ', async () => {
+  const f = fixture({ problems: ['A', 'B'].map((maBai, i) => ({ ...practice, maBai, giaoBaiId: assignmentId(i) })) });
+  const report = await runEvaluation({ ...f.options, cases: buildSessionCases(practice).slice(0, 5) });
+  assert.equal(report.passed, true);
+  assert.deepEqual(report.results.map(r => r.maBai), ['A', 'B', 'A', 'B', 'A']);
+  assert.deepEqual(report.results.map(r => r.sessionReused), [false, false, true, true, true]);
+  assert.deepEqual(report.results.map(r => r.sharedWithCases), [[3, 5], [4], [1, 5], [2], [1, 3]]);
+  assert.deepEqual(report.sharedSessions.map(s => s.cases.map(c => c.index)), [[1, 3, 5], [2, 4]]);
+  assert.ok(f.logs.some(line => line.includes('Chia sẻ phiên') && line.includes('1, 3, 5')));
+});
+
+test('không tái dùng assignment nếu ca trước chưa xác nhận kết thúc trong lịch sử', async () => {
+  const f = fixture({ failStream: true, stuck: true });
+  const report = await runEvaluation({ ...f.options, cases: buildSessionCases(practice).slice(0, 2) });
+  assert.equal(report.passed, false);
+  assert.equal(report.results[0].sessionFinished, false);
+  assert.equal(report.results[1].turns.length, 0);
+  assert.ok(report.results[1].errors.some(e => e.includes('chưa kết thúc')));
+  assert.equal(f.calls.filter(c => c.path === '/api/hs/gia-su/v2/phien').length, 1);
+});
+
+test('nén async sau done: chỉ summaryThrough từ lịch sử cũng đủ, poll tối đa 30 giây', async () => {
+  const f = fixture({ compactionDelayMs: 12_000, omitSummary: true });
+  const report = await runEvaluation({ ...f.options, cases: buildSessionCases(practice).filter(c => c.requireCompaction).slice(0, 1) });
+  assert.equal(report.passed, true);
+  assert.ok(report.results[0].compaction.observed);
+  assert.ok(report.results[0].compaction.after.summaryThrough > 0);
+  const asks = f.calls.filter(c => c.init.method === 'POST' && c.path.endsWith('/luot'));
+  const lastAsk = asks.at(-1);
+  const polls = f.calls.filter(c => c.path.endsWith('/luot') && c.init.method !== 'POST' && c.at > lastAsk.at);
+  assert.ok(polls.length > 1);
+  assert.ok(polls.at(-1).at - polls[0].at <= 30_000);
+});
+
+test('nén quá muộn không đạt, không gọi poll vượt hạn hoặc phá nhịp HTTP', async () => {
+  const f = fixture({ compactionDelayMs: 60_000, omitSummary: true });
+  const report = await runEvaluation({ ...f.options, cases: buildSessionCases(practice).filter(c => c.requireCompaction).slice(0, 1) });
+  assert.equal(report.passed, false);
+  assert.equal(report.results[0].compaction.observed, false);
+  const lastAsk = f.calls.filter(c => c.init.method === 'POST' && c.path.endsWith('/luot')).at(-1);
+  const polls = f.calls.filter(c => c.path.endsWith('/luot') && c.init.method !== 'POST' && c.at > lastAsk.at);
+  assert.ok(polls.length > 1);
+  assert.ok(polls.at(-1).at - polls[0].at <= 30_000);
+  assert.ok(f.calls.every((c, i) => i === 0 || c.at - f.calls[i - 1].at >= 2200));
+});
+
+test('runner báo TTFT delta đầu riêng với tổng thời gian đọc SSE', async () => {
+  const f = fixture();
+  const report = await runEvaluation({ ...f.options, cases: buildSessionCases(practice).slice(0, 1), fetchImpl: async (url, init) => {
+    const response = await f.options.fetchImpl(url, init);
+    if (init.method !== 'POST' || !url.pathname.endsWith('/luot')) return response;
+    const events = parseSse(await response.text());
+    let index = 0;
+    return new Response(new ReadableStream({ async pull(controller) {
+      await f.options.sleep(index === 2 ? 500 : 20);
+      if (index < events.length) {
+        const e = events[index++];
+        controller.enqueue(new TextEncoder().encode(frame(e.event, e.data)));
+      } else controller.close();
+    } }, { highWaterMark: 0 }), { headers: { 'Content-Type': 'text/event-stream' } });
+  } });
+  assert.equal(report.passed, true);
+  assert.equal(report.results[0].turns[0].ttftMs, 50);
+  assert.equal(report.results[0].turns[0].latencyMs, 570);
+  assert.equal(report.summary.ttftMs.p50, 50);
+  assert.equal(report.summary.totalLatencyMs, 570);
+});
+
+
+test('đủ 30 giao bài thì bộ ca mặc định có 30 phiên riêng và dùng bước của từng bài', async () => {
+  const problems = Array.from({ length: 30 }, (_, i) => ({ maBai: `NT-LUYEN12-${i + 1}`, giaoBaiId: assignmentId(i),
+    cacBuoc: [{ maBuoc: `B.BAI${i + 1}.MOT` }, { maBuoc: `B.BAI${i + 1}.HAI` }] }));
+  const f = fixture({ problems });
+  const report = await runEvaluation(f.options);
+  assert.equal(report.passed, true);
+  assert.equal(report.results.length, 30);
+  assert.equal(new Set(report.results.map(r => r.sessionId)).size, 30);
+  assert.ok(report.results.every(r => !r.sessionReused && r.sessionFinished));
+  assert.deepEqual(report.sharedSessions, []);
+  assert.equal(report.summary.cancelledTurns, 1);
+  assert.equal(report.results.filter(r => r.kind === 'compaction' && r.compaction.observed).length, 2);
+});
+
+test('kiểm lộ đáp án dùng đáp án của bài từng ca, không giữ đáp án bài đầu', async () => {
+  const f = fixture({ problems: ['A', 'B'].map((maBai, i) => ({ ...practice, maBai, giaoBaiId: assignmentId(i) })) });
+  const report = await runEvaluation({ ...f.options, cases: buildSessionCases(practice).slice(0, 2),
+    answers: new Map([['A', { result: 'x+42' }], ['B', { result: 'x+99' }]]), fetchImpl: async (url, init) => {
+      const response = await f.options.fetchImpl(url, init);
+      if (init.method !== 'POST' || !url.pathname.endsWith('/luot')) return response;
+      const events = parseSse(await response.text());
+      events.find(e => e.event === 'delta').data.text = 'Em xem biểu thức x+99 nhé.';
+      return new Response(events.map(e => frame(e.event, e.data)).join(''), { headers: { 'Content-Type': 'text/event-stream' } });
+    },
+  });
+  assert.equal(report.results[0].turns[0].leakCount, 0);
+  assert.ok(report.results[1].turns[0].leakCount > 0);
+  assert.equal(report.results[1].passed, false);
+});
+
+test('poll nén không nhận kết quả đến sau cửa sổ 30 giây', async () => {
+  const f = fixture({ compact: false, omitSummary: true });
+  let doneAt, historyReads = 0;
+  const report = await runEvaluation({ ...f.options, cases: buildSessionCases(practice).filter(c => c.requireCompaction).slice(0, 1),
+    fetchImpl: async (url, init) => {
+      const response = await f.options.fetchImpl(url, init);
+      if (init.method === 'POST' && url.pathname.endsWith('/luot') && JSON.parse(init.body).cauHoi.startsWith('Lượt ghi chú 16.')) doneAt = f.options.now();
+      if (doneAt && init.method !== 'POST' && url.pathname.endsWith('/luot') && ++historyReads > 1) {
+        assert.ok(init.signal instanceof AbortSignal);
+        await f.options.sleep(30_000);
+        const history = await response.json();
+        history.session.summaryThrough = 9;
+        return Response.json(history);
+      }
+      return response;
+    },
+  });
+  assert.equal(report.passed, false);
+  assert.equal(report.results[0].compaction.observed, false);
 });
