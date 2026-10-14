@@ -212,20 +212,26 @@ import vn.hoctapcanman.core.shared.infrastructure.math.*;
     public Optional<String> sanitize(UUID classId,UUID problemId,String draft,String question,List<String> submittedLines) {
         try {
             var solution=solutions.findByProblemId(problemId);
-            if(solution.isEmpty())return Optional.empty();
+            if(solution.isEmpty())throw new WorkspaceException(503,"Bài chưa có căn cứ kiểm toán. Em nhờ giáo viên kiểm tra lại.");
             Object facts=JSON.readValue(solution.get().protectedFactsJson(),Object.class);
-            if(!(facts instanceof List<?> protectedFacts)||protectedFacts.isEmpty())return Optional.empty();
+            if(!(facts instanceof List<?> protectedFacts)||protectedFacts.isEmpty())throw new WorkspaceException(503,"Bài chưa có căn cứ kiểm toán. Em nhờ giáo viên kiểm tra lại.");
             var result=math.call(MathJob.FILTER,Map.of("ban_nhap",draft,"su_kien",facts,"cau_hs",question));
-            if(!(result instanceof MathResult.Ok ok)||!Boolean.TRUE.equals(ok.body().get("cho_phep"))||!Boolean.FALSE.equals(ok.body().get("loi")))return Optional.empty();
+            if (!(result instanceof MathResult.Ok ok) || !Boolean.FALSE.equals(ok.body().get("loi"))) throw new WorkspaceException(503,"Cổng kiểm toán chưa sẵn sàng. Em thử lại sau.");
+            if(!(ok.body().get("cho_phep") instanceof Boolean))throw new WorkspaceException(503,"Cổng kiểm toán chưa sẵn sàng. Em thử lại sau.");
+            if(!Boolean.TRUE.equals(ok.body().get("cho_phep")))return Optional.empty();
             List<Map<String,Object>> formulas=sheets.findCurrent(classId).map(s->s.rows().stream().map(f->Map.<String,Object>of("id",f.code(),"latex",f.latex(),"phat_bieu",f.statement(),"trich_dan",Map.of("tai_lieu",Objects.toString(f.citationPassageId(),"")))).toList()).orElse(List.of());
             String function=problems.findById(problemId).map(p->Objects.requireNonNullElse(p.functionSympy(),"")).orElse("");
             var gate=math.call(MathJob.KIEM_LOI_GIANG,Map.of("cau",draft,"bang_cong_thuc",formulas,"ham",function,"bai_lam_hoc_sinh",submittedLines));
+            if (!(gate instanceof MathResult.Ok cleanResult) || (cleanResult.body().containsKey("loi") && !Boolean.FALSE.equals(cleanResult.body().get("loi")))
+                || !(cleanResult.body().get("thay_bang_goi_y") instanceof Boolean) || !(cleanResult.body().get("cau_sach") instanceof String))
+                throw new WorkspaceException(503,"Cổng kiểm toán chưa sẵn sàng. Em thử lại sau.");
             String sach=gate instanceof MathResult.Ok clean&&Boolean.FALSE.equals(clean.body().get("thay_bang_goi_y"))&&clean.body().get("cau_sach") instanceof String c?c.strip():"";
             if(!draft.equals(sach))db.sql("INSERT INTO tutor_review_queue(id,class_id,problem_id,draft,reason,created_at) VALUES(:id,:cl,:problem,:draft,:reason,:now) ON CONFLICT(class_id,problem_id,draft) DO NOTHING").param("id",UUID.randomUUID()).param("cl",classId).param("problem",problemId).param("draft",draft).param("reason","Cổng công thức chưa xác minh được lời gợi ý; câu này chưa gửi cho học sinh.").param("now",java.sql.Timestamp.from(clock.instant())).update();
             return sach.isBlank()?Optional.empty():Optional.of(sach);
         }
+        catch(WorkspaceException ex) { throw ex; }
         catch(RuntimeException ex) {
-            return Optional.empty();
+            throw new WorkspaceException(503,"Cổng kiểm toán chưa sẵn sàng. Em thử lại sau.");
         }
     }
 

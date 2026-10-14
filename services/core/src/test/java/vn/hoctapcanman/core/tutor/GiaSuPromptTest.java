@@ -21,7 +21,7 @@ class GiaSuPromptTest {
             () -> assertTrue(p.user().contains("chỉ gợi ý cho bước «Đạo hàm»")),
             () -> assertTrue(p.user().contains("[1] Lũy thừa")),
             () -> assertTrue(p.user().contains("f'(x)=3x")),
-            () -> assertTrue(p.user().contains(c.hint())),
+            () -> assertFalse(p.user().contains("Gợi ý thang")),
             () -> assertFalse(p.user().contains(solution)),
             () -> assertFalse(p.user().contains("an@example.test")),
             () -> assertFalse(p.user().contains(problem.toString())),
@@ -44,11 +44,17 @@ class GiaSuPromptTest {
         assertFalse(p.user().contains("0912345678"));
         assertTrue(p.user().contains("Em bị kẹt"));
     }
-    @Test void offlineAdapterHasNoDraft() {
+    @Test void offlineAdapterIsExplicitDevModel() {
         var adapter = new OfflineHintModelAdapter();
         assertEquals("offline", adapter.provider());
         assertTrue(adapter.draft(TutorPrompt.compose(new TutorContext(UUID.randomUUID(), "DH1", "Đề", "x", "B.DH.TXD", "Gợi ý"),
-            new TutorRequest("DH1", "B.DH.TXD", 1, "Em bị kẹt"))).isEmpty());
+            new TutorRequest("DH1", "B.DH.TXD", 1, "Em bị kẹt"))).isPresent());
+    }
+
+    @Test void lockedVietnameseMathTextIsNotMistakenForPersonalData() {
+        var formula=new TutorFormula(1,"d-4","Đơn điệu","y' \\ge 0 \\text{ chỉ tại hữu hạn điểm} \\Rightarrow \\text{đồng biến}","Hàm đồng biến trên khoảng khi đạo hàm không âm.");
+        var context=new TutorContext(UUID.randomUUID(),"DH1","Xét tính đơn điệu của hàm số.","x","B.DH.XETDAU","","Xét dấu",List.of(formula),List.of());
+        assertTrue(TutorPrompt.safeContext(context,"Em bị kẹt"));
     }
 
     @org.junit.jupiter.api.Test void personalDataKeepsTextLocal() {

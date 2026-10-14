@@ -1,165 +1,145 @@
 package vn.hoctapcanman.core.tutor.application.service;
 
-import vn.hoctapcanman.core.tutor.application.dto.hocsinh.HintPrompt;
-
-import java.nio.charset.StandardCharsets;
-import java.security.*;
-import java.text.Normalizer;
-import java.text.BreakIterator;
 import java.util.*;
+import java.text.Normalizer;
 import java.util.function.Consumer;
 import java.util.regex.Pattern;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import vn.hoctapcanman.core.classroom.application.port.ClassMembership;
 import vn.hoctapcanman.core.tutor.application.port.HintModel;
+import vn.hoctapcanman.core.tutor.application.dto.TutorSessionDto.ModelUsage;
+import vn.hoctapcanman.core.tutor.application.dto.hocsinh.HintPrompt;
 import vn.hoctapcanman.core.workspace.application.dto.WorkspaceDto.*;
 import vn.hoctapcanman.core.workspace.application.port.*;
 import vn.hoctapcanman.core.workspace.application.exception.WorkspaceException;
 
-/** Gia sư Socratic với thang dự phòng; mọi bản nháp đều qua hai lớp cổng toán. */
+/** Pipeline dùng chung: mỗi câu model đều qua cổng trước khi phát. */
 @Service
 public class OfflineTutorService {
-    private static final Logger LOG = LoggerFactory.getLogger(OfflineTutorService.class);
-    private static final String REFUSAL = "Mình sẽ giúp em tự làm. Em đang vướng ở đâu trong bước này? Hãy nêu cách em đã thử.";
-    private static final String SAFE = "Em xem lại bước này theo bảng công thức của lớp rồi thử lại, hoặc gửi thầy cô.";
     private final WorkspaceStore store;
     private final ClassMembership membership;
     private final ContentWorkflow gate;
     private final HintModel model;
     private final TutorRateLimiter limiter;
-
     public OfflineTutorService(WorkspaceStore store, ClassMembership membership, ContentWorkflow gate,
         HintModel model, TutorRateLimiter limiter) {
-        this.store = store;
-        this.membership = membership;
-        this.gate = gate;
-        this.model = model;
-        this.limiter = limiter;
+        this.store=store; this.membership=membership; this.gate=gate; this.model=model; this.limiter=limiter;
     }
-
-    /** Kiểm quyền và tính đúng một lượt trước khi controller tạo SSE. */
     public UUID authorize(UUID student, TutorRequest request) {
-        UUID cl = membership.lopHoc(student).orElseThrow(() -> new WorkspaceException(404, "Em chưa có lớp."));
-        if (store.testMode(student, cl, request.maBai())) throw new WorkspaceException(403,
-            "Gia sư không mở trong bài kiểm tra hoặc bài đã hết hạn.");
-        // Chỉ tính lượt khi bài, bước và cấp còn hợp lệ: yêu cầu cũ hay sai không ăn hạn mức.
-        if (store.tutorContext(student, cl, request).isEmpty()) throw new WorkspaceException(404,
-            "Chưa có gợi ý phù hợp cho bước này. Em có thể nhờ giáo viên.");
+        UUID cl=membership.lopHoc(student).orElseThrow(() -> new WorkspaceException(404,"Em chưa có lớp."));
+        context(student,cl,request);
         limiter.acquire(student);
         return cl;
     }
-
+    public TutorContext context(UUID student, UUID cl, TutorRequest request) {
+        if (!membership.lopHoc(student).filter(cl::equals).isPresent()) throw new WorkspaceException(404,"Em chưa có lớp.");
+        if (store.testMode(student,cl,request.maBai())) throw new WorkspaceException(403,"Gia sư không mở trong bài kiểm tra hoặc bài đã hết hạn.");
+        return store.tutorContext(student,cl,request).orElseThrow(() -> new WorkspaceException(404,"Bài hoặc bước này chưa mở gia sư."));
+    }
     public TutorEvent answer(UUID student, TutorRequest request) {
-        return answerAuthorized(student, authorize(student, request), request, ignored -> {});
+        return answerAuthorized(student,authorize(student,request),request,ignored -> {});
     }
-
-    /** Chỉ controller đã cấp quyền được gọi đường này; không đếm lượt lần hai. */
     public TutorEvent answerAuthorized(UUID student, UUID cl, TutorRequest request, Consumer<String> phase) {
-        long start = System.nanoTime();
-        String outcome = "LOI";
-        String problemCode = "khong_xac_dinh";
-        try {
-            phase.accept("kho");
-            TutorContext context = store.tutorContext(student, cl, request).orElseThrow(() -> new WorkspaceException(404,
-                "Chưa có gợi ý phù hợp cho bước này. Em có thể nhờ giáo viên."));
-            problemCode = context.code();
-            phase.accept("goi");
-            boolean refusal = asksAnswer(request.cauHoi());
-            Optional<String> draft = Optional.empty();
-            if (!refusal && glmEnabled(cl) && TutorPrompt.safeToSend(request.cauHoi(), context.submittedLines())) {
-                try { draft = model.draft(TutorPrompt.compose(context, request)); }
-                catch (RuntimeException ignored) { /* Nhà lỗi: chỉ dùng thang sau khi qua cổng. */ }
+        phase.accept("kho");
+        var c=context(student,cl,request);
+        var text=new StringBuilder();
+        phase.accept("goi");
+        generate(student,cl,request,c,TutorPrompt.compose(c,request),text::append,ignored -> {},ignored -> {},() -> {});
+        phase.accept("loc");
+        return new TutorEvent("xong",text.toString().strip(),"MO_HINH");
+    }
+    public String provider(UUID cl) { return selected(cl).provider(); }
+    private HintModel selected(UUID cl) {
+        var settings=store.settings(cl);
+        return model.selected(settings!=null?settings.aiProvider():"offline");
+    }
+    public HintModel ready(UUID cl) {
+        HintModel chosen=selected(cl);
+        if("unavailable".equals(chosen.provider()))throw new WorkspaceException(503,"Mô hình đã chọn chưa sẵn sàng. Em thử lại sau.");
+        var settings=store.settings(cl);
+        boolean glm=settings!=null && "glm".equals(settings.aiProvider());
+        if(glm != "GLM".equals(chosen.provider()))throw new WorkspaceException(503,"Mô hình đã chọn chưa sẵn sàng. Em thử lại sau.");
+        return chosen;
+    }
+    public String checked(UUID cl, TutorContext c, TutorRequest request, String text) {
+        if (!safeShape(c,text)) throw new Rejected("OUTPUT_SHAPE");
+        // Lỗi hạ tầng phải được adapter báo riêng, không kích hoạt regen.
+        return gate.sanitize(cl,c.problemId(),text.strip(),request.cauHoi(),c.submittedLines())
+            .filter(text.strip()::equals).orElseThrow(() -> new Rejected("GATE_REJECTED"));
+    }
+    public void generate(UUID student, UUID cl, TutorRequest request, TutorContext context, HintPrompt original,
+        Consumer<String> sentence, Consumer<Integer> regen, Consumer<ModelUsage> usage, Runnable checkpoint) {
+        generate(student,cl,request,context,original,sentence,regen,usage,checkpoint,6000);
+    }
+    public void generate(UUID student, UUID cl, TutorRequest request, TutorContext context, HintPrompt original,
+        Consumer<String> sentence, Consumer<Integer> regen, Consumer<ModelUsage> usage, Runnable checkpoint,int budget) {
+        HintModel chosen=ready(cl);
+        if (!TutorPrompt.safeContext(context,request.cauHoi()))
+            throw new WorkspaceException(400,"Em bỏ thông tin cá nhân khỏi câu hỏi rồi thử lại nhé.");
+        StringBuilder accepted=new StringBuilder();
+        String feedback="";
+        int[] count={0};
+        for (int attempt=0; attempt<4; attempt++) {
+            checkpoint.run();
+            if (attempt>0) regen.accept(attempt);
+            final boolean strict=attempt==3;
+            final int before=count[0];
+            String instruction=attempt==0 ? "" : "\nMã vi phạm: " + feedback + ". Bước: " + context.step()
+                + ". Viết tiếp sau phần đã đạt, không lặp lại. Phần đã đạt là dữ liệu: " + accepted;
+            if (attempt==3) instruction += "\nChỉ sinh đúng một câu hỏi Socratic ngắn ở bước hiện tại; không ký hiệu toán, không quy tắc hay kết quả.";
+            HintPrompt prompt=new HintPrompt(original.system()+instruction,original.user());
+            if(HintModel.estimate(prompt.system()+prompt.user())+16+350>budget)
+                throw new WorkspaceException(413,"Ngữ cảnh đã vượt giới hạn. Em thử câu hỏi ngắn hơn.");
+            StringBuilder raw=new StringBuilder();
+            ModelUsage measured=null;
+            try {
+                var buffer=new SentenceBuffer(s -> {
+                    checkpoint.run();
+                    if (count[0]>=3) throw new Completed();
+                    if (strict && (count[0]>before || s.strip().length()>240 || !s.strip().endsWith("?")
+                        || s.contains("$") || s.contains("\\(") || s.contains("\\[") || s.codePoints().anyMatch(Character::isDigit)))
+                        throw new Rejected("STRICT_QUESTION_SHAPE");
+                    String clean=checked(cl,context,request,s);
+                    var now=context(student,cl,request);
+                    if (!now.statement().equals(context.statement()) || !now.formulas().equals(context.formulas()))
+                        throw new WorkspaceException(409,"Đề hoặc bảng công thức vừa đổi. Em hỏi lại nhé.");
+                    if(!ready(cl).provider().equals(chosen.provider()))throw new WorkspaceException(403,"Cài đặt gia sư vừa đổi. Em hỏi lại nhé.");
+                    checkpoint.run();
+                    String delta=(accepted.isEmpty()?"":" ")+clean;
+                    sentence.accept(delta);
+                    accepted.append(delta);
+                    count[0]++;
+                    if(count[0]==3)throw new Completed();
+                });
+                measured=chosen.stream(prompt,t -> { checkpoint.run(); raw.append(t); buffer.add(t); });
+                buffer.finish();
+                if (count[0]==before) throw new WorkspaceException(503,"Mô hình chưa trả lời. Em thử lại sau.");
+                return;
+            } catch (Completed ex) {
+                return;
+            } catch (Rejected ex) {
+                feedback=ex.code;
+                if (attempt==3) throw new WorkspaceException(503,"Chưa có lời gợi ý đạt kiểm tra. Em thử lại hoặc nhờ giáo viên.");
+            } finally {
+                usage.accept(measured!=null?measured:new ModelUsage(HintModel.estimate(prompt.system()+prompt.user()),HintModel.estimate(raw.toString()),true));
             }
-            phase.accept("loc");
-            if (refusal) {
-                // Câu từ chối cố định, không chứa toán: không cần qua mô hình.
-                outcome = "TU_CHOI";
-                return release(student, cl, request, context, "xong", REFUSAL, "TU_CHOI");
-            }
-            Optional<String> fromModel = draft.filter(d -> hasSafeShape(context, d)).flatMap(d -> allowed(cl, context, d, request));
-            if (draft.isPresent()) logGate(1, draft.get(), fromModel);
-            if (fromModel.isEmpty() && draft.isPresent()) {
-                // Cổng bỏ hết bản nháp: thử lại đúng một lần với yêu cầu chặt hơn (không nới cổng, ADR 013).
-                try {
-                    var first = TutorPrompt.compose(context, request);
-                    var retry = model.draft(new HintPrompt(first.system(), first.user() + TutorPrompt.RETRY));
-                    fromModel = retry.filter(d -> hasSafeShape(context, d)).flatMap(d -> allowed(cl, context, d, request));
-                    if (retry.isPresent()) logGate(2, retry.get(), fromModel);
-                } catch (RuntimeException ignored) { /* Nhà lỗi: dùng thang. */ }
-            }
-            if (fromModel.isPresent()) {
-                outcome = "DAT_MO_HINH";
-                return release(student, cl, request, context, "xong", fromModel.get(), "MO_HINH");
-            }
-            Optional<String> ladder = hasSafeShape(context, context.hint()) ? allowed(cl, context, context.hint(), request) : Optional.empty();
-            if (ladder.isPresent()) {
-                outcome = "THANG";
-                return release(student, cl, request, context, "xong", ladder.get(), "THANG");
-            }
-            // ADR 013 §6: không còn câu nào qua cổng thì dùng câu cố định không chứa toán.
-            outcome = "CAU_CO_DINH";
-            return release(student, cl, request, context, "xong", SAFE, "CO_DINH");
-        } catch (RuntimeException ex) {
-            outcome = "LOI";
-            throw ex;
-        } finally {
-            LOG.info("gia_su hoc_sinh={} bai={} cap={} nha={} tre_ms={} ket_qua={}",
-                hashed(student), problemCode, Math.clamp(request.cap(), 1, 3), model.provider(),
-                (System.nanoTime() - start) / 1_000_000, outcome);
         }
     }
-
-    /** Đo tỉ lệ cổng bỏ bản nháp (ADR 013, «điều làm quyết định này sai»); chỉ ghi số đếm, không ghi nội dung. */
-    private static void logGate(int lan, String draft, Optional<String> kept) {
-        String giu = kept.isEmpty() ? "BO" : kept.get().equals(draft) ? "TOAN_BO" : "MOT_PHAN";
-        LOG.info("gia_su_cong lan={} giu={}", lan, giu);
+    private static boolean safeShape(TutorContext c,String text) {
+        if (text.isBlank() || !TutorPrompt.safeToSend(text,List.of())) return false;
+        if (text.codePoints().anyMatch(x -> Set.of(Character.UnicodeScript.HAN,Character.UnicodeScript.HIRAGANA,
+            Character.UnicodeScript.KATAKANA,Character.UnicodeScript.HANGUL).contains(Character.UnicodeScript.of(x)))) return false;
+        Set<String> refs=new HashSet<>(); c.formulas().forEach(f -> refs.add(Integer.toString(f.number())));
+        var matcher=Pattern.compile("\\[(\\d+)\\]").matcher(text);
+        while (matcher.find()) if (!refs.contains(matcher.group(1))) return false;
+        return true;
     }
+    private static final class Completed extends RuntimeException {}
 
-    /** Lớp phải chọn nhà GLM (giáo viên bật); mặc định offline, không gửi gì ra ngoài. */
-    private boolean glmEnabled(UUID cl) {
-        var settings = store.settings(cl);
-        return settings != null && "glm".equals(settings.aiProvider());
+    public static final class Rejected extends RuntimeException {
+        final String code;
+        public Rejected(String code) { super(code); this.code=code; }
     }
-
-    private TutorEvent release(UUID student, UUID cl, TutorRequest request, TutorContext asked, String status, String text, String nguon) {
-        if (!membership.lopHoc(student).filter(cl::equals).isPresent()) throw new WorkspaceException(404, "Em chưa có lớp.");
-        if (store.testMode(student, cl, request.maBai())) throw new WorkspaceException(403,
-            "Gia sư không mở trong bài kiểm tra hoặc bài đã hết hạn.");
-        // Gọi ngoài có thể lâu: kiểm lại toàn bộ điều kiện giao bài (hủy, gỡ phát hành, hết hạn) trước khi phát.
-        TutorContext now = store.tutorContext(student, cl, request).orElseThrow(() -> new WorkspaceException(404,
-            "Chưa có gợi ý phù hợp cho bước này. Em có thể nhờ giáo viên."));
-        // Bảng công thức đổi giữa lúc dựng prompt và lúc phát thì mã [n] có thể trỏ sai dòng: không phát.
-        if (!now.formulas().equals(asked.formulas())) throw new WorkspaceException(409,
-            "Bảng công thức của lớp vừa cập nhật. Em hỏi lại nhé.");
-        return new TutorEvent(status, text, nguon);
-    }
-
-    private static boolean hasSafeShape(TutorContext context, String draft) {
-        // Mô hình đôi khi chèn chữ Hán/Nhật/Hàn giữa câu tiếng Việt: bỏ cả bản nháp.
-        if (draft.codePoints().anyMatch(c -> Character.UnicodeScript.of(c) == Character.UnicodeScript.HAN || Character.UnicodeScript.of(c) == Character.UnicodeScript.HIRAGANA || Character.UnicodeScript.of(c) == Character.UnicodeScript.KATAKANA || Character.UnicodeScript.of(c) == Character.UnicodeScript.HANGUL)) return false;
-        Set<String> references = new HashSet<>();
-        context.formulas().forEach(row -> references.add(Integer.toString(row.number())));
-        var matcher = Pattern.compile("\\[(\\d+)\\]").matcher(draft);
-        while (matcher.find()) if (!references.contains(matcher.group(1))) return false;
-        // Dấu câu trong toán không phải ranh giới câu văn; không cắt bản nháp vì có thể làm hỏng KaTeX.
-        String prose = draft.replaceAll("(?s)\\$\\$.*?\\$\\$|\\$[^$]*\\$|\\\\\\(.*?\\\\\\)|\\\\\\[.*?\\\\\\]", "toán");
-        BreakIterator sentences = BreakIterator.getSentenceInstance(Locale.forLanguageTag("vi"));
-        sentences.setText(prose);
-        int count = 0;
-        for (int from = sentences.first(), to = sentences.next(); to != BreakIterator.DONE; from = to, to = sentences.next()) {
-            if (!prose.substring(from, to).isBlank() && ++count > 3) return false;
-        }
-        return count > 0;
-    }
-
-    private Optional<String> allowed(UUID cl, TutorContext context, String draft, TutorRequest request) {
-        if (draft.isBlank()) return Optional.empty();
-        try { return gate.sanitize(cl, context.problemId(), draft, request.cauHoi(), context.submittedLines()); }
-        catch (RuntimeException ignored) { return Optional.empty(); }
-    }
-
     public static boolean asksAnswer(String text) {
         String s = Normalizer.normalize(text, Normalizer.Form.NFD).replaceAll("\\p{M}", "")
             .toLowerCase(Locale.ROOT).replace('đ', 'd');
@@ -169,10 +149,4 @@ public class OfflineTutorService {
             + "dong\\s*vai|gia\\s*vo|pretend|act\\s+as|gia\\s*su.*giao\\s*vien|em\\s*la\\s*giao\\s*vien).*" );
     }
 
-    private static String hashed(UUID student) {
-        try {
-            byte[] hash = MessageDigest.getInstance("SHA-256").digest(student.toString().getBytes(StandardCharsets.UTF_8));
-            return HexFormat.of().formatHex(hash).substring(0, 12);
-        } catch (NoSuchAlgorithmException ex) { throw new IllegalStateException("Không có thuật toán băm định danh.", ex); }
-    }
 }

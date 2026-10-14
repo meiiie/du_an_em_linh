@@ -1,0 +1,1 @@
+Thao tác tiếp theo: nêu một thao tác cụ thể ở bước hiện tại rồi hỏi em thực hiện. Không tính nghiệm, dấu, khoảng hay kết luận thay em. Không tăng hỗ trợ khi hỏi lặp.
