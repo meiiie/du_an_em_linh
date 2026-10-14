@@ -111,7 +111,7 @@ describe('Danh sách giáo viên trên màn hẹp', () => {
       const f=TestBed.createComponent(PhongGiaoVien);f.componentRef.setInput('trang',trang);f.detectChanges();
       const http=TestBed.inject(HttpTestingController);
       http.expectOne('/api/gv/tien-do?lopId=lop1').flush(Array.from({length:21},(_,i)=>({id:'hs'+i,title:'Học sinh '+i,subtitle:'',status:'',details:{skills:[],submitted:0}})));
-      if(trang==='ngan-hang')http.expectOne('/api/gv/ngan-hang?lopId=lop1').flush(Array.from({length:21},(_,i)=>({id:'b'+i,title:'Bài '+i,subtitle:'',status:'DA_PHAT_HANH',details:{code:'CODE'+i,skillCode:'HS',level4:'NHAN_BIET',gate:'DAT',latex:'x'}})));
+      if(trang==='ngan-hang')http.expectOne('/api/gv/ky-nang?lopId=lop1').flush([]);if(trang==='ngan-hang')http.expectOne('/api/gv/ngan-hang?lopId=lop1').flush(Array.from({length:21},(_,i)=>({id:'b'+i,title:'Bài '+i,subtitle:'',status:'DA_PHAT_HANH',details:{code:'CODE'+i,skillCode:'HS',level4:'NHAN_BIET',gate:'DAT',latex:'x'}})));
       await f.whenStable();
       const el=f.nativeElement as HTMLElement;
       expect(el.querySelectorAll('tbody tr')).toHaveLength(10);
@@ -209,4 +209,45 @@ describe('Cảnh báo kẹt cho giáo viên', () => {
     expect(alert.querySelector('a')?.getAttribute('href')).toBe('/gv/hoc-sinh/chi');
     http.verify();
   });
+});
+
+async function teacherPage(trang:'ngan-hang'|'ket-noi-ai'|'cai-dat'){
+ const lop={id:signal('lop1'),ds:signal([{id:'lop1',title:'12A1'},{id:'lop2',title:'12A2'}]),dangTai:signal(false),loi:signal(false),soChoDuyet:signal(0),tai:async()=>{}};
+ TestBed.configureTestingModule({providers:[provideHttpClient(),provideHttpClientTesting(),provideRouter([]),{provide:LopDangChon,useValue:lop}]});
+ const f=TestBed.createComponent(PhongGiaoVien);f.componentRef.setInput('trang',trang);f.detectChanges();
+ const el=f.nativeElement as HTMLElement;
+ for(const d of el.querySelectorAll<HTMLDialogElement>('dialog')){d.showModal=()=>{d.open=true;};d.close=()=>{d.open=false;};}
+ const button=(text:string)=>[...el.querySelectorAll<HTMLButtonElement>('button')].find(b=>b.textContent?.trim()===text)!;
+ return {f,el,lop,button,http:TestBed.inject(HttpTestingController)};
+}
+const catalogStudent={id:'hs1',title:'An',subtitle:'',status:'',details:{skills:[{code:'T12.NT.HS',name:'Hàm số',level4:'NHAN_BIET',level3:'Biết',mastery:0,overridden:false}],submitted:0}};
+const catalogBank={id:'p1',title:'Câu hỏi',subtitle:'',status:'DA_PHAT_HANH',details:{skillCode:'T12.NT.HS',skillName:'Hàm số',level4:'NHAN_BIET',gate:'DAT',latex:'x'}};
+describe('Nhập câu hỏi theo danh mục lớp',()=>{
+ it('chọn kỹ năng có thật, không mã mặc định; gửi đúng mã và đổi lớp xóa lựa chọn',async()=>{
+  const t=await teacherPage('ngan-hang');t.http.expectOne('/api/gv/tien-do?lopId=lop1').flush([catalogStudent]);t.http.expectOne('/api/gv/ngan-hang?lopId=lop1').flush([catalogBank]);t.http.expectOne('/api/gv/ky-nang?lopId=lop1').flush([]);await t.f.whenStable();
+  t.button('Nhập câu hỏi').click();await t.f.whenStable();
+  const form=t.el.querySelector('app-hop-thoai[tieuDe="Nhập câu hỏi"] form') ?? [...t.el.querySelectorAll('form')].find(f=>f.textContent?.includes('Hàm số cần kiểm'))!;
+  const select=form.querySelector<HTMLSelectElement>('select')!;expect(select.value).toBe('');expect([...select.options].map(o=>o.value)).toEqual(['','T12.NT.HS']);
+  select.value='T12.NT.HS';select.dispatchEvent(new Event('input'));select.dispatchEvent(new Event('change'));
+  await t.f.whenStable();
+  for(const input of form.querySelectorAll<HTMLInputElement|HTMLTextAreaElement>('input,textarea')){input.value='x';input.dispatchEvent(new Event('input'));}await t.f.whenStable();
+  expect(t.f.componentInstance['baiModel']().skillCode).toBe('T12.NT.HS');
+  expect(t.f.componentInstance['baiForm']().invalid()).toBe(false);
+  form.dispatchEvent(new Event('submit',{cancelable:true}));const r=t.http.expectOne(req=>req.method==='POST');expect(r.request.body.skillCode).toBe('T12.NT.HS');r.flush({message:'Đã nhập',count:1});
+  await new Promise(r=>setTimeout(r,0));TestBed.tick();t.http.expectOne('/api/gv/ngan-hang?lopId=lop1').flush([catalogBank]);await t.f.whenStable();
+  const cls=t.el.querySelector<HTMLSelectElement>('[aria-label="Chọn lớp"]')!;cls.value='lop2';cls.dispatchEvent(new Event('change'));TestBed.tick();t.http.expectOne('/api/gv/tien-do?lopId=lop2').flush([]);t.http.expectOne('/api/gv/ngan-hang?lopId=lop2').flush([]);t.http.expectOne('/api/gv/ky-nang?lopId=lop2').flush([]);await t.f.whenStable();
+  expect(select.value).toBe('');expect(select.options).toHaveLength(1);expect(form.textContent).toContain('Lớp chưa có danh mục kỹ năng');expect(form.querySelector<HTMLButtonElement>('[type=submit]')?.disabled).toBe(true);t.http.verify();
+ });
+ it('lớp mới chưa có học sinh hay bài vẫn lấy kỹ năng từ danh mục lớp, không cho nhập mã tùy ý',async()=>{
+  const t=await teacherPage('ngan-hang');t.http.expectOne('/api/gv/tien-do?lopId=lop1').flush([]);t.http.expectOne('/api/gv/ngan-hang?lopId=lop1').flush([]);t.http.expectOne('/api/gv/ky-nang?lopId=lop1').flush([{id:'T12.NT.HS',title:'Hàm số',subtitle:'',status:'KY_NANG',details:{}}]);await t.f.whenStable();
+  const select=t.el.querySelector<HTMLSelectElement>('app-hop-thoai select[aria-label]') ?? [...t.el.querySelectorAll<HTMLSelectElement>('app-hop-thoai select')].find(s=>s.options[0]?.text==='Chọn kỹ năng')!;
+  expect([...select.options].map(o=>o.value)).toEqual(['','T12.NT.HS']);t.http.verify();
+ });
+});
+describe('Chữ về gia sư đúng hiện trạng',()=>{
+ it.each(['cai-dat','ket-noi-ai'] as const)('%s giải thích mô hình và mở lời giải sau nộp',async trang=>{
+  const t=await teacherPage(trang);t.http.expectOne('/api/gv/cai-dat?lopId=lop1').flush({lopId:'lop1',revealSolutionAfterSubmit:true,aiProvider:'glm'});
+  if(trang==='ket-noi-ai'){t.http.expectOne('/api/gv/tien-do?lopId=lop1').flush([catalogStudent]);t.http.expectOne('/api/gv/lop/lop1/gia-su/su-dung').flush({classId:'lop1',requests:0,inputTokens:0,outputTokens:0,estimatedTokens:0,students:[]});}
+  await t.f.whenStable();expect(t.el.textContent).toContain('Chỉ dẫn hệ thống yêu cầu gia sư');expect(t.el.textContent).toContain('xem lời giải sau khi nộp bài');expect(t.el.textContent).not.toContain('cổng kiểm công thức');expect(t.el.textContent).not.toContain('gợi ý có sẵn');t.http.verify();
+ });
 });

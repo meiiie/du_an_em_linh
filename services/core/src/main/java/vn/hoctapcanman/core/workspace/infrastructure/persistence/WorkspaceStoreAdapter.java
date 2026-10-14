@@ -118,7 +118,7 @@ import vn.hoctapcanman.core.workspace.application.exception.WorkspaceException;
     }
 
     public List<Item> modes(UUID student,UUID cl) {
-        return db.sql("SELECT p.code,a.mode,a.due_at FROM assignments a JOIN problems p ON p.id=a.problem_id WHERE a.student_id=:student AND a.class_id=:cl AND a.status='DA_GIAO'").param("student",student).param("cl",cl).query((r,n)->new Item(r.getString("code"),r.getString("code"),"",r.getString("mode"),details("dueAt",instant(r,"due_at")))).list();
+        return db.sql("SELECT p.code,a.mode,a.due_at,(a.due_at IS NULL OR a.due_at>now()) con_han FROM assignments a JOIN problems p ON p.id=a.problem_id WHERE a.student_id=:student AND a.class_id=:cl AND a.status='DA_GIAO'").param("student",student).param("cl",cl).query((r,n)->new Item(r.getString("code"),r.getString("code"),"",r.getString("mode"),details("dueAt",instant(r,"due_at"),"conHan",r.getBoolean("con_han")))).list();
     }
 
     public List<Skill> learningSkills(UUID student, UUID cl) {

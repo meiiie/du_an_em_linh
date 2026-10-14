@@ -15,6 +15,7 @@ export class TrangRong {
 
 @Component({
   selector: 'app-khung-cho',
+  styles: `.khung-cho i{animation:cho-mo 1.4s ease-in-out 3 alternate}@keyframes cho-mo{to{opacity:.5}}@media(prefers-reduced-motion:reduce){.khung-cho i{animation:none}}`,
   template: `<div class="khung-cho" [attr.data-kieu]="kieu()" role="status" aria-busy="true"><span class="sr-only">{{nhan()}}</span>@for (row of hang(); track $index) {<i aria-hidden="true"></i>}</div>`,
 })
 export class KhungCho {

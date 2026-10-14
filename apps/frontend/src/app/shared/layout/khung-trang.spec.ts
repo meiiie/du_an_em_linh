@@ -223,6 +223,13 @@ describe('KhungTrang', () => {
     expect(ray.classList).not.toContain('mo');
     expect(document.activeElement).toBe(noiDung);
   });
+  it.each([390,768,1023,1024])('điều hướng đáy theo mốc desktop ở %s px',async width=>{
+    vi.stubGlobal('matchMedia',(q:string)=>({matches:q.includes('min-width')?width>=1024:q.includes('max-width')?width<=600:false,addEventListener:()=>undefined,removeEventListener:()=>undefined}));
+    const t=await mo('/hs');
+    expect(!!t.el.querySelector('.bottom-nav')).toBe(width<1024);
+    if(width<1024)expect(t.el.querySelector('.bottom-nav a')?.getAttribute('href')).toBe('/hs');
+  });
+
   it('quản trị có thể chuyển giữa khu vực giáo viên và quản trị', async () => {
     const t = await mo('/gv', { ...GV, role: 'ADMIN' });
     expect(t.el.querySelector('[data-testid="chuyen-quan-tri"]')?.getAttribute('href')).toBe('/qt');

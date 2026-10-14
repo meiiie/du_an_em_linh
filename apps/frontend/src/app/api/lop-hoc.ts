@@ -39,6 +39,10 @@ export class ApiLopHoc {
   nganHang(lopId: () => string | undefined) {
     return httpResource<Item<BankDetails>[]>(() => { const id = lopId(); return id ? this.duongGv('ngan-hang', id) : undefined; });
   }
+  /** `GET /api/gv/ky-nang`: danh mục kỹ năng soạn bài của lớp, có cả khi lớp mới chưa có bài hay học sinh. */
+  kyNangGv(lopId: () => string | undefined) {
+    return httpResource<Item[]>(() => { const id = lopId(); return id ? this.duongGv('ky-nang', id) : undefined; });
+  }
   danhSachGv(trang: () => 'duyet' | 'giao' | 'cong-thuc' | undefined, lopId: () => string) {
     return httpResource<Item[]>(() => { const path = trang(); return path && lopId() ? this.duongGv(path, lopId()) : undefined; });
   }
