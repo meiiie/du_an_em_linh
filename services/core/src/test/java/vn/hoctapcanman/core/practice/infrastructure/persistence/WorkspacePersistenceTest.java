@@ -122,7 +122,7 @@ class WorkspacePersistenceTest {
         var gate = mock(ContentWorkflow.class);
         var tutorSessions = mock(vn.hoctapcanman.core.tutor.application.service.TutorSessionService.class);
         when(tutorSessions.answer(eq(student),any())).thenAnswer(i -> {
-            return new OfflineTutorService(store,membership,gate,new vn.hoctapcanman.core.tutor.infrastructure.ai.OfflineHintModelAdapter(),new vn.hoctapcanman.core.tutor.application.service.TutorRateLimiter(java.time.Clock.systemUTC(),12,java.time.Duration.ofMinutes(10))).answer(student,i.getArgument(1));
+            return new OfflineTutorService(store,membership,new vn.hoctapcanman.core.tutor.infrastructure.ai.OfflineHintModelAdapter(),new vn.hoctapcanman.core.tutor.application.service.TutorRateLimiter(java.time.Clock.systemUTC(),12,java.time.Duration.ofMinutes(10))).answer(student,i.getArgument(1));
         });
         var mvc = MockMvcBuilders.standaloneSetup(new vn.hoctapcanman.core.tutor.infrastructure.web.TutorSessionController(tutorSessions))
             .setControllerAdvice(new WorkspaceExceptionHandler())

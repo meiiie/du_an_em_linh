@@ -5,7 +5,7 @@ import java.util.function.Consumer;
 import vn.hoctapcanman.core.tutor.application.dto.hocsinh.HintPrompt;
 import vn.hoctapcanman.core.tutor.application.dto.TutorSessionDto.ModelUsage;
 
-/** Chỉ token nội dung; bên nhận phải kiểm trước khi phát. */
+/** Chỉ token nội dung; prompt gia sư bảo vệ đáp án trong luồng trực tiếp. */
 public interface HintModel {
     Optional<String> draft(HintPrompt prompt);
     String provider();

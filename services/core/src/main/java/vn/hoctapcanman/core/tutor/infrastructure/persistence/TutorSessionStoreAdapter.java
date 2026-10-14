@@ -120,19 +120,13 @@ public class TutorSessionStoreAdapter implements TutorSessionStore {
         var t=db.sql("SELECT * FROM yeu_cau_gia_su WHERE id=:t AND phien_id=:s").param("t",turn).param("s",session).query(TutorSessionStoreAdapter::turn).optional();
         if(t.isEmpty() || !t.get().status().equals("generating")) return Optional.empty();
         if(type.equals("delta")) validateDelta(current,t.get());
-        if(type.equals("done") && "cancelled".equals(data.get("status"))) {
-            var terminalData=new LinkedHashMap<String,Object>(data);
-            long count=db.sql("SELECT count(*) FROM yeu_cau_gia_su t CROSS JOIN LATERAL jsonb_array_elements(t.su_kien) e(item) WHERE t.id=:t AND e.item->>'type'='delta'")
-                .param("t",turn).query(Long.class).single();
-            terminalData.put("lastSentenceIndex",count);data=terminalData;
-        }
         Event e=new Event(2,session,turn,current.lastSeq()+1,type,Map.copyOf(data));
         String status=type.equals("error")?"error":type.equals("done")?Objects.toString(data.get("status"),"completed"):"generating";
         String delta=type.equals("delta")?Objects.toString(data.get("text"),""):"";
         db.sql("UPDATE yeu_cau_gia_su SET su_kien=su_kien||CAST(:event AS jsonb),tra_loi=tra_loi||:delta,trang_thai=:status WHERE id=:t")
             .param("event",JSON.writeValueAsString(List.of(e))).param("delta",delta).param("status",status).param("t",turn).update();
         db.sql("UPDATE phien_gia_su SET last_seq=:seq,revision=revision+1,updated_at=now(),token_count=token_count+:tokens WHERE id=:s")
-            .param("seq",e.seq()).param("s",session).param("tokens",HintModel.estimate(delta)).update();
+            .param("seq",e.seq()).param("s",session).param("tokens",HintModel.estimate(t.get().answer()+delta)-HintModel.estimate(t.get().answer())).update();
         if(type.equals("done") || type.equals("error")) {
             db.sql("INSERT INTO luot_gia_su(id,phien_id,luot_id,seq,role,content,tokens) SELECT :id,phien_id,id,thu_tu*2,'assistant',tra_loi,:tokens FROM yeu_cau_gia_su WHERE id=:t")
                 .param("id",UUID.randomUUID()).param("t",turn).param("tokens",HintModel.estimate(t.get().answer()+delta)).update();

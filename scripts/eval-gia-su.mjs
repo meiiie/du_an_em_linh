@@ -164,6 +164,7 @@ function proseSentenceCount(message) {
 
 export function evaluateResponse(c, response, answer, maxLatencyMs) {
   const errors = [];
+  const leaks = [];
   let nguon = null;
   if (response.status !== c.expectedStatus) errors.push(`HTTP ${response.status}, cần ${c.expectedStatus}.`);
   if (response.latencyMs > maxLatencyMs) errors.push('Vượt giới hạn độ trễ.');
@@ -176,20 +177,20 @@ export function evaluateResponse(c, response, answer, maxLatencyMs) {
     if (STATES.some((state, i) => events[i]?.event !== state)) errors.push('Thiếu hoặc sai thứ tự kho → goi → loc.');
     if (events.some(e => e.data?.status !== e.event)) errors.push('Trạng thái JSON không khớp tên sự kiện.');
     if (events.some(e => ![...STATES, ...TERMINAL].includes(e.event))) errors.push('Có sự kiện SSE ngoài hợp đồng.');
-    errors.push(...checkLeaks(events, answer));
+    leaks.push(...checkLeaks(events, answer));
     nguon = terminal[0]?.data?.nguon ?? null;
     const finalMessage = terminal[0]?.data?.message;
     if (typeof finalMessage === 'string') {
       if (proseSentenceCount(finalMessage) > 3) errors.push('Gợi ý vượt ba câu văn.');
-      if (/đúng\s*không/iu.test(c.request?.cauHoi ?? '') && /^\s*(?:đúng\s+rồi|chính\s+xác|kết\s*quả\s+(?:đúng|chính\s+xác))/iu.test(finalMessage)) errors.push('Xác nhận trực tiếp kết quả học sinh đưa ra.');
+      if (/đúng\s*không/iu.test(c.request?.cauHoi ?? '') && /^\s*(?:đúng\s+rồi|chính\s+xác|kết\s*quả\s+(?:đúng|chính\s+xác))/iu.test(finalMessage)) leaks.push('Xác nhận trực tiếp kết quả học sinh đưa ra.');
     }
   }
-  return { name: c.name, expectedStatus: c.expectedStatus, status: response.status, latencyMs: response.latencyMs, nguon, passed: errors.length === 0, errors };
+  return { name: c.name, expectedStatus: c.expectedStatus, status: response.status, latencyMs: response.latencyMs, nguon, leakCount: leaks.length, passed: errors.length === 0, errors };
 }
 
 /** Các helper buildCases/evaluateResponse phía trên giữ hợp đồng eval v1 cho unit test. */
 const API = '/api/hs/gia-su/v2/phien';
-const V2_EVENTS = new Set(['start', 'delta', 'regen', 'done', 'error', 'heartbeat']);
+const V2_EVENTS = new Set(['start', 'delta', 'done', 'error', 'heartbeat']);
 const STEPS = ['TXD', 'DAOHAM', 'NGHIEM', 'XETDAU', 'KETLUAN'].map(step => `B.DH.${step}`);
 export const CANNED_REPLIES = [
   'Em đã thử cách nào ở bước hiện tại?', // OfflineHintModelAdapter
@@ -303,7 +304,7 @@ export function evaluateTurn(request, response, answer, maxLatencyMs, { cancel =
   if (terminal.length !== 1 || events.at(-1) !== terminal[0]) add('Cần đúng một sự kiện kết thúc ở cuối luồng.');
   if (events[0]?.event !== 'start' || events.filter(e => e.event === 'start').length !== 1) add('Thiếu hoặc lặp sự kiện start.');
   if (events[0]?.data?.requestId !== request.requestId) add('requestId không khớp lượt gửi.');
-  let lastSeq = 0, sentenceIndex = 0;
+  let lastSeq = 0;
   const turnId = events[0]?.data?.turnId;
   for (const e of events) {
     if (!V2_EVENTS.has(e.event)) add('Có sự kiện SSE ngoài hợp đồng v2.');
@@ -312,21 +313,20 @@ export function evaluateTurn(request, response, answer, maxLatencyMs, { cancel =
     if (!Number.isSafeInteger(e.data?.seq) || e.data.seq <= lastSeq) add('Thứ tự seq chưa hợp lệ.');
     lastSeq = e.data?.seq;
     if (e.id !== undefined && e.id !== `${e.data?.sessionId}:${e.data?.seq}`) add('ID SSE không khớp seq.');
-    if (e.event === 'delta' && (e.data?.sentenceIndex !== ++sentenceIndex || typeof e.data?.text !== 'string' || !e.data.text.trim())) add('Delta trống hoặc sai thứ tự câu.');
+    if (e.event === 'delta' && (typeof e.data?.text !== 'string' || e.data.text.length === 0)) add('Delta trống hoặc text không hợp lệ.');
   }
   const final = terminal[0];
   if (final?.event !== 'done' || final.data?.status !== (cancel ? 'cancelled' : 'completed')) add(cancel ? 'API chưa xác nhận hủy lượt.' : 'Gia sư chưa hoàn tất gợi ý.');
-  if (final?.event === 'done' && final.data?.lastSentenceIndex !== sentenceIndex) add('Số câu ở done không khớp delta.');
   if (!cancel && (!reply.trim() || ttftMs === null)) add('Không có delta đầu tiên hoặc lời gợi ý trống.');
   // Dùng lại heuristics v1 trên toàn bộ văn bản đã phát, kể cả luồng lỗi/hủy.
   const leaks = checkLeaks([{ event: 'xong', data: { message: reply } }], answer);
   if (/^[+-]?\d+(?:[.,]\d+)?(?:\/\d+)?[.!]?$/.test(normalizeMath(reply))) leaks.push('Lời đáp chỉ nêu kết quả số.');
-  errors.push(...leaks);
+  // Quyết định Darren: phát trực tiếp; số đo rò chỉ để quan sát, không là cổng đạt/trượt.
   if (proseSentenceCount(reply) > 3) add('Gợi ý vượt ba câu văn.');
-  if (/đúng\s*không/iu.test(request.cauHoi) && /^\s*(?:đúng\s+rồi|chính\s+xác|(?:chưa|không)\s+(?:đúng|chính\s+xác)|sai\s+rồi|không\s*[,!.]|kết\s*quả\s+(?:đúng|sai|chính\s+xác))/iu.test(reply)) add('Xác nhận trực tiếp kết quả học sinh đưa ra.');
+  if (/đúng\s*không/iu.test(request.cauHoi) && /^\s*(?:đúng\s+rồi|chính\s+xác|(?:chưa|không)\s+(?:đúng|chính\s+xác)|sai\s+rồi|không\s*[,!.]|kết\s*quả\s+(?:đúng|sai|chính\s+xác))/iu.test(reply)) leaks.push('Xác nhận trực tiếp kết quả học sinh đưa ra.');
   const canned = CANNED_REPLIES.some(text => text.normalize('NFC') === reply.trim().normalize('NFC'));
   if (canned) add('Lời gợi ý trùng câu cố định đã biết.');
-  return { status, latencyMs, ttftMs, regenCount: events.filter(e => e.event === 'regen').length,
+  return { status, latencyMs, ttftMs,
     errorEvents: events.filter(e => e.event === 'error').length, deltaCount: deltas.length,
     leakCount: leaks.length, canned, repeated: false, cancelled: final?.event === 'done' && final.data?.status === 'cancelled',
     passed: errors.length === 0, errors };
@@ -364,7 +364,6 @@ function distribution(values) {
 export function summarizeTurns(turns) {
   const total = key => turns.reduce((sum, t) => sum + t[key], 0);
   return { turns: turns.length, totalLatencyMs: total('latencyMs'), ttftMs: distribution(turns.map(t => t.ttftMs)), latencyMs: distribution(turns.map(t => t.latencyMs)),
-    regenCount: total('regenCount'), regenRate: turns.length ? turns.filter(t => t.regenCount > 0).length / turns.length : 0,
     errorEvents: total('errorEvents'), leakCount: total('leakCount'), cannedReplies: turns.filter(t => t.canned).length,
     repeatedReplies: turns.filter(t => t.repeated).length, cancelledTurns: turns.filter(t => t.cancelled).length };
 }
@@ -540,7 +539,7 @@ export async function runEvaluation({ env = process.env, fetchImpl = fetch, slee
         if (c.cancel && (cancellation?.status !== 'cancelled' || cancellation?.turnId !== events[0]?.data?.turnId || cancellation?.sessionId !== sessionId)) measured.errors.push('CancelAck chưa xác nhận đúng lượt đã hủy.');
         measured.passed = measured.errors.length === 0;
         result.turns.push(measured);
-        log(`Lượt ${turnIndex + 1}/${c.turns.length} · ${c.name} · HTTP ${status ?? '—'} · TTFT ${ttftMs ?? '—'} ms · trễ ${measured.latencyMs} ms · regen ${measured.regenCount} · lỗi SSE ${measured.errorEvents}`);
+        log(`Lượt ${turnIndex + 1}/${c.turns.length} · ${c.name} · HTTP ${status ?? '—'} · TTFT ${ttftMs ?? '—'} ms · trễ ${measured.latencyMs} ms · lỗi SSE ${measured.errorEvents} · lộ (tham khảo) ${measured.leakCount}`);
         replies.push({ caseIndex, question: `${request.maBuoc}|${request.cap}|${request.cauHoi}`, result: measured, reply: events.filter(e => e.event === 'delta').map(e => e.data?.text ?? '').join('') });
         if (c.requireCompaction && turnIndex === c.turns.length - 1) compactionDeadline = now() + 30_000;
         const settled = await waitForTerminal(sessionId, events[0]?.data?.turnId);
@@ -594,12 +593,12 @@ export async function runEvaluation({ env = process.env, fetchImpl = fetch, slee
     r.metrics = summarizeTurns(r.turns);
     r.passed = !r.errors.length && r.turns.length === r.expectedTurns && r.turns.every(t => t.passed);
     const reasons = [...new Set([...r.errors, ...r.turns.flatMap(t => t.errors)])].join(' ');
-    log(`${r.passed ? 'ĐẠT' : 'TRƯỢT'} · ${r.name} · TTFT p50 ${r.metrics.ttftMs.p50 ?? '—'} ms · tổng trễ ${r.metrics.totalLatencyMs} ms · regen ${r.metrics.regenCount} · lỗi SSE ${r.metrics.errorEvents} · lộ ${r.metrics.leakCount} · câu cố định/lặp ${r.metrics.cannedReplies}/${r.metrics.repeatedReplies} · nén ${r.compaction.observed ? 'có' : 'chưa'}${reasons ? ` · ${reasons}` : ''}`);
+    log(`${r.passed ? 'ĐẠT' : 'TRƯỢT'} · ${r.name} · TTFT p50 ${r.metrics.ttftMs.p50 ?? '—'} ms · tổng trễ ${r.metrics.totalLatencyMs} ms · lỗi SSE ${r.metrics.errorEvents} · lộ (tham khảo) ${r.metrics.leakCount} · câu cố định/lặp ${r.metrics.cannedReplies}/${r.metrics.repeatedReplies} · nén ${r.compaction.observed ? 'có' : 'chưa'}${reasons ? ` · ${reasons}` : ''}`);
   }
   const report = { skipped: false, passed: results.every(r => r.passed), generatedAt: new Date(now()).toISOString(), intervalMs, maxLatencyMs, skippedAssignments, sharedSessions,
     summary: { cases: results.length, passedCases: results.filter(r => r.passed).length,
       compactionCases: results.filter(r => r.compaction.observed).length, ...summarizeTurns(results.flatMap(r => r.turns)) }, results };
-  log(`Tổng: ${report.summary.passedCases}/${report.summary.cases} ca đạt · TTFT p50/p95 ${report.summary.ttftMs.p50 ?? '—'}/${report.summary.ttftMs.p95 ?? '—'} ms · trễ ${report.summary.totalLatencyMs} ms · regen ${report.summary.regenCount} (${Math.round(report.summary.regenRate * 100)}% lượt) · lỗi SSE ${report.summary.errorEvents} · lộ ${report.summary.leakCount} · câu cố định/lặp ${report.summary.cannedReplies}/${report.summary.repeatedReplies}`);
+  log(`Tổng: ${report.summary.passedCases}/${report.summary.cases} ca đạt · TTFT p50/p95 ${report.summary.ttftMs.p50 ?? '—'}/${report.summary.ttftMs.p95 ?? '—'} ms · trễ ${report.summary.totalLatencyMs} ms · lỗi SSE ${report.summary.errorEvents} · lộ (tham khảo) ${report.summary.leakCount} · câu cố định/lặp ${report.summary.cannedReplies}/${report.summary.repeatedReplies}`);
   if (out) await writeFile(out, `${JSON.stringify(report, null, 2)}\n`, { mode: 0o600 });
   else log(JSON.stringify(report, null, 2));
   return report;
@@ -629,9 +628,10 @@ xác nhận lượt mới nhất kết thúc (poll tối đa 60 giây, giữ nh�
 sharedSessions/sharedWithCases ghi các ca dùng chung.
 Nén chỉ đạt khi session.summaryThrough từ GET lịch sử tăng trong ca dài;
 chờ nén async tối đa 30 giây sau done, giữ nguyên nhịp HTTP.
-TTFT đo ngay khi delta đầu tới; regenRate = số lượt có regen / số lượt đo.
+TTFT đo ngay khi delta đầu tới; delta là chunk nội dung trực tiếp, không đợi trọn câu.
 Đáp án tổng hợp chỉ đọc cục bộ; không gửi đáp án hay bảng công thức trong
 câu hỏi. Heuristics dò lời đáp đã phát, không dò nguồn công thức được dẫn.
+leakCount là số đo thông tin, không quyết định đạt/trượt; không còn số đo regen.
 Câu offline cố định và lời đáp trùng nguyên văn giữa các ca làm eval trượt.
 JSON (--out hoặc stdout) chỉ chứa số đo/kiểm tra, không chat hay bí mật.
 Đây là kiểm tra cơ học, không chứng minh chất lượng sư phạm.`;

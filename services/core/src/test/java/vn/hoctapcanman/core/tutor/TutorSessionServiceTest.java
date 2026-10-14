@@ -23,13 +23,12 @@ class TutorSessionServiceTest {
     final ContentWorkflow gate=mock(ContentWorkflow.class);
     final HintModel model=mock(HintModel.class,CALLS_REAL_METHODS);
     final MemoryStore store=new MemoryStore(new Assignment(assignment,student,cl,"DH1",1,"THONG_HIEU"));
-    final OfflineTutorService pipeline=new OfflineTutorService(workspace,members,gate,model,new TutorRateLimiter(Clock.systemUTC(),100,Duration.ofMinutes(10)));
+    final OfflineTutorService pipeline=new OfflineTutorService(workspace,members,model,new TutorRateLimiter(Clock.systemUTC(),100,Duration.ofMinutes(10)));
     final TutorSessionService service=new TutorSessionService(store,pipeline,members,workspace,6000);
     @BeforeEach void setup() {
         when(members.lopHoc(student)).thenReturn(Optional.of(cl));when(model.provider()).thenReturn("GLM");
         when(workspace.settings(cl)).thenReturn(new Settings(cl,false,"glm"));
         when(workspace.tutorContext(eq(student),eq(cl),any())).thenReturn(Optional.of(new TutorContext(problem,"DH1","Đề","x**2","B.DH.TXD","Thang không được dùng")));
-        when(gate.sanitize(any(),any(),anyString(),anyString(),anyList())).thenAnswer(i -> Optional.of(i.<String>getArgument(2)));
         when(model.draft(any())).thenReturn(Optional.of("Em cần tìm điều gì ở bước này?"));
     }
     Ask request(UUID id){return new Ask(id,"B.DH.TXD",1,"Em đã thử cách này");}
@@ -39,7 +38,7 @@ class TutorSessionServiceTest {
         while(System.nanoTime()<end){var t=store.turns(a.session().id(),0,1).getFirst();if(!t.status().equals("generating"))return t;Thread.sleep(10);}
         fail("Worker không kết thúc");return null;
     }
-    @Test void remembersEarlierCheckedTurnsAndReplayNeverCallsModel() throws Exception {
+    @Test void remembersEarlierTurnsAndReplayNeverCallsModel() throws Exception {
         var prompts=new CopyOnWriteArrayList<HintPrompt>();when(model.draft(any())).thenAnswer(i -> {prompts.add(i.getArgument(0));return Optional.of("Em cần tìm điều gì?");});
         Accepted first=ask();assertEquals("completed",terminal(first).status());
         var initial=service.events(student,first.session().id(),0);
@@ -48,8 +47,20 @@ class TutorSessionServiceTest {
         assertEquals(initial.subList(1,3),service.events(student,first.session().id(),1));
         verify(model,times(1)).draft(any());
         Accepted next=ask();assertEquals(first.session().id(),next.session().id());terminal(next);
-        assertTrue(prompts.getLast().user().contains("Gia sư đã kiểm: Em cần tìm điều gì?"));
+        assertTrue(prompts.getLast().user().contains("Gia sư: Em cần tìm điều gì?"));
         assertTrue(prompts.getLast().system().contains("giải thích lựa chọn"));
+    }
+    @Test void uncheckedLiveIdentityIsKeptInHistoryButNeverResentToModel() throws Exception {
+        String raw="Em liên hệ Nguyễn Văn An qua www.example.test nhé.";
+        var prompts=new CopyOnWriteArrayList<HintPrompt>();
+        when(model.draft(any())).thenAnswer(i -> {prompts.add(i.getArgument(0));return Optional.of(raw);});
+        Accepted first=ask();assertEquals(raw,terminal(first).answer());
+        Accepted next=ask();assertEquals(raw,terminal(next).answer());
+        assertFalse(prompts.getLast().user().contains("Nguyễn Văn An"));
+        assertFalse(prompts.getLast().user().contains("www.example.test"));
+        assertTrue(prompts.getLast().user().contains("[đã ẩn nội dung có thông tin cá nhân]"));
+        assertEquals(raw,store.turn(first.session().id(),first.turn().id()).orElseThrow().answer());
+        verifyNoInteractions(gate);
     }
     @Test void duplicateRequestIsIdempotentAndDifferentPayloadConflicts() throws Exception {
         Accepted first=ask();terminal(first);
@@ -63,16 +74,50 @@ class TutorSessionServiceTest {
         assertThrows(WorkspaceException.class,() -> service.events(other,a.session().id(),0));
         assertThrows(WorkspaceException.class,() -> service.cancel(other,a.session().id(),a.turn().id()));
     }
-    @Test void cancellationWinsAgainstUnreleasedSentenceAndIsIdempotent() throws Exception {
-        CountDownLatch inGate=new CountDownLatch(1),release=new CountDownLatch(1);
-        when(model.draft(any())).thenReturn(Optional.of("Em xét khoảng nào?"));
-        when(gate.sanitize(any(),any(),anyString(),anyString(),anyList())).thenAnswer(i -> {
-            inGate.countDown();release.await(3,TimeUnit.SECONDS);return Optional.of(i.<String>getArgument(2));
-        });
-        Accepted a=ask();assertTrue(inGate.await(3,TimeUnit.SECONDS));
-        CancelAck cancelled=service.cancel(student,a.session().id(),a.turn().id());release.countDown();
-        assertEquals("cancelled",terminal(a).status());assertEquals(cancelled.lastSeq(),service.cancel(student,a.session().id(),a.turn().id()).lastSeq());
-        assertEquals(List.of("start","done"),store.events(a.session().id(),0).stream().map(Event::type).toList());
+    @Test void cancellationKeepsReleasedPartialTokensAndIsIdempotent() throws Exception {
+        var firstToken=new CountDownLatch(1);var release=new CountDownLatch(1);var finished=new CountDownLatch(1);
+        doAnswer(i -> {
+            java.util.function.Consumer<String> chunks=i.getArgument(1);
+            chunks.accept("Em thử $x");firstToken.countDown();
+            try { assertTrue(release.await(3,TimeUnit.SECONDS));chunks.accept("^2$"); }
+            finally { finished.countDown(); }
+            return new ModelUsage(50,20,false);
+        }).when(model).stream(any(),any());
+        Accepted a=ask();
+        try {
+            assertTrue(firstToken.await(3,TimeUnit.SECONDS));
+            assertEquals("Em thử $x",store.turn(a.session().id(),a.turn().id()).orElseThrow().answer());
+            CancelAck cancelled=service.cancel(student,a.session().id(),a.turn().id());
+            assertEquals("cancelled",terminal(a).status());
+            assertEquals(cancelled.lastSeq(),service.cancel(student,a.session().id(),a.turn().id()).lastSeq());
+        } finally { release.countDown(); }
+        assertTrue(finished.await(3,TimeUnit.SECONDS));
+        assertEquals(List.of("start","delta","done"),store.events(a.session().id(),0).stream().map(Event::type).toList());
+        assertEquals("Em thử $x",terminal(a).answer());
+    }
+    @Test void rawDeltasKeepWhitespaceAndResumeBySeqWithoutSentenceIndices() throws Exception {
+        var expected=List.of("Em thử $x","^2$","\n"," ","Em chọn gì?");
+        doAnswer(i -> {
+            java.util.function.Consumer<String> chunks=i.getArgument(1);expected.forEach(chunks);
+            return new ModelUsage(50,20,false);
+        }).when(model).stream(any(),any());
+        Accepted a=ask();assertEquals(String.join("",expected),terminal(a).answer());
+        var events=service.events(student,a.session().id(),0);
+        assertEquals(expected,events.stream().filter(e -> e.type().equals("delta")).map(e -> e.data().get("text")).toList());
+        assertTrue(events.stream().filter(e -> e.type().equals("delta")).allMatch(e -> e.data().keySet().equals(Set.of("text"))));
+        assertEquals(events.subList(3,events.size()),service.events(student,a.session().id(),3));
+        assertFalse(events.getLast().data().containsKey("lastSentenceIndex"));
+        verifyNoInteractions(gate);
+    }
+    @Test void transportErrorRetainsPartialTokensAndBillsOnceWithoutRegeneration() throws Exception {
+        doAnswer(i -> {
+            java.util.function.Consumer<String> chunks=i.getArgument(1);chunks.accept("Em thử $x");
+            throw new IllegalStateException("MODEL_UNAVAILABLE");
+        }).when(model).stream(any(),any());
+        Accepted a=ask();assertEquals("error",terminal(a).status());assertEquals("Em thử $x",terminal(a).answer());
+        assertEquals(List.of("start","delta","error"),store.events(a.session().id(),0).stream().map(Event::type).toList());
+        assertEquals(1,store.calls.size());assertTrue(store.calls.getFirst().estimated());
+        verify(model,times(1)).stream(any(),any());verifyNoInteractions(gate);
     }
     @Test void cancellationAndStreamErrorNeverInterruptPersistenceWrite() throws Exception {
         for(boolean streamError:List.of(false,true)) {
@@ -148,6 +193,22 @@ class TutorSessionServiceTest {
         while(System.nanoTime()<end){if(store.purposes.contains("summary"))return;Thread.sleep(10);}
         fail("Worker nén không ghi usage");
     }
+    @Test void compactionDoesNotResendUncheckedIdentityFromOldTurns() throws Exception {
+        service.open(student,assignment);
+        String raw="Em liên hệ Nguyễn Văn An qua www.example.test nhé.";
+        for(int i=0;i<10;i++)store.seed("Em thử "+"cách ".repeat(350),raw);
+        var prompts=new CopyOnWriteArrayList<HintPrompt>();
+        when(model.draft(any())).thenAnswer(i -> {
+            HintPrompt p=i.getArgument(0);prompts.add(p);
+            return Optional.of(p.system().startsWith("Tóm tắt")?summaryAfterDone("Em đang thử cách đã chọn."):"Em cần tìm gì?");
+        });
+        Accepted a=ask();terminal(a);awaitSummaryUsage();
+        var summaryPrompt=prompts.stream().filter(p -> p.system().startsWith("Tóm tắt")).findFirst().orElseThrow();
+        assertFalse(summaryPrompt.user().contains("Nguyễn Văn An"));
+        assertFalse(summaryPrompt.user().contains("www.example.test"));
+        assertTrue(summaryPrompt.user().contains("[đã ẩn nội dung có thông tin cá nhân]"));
+        assertEquals(raw,store.turns.getFirst().answer());verifyNoInteractions(gate);
+    }
     @Test void preSendRevocationDoesNotBillSummaryOrChangeDone() throws Exception {
         var rejected=new CountDownLatch(1);var billed=new CountDownLatch(1);
         var db=new MemoryStore(store.a) {
@@ -156,7 +217,7 @@ class TutorSessionServiceTest {
                 if(purpose.equals("summary"))billed.countDown();
             }
         };
-        var guarded=new OfflineTutorService(workspace,members,gate,model,new TutorRateLimiter(Clock.systemUTC(),100,Duration.ofMinutes(10))) {
+        var guarded=new OfflineTutorService(workspace,members,model,new TutorRateLimiter(Clock.systemUTC(),100,Duration.ofMinutes(10))) {
             @Override public HintModel ready(UUID classId) {
                 var selected=super.ready(classId);
                 if(db.snapshot(db.s.id()).lastSeq()>0 && db.events(db.s.id(),0).getLast().type().equals("done"))
@@ -239,7 +300,7 @@ class TutorSessionServiceTest {
         awaitSummaryUsage();assertEquals("",store.snapshot(a.session().id()).tomTat());
         assertEquals("done",store.events(a.session().id(),0).getLast().type());
     }
-    @Test void compactionUsesModelGatesSummaryAndKeepsThreeRecentPairs() throws Exception {
+    @Test void compactionUsesModelWithoutGateAndKeepsThreeRecentPairs() throws Exception {
         service.open(student,assignment);
         for(int i=0;i<10;i++)store.seed("Em thử "+"cách ".repeat(250),"Em làm "+"tiếp ".repeat(250));
         var prompts=new CopyOnWriteArrayList<HintPrompt>();when(model.draft(any())).thenAnswer(i -> {
@@ -252,8 +313,8 @@ class TutorSessionServiceTest {
         assertFalse(store.s.tomTat().isEmpty());assertEquals(8,store.s.summaryThrough());
         assertFalse(prompts.getFirst().user().contains("Lượt 1 —"));assertTrue(prompts.getFirst().user().contains("Lượt 8 —"));
         assertEquals(11,store.turns(store.s.id(),0,100).size());assertEquals(2,store.calls.size());
-        verify(gate).sanitize(any(),any(),eq("Em đang thử cách đã chọn."),anyString(),anyList());
-        // Lượt sau dùng summary đã kiểm, không đưa lại phần nguồn đã nén vào cửa sổ.
+        verifyNoInteractions(gate);
+        // Lượt sau dùng summary, không đưa lại phần nguồn đã nén vào cửa sổ.
         Accepted next=ask();assertEquals("completed",terminal(next).status());
         assertTrue(prompts.getLast().user().contains(store.snapshot(store.s.id()).tomTat()));
         assertFalse(prompts.getLast().user().contains("Lượt 8 —"));assertTrue(prompts.getLast().user().contains("Lượt 9 —"));
@@ -277,11 +338,22 @@ class TutorSessionServiceTest {
         assertEquals(8,h.session().summaryThrough());assertFalse(h.session().tomTat().isBlank());
         assertTrue(prompts.getFirst().user().contains("Lượt 8 —"));assertTrue(prompts.getFirst().user().contains("Lượt 10 —"));
     }
-    @Test void rejectedSummaryIsNeverSavedOrIncludedAsMemory() throws Exception {
+    @Test void summaryCanContainMathWithoutGateAndIsIncludedAsMemory() throws Exception {
         service.open(student,assignment);for(int i=0;i<10;i++)store.seed("Em thử "+"cách ".repeat(250),"Em làm "+"tiếp ".repeat(250));
-        when(model.draft(any())).thenAnswer(i -> Optional.of(((HintPrompt)i.getArgument(0)).system().startsWith("Tóm tắt")?summaryAfterDone("Tóm tắt bị chặn."):"Em cần tìm gì?"));
-        when(gate.sanitize(any(),any(),eq("Tóm tắt bị chặn."),anyString(),anyList())).thenReturn(Optional.empty());
+        var prompts=new CopyOnWriteArrayList<HintPrompt>();
+        when(model.draft(any())).thenAnswer(i -> {
+            HintPrompt p=i.getArgument(0);prompts.add(p);
+            return Optional.of(p.system().startsWith("Tóm tắt")?summaryAfterDone("Em thử $x^2$."):"Em cần tìm gì?");
+        });
+        Accepted a=ask();terminal(a);awaitSummaryUsage();assertTrue(store.s.tomTat().contains("$x^2$"));assertEquals(8,store.s.summaryThrough());
+        verifyNoInteractions(gate);
+        Accepted next=ask();terminal(next);assertTrue(prompts.getLast().user().contains("$x^2$"));
+    }
+    @Test void invalidSummaryIsNeverSavedOrIncludedAsMemory() throws Exception {
+        service.open(student,assignment);for(int i=0;i<10;i++)store.seed("Em thử "+"cách ".repeat(250),"Em làm "+"tiếp ".repeat(250));
+        when(model.draft(any())).thenAnswer(i -> Optional.of(((HintPrompt)i.getArgument(0)).system().startsWith("Tóm tắt")?"{}":"Em cần tìm gì?"));
         Accepted a=ask();terminal(a);awaitSummaryUsage();assertEquals("",store.s.tomTat());assertEquals(0,store.s.summaryThrough());
+        assertEquals("done",store.events(a.session().id(),0).getLast().type());
     }
     @Test void usageRequiresTeacherClassMembershipOrAdmin() {
         when(workspace.accountRole(student)).thenReturn("TEACHER");service.usage(student,cl);verify(members).kiemGiaoVien(student,cl);

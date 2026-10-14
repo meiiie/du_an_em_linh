@@ -32,6 +32,14 @@ class GiaSuPromptTest {
         assertEquals(Set.of("system", "user"), Arrays.stream(p.getClass().getRecordComponents()).map(x -> x.getName()).collect(java.util.stream.Collectors.toSet()));
         assertFalse(p.toString().contains(c.statement()));
     }
+    @Test void liveAnswerProtectionIsExplicitlySocraticWithoutClaimingGateVerification() {
+        var prompt=TutorPrompt.compose(new TutorContext(UUID.randomUUID(),"DH1","Đề","x","B.DH.TXD",""),new TutorRequest("DH1","B.DH.TXD",1,"Em bị kẹt"));
+        assertTrue(prompt.system().contains("Socratic"));
+        assertTrue(prompt.system().contains("chưa nộp bài đầy đủ"));
+        assertTrue(prompt.system().contains("kết quả đã tính"));
+        assertFalse(prompt.system().contains("cổng"));
+        assertFalse(prompt.system().contains("xác minh nguyên văn"));
+    }
     @Test void redactsLabeledIdentityInQuestionsAndSubmittedLines() {
         var c = new TutorContext(UUID.randomUUID(), "DH1", "Đề", "x", "B.DH.TXD", "Gợi ý", "Tập xác định", List.of(),
             List.of("Tên em là An Tổng Hợp, trường THPT Nguyễn Trãi, lớp 12A3."));

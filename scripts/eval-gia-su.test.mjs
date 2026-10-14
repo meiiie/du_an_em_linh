@@ -54,11 +54,13 @@ test('giới hạn ba câu văn, bỏ dấu câu trong vùng toán và dấu th�
   assert.equal(evaluateResponse(c, response('Em xem $f(1.5), x?$. Hãy nhắc quy tắc. Em thử tiếp nhé.'), { cuc_tieu_x: ['42'] }, 100).passed, true);
 });
 
-test('xin xác nhận kết quả là ca riêng và lời xác nhận trực tiếp làm ca trượt', () => {
+test('xin xác nhận kết quả là ca riêng và lời xác nhận trực tiếp tăng số đo lộ', () => {
   const cases = buildCases([{ maBai: 'A', cacBuoc: [{ maBuoc: 'B.DH.DAOHAM' }] }], [{ id: 'A', status: 'ON_TAP', details: {} }]);
   const confirmation = cases.find(c => c.request?.cauHoi === 'em ra x = 3, đúng không ạ?');
   assert.ok(confirmation);
-  assert.equal(evaluateResponse(confirmation, { status: 200, events: luong('Đúng rồi em nhé.'), latencyMs: 12 }, { cuc_tieu_x: ['42'] }, 100).passed, false);
+  const result = evaluateResponse(confirmation, { status: 200, events: luong('Đúng rồi em nhé.'), latencyMs: 12 }, { cuc_tieu_x: ['42'] }, 100);
+  assert.equal(result.passed, true);
+  assert.ok(result.leakCount > 0);
   assert.equal(evaluateResponse(confirmation, { status: 200, events: luong('Em thử thay vào điều kiện của bước này nhé.'), latencyMs: 12 }, { cuc_tieu_x: ['42'] }, 100).passed, true);
 });
 
@@ -101,13 +103,15 @@ test('nhịp gọi mặc định bảo vệ giới hạn 12 lượt trong 10 ph�
   assert.throws(() => pacingMilliseconds({ MATHL_EVAL_RATE_LIMIT: '0' }), /dương/);
 });
 
-test('phân biệt HTTP, SSE lỗi, thiếu kết thúc, lộ đáp án và quá thời gian', () => {
+test('phân biệt HTTP, SSE lỗi, thiếu kết thúc và quá thời gian; lộ đáp án chỉ là số đo', () => {
   const c = { expectedStatus: 200 };
   assert.equal(evaluateResponse(c, { status: 200, events: luong('Em thử đạo hàm.'), latencyMs: 12 }, null, 100).passed, true);
   assert.equal(evaluateResponse(c, { status: 429, events: [], latencyMs: 12 }, null, 100).passed, false);
   assert.equal(evaluateResponse(c, { status: 200, events: [khung('kho'), khung('loi', 'Lỗi')], latencyMs: 12 }, null, 100).passed, false);
   assert.equal(evaluateResponse(c, { status: 200, events: [khung('kho')], latencyMs: 12 }, null, 100).passed, false);
-  assert.equal(evaluateResponse(c, { status: 200, events: luong('x=5'), latencyMs: 12 }, null, 100).passed, false);
+  const leak = evaluateResponse(c, { status: 200, events: luong('x=5'), latencyMs: 12 }, null, 100);
+  assert.equal(leak.passed, true);
+  assert.ok(leak.leakCount > 0);
   assert.equal(evaluateResponse(c, { status: 200, events: luong('Em thử đạo hàm.'), latencyMs: 101 }, null, 100).passed, false);
   assert.equal(evaluateResponse({ expectedStatus: 403 }, { status: 403, events: [], latencyMs: 12 }, null, 100).passed, true);
 });
@@ -121,13 +125,12 @@ test('evaluateResponse ghi nguồn để chứng minh core thật sự gọi GLM
 const steps = ['TXD', 'DAOHAM', 'NGHIEM', 'XETDAU', 'KETLUAN'].map(s => ({ maBuoc: `B.DH.${s}` }));
 const practice = { maBai: 'A', cacBuoc: steps };
 const frame = (event, data) => `event: ${event}\nid: ${data.sessionId}:${data.seq}\ndata: ${JSON.stringify(data)}\n\n`;
-const v2 = (text = 'Em thử xem lại điều kiện nhé?', { regen = false, error = false, cancelled = false, requestId = 'request' } = {}) => {
+const v2 = (text = 'Em thử xem lại điều kiện nhé?', { error = false, cancelled = false, requestId = 'request' } = {}) => {
   const data = { v: 2, sessionId: 'session', turnId: 'turn' };
   const events = [{ event: 'start', data: { ...data, requestId } }];
-  if (regen) events.push({ event: 'regen', data: { ...data, attempt: 1 } });
-  if (text) events.push({ event: 'delta', data: { ...data, sentenceIndex: 1, text } });
+  if (text) events.push({ event: 'delta', data: { ...data, text } });
   events.push(error ? { event: 'error', data: { ...data, message: 'lỗi mô hình bí mật' } }
-    : { event: 'done', data: { ...data, status: cancelled ? 'cancelled' : 'completed', lastSentenceIndex: text ? 1 : 0 } });
+    : { event: 'done', data: { ...data, status: cancelled ? 'cancelled' : 'completed', tokens: 10, durationMs: 100 } });
   return events.map((e, i) => ({ ...e, data: { ...e.data, seq: i + 1 } }));
 };
 const request = { requestId: 'request', cauHoi: 'Em cần gợi ý.' };
@@ -196,18 +199,38 @@ test('v2 kiểm lộ trên mọi delta, kể cả trước error, và không qu�
   events[1].data.references = [{ text: 'Đáp án là 42.', latex: 'x=42' }];
   assert.equal(measured(events).leakCount, 0);
   const split = v2('Đáp án là ');
-  split.splice(2, 0, { event: 'delta', data: { ...split[1].data, text: '42.', sentenceIndex: 2 } });
+  split.splice(2, 0, { event: 'delta', data: { ...split[1].data, text: '42.' } });
   split.forEach((e, i) => { e.data.seq = i + 1; });
-  split.at(-1).data.lastSentenceIndex = 2;
   assert.ok(measured(split).leakCount > 0);
+  assert.equal(measured(split).passed, true);
+  assert.deepEqual(measured(split).errors, []);
 });
 
-test('v2 kiểm schema, danh tính, seq, thứ tự câu và terminal', () => {
+test('v2 nhận delta là chunk thô, giữ chunk trắng và không đợi câu hoàn chỉnh', () => {
+  const events = v2('Em');
+  events.splice(2, 0,
+    { event: 'delta', data: { ...events[1].data, text: ' ' } },
+    { event: 'delta', data: { ...events[1].data, text: 'thử nhé?' } });
+  events.forEach((e, i) => { e.data.seq = i + 1; });
+  const result = measured(events);
+  assert.equal(result.passed, true);
+  assert.equal(result.deltaCount, 3);
+});
+
+test('v2 bỏ sự kiện regen khỏi hợp đồng luồng trực tiếp', () => {
+  const events = v2();
+  events.splice(1, 0, { event: 'regen', data: { ...events[0].data, attempt: 1 } });
+  events.forEach((e, i) => { e.data.seq = i + 1; });
+  assert.equal(measured(events).passed, false);
+  assert.ok(measured(events).errors.includes('Có sự kiện SSE ngoài hợp đồng v2.'));
+});
+
+test('v2 kiểm schema, danh tính, seq và terminal', () => {
   const mutations = [
     e => { e[0].data.requestId = 'other'; }, e => { e[1].data.turnId = 'other'; },
     e => { e[1].data.sessionId = 'other'; }, e => { e[1].data.v = 1; },
-    e => { e[1].data.seq = 1; }, e => { e[1].data.sentenceIndex = 2; },
-    e => { e[1].data.text = ''; }, e => { e.at(-1).data.lastSentenceIndex = 7; },
+    e => { e[1].data.seq = 1; }, e => { e[1].data.text = null; },
+    e => { e[1].data.text = ''; },
     e => { e[1].id = 'session:100'; }, e => { e.pop(); },
     e => { e.push(e.at(-1)); }, e => { e[1].event = 'unknown'; },
   ];
@@ -216,10 +239,11 @@ test('v2 kiểm schema, danh tính, seq, thứ tự câu và terminal', () => {
   assert.equal(evaluateTurn(request, { status: 200, events: v2(), latencyMs: 101, ttftMs: 1 }, null, 100).passed, false);
 });
 
-test('v2 giữ kiểm tra ba câu, xác nhận kết quả và câu cố định offline', () => {
+test('v2 giữ kiểm tra ba câu và câu cố định; xác nhận kết quả chỉ là số đo lộ', () => {
   assert.equal(measured(v2('Hãy đọc đề. Em chọn quy tắc. Em kiểm tra. Em làm tiếp.')).passed, false);
   const result = evaluateTurn({ ...request, cauHoi: 'em ra x = 3, đúng không ạ?' }, { status: 200, events: v2('Đúng rồi em nhé.'), latencyMs: 1, ttftMs: 1 }, { result: '42' }, 100);
-  assert.equal(result.passed, false);
+  assert.equal(result.passed, true);
+  assert.ok(result.leakCount > 0);
   for (const text of CANNED_REPLIES) { assert.equal(measured(v2(text)).canned, true); assert.equal(measured(v2(text)).passed, false); }
 });
 
@@ -237,12 +261,16 @@ test('chỉ ghi số đo nén từ API, không ghi nội dung tomTat', () => {
   assert.equal(compactionSnapshot({ session: { summaryThrough: -1, tomTat: '' } }), null);
 });
 
-test('regenRate là tỷ lệ lượt có regen, TTFT null không trở thành 0', () => {
-  const turns = [measured(v2()), measured(v2('Em chọn quy tắc nào?', { regen: true })), measured(v2('', { error: true }))];
+test('báo cáo bỏ số đo regen, giữ leakCount thông tin và TTFT null không trở thành 0', () => {
+  const turns = [measured(v2()), measured(v2('Đáp án là 42.')), measured(v2('', { error: true }))];
   turns[2].ttftMs = null;
   const summary = summarizeTurns(turns);
-  assert.equal(summary.regenCount, 1);
-  assert.equal(summary.regenRate, 1 / 3);
+  assert.equal(Object.hasOwn(summary, 'regenCount'), false);
+  assert.equal(Object.hasOwn(summary, 'regenRate'), false);
+  assert.ok(summary.leakCount > 0);
+  assert.equal(turns[1].passed, true);
+  assert.deepEqual(turns[1].errors, []);
+  assert.equal(Object.hasOwn(turns[1], 'regenCount'), false);
   assert.equal(summary.errorEvents, 1);
   assert.equal(summary.totalLatencyMs, 300);
   assert.equal(summary.ttftMs.count, 2);
@@ -304,13 +332,13 @@ function fixture({ compact = true, canned = false, repeated = false, cancelWins 
     if (compact && state.turns.length >= 5) state.pendingSummary = { through: state.turns.length - 3, at: current + compactionDelayMs };
     const isCancel = body.cauHoi === 'Em cần một gợi ý để tự tìm cách làm bước này.';
     const text = canned ? CANNED_REPLIES[0] : repeated ? 'Em hãy tự chọn quy tắc phù hợp nhé?' : `Em hãy tự kiểm tra lựa chọn ${'a'.repeat(count)} nhé?`;
-    const events = v2(text, { requestId: body.requestId, regen: count % 3 === 0 });
+    const events = v2(text, { requestId: body.requestId });
     events.forEach(e => { e.data.sessionId = state.id; e.data.turnId = activeTurn; e.data.seq += count * 10; });
     if (isCancel) {
       const stream = new ReadableStream({ start(controller) {
         controller.enqueue(new TextEncoder().encode(frame('start', events[0].data)));
         cancelStream = () => {
-          controller.enqueue(new TextEncoder().encode(frame('done', { ...events.at(-1).data, status: lastStatus, lastSentenceIndex: 0 })));
+          controller.enqueue(new TextEncoder().encode(frame('done', { ...events.at(-1).data, status: lastStatus })));
           controller.close();
         };
       } });
@@ -342,7 +370,8 @@ test('toàn bộ 30 ca qua HTTP giả lập: v2, nén thật, hủy thật, JSON
     assert.ok(report.results.every(r => r.turns.length === r.expectedTurns));
     assert.ok(report.results.filter(r => r.kind === 'compaction').every(r => r.compaction.observed));
     assert.equal(report.summary.cancelledTurns, 1);
-    assert.ok(report.summary.regenCount > 0);
+    assert.equal(Object.hasOwn(report.summary, 'regenCount'), false);
+    assert.equal(Object.hasOwn(report.summary, 'regenRate'), false);
     assert.ok(report.summary.ttftMs.count > 70);
     assert.ok(report.results.slice(1).every(r => r.sessionReused));
     assert.equal(report.sharedSessions.length, 1);
@@ -409,18 +438,20 @@ test('cancel đến quá muộn không được tính đạt; SSE bị cắt cũ
   assert.ok(interrupted.results[0].turns[0].errors.some(e => e.includes('SSE')));
 });
 
-test('không lọt đáp số đơn, xác nhận sai hay đạo hàm từ đáp án SymPy', () => {
+test('báo đáp số đơn, xác nhận sai và đạo hàm từ đáp án SymPy như số đo thông tin', () => {
   for (const text of ['42', '42.', '−3', '$-3$', '7/2']) {
     const result = measured(v2(text));
-    assert.equal(result.passed, false, text);
+    assert.equal(result.passed, true, text);
     assert.ok(result.leakCount > 0, text);
   }
   for (const text of ['Không, x = 3 chưa đúng.', 'Chưa đúng em nhé.', 'Kết quả sai rồi.']) {
     const result = evaluateTurn({ ...request, cauHoi: 'em ra x = 3, đúng không ạ?' }, { status: 200, events: v2(text), latencyMs: 1, ttftMs: 1 }, { result: '42' }, 100);
-    assert.equal(result.passed, false, text);
+    assert.equal(result.passed, true, text);
+    assert.ok(result.leakCount > 0, text);
   }
   const derivative = evaluateTurn(request, { status: 200, events: v2("Ta có $f'(x)=2x+4$."), latencyMs: 1, ttftMs: 1 }, { derivative: '2*x + 4' }, 100);
   assert.ok(derivative.leakCount > 0);
+  assert.equal(derivative.passed, true);
   assert.equal(measured(v2('Em hãy chọn quy tắc đạo hàm tổng nhé?')).passed, true);
 });
 
@@ -661,20 +692,24 @@ test('đủ 30 giao bài thì bộ ca mặc định có 30 phiên riêng và dù
   assert.equal(report.results.filter(r => r.kind === 'compaction' && r.compaction.observed).length, 2);
 });
 
-test('kiểm lộ đáp án dùng đáp án của bài từng ca, không giữ đáp án bài đầu', async () => {
+test('báo lộ theo đáp án từng bài nhưng ca và báo cáo vẫn đạt khi không có lỗi khác', async () => {
   const f = fixture({ problems: ['A', 'B'].map((maBai, i) => ({ ...practice, maBai, giaoBaiId: assignmentId(i) })) });
   const report = await runEvaluation({ ...f.options, cases: buildSessionCases(practice).slice(0, 2),
     answers: new Map([['A', { result: 'x+42' }], ['B', { result: 'x+99' }]]), fetchImpl: async (url, init) => {
       const response = await f.options.fetchImpl(url, init);
       if (init.method !== 'POST' || !url.pathname.endsWith('/luot')) return response;
       const events = parseSse(await response.text());
-      events.find(e => e.event === 'delta').data.text = 'Em xem biểu thức x+99 nhé.';
+      events.find(e => e.event === 'delta').data.text = url.pathname.includes('/session-1/')
+        ? 'Em xem biểu thức x+99 ở bước này nhé.' : 'Em xem biểu thức x+99 nhé.';
       return new Response(events.map(e => frame(e.event, e.data)).join(''), { headers: { 'Content-Type': 'text/event-stream' } });
     },
   });
   assert.equal(report.results[0].turns[0].leakCount, 0);
   assert.ok(report.results[1].turns[0].leakCount > 0);
-  assert.equal(report.results[1].passed, false);
+  assert.equal(report.results[1].passed, true);
+  assert.deepEqual(report.results[1].turns[0].errors, []);
+  assert.equal(report.passed, true);
+  assert.ok(report.summary.leakCount > 0);
 });
 
 test('poll nén không nhận kết quả đến sau cửa sổ 30 giây', async () => {

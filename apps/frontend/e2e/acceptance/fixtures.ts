@@ -72,7 +72,7 @@ export class MockApi {
                 };
                 const text = '**Lời đã kiểm trong mock** $x^2$.';
                 await route.fulfill({ status:this.tutorStatus, contentType:'text/event-stream', body:this.tutorStatus === 200
-                    ? event('start',{requestId:body.requestId,maBuoc:body.maBuoc,cap:body.cap,contextVersion:'1:synthetic'}) + event('delta',{sentenceIndex:1,text}) + event('done',{status:'completed',lastSentenceIndex:1,tokens:10,durationMs:20}) : '' });
+                    ? event('start',{requestId:body.requestId,maBuoc:body.maBuoc,cap:body.cap,contextVersion:'1:synthetic'}) + event('delta',{text}) + event('done',{status:'completed',tokens:10,durationMs:20}) : '' });
                 if (this.tutorStatus === 200) this.tutorTurns.unshift({id:turnId,sessionId:'e2e-session',requestId:body.requestId,ordinal:this.tutorTurns.length+1,step:body.maBuoc,level:body.cap,question:body.cauHoi,answer:text,status:'completed',createdAt:'2026-10-14T00:00:00Z'});
                 return;
             }

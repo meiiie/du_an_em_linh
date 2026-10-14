@@ -23,7 +23,7 @@ public final class GlmHintModelAdapter implements HintModel {
     private final Duration timeout;
     private final int maxTokens;
     private final Duration firstTokenTimeout;
-    // Chừa thời gian cho cổng kiểm duyệt trước deadline toàn lượt 120 giây.
+    // Chừa thời gian lưu terminal/usage trước deadline toàn lượt 120 giây.
     private static final Duration MAX_BUDGET=Duration.ofSeconds(110);
     public GlmHintModelAdapter(RestClient client,String key,String model,Duration timeout,int maxTokens) {
         this(client,key,model,timeout,maxTokens,Duration.ofSeconds(20));

@@ -66,3 +66,13 @@ cd services/core
 | Kiểm diff | `git diff --check`: exit 0; không sửa V1–V13 hoặc `.github`. |
 
 Sandbox không cho JVM tự attach Mockito, nên lệnh dùng `-javaagent` lúc khởi động; không thay mock maker hay bỏ assertion để làm xanh. Test HTTP mở socket được giữ nguyên trong repo, không đánh dấu skip/xóa. Full `verify` **chưa xanh trong môi trường này**; cần chạy lại với quyền mở socket và Docker. Không đọc `.env`, không in khóa; không commit.
+
+## Bổ sung 2026-10-14 — delta trực tiếp theo quyết định Darren
+
+Bổ sung này thay hợp đồng phát từng câu đã kiểm ở trên theo [quyết định Darren trong ADR 013](013-cong-ba-tang-cho-loi-gia-su.md#bổ-sung-2026-10-14--quyết-định-darren-bỏ-cổng-từng-câu-khỏi-luồng-trực-tiếp).
+
+- Trình tự v2 là `start → (delta|heartbeat)* → done|error`; không có `regen`. `delta` mang `{text}` là chunk nội dung từ nhà, có thể cắt giữa câu, Markdown hoặc LaTeX, kể cả chỉ chứa khoảng trắng. Chunk tối đa 64 đơn vị UTF-16, không tách cặp surrogate; vòng đọc log SSE chờ 50 ms giữa các lần quét. Reasoning và tool output vẫn không được phát.
+- Envelope `v:2,sessionId,turnId,seq` và ID `<sessionId>:<seq>` giữ nguyên. `seq` là cursor thứ tự và chống lặp duy nhất; không còn `sentenceIndex`/`lastSentenceIndex`. `done` mang `status,tokens,durationMs`; không gửi lời trả lời để ghi đè chunk đã phát.
+- Lưu chunk trước gửi SSE, giữ kiểm quyền/mode/hạn/phiên bản và tranh chấp với cancel. Chunk đã commit còn trong lịch sử khi hủy/lỗi; resume đọc đúng log cũ, không gọi model lại. Heartbeat không lưu/không cấp seq/không tính TTFT. Worker, lease và thời hạn toàn lượt không thay đổi.
+- Không có buffer câu, kiểm cổng từng câu, sinh lại hoặc strict/fast-path. Nén summary chạy bất đồng bộ sau `done` và không gọi cổng lời giảng. Usage tiếp tục ghi lời gọi model và nén; retry GLM vẫn tối đa một lần trước token nội dung đầu tiên theo quy định retry trên.
+- Frontend nối đúng mọi chunk, giữ khoảng trắng và render được Markdown/LaTeX đang dở. TTFT tính lúc nhận delta đầu tiên, không chờ câu đủ hay EOF. Eval báo rò đáp án để quan sát, không dùng làm cổng đạt/trượt; bỏ số đo regen. Chưa có benchmark GLM thật cho thay đổi này.

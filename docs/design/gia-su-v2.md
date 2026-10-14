@@ -5,6 +5,8 @@ Phạm vi: Toán 12, đơn điệu và cực trị; core điều phối, math ki
 Sản phẩm của phiên này chỉ là tài liệu; không sửa mã, migration, dữ liệu sư phạm hoặc hai repo tham khảo.
 Mọi con số ngân sách/ngưỡng ở phần thiết kế là giá trị khởi đầu để đo, không phải kết quả benchmark.
 
+**Cập nhật 2026-10-14 — quyết định Darren:** lời LIVE phát `delta {text}` nguyên văn theo `seq`, không đợi/kiểm từng câu, không regen, strict fallback hoặc fast-path; summary cũng không qua cổng. Bảo vệ đáp án dựa vào prompt Socratic và quy tắc mở lời giải sau nộp đủ bài (kiểm tra phải chờ hết hạn); giữ PII, phiên, nén async, cancel/resume, usage và một retry GLM trước token đầu. `leakCount` chỉ để quan sát. Các phần lịch sử bên dưới về cổng và «0 lộ» được thay bởi bổ sung 2026-10-14 trong [ADR 013](../adr/013-cong-ba-tang-cho-loi-gia-su.md) và [ADR 010](../adr/010-sse-trang-thai-gia-su.md).
+
 ## 1. Nguồn và cách đọc kết quả
 
 Khảo sát mã cục bộ, không suy diễn từ tên tính năng hoặc bình luận lịch sử. Các đường viết tắt dưới đây tính từ gốc tương ứng:

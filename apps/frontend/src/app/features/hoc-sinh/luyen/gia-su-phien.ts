@@ -127,9 +127,9 @@ export class GiaSuPhien {
   async hoi(cauHoi: string, maBuoc: string, cap: number, retry?: LuotGiaSuV2): Promise<void> {
     if (!this.sanSang()) return;
     const requestId = crypto.randomUUID();
-    const turn: LuotGiaSuV2 = { requestId, turnId: '', maBuoc, cap, cauHoi, sentences: [], status: 'generating',
+    const turn: LuotGiaSuV2 = { requestId, turnId: '', maBuoc, cap, cauHoi, text: '', status: 'generating',
       ...(retry ? { retryOfTurnId: retry.turnId || retry.requestId } : {}) };
-    // Thử lại gắn với lượt lỗi, chỉ giữ một câu hỏi trong UI; phần đã kiểm vẫn ở lượt cũ.
+    // Thử lại gắn với lượt lỗi, chỉ giữ một câu hỏi trong UI; phần đã nhận vẫn ở lượt cũ.
     this.luot.update(turns => [...turns, turn]);
     const active = this.connection(this.sessionId(), requestId, '');
     this.active = active;
@@ -180,11 +180,14 @@ export class GiaSuPhien {
         const response = await this.request(this.path(a.sessionId, 'cancel'), { method: 'POST', body: JSON.stringify({ turnId: a.turnId } satisfies HuyGiaSuV2) });
         const ack: XacNhanHuyGiaSuV2 = await response.json();
         if (ack.sessionId !== a.sessionId || ack.turnId !== a.turnId || !['cancelled', 'completed', 'error'].includes(ack.status) || !Number.isSafeInteger(ack.lastSeq)) throw new Error('Chưa xác nhận được việc dừng. Bấm Dừng để thử lại.');
-        // ACK completed có thể thắng race: replay phần còn thiếu trước khi đóng stream.
-        if (ack.status !== 'cancelled') {
+        // Stream có thể đã nhận done trong lúc chờ ACK; không mở lại lượt đã xong.
+        if (!this.current(a) || a.terminal) return;
+        // ACK cancelled chỉ thay được done kế tiếp. Nếu còn delta ở giữa,
+        // replay từ cursor đã nhận trước khi cho phép hỏi lượt mới.
+        if (ack.status !== 'cancelled' || ack.lastSeq > this.lastSeq + 1) {
           a.stopping = false;
           if (this.current(a)) {
-            // Worker đã xong trước cancel nhưng client có thể chưa nhận hết delta/done.
+            // Worker đã dừng/xong nhưng client có thể chưa nhận hết delta/done.
             // Nối lại từ cursor đã nhận, không nhảy thẳng tới seq trong ACK.
             a.abort.abort();
             const replay = this.connection(a.sessionId, a.requestId, a.turnId);
@@ -308,7 +311,7 @@ export class GiaSuPhien {
       this.historyOffset++;
     }
     if (d.turnId !== a.turnId) throw new Error('Phiên đã thay đổi.');
-    if (event.event === 'delta' && (typeof event.data.text !== 'string' || !Number.isSafeInteger(event.data.sentenceIndex) || event.data.sentenceIndex < 1)) throw new Error('Kết nối bị gián đoạn.');
+    if (event.event === 'delta' && typeof event.data.text !== 'string') throw new Error('Kết nối bị gián đoạn.');
     if (event.event === 'done' && event.data.status !== 'completed' && event.data.status !== 'cancelled') throw new Error('Kết nối bị gián đoạn.');
     this.lastSeq = seq;
     switch (event.event) {
@@ -317,16 +320,12 @@ export class GiaSuPhien {
         if (a.stopping) void this.huy(a);
         break;
       case 'delta': {
-        const { sentenceIndex, text } = event.data;
-        if (this.luot().some(t => t.turnId === a.turnId && t.sentences.some(s => s.sentenceIndex === sentenceIndex))) break;
-        this.update(a, t => t.sentences.some(s => s.sentenceIndex === sentenceIndex) ? t : {
-          ...t, sentences: [...t.sentences, { sentenceIndex, text }],
-        });
+        const { text } = event.data;
+        this.update(a, t => ({ ...t, text: t.text + text }));
         this.thongBaoCau.update(cau => [...cau, { seq, text }]);
         if (!a.stopping) this.trangThai.set('Đang soạn lời gợi ý…');
         break;
       }
-      case 'regen': if (!a.stopping) this.trangThai.set('Đang viết lại cho đúng yêu cầu…'); break;
       case 'done':
         a.terminal = true;
         this.update(a, t => ({ ...t, status: event.data.status === 'cancelled' ? 'cancelled' : 'completed' }));
@@ -345,9 +344,8 @@ export class GiaSuPhien {
   private mapHistory(turns: readonly TurnGiaSuV2[]): LuotGiaSuV2[] {
     return [...turns].reverse().map(t => ({
       requestId: t.requestId, turnId: t.id, maBuoc: t.step, cap: t.level, cauHoi: t.question, status: t.status,
-      // answer đã ghép các delta; giữ nguyên Markdown và dùng chỉ số 0 cho snapshot
-      // để không trùng sentenceIndex (1-based) khi nối lại lượt đang sinh.
-      sentences: t.answer ? [{ sentenceIndex: 0, text: t.answer }] : [],
+      // Snapshot đã ghép delta đến session.lastSeq; chỉ nối chữ sau cursor này.
+      text: t.answer,
       ...(t.status === 'error' ? { error: { message: 'Lượt hỏi chưa hoàn tất. Em có thể hỏi lại.', retryable: true } } : {}),
     }));
   }

@@ -8,7 +8,7 @@ import { NOI_LAI_GIA_SU } from './gia-su-phien';
 const session: SessionGiaSuV2 = {id:'s1',studentId:'synthetic-student',assignmentId:'assignment-1',classId:'synthetic-class',tomTat:'',summaryThrough:0,contextVersion:'1:synthetic',lastSeq:0,revision:1,tokenCount:0};
 const json=(body:unknown)=>new Response(JSON.stringify(body),{headers:{'Content-Type':'application/json'}});
 const eventFields = (name: string) => name === 'start' ? {maBuoc:'B.DH.TXD',cap:1,contextVersion:'1:synthetic'}
-  : name === 'regen' ? {attempt:1,mode:'rewrite'} : name === 'done' ? {lastSentenceIndex:1,tokens:10,durationMs:20}
+  : name === 'done' ? {tokens:10,durationMs:20}
   : name === 'error' ? {code:'MODEL_UNAVAILABLE'} : {};
 const event=(name:string,seq:number,data:object={})=>`id: s1:${seq}\nevent: ${name}\ndata: ${JSON.stringify({v:2,...eventFields(name),sessionId:'s1',turnId:'t1',seq,...data})}\n\n`;
 const settle=async()=>{await new Promise(r=>setTimeout(r,5));};
@@ -18,7 +18,7 @@ describe('Sidebar gia sư',()=>{
   let response:(init:RequestInit)=>Response;
   beforeEach(()=>{
     localStorage.clear();
-    response=init=>new Response(event('start',1,{requestId:JSON.parse(init.body as string).requestId})+event('delta',2,{sentenceIndex:1,text:'**Câu đã kiểm** $x^2$.'})+event('done',3,{status:'completed'}),{headers:{'Content-Type':'text/event-stream'}});
+    response=init=>new Response(event('start',1,{requestId:JSON.parse(init.body as string).requestId})+event('delta',2,{text:'**Câu đã kiểm** $x^2$.'})+event('done',3,{status:'completed'}),{headers:{'Content-Type':'text/event-stream'}});
     fetchMock=vi.fn(async(url:string,init:RequestInit={})=>{
       if(url===API_GIA_SU)return json({sessionId:'s1',lastSeq:0,turnId:null,status:'idle'});
       if(url.includes('/luot?')&&!init.method)return json({session,turns:[]});
@@ -69,7 +69,7 @@ describe('Sidebar gia sư',()=>{
     expect(t.el.querySelector('article strong')?.textContent).toBe('Câu đã kiểm');expect(t.el.querySelector('.katex')).not.toBeNull();
     expect(t.el.querySelectorAll('article')).toHaveLength(2);
   });
-  it('hiện trạng thái chờ polite, regen trước delta và lời đã kiểm khi delta tới',async()=>{
+  it('hiện trạng thái chờ polite đến token thô đầu tiên và giữ nút Dừng',async()=>{
     let writer!: ReadableStreamDefaultController<Uint8Array>;
     response=()=>new Response(new ReadableStream({start(c){writer=c;}}),{headers:{'Content-Type':'text/event-stream'}});
     const t=await setup();await t.fill('Em hỏi');await t.click('Gửi câu hỏi');
@@ -80,15 +80,16 @@ describe('Sidebar gia sư',()=>{
     expect(status().querySelector('span')?.getAttribute('aria-hidden')).toBe('true');
     expect(t.el.querySelector('.cau-cua-ai')).toBeNull();
     const requestId=JSON.parse(fetchMock.mock.calls[2][1].body).requestId;
-    writer.enqueue(new TextEncoder().encode(event('start',1,{requestId})+event('regen',2)));
+    writer.enqueue(new TextEncoder().encode(event('start',1,{requestId})));
     await settle();await t.f.whenStable();
-    expect(status().textContent).toContain('Đang viết lại cho đúng yêu cầu…');
+    expect(status().textContent).toContain('Đang suy nghĩ…');
     expect(t.el.querySelector('.cau-cua-ai')).toBeNull();
-    writer.enqueue(new TextEncoder().encode(event('delta',3,{sentenceIndex:1,text:'Câu đã kiểm.'})));
+    writer.enqueue(new TextEncoder().encode(event('delta',2,{text:'Câu'})));
     await settle();await t.f.whenStable();
     expect(status().textContent).toContain('Đang soạn lời gợi ý…');
-    expect(t.el.querySelector('.cau-cua-ai')?.textContent).toContain('Câu đã kiểm.');
-    writer.enqueue(new TextEncoder().encode(event('done',4,{status:'completed'})));
+    expect(t.el.querySelector('.cau-cua-ai')?.textContent).toContain('Câu');
+    expect(t.el.querySelector('[data-testid="gia-su-dung"]')).not.toBeNull();
+    writer.enqueue(new TextEncoder().encode(event('done',3,{status:'completed'})));
     await settle();await t.f.whenStable();
     expect(t.el.querySelector('.typing')).toBeNull();
   });
@@ -106,7 +107,7 @@ describe('Sidebar gia sư',()=>{
     expect(t.el.querySelector('.cau-cua-ai')).toBeNull();
   });
   it('Escape khi đang sinh POST cancel đúng lượt, giữ câu và đóng panel',async()=>{
-    response=init=>new Response(new ReadableStream({start(c){c.enqueue(new TextEncoder().encode(event('start',1,{requestId:JSON.parse(init.body as string).requestId})+event('delta',2,{sentenceIndex:1,text:'Câu đã kiểm.'})));}}),{headers:{'Content-Type':'text/event-stream'}});
+    response=init=>new Response(new ReadableStream({start(c){c.enqueue(new TextEncoder().encode(event('start',1,{requestId:JSON.parse(init.body as string).requestId})+event('delta',2,{text:'Câu đã kiểm.'})));}}),{headers:{'Content-Type':'text/event-stream'}});
     const t=await setup();await t.fill('Em hỏi');await t.click('Gửi câu hỏi');
     expect(t.el.querySelector('article.cau-cua-ai')?.textContent).toContain('Câu đã kiểm');
     document.dispatchEvent(new KeyboardEvent('keydown',{key:'Escape'}));await settle();await t.f.whenStable();
@@ -127,7 +128,7 @@ describe('Sidebar gia sư',()=>{
     response=init=>new Response(event('start',1,{requestId:JSON.parse(init.body as string).requestId})+event('error',2,{message:'Chưa có lời đã kiểm.',retryable:true}),{headers:{'Content-Type':'text/event-stream'}});
     const t=await setup();await t.fill('Câu hỏi của em');await t.click('Gửi câu hỏi');
     await t.click('Hỏi lại');expect(t.el.querySelector('textarea')!.value).toBe('Câu hỏi của em');expect(fetchMock).toHaveBeenCalledTimes(3);
-    response=init=>new Response(event('start',3,{turnId:'t2',requestId:JSON.parse(init.body as string).requestId})+event('delta',4,{turnId:'t2',sentenceIndex:1,text:'Câu mới đã kiểm.'})+event('done',5,{turnId:'t2',status:'completed'}),{headers:{'Content-Type':'text/event-stream'}});
+    response=init=>new Response(event('start',3,{turnId:'t2',requestId:JSON.parse(init.body as string).requestId})+event('delta',4,{turnId:'t2',text:'Câu mới đã kiểm.'})+event('done',5,{turnId:'t2',status:'completed'}),{headers:{'Content-Type':'text/event-stream'}});
     await t.click('Thử lại');
     expect(t.el.querySelectorAll('.cau-cua-em')).toHaveLength(1);expect(t.el.textContent).toContain('Câu mới đã kiểm.');
   });
@@ -138,12 +139,12 @@ describe('Sidebar gia sư',()=>{
   });
   it('em cuộn lên thì delta không kéo xuống đáy; nút Xuống tiếp tục theo dõi',async()=>{
     let writer!: ReadableStreamDefaultController<Uint8Array>;
-    response=init=>new Response(new ReadableStream({start(c){writer=c;c.enqueue(new TextEncoder().encode(event('start',1,{requestId:JSON.parse(init.body as string).requestId})+event('delta',2,{sentenceIndex:1,text:'Câu đầu. '})));}}),{headers:{'Content-Type':'text/event-stream'}});
+    response=init=>new Response(new ReadableStream({start(c){writer=c;c.enqueue(new TextEncoder().encode(event('start',1,{requestId:JSON.parse(init.body as string).requestId})+event('delta',2,{text:'Câu đầu. '})));}}),{headers:{'Content-Type':'text/event-stream'}});
     const t=await setup();await t.fill('Em hỏi');await t.click('Gửi câu hỏi');
     const thread=t.el.querySelector<HTMLElement>('.tutor-messages')!;
     Object.defineProperties(thread,{scrollHeight:{value:1200,configurable:true},clientHeight:{value:300,configurable:true}});
     thread.scrollTop=200;thread.dispatchEvent(new Event('scroll'));await t.f.whenStable();
-    writer.enqueue(new TextEncoder().encode(event('delta',3,{sentenceIndex:2,text:'Câu sau.'})));await settle();await t.f.whenStable();
+    writer.enqueue(new TextEncoder().encode(event('delta',3,{text:'Câu sau.'})));await settle();await t.f.whenStable();
     expect(thread.scrollTop).toBe(200);expect(t.el.querySelector('[data-testid="gia-su-xuong"]')).not.toBeNull();
     await t.click('Xuống');expect(thread.scrollTop).toBe(1200);
     writer.enqueue(new TextEncoder().encode(event('done',4,{status:'completed'})));await settle();await t.f.whenStable();
@@ -151,6 +152,27 @@ describe('Sidebar gia sư',()=>{
 });
 
 describe('Markdown gia sư',()=>{
+  it.each([
+    ['$','x_1 + \\frac{','x}{2}','$'],
+    ['$$','x_1 + \\frac{','x}{2}','$$'],
+    ['\\(','x_1 + \\frac{','x}{2}','\\)'],
+    ['\\[','x_1 + \\frac{','x}{2}','\\]'],
+  ])('giữ nguyên toán %s đang nhận và render KaTeX sau delimiter đóng',async(open,first,next,close)=>{
+    const f=TestBed.createComponent(GiaSuMarkdown);
+    const el=f.nativeElement as HTMLElement;
+    let text='**Xét** '+open;
+    for(const chunk of ['',first,next]){
+      text+=chunk;
+      f.componentRef.setInput('text',text);f.detectChanges();await f.whenStable();
+      expect(el.querySelector('strong')?.textContent).toBe('Xét');
+      expect(el.querySelector('.markdown')?.textContent).toBe('Xét '+text.slice(8)+'\n');
+      expect(el.querySelector('.katex,.katex-error')).toBeNull();
+    }
+    f.componentRef.setInput('text',text+close);f.detectChanges();await f.whenStable();
+    expect(el.querySelector('.katex')).not.toBeNull();
+    expect(el.querySelector('math')).not.toBeNull();
+    expect(el.querySelector('.katex-error')).toBeNull();
+  });
   it('sanitize HTML, không ảnh hay URL model, toán/MathML và nguồn đúng snapshot',async()=>{
     const f=TestBed.createComponent(GiaSuMarkdown);
     f.componentRef.setInput('text','**Nhấn mạnh**\n\n- Xét $x^2$ và \\(f\\prime\\).\n- Nguồn [1].\n\n$$\\frac{1}{x}$$\n\n<img src="https://outside.invalid/a" onerror="alert(1)"><script>alert(1)</script> [liên kết](javascript:alert) ![ảnh](https://outside.invalid/b)');

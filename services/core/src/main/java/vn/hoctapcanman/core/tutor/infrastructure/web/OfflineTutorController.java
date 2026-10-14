@@ -34,7 +34,7 @@ public class OfflineTutorController {
             } catch (WorkspaceException ex) {
                 sendError(emitter, ex.getMessage());
             } catch (Exception ex) {
-                sendError(emitter, "Chưa kiểm tra được gợi ý an toàn. Em thử lại hoặc nhờ giáo viên nhé.");
+                sendError(emitter, "Chưa thể nhận lời gợi ý. Em thử lại hoặc nhờ giáo viên nhé.");
             }
         });
         // Ngắt kết nối chỉ dừng đọc; model tiếp tục để có thể resume qua phiên v2.

@@ -64,7 +64,7 @@ class TutorSessionPersistenceTest {
     }
     @Test void restartReplaySummaryAndUsageRemainDurable() {
         Accepted a=accept();
-        store.append(session.id(),a.turn().id(),"delta",Map.of("text","Em cần tìm điều gì?","sentenceIndex",1));
+        store.append(session.id(),a.turn().id(),"delta",Map.of("text","Em cần tìm điều gì?"));
         store.append(session.id(),a.turn().id(),"done",Map.of("status","completed"));
         var snapshot=store.snapshot(session.id());store.compact(snapshot,"Em đang thử cách đã chọn.",1,7);
         store.usage(student,cl,a.turn().id(),"GLM","reply",new ModelUsage(80,12,false));
@@ -76,10 +76,21 @@ class TutorSessionPersistenceTest {
         assertEquals(2,restarted.usage(cl).getFirst().requests());assertEquals(120,restarted.usage(cl).getFirst().inputTokens());assertEquals(48,restarted.usage(cl).getFirst().estimatedTokens());
         assertEquals(2,db.sql("SELECT count(*) FROM luot_gia_su WHERE phien_id=:s").param("s",session.id()).query(Integer.class).single());
     }
+    @Test void tokenCountAndStoredAnswerAreIndependentOfTokenChunkBoundaries() {
+        Accepted a=accept();int before=store.snapshot(session.id()).tokenCount();
+        for(String token:List.of("E","m"," ","$","x","^","2","$","\n"))
+            store.append(session.id(),a.turn().id(),"delta",Map.of("text",token));
+        String answer="Em $x^2$\n";
+        assertEquals(before+vn.hoctapcanman.core.tutor.application.port.HintModel.estimate(answer),store.snapshot(session.id()).tokenCount());
+        store.append(session.id(),a.turn().id(),"done",Map.of("status","cancelled"));
+        assertEquals(answer,store.turns(session.id(),0,1).getFirst().answer());
+        var replay=store.events(session.id(),1);assertEquals(10,replay.size());
+        assertFalse(replay.getLast().data().containsKey("lastSentenceIndex"));
+    }
     @Test void cancelAndDeltaRaceHasOnlyOneTerminalAndNoLateDelta() throws Exception {
         Accepted a=accept();CountDownLatch go=new CountDownLatch(1);
         try(var executor=Executors.newVirtualThreadPerTaskExecutor()) {
-            var delta=executor.submit(() -> {go.await();return store.append(session.id(),a.turn().id(),"delta",Map.of("text","Em thử gì?","sentenceIndex",1));});
+            var delta=executor.submit(() -> {go.await();return store.append(session.id(),a.turn().id(),"delta",Map.of("text","Em thử gì?"));});
             var cancel=executor.submit(() -> {go.await();return store.append(session.id(),a.turn().id(),"done",Map.of("status","cancelled"));});
             go.countDown();delta.get(3,TimeUnit.SECONDS);cancel.get(3,TimeUnit.SECONDS);
         }
@@ -91,7 +102,7 @@ class TutorSessionPersistenceTest {
     }
     @Test void permissionOrContentRevokedBeforeCommitNeverPublishesDelta() {
         Accepted a=accept();db.sql("UPDATE assignments SET mode='KIEM_TRA' WHERE id=:id").param("id",assignment).update();
-        assertThrows(WorkspaceException.class,() -> store.append(session.id(),a.turn().id(),"delta",Map.of("text","Em thử gì?","sentenceIndex",1)));
+        assertThrows(WorkspaceException.class,() -> store.append(session.id(),a.turn().id(),"delta",Map.of("text","Em thử gì?")));
         assertEquals(List.of("start"),store.events(session.id(),0).stream().map(Event::type).toList());
     }
     @Test void staleSummaryRevisionCannotOverwriteNewState() {

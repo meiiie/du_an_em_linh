@@ -23,7 +23,7 @@ export function docSse(raw: string, eof = false): { events: SuKienSse[]; rest: s
     }
     if (data.length) {
       try {
-        if (['start', 'delta', 'regen', 'done', 'error', 'heartbeat'].includes(event)) {
+        if (['start', 'delta', 'done', 'error', 'heartbeat'].includes(event)) {
           events.push({ event, id, data: JSON.parse(data.join('\n')) } as SuKienSse);
         }
       }

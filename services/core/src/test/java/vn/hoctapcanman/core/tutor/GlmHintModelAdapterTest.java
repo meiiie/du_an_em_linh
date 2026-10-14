@@ -62,8 +62,8 @@ class GlmHintModelAdapterTest {
     }
     @Test void refusalOfConsumerStopsProviderWithoutRetry() {
         server.expect(requestTo(BASE+"/chat/completions")).andRespond(withSuccess(SUCCESS,MediaType.TEXT_EVENT_STREAM));
-        assertThrows(vn.hoctapcanman.core.tutor.application.service.OfflineTutorService.Rejected.class,
-            () -> adapter.stream(prompt,ignored -> {throw new vn.hoctapcanman.core.tutor.application.service.OfflineTutorService.Rejected("GATE_REJECTED");}));server.verify();
+        assertThrows(java.util.concurrent.CancellationException.class,
+            () -> adapter.stream(prompt,ignored -> {throw new java.util.concurrent.CancellationException();}));server.verify();
     }
     @Test void providerErrorsDoNotExposeResponseOrFallback() {
         for(HttpStatus status:List.of(HttpStatus.BAD_REQUEST,HttpStatus.UNAUTHORIZED,HttpStatus.FORBIDDEN,HttpStatus.NOT_FOUND,HttpStatus.UNPROCESSABLE_CONTENT,HttpStatus.TOO_MANY_REQUESTS,HttpStatus.SERVICE_UNAVAILABLE)) {

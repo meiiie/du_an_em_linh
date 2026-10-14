@@ -81,7 +81,7 @@ public class TutorSessionController {
                         if(!h.turns().isEmpty())data.put("turnId",h.turns().getFirst().id());
                         emitter.send(SseEmitter.event().name("heartbeat").data(data));heartbeat=System.nanoTime();
                     }
-                    Thread.sleep(200);
+                    Thread.sleep(50);
                 }
             } catch(IOException ex){emitter.completeWithError(ex);}
             catch(InterruptedException ex){Thread.currentThread().interrupt();emitter.complete();}

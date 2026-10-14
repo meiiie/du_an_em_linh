@@ -6,7 +6,7 @@ import katex from 'katex';
 import { NguonGiaSu } from '../../../api/gia-su';
 import { Katex } from '../../../shared/toan/katex';
 
-type ToanToken = Token & { latex: string; block: boolean };
+type ToanToken = Token & { latex?: string; block?: boolean };
 const escapeHtml = (s: string) => s.replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' })[c]!);
 
 /** Sanitize Markdown trước khi gắn DOM. Chỉ KaTeX tin cậy vẽ HTML/MathML sau đó. */
@@ -52,12 +52,18 @@ export class GiaSuMarkdown {
           start: src => src.search(/\$|\\\(|\\\[/),
           tokenizer: src => {
             const m = /^(\$\$([\s\S]+?)\$\$|\\\[([\s\S]+?)\\\]|\\\(([\s\S]+?)\\\)|\$([^$\n]+?)\$)/.exec(src);
-            if (!m) return undefined;
+            if (!m) {
+              // Token thô có thể kết thúc giữa công thức. Giữ delimiter/LaTeX
+              // nguyên văn, không để Markdown nuốt dấu gạch chéo hay dấu nhấn.
+              const partial = /^(\$\$[\s\S]*|\\\[[\s\S]*|\\\([^\n]*|\$[^$\n]*)/.exec(src);
+              return partial ? { type: 'tutorMath', raw: partial[0] } : undefined;
+            }
             return { type: 'tutorMath', raw: m[0], latex: m[2] ?? m[3] ?? m[4] ?? m[5], block: !!(m[2] ?? m[3]) };
           },
           renderer: token => {
             const t = token as ToanToken;
-            math.push({ latex: t.latex, block: t.block });
+            if (t.latex === undefined) return escapeHtml(t.raw);
+            math.push({ latex: t.latex, block: !!t.block });
             return `<span class="tutor-math${t.block ? ' tutor-math-block' : ''}"></span>`;
           },
         }, {

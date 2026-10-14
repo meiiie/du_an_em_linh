@@ -1,15 +1,11 @@
 import { NgTemplateOutlet } from '@angular/common';
-import { afterNextRender, Component, DestroyRef, effect, ElementRef, inject, input, output, Pipe, PipeTransform, signal, viewChild } from '@angular/core';
+import { afterNextRender, Component, DestroyRef, effect, ElementRef, inject, input, output, signal, viewChild } from '@angular/core';
 import { form, FormField, maxLength } from '@angular/forms/signals';
 import { GiaSuMarkdown } from './gia-su-markdown';
 import { GiaSuPhien } from './gia-su-phien';
 import { Button } from '../../../shared/ui/button';
 export { docSse } from './gia-su-sse';
-@Pipe({ name: 'noiCau' })
-class NoiCau implements PipeTransform {
-    transform(sentences: readonly { text: string }[]): string { return sentences.map(s => s.text).join(''); }
-}
-@Component({ selector: 'app-gia-su', imports: [Button, FormField, NgTemplateOutlet, GiaSuMarkdown, NoiCau], providers: [GiaSuPhien], templateUrl: './gia-su.html', styleUrl: './gia-su.css' })
+@Component({ selector: 'app-gia-su', imports: [Button, FormField, NgTemplateOutlet, GiaSuMarkdown], providers: [GiaSuPhien], templateUrl: './gia-su.html', styleUrl: './gia-su.css' })
 export class GiaSu {
     readonly anNut = input(false);
     moGiaSu() {

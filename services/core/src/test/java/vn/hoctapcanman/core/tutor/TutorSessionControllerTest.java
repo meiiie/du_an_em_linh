@@ -54,31 +54,29 @@ class TutorSessionControllerTest {
         String replay=mvc.perform(asyncDispatch(resumed)).andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
         assertFalse(replay.contains("event:start"));assertTrue(replay.contains("event:delta"));assertTrue(replay.contains("event:done"));
     }
-    @Test void flushesVerifiedSentenceWhileProviderIsStillStreaming() throws Exception {
-        var inGate=new java.util.concurrent.CountDownLatch(1);
-        var verifySentence=new java.util.concurrent.CountDownLatch(1);
+    @Test void flushesRawPartialTokenWhileProviderIsStillStreaming() throws Exception {
+        var emitted=new java.util.concurrent.CountDownLatch(1);
         var finishProvider=new java.util.concurrent.CountDownLatch(1);
-        org.mockito.Mockito.when(fixture.gate.sanitize(org.mockito.ArgumentMatchers.any(),org.mockito.ArgumentMatchers.any(),org.mockito.ArgumentMatchers.anyString(),org.mockito.ArgumentMatchers.anyString(),org.mockito.ArgumentMatchers.anyList()))
-            .thenAnswer(i -> {inGate.countDown();assertTrue(verifySentence.await(5,java.util.concurrent.TimeUnit.SECONDS));return Optional.of(i.<String>getArgument(2));});
         org.mockito.Mockito.doAnswer(i -> {
             java.util.function.Consumer<String> chunks=i.getArgument(1);
-            chunks.accept("Em xét khoảng nào?");
+            chunks.accept("Em thử $x");emitted.countDown();
             assertTrue(finishProvider.await(5,java.util.concurrent.TimeUnit.SECONDS));
+            chunks.accept("^2$");
             return new vn.hoctapcanman.core.tutor.application.dto.TutorSessionDto.ModelUsage(20,10,false);
         }).when(fixture.model).stream(org.mockito.ArgumentMatchers.any(),org.mockito.ArgumentMatchers.any());
         try {
             var response=mvc.perform(post("/api/hs/gia-su/v2/phien/{id}/luot",session).contentType(MediaType.APPLICATION_JSON).content(body(UUID.randomUUID())))
                 .andExpect(request().asyncStarted()).andReturn();
-            assertTrue(inGate.await(3,java.util.concurrent.TimeUnit.SECONDS));
-            assertFalse(response.getResponse().getContentAsString().contains("event:delta"));
-            verifySentence.countDown();
+            assertTrue(emitted.await(3,java.util.concurrent.TimeUnit.SECONDS));
             long deadline=System.nanoTime()+java.util.concurrent.TimeUnit.SECONDS.toNanos(3);
-            while(!response.getResponse().getContentAsString(java.nio.charset.StandardCharsets.UTF_8).contains("Em xét khoảng nào?") && System.nanoTime()<deadline)Thread.sleep(10);
+            while(!response.getResponse().getContentAsString(java.nio.charset.StandardCharsets.UTF_8).contains("Em thử $x") && System.nanoTime()<deadline)Thread.sleep(10);
             String partial=response.getResponse().getContentAsString(java.nio.charset.StandardCharsets.UTF_8);
-            assertTrue(partial.contains("event:delta"));assertTrue(partial.contains("Em xét khoảng nào?"));assertFalse(partial.contains("event:done"));
+            assertTrue(partial.contains("event:delta"));assertTrue(partial.contains("Em thử $x"));assertFalse(partial.contains("event:done"));
+            assertFalse(partial.contains("sentenceIndex"));assertFalse(partial.contains("event:regen"));
+            org.mockito.Mockito.verifyNoInteractions(fixture.gate);
             finishProvider.countDown();response.getAsyncResult(5000);
             mvc.perform(asyncDispatch(response)).andExpect(status().isOk());
-        } finally {verifySentence.countDown();finishProvider.countDown();}
+        } finally {finishProvider.countDown();}
     }
     @Test void mismatchedOrFutureCursorReturns409BeforeStream() throws Exception {
         mvc.perform(get("/api/hs/gia-su/v2/phien/{id}/su-kien",session).param("lastSeq","0").header("Last-Event-ID",session+":1"))
