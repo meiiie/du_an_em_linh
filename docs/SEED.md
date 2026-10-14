@@ -195,11 +195,11 @@ Cấu hình trong `application.yaml` dưới `mathl.gia-su.*`:
 | `GLM_MODEL` | `glm-5.3` | Rỗng dùng mặc định |
 | `GLM_TIMEOUT` | `45s` | Hạn toàn lời gọi cho mỗi attempt; tối đa hai attempt, tổng kể cả backoff bị chặn ở 110s trong deadline lượt 120s |
 | `GLM_FIRST_TOKEN_TIMEOUT` | `20s` | Hạn token nội dung đầu tiên và idle giữa các hoạt động stream sau đó; riêng với hạn toàn attempt |
-| `GLM_MAX_TOKENS` | `350` | Trần đầu ra, cho phép giảm xuống 1–350 |
+| `GLM_MAX_TOKENS` | `700` | Trần đầu ra, cho phép từ 1–1024 |
 | `GLM_RATE_LIMIT_REQUESTS` | `12` | Lượt tối đa mỗi học sinh trong cửa sổ trượt |
 | `GLM_RATE_LIMIT_WINDOW` | `10m` | Độ dài cửa sổ, ví dụ `10m` hoặc `PT10M` |
 
-Compose truyền khóa, URL, model, timeout và giới hạn từ môi trường host. Sau khi thay cấu hình, tạo lại core. Giới hạn dùng bộ nhớ của một tiến trình, đặt lại khi core khởi động; mỗi replica có bộ đếm riêng. Vượt giới hạn trả HTTP 429 bằng tiếng Việt **trước SSE**. Kiểm tra quyền/bài kiểm tra/hết hạn trước khi tiêu thụ lượt.
+Compose truyền khóa, URL, model, cả hai timeout, trần đầu ra, `GIA_SU_TEMPERATURE` (0.8), `GIA_SU_TOP_P` (0.9), `GIA_SU_TOKEN_BUDGET` (6000) và giới hạn lượt từ môi trường host. Biến VAPID và soạn nháp cũng được truyền; xem `.env.example`. Sau khi thay cấu hình, tạo lại core. Giới hạn dùng bộ nhớ của một tiến trình, đặt lại khi core khởi động; mỗi replica có bộ đếm riêng. Vượt giới hạn trả HTTP 429 bằng tiếng Việt **trước SSE**. Kiểm tra quyền/bài kiểm tra/hết hạn trước khi tiêu thụ lượt.
 
 Mô hình nhận đề, bước, cấp 1–3, câu hỏi, dòng em đã nộp, bảng công thức đã khóa và gợi ý thang; không nhận lời giải chuẩn hoặc dữ kiện bảo vệ. Tắt thinking và không stream token. Bản nháp đi qua `/v1/filter` rồi cổng `kiem_loi_giang`. Lỗi nhà, hết giờ hoặc bản nháp bị chặn thì lấy thang dự phòng qua cùng cổng; cổng vẫn lỗi thì chỉ hiện câu cố định không chứa toán. Xin đáp án hoặc đổi vai được từ chối bằng luật, không gọi mô hình. Chỉ gửi lại tối đa một lần với 429/500/502/503/504, tôn trọng `Retry-After`; không đổi nhà.
 

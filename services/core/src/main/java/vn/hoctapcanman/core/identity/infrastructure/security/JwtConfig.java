@@ -9,6 +9,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.env.Environment;
+import org.springframework.core.env.Profiles;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
@@ -25,14 +27,22 @@ public class JwtConfig {
     private static final int SO_BYTE_TOI_THIEU = 32;
 
     @Bean
-    SecretKey jwtSigningKey(IdentityProperties properties) {
+    SecretKey jwtSigningKey(IdentityProperties properties, Environment environment) {
         byte[] bytes;
         if (properties.jwtSecret().isBlank()) {
+            if (environment.acceptsProfiles(Profiles.of("prod"))) {
+                throw new IllegalStateException(
+                    "Thiếu APP_IDENTITY_JWT_SECRET: profile prod phải cấp khóa base64 của ít nhất 32 byte.");
+            }
             LOG.warn("Chưa đặt APP_IDENTITY_JWT_SECRET: dùng khóa JWT tạm, token mất hiệu lực khi khởi động lại.");
             bytes = new byte[SO_BYTE_TOI_THIEU];
             new SecureRandom().nextBytes(bytes);
         } else {
-            bytes = Base64.getDecoder().decode(properties.jwtSecret());
+            try {
+                bytes = Base64.getDecoder().decode(properties.jwtSecret());
+            } catch (IllegalArgumentException ignored) {
+                throw new IllegalStateException("APP_IDENTITY_JWT_SECRET phải là base64 hợp lệ của ít nhất 32 byte.");
+            }
             if (bytes.length < SO_BYTE_TOI_THIEU) {
                 throw new IllegalStateException("APP_IDENTITY_JWT_SECRET phải là base64 của ít nhất 32 byte");
             }

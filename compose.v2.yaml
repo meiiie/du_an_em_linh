@@ -35,7 +35,7 @@ services:
   core:
     <<: *cung
     build:
-      # Gốc repo: ảnh chứa data/supham, data/v0 và data/dev; xem services/core/Dockerfile.dockerignore.
+      # Gốc repo: ảnh chứa data/supham, data/v0; data/dev chỉ gắn khi chạy demo.
       context: .
       dockerfile: services/core/Dockerfile
     environment:
@@ -51,17 +51,19 @@ services:
       GLM_API_KEY: ${GLM_API_KEY:-}
       GLM_BASE_URL: ${GLM_BASE_URL:-}
       GLM_MODEL: ${GLM_MODEL:-}
-      GLM_TIMEOUT: ${GLM_TIMEOUT:-20s}
+      GLM_TIMEOUT: ${GLM_TIMEOUT:-45s}
+      GLM_FIRST_TOKEN_TIMEOUT: ${GLM_FIRST_TOKEN_TIMEOUT:-20s}
+      GLM_MAX_TOKENS: ${GLM_MAX_TOKENS:-700}
+      GIA_SU_TEMPERATURE: ${GIA_SU_TEMPERATURE:-0.8}
+      GIA_SU_TOP_P: ${GIA_SU_TOP_P:-0.9}
+      GIA_SU_TOKEN_BUDGET: ${GIA_SU_TOKEN_BUDGET:-6000}
       GLM_RATE_LIMIT_REQUESTS: ${GLM_RATE_LIMIT_REQUESTS:-12}
       GLM_RATE_LIMIT_WINDOW: ${GLM_RATE_LIMIT_WINDOW:-10m}
-      # Gia sư mặc định offline; bí mật không nằm trong frontend hoặc image.
-      LLM_BASE_URL: ${LLM_BASE_URL:-https://api.openai.com/v1}
-      LLM_API_KEY: ${LLM_API_KEY:-}
-      LLM_MODEL: ${LLM_MODEL:-gpt-4o-mini}
-      OPENROUTER_API_KEY: ${OPENROUTER_API_KEY:-}
-      OPENROUTER_MODEL: ${OPENROUTER_MODEL:-qwen/qwen3-coder}
-      ZAI_API_KEY: ${ZAI_API_KEY:-}
-      ZAI_MODEL: ${ZAI_MODEL:-glm-5.3}
+      VAPID_PUBLIC_KEY: ${VAPID_PUBLIC_KEY:-}
+      VAPID_PRIVATE_KEY: ${VAPID_PRIVATE_KEY:-}
+      VAPID_SUBJECT: ${VAPID_SUBJECT:-}
+      CONTENT_AI_API_KEY: ${CONTENT_AI_API_KEY:-}
+      CONTENT_AI_MODEL: ${CONTENT_AI_MODEL:-glm-5.3}
     depends_on:
       db:
         condition: service_healthy
@@ -85,6 +87,9 @@ services:
     build:
       context: .
       dockerfile: services/math/Dockerfile
+    environment:
+      MATH_JOB_MEM_MB: ${MATH_JOB_MEM_MB:-512}
+      MATH_JOB_CONCURRENCY: ${MATH_JOB_CONCURRENCY:-2}
     read_only: true
     tmpfs: [/tmp]
     healthcheck:

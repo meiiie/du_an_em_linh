@@ -2,7 +2,7 @@
 # services/core: build bằng Maven Wrapper trên JDK 25; chạy trên JRE 25 Alpine, người dùng không phải root,
 # jar tách lớp (thư viện ít đổi nằm ở lớp dưới để cache). Ngữ cảnh build là gốc repo (cần data/ cho importer, T003b):
 #   docker build -f services/core/Dockerfile .
-# Dockerfile.dockerignore cạnh tệp này chỉ cho services/core/, data/supham/, data/v0/, data/dev/ vào ngữ cảnh.
+# Dữ liệu dev chỉ được gắn lúc chạy Compose, không chép vào image production.
 
 FROM eclipse-temurin:25-jdk AS build
 WORKDIR /src
@@ -24,8 +24,6 @@ COPY --from=build /src/target/extracted/snapshot-dependencies/ ./
 # chỉ đọc. Đặt trước lớp mã ứng dụng (đổi thường xuyên hơn) để cache.
 COPY data/supham/ /app/noi-dung/supham/
 COPY data/v0/ /app/noi-dung/v0/
-# Dữ liệu trường hư cấu cho profile dev, có sẵn cả khi không gắn thư mục từ máy chủ.
-COPY data/dev/ /app/noi-dung/dev/
 ENV APP_CONTENT_SOURCE=/app/noi-dung
 COPY --from=build /src/target/extracted/application/ ./
 USER 1001:1001

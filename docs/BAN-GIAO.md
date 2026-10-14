@@ -102,3 +102,22 @@ node --test scripts/*.test.mjs
 Kết quả: **112 JUnit đạt**, 0 lỗi/bỏ qua (gồm ArchUnit, tự kiểm luật và `@NullMarked`); **19 ca eval unit đạt**, toàn bộ **4 tệp test scripts đạt**. CLI không có khóa in đúng thông báo bỏ qua, exit 0; `git diff --check` đạt. Lệnh Maven không có `-javaagent` vướng Mockito tự gắn agent trong sandbox; quét khóa chuẩn vướng Node tạo `/bin/sh` với `EPERM`, nên dùng phép quét trực tiếp tương đương, thêm Java và tệp mới: **849 tệp văn bản**, không phát hiện chuỗi khóa. Chưa chạy GLM thật, CAS HTTP, PostgreSQL/Testcontainers hoặc Compose trong phiên này; không có số đo độ trễ/chi phí nhà thật. Không sửa `.github/` hay migration V1–V13, không thêm migration.
 
 > Gia sư GLM chỉ chạy khi **lớp chọn nhà `glm`** (giáo viên: Cài đặt → Gia sư → «Gia sư AI (GLM)») **và** máy chủ có `GLM_API_KEY`. Lớp mới mặc định `offline`. Seed dev trường Nguyễn Trãi đặt sẵn `glm` cho ba lớp (dữ liệu hư cấu). Câu hỏi nghi có thông tin cá nhân (kể cả trong `$…$`/`\text{}`) không được gửi ra ngoài.
+
+
+## Vận hành sau audit mục 9
+
+Cấu hình mẫu đã bao phủ stack v2; Compose đồng bộ timeout GLM 45 giây và truyền biến gia sư, VAPID, soạn nháp. Image core không chép `data/dev`; demo dùng mount chỉ đọc. Khóa JWT hợp lệ tối thiểu 32 byte giải mã bắt buộc ngoài dev/test, thiếu hoặc sai sẽ dừng khởi động.
+
+Script sao lưu custom PostgreSQL, kiểm thử và hướng dẫn cron, sao chép ngoài máy, phục hồi vào CSDL riêng nằm trong [TRIEN-KHAI.md](TRIEN-KHAI.md). HTTPS/reverse proxy, giám sát, đích offsite và diễn tập production vẫn chờ thông tin máy chủ; chưa cài hoặc nghiệm thu các phần đó. Chạy kiểm thử ops bằng `node --test ops/backup-postgres.test.mjs` và `./mvnw test -Dtest=JwtConfigTest` trong services/core. Profile `prod` bắt buộc `APP_IDENTITY_JWT_SECRET`; profile khác dùng khóa tạm và cảnh báo.
+
+
+### Kiểm tra lane ops, 2026-10-15
+
+SHA nền `a12b20d945e6f02815a2ae3b495267577d0df25b`; diff chưa commit.
+
+- Từ `services/core`: `SPRING_PROFILES_ACTIVE=test JAVA_HOME=$HOME/.local/jdk/jdk-25.0.4.1+1 ./mvnw -q -o -Dmaven.repo.local=/tmp/mathl-ops-m2 -Dtest=JwtConfigTest,AuthControllerTest,CleanArchitectureTest,DddArchitectureTest,NullMarkedPackagesTest -DargLine=-javaagent:/tmp/mathl-ops-m2/org/mockito/mockito-core/5.23.0/mockito-core-5.23.0.jar test`: **47/47 đạt**, 0 lỗi/0 bỏ qua, exit 0. Gồm 16 JWT, 13 API xác thực và 18 kiến trúc/gói.
+- Node 22.23.3: `node --test --experimental-test-isolation=none ops/backup-postgres.test.mjs`: **6/6 đạt**, exit 0. Kiểm chế độ PG/Compose, quyền tệp, giữ/xóa đúng bản, lỗi dump/mục lục, dry-run và cấu hình sai; dùng công cụ giả, chưa phục hồi archive thật.
+- `shellcheck scripts/backup-postgres.sh`, `bash -n scripts/backup-postgres.sh`: exit 0.
+- `docker compose --env-file /dev/null -f compose.v2.yaml config -q` và cùng lệnh với `docker-compose.yml`: exit 0, không đọc tệp bí mật. YAML Render/prod parse hợp lệ; đối chiếu 27 biến runtime tường minh trong core/math không thiếu biến ở `.env.example`. `node scripts/check-flat.mjs`: đạt; `git diff --check`: exit 0.
+
+Lần thử toàn bộ Maven không đạt trong sandbox này: Docker socket trả `operation not permitted`, Testcontainers không khởi tạo được; các test dùng Mockito cần agent thay cho tự gắn. Bộ tập trung ở trên đã chạy với agent. Chưa build image, chạy stack khói thật, sao lưu/phục hồi PostgreSQL thật hoặc triển khai HTTPS/cron/offsite/giám sát. Không coi kiểm tra cấu hình và test dùng công cụ giả là nghiệm thu production.
