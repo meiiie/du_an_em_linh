@@ -25,7 +25,7 @@ class GiaSuPromptTest {
             () -> assertFalse(p.user().contains(solution)),
             () -> assertFalse(p.user().contains("an@example.test")),
             () -> assertFalse(p.user().contains(problem.toString())),
-            () -> assertTrue(p.system().contains("tối đa 3 câu")),
+            () -> assertTrue(p.system().contains("từ 1 đến 3 câu ngắn")),
             () -> assertTrue(p.system().contains("$…$")));
         assertEquals(Set.of("problemId", "code", "statement", "function", "step", "hint", "stepName", "formulas", "submittedLines"),
             Arrays.stream(TutorContext.class.getRecordComponents()).map(x -> x.getName()).collect(java.util.stream.Collectors.toSet()));
@@ -37,6 +37,8 @@ class GiaSuPromptTest {
         assertTrue(prompt.system().contains("Socratic"));
         assertTrue(prompt.system().contains("chưa nộp bài đầy đủ"));
         assertTrue(prompt.system().contains("kết quả đã tính"));
+        assertTrue(prompt.system().contains("Không dùng các cụm"));
+        assertTrue(prompt.system().contains("không dùng lại những từ đầu của lời đáp trước"));
         assertFalse(prompt.system().contains("cổng"));
         assertFalse(prompt.system().contains("xác minh nguyên văn"));
     }

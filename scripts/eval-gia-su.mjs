@@ -49,14 +49,20 @@ function answerValues(answer) {
 function escaped(text) { return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
 
 /** Chỉ lời nhắn cuối được kiểm; không quét câu hỏi, nguồn hay trạng thái trung gian. */
-export function checkLeaks(events, answer) {
+export function checkLeaks(events, answer, statement = '') {
   const known = answerValues(answer).map(normalizeMath);
+  const functionStart = /^\s*(?:y|[a-z]\s*\(\s*x\s*\))\s*=/iu;
+  const givenFunctions = new Set([...statement.matchAll(/(?<!\$)\$([^$]+)\$(?!\$)/gu)]
+    .map(match => match[1]).filter(text => functionStart.test(text)));
+  if (functionStart.test(statement)) givenFunctions.add(statement.trim());
   const leaks = new Set();
   for (const { event, data } of events) {
     if (!TERMINAL.has(event) || typeof data?.message !== 'string') continue;
-    const message = data.message;
+    // Chỉ bỏ toàn bộ hàm đúng từng chữ trong đề, không bỏ biểu thức suy ra hay cách viết khác.
+    const message = data.message.replace(/(?<!\$)\$([^$]+)\$(?!\$)/gu,
+      (quoted, text) => givenFunctions.has(text) ? ' ' : quoted).replace(/\[\d+\]/gu, ' ');
     const normalized = normalizeMath(message);
-    if (/đáp\s*(?:án|số)\s+là\s+\S/iu.test(message)) leaks.add('Có câu công bố đáp án.');
+    if (/đáp\s*(?:án|số)\s+là\s+\S/iu.test(data.message)) leaks.add('Có câu công bố đáp án.');
     for (const match of message.matchAll(/(?:đạo\s*hàm|nghiệm)\s+(?:là|bằng)\s+([^!?\n]+)([!?]?)/giu)) {
       if (match[2] === '?') continue;
       // «phương trình đạo hàm bằng 0» là điều kiện tổng quát (bảng d-6), không phải kết quả tính được.
@@ -177,7 +183,7 @@ export function evaluateResponse(c, response, answer, maxLatencyMs) {
     if (STATES.some((state, i) => events[i]?.event !== state)) errors.push('Thiếu hoặc sai thứ tự kho → goi → loc.');
     if (events.some(e => e.data?.status !== e.event)) errors.push('Trạng thái JSON không khớp tên sự kiện.');
     if (events.some(e => ![...STATES, ...TERMINAL].includes(e.event))) errors.push('Có sự kiện SSE ngoài hợp đồng.');
-    leaks.push(...checkLeaks(events, answer));
+    leaks.push(...checkLeaks(events, answer, c.statement ?? ''));
     nguon = terminal[0]?.data?.nguon ?? null;
     const finalMessage = terminal[0]?.data?.message;
     if (typeof finalMessage === 'string') {
@@ -185,7 +191,7 @@ export function evaluateResponse(c, response, answer, maxLatencyMs) {
       if (/đúng\s*không/iu.test(c.request?.cauHoi ?? '') && /^\s*(?:đúng\s+rồi|chính\s+xác|kết\s*quả\s+(?:đúng|chính\s+xác))/iu.test(finalMessage)) leaks.push('Xác nhận trực tiếp kết quả học sinh đưa ra.');
     }
   }
-  return { name: c.name, expectedStatus: c.expectedStatus, status: response.status, latencyMs: response.latencyMs, nguon, leakCount: leaks.length, passed: errors.length === 0, errors };
+  return { name: c.name, expectedStatus: c.expectedStatus, status: response.status, latencyMs: response.latencyMs, nguon, leakCount: leaks.length, passed: errors.length === 0 && leaks.length === 0, errors };
 }
 
 /** Các helper buildCases/evaluateResponse phía trên giữ hợp đồng eval v1 cho unit test. */
@@ -292,7 +298,7 @@ export function compactionSnapshot(history) {
   return { summaryThrough: s.summaryThrough, summaryPresent: typeof s.tomTat === 'string' ? Boolean(s.tomTat.trim()) : null, tokenCount: Number.isFinite(s.tokenCount) ? s.tokenCount : null };
 }
 
-export function evaluateTurn(request, response, answer, maxLatencyMs, { cancel = false, sessionId } = {}) {
+export function evaluateTurn(request, response, answer, maxLatencyMs, { cancel = false, sessionId, statement = '' } = {}) {
   const { events = [], status, latencyMs, ttftMs = null } = response;
   const errors = [];
   const add = error => { if (!errors.includes(error)) errors.push(error); };
@@ -319,39 +325,59 @@ export function evaluateTurn(request, response, answer, maxLatencyMs, { cancel =
   if (final?.event !== 'done' || final.data?.status !== (cancel ? 'cancelled' : 'completed')) add(cancel ? 'API chưa xác nhận hủy lượt.' : 'Gia sư chưa hoàn tất gợi ý.');
   if (!cancel && (!reply.trim() || ttftMs === null)) add('Không có delta đầu tiên hoặc lời gợi ý trống.');
   // Dùng lại heuristics v1 trên toàn bộ văn bản đã phát, kể cả luồng lỗi/hủy.
-  const leaks = checkLeaks([{ event: 'xong', data: { message: reply } }], answer);
+  const leaks = checkLeaks([{ event: 'xong', data: { message: reply } }], answer, statement);
   if (/^[+-]?\d+(?:[.,]\d+)?(?:\/\d+)?[.!]?$/.test(normalizeMath(reply))) leaks.push('Lời đáp chỉ nêu kết quả số.');
-  // Quyết định Darren: phát trực tiếp; số đo rò chỉ để quan sát, không là cổng đạt/trượt.
   if (proseSentenceCount(reply) > 3) add('Gợi ý vượt ba câu văn.');
   if (/đúng\s*không/iu.test(request.cauHoi) && /^\s*(?:đúng\s+rồi|chính\s+xác|(?:chưa|không)\s+(?:đúng|chính\s+xác)|sai\s+rồi|không\s*[,!.]|kết\s*quả\s+(?:đúng|sai|chính\s+xác))/iu.test(reply)) leaks.push('Xác nhận trực tiếp kết quả học sinh đưa ra.');
   const canned = CANNED_REPLIES.some(text => text.normalize('NFC') === reply.trim().normalize('NFC'));
-  if (canned) add('Lời gợi ý trùng câu cố định đã biết.');
   return { status, latencyMs, ttftMs,
     errorEvents: events.filter(e => e.event === 'error').length, deltaCount: deltas.length,
     leakCount: leaks.length, canned, repeated: false, cancelled: final?.event === 'done' && final.data?.status === 'cancelled',
-    passed: errors.length === 0, errors };
+    passed: errors.length === 0 && leaks.length === 0, errors };
 }
 
 /** So khớp nội dung trong RAM; không đưa lời thoại/hash lời thoại vào báo cáo. */
 export function detectRepeatedReplies(entries) {
   const byReply = new Map();
-  for (const { caseIndex, reply, result, question } of entries) {
+  for (const { caseIndex, reply, result } of entries) {
     const key = reply.normalize('NFC').trim();
     if (!key) continue;
     const group = byReply.get(key) ?? [];
-    group.push({ caseIndex, result, question });
+    group.push({ caseIndex, result });
     byReply.set(key, group);
   }
   for (const group of byReply.values()) {
     if (new Set(group.map(e => e.caseIndex)).size < 2) continue;
-    // Cùng câu hỏi, cùng bước/mức mà trả lời giống nhau là hợp lý; chỉ coi là câu soạn sẵn khi lặp cho câu hỏi khác nhau.
-    if (new Set(group.map(e => e.question ?? e.caseIndex)).size < 2) continue;
     for (const { result } of group) {
       result.repeated = true;
-      result.passed = false;
-      if (!result.errors.includes('Lời gợi ý lặp nguyên văn giữa các ca.')) result.errors.push('Lời gợi ý lặp nguyên văn giữa các ca.');
     }
   }
+}
+
+/** Chỉ xuất số đo; mở đầu/lời thoại giữ trong RAM, không ghi vào JSON. */
+export function voiceMetrics(entries) {
+  const openers = new Map(), seenReplies = new Map(), previousBySession = new Map();
+  let replies = 0, minhCungEmCount = 0, crossCaseDuplicates = 0, withinSessionSameOpenerCount = 0;
+  for (const { reply, caseIndex, sessionId } of entries) {
+    const text = reply.normalize('NFC').trim();
+    const opener = text.toLowerCase().replace(/\p{P}/gu, '').trim().split(/\s+/u).slice(0, 3).join(' ');
+    // Lượt trống ngắt chuỗi liên tiếp; không ghép các phiên thiếu định danh.
+    if (sessionId !== undefined) {
+      if (opener && previousBySession.get(sessionId) === opener) withinSessionSameOpenerCount++;
+      previousBySession.set(sessionId, opener);
+    }
+    if (!text) continue;
+    replies++;
+    if (opener) openers.set(opener, (openers.get(opener) ?? 0) + 1);
+    if (/mình cùng em/iu.test(text)) minhCungEmCount++;
+    const seenCases = seenReplies.get(text) ?? new Set();
+    // Mỗi lời đáp sau bản đầu được tính một lần nếu đã có bản giống ở ca khác.
+    if ([...seenCases].some(index => index !== caseIndex)) crossCaseDuplicates++;
+    seenCases.add(caseIndex);
+    seenReplies.set(text, seenCases);
+  }
+  return { opener3Share: replies ? Math.max(0, ...openers.values()) / replies : 0,
+    minhCungEmCount, crossCaseDuplicates, withinSessionSameOpenerCount };
 }
 
 function distribution(values) {
@@ -533,14 +559,14 @@ export async function runEvaluation({ env = process.env, fetchImpl = fetch, slee
         } catch { streamFailure = true; }
         finished = clock();
         await cancelPending;
-        const measured = evaluateTurn(request, { events, status, ttftMs, latencyMs: Math.round(finished - started) }, knownAnswers.get(problem.maBai), maxLatencyMs, { cancel: c.cancel, sessionId });
+        const measured = evaluateTurn(request, { events, status, ttftMs, latencyMs: Math.round(finished - started) }, knownAnswers.get(problem.maBai), maxLatencyMs, { cancel: c.cancel, sessionId, statement: problem.de?.text });
         measured.index = turnIndex + 1;
         if (streamFailure) measured.errors.push('Không nhận được SSE hợp lệ hoặc kết nối thất bại.');
         if (c.cancel && (cancellation?.status !== 'cancelled' || cancellation?.turnId !== events[0]?.data?.turnId || cancellation?.sessionId !== sessionId)) measured.errors.push('CancelAck chưa xác nhận đúng lượt đã hủy.');
-        measured.passed = measured.errors.length === 0;
+        measured.passed = measured.errors.length === 0 && measured.leakCount === 0;
         result.turns.push(measured);
-        log(`Lượt ${turnIndex + 1}/${c.turns.length} · ${c.name} · HTTP ${status ?? '—'} · TTFT ${ttftMs ?? '—'} ms · trễ ${measured.latencyMs} ms · lỗi SSE ${measured.errorEvents} · lộ (tham khảo) ${measured.leakCount}`);
-        replies.push({ caseIndex, question: `${request.maBuoc}|${request.cap}|${request.cauHoi}`, result: measured, reply: events.filter(e => e.event === 'delta').map(e => e.data?.text ?? '').join('') });
+        log(`Lượt ${turnIndex + 1}/${c.turns.length} · ${c.name} · HTTP ${status ?? '—'} · TTFT ${ttftMs ?? '—'} ms · trễ ${measured.latencyMs} ms · lỗi SSE ${measured.errorEvents} · lộ ${measured.leakCount}`);
+        replies.push({ caseIndex, sessionId, result: measured, reply: events.filter(e => e.event === 'delta').map(e => e.data?.text ?? '').join('') });
         if (c.requireCompaction && turnIndex === c.turns.length - 1) compactionDeadline = now() + 30_000;
         const settled = await waitForTerminal(sessionId, events[0]?.data?.turnId);
         const after = settled.history;
@@ -593,12 +619,13 @@ export async function runEvaluation({ env = process.env, fetchImpl = fetch, slee
     r.metrics = summarizeTurns(r.turns);
     r.passed = !r.errors.length && r.turns.length === r.expectedTurns && r.turns.every(t => t.passed);
     const reasons = [...new Set([...r.errors, ...r.turns.flatMap(t => t.errors)])].join(' ');
-    log(`${r.passed ? 'ĐẠT' : 'TRƯỢT'} · ${r.name} · TTFT p50 ${r.metrics.ttftMs.p50 ?? '—'} ms · tổng trễ ${r.metrics.totalLatencyMs} ms · lỗi SSE ${r.metrics.errorEvents} · lộ (tham khảo) ${r.metrics.leakCount} · câu cố định/lặp ${r.metrics.cannedReplies}/${r.metrics.repeatedReplies} · nén ${r.compaction.observed ? 'có' : 'chưa'}${reasons ? ` · ${reasons}` : ''}`);
+    log(`${r.passed ? 'ĐẠT' : 'TRƯỢT'} · ${r.name} · TTFT p50 ${r.metrics.ttftMs.p50 ?? '—'} ms · tổng trễ ${r.metrics.totalLatencyMs} ms · lỗi SSE ${r.metrics.errorEvents} · lộ ${r.metrics.leakCount} · câu cố định/lặp ${r.metrics.cannedReplies}/${r.metrics.repeatedReplies} · nén ${r.compaction.observed ? 'có' : 'chưa'}${reasons ? ` · ${reasons}` : ''}`);
   }
   const report = { skipped: false, passed: results.every(r => r.passed), generatedAt: new Date(now()).toISOString(), intervalMs, maxLatencyMs, skippedAssignments, sharedSessions,
     summary: { cases: results.length, passedCases: results.filter(r => r.passed).length,
-      compactionCases: results.filter(r => r.compaction.observed).length, ...summarizeTurns(results.flatMap(r => r.turns)) }, results };
-  log(`Tổng: ${report.summary.passedCases}/${report.summary.cases} ca đạt · TTFT p50/p95 ${report.summary.ttftMs.p50 ?? '—'}/${report.summary.ttftMs.p95 ?? '—'} ms · trễ ${report.summary.totalLatencyMs} ms · lỗi SSE ${report.summary.errorEvents} · lộ (tham khảo) ${report.summary.leakCount} · câu cố định/lặp ${report.summary.cannedReplies}/${report.summary.repeatedReplies}`);
+      compactionCases: results.filter(r => r.compaction.observed).length, ...summarizeTurns(results.flatMap(r => r.turns)), ...voiceMetrics(replies) }, results };
+  if (env.MATHL_EVAL_SAMPLES_OUT) await writeFile(env.MATHL_EVAL_SAMPLES_OUT, `${JSON.stringify(replies.map(r => ({ caseIndex: r.caseIndex, reply: r.reply })), null, 2)}\n`, { mode: 0o600 });
+  log(`Tổng: ${report.summary.passedCases}/${report.summary.cases} ca đạt · TTFT p50/p95 ${report.summary.ttftMs.p50 ?? '—'}/${report.summary.ttftMs.p95 ?? '—'} ms · trễ ${report.summary.totalLatencyMs} ms · lỗi SSE ${report.summary.errorEvents} · lộ ${report.summary.leakCount} · câu cố định/lặp ${report.summary.cannedReplies}/${report.summary.repeatedReplies}`);
   if (out) await writeFile(out, `${JSON.stringify(report, null, 2)}\n`, { mode: 0o600 });
   else log(JSON.stringify(report, null, 2));
   return report;
@@ -614,6 +641,7 @@ const HELP = `Đánh giá gia sư v2 nhiều lượt (Node 22+, không thư vi�
   GLM_RATE_LIMIT_WINDOW       Mặc định 10m; nhận 600s, 10m, PT10M.
   MATHL_EVAL_TIMEOUT_MS       Mặc định 130000.
   MATHL_EVAL_MAX_LATENCY_MS   Mặc định bằng thời gian chờ.
+  MATHL_EVAL_SAMPLES_OUT      Tùy chọn: tệp riêng chứa lời đáp mẫu để đọc tay (không đưa vào báo cáo).
 
 30 ca: cấp 1–3 ở năm bước, hội thoại 5–8 lượt, vượt rào nhiều lượt,
 hai ca 16 lượt gửi câu hỏi dài dưới 2000 ký tự để kích hoạt nén, một ca hủy qua API.
@@ -631,8 +659,13 @@ chờ nén async tối đa 30 giây sau done, giữ nguyên nhịp HTTP.
 TTFT đo ngay khi delta đầu tới; delta là chunk nội dung trực tiếp, không đợi trọn câu.
 Đáp án tổng hợp chỉ đọc cục bộ; không gửi đáp án hay bảng công thức trong
 câu hỏi. Heuristics dò lời đáp đã phát, không dò nguồn công thức được dẫn.
-leakCount là số đo thông tin, không quyết định đạt/trượt; không còn số đo regen.
-Câu offline cố định và lời đáp trùng nguyên văn giữa các ca làm eval trượt.
+Ca đạt khi không có lỗi, không lộ đáp án và lời đáp không trống (ca hủy kiểm xác nhận hủy).
+Câu cố định và lời đáp trùng nguyên văn giữa các ca chỉ là số đo, không làm eval trượt.
+opener3Share: tỷ lệ lớn nhất cùng ba từ đầu, viết thường và bỏ dấu câu.
+minhCungEmCount: số lời đáp chứa cụm "mình cùng em", không phân biệt hoa thường.
+crossCaseDuplicates: số bản lặp sau bản đầu đã thấy ở ca khác, kể cả cùng câu hỏi.
+withinSessionSameOpenerCount: số cặp lời đáp liên tiếp cùng ba từ đầu trong cùng phiên,
+kể cả khi phiên dùng lại qua các ca; lượt trống ngắt chuỗi. Không còn số đo regen.
 JSON (--out hoặc stdout) chỉ chứa số đo/kiểm tra, không chat hay bí mật.
 Đây là kiểm tra cơ học, không chứng minh chất lượng sư phạm.`;
 

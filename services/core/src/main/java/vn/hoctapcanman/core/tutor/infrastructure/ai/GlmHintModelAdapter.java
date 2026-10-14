@@ -22,6 +22,8 @@ public final class GlmHintModelAdapter implements HintModel {
     private final String model;
     private final Duration timeout;
     private final int maxTokens;
+    private final double temperature;
+    private final double topP;
     private final Duration firstTokenTimeout;
     // Chừa thời gian lưu terminal/usage trước deadline toàn lượt 120 giây.
     private static final Duration MAX_BUDGET=Duration.ofSeconds(110);
@@ -29,10 +31,16 @@ public final class GlmHintModelAdapter implements HintModel {
         this(client,key,model,timeout,maxTokens,Duration.ofSeconds(20));
     }
     public GlmHintModelAdapter(RestClient client,String key,String model,Duration timeout,int maxTokens,Duration firstTokenTimeout) {
+        this(client,key,model,timeout,maxTokens,firstTokenTimeout,0.8,0.9);
+    }
+    public GlmHintModelAdapter(RestClient client,String key,String model,Duration timeout,int maxTokens,Duration firstTokenTimeout,double temperature,double topP) {
         if(timeout.isZero() || timeout.isNegative() || firstTokenTimeout.isZero() || firstTokenTimeout.isNegative())
             throw new IllegalArgumentException("Thời gian chờ phải dương.");
+        if(!Double.isFinite(temperature) || temperature<=0 || temperature>1 || !Double.isFinite(topP) || topP<=0 || topP>1)
+            throw new IllegalArgumentException("Tham số lấy mẫu phải lớn hơn 0 và không quá 1.");
         this.client=client;this.key=key;this.model=model;this.timeout=timeout;this.maxTokens=maxTokens;
         this.firstTokenTimeout=firstTokenTimeout;
+        this.temperature=temperature;this.topP=topP;
     }
     @Override public String provider(){return "GLM";}
     @Override public Optional<String> draft(HintPrompt prompt) {
@@ -133,6 +141,8 @@ public final class GlmHintModelAdapter implements HintModel {
         var cancellation=attempt.cancellation;
         cancellation.check();
         Map<String,Object> body=Map.of("model",model,"max_tokens",maxTokens,"stream",true,
+            // Prompt tóm tắt do core dựng, không phân loại từ dữ liệu học sinh.
+            "temperature",prompt.system().startsWith("Tóm tắt hội thoại học toán")?0.2:temperature,"top_p",topP,
             "thinking",Map.of("type","disabled"),"messages",List.of(
                 Map.of("role","system","content",prompt.system()),Map.of("role","user","content",prompt.user())));
         try { return client.post().uri("/chat/completions").header(HttpHeaders.AUTHORIZATION,"Bearer "+key)

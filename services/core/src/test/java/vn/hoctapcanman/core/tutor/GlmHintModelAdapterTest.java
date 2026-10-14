@@ -44,11 +44,32 @@ class GlmHintModelAdapterTest {
     @Test void streamsContentWithThinkingDisabledAndRealUsage() {
         server.expect(requestTo(BASE+"/chat/completions")).andExpect(method(HttpMethod.POST))
             .andExpect(content().json("""
-                {"model":"glm-4.7","max_tokens":350,"stream":true,"thinking":{"type":"disabled"},
+                {"model":"glm-4.7","max_tokens":350,"stream":true,"temperature":0.8,"top_p":0.9,"thinking":{"type":"disabled"},
                 "messages":[{"role":"system","content":"Chỉ dẫn"},{"role":"user","content":"Câu hỏi"}]}
                 """,true)).andRespond(withSuccess(SUCCESS,MediaType.TEXT_EVENT_STREAM));
         var chunks=new ArrayList<String>();var usage=adapter.stream(prompt,chunks::add);
         assertEquals(List.of("Em đã ","thử gì?"),chunks);assertEquals(25,usage.inputTokens());assertEquals(7,usage.outputTokens());assertFalse(usage.estimated());server.verify();
+    }
+    @Test void summaryUsesLowTemperatureInsteadOfTutorSampling() {
+        server.expect(requestTo(BASE+"/chat/completions"))
+            .andExpect(jsonPath("$.temperature").value(0.2))
+            .andRespond(withSuccess(SUCCESS,MediaType.TEXT_EVENT_STREAM));
+        adapter.stream(new HintPrompt("Tóm tắt hội thoại học toán bằng tiếng Việt", "Lịch sử"),ignored -> {});
+        server.verify();
+    }
+    @Test void customSamplingChangesTutorRequestButNotSummaryTemperature() {
+        var builder=RestClient.builder().baseUrl(BASE);
+        server=MockRestServiceServer.bindTo(builder).build();
+        adapter=new GlmHintModelAdapter(builder.build(),"khóa-thử","glm-4.7",Duration.ofSeconds(2),350,Duration.ofSeconds(1),0.6,0.7);
+        server.expect(requestTo(BASE+"/chat/completions"))
+            .andExpect(jsonPath("$.temperature").value(0.6)).andExpect(jsonPath("$.top_p").value(0.7))
+            .andRespond(withSuccess(SUCCESS,MediaType.TEXT_EVENT_STREAM));
+        server.expect(requestTo(BASE+"/chat/completions"))
+            .andExpect(jsonPath("$.temperature").value(0.2)).andExpect(jsonPath("$.top_p").value(0.7))
+            .andRespond(withSuccess(SUCCESS,MediaType.TEXT_EVENT_STREAM));
+        adapter.stream(prompt,ignored -> {});
+        adapter.stream(new HintPrompt("Tóm tắt hội thoại học toán bằng tiếng Việt", "Lịch sử"),ignored -> {});
+        server.verify();
     }
     @Test void supportsCrLfAndEstimatesAbsentUsage() {
         server.expect(requestTo(BASE+"/chat/completions")).andRespond(withSuccess(SUCCESS.replace("\n","\r\n").replace(",\"usage\":{\"prompt_tokens\":25,\"completion_tokens\":7}",""),MediaType.TEXT_EVENT_STREAM));
