@@ -189,7 +189,7 @@ public final class GlmHintModelAdapter implements HintModel {
                 var reason=choice.path("finish_reason");
                 if(!reason.isMissingNode() && !reason.isNull() && !reason.isString())throw unavailable();
                 if(reason.isString()) {
-                    if(!reason.asString().equals("stop"))throw unavailable();
+                    if(!reason.asString().equals("stop") && !reason.asString().equals("length"))throw unavailable();
 
                 }
                 var delta=choice.path("delta");

@@ -153,7 +153,10 @@ public class TutorSessionService {
             ScheduledExecutorService timer=Executors.newSingleThreadScheduledExecutor(Thread.ofVirtual().factory());
             var timeout=timer.schedule(cancellation::cancel,compactionTimeoutSeconds,TimeUnit.SECONDS);
             try { compact(accepted,a,c,r,base,cancellation); }
-            catch(RuntimeException ex) { /* Nén lỗi giữ memory cũ; không sửa terminal/SSE của lượt đã xong. */ }
+            catch(RuntimeException ex) {
+                // Nén lỗi giữ memory cũ; chỉ ghi mã lỗi, không ghi nội dung hội thoại.
+                org.slf4j.LoggerFactory.getLogger(TutorSessionService.class).info("gia_su_nen loi={}",ex.getClass().getSimpleName()+":"+String.valueOf(ex.getMessage()).replaceAll("[^A-Z_]",""));
+            }
             finally {timeout.cancel(false);timer.shutdown();compactions.remove(id,cancellation);}
         });
     }
@@ -165,6 +168,7 @@ public class TutorSessionService {
         sessions.turn(s.id(),accepted.turn().id()).filter(t -> t.ordinal()>s.summaryThrough() && t.status().equals("completed")).ifPresent(turns::add);
         turns.sort(Comparator.comparingLong(Turn::ordinal));
         if(turns.size()<=3 || estimate(TutorPrompt.withMemory(base,a.level(),render(s.tomTat(),turns)))<budget*7/10)return;
+        org.slf4j.LoggerFactory.getLogger(TutorSessionService.class).info("gia_su_nen bat_dau luot={}",turns.size());
         int cut=turns.size()-3;
         var older=turns.subList(0,cut);
         HintPrompt prompt=summaryPrompt(s.tomTat(),older,budget);

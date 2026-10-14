@@ -54,8 +54,13 @@ class GlmHintModelAdapterTest {
         server.expect(requestTo(BASE+"/chat/completions")).andRespond(withSuccess(SUCCESS.replace("\n","\r\n").replace(",\"usage\":{\"prompt_tokens\":25,\"completion_tokens\":7}",""),MediaType.TEXT_EVENT_STREAM));
         assertTrue(adapter.stream(prompt,ignored -> {}).estimated());server.verify();
     }
+    @Test void lengthFinishKeepsStreamedText() {
+        // Cắt vì max_tokens vẫn là kết thúc hợp lệ: chữ đã phát tới em, không biến thành lỗi.
+        server.expect(requestTo(BASE+"/chat/completions")).andRespond(withSuccess(SUCCESS.replace("\"stop\"","\"length\""),MediaType.TEXT_EVENT_STREAM));
+        var chunks=new ArrayList<String>();adapter.stream(prompt,chunks::add);assertFalse(chunks.isEmpty());server.verify();
+    }
     @Test void partialTransportEofOrMalformedDataCannotComplete() {
-        for(String response:List.of("data: {\n\n",SUCCESS.replace("data: [DONE]",""),SUCCESS.replace("\"stop\"","\"length\""),"data: [DONE]\n\n", "data: {\"choices\":[{\"delta\":{\"content\":42}}]}\n\n")) {
+        for(String response:List.of("data: {\n\n",SUCCESS.replace("data: [DONE]",""),"data: [DONE]\n\n", "data: {\"choices\":[{\"delta\":{\"content\":42}}]}\n\n")) {
             setup();server.expect(requestTo(BASE+"/chat/completions")).andRespond(withSuccess(response,MediaType.TEXT_EVENT_STREAM));
             assertThrows(RuntimeException.class,() -> adapter.stream(prompt,ignored -> {}));server.verify();
         }

@@ -70,7 +70,7 @@ mathl:
     model: ${GLM_MODEL:glm-5.3}
     timeout: ${GLM_TIMEOUT:45s}
     first-token-timeout: ${GLM_FIRST_TOKEN_TIMEOUT:20s}
-    max-tokens: ${GLM_MAX_TOKENS:350}
+    max-tokens: ${GLM_MAX_TOKENS:700}
     token-budget: ${GIA_SU_TOKEN_BUDGET:6000}
     rate-limit:
       requests: ${GLM_RATE_LIMIT_REQUESTS:12}
