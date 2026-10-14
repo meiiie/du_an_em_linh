@@ -54,7 +54,7 @@ public class GetChiTietBaiUseCase {
         UUID giaoBaiId = assignments.forStudent(lopId, hocSinhId).stream()
             .filter(a -> a.problemId().equals(bai.problemId())).map(Assignment::id).findFirst().orElse(null);
         return new ChiTietBai(bai.ma(), giaoBaiId, new ChiTietBai.De(bai.deBai(), bai.deBaiLatex()), bai.kyNang(), bai.tenKyNang(), bai.mucDo(),
-            bai.dangTraLoi(), bai.buocBatDau(), bai.khaiBaoKetLuan(), bai.cacBuoc().stream().map(TenBuoc::cua).toList(),
+            bai.dangTraLoi(), bai.buocBatDau(), bai.khaiBaoKetLuan(), bai.moTaBuoc().stream().map(TenBuoc::cua).toList(),
             new ChiTietBai.BaiLam(xem.trangThai(), cacBuoc), coTheMoLoiGiai);
     }
 

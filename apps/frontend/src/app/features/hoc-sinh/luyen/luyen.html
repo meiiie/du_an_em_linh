@@ -28,7 +28,7 @@
       @if (b.cacBuoc.length) {
         <nav class="toolbar" aria-label="Các bước gợi mở">
           @for (s of b.cacBuoc; track s.maBuoc; let i = $index) {
-            <button appButton variant="secondary" type="button" [attr.aria-pressed]="buoc() === i" (click)="moBuoc(i)">{{ i + 1 }}. {{ tenBuocGiay(s.maBuoc) }}</button>
+            <button appButton variant="secondary" type="button" [attr.aria-pressed]="buoc() === i" (click)="moBuoc(i)">{{ i + 1 }}. {{ s.ten }}</button>
           }
         </nav>
       }
@@ -49,8 +49,8 @@
         @if (han() && mode()?.status !== 'KIEM_TRA') { <p class="phu">Hạn nộp: {{han()}}</p> }
         <p class="nhan-muc">{{ tenMuc[b.muc4] }}</p>
         <p class="ky-nang">{{ b.tenKyNang }}</p>
-        <p class="cau-hoi"><app-van-ban-toan [text]="thanDe(b.de.text)" /></p>
-        <app-katex bang [latex]="deBang(b.de.latex)" />
+        <p class="cau-hoi"><app-van-ban-toan [text]="khungDonDieu() ? thanDe(b.de.text) : b.de.text" /></p>
+        <app-katex bang [latex]="khungDonDieu() ? deBang(b.de.latex) : b.de.latex" />
         @if (deChoSan()) {
           <p class="phu" data-testid="de-cho-san">
             Đề đã cho sẵn: {{ deChoSan() }}. Em bắt đầu từ bước {{ tenBuocDau() }}.
@@ -90,9 +90,9 @@
 
             <fieldset class="nhap" [disabled]="khoa()" [class.sai]="caBuocSai(s.maBuoc)">
               <legend class="sr-only">Bài làm bước {{ s.ten }}</legend>
-              @switch (s.maBuoc) {
-                @case (ma.TXD) {
-                  <div class="dong" [class.sai]="dongSai(ma.TXD, 0)">
+              @switch (kieuNhap(s)) {
+                @case ('TXD') {
+                  <div class="dong" [class.sai]="dongSai(s.maBuoc, 0)">
                     <app-o-cong-thuc
                       nhan="D"
                       testId="latex-txd"
@@ -104,9 +104,9 @@
                     />
                   </div>
                 }
-                @case (ma.DAO_HAM) {
+                @case ('DAO_HAM') {
                   @for (d of n.dh; track $index; let i = $index) {
-                    <div class="dong" [class.sai]="dongSai(ma.DAO_HAM, i)">
+                    <div class="dong" [class.sai]="dongSai(s.maBuoc, i)">
                       <app-o-cong-thuc
                         [nhan]="i === 0 ? 'y′' : 'Dòng ' + (i + 1)"
                         [testId]="i === 0 ? 'latex-dh' : 'latex-dh-' + i"
@@ -120,7 +120,7 @@
                   }
                   <button appButton variant="secondary" type="button" class="them-dong" (click)="themDongDh()">+ Thêm dòng</button>
                 }
-                @case (ma.NGHIEM) {
+                @case ('NGHIEM') {
                   <div data-testid="nghiem-block" class="khoi-dong">
                     @for (r of n.nghiem; track $index; let i = $index) {
                       <div class="dong nghiem" [class.sai]="nghiemSai(n, i)" [attr.data-testid]="'dong-nghiem-' + i">
@@ -151,7 +151,7 @@
                     <p class="phu">Không có nghiệm thì để trống.</p>
                   </div>
                 }
-                @case (ma.XET_DAU) {
+                @case ('BANG_XET_DAU') {
                   <app-bang-xet-dau
                     [moc]="n.moc"
                     (mocChange)="datMoc($event)"
@@ -159,13 +159,13 @@
                     (dauChange)="datDau($event)"
                     [mui]="n.mui"
                     (muiChange)="datMui($event)"
-                    [oSai]="oSaiCua(ma.XET_DAU)"
+                    [oSai]="oSaiCua(s.maBuoc)"
                     (suKien)="ghiSuKien($event)"
                   />
                 }
-                @case (ma.KET_LUAN) {
+                @case ('KET_LUAN_DH') {
                   @for (o of cacOKetLuan(); track o.ma; let i = $index) {
-                    <div class="dong" [class.sai]="dongSai(ma.KET_LUAN, i)" [attr.data-testid]="'o-kl-' + o.testId.slice(6)">
+                    <div class="dong" [class.sai]="dongSai(s.maBuoc, i)" [attr.data-testid]="'o-kl-' + o.testId.slice(6)">
                       @if (o.congThuc) {
                         <app-o-cong-thuc
                           [nhan]="o.nhan"
@@ -192,6 +192,21 @@
                       }
                     </div>
                   }
+                }
+                @default {
+                  <div class="dong" [class.sai]="dongSai(s.maBuoc, 0)">
+                    <app-o-cong-thuc
+                      [nhan]="s.ten"
+                      [testId]="'latex-' + s.maBuoc"
+                      [goiY]="goiYNhap(kieuNhap(s))"
+                      [xemTruoc]="kieuNhap(s) !== 'TAP_HUU_HAN' && kieuNhap(s) !== 'DAY_GIA_TRI'"
+                      moTaBoi="huong-dan-nhap phan-hoi"
+                      [disabled]="khoa()"
+                      [value]="n.dongTheoBuoc?.[s.maBuoc] ?? ''"
+                      (valueChange)="datDong(s.maBuoc, $event)"
+                    />
+                    <p id="huong-dan-nhap" class="phu">{{ goiYNhap(kieuNhap(s)) }}</p>
+                  </div>
                 }
               }
             </fieldset>

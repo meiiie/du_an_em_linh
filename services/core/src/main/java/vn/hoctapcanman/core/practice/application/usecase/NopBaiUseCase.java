@@ -91,7 +91,7 @@ public class NopBaiUseCase {
         if (!membership.laHocSinh(hocSinhId, lopId)) {
             throw new BaiKhongTimThayException();
         }
-        BaiChoLamBai bai = baiDeLam.bai(lopId, maBai).filter(b -> b.ham() != null).orElseThrow(BaiKhongTimThayException::new);
+        BaiChoLamBai bai = baiDeLam.bai(lopId, maBai).filter(BaiChoLamBai::chamTungBuoc).orElseThrow(BaiKhongTimThayException::new);
         DaNopVaMucHieu kq = Objects.requireNonNull(tx.execute(s -> {
             CoCanCu nop = submissions.lockOpen(hocSinhId, lopId, bai.problemId(), bai.phienBan())
                 .map(dangLam -> nop(dangLam, bai))
@@ -107,8 +107,7 @@ public class NopBaiUseCase {
         if (!daLamDuBuoc(bai, daLuu)) {
             throw new BaiChuaNopDuocException(LyDo.CHUA_LAM_DU_BUOC);
         }
-        String bam = YeuCauCham.bam(YeuCauCham.dung(Objects.requireNonNull(bai.ham()), bai.cacBuoc(), bai.khaiBaoKetLuan(),
-            bai.buocBatDau(), bai.cacBuoc().getLast(), daLuu));
+        String bam = YeuCauCham.bam(YeuCauCham.dung(bai, baiDeLam, bai.cacBuoc().getLast(), daLuu));
         GradingResult canCu = grades.findByRequest(dangLam.id(), bam)
             .orElseThrow(() -> new BaiChuaNopDuocException(LyDo.CHUA_CHAM_BUOC_KET_LUAN));
         // Cắt về micro giây như cột timestamptz: phát lại đọc lúc nộp từ CSDL, BaiDaNop phải y hệt lần đầu.

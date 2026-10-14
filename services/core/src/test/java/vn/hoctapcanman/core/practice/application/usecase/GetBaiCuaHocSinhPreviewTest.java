@@ -34,7 +34,7 @@ class GetBaiCuaHocSinhPreviewTest {
             "Ôn tập hình học không gian – tuần 7",Instant.parse("2026-10-20T12:00:00Z"),UUID.randomUUID(),Instant.EPOCH)));
         when(submissions.findOpen(student,cl,problem,1)).thenReturn(Optional.empty());
         when(submissions.history(student,problem)).thenReturn(new SubmissionHistory(student,problem,List.of()));
-        var result=new GetBaiCuaHocSinhUseCase(membership,content,assignments,new BaiLamHienTai(submissions,grades)).execute(student,cl);
+        var result=new GetBaiCuaHocSinhUseCase(membership,content,assignments,new BaiLamHienTai(submissions,grades,content)).execute(student,cl);
         assertThat(result).singleElement().satisfies(row -> {
             assertThat(row.deBaiLatex()).isEqualTo(preview);
             assertThat(row.tenBo()).isEqualTo("Ôn tập hình học không gian – tuần 7");

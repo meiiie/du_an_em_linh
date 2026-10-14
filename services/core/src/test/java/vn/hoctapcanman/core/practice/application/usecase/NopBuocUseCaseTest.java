@@ -65,6 +65,7 @@ import vn.hoctapcanman.core.shared.infrastructure.ClockConfig;
     ClassMembershipService.class,
     ProblemRepositoryAdapter.class,
     TopicCatalogRepositoryAdapter.class,
+    vn.hoctapcanman.core.content.infrastructure.persistence.KhungChamRepositoryAdapter.class,
     BaiDeLamService.class,
     SubmissionRepositoryAdapter.class,
     GradingResultRepositoryAdapter.class,

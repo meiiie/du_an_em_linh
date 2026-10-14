@@ -5,20 +5,31 @@ Ngày 2026-10-15, nền `a12b20d945e6f02815a2ae3b495267577d0df25b`, lane grade.
 
 ## Số đo và giới hạn tích hợp
 
-| Phạm vi | Trước | Sau |
+| Phạm vi | Trước nối | Sau nối |
 | --- | ---: | ---: |
-| Bài có khung năm bước và đáp án từng bước được bộ chấm CAS hỗ trợ | 10/74 | 43/74 |
-| Bài dùng được phiếu tương tác hiện tại trên Angular/core | 10/74 | 10/74 |
-| Bài có khung CAS mới, còn cần nối frontend/core | 0 | 33 |
-| Bài chưa có khung CAS phù hợp | 64 | 31 |
+| Bài có khung năm bước và đáp án từng bước được bộ chấm CAS hỗ trợ | 43/74 | 43/74 |
+| Bài dùng được phiếu tương tác trên Angular/core | 10/74 | 43/74 |
+| Bài có khung CAS mới, còn cần nối frontend/core | 33 | 0 |
+| Bài chưa có khung CAS phù hợp | 31 | 31 |
 
-**43 không phải số bài tương tác đã hoàn thành trên UI.** Lane này chỉ sửa
-dữ liệu dev và dịch vụ toán. `phieu.ts`, `luyen.html` và `TenBuoc` hiện gắn
-cứng với `B.DH.*`; `YeuCauCham` chỉ gửi `ham`, còn `BaiDeLamService` lấy khung
-theo chủ đề và yêu cầu `functionSympy` khác rỗng. Đổi `dang_cau` của các bài
-mới thành `TU_LUAN_5_BUOC` lúc này sẽ tạo phiếu không có ô nhập hoặc chấm sai
-họ. Vì vậy giữ nguyên 74 đề, lời giải giáo viên, hình thức trả lời và trạng
-thái duyệt đang được importer dùng.
+Lane grade đã tăng số khung CAS từ 10 lên 43. Lane nối core/frontend ngày
+2026-10-15 đưa cả 43 khung vào phiếu tương tác: 10 B.DH, 17 B.GT và 16 B.XS.
+Số đo này là khả năng làm/chấm theo khung khi bài đã được phát hành cho lớp;
+không thay cổng kiểm định, trạng thái duyệt hay quyền giao bài.
+
+Importer lưu khung theo `problem_id` và `content_version` trong
+`exercise_step_frames` (Flyway V17). Metadata và dữ kiện đề dùng để chấm
+tham gia dấu vân tay nội dung: đổi khung tăng phiên bản bài, kiểm lại cổng
+phát hành; khung cũ bất biến. Metadata bước trong API học sinh chỉ gồm
+`maBuoc`, `ten`, `viec`,
+`kieu`. Dữ kiện `bai_toan` được practice đọc từ cổng nội bộ theo đúng bài và
+phiên bản, không nhận từ trình duyệt. B.DH giữ nguyên payload `ham` cũ.
+Frontend chọn ô theo kiểu nhập và bước kết luận theo vị trí cuối khung;
+khôi phục nháp/kết quả chấm và xử lý `KHONG_KIEM_DUOC` cho cả ba họ.
+
+Cờ `san_sang_ui: false` của 33 khung mới trong tệp nguồn ghi trạng thái ở
+thời điểm lane grade chưa nối UI. Importer nhận các khung có đủ năm bước và
+kiểu nhập được hỗ trợ, thay vì dùng cờ lịch sử đó để khóa phiếu.
 
 `cham-buoc.json` là tệp nội dung bổ sung có phiên bản, không thay schema của
 `bai-tap.json` hay khung chủ đề đang hoạt động. Mỗi mục có `ma_bai`, `ho`,
@@ -72,13 +83,12 @@ rút gọn làm mất điều kiện xác định như `x/x`, `sqrt(x)²` hay `l
 }
 ```
 
-Core phải lấy `bai_toan` từ nội dung của **đúng bài và phiên bản đang làm**,
+Core lấy `bai_toan` từ nội dung của **đúng bài và phiên bản đang làm**,
 không nhận đề/đáp án chuẩn do trình duyệt gửi. Bộ chấm tự tính đáp án từ
 dữ kiện này, không đọc `dap_an` trong tệp seed. Khi nối cần importer/port
 phục vụ khung theo bài, metadata công khai chỉ có mã/tên/việc/kiểu nhập,
 adapter practice gửi dữ kiện đề đáng tin cậy, và frontend nhập dòng/tập/dãy
-theo từng bước. Phần này cần lane frontend/core; lane grade không sửa các
-tệp đó. Không cần đưa lời giải chuẩn vào ngữ cảnh gia sư.
+theo từng bước. Đã nối trong lane core/frontend ngày 2026-10-15. Không cần đưa lời giải chuẩn vào ngữ cảnh gia sư.
 
 Phản hồi giữ `ket_qua`, `per_buoc`, `nop_toi`, `chua_xong`, vị trí dòng sai
 0-based và các trường hiện có. Mọi bước trước bước nộp phải có mặt đúng thứ
@@ -105,6 +115,39 @@ SymPy. Thiếu khung chấm từng bước, không phải kết luận rằng đ
 | Diện tích chứa tham số (1) | `NT-TP12-VDC-05` | Phải chia trường hợp vị trí nghiệm, dấu hàm và chứng minh tối ưu toàn cục trên các miền tham số. Bộ chấm diện tích mới chủ động từ chối hàm đổi dấu trong đoạn, không dùng sai công thức \|∫f\|. |
 
 ## Kiểm thử
+
+### Lane nối core/frontend, 2026-10-15
+
+Nền `e9f9c1a9f761e8cc237c723796013d1cbc117f49`, thay đổi chưa commit.
+`KhungChamWiringTest` đọc đủ 74 đề, đếm **43** phiếu chấm được, so metadata
+và dữ kiện máy chủ theo từng bài; kiểm không mượn khung từ phiên bản khác.
+`KhungChamUseCaseUnitTest` kiểm đường nộp B.GT/B.XS, giữ
+`KHONG_KIEM_DUOC`, dữ kiện bất biến và băm ổn định theo thứ tự khóa.
+`KhungChamPracticeIntegrationTest` có hai ca tham số B.GT/B.XS, chạy importer,
+cổng nội dung, nộp đủ năm bước, đọc lại và nộp bài trên PostgreSQL thật;
+chỉ máy CAS ở biên được giả lập. Hai ca đã biên dịch, chưa chạy vì thiếu Docker.
+
+- Core, từ `services/core`, `JAVA_HOME=$HOME/.local/jdk/jdk-25.0.4.1+1`:
+  `./mvnw -q '-DargLine=-javaagent:/home/box/.m2/repository/org/mockito/mockito-core/5.23.0/mockito-core-5.23.0.jar' '-Dtest=!MathServiceClientTest' -Dsurefire.reportsDirectory=/tmp/wire-core-surefire test`:
+  **438 đạt, 0 lỗi, 203 bỏ qua** (Docker/opt-in), gồm ArchUnit và 5 ca unit mới.
+  Lệnh chuẩn đã thử nhưng Mockito không tự attach được trong sandbox.
+  Thêm javaagent khắc phục attach; chạy đầy đủ vẫn lỗi tại test cũ
+  `MathServiceClientTest.start` vì mở socket bị `Operation not permitted`.
+  Lần đạt loại riêng test đó; không sửa hoặc bỏ qua assertion trong mã test.
+- Frontend, từ `apps/frontend`, đặt
+  `PATH=$HOME/.local/node/node-v22.23.3-linux-x64/bin:$PATH` và
+  `npm_config_cache=/tmp/mathl-ui3-npm`: `npx --offline -y pnpm@10.33.3 test`
+  **263 đạt, 0 lỗi**; `npx --offline -y pnpm@10.33.3 exec ng build`: đạt.
+  Lệnh npx chuẩn bị DNS chặn tới npm registry, nên dùng bản pnpm trong cache.
+- `node scripts/check-flat.mjs`, `node --test scripts/check-flat.test.mjs`
+  và `git diff --check`: đạt.
+- `npx --offline -y pnpm@10.33.3 exec playwright test e2e/acceptance/step-frames.spec.ts`:
+  chưa chạy được vì web server bị `EPERM` khi listen `127.0.0.1:4300`.
+  `--list` nhận đủ 4 ca cho B.GT/B.XS; ca desktop đặt viewport 1280 px,
+  ca mobile 390 px. MockApi đã có metadata kiểu nhập; không khẳng định
+  đã kiểm hình ảnh hoặc chạy e2e trong sandbox này.
+
+### Lane grade trước khi nối
 
 `test_step_families_seed.py` kiểm từng đáp án: giải tích đối chiếu định nghĩa
 bằng SymPy; xác suất liệt kê các kết quả đồng khả năng độc lập với công thức

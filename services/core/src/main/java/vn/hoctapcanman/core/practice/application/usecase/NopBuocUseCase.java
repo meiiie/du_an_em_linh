@@ -86,8 +86,7 @@ public class NopBuocUseCase {
         if (!membership.laHocSinh(hocSinhId, lopId)) {
             throw new BaiKhongTimThayException();
         }
-        BaiChoLamBai bai = baiDeLam.bai(lopId, maBai).filter(b -> b.ham() != null).orElseThrow(BaiKhongTimThayException::new);
-        String ham = Objects.requireNonNull(bai.ham());
+        BaiChoLamBai bai = baiDeLam.bai(lopId, maBai).filter(BaiChoLamBai::chamTungBuoc).orElseThrow(BaiKhongTimThayException::new);
         if (bai.cacBuoc().indexOf(yeuCau.maBuoc()) < YeuCauCham.batDau(bai.cacBuoc(), bai.buocBatDau())) {
             throw new IllegalArgumentException("Bước không thuộc khung của bài: " + yeuCau.maBuoc());
         }
@@ -121,8 +120,7 @@ public class NopBuocUseCase {
             }
             return new DaLuu(baiLam.id(), submissions.steps(baiLam.id()), nghi);
         }));
-        Map<String, @Nullable Object> payload = YeuCauCham.dung(ham, bai.cacBuoc(), bai.khaiBaoKetLuan(), bai.buocBatDau(), yeuCau.maBuoc(),
-            daLuu.cacBuoc());
+        Map<String, @Nullable Object> payload = YeuCauCham.dung(bai, baiDeLam, yeuCau.maBuoc(), daLuu.cacBuoc());
         String bam = YeuCauCham.bam(payload);
         GradingResult ketQua = grades.findByRequest(daLuu.baiLamId(), bam).orElseGet(() -> {
             Map<String, @Nullable Object> phanHoi = mayCham.cham(payload).orElse(null);
