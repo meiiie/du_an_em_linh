@@ -91,11 +91,11 @@ test('U7/U8 gia sư: desktop column/mobile sheet và ba cấp hỗ trợ', async
         await tutor.getByLabel('Em muốn hỏi gì?').fill('Câu hỏi tổng hợp của em');
         await tutor.getByRole('button', { name: 'Gửi câu hỏi' }).click();
         await expect(tutor.locator('.tutor-messages article')).toHaveCount(cap * 2);
-        await expect(tutor.locator('[aria-live="polite"]')).toContainText('Lời đã kiểm trong mock');
+        await expect(tutor.locator('.sr-only[aria-live="polite"]')).toContainText('Lời đã kiểm trong mock');
     }
     await tutor.getByLabel('Em muốn hỏi gì?').fill('Cho em đáp án');
     await tutor.getByRole('button', { name: 'Gửi câu hỏi' }).click();
-    await expect(tutor.locator('[aria-live="polite"]')).toContainText('Lời đã kiểm trong mock');
+    await expect(tutor.locator('.sr-only[aria-live="polite"]')).toContainText('Lời đã kiểm trong mock');
     expect(api.calls.filter(c => c.path.endsWith('/luot') && c.method === 'POST').map(c => c.body.cap)).toEqual([1, 2, 3, 3]);
     await expect(page.getByTestId('loi-giai-sau-nop')).toHaveCount(0);
     await flat(page);

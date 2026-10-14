@@ -66,7 +66,7 @@ for(const reducedMotion of ['no-preference','reduce'] as const){
     await expect(status).toHaveAttribute('role','status');
     await expect(status).toHaveAttribute('aria-live','polite');
     await expect(status.locator('span')).toHaveAttribute('aria-hidden','true');
-    expect(await status.locator('span').evaluate(el=>getComputedStyle(el).animationName)).toBe(reducedMotion==='reduce'?'none':'pense');
+    const anim=await status.locator('span').evaluate(el=>getComputedStyle(el).animationName);if(reducedMotion==='reduce')expect(anim).toBe('none');else expect(anim).toMatch(/pense$/);
     await expect(panel.locator('.cau-cua-ai')).toHaveCount(0);
     await flat(page);await noOverflow(page);
     await emit(page,'regen',2,{attempt:1,mode:'rewrite'});
