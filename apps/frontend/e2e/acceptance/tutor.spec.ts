@@ -13,7 +13,7 @@ test('Gia sư: toggle, shortcut, persistence, resize hoặc sheet và focus', as
   const before = await page.getByTestId('solve-screen').boundingBox();
   await toggle.click();
   await expect(panel).toBeVisible();
-  await expect(panel.getByRole('log')).toContainText('Gia sư chỉ gợi ý cách làm, không đưa đáp án');
+  await expect(panel.locator('article')).toHaveCount(0);
   if (page.viewportSize()!.width > 1024) {
     const solve = await page.getByTestId('solve-screen').boundingBox();
     const box = await panel.boundingBox();
@@ -59,26 +59,24 @@ test('Gia sư: toggle, shortcut, persistence, resize hoặc sheet và focus', as
   await expect(toggle).toHaveAttribute('aria-expanded', 'false');
 });
 
-test('Gia sư: KaTeX, Enter và Shift+Enter, chips ánh xạ ba cấp', async ({ page, api }) => {
-  await page.route('**/api/hs/gia-su', async route => {
-    api.calls.push({method:'POST',path:'/api/hs/gia-su',body:route.request().postDataJSON()});
-    await route.fulfill({contentType:'text/event-stream', body:'event: xong\ndata: {"message":"Xét dấu của $f\u0027(x)$ trước."}\n\n'});
-  });
+test('Gia sư: KaTeX, Enter và Shift+Enter, chọn mức hỗ trợ', async ({ page, api }) => {
   await page.goto('/hs/luyen/E2E-01');
   await page.getByTestId('mo-gia-su').click();
   const panel = page.getByTestId('gia-su-panel');
+  const composer = page.getByTestId('gia-su-composer');
   for (const cap of [1, 2, 3]) {
-    await panel.getByRole('button', {name:'Gợi ý bước tiếp'}).click();
+    await panel.getByLabel('Mức hỗ trợ').selectOption(String(cap));
+    await composer.fill('Câu hỏi tổng hợp của em');
+    await panel.getByRole('button', {name:'Gửi câu hỏi'}).click();
     await expect(panel.locator('article')).toHaveCount(cap * 2);
   }
-  const composer = page.getByTestId('gia-su-composer');
   await composer.fill('Em xét $x^2$');
   await composer.press('Shift+Enter');
   await expect(composer).toHaveValue('Em xét $x^2$\n');
   await composer.press('Enter');
   await expect(panel.locator('article')).toHaveCount(8);
   await expect(panel.locator('.katex').first()).toBeVisible();
-  expect(api.calls.filter(c=>c.path==='/api/hs/gia-su').map(c=>c.body.cap)).toEqual([1,2,3,3]);
+  expect(api.calls.filter(c=>c.path.endsWith('/luot') && c.method==='POST').map(c=>c.body.cap)).toEqual([1,2,3,3]);
 });
 
 test('Kiểm tra: toggle/FAB tạm tắt kể cả khi đã lưu trạng thái mở', async ({ page, api }) => {
@@ -94,30 +92,29 @@ test('Kiểm tra: toggle/FAB tạm tắt kể cả khi đã lưu trạng thái m
   expect((await new AxeBuilder({page}).exclude('math-field').analyze()).violations.filter(v=>v.impact==='serious'||v.impact==='critical')).toEqual([]);
 });
 
-test('Gia sư: đang chờ, reduced motion và sửa câu hỏi sau lỗi', async ({ page, api }) => {
+test('Gia sư: chờ, reduced motion và sửa câu hỏi sau lỗi', async ({ page, api }) => {
   await page.emulateMedia({ reducedMotion:'reduce' });
   let release!: () => void;
   const pending = new Promise<void>(resolve => release = resolve);
-  const fail = async (route: import('@playwright/test').Route) => {
-    api.calls.push({method:'POST',path:'/api/hs/gia-su',body:route.request().postDataJSON()});
+  await page.route('**/api/hs/gia-su/v2/phien/e2e-session/luot', async route => {
+    if(route.request().method()==='GET'){await route.fallback();return;}
+    const body = route.request().postDataJSON();
+    api.calls.push({method:'POST',path:'/api/hs/gia-su/v2/phien/e2e-session/luot',body});
     await pending;
-    await route.fulfill({status:503,body:''});
-  };
-  await page.route('**/api/hs/gia-su', fail);
+    await route.fulfill({contentType:'text/event-stream',body:`id: e2e-session:1\nevent: start\ndata: ${JSON.stringify({v:2,sessionId:'e2e-session',turnId:'error-turn',requestId:body.requestId,seq:1})}\n\nid: e2e-session:2\nevent: error\ndata: {"v":2,"sessionId":"e2e-session","turnId":"error-turn","seq":2,"message":"Chưa hoàn tất. Hãy thử lại.","retryable":true}\n\n`});
+  });
   await page.goto('/hs/luyen/E2E-01');
   await page.getByTestId('mo-gia-su').click();
   const panel = page.getByTestId('gia-su-panel');
-  await panel.getByRole('button', {name:'Giải thích công thức'}).click();
+  await panel.getByTestId('gia-su-composer').fill('Em cần giải thích công thức');
+  await panel.getByRole('button',{name:'Gửi câu hỏi'}).click();
   await expect(panel.locator('.typing')).toBeVisible();
   expect(await panel.locator('.typing span').evaluate(el=>getComputedStyle(el).animationName)).toBe('none');
-  await expect(panel.getByTestId('gia-su-chip').first()).toBeDisabled();
+  await expect(panel.getByTestId('gia-su-dung')).toBeVisible();
   release();
-  await expect(panel.getByRole('alert')).toContainText('Kiểm tra kết nối');
+  await expect(panel.getByRole('alert')).toContainText('Hãy thử lại');
   await panel.getByRole('button', {name:'Hỏi lại'}).click();
-  await expect(page.getByTestId('gia-su-composer')).toHaveValue('Giải thích công thức');
+  await expect(page.getByTestId('gia-su-composer')).toHaveValue('Em cần giải thích công thức');
   await expect(page.getByTestId('gia-su-composer')).toBeFocused();
-  expect(api.calls.filter(c=>c.path==='/api/hs/gia-su')).toHaveLength(1);
-  await page.unroute('**/api/hs/gia-su', fail);
-  await panel.getByRole('button', {name:'Gửi câu hỏi'}).click();
-  await expect(panel.getByRole('log')).toContainText('Hãy xem điều kiện xác định');
+  expect(api.calls.filter(c=>c.path.endsWith('/luot') && c.method==='POST')).toHaveLength(1);
 });
