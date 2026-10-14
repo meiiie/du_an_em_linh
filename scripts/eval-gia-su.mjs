@@ -623,7 +623,8 @@ export async function runEvaluation({ env = process.env, fetchImpl = fetch, slee
   }
   const report = { skipped: false, passed: results.every(r => r.passed), generatedAt: new Date(now()).toISOString(), intervalMs, maxLatencyMs, skippedAssignments, sharedSessions,
     summary: { cases: results.length, passedCases: results.filter(r => r.passed).length,
-      compactionCases: results.filter(r => r.compaction.observed).length, ...summarizeTurns(results.flatMap(r => r.turns)), ...voiceMetrics(replies) }, results, replies: replies.map(r => ({ caseIndex: r.caseIndex, reply: r.reply })) };
+      compactionCases: results.filter(r => r.compaction.observed).length, ...summarizeTurns(results.flatMap(r => r.turns)), ...voiceMetrics(replies) }, results };
+  if (env.MATHL_EVAL_SAMPLES_OUT) await writeFile(env.MATHL_EVAL_SAMPLES_OUT, `${JSON.stringify(replies.map(r => ({ caseIndex: r.caseIndex, reply: r.reply })), null, 2)}\n`, { mode: 0o600 });
   log(`Tổng: ${report.summary.passedCases}/${report.summary.cases} ca đạt · TTFT p50/p95 ${report.summary.ttftMs.p50 ?? '—'}/${report.summary.ttftMs.p95 ?? '—'} ms · trễ ${report.summary.totalLatencyMs} ms · lỗi SSE ${report.summary.errorEvents} · lộ ${report.summary.leakCount} · câu cố định/lặp ${report.summary.cannedReplies}/${report.summary.repeatedReplies}`);
   if (out) await writeFile(out, `${JSON.stringify(report, null, 2)}\n`, { mode: 0o600 });
   else log(JSON.stringify(report, null, 2));
@@ -640,6 +641,7 @@ const HELP = `Đánh giá gia sư v2 nhiều lượt (Node 22+, không thư vi�
   GLM_RATE_LIMIT_WINDOW       Mặc định 10m; nhận 600s, 10m, PT10M.
   MATHL_EVAL_TIMEOUT_MS       Mặc định 130000.
   MATHL_EVAL_MAX_LATENCY_MS   Mặc định bằng thời gian chờ.
+  MATHL_EVAL_SAMPLES_OUT      Tùy chọn: tệp riêng chứa lời đáp mẫu để đọc tay (không đưa vào báo cáo).
 
 30 ca: cấp 1–3 ở năm bước, hội thoại 5–8 lượt, vượt rào nhiều lượt,
 hai ca 16 lượt gửi câu hỏi dài dưới 2000 ký tự để kích hoạt nén, một ca hủy qua API.
