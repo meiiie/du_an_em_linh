@@ -16,8 +16,16 @@ class FullSolutionExplanationTest {
  final BaiChoLamBai problem=new BaiChoLamBai(UUID.randomUUID(),"P1",1,"K1","Kỹ năng","NHAN_BIET","Đề công khai","x^2","TU_LUAN_5_BUOC","x**2",List.of(),List.of(),null);
  final String json="{\"TXD\":\"Tập xác định R.\",\"DAOHAM\":\"Đạo hàm 2x.\",\"NGHIEM\":\"Nghiệm 0.\",\"XETDAU\":\"Xét dấu.\",\"KETLUAN\":\"Kết luận.\"}";
  final String full="Tập xác định R.\nĐạo hàm 2x.\nNghiệm 0.\nXét dấu.\nKết luận.";
- @BeforeEach void setup(){when(model.provider()).thenReturn("GLM");when(workspace.library(cl,false)).thenReturn(new Library(List.of(),List.of()));when(model.draft(any())).thenReturn(Optional.of(json));}
+ @BeforeEach void setup(){when(workspace.settings(cl)).thenReturn(new vn.hoctapcanman.core.workspace.application.dto.WorkspaceDto.Settings(cl,true,"glm"));when(model.selected("glm")).thenReturn(model);when(model.provider()).thenReturn("GLM");when(workspace.library(cl,false)).thenReturn(new Library(List.of(),List.of()));when(model.draft(any())).thenReturn(Optional.of(json));}
  @Test void offlineDoesNotCallModelOrMath(){when(model.provider()).thenReturn("offline");assertThat(adapter.explain(cl,problem)).isEmpty();verify(model,never()).draft(any());verifyNoInteractions(math,events);}
+ @Test void selectsConfiguredTransportInsteadOfCallingUnselectedRouter(){
+  var router=new vn.hoctapcanman.core.tutor.infrastructure.ai.SelectedHintModelAdapter(model,new vn.hoctapcanman.core.tutor.infrastructure.ai.OfflineHintModelAdapter());
+  var wired=new FullSolutionExplanationAdapter(router,workspace,math,events,Clock.systemUTC());
+  when(math.call(eq(MathJob.KIEM_LOI_GIANG),any())).thenReturn(new MathResult.Ok(Map.of("loi",false,"thay_bang_goi_y",false,"cau_sach",full)));
+  assertThat(wired.explain(cl,problem)).contains(full);
+  when(workspace.settings(cl)).thenReturn(new vn.hoctapcanman.core.workspace.application.dto.WorkspaceDto.Settings(cl,true,"offline"));
+  clearInvocations(model,math,events);assertThat(wired.explain(cl,problem)).isEmpty();verifyNoInteractions(model,math,events);
+ }
  @Test void providerFailureAndIncompleteStepsFallBack(){when(model.draft(any())).thenReturn(Optional.empty(),Optional.of("{\"TXD\":\"R\"}"));assertThat(adapter.explain(cl,problem)).isEmpty();assertThat(adapter.explain(cl,problem)).isEmpty();verifyNoInteractions(math);}
  @Test void uncheckedOrModifiedTextNeverLeavesGate(){when(math.call(eq(MathJob.KIEM_LOI_GIANG),any())).thenReturn(new MathResult.Failed(MathResult.Reason.UNAVAILABLE,"Unavailable"),new MathResult.Ok(Map.of("thay_bang_goi_y",false,"cau_sach","Xét dấu.")));assertThat(adapter.explain(cl,problem)).isEmpty();assertThat(adapter.explain(cl,problem)).isEmpty();}
  @Test void verifiedFullTextUsesOnlyPublishedProblemAndMetersRequest(){when(math.call(eq(MathJob.KIEM_LOI_GIANG),any())).thenReturn(new MathResult.Ok(Map.of("loi",false,"thay_bang_goi_y",false,"cau_sach",full)));assertThat(adapter.explain(cl,problem)).contains(full);verify(model).draft(argThat(p->p.user().contains("Đề công khai")&&!p.user().contains(cl.toString())&&!p.user().contains("Lời giải giáo viên")));verify(events).modelCall(eq(cl),eq("GLM"),any());}

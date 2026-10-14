@@ -76,6 +76,42 @@ class TutorSessionPersistenceTest {
         assertEquals(2,restarted.usage(cl).getFirst().requests());assertEquals(120,restarted.usage(cl).getFirst().inputTokens());assertEquals(48,restarted.usage(cl).getFirst().estimatedTokens());
         assertEquals(2,db.sql("SELECT count(*) FROM luot_gia_su WHERE phien_id=:s").param("s",session.id()).query(Integer.class).single());
     }
+    @Test void teacherUsageHttpKeepsStudentAndClassTotalsAndIncludesUnusedStudents() throws Exception {
+        UUID teacher=DuLieuPractice.nguoi(db,"TEACHER"),unused=DuLieuPractice.nguoi(db,"STUDENT"),foreign=DuLieuPractice.lop(db);
+        DuLieuPractice.ghiDanh(db,cl,teacher,"TEACHER");DuLieuPractice.ghiDanh(db,cl,unused,"STUDENT");
+        Accepted turn=accept();
+        store.usage(student,cl,turn.turn().id(),"GLM","reply",new ModelUsage(80,12,false));
+        store.usage(student,cl,turn.turn().id(),"GLM","summary",new ModelUsage(40,8,true));
+        var members=org.mockito.Mockito.mock(vn.hoctapcanman.core.classroom.application.port.ClassMembership.class);
+        org.mockito.Mockito.doThrow(new vn.hoctapcanman.core.workspace.application.exception.WorkspaceException(403,"Không thuộc lớp."))
+            .when(members).kiemGiaoVien(teacher,foreign);
+        var service=new vn.hoctapcanman.core.tutor.application.service.TutorSessionService(store,
+            org.mockito.Mockito.mock(vn.hoctapcanman.core.tutor.application.service.OfflineTutorService.class),members,
+            org.mockito.Mockito.mock(vn.hoctapcanman.core.workspace.application.port.WorkspaceStore.class),6000);
+        var mvc=org.springframework.test.web.servlet.setup.MockMvcBuilders.standaloneSetup(new vn.hoctapcanman.core.tutor.infrastructure.web.TutorSessionController(service))
+            .setControllerAdvice(new vn.hoctapcanman.core.workspace.infrastructure.web.WorkspaceExceptionHandler())
+            .setCustomArgumentResolvers(new org.springframework.security.web.method.annotation.AuthenticationPrincipalArgumentResolver()).build();
+        var jwt=org.springframework.security.oauth2.jwt.Jwt.withTokenValue("synthetic").header("alg","none").subject(teacher.toString()).build();
+        org.springframework.security.core.context.SecurityContextHolder.getContext().setAuthentication(new org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken(jwt));
+        try {
+            var report=service.usageReport(teacher,cl);
+            assertEquals(2,report.requests());assertEquals(120,report.inputTokens());assertEquals(20,report.outputTokens());assertEquals(48,report.estimatedTokens());
+            assertEquals(2,report.students().size());assertTrue(report.students().contains(new Usage(unused,0,0,0,0)));
+            mvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get("/api/gv/lop/{cl}/gia-su/su-dung",cl))
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.status().isOk())
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath("$.requests").value(2))
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath("$.inputTokens").value(120))
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath("$.students.length()").value(2));
+            mvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get("/api/gv/lop/{cl}/gia-su/su-dung",foreign))
+                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.status().isForbidden());
+            assertTrue(store.usage(foreign).isEmpty());
+        } finally {
+            org.springframework.security.core.context.SecurityContextHolder.clearContext();
+            db.sql("DELETE FROM classes WHERE id=:id").param("id",foreign).update();
+            db.sql("DELETE FROM enrollments WHERE user_id IN (:ids)").param("ids",List.of(teacher,unused)).update();
+            db.sql("DELETE FROM users WHERE id IN (:ids)").param("ids",List.of(teacher,unused)).update();
+        }
+    }
     @Test void tokenCountAndStoredAnswerAreIndependentOfTokenChunkBoundaries() {
         Accepted a=accept();int before=store.snapshot(session.id()).tokenCount();
         for(String token:List.of("E","m"," ","$","x","^","2","$","\n"))
