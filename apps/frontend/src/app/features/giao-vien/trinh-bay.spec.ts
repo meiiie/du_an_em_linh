@@ -1,3 +1,4 @@
+import { gomLuotGiao } from './trinh-bay';
 import { gomHan, hanTheoBo, tenTrangThai } from './trinh-bay';
 import { BankDetails, Item, StudentProfile } from '../../api/ux';
 
@@ -43,4 +44,15 @@ describe('Hạn bài giao', () => {
     expect(tenTrangThai('KHONG_KIEM_DUOC')).toBe('Không kiểm được');
     expect(tenTrangThai('UNKNOWN')).toBe('Chưa xác định');
   });
+});
+
+
+describe('gomLuotGiao', () => {
+ it('gom học sinh và bài theo lượt giao, giữ tên thật và tách lần giao cùng tên', () => {
+  const row = (id: string, key: string, student: string, code: string) => ({id, title:'Ôn đơn điệu', subtitle:'An', status:'ON_TAP', details:{setKey:key, studentId:student, problemCode:code}});
+  const groups=gomLuotGiao([row('1','luot1','hs1','P1'),row('2','luot1','hs2','P1'),row('3','luot1','hs1','P2'),row('4','luot2','hs1','P1')]);
+  expect(groups).toHaveLength(2);
+  expect(groups[0]).toMatchObject({title:'Ôn đơn điệu',subtitle:'2 bài · 2 học sinh'});
+  expect(gomLuotGiao([...groups.slice(0,0),row('5','luot3','hs1','P1')])).toHaveLength(1);
+ });
 });

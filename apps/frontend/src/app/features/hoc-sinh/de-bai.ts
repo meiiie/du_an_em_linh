@@ -39,7 +39,7 @@ import { nhomBai, locTrangThai } from './nhom-bai';
     } @else {
       @for (n of nhom(); track n.id; let dau = $first) {
         <details class="nhom-chu-de" [open]="dau">
-          <summary><span>{{ n.ten }}</span><span class="list-summary">{{n.hang.length | soViet}} bài · {{n.daNop | soViet}}/{{n.tong | soViet}} đã nộp · Hạn: {{ngay(n.han)}}</span></summary>
+          <summary><span>{{ n.ten }}</span><span class="list-summary">{{n.hang.length | soViet}} bài · {{n.daNop | soViet}}/{{n.tong | soViet}} đã nộp · Hạn: {{ngay(n.han, true)}}</span></summary>
           <ul class="danh-sach">
             @for (h of n.hang; track h.bai.maBai) {
               <li><app-hang-bai [bai]="h.bai" [so]="h.so" [kiemTra]="laKiemTra(h.bai.maBai)" /></li>

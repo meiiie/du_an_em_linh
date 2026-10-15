@@ -56,8 +56,9 @@ import vn.hoctapcanman.core.workspace.application.exception.WorkspaceException;
                 levels.computeIfPresent(level,(key,n)->n+1);
             }
         }
-        List<Item> deadlines=upcomingDeadlines(assignments(cl)).stream().limit(10).toList();
-        return new Dashboard(count("SELECT count(*) FROM enrollments WHERE class_id=:cl AND role_in_class='STUDENT'",cl),count("SELECT count(DISTINCT student_id) FROM escalations WHERE class_id=:cl AND handled_at IS NULL",cl),reviews(cl).size()+count("SELECT count(*) FROM content_drafts WHERE class_id=:cl AND decision IS NULL",cl),count("SELECT count(*) FROM assignments WHERE class_id=:cl AND status='DA_GIAO'",cl),levels,deadlines);
+        List<Item> sets=groupAssignments(assignments(cl));
+        List<Item> deadlines=upcomingDeadlines(sets).stream().limit(10).toList();
+        return new Dashboard(count("SELECT count(*) FROM enrollments WHERE class_id=:cl AND role_in_class='STUDENT'",cl),count("SELECT count(DISTINCT student_id) FROM escalations WHERE class_id=:cl AND handled_at IS NULL",cl),reviews(cl).size()+count("SELECT count(*) FROM content_drafts WHERE class_id=:cl AND decision IS NULL",cl),count("SELECT count(*) FROM assignments WHERE class_id=:cl",cl),sets.size(),levels,deadlines);
     }
 
     /** Lọc hạn đã qua trước khi gom bộ hoặc giới hạn số hàng; so sánh theo thời điểm thật. */
@@ -114,11 +115,43 @@ import vn.hoctapcanman.core.workspace.application.exception.WorkspaceException;
     }
 
     public List<Item> assignments(UUID cl) {
-        return db.sql("SELECT a.*,p.code,u.display_name FROM assignments a JOIN problems p ON p.id=a.problem_id JOIN users u ON u.id=a.student_id WHERE a.class_id=:cl AND a.status='DA_GIAO' ORDER BY a.assigned_at DESC") .param("cl",cl).query((r,n)->new Item(r.getString("id"),r.getString("code"),r.getString("display_name"),r.getString("mode"),details("studentId",r.getString("student_id"),"problemCode",r.getString("code"),"mode",r.getString("mode"),"dueAt",instant(r,"due_at")))).list();
+        return db.sql("""
+            SELECT a.*,p.code,p.statement_text,u.display_name,
+                EXISTS(SELECT 1 FROM submissions s WHERE s.class_id=a.class_id AND s.student_id=a.student_id
+                    AND s.problem_id=a.problem_id AND s.content_version=p.content_version
+                    AND s.started_at>=a.assigned_at AND s.status='DA_NOP') submitted
+            FROM assignments a JOIN problems p ON p.id=a.problem_id JOIN users u ON u.id=a.student_id
+            WHERE a.class_id=:cl AND a.status='DA_GIAO' ORDER BY a.assigned_at DESC,a.id
+            """).param("cl",cl).query((r,n)->new Item(r.getString("id"),
+                str(r,"set_name").isBlank()?r.getString("statement_text"):r.getString("set_name"),
+                r.getString("display_name"),r.getString("mode"),details("classId",cl.toString(),
+                "studentId",r.getString("student_id"),"problemCode",r.getString("code"),
+                "tenBo",str(r,"set_name"),"assignedAt",instant(r,"assigned_at"),
+                "setKey",cl+":"+instant(r,"assigned_at")+":"+str(r,"set_name")+":"+instant(r,"due_at")+":"+r.getString("mode"),"submitted",r.getBoolean("submitted"),
+                "mode",r.getString("mode"),"dueAt",instant(r,"due_at")))).list();
+    }
+
+
+    public static List<Item> groupAssignments(List<Item> rows) {
+        Map<String,List<Item>> groups=new LinkedHashMap<>();
+        for(var row:rows) {
+            String key=String.valueOf(row.details().getOrDefault("setKey",row.id()));
+            groups.computeIfAbsent(key,ignored->new java.util.ArrayList<>()).add(row);
+        }
+        return groups.entrySet().stream().map(e->{
+            var first=e.getValue().getFirst();
+            var codes=e.getValue().stream().map(i->i.details().get("problemCode")).distinct().toList();
+            return new Item(e.getKey(),first.title(),codes.size()+" bài",first.status(),details(
+                "setKey",e.getKey(),"tenBo",first.title(),"dueAt",first.details().get("dueAt"),
+                "mode",first.status(),"problemCodes",codes,
+                "problemCount",codes.size(),"assignmentCount",e.getValue().size(),
+                "studentCount",(int)e.getValue().stream().map(i->i.details().get("studentId")).distinct().count(),
+                "submittedCount",(int)e.getValue().stream().filter(i->Boolean.TRUE.equals(i.details().get("submitted"))).count()));
+        }).toList();
     }
 
     public List<Item> modes(UUID student,UUID cl) {
-        return db.sql("SELECT p.code,a.mode,a.due_at,(a.due_at IS NULL OR a.due_at>now()) con_han FROM assignments a JOIN problems p ON p.id=a.problem_id WHERE a.student_id=:student AND a.class_id=:cl AND a.status='DA_GIAO'").param("student",student).param("cl",cl).query((r,n)->new Item(r.getString("code"),r.getString("code"),"",r.getString("mode"),details("dueAt",instant(r,"due_at"),"conHan",r.getBoolean("con_han")))).list();
+        return db.sql("SELECT p.code,coalesce(nullif(a.set_name,''),p.statement_text) title,a.mode,a.due_at,(a.due_at IS NULL OR a.due_at>now()) con_han FROM assignments a JOIN problems p ON p.id=a.problem_id WHERE a.student_id=:student AND a.class_id=:cl AND a.status='DA_GIAO'").param("student",student).param("cl",cl).query((r,n)->new Item(r.getString("code"),r.getString("title"),"",r.getString("mode"),details("dueAt",instant(r,"due_at"),"conHan",r.getBoolean("con_han")))).list();
     }
 
     public List<Skill> learningSkills(UUID student, UUID cl) {
@@ -221,7 +254,7 @@ import vn.hoctapcanman.core.workspace.application.exception.WorkspaceException;
                 AND (a.due_at IS NULL OR a.due_at>:now)
                 AND NOT EXISTS(SELECT 1 FROM submissions s WHERE s.student_id=a.student_id
                     AND s.problem_id=p.id AND s.class_id=a.class_id AND s.content_version=p.content_version
-                    AND s.status='DA_NOP') ORDER BY p.code
+                    AND s.started_at>=a.assigned_at AND s.status='DA_NOP') ORDER BY p.code
             """).param("student",student).param("cl",cl).param("now",java.sql.Timestamp.from(clock.instant()))
             .query((r,n)->new Candidate(r.getString("code"),r.getString("skill_code"),Level4.valueOf(r.getString("level4")),r.getString("teacher_reason"))).list();
         return PersonalLearningRules.choose(learningSkills(student,cl),candidates)
@@ -352,7 +385,7 @@ import vn.hoctapcanman.core.workspace.application.exception.WorkspaceException;
 
     public List<Item> reminders(UUID student,Instant now) {
         List<Item> out=new ArrayList<>(schedule(student).stream().filter(i->i.status().equals("CHUA_XONG")&&!Instant.parse((String)i.details().get("endsAt")).isBefore(now)&&Instant.parse((String)i.details().get("startsAt")).isBefore(now.plus(Duration.ofDays(1)))).toList());
-        out.addAll(db.sql("SELECT a.id,p.code,a.due_at,a.mode FROM assignments a JOIN problems p ON p.id=a.problem_id WHERE a.student_id=:student AND a.status='DA_GIAO' AND a.due_at BETWEEN :now AND :until AND NOT EXISTS(SELECT 1 FROM submissions s WHERE s.student_id=a.student_id AND s.problem_id=a.problem_id AND s.class_id=a.class_id AND s.content_version=p.content_version AND s.status='DA_NOP')").param("student",student).param("now",java.sql.Timestamp.from(now)).param("until",java.sql.Timestamp.from(now.plus(Duration.ofDays(1)))).query((r,n)->new Item(r.getString("id"),"Sắp đến hạn: "+r.getString("code"),"",r.getString("mode"),details("dueAt",instant(r,"due_at")))).list());
+        out.addAll(db.sql("SELECT a.id,coalesce(nullif(a.set_name,''),p.statement_text) title,a.due_at,a.mode FROM assignments a JOIN problems p ON p.id=a.problem_id WHERE a.student_id=:student AND a.status='DA_GIAO' AND a.due_at BETWEEN :now AND :until AND NOT EXISTS(SELECT 1 FROM submissions s WHERE s.student_id=a.student_id AND s.problem_id=a.problem_id AND s.class_id=a.class_id AND s.content_version=p.content_version AND s.status='DA_NOP' AND s.started_at>=a.assigned_at)").param("student",student).param("now",java.sql.Timestamp.from(now)).param("until",java.sql.Timestamp.from(now.plus(Duration.ofDays(1)))).query((r,n)->new Item(r.getString("id"),"Sắp đến hạn: "+r.getString("title"),"",r.getString("mode"),details("dueAt",instant(r,"due_at")))).list());
         return out;
     }
 

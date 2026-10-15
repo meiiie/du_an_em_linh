@@ -72,7 +72,7 @@ export class HangBai {
 
   protected readonly tenMuc = computed(() => TEN_MUC[this.bai().muc4]);
   protected readonly chu = computed(() => chuTrangThai(this.bai()));
-  protected readonly han = computed(() => (this.bai().han ? ngayViet(this.bai().han!) : null));
+  protected readonly han = computed(() => (this.bai().han ? ngayViet(this.bai().han!, true) : null));
   /** Trong hàng chỉ hàm số; phần «, y′ = …» của đề hiện đủ trên bảng ở phiếu làm bài. */
   protected readonly vanBan = computed(() => /[À-ỹĐđ]/.test(this.bai().deBaiLatex) || ['$', '\\(', '\\['].some(d => this.bai().deBaiLatex.includes(d)));
   protected readonly hamHang = computed(() => hamLatex(this.bai().deBaiLatex.split(String.raw`,\quad`)[0]));

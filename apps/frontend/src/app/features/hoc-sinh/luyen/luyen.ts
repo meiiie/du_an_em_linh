@@ -233,7 +233,7 @@ export class Luyen {
     if(this.dangGui())return;
     this.dangGui.set(true);this.loiGui.set(null);
     try {
-      const result=await firstValueFrom(this.http.post<{loiGiai:string}>(`${API_HS.chiTietBai(this.maBai())}/loi-giai`,{}));
+      const result=await firstValueFrom(this.http.post<{loiGiai:string}>(API_HS.loiGiai(this.maBai()),{}));
       this.loiGiai.set(result.loiGiai);this.xacNhanLoiGiai.set(false);
     } catch(e) { this.loiGui.set(loiDeDoc(e,'Chưa mở được lời giải. Hãy thử lại.')); }
     finally {this.dangGui.set(false);}

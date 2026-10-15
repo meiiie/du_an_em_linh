@@ -80,9 +80,10 @@ class WorkspaceApiTest {
             List.of(item("d1", "Tài liệu đạo hàm", "Nội dung tự soạn", "tu_soan", Map.of())));
     }
     @Test void dashboardUsesTeacherClassAndReturnsCounts() throws Exception {
-        when(store.dashboard(cl)).thenReturn(new Dashboard(3,1,2,4,Map.of("NHAN_BIET",3L),List.of()));
+        when(store.dashboard(cl)).thenReturn(new Dashboard(3,1,2,4,1,Map.of("NHAN_BIET",3L),List.of()));
         mvc.perform(get("/api/gv/tong-quan").param("lopId",cl.toString()).with(as(actor,"TEACHER")))
-            .andExpect(status().isOk()).andExpect(jsonPath("$.students").value(3)).andExpect(jsonPath("$.pending").value(2));
+            .andExpect(status().isOk()).andExpect(jsonPath("$.students").value(3)).andExpect(jsonPath("$.pending").value(2))
+            .andExpect(jsonPath("$.assignments").value(4)).andExpect(jsonPath("$.boBai").value(1));
         verify(membership).kiemGiaoVien(actor, cl);
     }
     @Test void bankSearchFoldsVietnameseAndCombinesFilters() throws Exception {

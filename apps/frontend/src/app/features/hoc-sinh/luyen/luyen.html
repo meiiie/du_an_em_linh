@@ -304,7 +304,7 @@
 
 <app-hop-thoai [mo]="xacNhanLoiGiai()" tieuDe="Xem toàn bộ lời giải" [ban]="dangGui()" (dong)="xacNhanLoiGiai.set(false)">
   <p>Em đã nộp bài. Việc xem lời giải sẽ được ghi nhận để thầy cô theo dõi quá trình học.</p>
-  <p>Bài kiểm tra chỉ mở lời giải sau hạn nộp.</p>
+  @if(mode()?.status === 'KIEM_TRA'){<p>Bài kiểm tra chỉ mở lời giải sau hạn nộp.</p>}@else{<p>Bài luyện tập mở lời giải sau khi em đã nộp bài.</p>}
   @if(loiGui()){<p role="alert" class="field-error">{{loiGui()}}</p>}
   <button appButton type="button" [disabled]="dangGui()" (click)="xemLoiGiai()">Xác nhận xem lời giải</button>
 </app-hop-thoai>

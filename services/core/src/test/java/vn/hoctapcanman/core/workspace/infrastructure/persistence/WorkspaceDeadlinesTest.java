@@ -35,6 +35,27 @@ class WorkspaceDeadlinesTest {
             .extracting(Item::id).containsExactly("ngay","le","sau");
     }
 
+    @Test void boBaiGiuMaBaiKhongTrungVaCheDoTrongDetails() {
+        var rows = List.of(assignment("a1","P1","s1","on","ON_TAP"),
+            assignment("a2","P2","s1","on","ON_TAP"),
+            assignment("a3","P1","s2","on","ON_TAP"),
+            assignment("a4","P2","s2","on","ON_TAP"),
+            assignment("a5","P1","s1","test","KIEM_TRA"));
+        assertThat(WorkspaceStoreAdapter.groupAssignments(rows)).hasSize(2).satisfies(sets -> {
+            assertThat(sets.getFirst().details()).containsEntry("problemCodes",List.of("P1","P2"))
+                .containsEntry("mode","ON_TAP").containsEntry("problemCount",2)
+                .containsEntry("studentCount",2).containsEntry("assignmentCount",4)
+                .containsEntry("submittedCount",0).doesNotContainKey("problemCode");
+            assertThat(sets.get(1).details()).containsEntry("problemCodes",List.of("P1"))
+                .containsEntry("mode","KIEM_TRA");
+        });
+    }
+
+    private Item assignment(String id,String code,String student,String key,String mode) {
+        return new Item(id,"Ôn tập","",mode,Map.of("setKey",key,"problemCode",code,
+            "studentId",student,"dueAt","2026-10-14T10:00:00Z","mode",mode));
+    }
+
     private Item row(String id,String due) {
         return new Item(id,"Ôn tập","","ON_TAP",Map.of("dueAt",due));
     }

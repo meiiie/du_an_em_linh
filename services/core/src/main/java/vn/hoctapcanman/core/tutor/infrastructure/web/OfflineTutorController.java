@@ -18,7 +18,7 @@ public class OfflineTutorController {
     public OfflineTutorController(TutorSessionService tutor) { this.tutor = tutor; }
 
     @PostMapping(value="/api/hs/gia-su", produces="text/event-stream")
-    public SseEmitter ask(@AuthenticationPrincipal Jwt jwt, @Valid @RequestBody TutorRequest request) {
+    public org.springframework.http.ResponseEntity<SseEmitter> ask(@AuthenticationPrincipal Jwt jwt, @Valid @RequestBody TutorRequest request) {
         UUID student = UUID.fromString(jwt.getSubject());
         var accepted = tutor.startLegacy(student, request);
         // Cùng lượt bền vững và pipeline với API v2.
@@ -26,8 +26,28 @@ public class OfflineTutorController {
         Thread worker = Thread.ofVirtual().unstarted(() -> {
             try {
                 emitter.send(SseEmitter.event().name("goi").data(new TutorEvent("goi", "")));
-                TutorEvent answer = tutor.await(accepted);
-                emitter.send(SseEmitter.event().name(answer.status()).data(answer));
+                long cursor = tutor.cursorForTurn(student, accepted.session().id(), accepted.turn().id());
+                var text = new StringBuilder();
+                boolean finished = false;
+                while (!finished && !Thread.currentThread().isInterrupted()) {
+                    for (var event : tutor.events(student, accepted.session().id(), cursor)) {
+                        cursor = event.seq();
+                        if (!event.turnId().equals(accepted.turn().id())) continue;
+                        if (event.type().equals("delta")) {
+                            String delta = String.valueOf(event.data().get("text"));
+                            text.append(delta);
+                            emitter.send(SseEmitter.event().name("delta").data(java.util.Map.of("text", delta)));
+                        } else if (event.type().equals("error")) {
+                            sendError(emitter, String.valueOf(event.data().get("message")));
+                            return;
+                        } else if (event.type().equals("done")) {
+                            emitter.send(SseEmitter.event().name("xong").data(new TutorEvent("xong", text.toString())));
+                            finished = true;
+                            break;
+                        }
+                    }
+                    if (!finished) Thread.sleep(50);
+                }
                 emitter.complete();
             } catch (UncheckedIOException ex) {
                 emitter.completeWithError(ex.getCause());
@@ -42,7 +62,8 @@ public class OfflineTutorController {
         emitter.onTimeout(worker::interrupt);
         emitter.onError(ignored -> worker.interrupt());
         worker.start();
-        return emitter;
+        return org.springframework.http.ResponseEntity.ok().header("Cache-Control", "no-cache, no-transform")
+            .header("X-Accel-Buffering", "no").body(emitter);
     }
 
     private static void sendError(SseEmitter emitter, String message) {

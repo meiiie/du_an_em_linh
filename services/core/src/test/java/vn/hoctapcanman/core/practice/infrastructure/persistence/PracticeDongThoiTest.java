@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.time.Duration;
+import java.time.Clock;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
@@ -16,6 +17,8 @@ import java.util.function.Supplier;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase;
@@ -34,6 +37,9 @@ import vn.hoctapcanman.core.practice.domain.model.StepLine;
 import vn.hoctapcanman.core.practice.domain.model.StepWork;
 import vn.hoctapcanman.core.practice.domain.model.SkillLevel;
 import vn.hoctapcanman.core.practice.domain.model.Submission;
+import vn.hoctapcanman.core.practice.domain.model.InputEvent;
+import vn.hoctapcanman.core.workspace.application.dto.WorkspaceDto.Assign;
+import vn.hoctapcanman.core.workspace.infrastructure.persistence.WorkspaceStoreAdapter;
 
 /**
  * Hai tab của cùng học sinh (T022): mở bài làm cùng lúc thì nhận cùng một bài làm; ghi cùng một yêu cầu chấm cùng lúc thì
@@ -65,6 +71,7 @@ class PracticeDongThoiTest {
     private UUID lop;
     private UUID an;
     private UUID bai;
+    private UUID giaoVien;
 
     @BeforeEach
     void duLieu() {
@@ -74,6 +81,8 @@ class PracticeDongThoiTest {
         DuLieuPractice.ghiDanh(jdbc, lop, an, "STUDENT");
         bai = DuLieuPractice.bai(jdbc, "PR-DT");
         DuLieuPractice.phatHanh(jdbc, lop, bai);
+        giaoVien = DuLieuPractice.nguoi(jdbc, "TEACHER");
+        DuLieuPractice.ghiDanh(jdbc, lop, giaoVien, "TEACHER");
     }
 
     @AfterEach
@@ -81,6 +90,7 @@ class PracticeDongThoiTest {
         jdbc.sql("delete from classes where id = ?").params(lop).update();
         jdbc.sql("delete from problems where id = ?").params(bai).update();
         jdbc.sql("delete from users where id = ?").params(an).update();
+        jdbc.sql("delete from users where id = ?").params(giaoVien).update();
     }
 
     @Test
@@ -138,11 +148,77 @@ class PracticeDongThoiTest {
         assertThatThrownBy(() -> submissions.lockOpen(an, lop, bai, 1)).isInstanceOf(IllegalTransactionStateException.class);
     }
 
+    @ParameterizedTest
+    @ValueSource(strings = {"buoc", "suKien", "cham", "nop", "khoaMo"})
+    void giaoLaiDangGiuKhoaThiLanGhiChoRoiTuChoiLuotCu(String duong) throws Exception {
+        giao(LUC.minusSeconds(1));
+        Submission cu = submissions.openOrGet(Submission.open(lop, an, bai, 1, LUC));
+        GradingResult canCu = grades.record(ketQua(cu.id(), "c".repeat(64), GradeStatus.DAT));
+        var daNop = cu.submit(canCu, new SkillLevel("T12.DH.02", "THONG_HIEU"), LUC.plusSeconds(5)).baiLam();
+        var buoc = new StepWork("B.DH.DAOHAM", List.of(new StepLine(0, "3x^2", null)), null);
+        haiGiaoDichChongNhau(() -> {
+            giao(LUC.plusSeconds(1));
+            return true;
+        }, () -> {
+            if (duong.equals("khoaMo")) {
+                assertThat(submissions.lockOpen(an, lop, bai, 1)).isEmpty();
+            } else {
+                assertThatThrownBy(() -> {
+                    switch (duong) {
+                        case "buoc" -> submissions.saveStep(cu.id(), buoc);
+                        case "suKien" -> submissions.addEvents(cu.id(), List.of(
+                            new InputEvent("B.DH.DAOHAM", null, null, null, "3x^2", LUC)));
+                        case "cham" -> grades.record(ketQua(cu.id(), "d".repeat(64), GradeStatus.SAI));
+                        case "nop" -> submissions.update(daNop);
+                        default -> throw new AssertionError(duong);
+                    }
+                }).isInstanceOf(IllegalStateException.class);
+            }
+            return true;
+        }, true);
+        assertThat(submissions.steps(cu.id())).isEmpty();
+        assertThat(submissions.events(cu.id())).isEmpty();
+        assertThat(grades.bySubmission(cu.id())).containsExactly(canCu);
+        assertThat(submissions.findById(cu.id())).contains(cu);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"buoc", "nop"})
+    void lanGhiGiuKhoaLuotGiaoNenGiaoLaiChoDenCommit(String duong) throws Exception {
+        giao(LUC.minusSeconds(1));
+        Submission cu = submissions.openOrGet(Submission.open(lop, an, bai, 1, LUC));
+        GradingResult canCu = grades.record(ketQua(cu.id(), "b".repeat(64), GradeStatus.DAT));
+        haiGiaoDichChongNhau(() -> {
+            if (duong.equals("buoc")) {
+                submissions.saveStep(cu.id(), new StepWork("B.DH.DAOHAM", List.of(new StepLine(0, "3x^2", null)), null));
+            } else {
+                Submission mo = submissions.lockOpen(an, lop, bai, 1).orElseThrow();
+                submissions.update(mo.submit(canCu, new SkillLevel("T12.DH.02", "THONG_HIEU"), LUC.plusSeconds(5)).baiLam());
+            }
+            return true;
+        }, () -> {
+            giao(LUC.plusSeconds(10));
+            return true;
+        });
+        assertThat(submissions.findOpen(an, lop, bai, 1)).isEmpty();
+        assertThat(submissions.history(an, bai).daNopMoiNhat(lop, 1)).isEmpty();
+        assertThat(submissions.findById(cu.id())).isPresent();
+    }
+
+    private void giao(Instant luc) {
+        new WorkspaceStoreAdapter(jdbc, Clock.systemUTC()).assign(giaoVien,
+            new Assign(lop, List.of(an), List.of(bai), "ON_TAP", null, "Ôn tập"), List.of(an), luc);
+    }
+
     /**
      * Giao dịch đầu chạy {@code dau} rồi giữ, chưa commit; giao dịch sau chạy {@code sau} trên luồng khác. Khi thấy giao dịch
      * sau đang chờ khóa thì cho giao dịch đầu commit. Trả kết quả của hai giao dịch.
      */
     private <T> List<T> haiGiaoDichChongNhau(Supplier<T> dau, Supplier<T> sau) throws Exception {
+        return haiGiaoDichChongNhau(dau, sau, false);
+    }
+
+    private <T> List<T> haiGiaoDichChongNhau(Supplier<T> dau, Supplier<T> sau, boolean rollbackSau) throws Exception {
         CountDownLatch daGhi = new CountDownLatch(1);
         CountDownLatch choCommit = new CountDownLatch(1);
         CompletableFuture<T> mot = CompletableFuture.supplyAsync(() -> new TransactionTemplate(tx).execute(t -> {
@@ -157,10 +233,17 @@ class PracticeDongThoiTest {
             return kq;
         }));
         assertThat(daGhi.await(30, TimeUnit.SECONDS)).isTrue();
-        CompletableFuture<T> hai = CompletableFuture.supplyAsync(() -> new TransactionTemplate(tx).execute(t -> sau.get()));
-        choDenKhiCoGiaoDichChoKhoa(Duration.ofSeconds(30));
-        assertThat(hai).isNotDone();
-        choCommit.countDown();
+        CompletableFuture<T> hai = CompletableFuture.supplyAsync(() -> new TransactionTemplate(tx).execute(t -> {
+            T kq = sau.get();
+            if (rollbackSau) t.setRollbackOnly();
+            return kq;
+        }));
+        try {
+            choDenKhiCoGiaoDichChoKhoa(Duration.ofSeconds(30));
+            assertThat(hai).isNotDone();
+        } finally {
+            choCommit.countDown();
+        }
         return List.of(mot.get(30, TimeUnit.SECONDS), hai.get(30, TimeUnit.SECONDS));
     }
 

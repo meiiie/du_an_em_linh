@@ -187,6 +187,7 @@ export const API_HS = {
   bai: '/api/hs/bai',
   chiTietBai: (maBai: string) => `/api/hs/bai/${encodeURIComponent(maBai)}`,
   nopBuoc: (maBai: string) => `/api/hs/bai/${encodeURIComponent(maBai)}/buoc`,
+  loiGiai: (maBai: string) => `/api/hs/bai/${encodeURIComponent(maBai)}/loi-giai`,
   nopBai: (maBai: string) => `/api/hs/bai/${encodeURIComponent(maBai)}/nop`,
   giaSu: '/api/hs/gia-su',
   lichSuGiaSu: (maBai: string) => `/api/hs/gia-su/${encodeURIComponent(maBai)}`,

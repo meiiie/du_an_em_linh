@@ -33,7 +33,7 @@ export interface DeadlineDetails extends AssignmentDetails {
   assignmentCount?: number;
   submittedCount?: number;
 }
-export interface Dashboard{students:number;stuck:number;pending:number;assignments:number;distribution:Record<string,number>;deadlines:Item<DeadlineDetails>[];}
+export interface Dashboard{students:number;stuck:number;pending:number;assignments:number;boBai:number;distribution:Record<string,number>;deadlines:Item<DeadlineDetails>[];}
 export interface Settings{lopId:string;revealSolutionAfterSubmit:boolean;aiProvider:string;}
 export interface UserDetails{enabled:boolean;synthetic:boolean;}
 export interface StudentProfile{student:Item<StudentDetails>;history:Item[];}
