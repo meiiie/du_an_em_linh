@@ -55,3 +55,18 @@ export function hanTheoBo(deadlines: Item<DeadlineDetails>[]): HanBai[] {
       dueAt: a.details.dueAt!, submitted: a.details.submittedCount ?? 0, total: a.details.assignmentCount ?? 0, problemCount: a.details.problemCount ?? a.details.problemCodes?.length, studentCount: a.details.studentCount }))
     .sort((a, b) => new Date(a.dueAt).getTime() - new Date(b.dueAt).getTime());
 }
+
+/** Một mục cho mỗi lượt giao, kể cả lượt không có hạn. */
+export function gomLuotGiao(rows: readonly Item[]): Item[] {
+  const groups = new Map<string, Item[]>();
+  for (const row of rows) {
+    const key = String(row.details['setKey'] ?? JSON.stringify([row.title, row.details['assignedAt'], row.details['dueAt'], row.status]));
+    groups.set(key, [...(groups.get(key) ?? []), row]);
+  }
+  return [...groups].map(([id, entries]) => {
+    const first = entries[0];
+    const problems = new Set(entries.map(e => e.details['problemCode'] ?? e.id));
+    const students = new Set(entries.map(e => e.details['studentId'] ?? e.id));
+    return {...first, id, subtitle: `${problems.size} bài · ${students.size} học sinh`};
+  });
+}

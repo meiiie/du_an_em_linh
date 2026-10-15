@@ -30,6 +30,17 @@ class BoBaiSeedTest {
         assertThat(WorkspaceNguyenTraiSeedAdapter.boBai(List.of(row("a","s1","P1","","ON_TAP",false))))
             .singleElement().satisfies(s -> assertThat(s.details()).containsEntry("dueAt",""));
     }
+    @Test void productionGroupsByAssignmentBatchRatherThanStudentOrTitle() {
+        var first=row("a","s1","P1","2026-10-20","ON_TAP",true);
+        var details=new java.util.HashMap<>(first.details());details.put("setKey","batch1");
+        var second=new java.util.HashMap<>(details);second.put("studentId","s2");
+        var third=new java.util.HashMap<>(details);third.put("setKey","batch2");
+        var groups=vn.hoctapcanman.core.workspace.infrastructure.persistence.WorkspaceStoreAdapter.groupAssignments(List.of(
+            new Item("a",first.title(),"","ON_TAP",details),new Item("b",first.title(),"","ON_TAP",second),new Item("c",first.title(),"","ON_TAP",third)));
+        assertThat(groups).hasSize(2);
+        assertThat(groups.getFirst().title()).isEqualTo(first.title());
+        assertThat(groups.getFirst().details()).containsEntry("assignmentCount",2).containsEntry("studentCount",2).containsEntry("submittedCount",2);
+    }
     private Item row(String id,String student,String problem,String due,String mode,boolean submitted) {
         return new Item(id,"Ôn tập tích phân – tuần 7","",mode,
             Map.of("tenBo","Ôn tập tích phân – tuần 7","classId","lop","studentId",student,

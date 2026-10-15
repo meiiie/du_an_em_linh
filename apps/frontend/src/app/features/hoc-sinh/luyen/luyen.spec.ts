@@ -367,7 +367,10 @@ describe('Luyen', () => {
     t.$('[data-testid=xem-toan-bo-loi-giai]')!.click();
     await t.xong();
     const confirm=[...t.fixture.nativeElement.querySelectorAll('button')].find((b: any)=>b.textContent.trim()==='Xác nhận xem lời giải') as HTMLButtonElement;
+    expect(dialog.textContent).toContain('Bài luyện tập mở lời giải');
+    expect(dialog.textContent).not.toContain('Bài kiểm tra chỉ mở');
     confirm.click();
+    t.http.expectNone({method:'POST',url:API_HS.nopBai(MA)});
     t.http.expectOne({method:'POST',url:API_HS.chiTietBai(MA)+'/loi-giai'}).flush({loiGiai:'Lời giải đầy đủ.',nguon:'GIAO_VIEN'});
     await t.xong();
     expect(t.chu('[data-testid=loi-giai-sau-nop]')).toContain('Lời giải đầy đủ.');

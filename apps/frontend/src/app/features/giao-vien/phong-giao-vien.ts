@@ -1,3 +1,4 @@
+import { gomLuotGiao } from './trinh-bay';
 import { SuDungGiaSu } from '../../shared/ui/su-dung-gia-su';
 import { KichThuocTrang } from '../../shared/ui/kich-thuoc-trang';
 import { PhanTrang } from '../../shared/ui/phan-trang';
@@ -81,7 +82,8 @@ export class PhongGiaoVien{
  protected readonly baiLoc=computed(()=>{const ds=this.nganHang.hasValue()?this.nganHang.value():[];const q=this.tim().toLocaleLowerCase('vi');return ds.filter(b=>(!q||(b.title+' '+b.subtitle+' '+b.details.skillCode+' '+tenKyNang(b.details.skillCode,b.details.skillName||this.tenKyNangTheoMa().get(b.details.skillCode))).toLocaleLowerCase('vi').includes(q))&&(!this.mucLoc()||b.details.level4===this.mucLoc())&&(!this.congLoc()||b.details.gate===this.congLoc()));});
  protected readonly baiGiao=computed(()=>this.nganHang.hasValue()?this.nganHang.value().filter(b=>b.status==='DA_PHAT_HANH'&&(b.title+' '+b.subtitle+' '+b.details.skillCode+' '+tenKyNang(b.details.skillCode,b.details.skillName||this.tenKyNangTheoMa().get(b.details.skillCode))).toLocaleLowerCase('vi').includes(this.timBaiGiao().trim().toLocaleLowerCase('vi'))):[]);
  protected readonly hsGiao=computed(()=>(this.tienDo.hasValue()?this.tienDo.value():[]).filter(h=>h.title.toLocaleLowerCase('vi').includes(this.timHsGiao().trim().toLocaleLowerCase('vi'))));
- protected readonly noiDungLoc=computed(()=>(this.ds.hasValue()?this.ds.value():[]).filter(d=>(d.title+' '+d.subtitle).toLocaleLowerCase('vi').includes(this.tim().trim().toLocaleLowerCase('vi'))));
+ protected readonly luotGiao=computed(()=>gomLuotGiao(this.ds.hasValue()?this.ds.value():[]));
+ protected readonly noiDungLoc=computed(()=>(this.trang()==='giao'?this.luotGiao():(this.ds.hasValue()?this.ds.value():[])).filter(d=>(d.title+' '+d.subtitle).toLocaleLowerCase('vi').includes(this.tim().trim().toLocaleLowerCase('vi'))));
  protected readonly taiLieuLoc=computed(()=>(this.kho.hasValue()?this.kho.value().documents:[]).filter(d=>(d.title+' '+d.subtitle).toLocaleLowerCase('vi').includes(this.tim().trim().toLocaleLowerCase('vi'))));
  protected readonly moTa=computed(()=>({
   'tong-quan':'Theo dõi tiến độ, bài cần duyệt và hạn nộp của lớp.',
@@ -118,7 +120,7 @@ export class PhongGiaoVien{
  protected async ghi(path:string,body:unknown,method:'post'|'put'='post'):Promise<boolean>{if(this.ban())return false;this.ban.set(true);this.loi.set('');try{const k=await firstValueFrom(method==='put'?this.http.put<Result>(path,body):this.http.post<Result>(path,body));this.toast.hien(k.message||'Đã lưu.');return true;}catch(e){const d=e instanceof HttpErrorResponse?e.error?.detail:null;this.loi.set(typeof d==='string'?d:'Chưa lưu được. Kiểm tra kết nối rồi thử lại.');return false;}finally{this.ban.set(false);}}
  protected async luuDuyet(e:Event){e.preventDefault();if(!this.lyDo().trim()||!this.mucDangChon())return;if(await this.ghi('/api/gv/duyet/'+encodeURIComponent(this.mucDangChon()!.id),{lopId:this.lop.id(),approve:this.chapThuan(),reason:this.lyDo()})){this.hop.set(null);this.ds.reload();}}
  protected async ghiMuc(e:Event){e.preventDefault();if(!this.lyDo().trim())return;if(await this.ghi('/api/gv/muc-hieu',{lopId:this.lop.id(),studentId:this.id(),skillCode:this.kyNang(),level4:this.mucMoi(),reason:this.lyDo()})){this.hop.set(null);this.hocSinh.reload();}}
- protected async giao(e:Event){e.preventDefault();if(this.giaoForm().invalid()||!this.chonBai().length)return;const m=this.giaoModel();if(await this.ghi('/api/gv/giao',{lopId:this.lop.id(),studentIds:this.chonHs(),problemIds:this.chonBai(),mode:m.mode,dueAt:m.dueAt?new Date(m.dueAt).toISOString():null,setName:m.setName})){this.chonBai.set([]);this.ds.reload();}}
+ protected async giao(e:Event){e.preventDefault();if(this.giaoForm().invalid()||!this.chonBai().length)return;const m=this.giaoModel();if(await this.ghi('/api/gv/giao',{lopId:this.lop.id(),studentIds:this.chonHs(),problemIds:this.chonBai(),mode:m.mode,dueAt:m.dueAt?new Date(m.dueAt+'+07:00').toISOString():null,setName:m.setName})){this.chonBai.set([]);this.ds.reload();}}
  protected readonly taiLieuSoan=signal('');
  protected async soanNhap(e:Event){e.preventDefault();if(!this.taiLieuSoan()||this.ban())return;
   if(await this.ghi('/api/gv/soan-nhap',{lopId:this.lop.id(),documentId:this.taiLieuSoan()})){

@@ -59,9 +59,9 @@ public class SubmissionRepositoryAdapter implements SubmissionRepository {
         // còn trùng (Codex #136). Mỗi vòng trượt cần một lần nộp xen giữa, nên vài vòng là đủ; quá thì báo lỗi, không lặp mãi.
         for (int lan = 0; lan < SO_LAN_MO; lan++) {
             jdbc.sql("""
-                    insert into submissions (id, class_id, student_id, problem_id, content_version, status, guess_suspected, started_at)
-                    values (:id, :lop, :hs, :bai, :pb, 'DANG_LAM', false, :luc)
-                    on conflict (student_id, class_id, problem_id, content_version) where status = 'DANG_LAM' do nothing""")
+                    insert into submissions (id, class_id, student_id, problem_id, content_version, status, guess_suspected, started_at, assignment_at)
+                    values (:id, :lop, :hs, :bai, :pb, 'DANG_LAM', false, :luc, coalesce((SELECT assigned_at FROM assignments WHERE student_id=:hs AND class_id=:lop AND problem_id=:bai AND status='DA_GIAO'),'epoch'::timestamptz))
+                    on conflict (student_id, class_id, problem_id, content_version, assignment_at) where status = 'DANG_LAM' do nothing""")
                 .param("id", moi.id()).param("lop", moi.classId()).param("hs", moi.studentId()).param("bai", moi.problemId())
                 .param("pb", moi.contentVersion()).param("luc", Cot.luc(moi.startedAt()))
                 .update();
@@ -76,7 +76,7 @@ public class SubmissionRepositoryAdapter implements SubmissionRepository {
     @Override
     public Optional<Submission> findOpen(UUID studentId, UUID classId, UUID problemId, int contentVersion) {
         return jdbc.sql("select " + COT + " from submissions where student_id = :hs and class_id = :lop and problem_id = :bai"
-                + " and content_version = :pb and status = 'DANG_LAM'")
+                + " and content_version = :pb and status = 'DANG_LAM' and NOT EXISTS(SELECT 1 FROM assignments a WHERE a.student_id=submissions.student_id AND a.class_id=submissions.class_id AND a.problem_id=submissions.problem_id AND a.status='DA_GIAO' AND a.assigned_at>submissions.started_at)")
             .param("hs", studentId).param("lop", classId).param("bai", problemId).param("pb", contentVersion)
             .query(SubmissionRepositoryAdapter::baiLam).optional();
     }
@@ -90,6 +90,7 @@ public class SubmissionRepositoryAdapter implements SubmissionRepository {
                 select s.id from submissions s join problems p on p.id = s.problem_id and p.content_version = s.content_version
                 where s.student_id = :hs and s.class_id = :lop and s.problem_id = :bai and s.content_version = :pb
                     and s.status = 'DANG_LAM'
+                    AND NOT EXISTS(SELECT 1 FROM assignments a WHERE a.student_id=s.student_id AND a.class_id=s.class_id AND a.problem_id=s.problem_id AND a.status='DA_GIAO' AND a.assigned_at>s.started_at)
                 for no key update of s for share of p""")
             .param("hs", studentId).param("lop", classId).param("bai", problemId).param("pb", contentVersion)
             .query((rs, n) -> Cot.uuid(rs, "id")).optional()
@@ -107,7 +108,7 @@ public class SubmissionRepositoryAdapter implements SubmissionRepository {
     @Override
     public SubmissionHistory history(UUID studentId, UUID problemId) {
         return new SubmissionHistory(studentId, problemId, jdbc.sql("select " + COT
-                + " from submissions where student_id = :hs and problem_id = :bai order by started_at, id")
+                + " from submissions where student_id = :hs and problem_id = :bai and NOT EXISTS(SELECT 1 FROM assignments a WHERE a.student_id=submissions.student_id AND a.class_id=submissions.class_id AND a.problem_id=submissions.problem_id AND a.status='DA_GIAO' AND a.assigned_at>submissions.started_at) order by started_at, id")
             .param("hs", studentId).param("bai", problemId)
             .query(SubmissionRepositoryAdapter::baiLam).list());
     }
@@ -252,7 +253,8 @@ public class SubmissionRepositoryAdapter implements SubmissionRepository {
      */
     static void khoaDangLam(JdbcClient jdbc, UUID submissionId) {
         boolean ghiDuoc = jdbc.sql("""
-                select s.status = 'DANG_LAM' and s.content_version = p.content_version from submissions s
+                select s.status = 'DANG_LAM' and s.content_version = p.content_version
+                    AND NOT EXISTS(SELECT 1 FROM assignments a WHERE a.student_id=s.student_id AND a.class_id=s.class_id AND a.problem_id=s.problem_id AND a.status='DA_GIAO' AND a.assigned_at>s.started_at) from submissions s
                 join problems p on p.id = s.problem_id where s.id = :id for no key update of s for share of p""")
             .param("id", submissionId).query(Boolean.class).optional().orElse(false);
         if (!ghiDuoc) {

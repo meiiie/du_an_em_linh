@@ -69,6 +69,26 @@ describe('Giao bài với ngân hàng và lớp đầy đủ', () => {
     expect((t.lists()[0].querySelector('[type=checkbox]') as HTMLInputElement).checked).toBe(true);
     t.http.verify();
   });
+  it('giao hạn 21 giờ Việt Nam, tải lại và cập nhật số bộ theo lượt', async () => {
+    const t=await setup();
+    const name=t.el.querySelector<HTMLInputElement>('form > label input')!;
+    name.value='Ôn cực trị';name.dispatchEvent(new Event('input'));
+    const due=t.el.querySelector<HTMLInputElement>('#giao-han-nop')!;
+    due.value='2026-10-16T21:00';due.dispatchEvent(new Event('input'));
+    (t.lists()[0].querySelector('[type=checkbox]') as HTMLInputElement).click();
+    await t.fixture.whenStable();
+    t.el.querySelector('form')!.dispatchEvent(new Event('submit',{cancelable:true}));
+    const request=t.http.expectOne(r=>r.method==='POST'&&r.url==='/api/gv/giao');
+    expect(request.request.body.dueAt).toBe('2026-10-16T14:00:00.000Z');
+    request.flush({message:'Đã giao',count:2});
+    await new Promise(r=>setTimeout(r,0));TestBed.tick();
+    t.http.expectOne('/api/gv/giao?lopId=lop1').flush(['hs1','hs2'].map((studentId,i)=>({id:String(i),title:'Ôn cực trị',subtitle:'An',status:'ON_TAP',details:{setKey:'luot-moi',studentId,problemCode:'P1',dueAt:'2026-10-16T14:00:00Z'}})));
+    await t.fixture.whenStable();
+    expect(t.el.querySelector('.list-summary')?.textContent).toContain('1 bộ bài');
+    expect(t.el.querySelector('.row-list')?.textContent).toContain('Ôn cực trị');
+    expect(t.el.querySelector('.row-list')?.textContent).toContain('21:00');
+    t.http.verify();
+  });
   it('Enter trong ô tìm kiếm không gửi bộ bài đã đủ điều kiện giao', async () => {
     const t = await setup();
     const name = t.el.querySelector('form > label input') as HTMLInputElement;
@@ -135,7 +155,7 @@ describe('Tổng quan với hạn theo bài', () => {
     await f.whenStable();const el=f.nativeElement as HTMLElement;
     expect(el.querySelectorAll('.row-list li')).toHaveLength(5);
     expect(el.querySelector('.row-list strong')?.textContent).toBe('Ôn tập 0');
-    expect(el.querySelector('.row-list')?.textContent).toContain('Thứ Ba, 20/10 · 3/10 đã nộp');
+    expect(el.querySelector('.row-list')?.textContent).toContain('Thứ Ba, 20/10 · 20:00 · 3/10 đã nộp');
     expect(el.querySelector('.row-list')?.textContent).toContain('2 bài · 5 học sinh');
     http.expectNone(r => /\/(giao|ngan-hang|tien-do|hoc-sinh)\b/.test(r.url));
     expect([...el.querySelectorAll('a')].find(a=>a.textContent?.includes('Xem tất cả'))?.getAttribute('href')).toBe('/gv/giao');
@@ -160,7 +180,7 @@ describe('Tổng quan với hạn theo bài', () => {
     const el=f.nativeElement as HTMLElement;
     expect(el.querySelectorAll('.row-list li')).toHaveLength(1);
     expect(el.querySelector('.row-list strong')?.textContent).toBe('Hàm số: đơn điệu và cực trị');
-    expect(el.querySelector('.row-list')?.textContent).toContain('Thứ Ba, 20/10 · 1/2 đã nộp');
+    expect(el.querySelector('.row-list')?.textContent).toContain('Thứ Ba, 20/10 · 20:00 · 1/2 đã nộp');
     expect(el.querySelector('.distribution-legend')?.textContent).toContain('50%');
     http.expectNone('/api/gv/hoc-sinh/b?lopId=lop1');http.verify();
   });
