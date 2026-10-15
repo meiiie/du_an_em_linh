@@ -2,16 +2,24 @@
 # services/core: build bằng Maven Wrapper trên JDK 25; chạy trên JRE 25 Alpine, người dùng không phải root,
 # jar tách lớp (thư viện ít đổi nằm ở lớp dưới để cache). Ngữ cảnh build là gốc repo (cần data/ cho importer, T003b):
 #   docker build -f services/core/Dockerfile .
-# Dữ liệu dev chỉ được gắn lúc chạy Compose, không chép vào image production.
+# Dữ liệu dev chỉ được gắn lúc chạy Compose, không chép vào image production; riêng máy demo không có volume
+# (Railway) build với KEM_DU_LIEU_DEV=1 để chép data/dev vào image.
 
+# Cache id có tiền tố s/<service id>- vì Railway (dự án mathl-demo) bắt buộc; Docker cục bộ coi đó là tên thường.
 FROM eclipse-temurin:25-jdk AS build
 WORKDIR /src
 COPY services/core/.mvn/ .mvn/
 COPY services/core/mvnw services/core/pom.xml ./
-RUN --mount=type=cache,target=/root/.m2 ./mvnw -B -ntp dependency:go-offline
+RUN --mount=type=cache,id=s/e467fe46-9d11-4ed7-b810-d9e56443c63a-/root/.m2,target=/root/.m2 ./mvnw -B -ntp dependency:go-offline
 COPY services/core/src/ src/
-RUN --mount=type=cache,target=/root/.m2 ./mvnw -B -ntp package -DskipTests \
+RUN --mount=type=cache,id=s/e467fe46-9d11-4ed7-b810-d9e56443c63a-/root/.m2,target=/root/.m2 ./mvnw -B -ntp package -DskipTests \
  && java -Djarmode=tools -jar target/core-*.jar extract --layers --launcher --destination target/extracted
+
+# Mặc định thư mục rỗng; KEM_DU_LIEU_DEV=1 (máy demo) mới chép trường hư cấu THPT Nguyễn Trãi.
+FROM alpine:3.22 AS noi-dung-dev
+ARG KEM_DU_LIEU_DEV=0
+COPY data/dev/ /nguon/
+RUN mkdir -p /ra && if [ "$KEM_DU_LIEU_DEV" = "1" ]; then cp -r /nguon /ra/dev; fi
 
 FROM eclipse-temurin:25-jre-alpine
 RUN addgroup -S -g 1001 core && adduser -S -D -H -u 1001 -G core -s /sbin/nologin core
@@ -24,6 +32,7 @@ COPY --from=build /src/target/extracted/snapshot-dependencies/ ./
 # chỉ đọc. Đặt trước lớp mã ứng dụng (đổi thường xuyên hơn) để cache.
 COPY data/supham/ /app/noi-dung/supham/
 COPY data/v0/ /app/noi-dung/v0/
+COPY --from=noi-dung-dev /ra/ /app/noi-dung/
 ENV APP_CONTENT_SOURCE=/app/noi-dung
 COPY --from=build /src/target/extracted/application/ ./
 USER 1001:1001

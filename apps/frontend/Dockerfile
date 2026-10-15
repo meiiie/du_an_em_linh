@@ -8,7 +8,7 @@ WORKDIR /src
 RUN corepack enable
 COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
 COPY apps/frontend/package.json apps/frontend/package.json
-RUN --mount=type=cache,id=pnpm-store,target=/root/.local/share/pnpm/store \
+RUN --mount=type=cache,id=s/61cad3de-f3a8-40c3-89db-57d386e0fbd6-pnpm-store,target=/root/.local/share/pnpm/store \
     pnpm install --frozen-lockfile --filter frontend
 COPY apps/frontend/ apps/frontend/
 ARG GIT_SHA=development

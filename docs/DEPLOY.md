@@ -52,3 +52,7 @@ Chép thư mục sao lưu ra ngoài máy (rclone tới Google Drive/R2, hoặc s
 - [ ] Kiểm GLM: nếu gia sư lỗi hoặc chậm, giáo viên đổi nhà cung cấp lớp sang chế độ ngoại tuyến ở `/gv/cai-dat` (gợi ý cố định, không gọi AI) để buổi demo vẫn chạy.
 - [ ] Tài khoản demo: `nam.nguyen.hoai@thpt-nguyentrai.edu.vn` (học sinh 12A3), `lan.pham.ngoc@…` (giáo viên), `tung.nguyen.thanh@…` (quản trị); mật khẩu từ `.env` gửi riêng.
 - [ ] Mở sẵn trang theo dõi uptime; có bản sao lưu mới nhất.
+
+## Railway (demo đang chạy)
+
+Dự án `mathl-demo`, vùng Singapore, bốn dịch vụ: Postgres (plugin), `core` (Dockerfile `services/core/Dockerfile`, biến build `KEM_DU_LIEU_DEV=1` để chép `data/dev` vào image), `math` (Dockerfile `services/math/Dockerfile`, lệnh chạy nghe `::` cho mạng riêng), `frontend` (Dockerfile `apps/frontend/Dockerfile`, `CORE_HOSTPORT=core.railway.internal:8080`). Chỉ `frontend` có tên miền công khai; `/api/` đi qua nginx tới core trên mạng riêng nên cookie cùng nguồn. Bí mật (JWT, mật khẩu seed, VAPID) chỉ nằm trong biến Railway.
