@@ -1,8 +1,10 @@
 # Ngữ cảnh build là gốc repo: chỉ đưa vào mã core và nội dung chủ đề mà importer đọc (T003b).
+# data/dev chỉ vào image khi build với KEM_DU_LIEU_DEV=1 (máy demo); mặc định stage noi-dung-dev bỏ qua.
 *
 !services/core/
 !data/supham/
 !data/v0/
+!data/dev/
 services/core/target/
 services/core/.mvn/wrapper/maven-wrapper.jar
 services/core/.idea/
