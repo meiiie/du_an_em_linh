@@ -7,7 +7,7 @@ import jakarta.validation.constraints.*;
 public final class TutorSessionDto {
     private TutorSessionDto() {}
     public record Open(@NotNull UUID giaoBaiId) {}
-    public record Ask(@NotNull UUID requestId, @NotBlank @Size(max=32) String maBuoc,
+    public record Ask(@NotNull UUID requestId, @org.jspecify.annotations.Nullable @Pattern(regexp="\\S+") @Size(max=32) String maBuoc,
         @Min(1) @Max(3) int cap, @NotNull @Size(max=2000) String cauHoi) {
         @Override public String toString(){return "Ask[đã ẩn nội dung]";}
     }
@@ -20,7 +20,7 @@ public final class TutorSessionDto {
         @Override public String toString(){return "Session[id="+id+"]";}
     }
     public record Reference(int index, String text, String latex) {}
-    public record Turn(UUID id, UUID sessionId, UUID requestId, long ordinal, String step, int level,
+    public record Turn(UUID id, UUID sessionId, UUID requestId, long ordinal, @org.jspecify.annotations.Nullable String step, int level,
         String question, String answer, String status, Instant createdAt, List<Reference> references, String contextVersion) {
         public Turn { references=List.copyOf(references); }
         public Turn(UUID id,UUID sessionId,UUID requestId,long ordinal,String step,int level,

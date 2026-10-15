@@ -43,7 +43,7 @@ const daDat = (maBuoc: string, dong = [{ dong: 0, latex: '\\mathbb{R}' }]) => ({
 
 describe('Luyen', () => {
   beforeEach(() => localStorage.clear());
-  async function mo(bai: ChiTietBai | { loi: number }, choOn = true, mode = 'ON_TAP') {
+  async function mo(bai: ChiTietBai | { loi: number }, choOn = true, mode = 'ON_TAP', dueAt = '2026-10-20T12:00:00Z', truocCheDo?: () => Promise<void>) {
     TestBed.configureTestingModule({
       providers: [
         provideHttpClient(),
@@ -56,7 +56,8 @@ describe('Luyen', () => {
     fixture.componentRef.setInput('maBai', MA);
     fixture.detectChanges();
     const http = TestBed.inject(HttpTestingController);
-    http.expectOne('/api/hs/che-do').flush([{id:MA,title:MA,subtitle:'',status:mode,details:{dueAt:'2026-10-20T12:00:00Z'}}]);
+    if (truocCheDo) await truocCheDo();
+    http.expectOne('/api/hs/che-do').flush([{id:MA,title:MA,subtitle:'',status:mode,details:{dueAt}}]);
     const yc = http.expectOne({ method: 'GET', url: API_HS.chiTietBai(MA) });
     if ('loi' in bai) yc.flush({ detail: 'x' }, { status: bai.loi, statusText: 'Lỗi' });
     else yc.flush(bai);
@@ -377,6 +378,60 @@ describe('Luyen', () => {
     t.http.verify();
   });
 
+  it('bài kiểm tra trước hạn không cho xác nhận xem lời giải', async () => {
+    const t = await mo(chiTiet({trangThai:'DA_NOP', cacBuoc:CAC_BUOC.map(s=>daDat(s.maBuoc))}), false, 'KIEM_TRA');
+    TestBed.tick();
+    t.http.expectOne({method:'POST',url:API_HS.nopBai(MA)}).flush({ketQua:'DAT',mucHieu:[]});
+    await t.xong();
+    const dialog=t.el.querySelector('dialog')!;
+    dialog.showModal=()=>{dialog.open=true;}; dialog.close=()=>{dialog.open=false;};
+    await t.bam('[data-testid="xem-toan-bo-loi-giai"]');
+    expect(dialog.textContent).toContain('sau hạn nộp');
+    const confirm=[...dialog.querySelectorAll('button')].find(b=>b.textContent?.trim()==='Xác nhận xem lời giải')!;
+    expect(confirm.disabled).toBe(true);
+    confirm.click();
+    t.http.expectNone(API_HS.loiGiai(MA));
+    t.http.verify();
+  });
+  it('chế độ tải chậm vẫn tự mở xác nhận đúng hạn khi giữ trang', async () => {
+    const deadline=Date.now()+1000;
+    const t=await mo(chiTiet({trangThai:'DA_NOP',cacBuoc:CAC_BUOC.map(s=>daDat(s.maBuoc))}), false, 'KIEM_TRA', new Date(deadline).toISOString(), async () => { await new Promise(r=>setTimeout(r,300)); });
+    TestBed.tick();
+    t.http.expectOne({method:'POST',url:API_HS.nopBai(MA)}).flush({ketQua:'DAT',mucHieu:[]});
+    await t.xong();
+    const dialog=t.el.querySelector('dialog')!;
+    dialog.showModal=()=>{dialog.open=true;};dialog.close=()=>{dialog.open=false;};
+    await t.bam('[data-testid="xem-toan-bo-loi-giai"]');
+    const confirm=[...dialog.querySelectorAll('button')].find(b=>b.textContent?.trim()==='Xác nhận xem lời giải')!;
+    expect(confirm.disabled).toBe(true);
+    await new Promise(r=>setTimeout(r, Math.max(1, deadline-Date.now()+30)));
+    await t.fixture.whenStable();
+    expect(confirm.disabled).toBe(false);
+    t.http.verify();
+  });
+  it('bài đã nộp có ô chỉ đọc và lời giải Markdown cùng KaTeX', async () => {
+    const t = await mo(chiTiet({trangThai:'DA_NOP', cacBuoc:CAC_BUOC.map(s=>daDat(s.maBuoc))}), false);
+    TestBed.tick();
+    t.http.expectOne({method:'POST',url:API_HS.nopBai(MA)}).flush({ketQua:'DAT',mucHieu:[]});
+    await t.xong();
+    const input=t.$<HTMLInputElement>('[data-testid="latex-db"]')!;
+    expect(input.readOnly).toBe(true);
+    const saved=input.value;
+    input.value='Nội dung đến sau khi nộp'; input.dispatchEvent(new Event('input'));
+    await t.fixture.whenStable();
+    await t.bam('[data-testid="step-B.DH.TXD"]');
+    await t.bam('[data-testid="step-B.DH.KETLUAN"]');
+    expect(t.$<HTMLInputElement>('[data-testid="latex-db"]')!.value).toBe(saved);
+    const dialog=t.el.querySelector('dialog')!;
+    dialog.showModal=()=>{dialog.open=true;}; dialog.close=()=>{dialog.open=false;};
+    await t.bam('[data-testid="xem-toan-bo-loi-giai"]');
+    [...dialog.querySelectorAll('button')].find(b=>b.textContent?.trim()==='Xác nhận xem lời giải')!.click();
+    t.http.expectOne(API_HS.loiGiai(MA)).flush({loiGiai:'**Bước 1.** Tính đạo hàm $2x-6$.\n\n**Bước 2.** Xét trên $(-\\infty;3)$.'});
+    await t.xong();
+    expect(t.el.querySelector('[data-testid="loi-giai-sau-nop"] strong')?.textContent).toBe('Bước 1.');
+    expect(t.el.querySelectorAll('[data-testid="loi-giai-sau-nop"] .katex')).toHaveLength(2);
+    expect(t.chu('[data-testid="loi-giai-sau-nop"]')).not.toContain('$');
+  });
   it('phát lại bài đã nộp hỏng (500): vẫn báo đã nộp theo kết luận đã lưu, trang không kẹt, xem lại được từng bước', async () => {
     const t = await mo(chiTiet({ trangThai: 'DA_NOP', cacBuoc: CAC_BUOC.map((s) => daDat(s.maBuoc)) }), false);
     TestBed.tick();

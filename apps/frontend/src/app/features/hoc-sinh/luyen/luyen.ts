@@ -7,6 +7,7 @@ import {
   Component,
   computed,
   ElementRef,
+  effect,
   inject,
   Injector,
   input,
@@ -25,6 +26,7 @@ import { Button } from '../../../shared/ui/button';
 import { deBang, thanDe } from '../hang-bai';
 import { HopThoai } from '../../../shared/ui/hop-thoai';
 import { GiaSu } from './gia-su';
+import { GiaSuMarkdown } from './gia-su-markdown';
 import { BangXetDau, SuKienO } from './bang-xet-dau';
 import { dongNghiem, goiYNhap, kieuNhap, Mui, NGHIEM, NhapPhieu, nhapTuBaiLam, oKetLuan, XET_DAU, yeuCauNop } from './phieu';
 
@@ -55,7 +57,7 @@ const TEN_TRANG_THAI: Record<TrangThaiBuoc, string> = {
  */
 @Component({
   selector: 'app-luyen',
-  imports: [HopThoai,VanBanToan,KhungCho, LoiTai, GiaSu, BangXetDau, Button, Katex, OCongThuc, RouterLink],
+  imports: [GiaSuMarkdown,HopThoai,VanBanToan,KhungCho, LoiTai, GiaSu, BangXetDau, Button, Katex, OCongThuc, RouterLink],
   templateUrl: './luyen.html',
   styleUrl: './luyen.css',
 })
@@ -229,8 +231,30 @@ export class Luyen {
   });
   protected readonly loiGiai = signal<string | null>(null);
   protected readonly xacNhanLoiGiai = signal(false);
+  private readonly gioHienTai = signal(Date.now());
+  protected readonly khoaLoiGiai = computed(() => {
+    if (this.mode()?.status !== 'KIEM_TRA') return false;
+    const dueAt = this.mode()?.details.dueAt;
+    return !dueAt || !Number.isFinite(Date.parse(dueAt)) || this.gioHienTai() < Date.parse(dueAt);
+  });
+  constructor() {
+    effect(onCleanup => {
+      if (this.mode()?.status !== 'KIEM_TRA') return;
+      const deadline = Date.parse(this.mode()?.details.dueAt ?? '');
+      const observed = this.gioHienTai();
+      const now = Date.now();
+      if (!Number.isFinite(deadline)) return;
+      if (deadline <= now) {
+        if (observed < deadline) this.gioHienTai.set(now);
+        return;
+      }
+      // Chỉ hẹn đúng lúc đến hạn, không thăm dò liên tục. Dọn khi đổi bài/hủy trang.
+      const timer = setTimeout(() => this.gioHienTai.set(Date.now()), Math.min(deadline - now + 1, 2_147_483_647));
+      onCleanup(() => clearTimeout(timer));
+    });
+  }
   protected async xemLoiGiai(): Promise<void> {
-    if(this.dangGui())return;
+    if(this.dangGui() || this.khoaLoiGiai())return;
     this.dangGui.set(true);this.loiGui.set(null);
     try {
       const result=await firstValueFrom(this.http.post<{loiGiai:string}>(API_HS.loiGiai(this.maBai()),{}));
@@ -424,6 +448,7 @@ export class Luyen {
   }
 
   private sua(f: (n: NhapPhieu) => NhapPhieu): void {
+    if (this.khoa()) return;
     this.nhap.update((n) => (n ? f(n) : n));
   }
 

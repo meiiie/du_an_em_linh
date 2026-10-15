@@ -28,6 +28,20 @@ class TutorSessionControllerTest {
     }
     @AfterEach void clear(){SecurityContextHolder.clearContext();}
     String body(UUID request){return "{\"requestId\":\""+request+"\",\"maBuoc\":\"B.DH.TXD\",\"cap\":1,\"cauHoi\":\"Em đã thử cách này\"}";}
+    @Test void wholeExerciseQuestionAllowsNullStep() throws Exception {
+        var response=mvc.perform(post("/api/hs/gia-su/v2/phien/{id}/luot",session).contentType(MediaType.APPLICATION_JSON)
+            .content(body(UUID.randomUUID()).replace("\"B.DH.TXD\"","null")))
+            .andExpect(request().asyncStarted()).andReturn();
+        response.getAsyncResult(5000);
+        mvc.perform(asyncDispatch(response)).andExpect(status().isOk());
+        assertNull(fixture.store.turns(session,0,1).getFirst().step());
+        assertEquals("completed",fixture.store.turns(session,0,1).getFirst().status());
+    }
+    @Test void legacyWholeExerciseQuestionAllowsOmittedStep() throws Exception {
+        mvc.perform(post("/api/hs/gia-su/tra-loi").contentType(MediaType.APPLICATION_JSON)
+            .content("{\"maBai\":\"DH1\",\"cap\":1,\"cauHoi\":\"Em nên bắt đầu từ đâu?\"}"))
+            .andExpect(status().isOk()).andExpect(jsonPath("$.status").value("xong"));
+    }
     @Test void legacyStreamsDeltaBeforeProviderCompletes() throws Exception {
         var emitted=new java.util.concurrent.CountDownLatch(1);
         var release=new java.util.concurrent.CountDownLatch(1);
@@ -100,6 +114,43 @@ class TutorSessionControllerTest {
             finishProvider.countDown();response.getAsyncResult(5000);
             mvc.perform(asyncDispatch(response)).andExpect(status().isOk());
         } finally {finishProvider.countDown();}
+    }
+    @Test void v2FlushesSeveralDeltasBeforeProviderCompletes() throws Exception {
+        var firstRead=new java.util.concurrent.CountDownLatch(1);
+        var secondRead=new java.util.concurrent.CountDownLatch(1);
+        var complete=new java.util.concurrent.CountDownLatch(1);
+        org.mockito.Mockito.doAnswer(call -> {
+            java.util.function.Consumer<String> tokens=call.getArgument(1);
+            tokens.accept("Em thử ");
+            assertTrue(firstRead.await(5,java.util.concurrent.TimeUnit.SECONDS));
+            tokens.accept("xét dấu ");
+            assertTrue(secondRead.await(5,java.util.concurrent.TimeUnit.SECONDS));
+            tokens.accept("đạo hàm.");
+            assertTrue(complete.await(5,java.util.concurrent.TimeUnit.SECONDS));
+            return new vn.hoctapcanman.core.tutor.application.dto.TutorSessionDto.ModelUsage(20,10,false);
+        }).when(fixture.model).stream(org.mockito.ArgumentMatchers.any(),org.mockito.ArgumentMatchers.any());
+        try {
+            var result=mvc.perform(post("/api/hs/gia-su/v2/phien/{id}/luot",session)
+                .contentType(MediaType.APPLICATION_JSON).content(body(UUID.randomUUID())))
+                .andExpect(request().asyncStarted()).andReturn();
+            awaitPartial(result,"Em thử ");firstRead.countDown();
+            awaitPartial(result,"xét dấu ");secondRead.countDown();
+            awaitPartial(result,"đạo hàm.");complete.countDown();
+            result.getAsyncResult(5000);
+            String events=mvc.perform(asyncDispatch(result)).andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString(java.nio.charset.StandardCharsets.UTF_8);
+            assertEquals(3,events.split("event:delta",-1).length-1);
+            assertTrue(events.contains("event:done"));
+        } finally {firstRead.countDown();secondRead.countDown();complete.countDown();}
+    }
+    private static void awaitPartial(MvcResult result,String expected) throws Exception {
+        long deadline=System.nanoTime()+java.util.concurrent.TimeUnit.SECONDS.toNanos(3);
+        while(System.nanoTime()<deadline) {
+            String events=result.getResponse().getContentAsString(java.nio.charset.StandardCharsets.UTF_8);
+            if(events.contains(expected)) {assertFalse(events.contains("event:done"));return;}
+            Thread.sleep(10);
+        }
+        fail("SSE chưa phát đoạn: "+expected);
     }
     @Test void mismatchedOrFutureCursorReturns409BeforeStream() throws Exception {
         mvc.perform(get("/api/hs/gia-su/v2/phien/{id}/su-kien",session).param("lastSeq","0").header("Last-Event-ID",session+":1"))

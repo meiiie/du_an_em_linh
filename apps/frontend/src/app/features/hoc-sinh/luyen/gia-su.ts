@@ -220,7 +220,8 @@ export class GiaSu {
     protected taiLai() { void this.chat.mo(this.giaoBaiId()); }
     protected gui(e: Event) {
         e.preventDefault();
-        const q = this.model().cauHoi.trim();
+        // Đọc ô hiện tại cả khi input và Enter xảy ra trong cùng một lượt sự kiện.
+        const q = (this.soan()?.nativeElement.value ?? this.model().cauHoi).trim();
         if (!q || q.length > 2000 || !this.chat.sanSang()) return;
         this.model.set({ cauHoi: '' });
         this.oDay.set(true);
