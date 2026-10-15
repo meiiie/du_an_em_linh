@@ -4,7 +4,7 @@
 
 h2 {
   margin: 0;
-  font-weight: 400;
+  font-weight: 600;
   letter-spacing: -0.02em;
 }
 
@@ -47,8 +47,8 @@ h2 {
 .cua-so {
   overflow: hidden;
   border: 1px solid var(--line);
-  border-radius: 16px;
-  background: var(--tc-the);
+  border-radius: var(--radius-card);
+  background: var(--tc-kem);
 }
 
 .cua-so-dau {

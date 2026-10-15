@@ -93,6 +93,10 @@ describe('Luyen', () => {
     for (let i = 0; i < steps.length; i++) {
       expect(t.chu('.tieu-de')).toContain(steps[i].ten);
       expect(t.chu('.viec')).toBe(steps[i].viec);
+      expect(t.el.querySelectorAll('.nhap input')).toHaveLength(1);
+      expect(t.el.querySelectorAll('.nhap math-field')).toHaveLength(0);
+      expect(t.el.querySelectorAll('#huong-dan-nhap')).toHaveLength(1);
+      expect(t.$<HTMLInputElement>('.nhap input')?.placeholder).toBe('Nhập câu trả lời');
       if (i === 0) expect(t.chu('#huong-dan-nhap')).toContain('theo đúng thứ tự');
       if (i === 2) expect(t.chu('#huong-dan-nhap')).toContain('{a; b}');
       await t.go(`latex-${steps[i].maBuoc}`, values[i]);

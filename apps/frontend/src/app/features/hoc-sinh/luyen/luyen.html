@@ -195,16 +195,20 @@
                 }
                 @default {
                   <div class="dong" [class.sai]="dongSai(s.maBuoc, 0)">
-                    <app-o-cong-thuc
-                      [nhan]="s.ten"
-                      [testId]="'latex-' + s.maBuoc"
-                      [goiY]="goiYNhap(kieuNhap(s))"
-                      [xemTruoc]="kieuNhap(s) !== 'TAP_HUU_HAN' && kieuNhap(s) !== 'DAY_GIA_TRI'"
-                      moTaBoi="huong-dan-nhap phan-hoi"
-                      [disabled]="khoa()"
-                      [value]="n.dongTheoBuoc?.[s.maBuoc] ?? ''"
-                      (valueChange)="datDong(s.maBuoc, $event)"
-                    />
+                    <label class="o-chu">
+                      <span class="nhan">{{ s.ten }}</span>
+                      <input
+                        [attr.data-testid]="'latex-' + s.maBuoc"
+                        placeholder="Nhập câu trả lời"
+                        aria-describedby="huong-dan-nhap phan-hoi"
+                        autocomplete="off"
+                        spellcheck="false"
+                        autocapitalize="off"
+                        [disabled]="khoa()"
+                        [value]="n.dongTheoBuoc?.[s.maBuoc] ?? ''"
+                        (input)="datDong(s.maBuoc, $any($event.target).value)"
+                      />
+                    </label>
                     <p id="huong-dan-nhap" class="phu">{{ goiYNhap(kieuNhap(s)) }}</p>
                   </div>
                 }
