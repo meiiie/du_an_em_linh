@@ -14,4 +14,16 @@ describe('Phát biểu có toán trong dòng', () => {
     expect(el.textContent).toContain('<img src=x>');
     expect(el.querySelector('img')).toBeNull();
   });
+  it('giữ văn xuôi là text, nhận đủ dấu toán trong dòng và khối', async () => {
+    const f=TestBed.createComponent(VanBanToan);
+    f.componentRef.setInput('text', String.raw`Cho hàm số \(x^2\). Tính \[x+1\] và $y$. Giá \\$5; <script>không chạy</script>`);
+    await f.whenStable();
+    const el=f.nativeElement as HTMLElement;
+    expect(el.querySelectorAll('.katex')).toHaveLength(3);
+    expect(el.querySelectorAll('.katex-display')).toHaveLength(1);
+    expect([...el.querySelectorAll('annotation')].map(n=>n.textContent)).toEqual(['x^2','x+1','y']);
+    expect(el.textContent).toContain('Cho hàm số');
+    expect(el.querySelector('script')).toBeNull();
+  });
+
 });

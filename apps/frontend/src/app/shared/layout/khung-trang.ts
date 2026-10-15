@@ -103,7 +103,7 @@ const MAN_HINH_RONG = '(min-width: 1024px)';
       @if (laQuanTri()) {
         <nav class="chuyen-khu-vuc" aria-label="Khu vực làm việc">
           <a routerLink="/gv" [attr.aria-current]="khuVuc() === 'GV' ? 'page' : null" (click)="chonMuc()">Giáo viên</a>
-          <a routerLink="/qt" data-testid="chuyen-quan-tri" [attr.aria-current]="khuVuc() === 'QT' ? 'page' : null" (click)="chonMuc()">Quản trị</a>
+          @if(khuVuc() !== 'QT'){<a routerLink="/qt" data-testid="chuyen-quan-tri" [attr.aria-current]="khuVuc() === 'QT' ? 'page' : null" (click)="chonMuc()">Quản trị</a>}
         </nav>
       }
       <nav class="ray-nav" data-testid="sidebar-nav" [attr.aria-label]="nhanMenu()">

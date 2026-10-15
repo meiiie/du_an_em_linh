@@ -135,6 +135,17 @@ import vn.hoctapcanman.core.shared.infrastructure.math.*;
 
     public void review(UUID actor,UUID id,Review req) {
         db.sql("SELECT id FROM classes WHERE id=:id FOR UPDATE").param("id",req.lopId()).query(UUID.class).single();
+        int step=db.sql("""
+            INSERT INTO step_reviews(grading_id,teacher_id,decision,reason,reviewed_at)
+            SELECT g.id,:actor,:decision,:reason,:now FROM grading_results g JOIN submissions s ON s.id=g.submission_id
+            WHERE g.id=:id AND s.class_id=:cl AND g.result='KHONG_KIEM_DUOC'
+                AND NOT EXISTS(SELECT 1 FROM grading_results newer WHERE newer.submission_id=g.submission_id
+                    AND newer.step_code=g.step_code AND (newer.graded_at,newer.id)>(g.graded_at,g.id))
+            ON CONFLICT DO NOTHING
+            """).param("id",id).param("cl",req.lopId()).param("actor",actor)
+            .param("decision",req.approve()?"DA_XEM":"BI_CHAN").param("reason",req.reason())
+            .param("now",java.sql.Timestamp.from(clock.instant())).update();
+        if(step==1)return;
         int tutor=db.sql("UPDATE tutor_review_queue SET decision=:decision,reviewer_id=:actor,review_reason=:reason,reviewed_at=:now WHERE id=:id AND class_id=:cl AND decision IS NULL").param("decision",req.approve()?"DA_XEM":"BI_CHAN").param("actor",actor).param("reason",req.reason()).param("now",java.sql.Timestamp.from(clock.instant())).param("id",id).param("cl",req.lopId()).update();
         if(tutor==1)return;
         // Acknowledgement never bypasses either runtime tutor safety gate.

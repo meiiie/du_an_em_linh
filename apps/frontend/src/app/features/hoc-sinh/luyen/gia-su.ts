@@ -165,7 +165,8 @@ export class GiaSu {
                 this.rong.set(true);
             }
             else {
-                const m = matchMedia('(min-width: 1025px)');
+                // Sidebar + page padding + phiếu 480 px + gap + gia sư cần màn desktop rộng.
+                const m = matchMedia('(min-width: 1280px)');
                 const change = () => this.rong.set(m.matches);
                 change();
                 m.addEventListener('change', change);

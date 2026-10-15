@@ -6,7 +6,7 @@ Không đoán khi mơ hồ: trả None (THAT_BAI) để tầng trên ghi KHONG_K
 import re
 import unicodedata
 
-NORMALIZER_VERSION = "norm-0.2"
+NORMALIZER_VERSION = "norm-0.3"
 
 
 def _nfc(s):
@@ -84,6 +84,8 @@ def normalize_expr(raw):
     t = _nfc(str(raw)).strip()
     if not t:
         return None
+    t = re.sub(r"(?<![A-Za-z])inf(?![A-Za-z])", "oo", t, flags=re.I)
+    t = t.replace("∞", "oo").replace("\\infty", "oo")
     t = t.replace("$", "")
     t = t.replace("\\left", "").replace("\\right", "")
     t = t.replace("−", "-").replace("–", "-").replace("—", "-")
@@ -134,6 +136,8 @@ def normalize_domain(raw):
     t = _nfc(str(raw)).strip()
     if not t:
         return None
+    t = re.sub(r"(?<![A-Za-z])inf(?![A-Za-z])", "oo", t, flags=re.I)
+    t = t.replace("∞", "oo").replace("\\infty", "oo")
     t = t.replace("$", "")
     t = t.replace("\\left", "").replace("\\right", "")
     t = re.sub(r"^[Dd]\s*=\s*", "", t)
@@ -142,6 +146,8 @@ def normalize_domain(raw):
     t = t.replace("\\cup", " U ").replace("∪", " U ")
     # 0002c (Sư phạm 29/09 12:26): TXĐ gõ chữ u thường giữa hai khoảng cũng là dấu hợp -> DAT như U / ∪
     t = re.sub(r"([\)\]])\s*u\s*([\(\[])", r"\1 U \2", t)
+    # Giữ dấu trừ tập sát ngoặc: ℝ\\{3} không phải lệnh mở ngoặc LaTeX.
+    t = re.sub(r"R\s*\\\s*(?=\{)", lambda _: "R \\ ", t)
     t = t.replace("\\{", "{").replace("\\}", "}")
     t = t.replace("\\infty", "oo").replace("∞", "oo")
     t = t.replace("−", "-").replace("–", "-")

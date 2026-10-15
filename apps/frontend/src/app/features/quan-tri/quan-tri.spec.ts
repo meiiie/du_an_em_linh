@@ -8,13 +8,24 @@ describe('Danh sách người dùng', () => {
   it('nhật ký hiện tên hành động và vai trò tiếng Việt thay cho mã', async () => {
     TestBed.configureTestingModule({providers:[provideHttpClient(),provideHttpClientTesting()]});
     const f=TestBed.createComponent(QuanTri);f.componentRef.setInput('trang','nhat-ky');f.detectChanges();
-    TestBed.inject(HttpTestingController).expectOne('/api/qt/nhat-ky').flush([{id:'1',title:'TAO_TAI_KHOAN',subtitle:'STUDENT',status:'4ea60e1f-c26c-456c-b85f-ca2fedd7bf86',details:{createdAt:'2026-10-13T19:18:45Z'}}]);
+    TestBed.inject(HttpTestingController).expectOne('/api/qt/nhat-ky').flush([{id:'1',title:'GIAO_BAI',subtitle:'ON_TAP',status:'4ea60e1f-c26c-456c-b85f-ca2fedd7bf86',details:{createdAt:'2026-10-13T19:18:45Z'}}]);
     await f.whenStable();
     const row=(f.nativeElement as HTMLElement).querySelector('tbody tr')!.textContent!;
-    expect(row).toContain('Tạo tài khoản');expect(row).toContain('Học sinh');expect(row).toContain('Mã đối tượng 4ea60e1f');
-    expect(row).not.toContain('TAO_TAI_KHOAN');
+    expect(row).toContain('Giao bài');expect(row).toContain('Ôn tập');expect(row).toContain('4ea60e1f-c26c-456c-b85f-ca2fedd7bf86');
+    expect(row).not.toContain('GIAO_BAI');expect(row).not.toContain('ON_TAP');
+    expect((f.nativeElement as HTMLElement).querySelector('thead')?.textContent).toContain('Đối tượng');
   });
 
+
+  it('form tạo có cùng vai trò với bộ lọc', async () => {
+    TestBed.configureTestingModule({providers:[provideHttpClient(),provideHttpClientTesting()]});
+    const f=TestBed.createComponent(QuanTri);f.detectChanges();
+    TestBed.inject(HttpTestingController).expectOne('/api/qt/nguoi-dung').flush([]);await f.whenStable();
+    const el=f.nativeElement as HTMLElement;
+    for(const d of el.querySelectorAll<HTMLDialogElement>('dialog')){d.showModal=()=>{d.open=true;};d.close=()=>{d.open=false;};}
+    [...el.querySelectorAll<HTMLButtonElement>('button')].find(b=>b.textContent==='Thêm người dùng')!.click();await f.whenStable();
+    expect(el.querySelector('option[value="SCHOOL_ADMIN"]')?.textContent).toBe('Quản trị trường');
+  });
   it('màn hẹp hiện 10 người, đổi trang không mất lựa chọn và đổi chiều rộng đặt lại trang', async () => {
     TestBed.configureTestingModule({providers:[provideHttpClient(),provideHttpClientTesting()]});
     const size=TestBed.inject(KichThuocTrang);size.soMuc.set(10);

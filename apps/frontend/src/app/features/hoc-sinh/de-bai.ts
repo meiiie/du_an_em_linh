@@ -1,3 +1,4 @@
+import { VanBanToan } from '../../shared/toan/van-ban-toan';
 import { DinhDangSo, ngayViet } from '../../shared/ui/dinh-dang';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
@@ -15,7 +16,7 @@ import { nhomBai, locTrangThai } from './nhom-bai';
 /** `/hs/bai`: mọi bài được giao (`GET /api/hs/bai`), nhóm theo bộ bài/chủ đề; mỗi hàng dẫn tới phiếu làm bài. */
 @Component({
   selector: 'app-de-bai',
-  imports: [KhungCho, LoiTai, TrangRong, Button, HangBai, DinhDangSo],
+  imports: [VanBanToan, KhungCho, LoiTai, TrangRong, Button, HangBai, DinhDangSo],
   template: `
     <header class="dau-trang"><h1>Đề bài</h1><p class="muted">Tìm bài được giao và lọc theo trạng thái để luyện tập.</p></header><div class="toolbar"><label>Tìm đề bài<input type="search" [value]="tim()" (input)="tim.set($any($event.target).value)" placeholder="Kỹ năng, mã bài, đề bài" /></label></div>
     <details class="surface"><summary>Tự học theo chủ đề</summary>
@@ -23,7 +24,7 @@ import { nhomBai, locTrangThai } from './nhom-bai';
       <label>Chủ đề<select [value]="chuDe()" (change)="chuDe.set($any($event.target).value)"><option value="">Chọn chủ đề</option>@for(t of chuDes.value() ?? [];track t.id){<option [value]="t.id">{{t.title}}</option>}</select></label>
       @if(tuHoc.error()){<app-loi-tai [loi]="tuHoc.error()" (thuLai)="tuHoc.reload()" />}
       @if(goiY.hasValue()){<p>{{goiY.value()[0]?.subtitle}}</p>}
-      <ul class="row-list">@for(b of tuHoc.value() ?? [];track b.id){<li><strong>{{b.title}}</strong>@if(b.details['recommended']){<p class="badge">Gợi ý cho em</p><p>{{b.details['reason']}}</p>}<p>{{b.subtitle}}</p><button appButton variant="secondary" type="button" [disabled]="dangChon()" (click)="chonTuHoc(b.id)">Chọn bài tự học</button></li>}</ul>
+      <ul class="row-list">@for(b of tuHoc.value() ?? [];track b.id){<li><strong>{{b.title}}</strong>@if(b.details['recommended']){<p class="badge">Gợi ý cho em</p><p>{{b.details['reason']}}</p>}<p><app-van-ban-toan [text]="b.subtitle" /></p><button appButton variant="secondary" type="button" [disabled]="dangChon()" (click)="chonTuHoc(b.id)">Chọn bài tự học</button></li>}</ul>
       @if(loiChon()){<p role="alert">{{loiChon()}}</p>}
     </details>
     <div class="toolbar" role="group" aria-label="Lọc bài">@for(m of locs;track m.id){<button appButton variant="secondary" type="button" [attr.aria-pressed]="loc()===m.id" (click)="loc.set(m.id)">{{m.ten}}</button>}</div>

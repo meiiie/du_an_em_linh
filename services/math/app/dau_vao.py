@@ -20,7 +20,7 @@ DO_DAI_TOI_DA = 300
 
 _DAU = set("+-−–—*/^()[]{};,.=<>≤≥≠|\\$'′∞∪∩ℝ∅±√∈∉·×:!?%… ")
 _TU_TOAN = frozenset("""
-x y f g e pi oo r d s u v sqrt abs log ln sin cos tan cot exp frac dfrac tfrac cdot times left right infty
+x y f g e pi oo inf r d s u v sqrt abs log ln sin cos tan cot exp frac dfrac tfrac cdot times left right infty
 mathbb mathbf mathrm text textrm operatorname setminus cup cap in notin emptyset varnothing lor vee land wedge quad
 qquad le ge leq geq lt gt ne neq pm mp prime rightarrow leftrightarrow implies iff to lim cd ct none null delta
 approx ldots cdots dots circ mid begin end array cases dx

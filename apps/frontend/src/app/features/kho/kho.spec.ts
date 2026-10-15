@@ -5,6 +5,16 @@ import { vi } from 'vitest';
 import { Kho } from './kho';
 
 describe('Kho', () => {
+
+  it('không đưa văn xuôi vào KaTeX kể cả khi nằm trong trường công thức', async () => {
+    TestBed.configureTestingModule({providers:[provideHttpClient(),provideHttpClientTesting()]});
+    const f=TestBed.createComponent(Kho);f.detectChanges();const http=TestBed.inject(HttpTestingController);
+    http.expectOne('/api/hs/kho').flush({formulas:[{id:'1',title:'Góc',subtitle:'Với mọi góc $x$',status:'DAT',details:{statement:'Dùng góc chuẩn.'}}],documents:[]});
+    await f.whenStable();const el=f.nativeElement as HTMLElement;
+    expect(el.querySelectorAll('.katex')).toHaveLength(1);
+    expect(el.querySelector('annotation')?.textContent).toBe('x');
+    expect(el.textContent).toContain('Với mọi góc');http.verify();
+  });
   it('lỗi HTTP 500 hiện thông báo và cho tải lại kho', async () => {
     TestBed.configureTestingModule({ providers: [provideHttpClient(), provideHttpClientTesting()] });
     const http = TestBed.inject(HttpTestingController);

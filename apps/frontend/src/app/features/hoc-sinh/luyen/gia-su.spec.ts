@@ -58,6 +58,19 @@ describe('Sidebar gia sư',()=>{
     const t=await setup(false);
     expect(t.el.querySelector('[data-testid="gia-su-panel"]')).toBeNull();expect(fetchMock).not.toHaveBeenCalled();
   });
+  it.each([
+    [390, false], [1024, false], [1025, false], [1279, false], [1280, true], [1440, true],
+  ])('%i px: chỉ khôi phục cột gia sư khi còn đủ chỗ cho phiếu', async (width, sidebar) => {
+    vi.stubGlobal('matchMedia', (query: string) => ({
+      matches: width >= Number(/min-width:\s*(\d+)px/.exec(query)?.[1] ?? Infinity),
+      addEventListener: vi.fn(), removeEventListener: vi.fn(),
+    }));
+    localStorage.setItem('mathl-gia-su-mo', 'true');
+    const t = await setup(false);
+    expect(t.el.querySelector('.tutor-panel') !== null).toBe(sidebar);
+    expect(t.el.querySelector('dialog')).toBeNull();
+    if (!sidebar) expect(fetchMock).not.toHaveBeenCalled();
+  });
   it('Enter gửi, Shift+Enter và IME không gửi; ngữ cảnh cấp và Markdown/KaTeX',async()=>{
     const t=await setup();const input=await t.fill('Em hỏi về đạo hàm');
     input.dispatchEvent(new KeyboardEvent('keydown',{key:'Enter',shiftKey:true,bubbles:true}));

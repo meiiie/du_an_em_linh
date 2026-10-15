@@ -20,7 +20,7 @@
     </section>
   }
   @if(cheDo.error()){<app-loi-tai [loi]="cheDo.error()" moTa="Chưa tải được chế độ bài. Thử lại để mở gia sư cho bài ôn." (thuLai)="cheDo.reload()" />}
-    <div class="practice-grid" [class.co-gia-su]="coGiaSu() && giaSuMo() && giaSuDesktop()" [style.grid-template-columns]="coGiaSu() && giaSuMo() && giaSuDesktop() ? 'minmax(0, 1fr) ' + giaSuRong() + 'px' : 'minmax(0, 1fr)'">
+    <div class="practice-grid" [class.co-gia-su]="coGiaSu() && giaSuMo() && giaSuDesktop()" [style.grid-template-columns]="coGiaSu() && giaSuMo() && giaSuDesktop() ? 'minmax(0, 1fr) min(45%, ' + giaSuRong() + 'px)' : 'minmax(0, 1fr)'">
   @if (b.dangTraLoi !== 'TU_LUAN_5_BUOC' || !b.cacBuoc.length) {
     <div class="trong">
 @if (coGiaSu() || mode()?.status === 'KIEM_TRA') {<div class="tutor-trigger"><button appButton variant="secondary" type="button" data-testid="mo-gia-su" aria-label="Gia sư AI" aria-keyshortcuts="Control+/ Meta+/" [attr.aria-expanded]="giaSuMo()" [disabled]="!coGiaSu()" [title]="coGiaSu() ? 'Gia sư AI (Ctrl/Cmd+/)' : 'Đang kiểm tra — gia sư tạm tắt'" [attr.aria-describedby]="mode()?.status === 'KIEM_TRA' ? 'gia-su-tam-tat' : null" (click)="giaSu()?.moGiaSu()"><span class="fab-icon" aria-hidden="true">✦</span><span class="trigger-text">Gia sư AI</span></button></div>}
