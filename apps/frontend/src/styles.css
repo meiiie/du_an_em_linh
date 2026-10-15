@@ -548,10 +548,12 @@ input[type=checkbox] { accent-color: var(--action); cursor: pointer; }
 .row-list .actions { margin-top: 16px; }
 .row-list p { color: var(--ink-2); }
 .page .nhan-muc, .hoc-grid .nhan-muc { font-size: 12px; line-height: 16px; }
-.choice-list { gap: 0; max-height: 384px; overscroll-behavior: contain; scrollbar-gutter: stable; }
+.choice-list { gap: 0; grid-auto-rows: max-content; align-content: start; max-height: 384px; overscroll-behavior: contain; scrollbar-gutter: stable; }
 .choice-list .check { min-height: 48px; padding: 12px 8px; border-radius: 8px; font-size: 16px; font-weight: 400; }
 .choice-list .check:hover, .choice-list .check:has(:checked) { background: var(--wash); }
 .choice-list .check input { flex: 0 0 20px; margin: 0 8px 0 0; }
+.choice-list .check { align-items: flex-start; }
+.choice-list .check > span { flex: 1; min-width: 0; }
 .choice-list > .toolbar { position: sticky; top: 0; background: var(--raise); padding-bottom: 8px; z-index: 1; }
 .document-text { line-height: 1.75; }
 .document-details { margin-top: 8px; }
