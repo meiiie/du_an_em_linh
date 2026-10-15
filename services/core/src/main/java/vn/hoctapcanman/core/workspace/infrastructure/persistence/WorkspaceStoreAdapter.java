@@ -143,6 +143,7 @@ import vn.hoctapcanman.core.workspace.application.exception.WorkspaceException;
             var codes=e.getValue().stream().map(i->i.details().get("problemCode")).distinct().toList();
             return new Item(e.getKey(),first.title(),codes.size()+" bài",first.status(),details(
                 "setKey",e.getKey(),"tenBo",first.title(),"dueAt",first.details().get("dueAt"),
+                "mode",first.status(),"problemCodes",codes,
                 "problemCount",codes.size(),"assignmentCount",e.getValue().size(),
                 "studentCount",(int)e.getValue().stream().map(i->i.details().get("studentId")).distinct().count(),
                 "submittedCount",(int)e.getValue().stream().filter(i->Boolean.TRUE.equals(i.details().get("submitted"))).count()));
@@ -251,7 +252,7 @@ import vn.hoctapcanman.core.workspace.application.exception.WorkspaceException;
                 AND (a.due_at IS NULL OR a.due_at>:now)
                 AND NOT EXISTS(SELECT 1 FROM submissions s WHERE s.student_id=a.student_id
                     AND s.problem_id=p.id AND s.class_id=a.class_id AND s.content_version=p.content_version
-                    AND s.status='DA_NOP') ORDER BY p.code
+                    AND s.started_at>=a.assigned_at AND s.status='DA_NOP') ORDER BY p.code
             """).param("student",student).param("cl",cl).param("now",java.sql.Timestamp.from(clock.instant()))
             .query((r,n)->new Candidate(r.getString("code"),r.getString("skill_code"),Level4.valueOf(r.getString("level4")),r.getString("teacher_reason"))).list();
         return PersonalLearningRules.choose(learningSkills(student,cl),candidates)

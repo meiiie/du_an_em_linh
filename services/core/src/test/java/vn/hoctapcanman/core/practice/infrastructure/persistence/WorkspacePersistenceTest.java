@@ -83,6 +83,9 @@ class WorkspacePersistenceTest {
         assertThat(store.assignments(cl)).hasSize(1);
         assertThat(store.bank(cl)).hasSize(1);
         assertThat(store.dashboard(cl).students()).isEqualTo(1);
+        assertThat(store.dashboard(cl).deadlines()).singleElement().satisfies(row ->
+            assertThat(row.details()).containsEntry("problemCodes",List.of(code))
+                .containsEntry("mode","KIEM_TRA").doesNotContainKey("problemCode"));
         assertThat(store.audit()).anyMatch(i -> i.title().equals("GIAO_BAI"));
     }
 
@@ -108,6 +111,7 @@ class WorkspacePersistenceTest {
 
     @Test
     void completedOldAssignmentDoesNotMarkNewAssignmentSubmittedOrOpenItsSolution() {
+        db.sql("UPDATE problems SET level4='NHAN_BIET' WHERE id=:id").param("id",problem).update();
         var repo=new SubmissionRepositoryAdapter(db);
         Instant first=now.minusSeconds(3600);
         store.assign(teacher,new Assign(cl,List.of(student),List.of(problem),"ON_TAP",null,"Lượt cũ"),List.of(student),first);
@@ -117,12 +121,25 @@ class WorkspacePersistenceTest {
             null,null,null,null,java.util.Map.of(),"Chưa đạt",null,null,false,null,null,first.plusSeconds(30)));
         repo.update(old.submit(grade,new vn.hoctapcanman.core.practice.domain.model.SkillLevel("T12.DH.02","NHAN_BIET"),first.plusSeconds(60)).baiLam());
         assertThat(store.assignments(cl).getFirst().details()).containsEntry("submitted",true);
+        assertThat(store.recommendations(student,cl)).singleElement()
+            .satisfies(row -> assertThat(row.details()).containsEntry("noCandidate",true));
         store.assign(teacher,new Assign(cl,List.of(student),List.of(problem),"ON_TAP",null,"Lượt mới"),List.of(student),now);
         assertThat(store.assignments(cl).getFirst().details()).containsEntry("submitted",false);
+        assertThat(store.recommendations(student,cl)).singleElement()
+            .satisfies(row -> assertThat(row.id()).isEqualTo(code));
         assertThat(repo.history(student,problem).daNopMoiNhat(cl,1)).isEmpty();
         assertThat(repo.findById(old.id())).isPresent();
         var events=new SolutionRevealEventsAdapter(db);
         assertThat(events.blocked(student,cl,problem,now)).isFalse();
+
+        // Bài mở đúng thời điểm giao thuộc lượt mới; nộp xong thì thôi đề xuất.
+        var fresh=repo.openOrGet(vn.hoctapcanman.core.practice.domain.model.Submission.open(cl,student,problem,1,now));
+        var freshGrade=new GradingResultRepositoryAdapter(db).record(new vn.hoctapcanman.core.practice.domain.model.GradingResult(
+            UUID.randomUUID(),fresh.id(),"B.DH.DAOHAM","b".repeat(64),vn.hoctapcanman.core.practice.domain.model.GradeStatus.SAI,
+            null,null,null,null,java.util.Map.of(),"Chưa đạt",null,null,false,null,null,now.plusSeconds(30)));
+        repo.update(fresh.submit(freshGrade,new vn.hoctapcanman.core.practice.domain.model.SkillLevel("T12.DH.02","NHAN_BIET"),now.plusSeconds(60)).baiLam());
+        assertThat(store.recommendations(student,cl)).singleElement()
+            .satisfies(row -> assertThat(row.details()).containsEntry("noCandidate",true));
     }
 
     @Test
