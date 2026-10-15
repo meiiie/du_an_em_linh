@@ -1,9 +1,13 @@
 :host {
   display: block;
+  min-width: 0;
+  /* Công thức hay nhãn dài trên máy thiếu phông không được đẩy cả trang tràn ngang. */
+  overflow-x: clip;
 }
 
 .tieu-de {
   display: flex;
+  flex-wrap: wrap;
   justify-content: space-between;
   gap: var(--space-4);
   margin-bottom: var(--space-4);
@@ -115,6 +119,8 @@
 
 .trang app-katex {
   display: block;
+  max-width: 100%;
+  overflow-x: auto;
   margin: 4px 0 12px;
   font-size: 1.1rem;
 }
