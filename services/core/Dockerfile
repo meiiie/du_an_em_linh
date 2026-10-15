@@ -5,13 +5,14 @@
 # Dữ liệu dev chỉ được gắn lúc chạy Compose, không chép vào image production; riêng máy demo không có volume
 # (Railway) build với KEM_DU_LIEU_DEV=1 để chép data/dev vào image.
 
+# Cache id có tiền tố s/<service id>- vì Railway (dự án mathl-demo) bắt buộc; Docker cục bộ coi đó là tên thường.
 FROM eclipse-temurin:25-jdk AS build
 WORKDIR /src
 COPY services/core/.mvn/ .mvn/
 COPY services/core/mvnw services/core/pom.xml ./
-RUN --mount=type=cache,target=/root/.m2 ./mvnw -B -ntp dependency:go-offline
+RUN --mount=type=cache,id=s/e467fe46-9d11-4ed7-b810-d9e56443c63a-/root/.m2,target=/root/.m2 ./mvnw -B -ntp dependency:go-offline
 COPY services/core/src/ src/
-RUN --mount=type=cache,target=/root/.m2 ./mvnw -B -ntp package -DskipTests \
+RUN --mount=type=cache,id=s/e467fe46-9d11-4ed7-b810-d9e56443c63a-/root/.m2,target=/root/.m2 ./mvnw -B -ntp package -DskipTests \
  && java -Djarmode=tools -jar target/core-*.jar extract --layers --launcher --destination target/extracted
 
 # Mặc định thư mục rỗng; KEM_DU_LIEU_DEV=1 (máy demo) mới chép trường hư cấu THPT Nguyễn Trãi.
