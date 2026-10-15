@@ -35,4 +35,22 @@ describe('Đề bài theo chủ đề', () => {
     }
     http.verify();
   });
+  it('tự học render công thức, văn xuôi trong hàng bài giữ dạng chữ', async () => {
+    TestBed.configureTestingModule({providers:[provideHttpClient(),provideHttpClientTesting(),provideRouter([])]});
+    const f=TestBed.createComponent(DeBai);f.detectChanges();
+    const http=TestBed.inject(HttpTestingController);
+    http.expectOne('/api/hs/che-do').flush([]);http.expectOne('/api/hs/goi-bai').flush([]);
+    http.expectOne('/api/hs/chu-de').flush([{id:'TP12',title:'Tích phân',subtitle:'',status:'',details:{}}]);
+    http.expectOne('/api/hs/bai').flush([{maBai:'1',tenKyNang:'Tích phân',muc4:'NHAN_BIET',deBai:'Tính',deBaiLatex:'Tính tích phân $x^2$',trangThai:'CHUA_LAM',soBuoc:5,soBuocDat:0}]);
+    await f.whenStable();
+    const el=f.nativeElement as HTMLElement;
+    const select=el.querySelector('select')!;select.value='TP12';select.dispatchEvent(new Event('change'));TestBed.tick();
+    http.expectOne('/api/hs/tu-hoc?chuDe=TP12').flush([{id:'A',title:'Tích phân',subtitle:'Tính $x^2$',status:'NHAN_BIET',details:{}}]);
+    await f.whenStable();
+    expect(el.querySelectorAll('.katex')).toHaveLength(2);
+    expect([...el.querySelectorAll('annotation')].map(n=>n.textContent)).toEqual(['x^2','x^2']);
+    expect(el.querySelector('app-hang-bai')?.textContent).toContain('Tính tích phân');
+    http.verify();
+  });
+
 });

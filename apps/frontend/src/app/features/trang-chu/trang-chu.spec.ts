@@ -71,7 +71,7 @@ describe('TrangChu', () => {
     const chu = t.el.textContent!;
     expect(chu).toContain('Toán THPT');
     expect(chu).toContain('Lớp 10–12');
-    expect(chu).toContain('74 bài luyện tập · 13 chủ đề');
+    expect(chu).toContain('Bài luyện tập theo lớp và chủ đề');
     expect(chu).toContain('AI soạn nháp bài tập và lời giải từ tài liệu của thầy cô');
     expect(chu).toContain('Thầy cô duyệt trước khi giao cho học sinh');
     expect(chu).toContain('Theo dõi mức hiểu của từng học sinh');

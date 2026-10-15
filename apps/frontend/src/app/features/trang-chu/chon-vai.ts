@@ -62,7 +62,7 @@ import { Button } from '../../shared/ui/button';
       <div id="truoc-khi-dung" class="truoc">
         <h3>Trước khi dùng</h3>
         <p>
-          Toán THPT lớp 10–12. Bản thí điểm có 74 bài luyện tập thuộc 13 chủ đề.
+          Toán THPT lớp 10–12. Bài luyện tập hiển thị theo lớp và chủ đề đã được phát hành.
           Tài khoản do nhà trường cung cấp, không tự đăng ký.
           Nội dung được thầy cô duyệt trước khi học sinh thấy.
           Các hình trên trang minh họa cách học, không phải bài làm của học sinh.

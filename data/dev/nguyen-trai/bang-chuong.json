@@ -18,7 +18,7 @@
       "skillCode": "T11.NT.LG",
       "title": "Góc nhân đôi",
       "latex": "\\cos 2x=1-2\\sin^2 x",
-      "noiDung": "Trên đường tròn đơn vị, hoành độ là cos x, tung độ là sin x, nên tổng hai bình phương bằng 1. Dùng góc chuẩn, sau đó kiểm dấu theo góc phần tư. Phương trình lượng giác phải xét mọi nhánh nghiệm và giới hạn miền trước khi kết luận.",
+      "noiDung": "Công thức góc nhân đôi: $\\cos 2x = 1 - 2\\sin^2 x$. Dùng để đổi cos của góc gấp đôi về biểu thức theo sin của góc ban đầu.",
       "kiem_dinh": {
         "trai": "cos(2*x)",
         "phai": "1-2*sin(x)**2"

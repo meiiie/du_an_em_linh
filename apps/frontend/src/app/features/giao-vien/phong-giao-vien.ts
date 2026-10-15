@@ -113,7 +113,7 @@ export class PhongGiaoVien{
   const result=typeof b.details['result']==='string'&&b.details['result']?b.details['result']:b.subtitle;
   return ({DAT:'Đạt',SAI:'Sai',KHONG_KIEM_DUOC:'Không kiểm được'} as Record<string,string>)[result]??tenTrangThai(result);
  }
- protected chiTiet(c:Item):string {const d=c.details;return [d['statement'],d['tier1'],d['tier2']].filter(x=>typeof x==='string').join(' · ');}
+ protected chiTiet(c:Item):string {const d=c.details;return [d['statement'],d['tier1'],d['tier2']].filter(x=>typeof x==='string' && x.trim()).join(' · ');}
  protected doiChon(id:string,loai:'bai'|'hs'){const s=loai==='bai'?this.chonBai:this.chonHs;s.update(ds=>ds.includes(id)?ds.filter(x=>x!==id):[...ds,id]);}
  protected duyet(m:Item,approve:boolean){this.mucDangChon.set(m);this.chapThuan.set(approve);this.lyDo.set('');this.loi.set('');this.hop.set('duyet');}
  protected suaMuc(code:string,level:Muc4){this.kyNang.set(code);this.mucMoi.set(level);this.lyDo.set('');this.loi.set('');this.hop.set('muc');}

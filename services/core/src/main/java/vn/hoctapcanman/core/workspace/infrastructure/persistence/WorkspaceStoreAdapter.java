@@ -211,7 +211,13 @@ import vn.hoctapcanman.core.workspace.application.exception.WorkspaceException;
             SELECT p.code,p.statement_text,sk.name,p.skill_code,p.level4 FROM problems p JOIN skills sk ON sk.code=p.skill_code
             JOIN topics t ON t.code=sk.topic_code JOIN classes c ON c.id=:cl AND c.grade=t.grade AND coalesce(sk.grade,t.grade)=c.grade
             JOIN problem_releases r ON r.problem_id=p.id AND r.class_id=:cl AND r.status='DA_PHAT_HANH' AND EXISTS(SELECT 1 FROM verification_runs fresh WHERE fresh.id=r.run_id AND NOT fresh.stale AND fresh.content_version=p.content_version AND fresh.content_hash=p.content_hash)
-            WHERE sk.topic_code=:topic AND p.answer_form='TU_LUAN_5_BUOC' AND NOT EXISTS(
+            WHERE sk.topic_code=:topic AND (p.answer_form='TU_LUAN_5_BUOC' OR EXISTS(SELECT 1 FROM exercise_step_frames f WHERE f.problem_id=p.id AND f.content_version=p.content_version)) AND NOT EXISTS(
+                SELECT 1 FROM submissions s WHERE s.student_id=:student AND s.class_id=:cl
+                AND s.problem_id=p.id AND s.content_version=p.content_version AND s.status='DA_NOP'
+                AND NOT EXISTS(SELECT 1 FROM assignments current_assignment
+                    WHERE current_assignment.student_id=:student AND current_assignment.class_id=:cl
+                    AND current_assignment.problem_id=p.id AND current_assignment.status='DA_GIAO'
+                    AND s.assignment_at<current_assignment.assigned_at AND s.started_at<current_assignment.assigned_at)) AND NOT EXISTS(
                 SELECT 1 FROM assignments a WHERE a.student_id=:student AND a.problem_id=p.id AND a.status='DA_GIAO'
                 AND (a.mode='KIEM_TRA' OR a.due_at<=:now)) ORDER BY p.code
             """).param("cl",cl).param("topic",topic).param("student",student).param("now",java.sql.Timestamp.from(clock.instant()))
@@ -231,7 +237,7 @@ import vn.hoctapcanman.core.workspace.application.exception.WorkspaceException;
             SELECT :id,:cl,p.id,:student,'DA_GIAO',:student,:now,'ON_TAP','Tự học'
             FROM problems p JOIN problem_releases r ON r.problem_id=p.id AND r.class_id=:cl AND r.status='DA_PHAT_HANH' AND EXISTS(SELECT 1 FROM verification_runs fresh WHERE fresh.id=r.run_id AND NOT fresh.stale AND fresh.content_version=p.content_version AND fresh.content_hash=p.content_hash)
             JOIN skills sk ON sk.code=p.skill_code JOIN topics t ON t.code=sk.topic_code
-            JOIN classes c ON c.id=:cl AND c.grade=t.grade AND coalesce(sk.grade,t.grade)=c.grade WHERE p.code=:code AND p.answer_form='TU_LUAN_5_BUOC'
+            JOIN classes c ON c.id=:cl AND c.grade=t.grade AND coalesce(sk.grade,t.grade)=c.grade WHERE p.code=:code AND (p.answer_form='TU_LUAN_5_BUOC' OR EXISTS(SELECT 1 FROM exercise_step_frames f WHERE f.problem_id=p.id AND f.content_version=p.content_version))
             ON CONFLICT(class_id,problem_id,student_id) DO NOTHING
             """).param("id",UUID.randomUUID()).param("cl",cl).param("code",code).param("student",student).param("now",java.sql.Timestamp.from(now)).update();
         if(count==0 && db.sql("SELECT count(*) FROM assignments a JOIN problems p ON p.id=a.problem_id JOIN problem_releases r ON r.problem_id=p.id AND r.class_id=a.class_id AND r.status='DA_PHAT_HANH' AND EXISTS(SELECT 1 FROM verification_runs fresh WHERE fresh.id=r.run_id AND NOT fresh.stale AND fresh.content_version=p.content_version AND fresh.content_hash=p.content_hash) WHERE a.class_id=:cl AND a.student_id=:student AND p.code=:code AND a.status='DA_GIAO' AND a.mode='ON_TAP' AND (a.due_at IS NULL OR a.due_at>:now)")
@@ -248,11 +254,12 @@ import vn.hoctapcanman.core.workspace.application.exception.WorkspaceException;
                 WHERE student_id=a.student_id AND problem_id=p.id AND consumed_at IS NULL
                 ORDER BY created_at DESC,id DESC LIMIT 1)o ON true
             WHERE a.student_id=:student AND a.class_id=:cl AND a.status='DA_GIAO' AND a.mode='ON_TAP'
-                AND pr.status='DA_PHAT_HANH' AND EXISTS(SELECT 1 FROM verification_runs fresh WHERE fresh.id=pr.run_id AND NOT fresh.stale AND fresh.content_version=p.content_version AND fresh.content_hash=p.content_hash) AND p.answer_form='TU_LUAN_5_BUOC'
+                AND pr.status='DA_PHAT_HANH' AND EXISTS(SELECT 1 FROM verification_runs fresh WHERE fresh.id=pr.run_id AND NOT fresh.stale AND fresh.content_version=p.content_version AND fresh.content_hash=p.content_hash) AND (p.answer_form='TU_LUAN_5_BUOC' OR EXISTS(SELECT 1 FROM exercise_step_frames f WHERE f.problem_id=p.id AND f.content_version=p.content_version))
                 AND (a.due_at IS NULL OR a.due_at>:now)
                 AND NOT EXISTS(SELECT 1 FROM submissions s WHERE s.student_id=a.student_id
                     AND s.problem_id=p.id AND s.class_id=a.class_id AND s.content_version=p.content_version
-                    AND s.started_at>=a.assigned_at AND s.status='DA_NOP') ORDER BY p.code
+                    AND (s.assignment_at>=a.assigned_at OR s.started_at>=a.assigned_at)
+                    AND s.status='DA_NOP') ORDER BY p.code
             """).param("student",student).param("cl",cl).param("now",java.sql.Timestamp.from(clock.instant()))
             .query((r,n)->new Candidate(r.getString("code"),r.getString("skill_code"),Level4.valueOf(r.getString("level4")),r.getString("teacher_reason"))).list();
         return PersonalLearningRules.choose(learningSkills(student,cl),candidates)
@@ -281,6 +288,28 @@ import vn.hoctapcanman.core.workspace.application.exception.WorkspaceException;
  ORDER BY p.code
  """).param("cl",cl).query((rs,n)->new Item(rs.getString("id"),rs.getString("code"),"Máy chưa xác minh được đủ ba tầng. Cần giáo viên đọc căn cứ.",rs.getString("overall_status"),details("kind","PROBLEM","tiers",reviewEvidence(UUID.fromString(rs.getString("id")))))).list());
         result.addAll(db.sql("SELECT q.*,p.code FROM tutor_review_queue q JOIN problems p ON p.id=q.problem_id WHERE q.class_id=:cl AND q.decision IS NULL AND q.reason NOT LIKE 'Cổng công thức chưa xác minh được lời gợi ý%' ORDER BY q.created_at DESC").param("cl",cl).query((rs,n)->new Item(rs.getString("id"),"Gợi ý · "+rs.getString("code"),rs.getString("reason"),"KHONG_KIEM_DUOC",details("kind","TUTOR","draft",rs.getString("draft")))).list());
+        result.addAll(db.sql("""
+            SELECT g.id,g.step_code,g.message,p.code,u.display_name,t.description step_name,
+                concat_ws(E'\\n',
+                    (SELECT string_agg(l.latex, E'\\n' ORDER BY l.line_no) FROM submission_steps l
+                        WHERE l.submission_id=s.id AND l.step_code=g.step_code),
+                    (SELECT concat_ws(E'\\n','Bảng ' || b.table_kind,
+                        (SELECT string_agg(c.row_code || coalesce('[' || c.k::text || ']','') || ' = ' || c.value,
+                            E'\\n' ORDER BY c.ordinal) FROM submission_table_cells c
+                            WHERE c.submission_id=b.submission_id AND c.step_code=b.step_code))
+                        FROM submission_tables b WHERE b.submission_id=s.id AND b.step_code=g.step_code)) work
+            FROM grading_results g JOIN submissions s ON s.id=g.submission_id
+            JOIN problems p ON p.id=s.problem_id JOIN users u ON u.id=s.student_id
+            JOIN step_templates t ON t.step_code=g.step_code
+            WHERE s.class_id=:cl AND g.result='KHONG_KIEM_DUOC'
+                AND NOT EXISTS(SELECT 1 FROM grading_results newer WHERE newer.submission_id=g.submission_id
+                    AND newer.step_code=g.step_code AND (newer.graded_at,newer.id)>(g.graded_at,g.id))
+                AND NOT EXISTS(SELECT 1 FROM step_reviews r WHERE r.grading_id=g.id)
+            ORDER BY g.graded_at DESC,g.id
+            """).param("cl",cl).query((r,n)->new Item(r.getString("id"),
+                r.getString("display_name")+" · "+r.getString("code"),
+                "Bước "+r.getString("step_name")+". "+Objects.toString(r.getString("message"),"Máy chưa kiểm được."),
+                "KHONG_KIEM_DUOC",details("kind","STEP","draft",r.getString("work")))).list());
         return result;
     }
 
@@ -321,7 +350,7 @@ import vn.hoctapcanman.core.workspace.application.exception.WorkspaceException;
             String folded=java.text.Normalizer.normalize(chunk,java.text.Normalizer.Form.NFD).replaceAll("\\p{M}","").toLowerCase(Locale.ROOT).replace('đ','d');
             db.sql("INSERT INTO document_passages(id,document_id,char_start,char_end,text,text_folded) VALUES(:id,:doc,:start,:end,:text,:fold)").param("id",UUID.randomUUID()).param("doc",id).param("start",start).param("end",start+chunk.length()).param("text",chunk).param("fold",folded).update();
         }
-        log(actor,"NAP_TAI_LIEU",cl.toString(),title,now);
+        log(actor,"NAP_TAI_LIEU",id.toString(),title,now);
     }
 
     public void formula(UUID actor,Formula r,Instant now) {
@@ -331,7 +360,7 @@ import vn.hoctapcanman.core.workspace.application.exception.WorkspaceException;
         });
         UUID id=UUID.randomUUID();
         db.sql("INSERT INTO formulas(id,formula_sheet_id,ordinal,code,title,latex,statement) SELECT :id,:sheet,coalesce(max(ordinal),0)+1,:code,:title,:latex,:statement FROM formulas WHERE formula_sheet_id=:sheet").param("id",id).param("sheet",sheet).param("code","f"+id.toString().replace("-","").substring(0,30)).param("title",r.title()).param("latex",r.latex()).param("statement",r.statement()).update();
-        log(actor,"THEM_CONG_THUC",r.lopId().toString(),r.title(),now);
+        log(actor,"THEM_CONG_THUC",id.toString(),r.title(),now);
     }
 
     public Settings settings(UUID cl) {
@@ -416,7 +445,21 @@ import vn.hoctapcanman.core.workspace.application.exception.WorkspaceException;
     }
 
     public List<Item> audit() {
-        return db.sql("SELECT * FROM audit_log ORDER BY created_at DESC LIMIT 200").query((r,n)->new Item(r.getString("id"),r.getString("action"),r.getString("reason"),r.getString("target"),details("actorId",str(r,"actor_id"),"createdAt",instant(r,"created_at")))).list();
+        return db.sql("""
+            SELECT a.*,coalesce(d.id::text,f.id::text,a.target) object_id,
+                coalesce(d.title,f.title,u.display_name,c.name,p.code,'') target_name
+            FROM audit_log a
+            LEFT JOIN users u ON u.id::text=a.target
+            LEFT JOIN classes c ON c.id::text=a.target
+            LEFT JOIN documents d ON d.id::text=a.target OR (a.action='NAP_TAI_LIEU'
+                AND d.class_id::text=a.target AND d.title=a.reason AND d.created_at=a.created_at)
+            LEFT JOIN formulas f ON f.id::text=a.target OR (a.action='THEM_CONG_THUC'
+                AND f.title=a.reason AND f.formula_sheet_id IN (SELECT id FROM formula_sheets WHERE class_id::text=a.target)
+                AND 1=(SELECT count(*) FROM formulas f2 JOIN formula_sheets s2 ON s2.id=f2.formula_sheet_id
+                    WHERE s2.class_id::text=a.target AND f2.title=a.reason))
+            LEFT JOIN problems p ON p.id::text=a.target
+            ORDER BY a.created_at DESC LIMIT 200
+            """).query((r,n)->new Item(r.getString("id"),r.getString("action"),r.getString("reason"),r.getString("object_id"),details("actorId",str(r,"actor_id"),"createdAt",instant(r,"created_at"),"targetName",r.getString("target_name")))).list();
     }
 
     public void log(UUID actor,String action,String target,String reason,Instant now) {

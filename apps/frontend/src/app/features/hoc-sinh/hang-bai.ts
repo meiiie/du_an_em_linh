@@ -1,3 +1,4 @@
+import { VanBanToan } from '../../shared/toan/van-ban-toan';
 import { Component, computed, input } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { BaiCuaHocSinh, TEN_MUC } from '../../api/hoc-sinh';
@@ -41,7 +42,7 @@ export function chuTrangThai(b: BaiCuaHocSinh): string {
 /** Một hàng bài: vòng trạng thái, tên kỹ năng và hàm số, mức, hạn, trạng thái; cả hàng dẫn tới phiếu làm bài. */
 @Component({
   selector: 'app-hang-bai',
-  imports: [Katex, RouterLink, DinhDangSo],
+  imports: [VanBanToan, Katex, RouterLink, DinhDangSo],
   template: `
     <a class="hang" [routerLink]="['/hs/luyen', bai().maBai]" [attr.data-testid]="'bai-' + bai().maBai">
       <svg [class]="'vong ' + loaiVong()" viewBox="0 0 24 24" aria-hidden="true">
@@ -55,7 +56,7 @@ export function chuTrangThai(b: BaiCuaHocSinh): string {
       </svg>
       <span class="ten">
         <span class="tieu-de"><strong>Bài {{ so() | soViet }} · {{ bai().tenKyNang }}</strong>@if (kiemTra()) { <span class="badge">Kiểm tra</span> }</span>
-        <span class="ham"><app-katex [latex]="hamHang()" /></span>
+        <span class="ham">@if(vanBan()){<app-van-ban-toan [text]="bai().deBaiLatex" />}@else{<app-katex [latex]="hamHang()" />}</span>
       </span>
       <span class="muc">{{ tenMuc() }}@if (han(); as h) { · Hạn {{ h }}}</span>
       <span [class]="'tt ' + loaiVong()">{{ chu() }}</span>
@@ -73,6 +74,7 @@ export class HangBai {
   protected readonly chu = computed(() => chuTrangThai(this.bai()));
   protected readonly han = computed(() => (this.bai().han ? ngayViet(this.bai().han!, true) : null));
   /** Trong hàng chỉ hàm số; phần «, y′ = …» của đề hiện đủ trên bảng ở phiếu làm bài. */
+  protected readonly vanBan = computed(() => /[À-ỹĐđ]/.test(this.bai().deBaiLatex) || ['$', '\\(', '\\['].some(d => this.bai().deBaiLatex.includes(d)));
   protected readonly hamHang = computed(() => hamLatex(this.bai().deBaiLatex.split(String.raw`,\quad`)[0]));
   protected readonly loaiVong = computed(() => {
     const b = this.bai();

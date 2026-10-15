@@ -11,7 +11,7 @@ test('trang chủ: phạm vi THPT, giáo viên duyệt nội dung và bảng mà
   await page.locator('#xem').scrollIntoViewIfNeeded();
   await expect(page.locator('app-canh-lam-viec')).toBeVisible();
   await expect(page.locator('.huy-hieu')).toContainText('Lớp 10–12');
-  await expect(page.locator('.ghi-chu')).toContainText('74 bài luyện tập · 13 chủ đề');
+  await expect(page.locator('.ghi-chu')).toHaveText('Bản thí điểm: Bài luyện tập theo lớp và chủ đề · Trước khi dùng');
   const roles = page.locator('app-chon-vai');
   await expect(roles).toContainText('AI soạn nháp bài tập và lời giải từ tài liệu của thầy cô');
   await expect(roles).toContainText('Thầy cô duyệt trước khi giao cho học sinh');

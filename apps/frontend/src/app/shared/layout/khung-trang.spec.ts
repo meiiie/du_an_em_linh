@@ -32,6 +32,7 @@ describe('KhungTrang', () => {
         provideRouter(
           [
             { path: 'hs', component: KhungTrang, data: { khuVuc: 'HS' }, children: con },
+            { path: 'qt', component: KhungTrang, data: { khuVuc: 'QT' }, children: con },
             { path: 'gv', component: KhungTrang, data: { khuVuc: 'GV' }, children: con },
             { path: 'dang-nhap', component: NoiDung },
           ],
@@ -235,6 +236,12 @@ describe('KhungTrang', () => {
     expect(t.el.querySelector('[data-testid="chuyen-quan-tri"]')?.getAttribute('href')).toBe('/qt');
   });
 
+
+  it('sidebar quản trị chỉ có một mục Người dùng đến /qt', async () => {
+    const t=await mo('/qt',{...GV,role:'ADMIN'});
+    expect(t.el.querySelector('[data-testid="chuyen-quan-tri"]')).toBeNull();
+    expect(t.el.querySelectorAll('[data-testid="sidebar-nav"] a[href="/qt"]')).toHaveLength(1);
+  });
   it('học sinh không nhìn thấy điều hướng quản trị', async () => {
     const t = await mo('/hs');
     expect(t.el.querySelector('[data-testid="chuyen-quan-tri"]')).toBeNull();

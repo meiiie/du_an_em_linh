@@ -7,14 +7,14 @@ import { signal } from '@angular/core';
 import { LopDangChon } from '../../core/lop-dang-chon';
 import { PhongGiaoVien } from './phong-giao-vien';
 
-async function setup(boBai = 0) {
+async function setup(subtitle = 'Xét tính đơn điệu', boBai = 0) {
   const lop = { id: signal('lop1'), ds: signal([{ id: 'lop1', title: '12A1' }, { id: 'lop2', title: '12A2' }]), dangTai: signal(false), loi: signal(false), soChoDuyet: signal(0), tai: async () => {} };
   TestBed.configureTestingModule({ providers: [provideHttpClient(), provideHttpClientTesting(), provideRouter([]), { provide: LopDangChon, useValue: lop }] });
   const fixture = TestBed.createComponent(PhongGiaoVien);
   fixture.componentRef.setInput('trang', 'giao');
   fixture.detectChanges();
   const http = TestBed.inject(HttpTestingController);
-  http.expectOne('/api/gv/ngan-hang?lopId=lop1').flush(Array.from({ length: 45 }, (_, i) => ({ id: 'b' + i, title: 'Bài ' + i, subtitle: i === 0 ? 'Xét tính đơn điệu' : '', status: i === 44 ? 'NHAP' : 'DA_PHAT_HANH', details: { level4: 'NHAN_BIET', skillCode: 'T12.DH.03', gate: 'DAT', latex: 'x' } })));
+  http.expectOne('/api/gv/ngan-hang?lopId=lop1').flush(Array.from({ length: 45 }, (_, i) => ({ id: 'b' + i, title: 'Bài ' + i, subtitle: i === 0 ? subtitle : '', status: i === 44 ? 'NHAP' : 'DA_PHAT_HANH', details: { level4: 'NHAN_BIET', skillCode: 'T12.DH.03', gate: 'DAT', latex: 'x' } })));
   http.expectOne('/api/gv/tien-do?lopId=lop1').flush(Array.from({ length: 30 }, (_, i) => ({ id: 'hs' + i, title: 'Học sinh ' + i, subtitle: '', status: 'STUDENT', details: { skills: [], submitted: 0 } })));
   http.expectOne('/api/gv/giao?lopId=lop1').flush([]);
   http.expectOne('/api/gv/tong-quan?lopId=lop1').flush({students:30,stuck:0,pending:0,assignments:boBai*10,boBai,distribution:{},deadlines:[]});
@@ -26,8 +26,26 @@ async function setup(boBai = 0) {
 }
 
 describe('Giao bài với ngân hàng và lớp đầy đủ', () => {
+
+
+  it('hộp tải tài liệu chỉ có một tiêu đề', async () => {
+    const t=await setup();t.fixture.componentRef.setInput('trang','tai-lieu');TestBed.tick();
+    t.http.expectOne('/api/gv/kho?lopId=lop1').flush({formulas:[],documents:[]});await t.fixture.whenStable();
+    for(const d of t.el.querySelectorAll<HTMLDialogElement>('dialog')){d.showModal=()=>{d.open=true;};d.close=()=>{d.open=false;};}
+    [...t.el.querySelectorAll<HTMLButtonElement>('button')].find(b=>b.textContent==='Thêm tài liệu')!.click();await t.fixture.whenStable();
+    expect([...t.el.querySelectorAll('dialog[open] h2')].filter(h=>h.textContent==='Thêm tài liệu')).toHaveLength(1);
+    t.http.verify();
+  });
+  it('tên bài giao render toán và phần mô tả công thức bỏ các tầng trống', async () => {
+    const t=await setup('Xét tính đơn điệu $x^2$');
+    expect(t.lists()[0].querySelector('.katex')).not.toBeNull();
+    expect(t.lists()[0].querySelector('annotation')?.textContent).toBe('x^2');
+    const component=t.fixture.componentInstance as unknown as {chiTiet(c:unknown):string};
+    expect(component.chiTiet({details:{statement:'Góc nhân đôi',tier1:'',tier2:''}})).toBe('Góc nhân đôi');
+    t.http.verify();
+  });
   it('bộ đếm bộ bài dùng boBai của tổng quan', async () => {
-    const t = await setup(3);
+    const t = await setup(undefined, 3);
     expect(t.el.querySelector('.list-summary')?.textContent).toContain('3 bộ bài');
     t.http.verify();
   });

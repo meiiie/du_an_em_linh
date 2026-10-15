@@ -190,6 +190,7 @@
 
     .vung {
       position: relative;
+      min-width: 0;
     }
 
     .goc {
@@ -207,6 +208,8 @@
     }
 
     .noi-dung {
+      width: 100%;
+      min-width: 0;
       max-width: 76rem;
       margin: 0 auto;
       /* Nav height includes the bottom safe area; keep this in scoped CSS so the shorthand cannot override it. */
@@ -233,7 +236,9 @@
       }
 
       .vung {
-        padding-left: calc(var(--rong-ray) + env(safe-area-inset-left));
+        /* Reserve the fixed sidebar once, outside the content's width. */
+        margin-left: calc(var(--rong-ray) + env(safe-area-inset-left));
+        width: calc(100% - var(--rong-ray) - env(safe-area-inset-left));
       }
 
       /* Thông báo lỗi chạy ngang trên cùng: chừa chỗ cho nút đổi giao diện ở góc. */
