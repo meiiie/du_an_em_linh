@@ -231,25 +231,29 @@ export class Luyen {
   });
   protected readonly loiGiai = signal<string | null>(null);
   protected readonly xacNhanLoiGiai = signal(false);
-  private readonly gioHienTai = signal(Date.now());
   protected readonly khoaLoiGiai = computed(() => {
-    if (this.mode()?.status !== 'KIEM_TRA') return false;
-    const dueAt = this.mode()?.details.dueAt;
-    return !dueAt || !Number.isFinite(Date.parse(dueAt)) || this.gioHienTai() < Date.parse(dueAt);
+    const mode = this.mode();
+    // Chỉ server xác nhận hết hạn mới mở bài kiểm tra; giờ máy khách có thể lệch.
+    return !mode || (mode.status === 'KIEM_TRA' && mode.details.conHan !== false);
   });
   constructor() {
     effect(onCleanup => {
-      if (this.mode()?.status !== 'KIEM_TRA') return;
-      const deadline = Date.parse(this.mode()?.details.dueAt ?? '');
-      const observed = this.gioHienTai();
-      const now = Date.now();
-      if (!Number.isFinite(deadline)) return;
-      if (deadline <= now) {
-        if (observed < deadline) this.gioHienTai.set(now);
-        return;
-      }
-      // Chỉ hẹn đúng lúc đến hạn, không thăm dò liên tục. Dọn khi đổi bài/hủy trang.
-      const timer = setTimeout(() => this.gioHienTai.set(Date.now()), Math.min(deadline - now + 1, 2_147_483_647));
+      const mode = this.mode();
+      if (mode?.status !== 'KIEM_TRA' || mode.details.conHan === false) return;
+      const deadline = Date.parse(mode.details.dueAt ?? '');
+      if (!Number.isFinite(deadline) || deadline <= Date.now()) return;
+      // Đồng hồ chỉ hẹn tải lại chế độ, không quyết định quyền xem lời giải.
+      // Chia hạn dài để không vượt giới hạn setTimeout; dọn khi đổi bài/hủy trang.
+      let timer: ReturnType<typeof setTimeout>;
+      const henTaiLai = () => {
+        const conLai = deadline - Date.now();
+        if (conLai <= 0) {
+          this.cheDo.reload();
+          return;
+        }
+        timer = setTimeout(henTaiLai, Math.min(conLai + 1, 2_147_483_647));
+      };
+      henTaiLai();
       onCleanup(() => clearTimeout(timer));
     });
   }

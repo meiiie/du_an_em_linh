@@ -43,7 +43,7 @@ const daDat = (maBuoc: string, dong = [{ dong: 0, latex: '\\mathbb{R}' }]) => ({
 
 describe('Luyen', () => {
   beforeEach(() => localStorage.clear());
-  async function mo(bai: ChiTietBai | { loi: number }, choOn = true, mode = 'ON_TAP', dueAt = '2026-10-20T12:00:00Z', truocCheDo?: () => Promise<void>) {
+  async function mo(bai: ChiTietBai | { loi: number }, choOn = true, mode = 'ON_TAP', dueAt = '2026-10-20T12:00:00Z', truocCheDo?: () => Promise<void>, conHan = true) {
     TestBed.configureTestingModule({
       providers: [
         provideHttpClient(),
@@ -57,7 +57,7 @@ describe('Luyen', () => {
     fixture.detectChanges();
     const http = TestBed.inject(HttpTestingController);
     if (truocCheDo) await truocCheDo();
-    http.expectOne('/api/hs/che-do').flush([{id:MA,title:MA,subtitle:'',status:mode,details:{dueAt}}]);
+    http.expectOne('/api/hs/che-do').flush([{id:MA,title:MA,subtitle:'',status:mode,details:{dueAt,conHan}}]);
     const yc = http.expectOne({ method: 'GET', url: API_HS.chiTietBai(MA) });
     if ('loi' in bai) yc.flush({ detail: 'x' }, { status: bai.loi, statusText: 'Lỗi' });
     else yc.flush(bai);
@@ -393,7 +393,7 @@ describe('Luyen', () => {
     t.http.expectNone(API_HS.loiGiai(MA));
     t.http.verify();
   });
-  it('chế độ tải chậm vẫn tự mở xác nhận đúng hạn khi giữ trang', async () => {
+  it.each([false, true, null])('đến hạn tải lại chế độ, phản hồi conHan=%s quyết định mở lời giải (null: lỗi mạng)', async (conHan) => {
     const deadline=Date.now()+1000;
     const t=await mo(chiTiet({trangThai:'DA_NOP',cacBuoc:CAC_BUOC.map(s=>daDat(s.maBuoc))}), false, 'KIEM_TRA', new Date(deadline).toISOString(), async () => { await new Promise(r=>setTimeout(r,300)); });
     TestBed.tick();
@@ -405,8 +405,42 @@ describe('Luyen', () => {
     const confirm=[...dialog.querySelectorAll('button')].find(b=>b.textContent?.trim()==='Xác nhận xem lời giải')!;
     expect(confirm.disabled).toBe(true);
     await new Promise(r=>setTimeout(r, Math.max(1, deadline-Date.now()+30)));
+    TestBed.tick();
+    expect(confirm.disabled).toBe(true);
+    const reload=t.http.expectOne('/api/hs/che-do');
+    if(conHan === null) reload.flush(null,{status:503,statusText:'Lỗi mạng'});
+    else reload.flush([{id:MA,title:MA,subtitle:'',status:'KIEM_TRA',details:{dueAt:new Date(deadline).toISOString(),conHan}}]);
     await t.fixture.whenStable();
-    expect(confirm.disabled).toBe(false);
+    expect(confirm.disabled).toBe(conHan !== false);
+    confirm.click();
+    if(conHan === false) {
+      t.http.expectOne(API_HS.loiGiai(MA)).flush({loiGiai:'Lời giải sau hạn.'});
+      await t.xong();
+      expect(t.chu('[data-testid=loi-giai-sau-nop]')).toContain('Lời giải sau hạn.');
+    } else t.http.expectNone(API_HS.loiGiai(MA));
+    t.http.verify();
+  });
+  it.each([
+    {dueAt:'2099-01-01T00:00:00Z',conHan:false,disabled:false},
+    {dueAt:'2000-01-01T00:00:00Z',conHan:true,disabled:true},
+    {dueAt:'',conHan:false,disabled:false},
+  ])('ưu tiên conHan=$conHan từ server khi hạn cục bộ là $dueAt', async ({dueAt,conHan,disabled}) => {
+    const t=await mo(chiTiet({trangThai:'DA_NOP',cacBuoc:CAC_BUOC.map(s=>daDat(s.maBuoc))}), false, 'KIEM_TRA', dueAt, undefined, conHan);
+    TestBed.tick();
+    t.http.expectOne(API_HS.nopBai(MA)).flush({ketQua:'DAT',mucHieu:[]});
+    await t.xong();
+    const dialog=t.el.querySelector('dialog')!;
+    dialog.showModal=()=>{dialog.open=true;};dialog.close=()=>{dialog.open=false;};
+    await t.bam('[data-testid="xem-toan-bo-loi-giai"]');
+    const confirm=[...dialog.querySelectorAll('button')].find(b=>b.textContent?.trim()==='Xác nhận xem lời giải')!;
+    expect(confirm.disabled).toBe(disabled);
+    confirm.click();
+    if(disabled) t.http.expectNone(API_HS.loiGiai(MA));
+    else {
+      t.http.expectOne(API_HS.loiGiai(MA)).flush({loiGiai:'Lời giải được server cho phép.'});
+      await t.xong();
+      expect(t.chu('[data-testid=loi-giai-sau-nop]')).toContain('Lời giải được server cho phép.');
+    }
     t.http.verify();
   });
   it('bài đã nộp có ô chỉ đọc và lời giải Markdown cùng KaTeX', async () => {
