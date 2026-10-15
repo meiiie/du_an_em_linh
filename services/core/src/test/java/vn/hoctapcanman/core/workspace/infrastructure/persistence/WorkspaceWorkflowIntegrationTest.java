@@ -237,6 +237,36 @@ class WorkspaceWorkflowIntegrationTest {
         assertThat(store.selfStudy(student,cl,"DH12")).isEmpty();
         assertThat(store.recommendations(student,cl)).noneMatch(item->item.id().equals(code));
     }
+    @Test void reassignedStudyIgnoresOldSubmissionAndExcludesCurrentSubmissionAtAssignmentTime() {
+        Instant assigned=Instant.now();
+        var request=new Assign(cl,List.of(student),List.of(problem),"ON_TAP",null,"Ôn tập");
+        store.assign(teacher,request,List.of(student),assigned.minusSeconds(60));
+        UUID old=openWork(problem);
+        submitUncertain(old,uncertainGrade(old));
+        assertThat(store.selfStudy(student,cl,"DH12")).isEmpty();
+        assertThat(store.recommendations(student,cl)).noneMatch(item->item.id().equals(code));
+        store.assign(teacher,request,List.of(student),assigned.plusSeconds(1));
+        assertThat(store.selfStudy(student,cl,"DH12")).extracting(Item::id).containsExactly(code);
+        assertThat(store.recommendations(student,cl)).extracting(Item::id).containsExactly(code);
+        UUID current=openWork(problem);
+        submitUncertain(current,uncertainGrade(current));
+        assertThat(store.selfStudy(student,cl,"DH12")).isEmpty();
+        assertThat(store.recommendations(student,cl)).noneMatch(item->item.id().equals(code));
+    }
+    @Test void selfStudyWithoutAssignmentExcludesOnlySubmittedCurrentVersion() {
+        assertThat(store.selfStudy(student,cl,"DH12")).extracting(Item::id).containsExactly(code);
+        UUID old=openWork(problem);
+        submitUncertain(old,uncertainGrade(old));
+        assertThat(store.selfStudy(student,cl,"DH12")).isEmpty();
+        solutions.save(new Solution(problem,"{\"updated\":true}","[]",null));
+        DuLieuPractice.phatHanh(db,cl,problem);
+        assertThat(store.selfStudy(student,cl,"DH12")).extracting(Item::id).containsExactly(code);
+        UUID current=openWork(problem);
+        assertThat(store.selfStudy(student,cl,"DH12")).extracting(Item::id).containsExactly(code);
+        submitUncertain(current,uncertainGrade(current));
+        assertThat(store.selfStudy(student,cl,"DH12")).isEmpty();
+        assertThat(store.assignments(cl)).isEmpty();
+    }
     @Test void auditIdentifiesActualUploadedDocumentAndFormula() {
         store.formula(teacher,new vn.hoctapcanman.core.workspace.application.dto.WorkspaceDto.Formula(cl,"Công thức thử","x=x","Đẳng thức."),Instant.now());
         var audit=store.audit();
@@ -252,7 +282,14 @@ class WorkspaceWorkflowIntegrationTest {
     }
     private UUID openWork(UUID p,UUID learner) {
         UUID id=UUID.randomUUID();
-        db.sql("INSERT INTO submissions(id,class_id,student_id,problem_id,content_version,status,started_at) SELECT :id,:cl,:s,id,content_version,'DANG_LAM',now() FROM problems WHERE id=:p")
+        // now() is the transaction start, which can precede chooseStudy's Java timestamp.
+        db.sql("""
+            INSERT INTO submissions(id,class_id,student_id,problem_id,content_version,status,started_at)
+            SELECT :id,:cl,:s,id,content_version,'DANG_LAM',greatest(now(),
+                (SELECT assigned_at FROM assignments WHERE class_id=:cl AND student_id=:s
+                    AND problem_id=:p AND status='DA_GIAO'))
+            FROM problems WHERE id=:p
+            """)
             .param("id",id).param("cl",cl).param("s",learner).param("p",p).update();return id;
     }
     private UUID openWorkForOtherStudent() {
