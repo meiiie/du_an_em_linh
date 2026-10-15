@@ -20,18 +20,19 @@ const NAM_BUOC = [
   template: `
     <section id="nam-buoc" class="bat-dau">
       <div>
-        <p class="nho">Bắt đầu một bài</p>
-        <h2><span class="dong">Một bài. </span><span class="dong">Năm bước.</span></h2>
+        <p class="nho">Cách học theo từng chủ đề</p>
+        <h2><span class="dong">Từng bước nhỏ. </span><span class="dong">Hiểu rõ cách giải.</span></h2>
         <p class="mo-ta">
-          Viết từng bước như trên giấy. Máy kiểm tra mỗi bước và chỉ ra chỗ sai. Đồ thị của bài chỉ mở sau kết luận.
+          Viết từng bước như trên giấy. Máy kiểm tra mỗi bước và chỉ ra chỗ cần xem lại.
+          Gia sư AI gợi ý khi em cần. Sau khi nộp, em có thể xem lời giải đầy đủ.
         </p>
         <div class="nut">
-          <a appButton variant="vien-dam" routerLink="/dang-nhap">Vào học</a>
-          <a appButton variant="vien-kem" href="#xem">Xem cách học</a>
+          <a appButton routerLink="/dang-nhap">Vào học</a>
+          <a appButton variant="secondary" href="#xem">Xem cách học</a>
         </div>
       </div>
       <div class="cua-so">
-        <p class="cua-so-dau"><span>Phiếu năm bước</span><span>Toán 12</span></p>
+        <p class="cua-so-dau"><span>Ví dụ phiếu năm bước</span><span>Đạo hàm · Toán 12</span></p>
         <ol>
           @for (b of namBuoc; track b.ten; let i = $index) {
             <li>

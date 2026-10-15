@@ -4,7 +4,7 @@
 
 h2 {
   margin: 0;
-  font-weight: 400;
+  font-weight: 600;
   letter-spacing: -0.02em;
 }
 
@@ -28,8 +28,9 @@ article {
   flex-direction: column;
   padding: 40px;
   overflow: hidden;
-  border-radius: 16px;
-  background: var(--tc-kem);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  background: var(--tc-the);
 }
 
 .minh-hoa {
@@ -69,7 +70,7 @@ ul li {
   font-size: 15px;
 }
 
-article .vien {
+article .btn {
   width: 100%;
 }
 

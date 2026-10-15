@@ -3,7 +3,7 @@ import { RouterLink } from '@angular/router';
 import { Button } from '../../shared/ui/button';
 
 /**
- * «Chọn cách bắt đầu» theo trang Wiii (meiiie-design-kit, examples/wiii): hai thẻ kem cho học sinh và giáo viên, ảnh minh
+ * «Chọn cách bắt đầu»: hai thẻ sáng cho học sinh và giáo viên, ảnh minh
  * họa vẽ riêng (labs/design/prototypes/2026-10-06-trang-chu-anh), rồi «Trước khi dùng»: giới hạn của bản thử, hiện sẵn để
  * liên kết ở đầu trang dẫn tới đúng chỗ.
  */
@@ -29,12 +29,12 @@ import { Button } from '../../shared/ui/button';
           <h3>Học sinh.</h3>
           <p>Làm bài theo từng bước, hỏi gia sư khi kẹt.</p>
           <ul>
-            <li>Phiếu năm bước cho mỗi bài</li>
-            <li>Gợi ý ba cấp, không đưa đáp án</li>
-            <li>Mức hiểu theo từng kỹ năng</li>
-            <li>Lịch học trong tuần</li>
+            <li>Làm bài theo từng bước phù hợp với chủ đề</li>
+            <li>Gia sư AI gợi ý theo bước, không đưa đáp án</li>
+            <li>Xem lời giải đầy đủ sau khi nộp</li>
+            <li>Nhắc lịch học qua thông báo trình duyệt</li>
           </ul>
-          <a appButton variant="vien-dam" routerLink="/dang-nhap">Vào học</a>
+          <a appButton routerLink="/dang-nhap">Vào học</a>
         </article>
         <article>
           <img
@@ -49,21 +49,23 @@ import { Button } from '../../shared/ui/button';
             decoding="async"
           />
           <h3>Giáo viên.</h3>
-          <p>Chuẩn bị nội dung của lớp và theo dõi từng em.</p>
+          <p>Cùng AI soạn nội dung, thầy cô quyết định trước khi giao.</p>
           <ul>
-            <li>Tài liệu và bảng công thức của lớp</li>
-            <li>Công thức trong bài tập được kiểm trước khi dùng</li>
-            <li>Hàng duyệt cho phần máy không kiểm được</li>
-            <li>Mức của từng học sinh</li>
+            <li>AI soạn nháp bài tập và lời giải từ tài liệu của thầy cô</li>
+            <li>Thầy cô duyệt trước khi giao cho học sinh</li>
+            <li>Theo dõi mức hiểu của từng học sinh</li>
+            <li>Xem mức dùng AI của lớp</li>
           </ul>
-          <a appButton variant="vien-vien" routerLink="/dang-nhap">Vào lớp</a>
+          <a appButton variant="secondary" routerLink="/dang-nhap">Vào lớp</a>
         </article>
       </div>
       <div id="truoc-khi-dung" class="truoc">
         <h3>Trước khi dùng</h3>
         <p>
-          Nội dung hiện tại: đơn điệu và cực trị, Toán 12. Chưa tự đăng ký được; tài
-          khoản do nhà trường cung cấp. Các hình trên trang minh họa cách học, không phải bài làm của học sinh.
+          Toán THPT lớp 10–12. Bản thí điểm có 74 bài luyện tập thuộc 13 chủ đề.
+          Tài khoản do nhà trường cung cấp, không tự đăng ký.
+          Nội dung được thầy cô duyệt trước khi học sinh thấy.
+          Các hình trên trang minh họa cách học, không phải bài làm của học sinh.
         </p>
       </div>
     </section>

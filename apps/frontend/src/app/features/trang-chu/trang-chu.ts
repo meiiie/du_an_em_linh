@@ -5,7 +5,6 @@ import { Button } from '../../shared/ui/button';
 import { DoiGiaoDien } from '../../shared/ui/doi-giao-dien';
 import { CanhLamViec } from './canh-lam-viec';
 import { ChanTrang } from './chan-trang';
-import { DaiBang } from './dai-bang';
 import { ChonVai } from './chon-vai';
 import { PhanBatDau } from './phan-bat-dau';
 
@@ -19,12 +18,12 @@ const NHIP_MS = 1000;
 
 /**
  * Trang công khai `/`, dựng theo trang Wiii trong meiiie-design-kit (examples/wiii): mở đầu căn giữa với từ xoay, lưới thẻ
- * cảnh, phần bắt đầu, dải bảng tối, hai thẻ chọn vai, chân trang. Vùng toán là bảng 3b1b. Mọi chuyển động tự dừng
+ * cảnh, phần bắt đầu, hai thẻ chọn vai, chân trang. Đồ thị xanh trên nền sáng. Mọi chuyển động tự dừng
  * trong 5 s và đứng yên khi máy đặt giảm chuyển động.
  */
 @Component({
   selector: 'app-trang-chu',
-  imports: [RouterLink, BrandMark, Button, DoiGiaoDien, CanhLamViec, ChanTrang, ChonVai, DaiBang, PhanBatDau],
+  imports: [RouterLink, BrandMark, Button, DoiGiaoDien, CanhLamViec, ChanTrang, ChonVai, PhanBatDau],
   templateUrl: './trang-chu.html',
   styleUrl: './trang-chu.css',
 })

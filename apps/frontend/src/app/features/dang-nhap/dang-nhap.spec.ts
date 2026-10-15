@@ -33,6 +33,14 @@ function go(o: HTMLInputElement, giaTri: string): void {
 }
 
 describe('DangNhap', () => {
+  it('tài khoản do trường cấp, hướng dẫn quên mật khẩu không dẫn tới trang chưa có', async () => {
+    const t = await moTrang();
+    expect(t.el.textContent).toContain('Toán THPT · Lớp 10–12');
+    expect(t.el.textContent).toContain('Quên mật khẩu? Liên hệ giáo viên hoặc quản trị trường.');
+    expect(t.el.textContent).not.toContain('đơn điệu và cực trị');
+    expect(t.el.querySelector('a[href*="quen-mat-khau"], a[href*="dang-ky"]')).toBeNull();
+  });
+
   it('bước email: tiêu đề, ô email, Tiếp tục khóa khi ô trống, có nút đổi giao diện', async () => {
     const t = await moTrang();
     expect(t.el.querySelector('h1')?.textContent).toBe('Đăng nhập');

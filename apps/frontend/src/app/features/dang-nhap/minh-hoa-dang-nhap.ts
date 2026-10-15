@@ -1,8 +1,8 @@
 import { Component } from '@angular/core';
 
 /**
- * Nửa phải trang đăng nhập (màn rộng): tấm bảng tối 3b1b với nền đường cong và ảnh học sinh vẽ riêng
- * (labs/design/prototypes/2026-10-06-trang-chu-anh), cùng câu của trang công khai. Trang trí, ẩn với trình đọc màn hình;
+ * Nửa phải trang đăng nhập (màn rộng): minh họa toán phẳng trên nền xanh nhạt,
+ * cùng câu của trang công khai. Trang trí, ẩn với trình đọc màn hình;
  * không công thức nào của ngân hàng bài (SP-10).
  */
 @Component({
@@ -10,9 +10,22 @@ import { Component } from '@angular/core';
   host: { 'aria-hidden': 'true' },
   template: `
     <div class="giua">
-      <img src="/anh/hoc-sinh-1200.webp" width="1200" height="900" alt="" decoding="async" />
+      <svg class="minh-hoa" viewBox="0 0 480 320" fill="none">
+        <rect x="16" y="16" width="448" height="288" rx="12" class="giay" />
+        <g class="luoi">
+          <path d="M64 64H416M64 112H416M64 160H416M64 208H416M64 256H416" />
+          <path d="M112 64V256M176 64V256M240 64V256M304 64V256M368 64V256" />
+        </g>
+        <path d="M64 224H416M240 48V272" class="truc" />
+        <path d="M96 80Q240 352 384 80" class="duong" />
+        <circle cx="240" cy="216" r="6" class="diem" />
+        <g class="chu">
+          <text x="400" y="248">x</text><text x="256" y="64">y</text>
+          <text x="40" y="48">Học từng bước, hiểu từng ý</text>
+        </g>
+      </svg>
       <p class="cau">Học toán theo từng bước.<br />Tự mình <span class="gach">hiểu ra</span>.</p>
-      <p class="nho">Phiếu năm bước · Máy kiểm từng bước · Gia sư không đưa đáp án</p>
+      <p class="nho">Toán THPT lớp 10–12 · Gia sư AI gợi ý theo bước, không đưa đáp án</p>
     </div>
   `,
   styles: `
@@ -21,34 +34,39 @@ import { Component } from '@angular/core';
       place-items: center;
       min-height: 100dvh;
       padding: var(--space-8);
-      background: linear-gradient(145deg, var(--board), color-mix(in srgb, var(--m-blue) 24%, var(--board)));
-      color: var(--board-ink);
-      color-scheme: dark;
+      background: var(--wash);
+      color: var(--ink);
     }
     .giua {
       width: min(100%, 34rem);
     }
-    img {
+    .minh-hoa {
       display: block;
       width: 100%;
       height: auto;
-      border-radius: 16px;
     }
+    .giay { fill: var(--raise); stroke: var(--line); }
+    .luoi { stroke: var(--line); }
+    .truc { stroke: var(--line-strong); stroke-width: 1.5; }
+    .duong { stroke: var(--accent); stroke-width: 4; stroke-linecap: round; }
+    .diem { fill: var(--accent); }
+    .chu { fill: var(--ink-2); font: 14px var(--font-sans); }
     .cau {
+      color: var(--ink);
       margin: var(--space-6) 0 0;
       font-size: 32px;
-      font-weight: 400;
+      font-weight: 600;
       line-height: 1.2;
       letter-spacing: -0.02em;
     }
     .gach {
-      padding-bottom: 3px;
-      background: linear-gradient(90deg, var(--m-blue), var(--m-teal), var(--m-yellow)) no-repeat left bottom / 100% 3px;
+      color: var(--accent);
     }
     .nho {
       margin: var(--space-3) 0 0;
-      color: color-mix(in srgb, var(--board-ink) 70%, var(--board));
+      color: var(--muted);
       font-size: 15px;
+      line-height: 24px;
     }
   `,
 })

@@ -1,19 +1,23 @@
 :host {
   display: block;
+  min-width: 0;
+  /* Công thức hay nhãn dài trên máy thiếu phông không được đẩy cả trang tràn ngang. */
+  overflow-x: clip;
 }
 
 .tieu-de {
   display: flex;
+  flex-wrap: wrap;
   justify-content: space-between;
   gap: var(--space-4);
   margin-bottom: var(--space-4);
-  font-size: 15px;
+  font-size: 20px;
 }
 
 .tieu-de h2 {
   margin: 0;
   font-size: inherit;
-  font-weight: 400;
+  font-weight: 600;
 }
 
 .tieu-de span {
@@ -22,7 +26,7 @@
 
 .luoi {
   display: grid;
-  gap: 12px;
+  gap: 24px;
 }
 
 .the {
@@ -31,23 +35,22 @@
   min-width: 0;
   margin: 0;
   overflow: hidden;
-  border-radius: 16px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
   background: var(--tc-the);
   color: var(--ink);
 }
 
-.the.toi {
-  background: var(--board);
-  color: var(--board-ink);
-  color-scheme: dark;
+.gia-su-the {
+  background: var(--wash);
 }
 
 .dau {
   margin: 0;
   padding: 14px 24px;
-  border-bottom: 1px solid color-mix(in srgb, currentColor 10%, transparent);
+  border-bottom: 1px solid var(--line);
   font-size: 13px;
-  opacity: 0.8;
+  color: var(--muted);
 }
 
 .than {
@@ -70,7 +73,7 @@
 }
 
 .chan span {
-  opacity: 0.7;
+  color: var(--muted);
   text-align: right;
 }
 
@@ -100,8 +103,8 @@
 }
 
 .muc-luc .dang {
-  border-color: var(--accent);
-  color: var(--ink);
+  color: var(--accent);
+  font-weight: 600;
 }
 
 .trang p {
@@ -116,6 +119,8 @@
 
 .trang app-katex {
   display: block;
+  max-width: 100%;
+  overflow-x: auto;
   margin: 4px 0 12px;
   font-size: 1.1rem;
 }
@@ -135,7 +140,8 @@
   margin-left: auto;
   padding: 8px 14px;
   border-radius: 14px;
-  background: color-mix(in srgb, var(--board-ink) 12%, var(--board));
+  border: 1px solid var(--line);
+  background: var(--raise);
 }
 
 .the-nho {
@@ -147,8 +153,8 @@
 .the-nho span {
   padding: 2px 10px;
   border-radius: 999px;
-  background: color-mix(in srgb, var(--m-teal) 18%, var(--board));
-  color: var(--m-teal);
+  background: var(--raise);
+  color: var(--accent);
   font-size: 13px;
 }
 

@@ -38,7 +38,7 @@ const MUC = ['Nhận biết', 'Thông hiểu', 'Vận dụng', 'Vận dụng cao
         <p class="chan"><strong>Phiếu năm bước</strong><span>Kiểm từng bước</span></p>
       </article>
 
-      <article class="the toi gia-su-the">
+      <article class="the gia-su-the">
         <p class="dau">Gia sư</p>
         <div class="than gia-su">
           <p class="hoi">Em chưa biết xét dấu y′.</p>
@@ -48,20 +48,20 @@ const MUC = ['Nhận biết', 'Thông hiểu', 'Vận dụng', 'Vận dụng cao
         <p class="chan"><strong>Gia sư</strong><span>Hỏi khi cần</span></p>
       </article>
 
-      <article class="the toi bang-the">
+      <article class="the bang-the">
         <p class="dau">Bảng toán</p>
         <div class="than"><app-minh-hoa-dao-ham /></div>
         <p class="chan"><strong>Đồ thị</strong><span>Kéo điểm để xem</span></p>
       </article>
 
       <article class="the gv-the">
-        <p class="dau">Bảng công thức · Lớp 12A1 thử</p>
+        <p class="dau">Soạn nội dung · Giáo viên và AI</p>
         <ul class="than cong-thuc">
-          <li><app-katex latex="\\left(\\dfrac{u}{v}\\right)' = \\dfrac{u'v - uv'}{v^{2}}" /><span class="dat">Đạt</span></li>
-          <li><app-katex latex="(x^{n})' = n\\,x^{n-1}" /><span class="dat">Đạt</span></li>
-          <li><span>Ghi chú: điểm tới hạn</span><span class="cho">Chờ duyệt</span></li>
+          <li><span>Tài liệu của thầy cô</span><span>Nguồn soạn</span></li>
+          <li><span>AI soạn bài tập và lời giải</span><span class="cho">Bản nháp</span></li>
+          <li><span>Thầy cô xem và phê duyệt</span><span class="dat">Trước khi giao</span></li>
         </ul>
-        <p class="chan"><strong>Giáo viên</strong><span>Kiểm công thức trước khi dùng</span></p>
+        <p class="chan"><strong>Giáo viên</strong><span>Duyệt trước khi học sinh thấy</span></p>
       </article>
 
       <article class="the muc-the">

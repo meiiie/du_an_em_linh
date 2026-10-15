@@ -1,4 +1,4 @@
-/* Màn rộng: form trái, tấm bảng minh họa phải (MinhHoaDangNhap); màn hẹp chỉ có form. */
+/* Màn rộng: form trái, minh họa toán trên nền xanh nhạt; màn hẹp chỉ có form. */
 .trang {
   position: relative;
   display: grid;
@@ -130,9 +130,7 @@ h1 {
   font-size: 16px;
   font-weight: 400;
   line-height: 24px;
-  transition:
-    border-color 150ms var(--ease),
-    border-color 150ms var(--ease);
+  transition: border-color 150ms var(--ease);
 }
 
 .o-nhap:hover {

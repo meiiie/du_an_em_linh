@@ -30,7 +30,7 @@ const LUOI_DOC = [-4, -3, -2, -1, 1, 2, 3, 4].map(sx);
 const LUOI_NGANG = [-1, 1].map(sy);
 
 /**
- * Hình trên trang công khai, đặt trong thẻ nền `--board` (3b1b): kéo điểm (chuột, chạm) hay thanh trượt (bàn phím)
+ * Hình trên trang công khai, đường cong xanh trên nền sáng: kéo điểm (chuột, chạm) hay thanh trượt (bàn phím)
  * đổi `x`; tiếp tuyến và `y′` tính lại từ `x`. Không gắn nhãn cực trị (docs/DESIGN.md).
  */
 @Component({

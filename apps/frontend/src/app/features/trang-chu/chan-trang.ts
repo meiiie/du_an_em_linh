@@ -27,16 +27,11 @@ import { DoiGiaoDien } from '../../shared/ui/doi-giao-dien';
             <a href="#chon">Chuẩn bị lớp</a>
             <a routerLink="/dang-nhap">Vào lớp</a>
           </div>
-          <div>
-            <p>Dự án</p>
-            <a href="https://github.com/meiiie/du_an_em_linh">GitHub</a>
-            <a href="https://github.com/meiiie/du_an_em_linh/blob/main/LICENSE">Giấy phép MIT</a>
-          </div>
         </nav>
       </div>
       <div class="khung chan-duoi">
         <p>Các hình trên trang minh họa cách học, không phải bài làm của học sinh.</p>
-        <p>© MathL+ · Mã nguồn mở theo giấy phép MIT</p>
+        <p>© MathL+</p>
       </div>
     </footer>
   `,

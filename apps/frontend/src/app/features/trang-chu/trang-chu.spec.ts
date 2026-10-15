@@ -66,9 +66,21 @@ describe('TrangChu', () => {
     expect(t.tuDangHien()).toBe('hiểu ra');
   });
 
-  it('câu kiểm công thức nói rõ thuộc bài tập',async()=>{
-    const t=await mo();expect(t.el.textContent).toContain('Công thức trong bài tập được kiểm trước khi dùng');
-    expect(t.el.textContent).not.toContain('Công thức được kiểm trước khi dùng');
+  it('giới thiệu đúng phạm vi THPT và nội dung do giáo viên duyệt', async () => {
+    const t = await mo();
+    const chu = t.el.textContent!;
+    expect(chu).toContain('Toán THPT');
+    expect(chu).toContain('Lớp 10–12');
+    expect(chu).toContain('74 bài luyện tập · 13 chủ đề');
+    expect(chu).toContain('AI soạn nháp bài tập và lời giải từ tài liệu của thầy cô');
+    expect(chu).toContain('Thầy cô duyệt trước khi giao cho học sinh');
+    expect(chu).toContain('Theo dõi mức hiểu của từng học sinh');
+    expect(chu).toContain('Xem mức dùng AI của lớp');
+    expect(chu).toContain('Xem lời giải đầy đủ sau khi nộp');
+    expect(chu).toContain('Nhắc lịch học qua thông báo trình duyệt');
+    expect(chu).not.toMatch(/Một chủ đề|Công thức trong bài tập được kiểm|Hàng duyệt cho phần máy|MIT|Nghị định/);
+    expect(t.el.querySelector('footer')?.textContent).toContain('© MathL+');
+    expect(t.el.querySelector('footer a[href*="github.com"]')).toBeNull();
   });
 
   it('ảnh minh họa có chữ thay thế, kích thước khai sẵn (không xô bố cục) và tải lười', async () => {

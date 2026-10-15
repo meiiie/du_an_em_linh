@@ -12,6 +12,11 @@ for (const family of ['B.GT', 'B.XS']) {
     const values = ['0; 2', 'x^2', '{1; 2}', '1/2', '3/4'];
     for (let i = 0; i < steps.length; i++) {
       await expect(page.locator('.tieu-de')).toContainText(steps[i].ten);
+      await expect(page.locator('.nhap input')).toHaveCount(1);
+      await expect(page.locator('.nhap math-field')).toHaveCount(0);
+      await expect(page.locator('#huong-dan-nhap')).toHaveCount(1);
+      await expect(page.locator('.nhap input')).toHaveAttribute('aria-describedby', 'huong-dan-nhap phan-hoi');
+      await expect(page.locator('.nhap input')).toHaveAttribute('placeholder', 'Nhập câu trả lời');
       await page.locator(`input[data-testid="latex-${steps[i].maBuoc}"]`).fill(values[i]);
       await noOverflow(page);
       await flat(page);
