@@ -28,6 +28,29 @@ class TutorSessionControllerTest {
     }
     @AfterEach void clear(){SecurityContextHolder.clearContext();}
     String body(UUID request){return "{\"requestId\":\""+request+"\",\"maBuoc\":\"B.DH.TXD\",\"cap\":1,\"cauHoi\":\"Em đã thử cách này\"}";}
+    @Test void legacyStreamsDeltaBeforeProviderCompletes() throws Exception {
+        var emitted=new java.util.concurrent.CountDownLatch(1);
+        var release=new java.util.concurrent.CountDownLatch(1);
+        org.mockito.Mockito.doAnswer(call -> {
+            java.util.function.Consumer<String> tokens=call.getArgument(1);
+            tokens.accept("Em thử xét dấu");emitted.countDown();
+            assertTrue(release.await(5,java.util.concurrent.TimeUnit.SECONDS));
+            tokens.accept(" đạo hàm.");
+            return new vn.hoctapcanman.core.tutor.application.dto.TutorSessionDto.ModelUsage(20,10,false);
+        }).when(fixture.model).stream(org.mockito.ArgumentMatchers.any(),org.mockito.ArgumentMatchers.any());
+        try {
+            var response=mvc.perform(post("/api/hs/gia-su").contentType(MediaType.APPLICATION_JSON)
+                .content("{\"maBai\":\"DH1\",\"maBuoc\":\"B.DH.TXD\",\"cap\":1,\"cauHoi\":\"Em đã thử\"}"))
+                .andExpect(request().asyncStarted()).andExpect(header().string("X-Accel-Buffering","no")).andReturn();
+            assertTrue(emitted.await(3,java.util.concurrent.TimeUnit.SECONDS));
+            long deadline=System.nanoTime()+java.util.concurrent.TimeUnit.SECONDS.toNanos(3);
+            while(!response.getResponse().getContentAsString(java.nio.charset.StandardCharsets.UTF_8).contains("event:delta") && System.nanoTime()<deadline)Thread.sleep(10);
+            var partial=response.getResponse().getContentAsString(java.nio.charset.StandardCharsets.UTF_8);
+            assertTrue(partial.contains("event:delta"));assertFalse(partial.contains("event:xong"));
+            release.countDown();response.getAsyncResult(5000);
+            mvc.perform(asyncDispatch(response)).andExpect(status().isOk());
+        } finally {release.countDown();}
+    }
     @Test void openReturnsDesignSessionIdAndCursorWithoutCallingModel() throws Exception {
         mvc.perform(post("/api/hs/gia-su/v2/phien").contentType(MediaType.APPLICATION_JSON)
             .content("{\"giaoBaiId\":\""+fixture.assignment+"\"}"))

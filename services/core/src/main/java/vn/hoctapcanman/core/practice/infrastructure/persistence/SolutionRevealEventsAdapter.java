@@ -10,8 +10,8 @@ public class SolutionRevealEventsAdapter implements SolutionRevealEvents {
     private final JdbcClient db;
     public SolutionRevealEventsAdapter(JdbcClient db) { this.db=db; }
     public boolean blocked(UUID student, UUID classId, UUID problem, Instant now) {
-        return db.sql("SELECT EXISTS(SELECT 1 FROM assignments WHERE student_id=:student AND problem_id=:problem AND status='DA_GIAO' AND mode='KIEM_TRA' AND (due_at IS NULL OR due_at>:now))")
-            .param("student",student).param("problem",problem).param("now",Timestamp.from(now)).query(Boolean.class).single();
+        return db.sql("SELECT EXISTS(SELECT 1 FROM assignments WHERE student_id=:student AND class_id=:cl AND problem_id=:problem AND status='DA_GIAO' AND mode='KIEM_TRA' AND (due_at IS NULL OR due_at>:now))")
+            .param("student",student).param("cl",classId).param("problem",problem).param("now",Timestamp.from(now)).query(Boolean.class).single();
     }
     @org.springframework.transaction.annotation.Transactional(propagation=org.springframework.transaction.annotation.Propagation.REQUIRES_NEW)
     public void modelCall(UUID classId,String provider,Instant now) {

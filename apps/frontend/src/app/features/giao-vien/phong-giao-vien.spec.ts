@@ -7,7 +7,7 @@ import { signal } from '@angular/core';
 import { LopDangChon } from '../../core/lop-dang-chon';
 import { PhongGiaoVien } from './phong-giao-vien';
 
-async function setup() {
+async function setup(boBai = 0) {
   const lop = { id: signal('lop1'), ds: signal([{ id: 'lop1', title: '12A1' }, { id: 'lop2', title: '12A2' }]), dangTai: signal(false), loi: signal(false), soChoDuyet: signal(0), tai: async () => {} };
   TestBed.configureTestingModule({ providers: [provideHttpClient(), provideHttpClientTesting(), provideRouter([]), { provide: LopDangChon, useValue: lop }] });
   const fixture = TestBed.createComponent(PhongGiaoVien);
@@ -17,6 +17,7 @@ async function setup() {
   http.expectOne('/api/gv/ngan-hang?lopId=lop1').flush(Array.from({ length: 45 }, (_, i) => ({ id: 'b' + i, title: 'Bài ' + i, subtitle: i === 0 ? 'Xét tính đơn điệu' : '', status: i === 44 ? 'NHAP' : 'DA_PHAT_HANH', details: { level4: 'NHAN_BIET', skillCode: 'T12.DH.03', gate: 'DAT', latex: 'x' } })));
   http.expectOne('/api/gv/tien-do?lopId=lop1').flush(Array.from({ length: 30 }, (_, i) => ({ id: 'hs' + i, title: 'Học sinh ' + i, subtitle: '', status: 'STUDENT', details: { skills: [], submitted: 0 } })));
   http.expectOne('/api/gv/giao?lopId=lop1').flush([]);
+  http.expectOne('/api/gv/tong-quan?lopId=lop1').flush({students:30,stuck:0,pending:0,assignments:boBai*10,boBai,distribution:{},deadlines:[]});
   await fixture.whenStable();
   const el = fixture.nativeElement as HTMLElement;
   const lists = () => el.querySelectorAll('fieldset');
@@ -25,6 +26,11 @@ async function setup() {
 }
 
 describe('Giao bài với ngân hàng và lớp đầy đủ', () => {
+  it('bộ đếm bộ bài dùng boBai của tổng quan', async () => {
+    const t = await setup(3);
+    expect(t.el.querySelector('.list-summary')?.textContent).toContain('3 bộ bài');
+    t.http.verify();
+  });
   it('tên truy cập của bài giữ tên gốc cùng đề bài và mức khi hiển thị đề bài', async () => {
     const t = await setup();
     const checkbox = t.lists()[0].querySelector('input[type=checkbox]')!;
@@ -69,6 +75,27 @@ describe('Giao bài với ngân hàng và lớp đầy đủ', () => {
     expect((t.lists()[0].querySelector('[type=checkbox]') as HTMLInputElement).checked).toBe(true);
     t.http.verify();
   });
+  it('giao hạn 21 giờ Việt Nam, tải lại và cập nhật số bộ theo lượt', async () => {
+    const t=await setup();
+    const name=t.el.querySelector<HTMLInputElement>('form > label input')!;
+    name.value='Ôn cực trị';name.dispatchEvent(new Event('input'));
+    const due=t.el.querySelector<HTMLInputElement>('#giao-han-nop')!;
+    due.value='2026-10-16T21:00';due.dispatchEvent(new Event('input'));
+    (t.lists()[0].querySelector('[type=checkbox]') as HTMLInputElement).click();
+    await t.fixture.whenStable();
+    t.el.querySelector('form')!.dispatchEvent(new Event('submit',{cancelable:true}));
+    const request=t.http.expectOne(r=>r.method==='POST'&&r.url==='/api/gv/giao');
+    expect(request.request.body.dueAt).toBe('2026-10-16T14:00:00.000Z');
+    request.flush({message:'Đã giao',count:2});
+    await new Promise(r=>setTimeout(r,0));TestBed.tick();
+    t.http.expectOne('/api/gv/giao?lopId=lop1').flush(['hs1','hs2'].map((studentId,i)=>({id:String(i),title:'Ôn cực trị',subtitle:'An',status:'ON_TAP',details:{setKey:'luot-moi',studentId,problemCode:'P1',dueAt:'2026-10-16T14:00:00Z'}})));
+    t.http.expectOne('/api/gv/tong-quan?lopId=lop1').flush({students:30,stuck:0,pending:0,assignments:2,boBai:1,distribution:{},deadlines:[]});
+    await t.fixture.whenStable();
+    expect(t.el.querySelector('.list-summary')?.textContent).toContain('1 bộ bài');
+    expect(t.el.querySelector('.row-list')?.textContent).toContain('Ôn cực trị');
+    expect(t.el.querySelector('.row-list')?.textContent).toContain('21:00');
+    t.http.verify();
+  });
   it('Enter trong ô tìm kiếm không gửi bộ bài đã đủ điều kiện giao', async () => {
     const t = await setup();
     const name = t.el.querySelector('form > label input') as HTMLInputElement;
@@ -94,6 +121,7 @@ describe('Giao bài với ngân hàng và lớp đầy đủ', () => {
     t.http.expectOne('/api/gv/ngan-hang?lopId=lop2').flush([]);
     t.http.expectOne('/api/gv/tien-do?lopId=lop2').flush([]);
     t.http.expectOne('/api/gv/giao?lopId=lop2').flush([]);
+    t.http.expectOne('/api/gv/tong-quan?lopId=lop2').flush({students:0,stuck:0,pending:0,assignments:0,boBai:0,distribution:{},deadlines:[]});
     await t.fixture.whenStable();
     expect(t.lists()[0].textContent).toContain('Chọn bài (0)');
     expect((t.lists()[0].querySelector('input[type=search]') as HTMLInputElement).value).toBe('');
@@ -131,11 +159,11 @@ describe('Tổng quan với hạn theo bài', () => {
     TestBed.configureTestingModule({providers:[provideHttpClient(),provideHttpClientTesting(),provideRouter([]),{provide:LopDangChon,useValue:lop}]});
     const f=TestBed.createComponent(PhongGiaoVien);f.detectChanges();const http=TestBed.inject(HttpTestingController);
     http.expectOne('/api/gv/canh-bao?lopId=lop1').flush([]);
-    http.expectOne('/api/gv/tong-quan?lopId=lop1').flush({students:1,stuck:0,pending:0,assignments:80,distribution:{},deadlines:Array.from({length:8},(_,i)=>({id:String(i),title:'Ôn tập '+i,subtitle:'2 bài',status:'ON_TAP',details:{tenBo:'Ôn tập '+i,setKey:String(i),problemCodes:['A','B'],problemCount:2,studentCount:5,assignmentCount:10,submittedCount:3,dueAt:'2026-10-'+(20+i)+'T13:00:00Z'}})).reverse()});
+    http.expectOne('/api/gv/tong-quan?lopId=lop1').flush({students:1,stuck:0,pending:0,assignments:80,boBai:8,distribution:{},deadlines:Array.from({length:8},(_,i)=>({id:String(i),title:'Ôn tập '+i,subtitle:'2 bài',status:'ON_TAP',details:{tenBo:'Ôn tập '+i,setKey:String(i),problemCodes:['A','B'],problemCount:2,studentCount:5,assignmentCount:10,submittedCount:3,dueAt:'2026-10-'+(20+i)+'T13:00:00Z'}})).reverse()});
     await f.whenStable();const el=f.nativeElement as HTMLElement;
     expect(el.querySelectorAll('.row-list li')).toHaveLength(5);
     expect(el.querySelector('.row-list strong')?.textContent).toBe('Ôn tập 0');
-    expect(el.querySelector('.row-list')?.textContent).toContain('Thứ Ba, 20/10 · 3/10 đã nộp');
+    expect(el.querySelector('.row-list')?.textContent).toContain('Thứ Ba, 20/10 · 20:00 · 3/10 đã nộp');
     expect(el.querySelector('.row-list')?.textContent).toContain('2 bài · 5 học sinh');
     http.expectNone(r => /\/(giao|ngan-hang|tien-do|hoc-sinh)\b/.test(r.url));
     expect([...el.querySelectorAll('a')].find(a=>a.textContent?.includes('Xem tất cả'))?.getAttribute('href')).toBe('/gv/giao');
@@ -147,7 +175,7 @@ describe('Tổng quan với hạn theo bài', () => {
     const f=TestBed.createComponent(PhongGiaoVien);f.detectChanges();
     const http=TestBed.inject(HttpTestingController);
     http.expectOne('/api/gv/canh-bao?lopId=lop1').flush([]);
-    http.expectOne('/api/gv/tong-quan?lopId=lop1').flush({students:2,stuck:0,pending:0,assignments:2,distribution:{NHAN_BIET:1,THONG_HIEU:1},deadlines:[{id:"old",title:"CODE",details:{dueAt:"2026-10-20T13:00:00Z",studentId:"a",problemCode:"CODE"}}]});
+    http.expectOne('/api/gv/tong-quan?lopId=lop1').flush({students:2,stuck:0,pending:0,assignments:2,boBai:1,distribution:{NHAN_BIET:1,THONG_HIEU:1},deadlines:[{id:"old",title:"CODE",details:{dueAt:"2026-10-20T13:00:00Z",studentId:"a",problemCode:"CODE"}}]});
     await new Promise(r=>setTimeout(r,0));
     TestBed.tick();
     await new Promise(r=>setTimeout(r,0));
@@ -160,7 +188,7 @@ describe('Tổng quan với hạn theo bài', () => {
     const el=f.nativeElement as HTMLElement;
     expect(el.querySelectorAll('.row-list li')).toHaveLength(1);
     expect(el.querySelector('.row-list strong')?.textContent).toBe('Hàm số: đơn điệu và cực trị');
-    expect(el.querySelector('.row-list')?.textContent).toContain('Thứ Ba, 20/10 · 1/2 đã nộp');
+    expect(el.querySelector('.row-list')?.textContent).toContain('Thứ Ba, 20/10 · 20:00 · 1/2 đã nộp');
     expect(el.querySelector('.distribution-legend')?.textContent).toContain('50%');
     http.expectNone('/api/gv/hoc-sinh/b?lopId=lop1');http.verify();
   });
@@ -201,7 +229,7 @@ describe('Cảnh báo kẹt cho giáo viên', () => {
     const f=TestBed.createComponent(PhongGiaoVien); f.detectChanges();
     const http=TestBed.inject(HttpTestingController);
     http.expectOne('/api/gv/canh-bao?lopId=lop1').flush([{id:'ket1',title:'Chi',subtitle:'Đang kẹt ở Xét dấu đạo hàm.',status:'KET',details:{studentId:'chi'}}]);
-    http.expectOne('/api/gv/tong-quan?lopId=lop1').flush({students:1,stuck:1,pending:0,assignments:0,distribution:{},deadlines:[]});
+    http.expectOne('/api/gv/tong-quan?lopId=lop1').flush({students:1,stuck:1,pending:0,assignments:0,boBai:0,distribution:{},deadlines:[]});
     await f.whenStable();
     const alert=(f.nativeElement as HTMLElement).querySelector('[data-testid=canh-bao-ket]')!;
     expect(alert.textContent).toContain('Chi');
