@@ -1,0 +1,19 @@
+# Caddy trước frontend (nginx) của MathL+; tự cấp và gia hạn chứng chỉ HTTPS (Let's Encrypt).
+# MATHL_DOMAIN đặt trong .env trên máy chủ, ví dụ mathl.example.vn; bản ghi DNS A phải trỏ về IP máy chủ.
+{
+	email {$MATHL_ACME_EMAIL}
+}
+
+{$MATHL_DOMAIN} {
+	encode zstd gzip
+	header {
+		Strict-Transport-Security "max-age=31536000"
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		-Server
+	}
+	reverse_proxy frontend:8080 {
+		health_uri /health
+		health_interval 30s
+	}
+}
