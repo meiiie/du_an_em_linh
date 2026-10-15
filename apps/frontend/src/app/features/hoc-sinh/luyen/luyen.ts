@@ -2,6 +2,7 @@ import { VanBanToan } from '../../../shared/toan/van-ban-toan';
 import { ngayViet } from '../../../shared/ui/dinh-dang';
 import { ApiLopHoc } from '../../../api/lop-hoc';
 import { HttpClient, HttpErrorResponse, httpResource } from '@angular/common/http';
+import { DOCUMENT } from '@angular/common';
 import {
   afterNextRender,
   Component,
@@ -70,6 +71,7 @@ export class Luyen {
   readonly maBai = input.required<string>();
 
   private readonly http = inject(HttpClient);
+  private readonly document = inject(DOCUMENT);
   private readonly injector = inject(Injector);
   private readonly tieuDe = viewChild<ElementRef<HTMLElement>>('tieuDe');
   private readonly vungPhanHoi = viewChild<ElementRef<HTMLElement>>('vungPhanHoi');
@@ -238,23 +240,13 @@ export class Luyen {
   });
   constructor() {
     effect(onCleanup => {
-      const mode = this.mode();
-      if (mode?.status !== 'KIEM_TRA' || mode.details.conHan === false) return;
-      const deadline = Date.parse(mode.details.dueAt ?? '');
-      if (!Number.isFinite(deadline) || deadline <= Date.now()) return;
-      // Đồng hồ chỉ hẹn tải lại chế độ, không quyết định quyền xem lời giải.
-      // Chia hạn dài để không vượt giới hạn setTimeout; dọn khi đổi bài/hủy trang.
-      let timer: ReturnType<typeof setTimeout>;
-      const henTaiLai = () => {
-        const conLai = deadline - Date.now();
-        if (conLai <= 0) {
-          this.cheDo.reload();
-          return;
-        }
-        timer = setTimeout(henTaiLai, Math.min(conLai + 1, 2_147_483_647));
-      };
-      henTaiLai();
-      onCleanup(() => clearTimeout(timer));
+      if (!this.khoaLoiGiai()) return;
+      // Poll cả khi chưa tải được chế độ hoặc lần tải lại lỗi; chỉ server mở khoá.
+      // Không dựa vào dueAt/giờ máy, không chồng yêu cầu hay tải khi tab ẩn.
+      const timer = setInterval(() => {
+        if (!this.document.hidden && !this.cheDo.isLoading()) this.cheDo.reload();
+      }, 30_000);
+      onCleanup(() => clearInterval(timer));
     });
   }
   protected async xemLoiGiai(): Promise<void> {

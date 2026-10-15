@@ -43,6 +43,11 @@ const daDat = (maBuoc: string, dong = [{ dong: 0, latex: '\\mathbb{R}' }]) => ({
 
 describe('Luyen', () => {
   beforeEach(() => localStorage.clear());
+  afterEach(() => {
+    TestBed.resetTestingModule();
+    vi.useRealTimers();
+    vi.restoreAllMocks();
+  });
   async function mo(bai: ChiTietBai | { loi: number }, choOn = true, mode = 'ON_TAP', dueAt = '2026-10-20T12:00:00Z', truocCheDo?: () => Promise<void>, conHan = true) {
     TestBed.configureTestingModule({
       providers: [
@@ -393,9 +398,9 @@ describe('Luyen', () => {
     t.http.expectNone(API_HS.loiGiai(MA));
     t.http.verify();
   });
-  it.each([false, true, null])('đến hạn tải lại chế độ, phản hồi conHan=%s quyết định mở lời giải (null: lỗi mạng)', async (conHan) => {
-    const deadline=Date.now()+1000;
-    const t=await mo(chiTiet({trangThai:'DA_NOP',cacBuoc:CAC_BUOC.map(s=>daDat(s.maBuoc))}), false, 'KIEM_TRA', new Date(deadline).toISOString(), async () => { await new Promise(r=>setTimeout(r,300)); });
+  it.each([false, true, null])('poll mỗi 30 giây, phản hồi conHan=%s quyết định mở lời giải (null: lỗi mạng)', async (conHan) => {
+    vi.useFakeTimers({ toFake: ['setInterval', 'clearInterval'] });
+    const t=await mo(chiTiet({trangThai:'DA_NOP',cacBuoc:CAC_BUOC.map(s=>daDat(s.maBuoc))}), false, 'KIEM_TRA');
     TestBed.tick();
     t.http.expectOne({method:'POST',url:API_HS.nopBai(MA)}).flush({ketQua:'DAT',mucHieu:[]});
     await t.xong();
@@ -404,12 +409,15 @@ describe('Luyen', () => {
     await t.bam('[data-testid="xem-toan-bo-loi-giai"]');
     const confirm=[...dialog.querySelectorAll('button')].find(b=>b.textContent?.trim()==='Xác nhận xem lời giải')!;
     expect(confirm.disabled).toBe(true);
-    await new Promise(r=>setTimeout(r, Math.max(1, deadline-Date.now()+30)));
+    vi.advanceTimersByTime(29_999);
+    TestBed.tick();
+    t.http.expectNone('/api/hs/che-do');
+    vi.advanceTimersByTime(1);
     TestBed.tick();
     expect(confirm.disabled).toBe(true);
     const reload=t.http.expectOne('/api/hs/che-do');
     if(conHan === null) reload.flush(null,{status:503,statusText:'Lỗi mạng'});
-    else reload.flush([{id:MA,title:MA,subtitle:'',status:'KIEM_TRA',details:{dueAt:new Date(deadline).toISOString(),conHan}}]);
+    else reload.flush([{id:MA,title:MA,subtitle:'',status:'KIEM_TRA',details:{dueAt:'2026-10-20T12:00:00Z',conHan}}]);
     await t.fixture.whenStable();
     expect(confirm.disabled).toBe(conHan !== false);
     confirm.click();
@@ -418,8 +426,52 @@ describe('Luyen', () => {
       await t.xong();
       expect(t.chu('[data-testid=loi-giai-sau-nop]')).toContain('Lời giải sau hạn.');
     } else t.http.expectNone(API_HS.loiGiai(MA));
+    vi.advanceTimersByTime(30_000);
+    TestBed.tick();
+    if (conHan === false) t.http.expectNone('/api/hs/che-do');
+    else {
+      t.http.expectOne('/api/hs/che-do').flush([{id:MA,status:'KIEM_TRA',details:{conHan:false}}]);
+      await t.fixture.whenStable();
+      expect(confirm.disabled).toBe(false);
+    }
     t.http.verify();
   });
+
+  it.each(['2000-01-01T00:00:00Z', '2099-01-01T00:00:00Z', '', 'không hợp lệ'])(
+    'vẫn poll khi hạn là %s; bỏ qua tab ẩn, yêu cầu đang tải và dọn khi huỷ', async (dueAt) => {
+      vi.useFakeTimers({ toFake: ['setInterval', 'clearInterval'] });
+      const hidden = vi.spyOn(document, 'hidden', 'get').mockReturnValue(true);
+      const t = await mo(chiTiet(), true, 'KIEM_TRA', dueAt);
+      vi.advanceTimersByTime(60_000);
+      TestBed.tick();
+      t.http.expectNone('/api/hs/che-do');
+      hidden.mockReturnValue(false);
+      vi.advanceTimersByTime(30_000);
+      TestBed.tick();
+      const reload = t.http.expectOne('/api/hs/che-do');
+      vi.advanceTimersByTime(30_000);
+      TestBed.tick();
+      t.http.expectNone('/api/hs/che-do');
+      expect(reload.cancelled).toBe(false);
+      reload.flush([{id:MA,status:'KIEM_TRA',details:{dueAt,conHan:true}}]);
+      await t.fixture.whenStable();
+      t.fixture.destroy();
+      vi.advanceTimersByTime(60_000);
+      TestBed.tick();
+      t.http.expectNone('/api/hs/che-do');
+      t.http.verify();
+    },
+  );
+
+  it('bài ôn không poll trạng thái hạn', async () => {
+    vi.useFakeTimers({ toFake: ['setInterval', 'clearInterval'] });
+    const t = await mo(chiTiet());
+    vi.advanceTimersByTime(60_000);
+    TestBed.tick();
+    t.http.expectNone('/api/hs/che-do');
+    t.http.verify();
+  });
+
   it.each([
     {dueAt:'2099-01-01T00:00:00Z',conHan:false,disabled:false},
     {dueAt:'2000-01-01T00:00:00Z',conHan:true,disabled:true},
