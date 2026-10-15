@@ -15,9 +15,17 @@ server {
     add_header X-Frame-Options DENY always;
     add_header Referrer-Policy strict-origin-when-cross-origin always;
 
+    # Phân giải lại tên core mỗi 10 giây: trên Railway core đổi IP mỗi lần triển khai, nginx giữ IP cũ thì mọi /api/
+    # treo (nút Vào học không đi đâu vì guard chờ /api/auth/refresh). NGINX_LOCAL_RESOLVERS do entrypoint của image
+    # đọc từ /etc/resolv.conf (Docker: 127.0.0.11, Railway: DNS mạng riêng). proxy_pass dùng biến nên phải có resolver.
+    resolver ${NGINX_LOCAL_RESOLVERS} valid=10s;
+    resolver_timeout 5s;
+    set $core_upstream http://${CORE_HOSTPORT};
+
     # ^~: location regex của tệp tĩnh bên dưới không bắt nhầm đường API.
     location ^~ /api/ {
-        proxy_pass http://${CORE_HOSTPORT};
+        proxy_pass $core_upstream;
+        proxy_connect_timeout 5s;
         proxy_buffering off;
         proxy_read_timeout 90s;
         proxy_set_header Host $host;
@@ -26,7 +34,8 @@ server {
     }
 
     location = /health {
-        proxy_pass http://${CORE_HOSTPORT}/actuator/health/readiness;
+        proxy_pass $core_upstream/actuator/health/readiness;
+        proxy_connect_timeout 5s;
         proxy_set_header Host $host;
         add_header Cache-Control "no-cache" always;
         add_header X-Content-Type-Options nosniff always;
