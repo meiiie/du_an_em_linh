@@ -180,7 +180,7 @@ import vn.hoctapcanman.core.workspace.application.exception.WorkspaceException;
             JOIN problem_releases r ON r.problem_id=p.id AND r.class_id=:cl AND r.status='DA_PHAT_HANH' AND EXISTS(SELECT 1 FROM verification_runs fresh WHERE fresh.id=r.run_id AND NOT fresh.stale AND fresh.content_version=p.content_version AND fresh.content_hash=p.content_hash)
             WHERE sk.topic_code=:topic AND (p.answer_form='TU_LUAN_5_BUOC' OR EXISTS(SELECT 1 FROM exercise_step_frames f WHERE f.problem_id=p.id AND f.content_version=p.content_version)) AND NOT EXISTS(
                 SELECT 1 FROM submissions s WHERE s.student_id=:student AND s.class_id=:cl
-                AND s.problem_id=p.id AND s.status='DA_NOP') AND NOT EXISTS(
+                AND s.problem_id=p.id AND s.content_version=p.content_version AND s.status='DA_NOP') AND NOT EXISTS(
                 SELECT 1 FROM assignments a WHERE a.student_id=:student AND a.problem_id=p.id AND a.status='DA_GIAO'
                 AND (a.mode='KIEM_TRA' OR a.due_at<=:now)) ORDER BY p.code
             """).param("cl",cl).param("topic",topic).param("student",student).param("now",java.sql.Timestamp.from(clock.instant()))
@@ -252,8 +252,14 @@ import vn.hoctapcanman.core.workspace.application.exception.WorkspaceException;
         result.addAll(db.sql("SELECT q.*,p.code FROM tutor_review_queue q JOIN problems p ON p.id=q.problem_id WHERE q.class_id=:cl AND q.decision IS NULL AND q.reason NOT LIKE 'Cổng công thức chưa xác minh được lời gợi ý%' ORDER BY q.created_at DESC").param("cl",cl).query((rs,n)->new Item(rs.getString("id"),"Gợi ý · "+rs.getString("code"),rs.getString("reason"),"KHONG_KIEM_DUOC",details("kind","TUTOR","draft",rs.getString("draft")))).list());
         result.addAll(db.sql("""
             SELECT g.id,g.step_code,g.message,p.code,u.display_name,t.description step_name,
-                coalesce((SELECT string_agg(l.latex, E'\\n' ORDER BY l.line_no) FROM submission_steps l
-                    WHERE l.submission_id=s.id AND l.step_code=g.step_code),'') work
+                concat_ws(E'\\n',
+                    (SELECT string_agg(l.latex, E'\\n' ORDER BY l.line_no) FROM submission_steps l
+                        WHERE l.submission_id=s.id AND l.step_code=g.step_code),
+                    (SELECT concat_ws(E'\\n','Bảng ' || b.table_kind,
+                        (SELECT string_agg(c.row_code || coalesce('[' || c.k::text || ']','') || ' = ' || c.value,
+                            E'\\n' ORDER BY c.ordinal) FROM submission_table_cells c
+                            WHERE c.submission_id=b.submission_id AND c.step_code=b.step_code))
+                        FROM submission_tables b WHERE b.submission_id=s.id AND b.step_code=g.step_code)) work
             FROM grading_results g JOIN submissions s ON s.id=g.submission_id
             JOIN problems p ON p.id=s.problem_id JOIN users u ON u.id=s.student_id
             JOIN step_templates t ON t.step_code=g.step_code

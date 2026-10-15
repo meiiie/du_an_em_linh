@@ -173,7 +173,7 @@ class WorkspaceWorkflowIntegrationTest {
         for(String topic:List.of("TP12","KG12","XS12")) {
             String skill="T12.QA."+topic;
             db.sql("INSERT INTO topics(code,name,grade) VALUES(:t,:t,12) ON CONFLICT DO NOTHING").param("t",topic).update();
-            db.sql("INSERT INTO skills(code,topic_code,name,grade) VALUES(:s,:t,'Kỹ năng thử',12) ON CONFLICT DO NOTHING").param("s",skill).param("t",topic).update();
+            db.sql("INSERT INTO skills(code,topic_code,name,grade,is_core) VALUES(:s,:t,'Kỹ năng thử',12,true) ON CONFLICT DO NOTHING").param("s",skill).param("t",topic).update();
             var exercise=DuLieuPractice.baiV0(db,"QA-"+topic,skill,"NHAN_BIET","Đề tổng hợp","x",null,"TU_LUAN",null,"SUPHAM");
             DuLieuPractice.phatHanh(db,cl,exercise.id());
             assertThat(store.selfStudy(student,cl,topic)).isEmpty();
@@ -181,8 +181,7 @@ class WorkspaceWorkflowIntegrationTest {
             assertThat(store.selfStudy(student,cl,topic)).extracting(i->i.id()).containsExactly(exercise.ma());
             store.chooseStudy(student,cl,exercise.ma(),Instant.now());
             UUID submission=openWork(exercise.id());UUID grade=uncertainGrade(submission);
-            db.sql("UPDATE submissions SET status='DA_NOP',result='KHONG_KIEM_DUOC',result_grading_id=:g,submitted_at=now() WHERE id=:s")
-                .param("g",grade).param("s",submission).update();
+            submitUncertain(submission,grade);
             assertThat(store.selfStudy(student,cl,topic)).isEmpty();
             assertThat(store.recommendations(student,cl)).noneMatch(item->item.id().equals(exercise.ma()));
         }
@@ -201,6 +200,43 @@ class WorkspaceWorkflowIntegrationTest {
         assertThat(store.reviews(cl)).isEmpty();
         assertThat(db.sql("SELECT result FROM grading_results WHERE id=:g").param("g",grade).query(String.class).single()).isEqualTo("KHONG_KIEM_DUOC");
     }
+    @Test void uncertainSignTableReviewIncludesOrderedCellsFromOnlyThatSubmissionAndStep() {
+        UUID submission=openWork(problem);UUID grade=uncertainGrade(submission,"B.DH.XETDAU");
+        db.sql("INSERT INTO submission_steps(submission_id,step_code,line_no,latex) VALUES(:s,'B.DH.DAOHAM',0,'Không phải bước xét dấu')")
+            .param("s",submission).update();
+        for(UUID work:List.of(submission,openWorkForOtherStudent())) {
+            db.sql("INSERT INTO submission_tables(submission_id,step_code,table_kind) VALUES(:s,'B.DH.XETDAU','XET_DAU')").param("s",work).update();
+            // Insert out of order: evidence must follow ordinal and retain the 0-based position.
+            db.sql("""
+                INSERT INTO submission_table_cells(submission_id,step_code,ordinal,row_code,k,value) VALUES
+                (:s,'B.DH.XETDAU',2,'DAU_YPHAY',1,'?'),
+                (:s,'B.DH.XETDAU',0,'X',NULL,'0'),
+                (:s,'B.DH.XETDAU',1,'DAU_YPHAY',0,'-')
+                """).param("s",work).update();
+        }
+        assertThat(store.reviews(cl)).singleElement().satisfies(item->{
+            assertThat(item.id()).isEqualTo(grade.toString());
+            assertThat(item.details()).containsEntry("kind","STEP")
+                .containsEntry("draft","Bảng XET_DAU\nX = 0\nDAU_YPHAY[0] = -\nDAU_YPHAY[1] = ?");
+        });
+        service.review(teacher,grade,new Review(cl,true,"Đã xem bảng xét dấu."));
+        assertThat(store.reviews(cl)).isEmpty();
+        assertThat(db.sql("SELECT result FROM grading_results WHERE id=:g").param("g",grade).query(String.class).single()).isEqualTo("KHONG_KIEM_DUOC");
+    }
+    @Test void submissionForOldVersionDoesNotExcludeRepublishedExerciseFromSelfStudy() {
+        store.chooseStudy(student,cl,code,Instant.now());
+        UUID submission=openWork(problem);submitUncertain(submission,uncertainGrade(submission));
+        int before=problems.findContentVersion(problem).orElseThrow();
+        assertThat(store.selfStudy(student,cl,"DH12")).isEmpty();
+        solutions.save(new Solution(problem,"{\"updated\":true}","[]",null));
+        assertThat(problems.findContentVersion(problem)).contains(before+1);
+        DuLieuPractice.phatHanh(db,cl,problem);
+        assertThat(store.selfStudy(student,cl,"DH12")).extracting(Item::id).containsExactly(code);
+        assertThat(store.recommendations(student,cl)).extracting(Item::id).containsExactly(code);
+        UUID current=openWork(problem);submitUncertain(current,uncertainGrade(current));
+        assertThat(store.selfStudy(student,cl,"DH12")).isEmpty();
+        assertThat(store.recommendations(student,cl)).noneMatch(item->item.id().equals(code));
+    }
     @Test void auditIdentifiesActualUploadedDocumentAndFormula() {
         store.formula(teacher,new vn.hoctapcanman.core.workspace.application.dto.WorkspaceDto.Formula(cl,"Công thức thử","x=x","Đẳng thức."),Instant.now());
         var audit=store.audit();
@@ -212,14 +248,31 @@ class WorkspaceWorkflowIntegrationTest {
         });
     }
     private UUID openWork(UUID p) {
+        return openWork(p,student);
+    }
+    private UUID openWork(UUID p,UUID learner) {
         UUID id=UUID.randomUUID();
-        db.sql("INSERT INTO submissions(id,class_id,student_id,problem_id,content_version,status,started_at) VALUES(:id,:cl,:s,:p,1,'DANG_LAM',now())")
-            .param("id",id).param("cl",cl).param("s",student).param("p",p).update();return id;
+        db.sql("INSERT INTO submissions(id,class_id,student_id,problem_id,content_version,status,started_at) SELECT :id,:cl,:s,id,content_version,'DANG_LAM',now() FROM problems WHERE id=:p")
+            .param("id",id).param("cl",cl).param("s",learner).param("p",p).update();return id;
+    }
+    private UUID openWorkForOtherStudent() {
+        UUID other=DuLieuPractice.nguoi(db,"STUDENT");DuLieuPractice.ghiDanh(db,cl,other,"STUDENT");
+        return openWork(problem,other);
+    }
+    private void submitUncertain(UUID submission,UUID grade) {
+        db.sql("""
+            UPDATE submissions s SET status='DA_NOP',result='KHONG_KIEM_DUOC',result_grading_id=:g,
+                submitted_at=now(),skill_code=p.skill_code,level4=p.level4
+            FROM problems p WHERE s.id=:s AND p.id=s.problem_id
+            """).param("g",grade).param("s",submission).update();
     }
     private UUID uncertainGrade(UUID submission) {
+        return uncertainGrade(submission,"B.DH.DAOHAM");
+    }
+    private UUID uncertainGrade(UUID submission,String step) {
         UUID id=UUID.randomUUID();
-        db.sql("INSERT INTO grading_results(id,submission_id,step_code,request_hash,result,message,graded_at) VALUES(:id,:s,'B.DH.DAOHAM',:hash,'KHONG_KIEM_DUOC','Chờ thầy cô xem.',now())")
-            .param("id",id).param("s",submission).param("hash","c".repeat(64)).update();return id;
+        db.sql("INSERT INTO grading_results(id,submission_id,step_code,request_hash,result,message,graded_at) VALUES(:id,:s,:step,:hash,'KHONG_KIEM_DUOC','Chờ thầy cô xem.',now())")
+            .param("id",id).param("s",submission).param("step",step).param("hash","c".repeat(64)).update();return id;
     }
 
 }
