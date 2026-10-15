@@ -1,0 +1,54 @@
+# Lớp phủ cho máy chủ demo cho khách: docker compose -f compose.v2.yaml -f compose.demo.yaml up -d --build --wait
+# Giữ dữ liệu tổng hợp THPT Nguyễn Trãi (profile dev) nhưng chạy thêm profile prod: bắt buộc khóa JWT, cookie Secure.
+# Mọi bí mật lấy từ .env trên máy chủ (không commit); thiếu biến bắt buộc thì Compose dừng ngay.
+name: hoc-toan-v2
+
+services:
+  db:
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Đặt POSTGRES_PASSWORD trong .env}
+    mem_limit: 512m
+
+  core:
+    environment:
+      # prod sau dev: thuộc tính prod thắng (cookie Secure, JWT bắt buộc); biến môi trường dưới đây bật lại nhập seed.
+      SPRING_PROFILES_ACTIVE: dev,prod
+      APP_CONTENT_IMPORT_ON_STARTUP: "true"
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:?Đặt POSTGRES_PASSWORD trong .env}
+      APP_IDENTITY_JWT_SECRET: ${APP_IDENTITY_JWT_SECRET:?Đặt APP_IDENTITY_JWT_SECRET (openssl rand -base64 32)}
+      MATHL_DEV_SEED_PASSWORD: ${MATHL_DEV_SEED_PASSWORD:?Đặt MATHL_DEV_SEED_PASSWORD cho tài khoản demo}
+
+  frontend:
+    environment:
+      SITE_URL: https://${MATHL_DOMAIN:?Đặt MATHL_DOMAIN}
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    security_opt: ["no-new-privileges:true"]
+    cap_drop: [ALL]
+    cap_add: [NET_BIND_SERVICE]
+    environment:
+      MATHL_DOMAIN: ${MATHL_DOMAIN:?Đặt MATHL_DOMAIN}
+      MATHL_ACME_EMAIL: ${MATHL_ACME_EMAIL:?Đặt MATHL_ACME_EMAIL}
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    depends_on:
+      frontend:
+        condition: service_healthy
+    mem_limit: 128m
+    logging:
+      driver: local
+      options:
+        max-size: 10m
+        max-file: "3"
+
+volumes:
+  caddy-data:
+  caddy-config:
