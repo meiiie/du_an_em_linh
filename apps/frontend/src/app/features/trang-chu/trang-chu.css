@@ -5,6 +5,8 @@
   --tc-kem: var(--wash);
   display: block;
   min-height: 100dvh;
+  /* Phông dự phòng rộng hơn (máy không có Noto) không được làm cả trang cuộn ngang. */
+  overflow-x: clip;
   background: var(--tc-page);
 }
 
