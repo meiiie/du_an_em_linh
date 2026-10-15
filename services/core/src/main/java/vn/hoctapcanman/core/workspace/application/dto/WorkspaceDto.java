@@ -17,7 +17,7 @@ public final class WorkspaceDto {
     public record Result(String message,int count) {
     }
 
-    public record Dashboard(int students,int stuck,int pending,int assignments,Map<String,Long> distribution,List<Item> deadlines) {
+    public record Dashboard(int students,int stuck,int pending,int assignments,int boBai,Map<String,Long> distribution,List<Item> deadlines) {
     }
 
     public record Library(List<Item> formulas,List<Item> documents) {

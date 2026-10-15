@@ -266,7 +266,8 @@ class WorkspacePersistenceTest {
         assertThat(seedStore.dashboard(cl).deadlines()).extracting(row -> row.details().get("dueAt"))
             .containsExactly("2026-10-13T10:00:00Z","2026-10-13T11:00:00Z");
         assertThat(seedStore.assignments(cl)).hasSize(13);
-        assertThat(seedStore.dashboard(cl).assignments()).isEqualTo(4);
+        assertThat(seedStore.dashboard(cl).assignments()).isEqualTo(13);
+        assertThat(seedStore.dashboard(cl).boBai()).isEqualTo(4);
     }
 
     @Test

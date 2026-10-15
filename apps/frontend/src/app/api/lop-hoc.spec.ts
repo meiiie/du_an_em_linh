@@ -15,7 +15,7 @@ describe('ApiLopHoc', () => {
 
   it('tổng quan gửi đúng lớp, ký tự đặc biệt không làm thay đổi query', () => {
     api.tongQuan('lop & 12').subscribe();
-    http.expectOne('/api/gv/tong-quan?lopId=lop%20%26%2012').flush({ students: 0, stuck: 0, pending: 0, assignments: 0, distribution: {}, deadlines: [] });
+    http.expectOne('/api/gv/tong-quan?lopId=lop%20%26%2012').flush({ students: 0, stuck: 0, pending: 0, assignments: 0, boBai: 0, distribution: {}, deadlines: [] });
   });
 
   it('xuất thẻ giữ lỗi endpoint để màn báo lỗi, không tạo CSV rỗng', () => {

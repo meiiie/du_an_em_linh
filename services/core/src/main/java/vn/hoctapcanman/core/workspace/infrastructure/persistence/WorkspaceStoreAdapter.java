@@ -58,7 +58,7 @@ import vn.hoctapcanman.core.workspace.application.exception.WorkspaceException;
         }
         List<Item> sets=groupAssignments(assignments(cl));
         List<Item> deadlines=upcomingDeadlines(sets).stream().limit(10).toList();
-        return new Dashboard(count("SELECT count(*) FROM enrollments WHERE class_id=:cl AND role_in_class='STUDENT'",cl),count("SELECT count(DISTINCT student_id) FROM escalations WHERE class_id=:cl AND handled_at IS NULL",cl),reviews(cl).size()+count("SELECT count(*) FROM content_drafts WHERE class_id=:cl AND decision IS NULL",cl),sets.size(),levels,deadlines);
+        return new Dashboard(count("SELECT count(*) FROM enrollments WHERE class_id=:cl AND role_in_class='STUDENT'",cl),count("SELECT count(DISTINCT student_id) FROM escalations WHERE class_id=:cl AND handled_at IS NULL",cl),reviews(cl).size()+count("SELECT count(*) FROM content_drafts WHERE class_id=:cl AND decision IS NULL",cl),count("SELECT count(*) FROM assignments WHERE class_id=:cl",cl),sets.size(),levels,deadlines);
     }
 
     /** Lọc hạn đã qua trước khi gom bộ hoặc giới hạn số hàng; so sánh theo thời điểm thật. */
