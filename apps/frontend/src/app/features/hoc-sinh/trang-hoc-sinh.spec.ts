@@ -139,6 +139,14 @@ describe('TrangHocSinh', () => {
     t.http.verify();
   });
 
+  it('nhắc hạn giữ tên thật của bộ bài và thời điểm trong phần tử thời gian',async()=>{
+    const t=await mo(undefined,[{id:'bo-kg',title:'Sắp đến hạn: Ôn tập hình học không gian',subtitle:'',status:'ON_TAP',details:{dueAt:'2026-10-20T13:00:00Z'}}]);
+    t.http.expectOne(API_HS.bai).flush(BAI);await t.fixture.whenStable();
+    expect(t.chu('.nhac-hoc strong')).toBe('Sắp đến hạn: Ôn tập hình học không gian');
+    expect(t.chu('.nhac-hoc time')).toBe('Thứ Ba, 20/10 · 20:00');
+    expect(t.chu('.nhac-hoc')).not.toContain('Bài được giao');t.http.verify();
+  });
+
   it('chỉ hiện hai nhắc hạn và giữ liên kết lịch sau danh sách', async () => {
     const reminders = Array.from({length:4}, (_, i) => ({id:'nhac'+i,title:'Nhắc học '+i,subtitle:'',status:'',details:{startsAt:'2026-10-20T13:00:00Z'}}));
     const t = await mo(undefined, reminders);

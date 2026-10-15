@@ -48,4 +48,43 @@ class WorkspaceServiceTest {
  @Test void cannotDisableSelf(){assertThrows(WorkspaceException.class,()->service.bulk(actor,new Bulk(List.of(actor),false)));verifyNoInteractions(store);}
  @Test void rejectsRealStudentIntake(){assertThrows(WorkspaceException.class,()->service.createUser(actor,new NewUser("demo@example.test","Demo","long-password","STUDENT",false)));verifyNoInteractions(hasher,store);}
  @Test void scheduleChecksTimeRange(){assertThrows(WorkspaceException.class,()->service.schedule(student,new Schedule("Học",now,now.minusSeconds(1))));verifyNoInteractions(store);}
+
+ @Test void archiveAssignmentChecksClassBeforeWriting(){
+  doThrow(new WorkspaceException(403,"Không thuộc lớp")).when(members).kiemGiaoVien(actor,cl);
+  assertThrows(WorkspaceException.class,()->service.archiveAssignments(actor,new ArchiveSet(cl,List.of(problem))));
+  verifyNoInteractions(store);
+ }
+ @Test void archiveDocumentChecksClassAndMissingResource(){
+  assertThrows(WorkspaceException.class,()->service.archiveDocument(actor,cl,problem));
+  verify(members).kiemGiaoVien(actor,cl);verify(store).archiveDocument(actor,cl,problem,now);
+ }
+ @Test void archiveUserChecksScopeAndProtectsSelf(){
+  when(store.accountRole(actor)).thenReturn("ADMIN");
+  assertThrows(WorkspaceException.class,()->service.archiveUser(actor,actor));
+  verify(store,never()).archiveUser(any(),any(),any());
+  when(store.archiveUser(actor,student,now)).thenReturn(true);
+  assertEquals(1,service.archiveUser(actor,student).count());
+ }
+ @Test void passwordResetHashesAndDoesNotLogRawPassword(){
+  when(store.accountRole(actor)).thenReturn("ADMIN");when(hasher.hash("New-password-123")).thenReturn("{bcrypt}HASH");
+  when(store.resetPassword(actor,student,"{bcrypt}HASH",now)).thenReturn(true);
+  assertEquals(1,service.resetPassword(actor,student,new ResetPassword("New-password-123")).count());
+  verify(store).resetPassword(actor,student,"{bcrypt}HASH",now);
+  assertFalse(new ResetPassword("New-password-123").toString().contains("New-password"));
+ }
+ @Test void schoolAdminCannotResetOutsideScopeOrUseOversizedUtf8(){
+  when(store.accountRole(actor)).thenReturn("SCHOOL_ADMIN");
+  assertThrows(WorkspaceException.class,()->service.resetPassword(actor,student,new ResetPassword("New-password-123")));
+  when(store.accountRole(actor)).thenReturn("ADMIN");
+  assertThrows(WorkspaceException.class,()->service.resetPassword(actor,student,new ResetPassword("ấ".repeat(30))));
+  verifyNoInteractions(hasher);verify(store,never()).resetPassword(any(),any(),any(),any());
+ }
+
+ @Test void bankPaginationRejectsInvalidSizeAndDelegatesNormalizedQuery(){
+  assertThrows(WorkspaceException.class,()->service.bankPage(actor,cl,"","","",1,1000));
+  verify(store,never()).bankPage(any(),any(),any(),any(),anyInt(),anyInt());
+  when(store.bankPage(cl,"tich phan","","",2,10)).thenReturn(new BankPage(List.of(),0));
+  assertEquals(0,service.bankPage(actor,cl,"Tích phân","","",2,10).total());
+  verify(store).bankPage(cl,"tich phan","","",2,10);
+ }
 }

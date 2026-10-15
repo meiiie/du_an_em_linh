@@ -68,10 +68,13 @@ import vn.hoctapcanman.core.workspace.application.service.WorkspaceService;
         return service.skillCatalog(actor(jwt),lopId);
     }
 
-    @GetMapping("/api/gv/ngan-hang") public List<Item> bank(@AuthenticationPrincipal Jwt jwt,@RequestParam UUID lopId,
+    @GetMapping("/api/gv/ngan-hang") public org.springframework.http.ResponseEntity<List<Item>> bank(@AuthenticationPrincipal Jwt jwt,@RequestParam UUID lopId,
         @RequestParam(defaultValue="") String q,@RequestParam(defaultValue="") String level4,
-        @RequestParam(defaultValue="") String skillCode,@RequestParam(defaultValue="") String gate) {
-        return service.bank(actor(jwt),lopId,q,level4,skillCode,gate);
+        @RequestParam(defaultValue="") String skillCode,@RequestParam(defaultValue="") String gate,
+        @RequestParam(defaultValue="-1") int page,@RequestParam(defaultValue="20") int size) {
+        if(page==-1)return org.springframework.http.ResponseEntity.ok(service.bank(actor(jwt),lopId,q,level4,skillCode,gate));
+        var result=service.bankPage(actor(jwt),lopId,q,level4,gate,page,size);
+        return org.springframework.http.ResponseEntity.ok().header("X-Total-Count",Long.toString(result.total())).body(result.items());
     }
 
     @GetMapping("/api/gv/giao") public List<Item> assignments(@AuthenticationPrincipal Jwt jwt,@RequestParam UUID lopId) {
@@ -196,6 +199,19 @@ import vn.hoctapcanman.core.workspace.application.service.WorkspaceService;
 
     @PostMapping("/api/qt/lop/phan-cong") public Result enroll(@AuthenticationPrincipal Jwt jwt,@Valid @RequestBody Enrollment request) {
         return service.enroll(actor(jwt),request);
+    }
+
+    @PostMapping("/api/gv/giao/luu-tru") public Result archiveAssignments(@AuthenticationPrincipal Jwt jwt,@Valid @RequestBody ArchiveSet request) {
+        return service.archiveAssignments(actor(jwt),request);
+    }
+    @DeleteMapping("/api/gv/tai-lieu/{id}") public Result archiveDocument(@AuthenticationPrincipal Jwt jwt,@PathVariable UUID id,@RequestParam UUID lopId) {
+        return service.archiveDocument(actor(jwt),lopId,id);
+    }
+    @DeleteMapping("/api/qt/nguoi-dung/{id}") public Result archiveUser(@AuthenticationPrincipal Jwt jwt,@PathVariable UUID id) {
+        return service.archiveUser(actor(jwt),id);
+    }
+    @PutMapping("/api/qt/nguoi-dung/{id}/mat-khau") public Result password(@AuthenticationPrincipal Jwt jwt,@PathVariable UUID id,@Valid @RequestBody ResetPassword request) {
+        return service.resetPassword(actor(jwt),id,request);
     }
 
     @GetMapping("/api/qt/nhat-ky") public List<Item> audit(@AuthenticationPrincipal Jwt jwt) {

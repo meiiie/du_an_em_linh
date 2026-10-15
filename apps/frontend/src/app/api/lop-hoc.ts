@@ -36,8 +36,8 @@ export class ApiLopHoc {
   hocSinh(lopId: () => string, id: () => string | undefined) {
     return httpResource<StudentProfile>(() => { const ma = id(); return lopId() && ma ? this.duongGv(`hoc-sinh/${encodeURIComponent(ma)}`, lopId()) : undefined; });
   }
-  nganHang(lopId: () => string | undefined) {
-    return httpResource<Item<BankDetails>[]>(() => { const id = lopId(); return id ? this.duongGv('ngan-hang', id) : undefined; });
+  nganHang(lopId: () => string | undefined, trang?: () => {page:number;size:number;q:string;level4:string;gate:string}|undefined) {
+    return httpResource<Item<BankDetails>[]>(() => { const id = lopId(); const p=trang?.(); return id ? this.duongGv('ngan-hang', id)+(p?'&'+new URLSearchParams({page:String(p.page),size:String(p.size),q:p.q,level4:p.level4,gate:p.gate}):'') : undefined; });
   }
   /** `GET /api/gv/ky-nang`: danh mục kỹ năng soạn bài của lớp, có cả khi lớp mới chưa có bài hay học sinh. */
   kyNangGv(lopId: () => string | undefined) {

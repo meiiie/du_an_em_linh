@@ -67,6 +67,6 @@ export function gomLuotGiao(rows: readonly Item[]): Item[] {
     const first = entries[0];
     const problems = new Set(entries.map(e => e.details['problemCode'] ?? e.id));
     const students = new Set(entries.map(e => e.details['studentId'] ?? e.id));
-    return {...first, id, subtitle: `${problems.size} bài · ${students.size} học sinh`};
+    return {...first, id, details:{...first.details,assignmentIds:entries.flatMap(e => Array.isArray(e.details['assignmentIds']) ? e.details['assignmentIds'] : [e.id])}, subtitle: `${problems.size} bài · ${students.size} học sinh`};
   });
 }

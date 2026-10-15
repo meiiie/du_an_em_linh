@@ -21,6 +21,6 @@ JOIN skills sk ON sk.code=p.skill_code
 JOIN topics topic ON topic.code=sk.topic_code
 JOIN enrollments hs ON hs.class_id=c.id AND hs.role_in_class='STUDENT'
 JOIN users u ON u.id=hs.user_id AND u.synthetic AND u.role='STUDENT' AND u.enabled
-WHERE c.id=:lop AND c.enabled AND topic.grade=c.grade
+WHERE c.id=:lop AND c.enabled AND topic.grade=c.grade AND p.code NOT IN (:tuHoc)
  AND NOT EXISTS (SELECT 1 FROM assignments a WHERE a.class_id=c.id AND a.problem_id=p.id AND a.student_id=hs.user_id)
 ON CONFLICT (class_id,problem_id,student_id) DO NOTHING

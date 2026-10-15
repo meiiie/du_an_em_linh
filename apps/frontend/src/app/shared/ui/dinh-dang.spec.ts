@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { DinhDangSo, ngayViet } from './dinh-dang';
+import { DinhDangSo, ngayViet, docHanViet } from './dinh-dang';
 
 describe('Dữ liệu hiển thị tiếng Việt', () => {
   it('nhóm hàng nghìn và dùng dấu phẩy cho phần thập phân', () => {
@@ -22,4 +22,10 @@ describe('Dữ liệu hiển thị tiếng Việt', () => {
     expect(ngayViet('2026-10-12T17:30:00Z')).toBe('Thứ Ba, 13/10');
     expect(ngayViet('2026-10-12T17:30:00Z', true)).toBe('Thứ Ba, 13/10 · 00:30');
   });
+});
+
+it('đọc hạn dd/mm/yyyy theo giờ Việt Nam và từ chối ngày không tồn tại',()=>{
+ expect(docHanViet('16/10/2026 21:00')).toBe('2026-10-16T14:00:00.000Z');
+ expect(docHanViet('29/02/2028 00:00')).toBe('2028-02-28T17:00:00.000Z');
+ for(const v of ['31/02/2026 21:00','29/02/2026 12:00','10/15/2026 21:00','16/10/2026 24:00','16/10/2026 12:60','2026-10-16T21:00'])expect(docHanViet(v)).toBeNull();
 });

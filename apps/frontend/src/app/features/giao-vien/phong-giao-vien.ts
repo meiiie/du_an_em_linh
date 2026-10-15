@@ -4,7 +4,7 @@ import { KichThuocTrang } from '../../shared/ui/kich-thuoc-trang';
 import { PhanTrang } from '../../shared/ui/phan-trang';
 import { gomHan, hanTheoBo, tenBai, tenKyNang, tenTrangThai } from './trinh-bay';
 import { VanBanToan } from '../../shared/toan/van-ban-toan';
-import { DinhDangSo, ngayViet } from '../../shared/ui/dinh-dang';
+import { DinhDangSo, ngayViet, docHanViet } from '../../shared/ui/dinh-dang';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Component, computed, effect, inject, input, linkedSignal, resource, signal } from '@angular/core';
 import { form, FormField, required, maxLength } from '@angular/forms/signals';
@@ -25,14 +25,14 @@ const TIEU_DE:Record<TrangGv,string>={'tong-quan':'Tổng quan','tien-do':'Mức
 @Component({selector:'app-phong-giao-vien',imports:[SuDungGiaSu,PhanTrang,VanBanToan,RouterLink,Button,HopThoai,Katex,OCongThuc,FormField,KhungCho,LoiTai,SoDo,TrangRong,DinhDangSo],templateUrl:'./phong-giao-vien.html'})
 export class PhongGiaoVien{
  protected readonly soMoiTrang = inject(KichThuocTrang).soMuc;
- readonly trang=input<TrangGv>('tong-quan');readonly id=input('');protected readonly lop=inject(LopDangChon);protected readonly tieuDe=computed(()=>this.trang()==='tong-quan'&&this.lop.ds().find(l=>l.id===this.lop.id()) ? 'Lớp '+this.lop.ds().find(l=>l.id===this.lop.id())!.title : TIEU_DE[this.trang()]);protected readonly tenMuc=TEN_MUC;protected readonly cacMuc=Object.keys(TEN_MUC) as Muc4[];protected readonly tim=signal('');protected readonly timBaiGiao=signal('');protected readonly timHsGiao=signal('');protected readonly mucLoc=signal('');protected readonly congLoc=signal('');protected readonly ban=signal(false);protected readonly loi=signal('');protected readonly hop=signal<'duyet'|'muc'|'cong-thuc'|'bai'|'bai-ke'|'tai-lieu'|'soan-nhap'|null>(null);protected readonly mucDangChon=signal<Item|null>(null);protected readonly chapThuan=signal(true);protected readonly lyDo=signal('');protected readonly kyNang=signal('');protected readonly mucMoi=signal<Muc4>('NHAN_BIET');protected readonly chonBai=signal<readonly string[]>([]);protected readonly chonHs=signal<readonly string[]>([]);protected readonly file=signal<File|null>(null);private readonly http=inject(HttpClient);private readonly api=inject(ApiLopHoc);private readonly toast=inject(ThongBaoNhanh);
+ readonly trang=input<TrangGv>('tong-quan');readonly id=input('');protected readonly lop=inject(LopDangChon);protected readonly tieuDe=computed(()=>this.trang()==='tong-quan'&&this.lop.ds().find(l=>l.id===this.lop.id()) ? 'Lớp '+this.lop.ds().find(l=>l.id===this.lop.id())!.title : TIEU_DE[this.trang()]);protected readonly tenMuc=TEN_MUC;protected readonly cacMuc=Object.keys(TEN_MUC) as Muc4[];protected readonly tim=signal('');protected readonly timBaiGiao=signal('');protected readonly timHsGiao=signal('');protected readonly mucLoc=signal('');protected readonly congLoc=signal('');protected readonly ban=signal(false);protected readonly loi=signal('');protected readonly hop=signal<'luu-tru'|'duyet'|'muc'|'cong-thuc'|'bai'|'bai-ke'|'tai-lieu'|'soan-nhap'|null>(null);protected readonly mucDangChon=signal<Item|null>(null);protected readonly chapThuan=signal(true);protected readonly lyDo=signal('');protected readonly kyNang=signal('');protected readonly mucMoi=signal<Muc4>('NHAN_BIET');protected readonly chonBai=signal<readonly string[]>([]);protected readonly chonHs=signal<readonly string[]>([]);protected readonly file=signal<File|null>(null);private readonly http=inject(HttpClient);private readonly api=inject(ApiLopHoc);private readonly toast=inject(ThongBaoNhanh);
  private url(path:string){return this.api.duongGv(path,this.lop.id());}
  protected readonly tongQuan=this.api.trangTongQuan(()=>['tong-quan','giao'].includes(this.trang())?this.lop.id():undefined);
  protected readonly canhBao=this.api.canhBao(()=>this.trang()==='tong-quan'?this.lop.id():undefined);
- protected readonly tienDo=this.api.tienDo(()=>['tien-do','giao','ngan-hang','ket-noi-ai'].includes(this.trang())?this.lop.id():undefined);
+ protected readonly tienDo=this.api.tienDo(()=>['tien-do','giao','ket-noi-ai'].includes(this.trang())?this.lop.id():undefined);
  protected readonly hocSinh=this.api.hocSinh(()=>this.lop.id(),()=>this.trang()==='hoc-sinh'?this.id():undefined);
  protected readonly kyNangLop=this.api.kyNangGv(()=>this.trang()==='ngan-hang'?this.lop.id():undefined);
- protected readonly nganHang=this.api.nganHang(()=>['ngan-hang','giao','hoc-sinh','duyet'].includes(this.trang())?this.lop.id():undefined);
+ protected readonly nganHang=this.api.nganHang(()=>['ngan-hang','giao','hoc-sinh','duyet'].includes(this.trang())?this.lop.id():undefined,()=>this.trang()==='ngan-hang'?{page:this.trangBai(),size:this.soMoiTrang(),q:this.tim(),level4:this.mucLoc(),gate:this.congLoc()}:undefined);
  protected readonly ds=this.api.danhSachGv(()=>{const t=this.trang();return t==='duyet'||t==='giao'||t==='cong-thuc'?t:undefined;},()=>this.lop.id());
  protected readonly kho=this.api.khoGv(()=>this.trang()==='tai-lieu'?this.lop.id():undefined);
  protected readonly caiDat=this.api.caiDat(()=>['cai-dat','ket-noi-ai'].includes(this.trang())?this.lop.id():undefined);
@@ -79,7 +79,7 @@ export class PhongGiaoVien{
  protected readonly kyNangHopLe=computed(()=>this.danhMucKyNang().some(k=>k.code===this.baiModel().skillCode));
  protected readonly baiKeId=signal('');
  protected readonly docModel=signal({title:'',licenseStatus:'tu_soan'});protected readonly docForm=form(this.docModel,p=>{required(p.title);maxLength(p.title,120);});
- protected readonly baiLoc=computed(()=>{const ds=this.nganHang.hasValue()?this.nganHang.value():[];const q=this.tim().toLocaleLowerCase('vi');return ds.filter(b=>(!q||(b.title+' '+b.subtitle+' '+b.details.skillCode+' '+tenKyNang(b.details.skillCode,b.details.skillName||this.tenKyNangTheoMa().get(b.details.skillCode))).toLocaleLowerCase('vi').includes(q))&&(!this.mucLoc()||b.details.level4===this.mucLoc())&&(!this.congLoc()||b.details.gate===this.congLoc()));});
+ protected readonly baiLoc=computed(()=>{const ds=this.nganHang.hasValue()?this.nganHang.value():[];const q=this.tim().toLocaleLowerCase('vi');if(this.trang()==='ngan-hang')return ds;return ds.filter(b=>(!q||(b.title+' '+b.subtitle+' '+b.details.skillCode+' '+tenKyNang(b.details.skillCode,b.details.skillName||this.tenKyNangTheoMa().get(b.details.skillCode))).toLocaleLowerCase('vi').includes(q))&&(!this.mucLoc()||b.details.level4===this.mucLoc())&&(!this.congLoc()||b.details.gate===this.congLoc()));});
  protected readonly baiGiao=computed(()=>this.nganHang.hasValue()?this.nganHang.value().filter(b=>b.status==='DA_PHAT_HANH'&&(b.title+' '+b.subtitle+' '+b.details.skillCode+' '+tenKyNang(b.details.skillCode,b.details.skillName||this.tenKyNangTheoMa().get(b.details.skillCode))).toLocaleLowerCase('vi').includes(this.timBaiGiao().trim().toLocaleLowerCase('vi'))):[]);
  protected readonly hsGiao=computed(()=>(this.tienDo.hasValue()?this.tienDo.value():[]).filter(h=>h.title.toLocaleLowerCase('vi').includes(this.timHsGiao().trim().toLocaleLowerCase('vi'))));
  protected readonly luotGiao=computed(()=>gomLuotGiao(this.ds.hasValue()?this.ds.value():[]));
@@ -99,7 +99,8 @@ export class PhongGiaoVien{
  }[this.trang()]));
  protected readonly hsLoc=computed(()=>(this.tienDo.hasValue()?this.tienDo.value():[]).filter(h=>h.title.toLocaleLowerCase('vi').includes(this.tim().toLocaleLowerCase('vi'))));
  protected readonly trangLichSu=linkedSignal({source:()=>({ds:this.hocSinh.value()?.history, size:this.soMoiTrang()}),computation:()=>1});
- protected readonly trangBai=linkedSignal({source:()=>({ds:this.baiLoc(), size:this.soMoiTrang()}),computation:()=>1});
+ protected readonly trangBai=linkedSignal({source:()=>({q:this.tim(),level:this.mucLoc(),gate:this.congLoc(),cl:this.lop.id(),size:this.soMoiTrang()}),computation:()=>1});
+ protected readonly tongBai=computed(()=>Number(this.nganHang.headers()?.get('X-Total-Count') ?? this.baiLoc().length));
  protected readonly trangHs=linkedSignal({source:()=>({ds:this.hsLoc(), size:this.soMoiTrang()}),computation:()=>1});
  protected readonly trangNoiDung=linkedSignal({source:()=>({ds:this.noiDungLoc(), size:this.soMoiTrang()}),computation:()=>1});
  protected readonly trangTaiLieu=linkedSignal({source:()=>({ds:this.taiLieuLoc(), size:this.soMoiTrang()}),computation:()=>1});
@@ -118,9 +119,23 @@ export class PhongGiaoVien{
  protected duyet(m:Item,approve:boolean){this.mucDangChon.set(m);this.chapThuan.set(approve);this.lyDo.set('');this.loi.set('');this.hop.set('duyet');}
  protected suaMuc(code:string,level:Muc4){this.kyNang.set(code);this.mucMoi.set(level);this.lyDo.set('');this.loi.set('');this.hop.set('muc');}
  protected async ghi(path:string,body:unknown,method:'post'|'put'='post'):Promise<boolean>{if(this.ban())return false;this.ban.set(true);this.loi.set('');try{const k=await firstValueFrom(method==='put'?this.http.put<Result>(path,body):this.http.post<Result>(path,body));this.toast.hien(k.message||'Đã lưu.');return true;}catch(e){const d=e instanceof HttpErrorResponse?e.error?.detail:null;this.loi.set(typeof d==='string'?d:'Chưa lưu được. Kiểm tra kết nối rồi thử lại.');return false;}finally{this.ban.set(false);}}
+ protected readonly luuTru=signal<{loai:'giao'|'tai-lieu';muc:Item}|null>(null);
+ protected chonLuuTru(loai:'giao'|'tai-lieu',muc:Item){this.luuTru.set({loai,muc});this.loi.set('');this.hop.set('luu-tru');}
+ protected async xacNhanLuuTru(){
+  const x=this.luuTru();if(!x||this.ban())return;
+  if(x.loai==='giao'){
+   if(await this.ghi('/api/gv/giao/luu-tru',{lopId:this.lop.id(),ids:x.muc.details['assignmentIds']})){
+    this.hop.set(null);this.ds.reload();this.tongQuan.reload();
+   }
+  }else{
+   this.ban.set(true);this.loi.set('');
+   try{await firstValueFrom(this.http.delete('/api/gv/tai-lieu/'+encodeURIComponent(x.muc.id)+'?lopId='+encodeURIComponent(this.lop.id())));this.hop.set(null);this.kho.reload();this.toast.hien('Đã ẩn tài liệu.');}
+   catch{this.loi.set('Chưa ẩn được tài liệu. Hãy thử lại.');}finally{this.ban.set(false);}
+  }
+ }
  protected async luuDuyet(e:Event){e.preventDefault();if(!this.lyDo().trim()||!this.mucDangChon())return;if(await this.ghi('/api/gv/duyet/'+encodeURIComponent(this.mucDangChon()!.id),{lopId:this.lop.id(),approve:this.chapThuan(),reason:this.lyDo()})){this.hop.set(null);this.ds.reload();}}
  protected async ghiMuc(e:Event){e.preventDefault();if(!this.lyDo().trim())return;if(await this.ghi('/api/gv/muc-hieu',{lopId:this.lop.id(),studentId:this.id(),skillCode:this.kyNang(),level4:this.mucMoi(),reason:this.lyDo()})){this.hop.set(null);this.hocSinh.reload();}}
- protected async giao(e:Event){e.preventDefault();if(this.giaoForm().invalid()||!this.chonBai().length)return;const m=this.giaoModel();if(await this.ghi('/api/gv/giao',{lopId:this.lop.id(),studentIds:this.chonHs(),problemIds:this.chonBai(),mode:m.mode,dueAt:m.dueAt?new Date(m.dueAt+'+07:00').toISOString():null,setName:m.setName})){this.chonBai.set([]);this.ds.reload();this.tongQuan.reload();}}
+ protected async giao(e:Event){e.preventDefault();if(this.giaoForm().invalid()||!this.chonBai().length)return;const m=this.giaoModel();const due=m.dueAt?docHanViet(m.dueAt):null;if(m.dueAt&&!due){this.loi.set('Nhập hạn theo dạng ngày/tháng/năm giờ:phút, ví dụ 16/10/2026 21:00.');return;}if(await this.ghi('/api/gv/giao',{lopId:this.lop.id(),studentIds:this.chonHs(),problemIds:this.chonBai(),mode:m.mode,dueAt:due,setName:m.setName})){this.chonBai.set([]);this.ds.reload();this.tongQuan.reload();}}
  protected readonly taiLieuSoan=signal('');
  protected async soanNhap(e:Event){e.preventDefault();if(!this.taiLieuSoan()||this.ban())return;
   if(await this.ghi('/api/gv/soan-nhap',{lopId:this.lop.id(),documentId:this.taiLieuSoan()})){

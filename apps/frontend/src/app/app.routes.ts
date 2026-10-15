@@ -52,6 +52,7 @@ export const routes: Routes = [
       gv('hoc-sinh/:id', 'Học sinh', 'hoc-sinh'),
       gv('giao', 'Giao bài', 'giao'),
       gv('cai-dat', 'Cài lớp', 'cai-dat'),
+      {path:'cai-lop',redirectTo:'cai-dat',pathMatch:'full'},
       gv('ket-noi-ai', 'Gia sư', 'ket-noi-ai'),
     ],
   },
@@ -60,6 +61,7 @@ export const routes: Routes = [
     children:[
       {path:'',title:'Người dùng',data:{trang:'nguoi-dung'},loadComponent:quanTri},
       {path:'lop',title:'Lớp học',data:{trang:'lop'},loadComponent:quanTri},
+      {path:'su-dung-ai',title:'Sử dụng AI',loadComponent:()=>import('./features/quan-tri/su-dung-ai').then(m=>m.SuDungAiQuanTri)},
       {path:'nhat-ky',title:'Nhật ký',data:{trang:'nhat-ky'},loadComponent:quanTri},
     ],
   },

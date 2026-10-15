@@ -78,7 +78,7 @@ public class DocumentRepositoryAdapter implements DocumentRepository {
 
     @Override
     public List<Document> findByClass(UUID classId) {
-        return jdbc.sql("select " + COT + " from documents where class_id = :lop order by created_at, id")
+        return jdbc.sql("select " + COT + " from documents where class_id = :lop AND archived_at IS NULL order by created_at, id")
             .param("lop", classId).query(DocumentRepositoryAdapter::taiLieu).list();
     }
 

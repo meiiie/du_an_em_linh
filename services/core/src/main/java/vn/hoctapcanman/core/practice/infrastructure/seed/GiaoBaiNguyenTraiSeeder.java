@@ -44,20 +44,30 @@ public class GiaoBaiNguyenTraiSeeder implements ApplicationRunner {
             .map(e -> (String)e.get("id")).toList();
     }
 
+    @SuppressWarnings("unchecked")
+    static List<String> studyCodes(String json) {
+        List<Map<String,Object>> exercises = JsonMapper.builder().build().readValue(json,List.class);
+        var codes=exercises.stream().filter(e->Boolean.TRUE.equals(e.get("tu_hoc_seed"))).map(e->(String)e.get("id")).toList();
+        return codes.isEmpty()?List.of("KHONG_CO_BAI_TU_HOC_SEED"):codes;
+    }
+
     @Override
     public void run(ApplicationArguments args) {
         String sql;
         List<String> testCodes;
+        List<String> studyCodes;
         try {
             sql = new ClassPathResource(TEP).getContentAsString(StandardCharsets.UTF_8);
-            testCodes = testCodes(Files.readString(source.resolve("dev/nguyen-trai/bai-tap.json")));
+            String json=Files.readString(source.resolve("dev/nguyen-trai/bai-tap.json"));
+            testCodes = testCodes(json);
+            studyCodes = studyCodes(json);
         } catch (IOException e) {
             LOG.warn("Bỏ qua giao bài trường hư cấu: thiếu hoặc không đọc được data/dev hoặc SQL seed.");
             return;
         }
         int moi = 0;
         for (String ten : TruongNguyenTrai.LOP) {
-            if (LopSeedAnToan.kiem(jdbc, ten)) moi += jdbc.sql(sql).param("lop", TruongNguyenTrai.id("lop:" + ten)).param("kiemTra", testCodes).update();
+            if (LopSeedAnToan.kiem(jdbc, ten)) moi += jdbc.sql(sql).param("lop", TruongNguyenTrai.id("lop:" + ten)).param("kiemTra", testCodes).param("tuHoc",studyCodes).update();
         }
         LOG.info("Giao bài trường hư cấu: {} lượt giao mới", moi);
     }

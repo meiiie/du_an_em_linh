@@ -215,4 +215,33 @@ class WorkspaceApiTest {
             .content("{}"))
             .andExpect(status().isBadRequest());
     }
+
+    @Test void pagedBankReturnsTotalHeaderAndCallsPagedStoreOnly()throws Exception {
+        when(store.bankPage(cl,"tich phan","","",2,10)).thenReturn(new BankPage(List.of(),31));
+        mvc.perform(get("/api/gv/ngan-hang").with(as(actor,"TEACHER")).param("lopId",cl.toString()).param("page","2").param("size","10").param("q","Tích phân"))
+            .andExpect(status().isOk()).andExpect(header().string("X-Total-Count","31")).andExpect(content().json("[]"));
+        verify(store).bankPage(cl,"tich phan","","",2,10);verify(store,never()).bank(cl);
+    }
+    @Test void resetPasswordValidatesAndChecksAdminScope()throws Exception {
+        when(hasher.hash("New-password-123")).thenReturn("{bcrypt}HASH");
+        when(store.resetPassword(actor,student,"{bcrypt}HASH",NOW)).thenReturn(true);
+        mvc.perform(put("/api/qt/nguoi-dung/"+student+"/mat-khau").with(as(actor,"ADMIN")).contentType(MediaType.APPLICATION_JSON)
+            .content("{\"password\":\"New-password-123\"}"))
+            .andExpect(status().isOk());
+        verify(store).resetPassword(actor,student,"{bcrypt}HASH",NOW);
+        mvc.perform(put("/api/qt/nguoi-dung/"+student+"/mat-khau").with(as(actor,"TEACHER")).contentType(MediaType.APPLICATION_JSON)
+            .content("{\"password\":\"New-password-123\"}"))
+            .andExpect(status().isForbidden());
+        mvc.perform(put("/api/qt/nguoi-dung/"+student+"/mat-khau").with(as(actor,"ADMIN")).contentType(MediaType.APPLICATION_JSON)
+            .content("{\"password\":\"short\"}"))
+            .andExpect(status().isBadRequest());
+    }
+    @Test void archiveApiDeniesStudentAndChecksTeacherClass()throws Exception {
+        mvc.perform(delete("/api/gv/tai-lieu/"+problem).param("lopId",cl.toString()).with(as(student,"STUDENT")))
+            .andExpect(status().isForbidden());
+        when(store.archiveDocument(actor,cl,problem,NOW)).thenReturn(true);
+        mvc.perform(delete("/api/gv/tai-lieu/"+problem).param("lopId",cl.toString()).with(as(actor,"TEACHER")))
+            .andExpect(status().isOk());
+        verify(membership).kiemGiaoVien(actor,cl);verify(store).archiveDocument(actor,cl,problem,NOW);
+    }
 }

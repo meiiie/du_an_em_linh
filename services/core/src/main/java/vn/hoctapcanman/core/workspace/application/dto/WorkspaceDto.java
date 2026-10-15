@@ -23,6 +23,8 @@ public final class WorkspaceDto {
     public record Library(List<Item> formulas,List<Item> documents) {
     }
 
+    public record BankPage(List<Item> items,long total) {}
+
     public record Student(Item student,List<Item> history) {
     }
 
@@ -65,6 +67,12 @@ public final class WorkspaceDto {
     }
 
     public record Bulk(@NotEmpty @Size(max=200) List<UUID> ids,boolean enabled) {
+    }
+
+    public record ArchiveSet(@NotNull UUID lopId,@NotEmpty @Size(max=2000) List<UUID> ids) {}
+    public record ResetPassword(@NotNull @Size(min=12,max=72)
+        @vn.hoctapcanman.core.identity.application.dto.ToiDaByteUtf8(72) String password) {
+        @Override public String toString() { return "ResetPassword[đã ẩn]"; }
     }
 
     public record Lock(@NotNull Boolean locked) {

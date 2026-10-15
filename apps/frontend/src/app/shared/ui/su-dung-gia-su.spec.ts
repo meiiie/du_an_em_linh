@@ -31,9 +31,9 @@ describe('Báo cáo sử dụng gia sư AI',()=>{
   expect(old.cancelled).toBe(true);t.http.expectOne('/api/gv/lop/lop2/gia-su/su-dung').flush({...report,classId:'lop2',requests:7});await t.f.whenStable();
   expect(t.el.querySelector('[data-testid=tong-su-dung-ai]')?.textContent).toContain('7 lượt gọi');t.http.verify();
  });
- it('thiếu tên vẫn hiển thị định danh; cập nhật lấy số liệu mới',async()=>{
+ it('thiếu tên hiện nhãn dễ hiểu và ẩn UUID; cập nhật lấy số liệu mới',async()=>{
   const t=await setup();t.f.componentRef.setInput('hocSinh',[]);t.http.expectOne('/api/gv/lop/lop1/gia-su/su-dung').flush(report);await t.f.whenStable();
-  expect(t.el.querySelector('tbody th')?.textContent).toBe('Học sinh hs1');
+  expect(t.el.querySelector('tbody th')?.textContent).toBe('Học sinh chưa có tên');
   t.el.querySelector<HTMLButtonElement>('button')!.click();TestBed.tick();t.http.expectOne('/api/gv/lop/lop1/gia-su/su-dung').flush(report);await t.f.whenStable();t.http.verify();
  });
 });

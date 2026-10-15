@@ -792,6 +792,9 @@ def _ve_buoc_bat_dau(payload, r):
 def grade(payload):
     if not isinstance(payload, dict) or not isinstance(payload.get("cac_buoc"), list):
         return _kkd_dau_vao(payload if isinstance(payload, dict) else {}, None, None, None, "payload sai khuôn")
+    if isinstance(payload.get("bai_toan"), dict) and payload["bai_toan"].get("loai") == "tra_loi_tu_do":
+        from app.free_response import grade_free_response
+        return grade_free_response(payload)
     if "bai_toan" in payload:
         # Dữ kiện đề cho họ mới; B.DH cũ tiếp tục dùng `ham` như trước.
         from app.step_families import grade_family

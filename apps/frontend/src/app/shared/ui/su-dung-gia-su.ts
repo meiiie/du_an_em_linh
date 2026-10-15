@@ -20,14 +20,14 @@ import { KhungCho, LoiTai, TrangRong } from './trang-thai';
         @let bc = baoCao.value();
         <p data-testid="tong-su-dung-ai"><strong>Tổng lớp:</strong> {{bc.requests | soViet}} lượt gọi · {{bc.inputTokens + bc.outputTokens | soViet}} token</p>
         <p class="muted">Đầu vào: {{bc.inputTokens | soViet}} token · Đầu ra: {{bc.outputTokens | soViet}} token · Ước tính: {{bc.estimatedTokens | soViet}} token.</p>
-        <p class="muted">Token ước tính đã nằm trong tổng. Số liệu tích lũy; chưa có dữ liệu giới hạn sử dụng.</p>
+        <p class="muted">Ước tính là số token tính từ độ dài văn bản khi nhà AI không trả số đo. Token ước tính đã nằm trong tổng, không cộng thêm. Số liệu tích lũy từ các lượt gọi được ghi nhận.</p>
         @if (bc.students.length) {
           <div class="table-scroll" role="region" aria-label="Sử dụng AI theo học sinh" tabindex="0">
             <table class="data-table">
               <caption>Sử dụng gia sư theo học sinh</caption>
               <thead><tr><th scope="col">Học sinh</th><th scope="col">Lượt gọi</th><th scope="col">Token đầu vào</th><th scope="col">Token đầu ra</th><th scope="col">Token ước tính</th><th scope="col">Tổng token</th><th scope="col">Giới hạn</th></tr></thead>
               <tbody>@for (hs of bc.students; track hs.studentId) {
-                <tr><th scope="row">{{tenHocSinh().get(hs.studentId) || 'Học sinh ' + hs.studentId}}</th>
+                <tr><th scope="row">{{tenHocSinh().get(hs.studentId) || 'Học sinh chưa có tên'}}</th>
                   <td data-label="Lượt gọi">{{hs.requests | soViet}}</td><td data-label="Token đầu vào">{{hs.inputTokens | soViet}}</td>
                   <td data-label="Token đầu ra">{{hs.outputTokens | soViet}}</td><td data-label="Token ước tính">{{hs.estimatedTokens | soViet}}</td>
                   <td data-label="Tổng token">{{hs.inputTokens + hs.outputTokens | soViet}}</td><td data-label="Giới hạn">Chưa có dữ liệu</td></tr>

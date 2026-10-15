@@ -141,6 +141,19 @@ describe('Luyen', () => {
     expect(t.$('.tutor-panel')).not.toBeNull();
   });
 
+  it('bài tự luận có ô đáp số và phần trình bày, gửi lên máy chủ để kiểm', async()=>{
+    const t=await mo(chiTiet({}, {dangTraLoi:'TU_LUAN',cacBuoc:[{maBuoc:'B.TD.TRALOI',ten:'Bài làm',viec:'Nhập đáp số và trình bày',kieu:'TU_DO'}]}));
+    expect(t.$('[data-testid=solve-screen]')).not.toBeNull();
+    await t.go('dap-so-tu-do','72');
+    const presentation=t.$<HTMLTextAreaElement>('[data-testid=trinh-bay-tu-do]')!;
+    presentation.value='Em tính diện tích đáy rồi tính thể tích.';presentation.dispatchEvent(new Event('input'));await t.fixture.whenStable();
+    await t.bam('[data-testid=nop-buoc]');
+    const request=t.http.expectOne(API_HS.nopBuoc(MA));
+    expect(request.request.body).toEqual({maBuoc:'B.TD.TRALOI',dong:[{dong:0,latex:'72'},{dong:1,latex:presentation.value}]});
+    request.flush({ketQua:'DAT',thongBao:'Đáp số đúng.',oSai:[],nghiDoanMo:false});await t.xong();
+    expect(t.el.textContent).toContain('Đáp số đúng.');
+  });
+
   it('bài luyện trên giấy cho chọn bước gợi mở bằng tên tiếng Việt', async () => {
     const t = await mo(chiTiet({}, { dangTraLoi: 'TU_LUAN', cacBuoc: [
       {maBuoc:'B.L10.PHANTICH',ten:'Phân tích đề',viec:''},

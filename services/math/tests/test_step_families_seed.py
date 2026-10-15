@@ -118,7 +118,7 @@ def independent_probability_steps(problem):
 
 
 def test_coverage_and_scope_are_explicit():
-    assert len(EXERCISES) == 74
+    assert len(EXERCISES) == 77
     assert len(FRAMES) == 43
     assert sum(frame["san_sang_ui"] for frame in FRAMES) == 10
     assert len({frame["ma_bai"] for frame in FRAMES}) == len(FRAMES)

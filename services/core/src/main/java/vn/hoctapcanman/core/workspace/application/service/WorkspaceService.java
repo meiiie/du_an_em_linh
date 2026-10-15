@@ -112,6 +112,15 @@ import vn.hoctapcanman.core.workspace.application.port.*;
             .filter(i->gate.isEmpty()||gate.equals(i.details().get("gate"))).toList();
     }
 
+    public BankPage bankPage(UUID actor,UUID cl,String query,String level,String gate,int page,int size) {
+        teacher(actor,cl);
+        if(page<1||page>100000||size<1||size>100)throw new WorkspaceException(400,"Chọn trang và số bài từ 1 đến 100.");
+        if(!level.isEmpty()&&!Set.of("NHAN_BIET","THONG_HIEU","VAN_DUNG","VAN_DUNG_CAO").contains(level)
+            ||!gate.isEmpty()&&!Set.of("DAT","SAI","KHONG_KIEM_DUOC","GV_DUYET").contains(gate))
+            throw new WorkspaceException(400,"Chọn mức và kết quả kiểm hợp lệ.");
+        return store.bankPage(cl,searchQuery(query),level,gate,page,size);
+    }
+
     public Library library(UUID actor,UUID cl,String q) {
         teacher(actor,cl);
         return searchLibrary(store.library(cl,true),q);
@@ -327,6 +336,39 @@ import vn.hoctapcanman.core.workspace.application.port.*;
         if(!globalAdmin(actor))throw new WorkspaceException(403,"Nhờ quản trị hệ thống tạo và phân công lớp mới.");
         store.createClass(actor,r,clock.instant());
         return ok("Đã tạo lớp.",1);
+    }
+
+    public Result archiveAssignments(UUID actor,ArchiveSet r) {
+        teacher(actor,r.lopId());
+        if(!store.archiveAssignments(actor,r.lopId(),r.ids(),clock.instant()))
+            throw new WorkspaceException(404,"Không tìm thấy lượt giao trong lớp.");
+        return ok("Đã lưu trữ bộ bài được giao.",r.ids().size());
+    }
+
+    public Result archiveDocument(UUID actor,UUID cl,UUID id) {
+        teacher(actor,cl);
+        if(!store.archiveDocument(actor,cl,id,clock.instant())) throw new WorkspaceException(404,"Không tìm thấy tài liệu trong lớp.");
+        return ok("Đã ẩn tài liệu khỏi kho lớp.",1);
+    }
+
+    private void manageAccount(UUID actor,UUID id) {
+        boolean global=globalAdmin(actor);
+        if(actor.equals(id))throw new WorkspaceException(400,"Không thể thực hiện với tài khoản đang dùng.");
+        if(!global&&!store.managesUser(actor,id))throw new WorkspaceException(403,"Tài khoản ngoài phạm vi quản lý.");
+    }
+
+    public Result archiveUser(UUID actor,UUID id) {
+        manageAccount(actor,id);
+        if(!store.archiveUser(actor,id,clock.instant()))throw new WorkspaceException(404,"Không tìm thấy tài khoản.");
+        return ok("Đã vô hiệu hóa và ẩn tài khoản.",1);
+    }
+
+    public Result resetPassword(UUID actor,UUID id,ResetPassword r) {
+        manageAccount(actor,id);
+        if(r.password()==null||r.password().length()<12||r.password().getBytes(java.nio.charset.StandardCharsets.UTF_8).length>72)
+            throw new WorkspaceException(400,"Mật khẩu cần ít nhất 12 ký tự và tối đa 72 byte.");
+        if(!store.resetPassword(actor,id,passwords.hash(r.password()),clock.instant()))throw new WorkspaceException(404,"Không tìm thấy tài khoản.");
+        return ok("Đã đặt mật khẩu mới và đăng xuất các phiên cũ.",1);
     }
 
     public Result lockUser(UUID actor,UUID id,Lock r) {

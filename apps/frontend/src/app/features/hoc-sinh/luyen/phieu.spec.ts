@@ -199,3 +199,11 @@ describe('khung theo bài', () => {
     expect(yeuCauNop('B.GT.KETLUAN', n, [], 'TAP_HUU_HAN')).toEqual({ maBuoc: 'B.GT.KETLUAN', dong: [{ dong: 0, latex: '{pi/2; pi}' }] });
   });
 });
+
+describe('Nhập tự do',()=>{
+ it('giữ riêng đáp số và phần trình bày, kể cả khi chưa có đáp số',()=>{
+  const n={...NHAP,dongTheoBuoc:{'B.TD.TRALOI':'72'},trinhBay:'Em tính diện tích đáy trước.'};
+  expect(yeuCauNop('B.TD.TRALOI',n,[],'TU_DO')).toEqual({maBuoc:'B.TD.TRALOI',dong:[{dong:0,latex:'72'},{dong:1,latex:'Em tính diện tích đáy trước.'}]});
+  expect(yeuCauNop('B.TD.TRALOI',{...n,dongTheoBuoc:{}},[],'TU_DO').dong?.[0].latex).toBe('');
+ });
+});

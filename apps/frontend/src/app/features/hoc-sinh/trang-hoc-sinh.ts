@@ -49,7 +49,7 @@ export class TrangHocSinh {
   protected nhacTen(n: Item<ReminderDetails>): string {
     const code = n.title.startsWith('Sắp đến hạn: ') ? n.title.slice('Sắp đến hạn: '.length) : '';
     const b = (this.ds.value() ?? []).find(b => b.maBai === code);
-    return code ? 'Sắp đến hạn: ' + (b?.tenKyNang || 'Bài được giao') : n.title;
+    return code ? 'Sắp đến hạn: ' + (b?.tenBo || b?.tenKyNang || code) : n.title;
   }
   protected nhacNgay(n: Item<ReminderDetails>): string {
     const dueAt = n.details.dueAt;
