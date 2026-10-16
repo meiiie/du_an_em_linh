@@ -80,7 +80,7 @@ describe('Sidebar gia sư',()=>{
     const cap=t.el.querySelector('select')!;cap.value='2';cap.dispatchEvent(new Event('change'));
     input.dispatchEvent(new KeyboardEvent('keydown',{key:'Enter',bubbles:true,cancelable:true}));await settle();await t.f.whenStable();
     expect(JSON.parse(fetchMock.mock.calls[2][1].body)).toMatchObject({maBuoc:'B.DH.TXD',cap:2,cauHoi:'Em hỏi về đạo hàm'});
-    expect(t.el.querySelector('article strong')?.textContent).toBe('Câu đã kiểm');expect(t.el.querySelector('.katex')).not.toBeNull();
+    await vi.waitFor(()=>{t.f.detectChanges();expect(t.el.querySelector('article strong')?.textContent).toBe('Câu đã kiểm');});expect(t.el.querySelector('.katex')).not.toBeNull();
     expect(t.el.querySelectorAll('article')).toHaveLength(2);
   });
   it('bài chưa có khung gửi BAI_LAM và dòng giới thiệu; mỗi lượt lấy nháp và bước hiện tại',async()=>{
@@ -102,6 +102,7 @@ describe('Sidebar gia sư',()=>{
       +event('delta',2,{text:'Xem **căn cứ** [1].\nEm chọn thao tác nào?'})
       +event('done',3,{status:'completed'}),{headers:{'Content-Type':'text/event-stream'}});
     const t=await setup();await t.fill('Em hỏi về căn cứ');await t.click('Gửi câu hỏi');
+    await vi.waitFor(()=>{t.f.detectChanges();expect(t.el.querySelector('article br')).not.toBeNull();});
     const button=t.el.querySelector<HTMLButtonElement>('.tutor-source')!;
     expect(button.type).toBe('button');expect(button.getAttribute('aria-label')).toBe('Mở công thức 1');
     expect(t.el.querySelector('article strong')?.textContent).toBe('căn cứ');
@@ -163,7 +164,7 @@ describe('Sidebar gia sư',()=>{
   it('Escape khi đang sinh POST cancel đúng lượt, giữ câu và đóng panel',async()=>{
     response=init=>new Response(new ReadableStream({start(c){c.enqueue(new TextEncoder().encode(event('start',1,{requestId:JSON.parse(init.body as string).requestId})+event('delta',2,{text:'Câu đã kiểm.'})));}}),{headers:{'Content-Type':'text/event-stream'}});
     const t=await setup();await t.fill('Em hỏi');await t.click('Gửi câu hỏi');
-    expect(t.el.querySelector('article.cau-cua-ai')?.textContent).toContain('Câu đã kiểm');
+    await vi.waitFor(()=>{t.f.detectChanges();expect(t.el.querySelector('article.cau-cua-ai')?.textContent).toContain('Câu đã kiểm');});
     document.dispatchEvent(new KeyboardEvent('keydown',{key:'Escape'}));await settle();await t.f.whenStable();
     const cancel=fetchMock.mock.calls.find(c=>String(c[0]).endsWith('/cancel'))!;
     expect(JSON.parse(cancel[1].body)).toEqual({turnId:'t1'});expect(t.el.querySelector('[data-testid="gia-su-panel"]')).toBeNull();
