@@ -53,6 +53,63 @@ class TutorSessionControllerTest {
             mvc.perform(asyncDispatch(response)).andExpect(status().isOk()).andExpect(content().contentTypeCompatibleWith(MediaType.TEXT_EVENT_STREAM));
         } finally {first.countDown();second.countDown();finish.countDown();}
     }
+    @org.junit.jupiter.params.ParameterizedTest
+    @org.junit.jupiter.params.provider.ValueSource(strings={"io", "closed", "completion", "timeout", "error"})
+    void disconnectedEmitterDoesNotStopDurableGeneration(String failure) throws Exception {
+        var finish=new java.util.concurrent.CountDownLatch(1);
+        var detached=new java.util.concurrent.CountDownLatch(1);
+        var sends=new java.util.concurrent.atomic.AtomicInteger();
+        var completion=new java.util.concurrent.atomic.AtomicReference<Runnable>();
+        var timeout=new java.util.concurrent.atomic.AtomicReference<Runnable>();
+        var error=new java.util.concurrent.atomic.AtomicReference<java.util.function.Consumer<Throwable>>();
+        var modelThread=new java.util.concurrent.atomic.AtomicReference<Thread>();
+        var streamThread=new java.util.concurrent.atomic.AtomicReference<Thread>();
+        org.mockito.Mockito.doAnswer(call -> {
+            modelThread.set(Thread.currentThread());
+            java.util.function.Consumer<String> tokens=call.getArgument(1);
+            tokens.accept("Đầu tiên ");
+            assertTrue(finish.await(5,java.util.concurrent.TimeUnit.SECONDS));
+            tokens.accept("em chọn căn cứ.");
+            return new vn.hoctapcanman.core.tutor.application.dto.TutorSessionDto.ModelUsage(20,10,false);
+        }).when(fixture.model).stream(org.mockito.ArgumentMatchers.any(),org.mockito.ArgumentMatchers.any());
+        try (var emitters=org.mockito.Mockito.mockConstruction(org.springframework.web.servlet.mvc.method.annotation.SseEmitter.class,(emitter, context) -> {
+            org.mockito.Mockito.doAnswer(c -> {completion.set(c.getArgument(0));return null;}).when(emitter).onCompletion(org.mockito.ArgumentMatchers.any());
+            org.mockito.Mockito.doAnswer(c -> {timeout.set(c.getArgument(0));return null;}).when(emitter).onTimeout(org.mockito.ArgumentMatchers.any());
+            org.mockito.Mockito.doAnswer(c -> {error.set(c.getArgument(0));return null;}).when(emitter).onError(org.mockito.ArgumentMatchers.any());
+            org.mockito.Mockito.doAnswer(c -> {detached.countDown();return null;}).when(emitter).complete();
+            org.mockito.Mockito.doAnswer(c -> {detached.countDown();return null;}).when(emitter).completeWithError(org.mockito.ArgumentMatchers.any());
+            org.mockito.Mockito.doAnswer(c -> {
+                streamThread.set(Thread.currentThread());
+                if(sends.incrementAndGet()==2) {
+                    detached.countDown();
+                    switch(failure) {
+                        case "io" -> throw new java.io.IOException("Tab closed");
+                        case "closed" -> throw new IllegalStateException("Emitter already completed");
+                        case "completion" -> completion.get().run();
+                        case "timeout" -> timeout.get().run();
+                        case "error" -> error.get().accept(new java.io.IOException("Tab closed"));
+                    }
+                    detached.countDown();
+                }
+                return null;
+            }).when(emitter).send(org.mockito.ArgumentMatchers.any(org.springframework.web.servlet.mvc.method.annotation.SseEmitter.SseEventBuilder.class));
+        })) {
+            var jwt=Jwt.withTokenValue("tổng-hợp").header("alg","none").subject(fixture.student.toString()).build();
+            new TutorSessionController(fixture.service).ask(jwt,session,fixture.request(UUID.randomUUID()));
+            assertTrue(detached.await(3,java.util.concurrent.TimeUnit.SECONDS));
+            streamThread.get().join(3000);
+            assertFalse(streamThread.get().isAlive());
+            assertNotSame(modelThread.get(),streamThread.get());
+            var turn=fixture.store.turns(session,0,1).getFirst();
+            assertEquals("generating",turn.status());
+            finish.countDown();
+            var accepted=new vn.hoctapcanman.core.tutor.application.dto.TutorSessionDto.Accepted(fixture.store.snapshot(session),turn,true);
+            var completed=fixture.terminal(accepted);
+            assertEquals("completed",completed.status());
+            assertEquals("Đầu tiên em chọn căn cứ.",completed.answer());
+            assertEquals(List.of("start","delta","delta","done"),fixture.store.events(session,0).stream().map(e -> e.type()).toList());
+        } finally {finish.countDown();}
+    }
     private static void awaitEvent(MvcResult result,String event,int count) throws Exception {
         long deadline=System.nanoTime()+java.util.concurrent.TimeUnit.SECONDS.toNanos(3);
         while(System.nanoTime()<deadline) {

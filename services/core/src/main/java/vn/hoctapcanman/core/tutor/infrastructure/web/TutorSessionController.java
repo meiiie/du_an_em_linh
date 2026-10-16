@@ -70,7 +70,7 @@ public class TutorSessionController {
                 while(connected.get()) {
                     List<Event> events=tutor.events(student,session,cursor);
                     for(Event e:events) {
-                        send(emitter,e);
+                        if(!send(emitter,e,connected))return;
                         cursor=e.seq();
                         if(target!=null && e.turnId().equals(target) && (e.type().equals("done") || e.type().equals("error"))) {emitter.complete();return;}
                     }
@@ -79,26 +79,35 @@ public class TutorSessionController {
                     if(System.nanoTime()-heartbeat>=15_000_000_000L) {
                         Map<String,Object> data=new LinkedHashMap<>();data.put("sessionId",session);data.put("lastSeq",cursor);
                         if(!h.turns().isEmpty())data.put("turnId",h.turns().getFirst().id());
-                        emitter.send(SseEmitter.event().name("heartbeat").data(data));heartbeat=System.nanoTime();
+                        if(!send(emitter,SseEmitter.event().name("heartbeat").data(data),connected))return;
+                        heartbeat=System.nanoTime();
                     }
                     Thread.sleep(50);
                 }
-            } catch(IOException ex){emitter.completeWithError(ex);}
-            catch(InterruptedException ex){Thread.currentThread().interrupt();emitter.complete();}
+            } catch(InterruptedException ex){Thread.currentThread().interrupt();emitter.complete();}
             catch(RuntimeException ex) {
                 try {
                     var error=tutor.streamError(student,session,target,ex);
-                    if(error.isPresent()){send(emitter,error.get());emitter.complete();}
+                    if(error.isPresent()){if(send(emitter,error.get(),connected))emitter.complete();}
                     else emitter.completeWithError(ex);
-                } catch(IOException | RuntimeException closed){emitter.completeWithError(closed);}
+                } catch(RuntimeException closed){emitter.completeWithError(closed);}
             }
         });
         return ResponseEntity.ok().header(HttpHeaders.CACHE_CONTROL,"no-cache, no-transform").header("X-Accel-Buffering","no").body(emitter);
     }
-    private static void send(SseEmitter emitter,Event event)throws IOException {
+    private static boolean send(SseEmitter emitter,Event event,AtomicBoolean connected) {
         Map<String,Object> data=new LinkedHashMap<>(event.data());
         data.put("v",event.v());data.put("sessionId",event.sessionId());data.put("turnId",event.turnId());data.put("seq",event.seq());
-        emitter.send(SseEmitter.event().id(event.sessionId()+":"+event.seq()).name(event.type()).data(data));
+        return send(emitter,SseEmitter.event().id(event.sessionId()+":"+event.seq()).name(event.type()).data(data),connected);
+    }
+    /** Transport errors only detach this subscriber; the model worker owns the turn. */
+    private static boolean send(SseEmitter emitter,SseEmitter.SseEventBuilder event,AtomicBoolean connected) {
+        if(!connected.get())return false;
+        try {emitter.send(event);return true;}
+        catch(IOException | RuntimeException closed) {
+            connected.set(false);
+            return false;
+        }
     }
     static long cursor(UUID session,@Nullable Long query,@Nullable String header) {
         Long parsed=null;
