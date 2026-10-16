@@ -69,7 +69,7 @@ class GlmHintModelAdapterTest {
     }
     @org.junit.jupiter.params.ParameterizedTest
     @org.junit.jupiter.params.provider.CsvSource(value={
-        "glm-5.3|medium|enabled|medium", "glm-5.3|''|enabled|", "glm-5.3|'   '|enabled|",
+        "glm-5.3|medium|enabled|low", "glm-5.3|''|enabled|low", "glm-5.3|'   '|enabled|low", "glm-5.3-flashx|HIGH|enabled|high", "glm-5.2|medium|enabled|medium",
         "glm-4.7|medium|disabled|", "glm-5.1|low|disabled|", "other-glm-5.3|low|disabled|"
     },delimiter='|')
     void configuredEffortIsOnlySentForForcedThinkingModels(String model,String effort,String thinking,String expectedEffort) {

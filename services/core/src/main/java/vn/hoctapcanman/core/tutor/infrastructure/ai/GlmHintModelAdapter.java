@@ -24,7 +24,7 @@ public final class GlmHintModelAdapter implements HintModel {
     private final String model;
     private final String reasoningEffort;
     private static final java.util.regex.Pattern FORCED_THINKING_MODEL=java.util.regex.Pattern.compile(
-        "glm-5\\.(?:[2-9]|[1-9][0-9]+)(?:-flash)?",java.util.regex.Pattern.CASE_INSENSITIVE);
+        "glm-5\\.(?:[2-9]|[1-9][0-9]+)(?:-flashx?)?",java.util.regex.Pattern.CASE_INSENSITIVE);
     private final Duration timeout;
     private final int maxTokens;
     private final double temperature;
@@ -167,7 +167,10 @@ public final class GlmHintModelAdapter implements HintModel {
         body.put("top_p",topP);
         boolean forcedThinking=FORCED_THINKING_MODEL.matcher(model).matches();
         body.put("thinking",Map.of("type",forcedThinking?"enabled":"disabled"));
-        if(forcedThinking && !reasoningEffort.isBlank())body.put("reasoning_effort",reasoningEffort);
+        String effort=reasoningEffort==null?"":reasoningEffort.strip().toLowerCase(java.util.Locale.ROOT);
+        // GLM-5.3 chỉ nhận low/high/max; giá trị khác về low để không bị 400.
+        if(forcedThinking && model.toLowerCase(java.util.Locale.ROOT).startsWith("glm-5.3") && !java.util.Set.of("low","high","max").contains(effort))effort="low";
+        if(forcedThinking && !effort.isBlank())body.put("reasoning_effort",effort);
         body.put("messages",List.of(
             Map.of("role","system","content",prompt.system()),Map.of("role","user","content",prompt.user())));
         try { return client.post().uri("/chat/completions").header(HttpHeaders.AUTHORIZATION,"Bearer "+key)
