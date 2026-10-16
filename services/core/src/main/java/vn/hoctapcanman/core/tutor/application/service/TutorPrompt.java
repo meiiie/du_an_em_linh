@@ -43,10 +43,17 @@ public final class TutorPrompt {
     }
 
     public static boolean safeContext(TutorContext context,String question) {
-        var text=new java.util.ArrayList<String>(context.submittedLines());
-        text.add(context.statement());text.add(context.stepName());
-        for(var row:context.formulas()) {text.add(row.title());text.add(row.statement());text.add("$"+row.latex()+"$");}
-        return safeToSend(withoutIdentifiers(question),text.stream().map(TutorPrompt::withoutIdentifiers).toList());
+        // Đề, tên bước, công thức đã duyệt: kiểm tên/liên hệ ở văn bản thường, không áp heuristic trong vùng toán.
+        var curated=new java.util.ArrayList<String>();
+        curated.add(context.statement());curated.add(context.stepName());
+        for(var row:context.formulas()) {curated.add(row.title());curated.add(row.statement());curated.add(row.latex());}
+        for(String t:curated) {
+            if(t==null)continue;
+            String clean=withoutIdentifiers(t), plain=MATH.matcher(clean).replaceAll(" ");
+            // Vẫn chặn tên/liên hệ trong văn bản thường; chỉ bỏ heuristic trong vùng $…$ (\\text{Bayes}, A, B…).
+            if(RUI_RO_KHONG_TEN.matcher(clean).find() || TEN.matcher(plain.strip()).find() || IN_HOA.matcher(plain).find()) return false;
+        }
+        return safeToSend(withoutIdentifiers(question),context.submittedLines().stream().map(TutorPrompt::withoutIdentifiers).toList());
     }
 
     public static HintPrompt compose(TutorContext context, TutorRequest request) {
