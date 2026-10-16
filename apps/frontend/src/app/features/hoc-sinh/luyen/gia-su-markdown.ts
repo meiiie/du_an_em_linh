@@ -50,11 +50,14 @@ export class GiaSuMarkdown {
       const previous = untracked(this.revealed);
       if (!target.startsWith(previous)) this.revealed.set('');
       // Nhịp đều theo frame để chữ chảy dần cả khi nhà cung cấp đổ cả câu một lúc.
-      const drain = () => {
+      // Theo thời gian thật: ~170 ký tự/giây, backlog dài bắt kịp trong ~1 giây, không phụ thuộc tần số màn hình.
+      let last = 0;
+      const drain = (now = performance.now()) => {
         const current = this.revealed();
-        // ~150 ký tự/giây như gõ chữ; backlog dài (>400) thì bắt kịp trong khoảng 1 giây.
+        const dt = last ? Math.min(100, now - last) : 16;
+        last = now;
         const backlog = target.length - current.length;
-        let end = Math.min(target.length, current.length + Math.max(3, backlog > 400 ? Math.ceil(backlog / 60) : 0));
+        let end = Math.min(target.length, current.length + Math.max(1, Math.round(dt * Math.max(0.17, backlog / 400))));
         if (end < target.length && /[\uD800-\uDBFF]/.test(target[end - 1])) end++;
         this.revealed.set(target.slice(0, end));
         if (end < target.length) this.frame = requestAnimationFrame(drain);
