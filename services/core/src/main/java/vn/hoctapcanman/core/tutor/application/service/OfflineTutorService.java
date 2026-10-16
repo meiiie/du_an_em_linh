@@ -36,6 +36,8 @@ public class OfflineTutorService {
         limiter.acquire(student);
         return cl;
     }
+    /** Ngữ cảnh/quyền đã kiểm ở ask; không đọc lại DB trước khi phát start. */
+    public void authorizePrepared(UUID student) { limiter.acquire(student); }
     public TutorContext context(UUID student, UUID cl, TutorRequest request) {
         if (!membership.lopHoc(student).filter(cl::equals).isPresent()) throw new WorkspaceException(404,"Em chưa có lớp.");
         if (store.testMode(student,cl,request.maBai())) throw new WorkspaceException(403,"Gia sư không mở trong bài kiểm tra hoặc bài đã hết hạn.");

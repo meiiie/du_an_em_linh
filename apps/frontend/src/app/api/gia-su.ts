@@ -34,7 +34,7 @@ export interface TurnGiaSuV2 {
 }
 /** Các lượt mới nhất trước; phân trang bằng offset/limit. */
 export interface LichSuGiaSuV2 { session: SessionGiaSuV2; turns: readonly TurnGiaSuV2[] }
-export interface HoiGiaSuV2 { requestId: string; maBuoc: string; cap: number; cauHoi: string }
+export interface HoiGiaSuV2 { requestId: string; maBuoc: string; cap: number; cauHoi: string; baiLamHienTai?: string }
 export interface HuyGiaSuV2 { turnId: string }
 export interface XacNhanHuyGiaSuV2 { sessionId: string; turnId: string; status: Exclude<TrangThaiLuot, 'generating'>; lastSeq: number }
 interface EventData { v: 2; sessionId: string; turnId: string; seq: number }
@@ -55,6 +55,7 @@ export interface LuotGiaSuV2 {
   cap: number;
   cauHoi: string;
   retryOfTurnId?: string;
+  live?: boolean;
   text: string;
   references?: readonly NguonGiaSu[];
   status: TrangThaiLuot;

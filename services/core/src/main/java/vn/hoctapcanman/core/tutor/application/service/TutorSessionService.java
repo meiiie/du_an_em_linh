@@ -79,13 +79,15 @@ public class TutorSessionService {
         Session s=owned(student,session);
         Assignment a=assignment(student,s.assignmentId());
         TutorRequest r=new TutorRequest(a.code(),request.maBuoc(),request.cap(),request.cauHoi());
-        TutorContext c=pipeline.context(student,a.classId(),r);
+        TutorContext saved=pipeline.context(student,a.classId(),r);
+        TutorContext c=request.baiLamHienTai()==null?saved:new TutorContext(saved.problemId(),saved.code(),saved.statement(),
+            saved.function(),saved.step(),saved.hint(),saved.stepName(),saved.formulas(),List.of(request.baiLamHienTai()));
         String question=TutorPrompt.withoutIdentifiers(request.cauHoi());
         if(!TutorPrompt.safeContext(c,question))
             throw new WorkspaceException(400,"Em bỏ thông tin cá nhân khỏi câu hỏi rồi thử lại nhé.");
         Accepted accepted=sessions.accept(s,request,question,version(a,c),references(c));
         if(accepted.created()) {
-            try { pipeline.authorize(student,r); }
+            try { pipeline.authorizePrepared(student); }
             catch(RuntimeException ex) { fail(s.id(),accepted.turn().id(),ex); throw ex; }
             var cancellation=new HintModel.Cancellation();
             Thread worker=Thread.ofVirtual().unstarted(() -> run(accepted,a,c,new TutorRequest(a.code(),request.maBuoc(),request.cap(),question),cancellation));
@@ -108,7 +110,7 @@ public class TutorSessionService {
             fail(id,turn,new WorkspaceException(503,"Lượt hỏi đã hết thời gian. Em có thể hỏi lại."));
         },120,TimeUnit.SECONDS);
         int[] tokens={0};
-        long[] lastFull={0};
+        long[] lastFull={System.nanoTime()};
         Runnable fullCheckpoint=() -> {
             cancellation.check();
             if(System.nanoTime()>deadline)throw new WorkspaceException(503,"Lượt hỏi đã hết thời gian. Em có thể hỏi lại.");
@@ -247,7 +249,7 @@ public class TutorSessionService {
     private static int estimate(HintPrompt p){return HintModel.estimate(p.system()+p.user())+16;}
     private static String render(String summary,List<Turn> turns) {
         StringBuilder text=new StringBuilder("Tóm tắt: ").append(memoryText(summary));
-        for(Turn t:turns)text.append("\nLượt ").append(t.ordinal()).append(" — học sinh: ").append(memoryText(t.question())).append("\nGia sư: ").append(memoryText(t.answer()));
+        for(Turn t:turns)text.append("\nLượt ").append(t.ordinal()).append(" [bước ").append(t.step()).append("] — học sinh: ").append(memoryText(t.question())).append("\nGia sư: ").append(memoryText(t.answer()));
         return text.toString();
     }
     /** Chỉ khử PII trong dữ liệu gửi lại nhà; giữ nguyên bản gốc và delta trực tiếp. */

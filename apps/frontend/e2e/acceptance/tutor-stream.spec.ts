@@ -77,6 +77,27 @@ for(const reducedMotion of ['no-preference','reduce'] as const){
   });
 }
 
+test('SSE: chữ hiện qua nhiều frame trước done, cả khi delta đến dồn',async({page})=>{
+  await installStream(page);const panel=await open(page);await ask(page);
+  const text='Em thử xác định diện tích đáy rồi chọn chiều cao tương ứng. '.repeat(30);
+  await page.evaluate(text=>{
+    const samples:string[]=[];
+    (window as unknown as {typingSamples:string[]}).typingSamples=samples;
+    const observer=new MutationObserver(()=>{
+      const value=document.querySelector('.cau-cua-ai .markdown')?.textContent ?? '';
+      if(value && samples.at(-1)!==value)samples.push(value);
+    });
+    observer.observe(document.querySelector('.tutor-messages')!,{subtree:true,childList:true,characterData:true});
+    for(let i=0;i<50;i++)window.tutorStream.emit('delta',i+2,{text:text.slice(Math.floor(i*text.length/50),Math.floor((i+1)*text.length/50))});
+  },text);
+  await expect(panel.locator('.markdown')).toContainText(text.trim());
+  const samples=await page.evaluate(()=>(window as unknown as {typingSamples:string[]}).typingSamples);
+  expect(new Set(samples.map(s=>s.length)).size).toBeGreaterThan(3);
+  expect(samples.some(s=>s.length>0 && s.length<text.length/2)).toBe(true);
+  await expect(panel.getByTestId('gia-su-dung')).toBeVisible();
+  await emit(page,'done',52,{status:'completed'});
+});
+
 test('SSE: tải lịch sử, delta tăng dần, Markdown/KaTeX, sanitize, heartbeat và seq trùng',async({page})=>{
   await installStream(page,3);
   await page.route('**/api/hs/gia-su/v2/phien/e2e-session/luot*',async route=>{
@@ -164,7 +185,7 @@ test('SSE: lỗi giữ phần đã kiểm; Thử lại tạo lượt liên kết
   await panel.getByRole('button',{name:'Thử lại',exact:true}).click();
   await expect.poll(()=>page.evaluate(()=>window.tutorStream.calls.length)).toBe(2);
   const calls=await page.evaluate(()=>window.tutorStream.calls);
-  expect(calls[1].body).toEqual({requestId:expect.any(String),maBuoc:calls[0].body?.['maBuoc'],cap:calls[0].body?.['cap'],cauHoi:'Câu hỏi cần giữ lại'});
+  expect(calls[1].body).toMatchObject({requestId:expect.any(String),maBuoc:calls[0].body?.['maBuoc'],cap:calls[0].body?.['cap'],cauHoi:'Câu hỏi cần giữ lại'});
   expect(calls[1].body?.['requestId']).not.toBe(calls[0].body?.['requestId']);
   await emit(page,'delta',5,{text:'Lượt mới đã kiểm.'});await emit(page,'done',6,{status:'completed'});
   await expect(panel.locator('.cau-cua-em')).toHaveCount(1);await expect(panel.locator('.cau-cua-ai')).toHaveCount(2);

@@ -48,6 +48,22 @@ class TutorSessionPersistenceTest {
     }
     Ask ask(UUID id){return new Ask(id,"B.DH.TXD",1,"Em đã thử gì?");}
     Accepted accept(){var q=ask(UUID.randomUUID());return store.accept(store.snapshot(session.id()),q,q.cauHoi(),version);}
+    @Test void paperExerciseWithoutStepFrameSupportsWholeExerciseTutorAndReplay() {
+        db.sql("UPDATE problems SET answer_form='TU_LUAN' WHERE id=:p").param("p",problem).update();
+        var workspace=new vn.hoctapcanman.core.workspace.infrastructure.persistence.WorkspaceStoreAdapter(db,java.time.Clock.systemUTC());
+        var request=new vn.hoctapcanman.core.workspace.application.dto.WorkspaceDto.TutorRequest("TUTOR","BAI_LAM",1,"Em chọn diện tích đáy thế nào?");
+        // Đọc mã thật của fixture; không đọc lời giải hay bật chấm CAS.
+        String code=db.sql("SELECT code FROM problems WHERE id=:p").param("p",problem).query(String.class).single();
+        request=new vn.hoctapcanman.core.workspace.application.dto.WorkspaceDto.TutorRequest(code,"BAI_LAM",1,request.cauHoi());
+        var context=workspace.tutorContext(student,cl,request).orElseThrow();
+        assertEquals("Bài làm",context.stepName());
+        var q=new Ask(UUID.randomUUID(),"BAI_LAM",1,request.cauHoi());
+        var accepted=store.accept(session,q,q.cauHoi(),version);
+        assertEquals("BAI_LAM",store.turn(session.id(),accepted.turn().id()).orElseThrow().step());
+        assertFalse(store.accept(store.snapshot(session.id()),q,q.cauHoi(),version).created());
+        assertTrue(workspace.tutorContext(UUID.randomUUID(),cl,request).isEmpty());
+        assertTrue(workspace.tutorContext(student,cl,new vn.hoctapcanman.core.workspace.application.dto.WorkspaceDto.TutorRequest(code,"BOGUS",1,"Em hỏi")).isEmpty());
+    }
     @Test void ownerAssignmentForeignKeyAndPersistentIdentity() {
         assertEquals(session.id(),store.open(store.assignment(student,assignment).orElseThrow()).id());
         assertTrue(store.find(UUID.randomUUID(),session.id()).isEmpty());

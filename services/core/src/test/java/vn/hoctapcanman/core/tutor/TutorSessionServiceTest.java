@@ -38,6 +38,24 @@ class TutorSessionServiceTest {
         while(System.nanoTime()<end){var t=store.turns(a.session().id(),0,1).getFirst();if(!t.status().equals("generating"))return t;Thread.sleep(10);}
         fail("Worker không kết thúc");return null;
     }
+    @Test void latestDraftAndStepOverrideSavedWorkAndEarlierHistory() throws Exception {
+        var prompts=new CopyOnWriteArrayList<HintPrompt>();
+        when(model.draft(any())).thenAnswer(i -> {prompts.add(i.getArgument(0));return Optional.of("Em chọn căn cứ nào?");});
+        Accepted first=ask();terminal(first);
+        when(workspace.tutorContext(eq(student),eq(cl),any())).thenReturn(Optional.of(new TutorContext(problem,"DH1","Đề","x**2",
+            "B.DH.DAOHAM","","Đạo hàm",List.of(),List.of("bài cũ đã lưu"))));
+        var next=service.ask(student,first.session().id(),new Ask(UUID.randomUUID(),"B.DH.DAOHAM",1,"Em sửa thế này","f'(x)=2x"));
+        assertEquals("completed",terminal(next).status());
+        var prompt=prompts.getLast().user();
+        assertTrue(prompt.contains("B.DH.DAOHAM — Đạo hàm"));assertTrue(prompt.contains("f'(x)=2x"));
+        assertFalse(prompt.contains("bài cũ đã lưu"));assertTrue(prompt.contains("được ưu tiên hơn lịch sử"));
+        assertTrue(prompt.contains("[bước B.DH.TXD]"));
+    }
+    @Test void latestDraftStillPassesPrivacyGateBeforeModel() {
+        var s=service.open(student,assignment);
+        assertThrows(WorkspaceException.class,() -> service.ask(student,s.id(),new Ask(UUID.randomUUID(),"B.DH.TXD",1,"Em hỏi","liên hệ www.example.test")));
+        verify(model,never()).draft(any());
+    }
     @Test void remembersEarlierTurnsAndReplayNeverCallsModel() throws Exception {
         var prompts=new CopyOnWriteArrayList<HintPrompt>();when(model.draft(any())).thenAnswer(i -> {prompts.add(i.getArgument(0));return Optional.of("Em cần tìm điều gì?");});
         Accepted first=ask();assertEquals("completed",terminal(first).status());
@@ -374,13 +392,13 @@ class TutorSessionServiceTest {
         awaitSummaryUsage();
         assertEquals(2,prompts.size());assertTrue(prompts.getLast().system().startsWith("Tóm tắt"));
         assertFalse(store.s.tomTat().isEmpty());assertEquals(8,store.s.summaryThrough());
-        assertFalse(prompts.getFirst().user().contains("Lượt 1 —"));assertTrue(prompts.getFirst().user().contains("Lượt 8 —"));
+        assertFalse(prompts.getFirst().user().contains("Lượt 1 [bước B.DH.TXD] —"));assertTrue(prompts.getFirst().user().contains("Lượt 8 [bước B.DH.TXD] —"));
         assertEquals(11,store.turns(store.s.id(),0,100).size());assertEquals(2,store.calls.size());
         verifyNoInteractions(gate);
         // Lượt sau dùng summary, không đưa lại phần nguồn đã nén vào cửa sổ.
         Accepted next=ask();assertEquals("completed",terminal(next).status());
         assertTrue(prompts.getLast().user().contains(store.snapshot(store.s.id()).tomTat()));
-        assertFalse(prompts.getLast().user().contains("Lượt 8 —"));assertTrue(prompts.getLast().user().contains("Lượt 9 —"));
+        assertFalse(prompts.getLast().user().contains("Lượt 8 [bước B.DH.TXD] —"));assertTrue(prompts.getLast().user().contains("Lượt 9 [bước B.DH.TXD] —"));
     }
     @Test void compactsAtSeventyPercentIncludingFailedAndCancelledQuestions() throws Exception {
         service.open(student,assignment);
@@ -399,7 +417,7 @@ class TutorSessionServiceTest {
         awaitSummaryUsage();
         History h=service.history(student,a.session().id(),0,50);
         assertEquals(8,h.session().summaryThrough());assertFalse(h.session().tomTat().isBlank());
-        assertTrue(prompts.getFirst().user().contains("Lượt 8 —"));assertTrue(prompts.getFirst().user().contains("Lượt 10 —"));
+        assertTrue(prompts.getFirst().user().contains("Lượt 8 [bước B.DH.TXD] —"));assertTrue(prompts.getFirst().user().contains("Lượt 10 [bước B.DH.TXD] —"));
     }
     @Test void summaryCanContainMathWithoutGateAndIsIncludedAsMemory() throws Exception {
         service.open(student,assignment);for(int i=0;i<10;i++)store.seed("Em thử "+"cách ".repeat(250),"Em làm "+"tiếp ".repeat(250));

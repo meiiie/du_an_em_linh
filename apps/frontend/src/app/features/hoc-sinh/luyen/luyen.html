@@ -306,7 +306,7 @@
       </div>
     </section>
   }
-    @if (coGiaSu()) { <app-gia-su [anNut]="true" (moChange)="giaSuMo.set($event)" (rongChange)="giaSuDesktop.set($event)" (rongGiaSu)="giaSuRong.set($event)" [maBai]="b.maBai" [giaoBaiId]="b.giaoBaiId ?? ''" [maBuoc]="buocHien()?.maBuoc ?? ''" [tenBuoc]="buocHien()?.ten ?? ''" /> }
+    @if (coGiaSu()) { <app-gia-su [anNut]="true" (moChange)="giaSuMo.set($event)" (rongChange)="giaSuDesktop.set($event)" (rongGiaSu)="giaSuRong.set($event)" [maBai]="b.maBai" [giaoBaiId]="b.giaoBaiId ?? ''" [maBuoc]="buocHien()?.maBuoc ?? ''" [tenBuoc]="buocHien()?.ten ?? ''" [baiLamHienTai]="baiLamGiaSu()" /> }
     </div>
 }
 
