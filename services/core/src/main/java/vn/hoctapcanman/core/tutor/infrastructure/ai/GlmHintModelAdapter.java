@@ -22,6 +22,9 @@ public final class GlmHintModelAdapter implements HintModel {
     private final RestClient client;
     private final String key;
     private final String model;
+    private final String reasoningEffort;
+    private static final java.util.regex.Pattern FORCED_THINKING_MODEL=java.util.regex.Pattern.compile(
+        "glm-5\\.(?:[2-9]|[1-9][0-9]+)(?:-flashx?)?",java.util.regex.Pattern.CASE_INSENSITIVE);
     private final Duration timeout;
     private final int maxTokens;
     private final double temperature;
@@ -39,6 +42,9 @@ public final class GlmHintModelAdapter implements HintModel {
         this(client,key,model,timeout,maxTokens,firstTokenTimeout,temperature,topP,io.micrometer.core.instrument.Metrics.globalRegistry);
     }
     public GlmHintModelAdapter(RestClient client,String key,String model,Duration timeout,int maxTokens,Duration firstTokenTimeout,double temperature,double topP,io.micrometer.core.instrument.MeterRegistry meters) {
+        this(client,key,model,timeout,maxTokens,firstTokenTimeout,temperature,topP,"low",meters);
+    }
+    public GlmHintModelAdapter(RestClient client,String key,String model,Duration timeout,int maxTokens,Duration firstTokenTimeout,double temperature,double topP,String reasoningEffort,io.micrometer.core.instrument.MeterRegistry meters) {
         unexpectedReasoning=meters.counter("gia_su_glm.reasoning_khong_mong_doi");
         if(timeout.isZero() || timeout.isNegative() || firstTokenTimeout.isZero() || firstTokenTimeout.isNegative())
             throw new IllegalArgumentException("Thời gian chờ phải dương.");
@@ -46,7 +52,7 @@ public final class GlmHintModelAdapter implements HintModel {
             throw new IllegalArgumentException("Tham số lấy mẫu phải lớn hơn 0 và không quá 1.");
         this.client=client;this.key=key;this.model=model;this.timeout=timeout;this.maxTokens=maxTokens;
         this.firstTokenTimeout=firstTokenTimeout;
-        this.temperature=temperature;this.topP=topP;
+        this.temperature=temperature;this.topP=topP;this.reasoningEffort=reasoningEffort;
     }
     @Override public String provider(){return "GLM";}
     @Override public Optional<String> draft(HintPrompt prompt) {
@@ -152,11 +158,21 @@ public final class GlmHintModelAdapter implements HintModel {
     private ModelUsage call(HintPrompt prompt,Consumer<String> tokens,Attempt attempt) {
         var cancellation=attempt.cancellation;
         cancellation.check();
-        Map<String,Object> body=Map.of("model",model,"max_tokens",maxTokens,"stream",true,
-            // Prompt tóm tắt do core dựng, không phân loại từ dữ liệu học sinh.
-            "temperature",prompt.system().startsWith("Tóm tắt hội thoại học toán")?0.2:temperature,"top_p",topP,
-            "thinking",Map.of("type","disabled"),"messages",List.of(
-                Map.of("role","system","content",prompt.system()),Map.of("role","user","content",prompt.user())));
+        Map<String,Object> body=new LinkedHashMap<>();
+        body.put("model",model);
+        body.put("max_tokens",maxTokens);
+        body.put("stream",true);
+        // Prompt tóm tắt do core dựng, không phân loại từ dữ liệu học sinh.
+        body.put("temperature",prompt.system().startsWith("Tóm tắt hội thoại học toán")?0.2:temperature);
+        body.put("top_p",topP);
+        boolean forcedThinking=FORCED_THINKING_MODEL.matcher(model).matches();
+        body.put("thinking",Map.of("type",forcedThinking?"enabled":"disabled"));
+        String effort=reasoningEffort==null?"":reasoningEffort.strip().toLowerCase(java.util.Locale.ROOT);
+        // GLM-5.3 chỉ nhận low/high/max; giá trị khác về low để không bị 400.
+        if(forcedThinking && model.toLowerCase(java.util.Locale.ROOT).startsWith("glm-5.3") && !java.util.Set.of("low","high","max").contains(effort))effort="low";
+        if(forcedThinking && !effort.isBlank())body.put("reasoning_effort",effort);
+        body.put("messages",List.of(
+            Map.of("role","system","content",prompt.system()),Map.of("role","user","content",prompt.user())));
         try { return client.post().uri("/chat/completions").header(HttpHeaders.AUTHORIZATION,"Bearer "+key)
             .contentType(MediaType.APPLICATION_JSON).accept(MediaType.TEXT_EVENT_STREAM).body(body)
             .exchange((request,response) -> {

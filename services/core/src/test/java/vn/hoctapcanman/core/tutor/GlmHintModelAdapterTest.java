@@ -51,6 +51,39 @@ class GlmHintModelAdapterTest {
         var chunks=new ArrayList<String>();var usage=adapter.stream(prompt,chunks::add);
         assertEquals(List.of("Em đã ","thử gì?"),chunks);assertEquals(25,usage.inputTokens());assertEquals(7,usage.outputTokens());assertFalse(usage.estimated());server.verify();
     }
+    @org.junit.jupiter.params.ParameterizedTest
+    @org.junit.jupiter.params.provider.ValueSource(strings={"glm-5.2","glm-5.3","GLM-5.3-FLASH","glm-5.10"})
+    void forcedThinkingModelsUseLowEffortAndNeverForwardReasoning(String model) {
+        var builder=RestClient.builder().baseUrl(BASE);
+        server=MockRestServiceServer.bindTo(builder).build();
+        adapter=new GlmHintModelAdapter(builder.build(),"khóa-thử",model,Duration.ofSeconds(30),350);
+        server.expect(requestTo(BASE+"/chat/completions"))
+            .andExpect(content().json("""
+                {"model":"%s","max_tokens":350,"stream":true,"temperature":0.8,"top_p":0.9,
+                "thinking":{"type":"enabled"},"reasoning_effort":"low",
+                "messages":[{"role":"system","content":"Chỉ dẫn"},{"role":"user","content":"Câu hỏi"}]}
+                """.formatted(model),true)).andRespond(withSuccess(SUCCESS,MediaType.TEXT_EVENT_STREAM));
+        var chunks=new ArrayList<String>();
+        adapter.stream(prompt,chunks::add);
+        assertEquals(List.of("Em đã ","thử gì?"),chunks);server.verify();
+    }
+    @org.junit.jupiter.params.ParameterizedTest
+    @org.junit.jupiter.params.provider.CsvSource(value={
+        "glm-5.3|medium|enabled|low", "glm-5.3|''|enabled|low", "glm-5.3|'   '|enabled|low", "glm-5.3-flashx|HIGH|enabled|high", "glm-5.2|medium|enabled|medium",
+        "glm-4.7|medium|disabled|", "glm-5.1|low|disabled|", "other-glm-5.3|low|disabled|"
+    },delimiter='|')
+    void configuredEffortIsOnlySentForForcedThinkingModels(String model,String effort,String thinking,String expectedEffort) {
+        var builder=RestClient.builder().baseUrl(BASE);
+        server=MockRestServiceServer.bindTo(builder).build();
+        adapter=new GlmHintModelAdapter(builder.build(),"khóa-thử",model,Duration.ofSeconds(30),350,
+            Duration.ofSeconds(20),0.8,0.9,effort,io.micrometer.core.instrument.Metrics.globalRegistry);
+        var expectation=server.expect(requestTo(BASE+"/chat/completions"))
+            .andExpect(jsonPath("$.thinking.type").value(thinking));
+        if(expectedEffort==null)expectation.andExpect(jsonPath("$.reasoning_effort").doesNotExist());
+        else expectation.andExpect(jsonPath("$.reasoning_effort").value(expectedEffort));
+        expectation.andRespond(withSuccess(SUCCESS,MediaType.TEXT_EVENT_STREAM));
+        assertEquals("Em đã thử gì?",adapter.draft(prompt).orElseThrow());server.verify();
+    }
     @Test void reasoningOnlyIsWarnedAndCountedOncePerAttemptWithoutLoggingContent(org.springframework.boot.test.system.CapturedOutput output) {
         var builder=RestClient.builder().baseUrl(BASE);server=MockRestServiceServer.bindTo(builder).build();
         var meters=new io.micrometer.core.instrument.simple.SimpleMeterRegistry();
