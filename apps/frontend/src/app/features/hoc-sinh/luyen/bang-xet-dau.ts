@@ -1,4 +1,4 @@
-import { Component, computed, input, model, output, signal } from '@angular/core';
+import { booleanAttribute, Component, computed, input, model, output, signal } from '@angular/core';
 import { ViTriSai } from '../../../api/hoc-sinh';
 import { Button } from '../../../shared/ui/button';
 import { HANG_DAU, HANG_MUI, HANG_X, Mui, XET_DAU } from './phieu';
@@ -23,7 +23,7 @@ const MUI: { gia: Mui; chu: string; ten: string }[] = [
 ];
 
 /**
- * Bảng xét dấu trên tấm bảng 3b1b, cùng cách nhập với v0 (`apps/web/components/solve-client.tsx`): học sinh thêm mốc theo
+ * Bảng xét dấu theo giao diện đang chọn, cùng cách nhập với v0 (`apps/web/components/solve-client.tsx`): học sinh thêm mốc theo
  * thứ tự mình chọn (máy không tự sắp, sai thứ tự do máy chủ báo), chọn dấu y′ ở từng khoảng và từng mốc, chọn mũi tên ở
  * từng khoảng. Ô theo chỉ số `k` của `docs/chi-so-o-bang.md`. Không tự kiểm đúng / sai: chỉ tô ô máy chủ báo sai.
  */
@@ -33,6 +33,8 @@ const MUI: { gia: Mui; chu: string; ten: string }[] = [
   template: `
     <div class="them">
       <input
+        [readOnly]="readonly()"
+        [disabled]="disabled()"
         class="o-moc"
         data-testid="moc-nhap"
         aria-label="Mốc x"
@@ -42,7 +44,7 @@ const MUI: { gia: Mui; chu: string; ten: string }[] = [
         (input)="nhapMoc.set($any($event.target).value)"
         (keydown.enter)="themMoc()"
       />
-      <button appButton variant="secondary" type="button" data-testid="moc-them" (click)="themMoc()">Thêm mốc</button>
+      <button [disabled]="readonly() || disabled()" appButton variant="secondary" type="button" data-testid="moc-them" (click)="themMoc()">Thêm mốc</button>
     </div>
     <div class="cuon" data-testid="bang-xet-dau">
       <table>
@@ -57,7 +59,7 @@ const MUI: { gia: Mui; chu: string; ten: string }[] = [
                 @if (k % 2) {
                   <td [attr.data-testid]="'x-' + (k - 1) / 2" [class.sai]="sai(hangX, (k - 1) / 2)">
                     <span class="moc">{{ moc()[(k - 1) / 2] }}</span>
-                    <button type="button" class="xoa" [attr.aria-label]="'Xóa mốc ' + moc()[(k - 1) / 2]" (click)="xoaMoc((k - 1) / 2)">×</button>
+                    <button [disabled]="readonly() || disabled()" type="button" class="xoa" [attr.aria-label]="'Xóa mốc ' + moc()[(k - 1) / 2]" (click)="xoaMoc((k - 1) / 2)">×</button>
                   </td>
                 } @else {
                   <td class="vo-cuc">{{ k === 0 ? '−∞' : k === cot().length - 1 ? '+∞' : '' }}</td>
@@ -77,7 +79,7 @@ const MUI: { gia: Mui; chu: string; ten: string }[] = [
               >
                 <span class="chon">
                   @for (v of luaChonDau(k); track v) {
-                    <button
+                    <button [disabled]="readonly() || disabled()"
                       type="button"
                       [class]="'nut-o dau-' + tenLop(v)"
                       [attr.aria-label]="tenDau(v)"
@@ -107,7 +109,7 @@ const MUI: { gia: Mui; chu: string; ten: string }[] = [
                 >
                   <span class="chon">
                     @for (m of muiLuaChon; track m.gia) {
-                      <button
+                      <button [disabled]="readonly() || disabled()"
                         type="button"
                         [class]="'nut-o mui-' + m.gia.toLowerCase()"
                         [attr.aria-label]="m.ten"
@@ -130,6 +132,8 @@ const MUI: { gia: Mui; chu: string; ten: string }[] = [
   styleUrl: './bang-xet-dau.css',
 })
 export class BangXetDau {
+  readonly readonly = input(false, { transform: booleanAttribute });
+  readonly disabled = input(false, { transform: booleanAttribute });
   readonly moc = model<string[]>([]);
   readonly dau = model<Record<number, string>>({});
   readonly mui = model<Record<number, Mui>>({});
@@ -176,6 +180,7 @@ export class BangXetDau {
   }
 
   protected themMoc(): void {
+    if (this.readonly() || this.disabled()) return;
     const v = this.nhapMoc().trim();
     if (!v) return;
     this.suKien.emit({ hang: HANG_X, k: this.moc().length, giaTriCu: null, giaTriMoi: v });
@@ -188,6 +193,7 @@ export class BangXetDau {
    * (giá trị mới rỗng), để core đếm đủ số lần sửa khi nghi đoán mò.
    */
   protected xoaMoc(i: number): void {
+    if (this.readonly() || this.disabled()) return;
     this.suKien.emit({ hang: HANG_X, k: i, giaTriCu: this.moc()[i], giaTriMoi: '' });
     // Ô vốn trống (core lưu ô khoảng chưa chọn là chuỗi rỗng) không đổi gì: không ghi, kẻo đếm thừa lần sửa.
     for (const [k, v] of Object.entries(this.dau())) if (v) this.suKien.emit({ hang: HANG_DAU, k: Number(k), giaTriCu: v, giaTriMoi: '' });
@@ -198,11 +204,13 @@ export class BangXetDau {
   }
 
   protected chonDau(k: number, v: string): void {
+    if (this.readonly() || this.disabled()) return;
     this.suKien.emit({ hang: HANG_DAU, k, giaTriCu: this.dau()[k] ?? null, giaTriMoi: v });
     this.dau.update((d) => ({ ...d, [k]: v }));
   }
 
   protected chonMui(k: number, v: Mui): void {
+    if (this.readonly() || this.disabled()) return;
     this.suKien.emit({ hang: HANG_MUI, k, giaTriCu: this.mui()[k] ?? null, giaTriMoi: v });
     this.mui.update((d) => ({ ...d, [k]: v }));
   }

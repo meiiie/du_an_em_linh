@@ -2,11 +2,13 @@ import { VanBanToan } from '../../../shared/toan/van-ban-toan';
 import { ngayViet } from '../../../shared/ui/dinh-dang';
 import { ApiLopHoc } from '../../../api/lop-hoc';
 import { HttpClient, HttpErrorResponse, httpResource } from '@angular/common/http';
+import { DOCUMENT } from '@angular/common';
 import {
   afterNextRender,
   Component,
   computed,
   ElementRef,
+  effect,
   inject,
   Injector,
   input,
@@ -25,6 +27,7 @@ import { Button } from '../../../shared/ui/button';
 import { deBang, thanDe } from '../hang-bai';
 import { HopThoai } from '../../../shared/ui/hop-thoai';
 import { GiaSu } from './gia-su';
+import { GiaSuMarkdown } from './gia-su-markdown';
 import { BangXetDau, SuKienO } from './bang-xet-dau';
 import { dongNghiem, goiYNhap, kieuNhap, Mui, NGHIEM, NhapPhieu, nhapTuBaiLam, oKetLuan, XET_DAU, yeuCauNop } from './phieu';
 
@@ -55,7 +58,7 @@ const TEN_TRANG_THAI: Record<TrangThaiBuoc, string> = {
  */
 @Component({
   selector: 'app-luyen',
-  imports: [HopThoai,VanBanToan,KhungCho, LoiTai, GiaSu, BangXetDau, Button, Katex, OCongThuc, RouterLink],
+  imports: [GiaSuMarkdown,HopThoai,VanBanToan,KhungCho, LoiTai, GiaSu, BangXetDau, Button, Katex, OCongThuc, RouterLink],
   templateUrl: './luyen.html',
   styleUrl: './luyen.css',
 })
@@ -68,6 +71,7 @@ export class Luyen {
   readonly maBai = input.required<string>();
 
   private readonly http = inject(HttpClient);
+  private readonly document = inject(DOCUMENT);
   private readonly injector = inject(Injector);
   private readonly tieuDe = viewChild<ElementRef<HTMLElement>>('tieuDe');
   private readonly vungPhanHoi = viewChild<ElementRef<HTMLElement>>('vungPhanHoi');
@@ -229,8 +233,24 @@ export class Luyen {
   });
   protected readonly loiGiai = signal<string | null>(null);
   protected readonly xacNhanLoiGiai = signal(false);
+  protected readonly khoaLoiGiai = computed(() => {
+    const mode = this.mode();
+    // Chỉ server xác nhận hết hạn mới mở bài kiểm tra; giờ máy khách có thể lệch.
+    return !mode || (mode.status === 'KIEM_TRA' && mode.details.conHan !== false);
+  });
+  constructor() {
+    effect(onCleanup => {
+      if (!this.khoaLoiGiai()) return;
+      // Poll cả khi chưa tải được chế độ hoặc lần tải lại lỗi; chỉ server mở khoá.
+      // Không dựa vào dueAt/giờ máy, không chồng yêu cầu hay tải khi tab ẩn.
+      const timer = setInterval(() => {
+        if (!this.document.hidden && !this.cheDo.isLoading()) this.cheDo.reload();
+      }, 30_000);
+      onCleanup(() => clearInterval(timer));
+    });
+  }
   protected async xemLoiGiai(): Promise<void> {
-    if(this.dangGui())return;
+    if(this.dangGui() || this.khoaLoiGiai())return;
     this.dangGui.set(true);this.loiGui.set(null);
     try {
       const result=await firstValueFrom(this.http.post<{loiGiai:string}>(API_HS.loiGiai(this.maBai()),{}));
@@ -424,6 +444,7 @@ export class Luyen {
   }
 
   private sua(f: (n: NhapPhieu) => NhapPhieu): void {
+    if (this.khoa()) return;
     this.nhap.update((n) => (n ? f(n) : n));
   }
 

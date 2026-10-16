@@ -32,6 +32,18 @@ public final class VietLoiGiai {
             var explanation=root.path("giai_thich_giao_vien");
             if(explanation.isString()&&!explanation.asString().isBlank())return Optional.of(explanation.asString());
             try {
+                if (root.has("cac_buoc")) {
+                    var steps = root.path("cac_buoc");
+                    if (!steps.isArray() || steps.isEmpty()) return Optional.empty();
+                    var lines = new ArrayList<String>();
+                    for (var step : steps) {
+                        String text = chu(step.get("van_ban"));
+                        String latex = chu(step.get("latex"));
+                        if (text == null || text.isBlank()) return Optional.empty();
+                        lines.add("**Bước " + (lines.size() + 1) + ".** " + text.strip() + (latex == null || latex.isBlank() ? "" : " $" + latex.strip() + "$"));
+                    }
+                    return Optional.of(String.join("\n", lines));
+                }
                 var lines=cau(root,true);
                 if(!lines.isEmpty())return Optional.of(String.join("\n",lines));
             } catch(LechKieu ignored) { return Optional.empty(); }

@@ -17,6 +17,18 @@ class FullSolutionExplanationTest {
  final String json="{\"TXD\":\"Tập xác định R.\",\"DAOHAM\":\"Đạo hàm 2x.\",\"NGHIEM\":\"Nghiệm 0.\",\"XETDAU\":\"Xét dấu.\",\"KETLUAN\":\"Kết luận.\"}";
  final String full="Tập xác định R.\nĐạo hàm 2x.\nNghiệm 0.\nXét dấu.\nKết luận.";
  @BeforeEach void setup(){when(workspace.settings(cl)).thenReturn(new vn.hoctapcanman.core.workspace.application.dto.WorkspaceDto.Settings(cl,true,"glm"));when(model.selected("glm")).thenReturn(model);when(model.provider()).thenReturn("GLM");when(workspace.library(cl,false)).thenReturn(new Library(List.of(),List.of()));when(model.draft(any())).thenReturn(Optional.of(json));}
+ @Test void integralWithFunctionKeepsStoredTeacherSolutionWithoutCallingModel() {
+  var integral = new BaiChoLamBai(UUID.randomUUID(), "NT-TP12-TH-02", 1, "T12.NT.TP", "Tích phân", "THONG_HIEU",
+      "Tính tích phân từ 1 đến 4", "2x+5", "TU_LUAN", "2*x+5", List.of("B.GT.NGUYENHAM", "B.GT.TINH"), List.of(), null);
+  assertThat(adapter.explain(cl, integral)).isEmpty();
+  verifyNoInteractions(model, math, events, workspace);
+ }
+ @Test void nonDhStepMetadataCannotEnterLegacyFiveStepGenerator() {
+  var changedFrame = new BaiChoLamBai(UUID.randomUUID(), "NT-TP12-TH-02", 1, "T12.NT.TP", "Tích phân", "THONG_HIEU",
+      "Tính tích phân từ 1 đến 4", "2x+5", "TU_LUAN_5_BUOC", "2*x+5", List.of("B.GT.NGUYENHAM", "B.GT.TINH"), List.of(), null);
+  assertThat(adapter.explain(cl, changedFrame)).isEmpty();
+  verifyNoInteractions(model, math, events, workspace);
+ }
  @Test void offlineDoesNotCallModelOrMath(){when(model.provider()).thenReturn("offline");assertThat(adapter.explain(cl,problem)).isEmpty();verify(model,never()).draft(any());verifyNoInteractions(math,events);}
  @Test void selectsConfiguredTransportInsteadOfCallingUnselectedRouter(){
   var router=new vn.hoctapcanman.core.tutor.infrastructure.ai.SelectedHintModelAdapter(model,new vn.hoctapcanman.core.tutor.infrastructure.ai.OfflineHintModelAdapter());

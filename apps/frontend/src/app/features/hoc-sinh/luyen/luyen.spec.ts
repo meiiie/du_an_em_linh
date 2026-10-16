@@ -43,7 +43,12 @@ const daDat = (maBuoc: string, dong = [{ dong: 0, latex: '\\mathbb{R}' }]) => ({
 
 describe('Luyen', () => {
   beforeEach(() => localStorage.clear());
-  async function mo(bai: ChiTietBai | { loi: number }, choOn = true, mode = 'ON_TAP') {
+  afterEach(() => {
+    TestBed.resetTestingModule();
+    vi.useRealTimers();
+    vi.restoreAllMocks();
+  });
+  async function mo(bai: ChiTietBai | { loi: number }, choOn = true, mode = 'ON_TAP', dueAt = '2026-10-20T12:00:00Z', truocCheDo?: () => Promise<void>, conHan = true) {
     TestBed.configureTestingModule({
       providers: [
         provideHttpClient(),
@@ -56,7 +61,8 @@ describe('Luyen', () => {
     fixture.componentRef.setInput('maBai', MA);
     fixture.detectChanges();
     const http = TestBed.inject(HttpTestingController);
-    http.expectOne('/api/hs/che-do').flush([{id:MA,title:MA,subtitle:'',status:mode,details:{dueAt:'2026-10-20T12:00:00Z'}}]);
+    if (truocCheDo) await truocCheDo();
+    http.expectOne('/api/hs/che-do').flush([{id:MA,title:MA,subtitle:'',status:mode,details:{dueAt,conHan}}]);
     const yc = http.expectOne({ method: 'GET', url: API_HS.chiTietBai(MA) });
     if ('loi' in bai) yc.flush({ detail: 'x' }, { status: bai.loi, statusText: 'Lỗi' });
     else yc.flush(bai);
@@ -377,6 +383,141 @@ describe('Luyen', () => {
     t.http.verify();
   });
 
+  it('bài kiểm tra trước hạn không cho xác nhận xem lời giải', async () => {
+    const t = await mo(chiTiet({trangThai:'DA_NOP', cacBuoc:CAC_BUOC.map(s=>daDat(s.maBuoc))}), false, 'KIEM_TRA');
+    TestBed.tick();
+    t.http.expectOne({method:'POST',url:API_HS.nopBai(MA)}).flush({ketQua:'DAT',mucHieu:[]});
+    await t.xong();
+    const dialog=t.el.querySelector('dialog')!;
+    dialog.showModal=()=>{dialog.open=true;}; dialog.close=()=>{dialog.open=false;};
+    await t.bam('[data-testid="xem-toan-bo-loi-giai"]');
+    expect(dialog.textContent).toContain('sau hạn nộp');
+    const confirm=[...dialog.querySelectorAll('button')].find(b=>b.textContent?.trim()==='Xác nhận xem lời giải')!;
+    expect(confirm.disabled).toBe(true);
+    confirm.click();
+    t.http.expectNone(API_HS.loiGiai(MA));
+    t.http.verify();
+  });
+  it.each([false, true, null])('poll mỗi 30 giây, phản hồi conHan=%s quyết định mở lời giải (null: lỗi mạng)', async (conHan) => {
+    vi.useFakeTimers({ toFake: ['setInterval', 'clearInterval'] });
+    const t=await mo(chiTiet({trangThai:'DA_NOP',cacBuoc:CAC_BUOC.map(s=>daDat(s.maBuoc))}), false, 'KIEM_TRA');
+    TestBed.tick();
+    t.http.expectOne({method:'POST',url:API_HS.nopBai(MA)}).flush({ketQua:'DAT',mucHieu:[]});
+    await t.xong();
+    const dialog=t.el.querySelector('dialog')!;
+    dialog.showModal=()=>{dialog.open=true;};dialog.close=()=>{dialog.open=false;};
+    await t.bam('[data-testid="xem-toan-bo-loi-giai"]');
+    const confirm=[...dialog.querySelectorAll('button')].find(b=>b.textContent?.trim()==='Xác nhận xem lời giải')!;
+    expect(confirm.disabled).toBe(true);
+    vi.advanceTimersByTime(29_999);
+    TestBed.tick();
+    t.http.expectNone('/api/hs/che-do');
+    vi.advanceTimersByTime(1);
+    TestBed.tick();
+    expect(confirm.disabled).toBe(true);
+    const reload=t.http.expectOne('/api/hs/che-do');
+    if(conHan === null) reload.flush(null,{status:503,statusText:'Lỗi mạng'});
+    else reload.flush([{id:MA,title:MA,subtitle:'',status:'KIEM_TRA',details:{dueAt:'2026-10-20T12:00:00Z',conHan}}]);
+    await t.fixture.whenStable();
+    expect(confirm.disabled).toBe(conHan !== false);
+    confirm.click();
+    if(conHan === false) {
+      t.http.expectOne(API_HS.loiGiai(MA)).flush({loiGiai:'Lời giải sau hạn.'});
+      await t.xong();
+      expect(t.chu('[data-testid=loi-giai-sau-nop]')).toContain('Lời giải sau hạn.');
+    } else t.http.expectNone(API_HS.loiGiai(MA));
+    vi.advanceTimersByTime(30_000);
+    TestBed.tick();
+    if (conHan === false) t.http.expectNone('/api/hs/che-do');
+    else {
+      t.http.expectOne('/api/hs/che-do').flush([{id:MA,status:'KIEM_TRA',details:{conHan:false}}]);
+      await t.fixture.whenStable();
+      expect(confirm.disabled).toBe(false);
+    }
+    t.http.verify();
+  });
+
+  it.each(['2000-01-01T00:00:00Z', '2099-01-01T00:00:00Z', '', 'không hợp lệ'])(
+    'vẫn poll khi hạn là %s; bỏ qua tab ẩn, yêu cầu đang tải và dọn khi huỷ', async (dueAt) => {
+      vi.useFakeTimers({ toFake: ['setInterval', 'clearInterval'] });
+      const hidden = vi.spyOn(document, 'hidden', 'get').mockReturnValue(true);
+      const t = await mo(chiTiet(), true, 'KIEM_TRA', dueAt);
+      vi.advanceTimersByTime(60_000);
+      TestBed.tick();
+      t.http.expectNone('/api/hs/che-do');
+      hidden.mockReturnValue(false);
+      vi.advanceTimersByTime(30_000);
+      TestBed.tick();
+      const reload = t.http.expectOne('/api/hs/che-do');
+      vi.advanceTimersByTime(30_000);
+      TestBed.tick();
+      t.http.expectNone('/api/hs/che-do');
+      expect(reload.cancelled).toBe(false);
+      reload.flush([{id:MA,status:'KIEM_TRA',details:{dueAt,conHan:true}}]);
+      await t.fixture.whenStable();
+      t.fixture.destroy();
+      vi.advanceTimersByTime(60_000);
+      TestBed.tick();
+      t.http.expectNone('/api/hs/che-do');
+      t.http.verify();
+    },
+  );
+
+  it('bài ôn không poll trạng thái hạn', async () => {
+    vi.useFakeTimers({ toFake: ['setInterval', 'clearInterval'] });
+    const t = await mo(chiTiet());
+    vi.advanceTimersByTime(60_000);
+    TestBed.tick();
+    t.http.expectNone('/api/hs/che-do');
+    t.http.verify();
+  });
+
+  it.each([
+    {dueAt:'2099-01-01T00:00:00Z',conHan:false,disabled:false},
+    {dueAt:'2000-01-01T00:00:00Z',conHan:true,disabled:true},
+    {dueAt:'',conHan:false,disabled:false},
+  ])('ưu tiên conHan=$conHan từ server khi hạn cục bộ là $dueAt', async ({dueAt,conHan,disabled}) => {
+    const t=await mo(chiTiet({trangThai:'DA_NOP',cacBuoc:CAC_BUOC.map(s=>daDat(s.maBuoc))}), false, 'KIEM_TRA', dueAt, undefined, conHan);
+    TestBed.tick();
+    t.http.expectOne(API_HS.nopBai(MA)).flush({ketQua:'DAT',mucHieu:[]});
+    await t.xong();
+    const dialog=t.el.querySelector('dialog')!;
+    dialog.showModal=()=>{dialog.open=true;};dialog.close=()=>{dialog.open=false;};
+    await t.bam('[data-testid="xem-toan-bo-loi-giai"]');
+    const confirm=[...dialog.querySelectorAll('button')].find(b=>b.textContent?.trim()==='Xác nhận xem lời giải')!;
+    expect(confirm.disabled).toBe(disabled);
+    confirm.click();
+    if(disabled) t.http.expectNone(API_HS.loiGiai(MA));
+    else {
+      t.http.expectOne(API_HS.loiGiai(MA)).flush({loiGiai:'Lời giải được server cho phép.'});
+      await t.xong();
+      expect(t.chu('[data-testid=loi-giai-sau-nop]')).toContain('Lời giải được server cho phép.');
+    }
+    t.http.verify();
+  });
+  it('bài đã nộp có ô chỉ đọc và lời giải Markdown cùng KaTeX', async () => {
+    const t = await mo(chiTiet({trangThai:'DA_NOP', cacBuoc:CAC_BUOC.map(s=>daDat(s.maBuoc))}), false);
+    TestBed.tick();
+    t.http.expectOne({method:'POST',url:API_HS.nopBai(MA)}).flush({ketQua:'DAT',mucHieu:[]});
+    await t.xong();
+    const input=t.$<HTMLInputElement>('[data-testid="latex-db"]')!;
+    expect(input.readOnly).toBe(true);
+    const saved=input.value;
+    input.value='Nội dung đến sau khi nộp'; input.dispatchEvent(new Event('input'));
+    await t.fixture.whenStable();
+    await t.bam('[data-testid="step-B.DH.TXD"]');
+    await t.bam('[data-testid="step-B.DH.KETLUAN"]');
+    expect(t.$<HTMLInputElement>('[data-testid="latex-db"]')!.value).toBe(saved);
+    const dialog=t.el.querySelector('dialog')!;
+    dialog.showModal=()=>{dialog.open=true;}; dialog.close=()=>{dialog.open=false;};
+    await t.bam('[data-testid="xem-toan-bo-loi-giai"]');
+    [...dialog.querySelectorAll('button')].find(b=>b.textContent?.trim()==='Xác nhận xem lời giải')!.click();
+    t.http.expectOne(API_HS.loiGiai(MA)).flush({loiGiai:'**Bước 1.** Tính đạo hàm $2x-6$.\n\n**Bước 2.** Xét trên $(-\\infty;3)$.'});
+    await t.xong();
+    expect(t.el.querySelector('[data-testid="loi-giai-sau-nop"] strong')?.textContent).toBe('Bước 1.');
+    expect(t.el.querySelectorAll('[data-testid="loi-giai-sau-nop"] .katex')).toHaveLength(2);
+    expect(t.chu('[data-testid="loi-giai-sau-nop"]')).not.toContain('$');
+  });
   it('phát lại bài đã nộp hỏng (500): vẫn báo đã nộp theo kết luận đã lưu, trang không kẹt, xem lại được từng bước', async () => {
     const t = await mo(chiTiet({ trangThai: 'DA_NOP', cacBuoc: CAC_BUOC.map((s) => daDat(s.maBuoc)) }), false);
     TestBed.tick();

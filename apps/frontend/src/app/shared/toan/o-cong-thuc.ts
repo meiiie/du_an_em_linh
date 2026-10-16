@@ -14,6 +14,7 @@ import {
 } from '@angular/core';
 import { FormValueControl } from '@angular/forms/signals';
 import { Katex } from './katex';
+import { latexHienThi } from './bieu-thuc';
 
 let dangNap: Promise<boolean> | undefined;
 
@@ -211,7 +212,8 @@ export class OCongThuc implements FormValueControl<string> {
       const giaTri = this.value();
       if (!this.coMathLive()) return;
       const o = this.oToan().nativeElement;
-      if (o.value !== giaTri) o.value = giaTri;
+      const hienThi = latexHienThi(giaTri);
+      if (o.value !== hienThi) o.value = hienThi;
       // Nhãn trên host không đặt tên cho textbox bên trong shadow DOM của MathLive.
       o.shadowRoot?.querySelector('[role="textbox"]')?.setAttribute('aria-label', this.nhan());
     });

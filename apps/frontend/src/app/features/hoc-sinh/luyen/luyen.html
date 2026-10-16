@@ -99,6 +99,7 @@
                       goiY="Gõ tập xác định bằng bàn phím"
                       moTaBoi="phan-hoi"
                       [disabled]="khoa()"
+                      [readonly]="daNop()"
                       [value]="n.txd"
                       (valueChange)="datTxd($event)"
                     />
@@ -113,6 +114,7 @@
                         goiY="Gõ đạo hàm bằng bàn phím"
                         moTaBoi="phan-hoi"
                         [disabled]="khoa()"
+                        [readonly]="daNop()"
                         [value]="d"
                         (valueChange)="datDh(i, $event)"
                       />
@@ -130,6 +132,7 @@
                           goiY="Gõ một giá trị x, ví dụ -1"
                           moTaBoi="phan-hoi"
                           [disabled]="khoa()"
+                          [readonly]="daNop()"
                           [value]="r.latex"
                           (valueChange)="datNghiem(i, $event)"
                         />
@@ -153,6 +156,8 @@
                 }
                 @case ('BANG_XET_DAU') {
                   <app-bang-xet-dau
+                    [readonly]="daNop()"
+                    [disabled]="khoa()"
                     [moc]="n.moc"
                     (mocChange)="datMoc($event)"
                     [dau]="n.dau"
@@ -174,6 +179,7 @@
                           goiY="x = …, y = …, hoặc: không có"
                           moTaBoi="phan-hoi"
                           [disabled]="khoa()"
+                          [readonly]="daNop()"
                           [value]="n.kl[o.ma] ?? ''"
                           (valueChange)="datKl(o.ma, $event)"
                         />
@@ -186,6 +192,7 @@
                             aria-describedby="phan-hoi"
                             autocomplete="off"
                             [value]="n.kl[o.ma] ?? ''"
+                            [readOnly]="daNop()"
                             (input)="datKl(o.ma, $any($event.target).value)"
                           />
                         </label>
@@ -205,6 +212,7 @@
                         spellcheck="false"
                         autocapitalize="off"
                         [disabled]="khoa()"
+                        [readOnly]="daNop()"
                         [value]="n.dongTheoBuoc?.[s.maBuoc] ?? ''"
                         (input)="datDong(s.maBuoc, $any($event.target).value)"
                       />
@@ -261,7 +269,7 @@
             @if (loiGiai(); as lg) {
               <div class="loi-giai" data-testid="loi-giai-sau-nop">
                 <p class="nhan-muc">Lời giải</p>
-                <p><app-van-ban-toan [text]="lg" /></p>
+                <app-gia-su-markdown [text]="lg" />
               </div>
             }
             @if (goiBai.hasValue() && goiBai.value().length) {
@@ -306,5 +314,5 @@
   <p>Em đã nộp bài. Việc xem lời giải sẽ được ghi nhận để thầy cô theo dõi quá trình học.</p>
   @if(mode()?.status === 'KIEM_TRA'){<p>Bài kiểm tra chỉ mở lời giải sau hạn nộp.</p>}@else{<p>Bài luyện tập mở lời giải sau khi em đã nộp bài.</p>}
   @if(loiGui()){<p role="alert" class="field-error">{{loiGui()}}</p>}
-  <button appButton type="button" [disabled]="dangGui()" (click)="xemLoiGiai()">Xác nhận xem lời giải</button>
+  <button appButton type="button" [disabled]="dangGui() || khoaLoiGiai()" (click)="xemLoiGiai()">Xác nhận xem lời giải</button>
 </app-hop-thoai>
