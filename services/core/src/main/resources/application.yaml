@@ -75,6 +75,7 @@ mathl:
     max-tokens: ${GLM_MAX_TOKENS:700}
     temperature: ${GIA_SU_TEMPERATURE:0.8}
     top-p: ${GIA_SU_TOP_P:0.9}
+    reasoning-effort: ${GIA_SU_REASONING_EFFORT:low}
     token-budget: ${GIA_SU_TOKEN_BUDGET:6000}
     rate-limit:
       requests: ${GLM_RATE_LIMIT_REQUESTS:12}
