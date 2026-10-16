@@ -1,14 +1,14 @@
 cff-version: 1.2.0
-title: "MathL+ — phần mềm học toán với AI"
+title: MathL+ — phần mềm học toán với AI
 message: Nếu dùng trong bài NCKH, hãy trích dẫn kho này.
 type: software
 authors:
-  - name: "Nhóm du_an_em_linh"
-repository-code: "https://github.com/meiiie/du_an_em_linh"
-url: "https://hoc-toan-ai.onrender.com"
+  - name: Nhóm du_an_em_linh
+repository-code: https://github.com/meiiie/du_an_em_linh
+url: https://hoc-toan-ai.onrender.com
 license: MIT
-version: "0.1.0" # x-release-please-version
-date-released: "2026-09-27"
+version: 0.2.0
+date-released: '2026-09-27'
 keywords:
   - nckh
   - toan-12
