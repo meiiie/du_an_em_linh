@@ -94,7 +94,7 @@
                 @case ('TU_DO') {
                   <app-o-cong-thuc nhan="Đáp số cuối" testId="dap-so-tu-do"
                     [value]="n.dongTheoBuoc?.[s.maBuoc] ?? ''" (valueChange)="datDong(s.maBuoc,$event)" />
-                  <label>Phần trình bày<textarea data-testid="trinh-bay-tu-do" maxlength="2000"
+                  <label class="trinh-bay-tu-do">Phần trình bày<textarea data-testid="trinh-bay-tu-do" rows="6" maxlength="2000"
                     [value]="n.trinhBay ?? ''" (input)="datTrinhBay($any($event.target).value)"></textarea></label>
                   <p class="phu">Nếu chưa nhập được đáp số, em vẫn có thể gửi phần trình bày để thầy cô xem.</p>
                 }
@@ -313,7 +313,7 @@
       </div>
     </section>
   }
-    @if (coGiaSu()) { <app-gia-su [anNut]="true" (moChange)="giaSuMo.set($event)" (rongChange)="giaSuDesktop.set($event)" (rongGiaSu)="giaSuRong.set($event)" [maBai]="b.maBai" [giaoBaiId]="b.giaoBaiId ?? ''" [maBuoc]="buocHien()?.maBuoc ?? ''" [tenBuoc]="buocHien()?.ten ?? ''" [baiLamHienTai]="baiLamGiaSu()" /> }
+    @if (coGiaSu()) { <app-gia-su [anNut]="true" (moChange)="giaSuMo.set($event)" (rongChange)="giaSuDesktop.set($event)" (rongGiaSu)="giaSuRong.set($event)" [maBai]="b.maBai" [tenBai]="b.tenKyNang" [giaoBaiId]="b.giaoBaiId ?? ''" [maBuoc]="buocHien()?.maBuoc ?? ''" [tenBuoc]="buocHien()?.ten ?? ''" [baiLamHienTai]="baiLamGiaSu()" /> }
     </div>
 }
 

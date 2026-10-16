@@ -87,6 +87,7 @@ public final class GlmHintModelAdapter implements HintModel {
         AutoCloseable stop=() -> { task.cancel(false);attempt.cancellation.cancel(); };
         parent.attach(stop);
         try {
+            attempt.cancellation.onThinking(parent::thinking);
             Thread.startVirtualThread(task);
             for(;;) {
                 parent.check();
@@ -131,6 +132,7 @@ public final class GlmHintModelAdapter implements HintModel {
             reasoningReported=true;
             LOG.warn("gia_su_glm reasoning_khong_mong_doi");
             unexpectedReasoning.increment();
+            cancellation.thinking();
         }
         Attempt(long deadline) { this.deadline=deadline; }
         synchronized boolean emitted() { return emitted; }

@@ -55,8 +55,9 @@ export class GiaSuPhien {
   private loadAbort: AbortController | null = null;
   private retryTimer: ReturnType<typeof setTimeout> | undefined;
   private assignment = '';
+  private problem = '';
 
-  async mo(giaoBaiId: string): Promise<void> {
+  async mo(giaoBaiId: string, maBai = ''): Promise<void> {
     // Mở lại sau đóng cũng tải snapshot; không khởi tạo một lượt model mới.
     const epoch = ++this.epoch;
     const old = this.active;
@@ -65,12 +66,13 @@ export class GiaSuPhien {
     this.active = null;
     this.loadAbort?.abort();
     const abort = this.loadAbort = new AbortController();
-    if (this.assignment !== giaoBaiId) {
+    if (this.assignment !== giaoBaiId || this.problem !== maBai) {
       this.luot.set([]);
       clearTimeout(this.retryTimer);
       this.retryAt.set(0);
     }
     this.assignment = giaoBaiId;
+    this.problem = maBai;
     this.sessionId.set('');
     this.lastSeq = 0;
     this.historyOffset = 0;
@@ -84,8 +86,8 @@ export class GiaSuPhien {
     this.thongBaoCau.set([]);
     this.dangTai.set(true);
     try {
-      if (!giaoBaiId) throw new Error('Chưa mở được phiên gia sư. Hãy tải lại bài được giao.');
-      const response = await this.request(API_GIA_SU, { method: 'POST', body: JSON.stringify({ giaoBaiId }), signal: abort.signal });
+      if (!giaoBaiId && !maBai) throw new Error('Chưa mở được phiên gia sư. Hãy tải lại bài được giao.');
+      const response = await this.request(API_GIA_SU, { method: 'POST', body: JSON.stringify(giaoBaiId ? { giaoBaiId } : { maBai }), signal: abort.signal });
       const session: PhienGiaSuV2 = await response.json();
       const historyResponse = await this.request(this.path(session.sessionId, 'luot') + `?offset=0&limit=${this.pageSize}`, { signal: abort.signal });
       const history: LichSuGiaSuV2 = await historyResponse.json();
@@ -322,6 +324,10 @@ export class GiaSuPhien {
       case 'start':
         this.update(a, t => ({ ...t, turnId: d.turnId, references: event.data.references ?? t.references ?? [] }));
         if (a.stopping) void this.huy(a);
+        break;
+      case 'status':
+        if (event.data.phase !== 'thinking') throw new Error('Kết nối bị gián đoạn.');
+        if (!a.stopping && !this.luot().find(t => t.requestId === a.requestId)?.text) this.trangThai.set('Gia sư đang nghĩ…');
         break;
       case 'delta': {
         const { text } = event.data;

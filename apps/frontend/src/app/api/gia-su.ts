@@ -40,6 +40,7 @@ export interface XacNhanHuyGiaSuV2 { sessionId: string; turnId: string; status: 
 interface EventData { v: 2; sessionId: string; turnId: string; seq: number }
 export type SuKienSse =
   | { event: 'start'; id?: string; data: EventData & { requestId: string; maBuoc: string; cap: number; contextVersion: string; references?: readonly NguonGiaSu[] } }
+  | { event: 'status'; id?: string; data: EventData & { phase: 'thinking' } }
   | { event: 'delta'; id?: string; data: EventData & { text: string } }
   | { event: 'done'; id?: string; data: EventData & { status: 'completed' | 'cancelled'; tokens?: number; durationMs?: number } }
   | { event: 'error'; id?: string; data: EventData & { code: string; message: string; retryable: boolean } }

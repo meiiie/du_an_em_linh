@@ -40,6 +40,13 @@ describe('Sidebar gia sư',()=>{
     const fill=async(q:string)=>{const t=el.querySelector('textarea')!;t.value=q;t.dispatchEvent(new Event('input'));await f.whenStable();return t;};
     return {f,el,click,fill};
   }
+  it.each(['', 'Bài làm', 'Bài làm tự luận'])('bước chung %s: chào và phụ đề dùng tên bài', async (step) => {
+    const t=await setup();
+    t.f.componentRef.setInput('tenBuoc',step);t.f.componentRef.setInput('tenBai','Xác suất có điều kiện');
+    await t.f.whenStable();
+    expect(t.el.querySelector('header .muted')?.textContent).toBe('Xác suất có điều kiện');
+    expect(t.el.textContent).toContain('Em đang làm bài Xác suất có điều kiện. Em vướng ở đâu thì cứ hỏi nhé.');
+  });
   it('mở mới tải lịch sử, giữ độ rộng, phím tắt và Escape trả focus',async()=>{
     localStorage.setItem('mathl-gia-su-mo','true');localStorage.setItem('mathl-gia-su-rong','460');
     const t=await setup(false);

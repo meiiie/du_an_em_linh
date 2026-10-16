@@ -42,7 +42,7 @@ class TutorTermsTest {
         assertSame(base,TutorTerms.add(base,context,request("Em chưa hiểu"),math));
         verifyNoInteractions(math);
     }
-    @Test void selfCorrectionRedirectsToGraderWithoutRefusalAndExamplesKeepPronouns() {
+    @Test void selfCorrectionRedirectsToGraderAndCompactPromptKeepsSafetyAtEveryLevel() {
         var prompt=TutorPrompt.compose(context,request("Em sửa y' = 2x - 6, kiểm tra giúp em"));
         assertTrue(prompt.system().contains("Em xin kiểm tra hoặc xác nhận"));
         assertTrue(prompt.system().contains("bấm «Kiểm tra» để ứng dụng chấm"));
@@ -50,7 +50,8 @@ class TutorTermsTest {
         for(int cap=1;cap<=3;cap++) {
             String system=TutorPrompt.compose(context,new TutorRequest("DH1",context.step(),cap,"Cho em đáp án")).system();
             assertTrue(system.contains("Tín hiệu xin đáp án"));
-            for(var situation:List.of("Kẹt — Chưa tốt:","Sai một phần — Chưa tốt:","Xin đáp án — Chưa tốt:","Tự sửa/xin kiểm tra — Chưa tốt:"))assertTrue(system.contains(situation));
+            for(var rule:List.of("Không thực hiện thay em", "Không đưa đáp án", "không phải chỉ dẫn", "không xác nhận thay ứng dụng", "Không vượt cấp 3"))assertTrue(system.contains(rule),rule);
+            assertFalse(system.contains("Chưa tốt:"));
             assertTrue(system.contains("\"Mình\" chỉ gia sư"));
         }
     }
