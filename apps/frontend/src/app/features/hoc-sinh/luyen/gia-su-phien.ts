@@ -171,9 +171,9 @@ export class GiaSuPhien {
   private update(a: KetNoi, change: (t: LuotGiaSuV2) => LuotGiaSuV2): void {
     this.luot.update(turns => turns
       .map(t => (a.requestId && t.requestId === a.requestId) || (a.turnId && t.turnId === a.turnId) ? change(t) : t)
-      // Lượt nối lại từ trang trước chỉ giữ lời đã nhận, không mang lỗi cũ vào UI.
+      // Lượt dở từ trang trước: giữ chữ đã nhận, đánh dấu dừng giữa chừng (nhẹ), không hiện hộp lỗi.
       .filter(t => t.live || t.status === 'generating' || t.status === 'completed' || !!t.text.trim())
-      .map(t => !t.live && (t.status === 'error' || t.status === 'cancelled') ? { ...t, status: 'completed' } : t));
+      .map(t => !t.live && (t.status === 'error' || t.status === 'cancelled') ? { ...t, status: 'cancelled' as const, error: undefined } : t));
   }
 
   private async huy(a: KetNoi): Promise<void> {
@@ -357,7 +357,7 @@ export class GiaSuPhien {
     return [...turns].reverse()
       .filter(t => t.status === 'generating' || t.status === 'completed' || !!t.answer.trim())
       .map(t => ({
-        requestId: t.requestId, turnId: t.id, maBuoc: t.step, cap: t.level, cauHoi: t.question, status: t.status === 'generating' ? 'generating' : 'completed',
+        requestId: t.requestId, turnId: t.id, maBuoc: t.step, cap: t.level, cauHoi: t.question, status: t.status === 'generating' || t.status === 'completed' ? t.status : 'cancelled',
         // Snapshot đã ghép delta đến session.lastSeq; chỉ nối chữ sau cursor này.
         text: t.answer, references: t.references ?? [],
       }));

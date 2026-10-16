@@ -400,7 +400,7 @@ describe('Phiên gia sư v2', () => {
     });
     await service.mo('assignment-1');await settle();
     expect(service.luot()).toHaveLength(answer ? 1 : 0);
-    if(answer) expect(service.luot()[0]).toMatchObject({text:answer,status:'completed'});
+    if(answer) expect(service.luot()[0]).toMatchObject({text:answer,status:'cancelled'});
     expect(service.luot().some(t=>t.error)).toBe(false);
   });
 
