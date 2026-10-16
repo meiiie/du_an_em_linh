@@ -44,6 +44,35 @@ class PhanQuyenDuongDanTest {
     @Autowired
     private UserRepository users;
 
+    @Autowired
+    private vn.hoctapcanman.core.workspace.application.port.WorkspaceStore workspace;
+
+    @Autowired
+    private jakarta.persistence.EntityManager entities;
+
+    @Test
+    void datLaiMatKhauThuHoiJwtNgayVaTokenMoiVanDungDuoc() {
+        String token = bearer(Role.STUDENT);
+        User user = users.findByEmail(new Email("thu.student@demo.local")).orElseThrow();
+        entities.flush();
+        assertThat(workspace.resetPassword(user.id().value(), user.id().value(), "mat-khau-bam-moi", Instant.now())).isTrue();
+        entities.clear();
+        assertThat(mvc.get().uri(API_HS).header("Authorization", token)).hasStatus(401);
+        User updated = users.findById(user.id()).orElseThrow();
+        assertThat(mvc.get().uri(API_HS).header("Authorization", "Bearer " + tokens.issue(updated, Instant.now()).value())).hasStatus(404);
+    }
+
+    @Test
+    void moLaiTaiKhoanKhongKhoiPhucJwtTruocKhiKhoa() {
+        String token = bearer(Role.STUDENT);
+        User user = users.findByEmail(new Email("thu.student@demo.local")).orElseThrow();
+        entities.flush();
+        workspace.bulk(user.id().value(), new vn.hoctapcanman.core.workspace.application.dto.WorkspaceDto.Bulk(java.util.List.of(user.id().value()), false), Instant.now());
+        workspace.bulk(user.id().value(), new vn.hoctapcanman.core.workspace.application.dto.WorkspaceDto.Bulk(java.util.List.of(user.id().value()), true), Instant.now());
+        entities.clear();
+        assertThat(mvc.get().uri(API_HS).header("Authorization", token)).hasStatus(401);
+    }
+
     private String bearer(Role role) {
         Instant now = Instant.now();
         String email = "thu." + role.name().toLowerCase(Locale.ROOT).replace('_', '-') + "@demo.local";
@@ -90,7 +119,7 @@ class PhanQuyenDuongDanTest {
         String token = bearer(Role.STUDENT);
         User user = users.findByEmail(new Email("thu.student@demo.local")).orElseThrow();
         users.save(new User(user.id(), user.email(), user.passwordHash(), user.displayName(), user.role(), false,
-            user.synthetic(), user.createdAt(), Instant.now()));
+            user.synthetic(), user.createdAt(), Instant.now(), user.sessionEpoch()));
         assertThat(mvc.get().uri(API_HS).header("Authorization", token)).hasStatus(401);
     }
 
@@ -99,7 +128,7 @@ class PhanQuyenDuongDanTest {
         String token = bearer(Role.STUDENT);
         User user = users.findByEmail(new Email("thu.student@demo.local")).orElseThrow();
         users.save(new User(user.id(), user.email(), user.passwordHash(), user.displayName(), Role.TEACHER, user.enabled(),
-            user.synthetic(), user.createdAt(), Instant.now()));
+            user.synthetic(), user.createdAt(), Instant.now(), user.sessionEpoch()));
         assertThat(mvc.get().uri(API_HS).header("Authorization", token)).hasStatus(401);
     }
 }

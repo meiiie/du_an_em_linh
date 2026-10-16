@@ -28,13 +28,14 @@ export const DIEU_HUONG: Record<KhuVuc, readonly MucDieuHuong[]> = {
     { nhom: 'Nội dung', duongDan: '/gv/ngan-hang', nhan: 'Đề bài', testId: 'nav-gv-ngan-hang', bieuTuong: 'bank' },
     { nhom: 'Nội dung', duongDan: '/gv/tai-lieu', nhan: 'Tài liệu', testId: 'nav-gv-tai-lieu', bieuTuong: 'file' },
     { nhom: 'Nội dung', duongDan: '/gv/cong-thuc', nhan: 'Công thức', testId: 'nav-gv-cong-thuc', bieuTuong: 'sigma' },
-    { nhom: 'Theo dõi', duongDan: '/gv/tien-do', nhan: 'Mức', testId: 'nav-gv-tien-do', bieuTuong: 'chart' },
+    { nhom: 'Theo dõi', duongDan: '/gv/tien-do', nhan: 'Mức', testId: 'nav-gv-tien-do', bieuTuong: 'book' },
     { nhom: 'Thiết lập', duongDan: '/gv/ket-noi-ai', nhan: 'Gia sư', testId: 'nav-gv-ket-noi-ai', bieuTuong: 'plug' },
     { nhom: 'Thiết lập', duongDan: '/gv/cai-dat', nhan: 'Cài lớp', testId: 'nav-gv-cai-dat', bieuTuong: 'settings' },
   ],
   QT: [
     { duongDan: '/qt', nhan: 'Người dùng', testId: 'nav-qt-nguoi-dung', bieuTuong: 'home' },
     { duongDan: '/qt/lop', nhan: 'Lớp học', testId: 'nav-qt-lop', bieuTuong: 'book' },
+    { duongDan: '/qt/su-dung-ai', nhan: 'Sử dụng AI', testId: 'nav-qt-su-dung-ai', bieuTuong: 'book' },
     { duongDan: '/qt/nhat-ky', nhan: 'Nhật ký', testId: 'nav-qt-nhat-ky', bieuTuong: 'file' },
   ],
 };

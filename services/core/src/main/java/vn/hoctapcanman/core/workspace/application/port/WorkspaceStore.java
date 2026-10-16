@@ -10,6 +10,7 @@ public interface WorkspaceStore {
     List<Item> students(UUID classId);
     List<Item> history(UUID student,UUID classId);
     List<Item> bank(UUID classId);
+    BankPage bankPage(UUID classId,String query,String level,String skillCode,String gate,int page,int size);
     List<Item> assignments(UUID classId);
     List<Item> modes(UUID student,UUID classId);
     List<Item> topics(UUID student,UUID classId);
@@ -34,6 +35,10 @@ public interface WorkspaceStore {
     String accountRole(UUID actor);
     boolean managesUser(UUID actor,UUID target);
     List<Item> users();
+    int archiveAssignments(UUID actor,UUID classId,String setKey,Instant now);
+    boolean archiveDocument(UUID actor,UUID classId,UUID id,Instant now);
+    boolean archiveUser(UUID actor,UUID id,Instant now);
+    boolean resetPassword(UUID actor,UUID id,String hash,Instant now);
     void createUser(UUID actor,NewUser request,String hash,Instant now);
     void bulk(UUID actor,Bulk request,Instant now);
     void createClass(UUID actor,NewClass request,Instant now);
@@ -43,4 +48,6 @@ public interface WorkspaceStore {
     void log(UUID actor,String action,String target,String reason,Instant now);
     Optional<TutorContext> tutorContext(UUID student,UUID classId,TutorRequest request);
     boolean testMode(UUID student,UUID classId,String code);
+    /** Học sinh còn hoạt động (chưa lưu trữ) trong danh sách. */
+    java.util.List<java.util.UUID> activeStudents(java.util.List<java.util.UUID> ids);
 }

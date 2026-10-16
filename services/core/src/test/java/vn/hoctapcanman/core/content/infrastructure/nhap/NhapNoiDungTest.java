@@ -218,6 +218,7 @@ class NhapNoiDungTest {
             "version", "uploaded_by");
         khai("documents", v2Id, "id");
         khai("documents", v2Luc, "created_at");
+        khai("documents", "soDanhMucVaKhoLop", "archived_at");
         khai("document_passages", "soDanhMucVaKhoLop", "document_id", "page", "char_start", "char_end", "text");
         khai("document_passages", v2Id, "id");
         khai("document_passages", "v2: chữ đã gấp (thường, bỏ dấu) dẫn xuất từ text để tìm kiếm; text đã được so", "text_folded");
@@ -307,6 +308,8 @@ class NhapNoiDungTest {
      */
     @SuppressWarnings("unchecked")
     private void soDanhMucVaKhoLop(UUID lop, Map<String, Map<String, Object>> v0) {
+        assertThat(jdbc.sql("SELECT count(*) FROM documents WHERE class_id=:lop AND archived_at IS NOT NULL")
+            .param("lop", lop).query(Integer.class).single()).as("tài liệu vừa nhập chưa bị ẩn").isZero();
         Path data = NhapNoiDungChungTest.thuMucData();
         Map<String, Object> danhMuc = (Map<String, Object>) PhatLai.docTep(data.resolve("supham/danh-muc-ky-nang-DH.json"));
         List<Map<String, Object>> kyNang = (List<Map<String, Object>>) danhMuc.get("ky_nang");

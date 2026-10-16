@@ -45,6 +45,9 @@ public class UserJpaEntity {
     @Column(name = "updated_at", nullable = false)
     private Instant updatedAt;
 
+    @Column(name = "session_epoch", nullable = false)
+    private long sessionEpoch;
+
     @SuppressWarnings("NullAway.Init")
     protected UserJpaEntity() {}
 
@@ -59,10 +62,11 @@ public class UserJpaEntity {
         entity.synthetic = user.synthetic();
         entity.createdAt = user.createdAt();
         entity.updatedAt = user.updatedAt();
+        entity.sessionEpoch = user.sessionEpoch();
         return entity;
     }
 
     public User toDomain() {
-        return new User(new UserId(id), new Email(email), passwordHash, displayName, role, enabled, synthetic, createdAt, updatedAt);
+        return new User(new UserId(id), new Email(email), passwordHash, displayName, role, enabled, synthetic, createdAt, updatedAt, sessionEpoch);
     }
 }

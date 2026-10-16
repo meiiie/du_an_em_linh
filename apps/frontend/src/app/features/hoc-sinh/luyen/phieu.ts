@@ -52,6 +52,7 @@ export function oKetLuan(khaiBao: readonly string[]): OKetLuan[] {
 /** Những gì học sinh đã nhập ở năm bước (nháp hiện trên màn). */
 export interface NhapPhieu {
   dongTheoBuoc?: Record<string, string>;
+  trinhBay?: string;
   txd: string;
   dh: string[];
   nghiem: { latex: string; loai: LoaiNghiem }[];
@@ -95,6 +96,7 @@ export function nhapTuBaiLam(bai: ChiTietBai): NhapPhieu {
   const cua = (hang: string) => bang.filter((o) => o.hang === hang);
   return {
     ...(chung.length ? { dongTheoBuoc } : {}),
+    ...(bai.cacBuoc.some(s => kieuNhap(s) === 'TU_DO') ? {trinhBay:dong('B.TD.TRALOI')[1]?.latex ?? ''} : {}),
     txd: dong(ma('TXD', TXD))[0]?.latex ?? '',
     dh: dh.length ? dh : [''],
     nghiem: nghiem.length ? nghiem : [{ latex: '', loai: 'NGHIEM' }],
@@ -116,6 +118,8 @@ export function dongNghiem(n: NhapPhieu, i: number): number | undefined {
 /** Thân `POST /api/hs/bai/{maBai}/buoc` cho một bước, như payload của v0 (`apps/web/components/solve-client.tsx`). */
 export function yeuCauNop(maBuoc: string, n: NhapPhieu, khaiBao: readonly string[], kieu = kieuNhap({ maBuoc })): NopBuoc {
   switch (kieu) {
+    case 'TU_DO':
+      return {maBuoc,dong:[{dong:0,latex:n.dongTheoBuoc?.[maBuoc] ?? ''},{dong:1,latex:n.trinhBay ?? ''}]};
     case 'TXD':
       return { maBuoc, dong: [{ dong: 0, latex: n.txd }] };
     case 'DAO_HAM': {

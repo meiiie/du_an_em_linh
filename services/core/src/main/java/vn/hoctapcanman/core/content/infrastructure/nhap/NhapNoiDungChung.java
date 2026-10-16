@@ -172,6 +172,8 @@ public class NhapNoiDungChung {
                 ghiKhungBuoc(List.of(moi));
             }
             ghiKhungBuoc(nguon.danhSach("dev/nguyen-trai/khung-buoc.json"));
+            // Mã nhập dùng chung; bài vẫn thuộc chủ đề của kỹ năng chính.
+            catalog.saveStepTemplate(new StepTemplate("B.TD.TRALOI", null, 1, InputKind.DONG, null, "Bài làm tự luận"));
             // Mã dùng làm khóa ngoại của bài làm; không gán kỹ năng DH cho họ mới.
             for (String family : List.of("B.GT", "B.XS")) {
                 String topic = family.equals("B.GT") ? "KHUNG_GT" : "KHUNG_XS";

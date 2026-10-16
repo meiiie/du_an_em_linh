@@ -33,6 +33,8 @@ class PhanBoMucHieuSeedTest {
             var tasks = exercises.stream().filter(e -> topicCodes.contains(e.get("chu_de")))
                 .filter(e -> !Boolean.TRUE.equals(e.get("kiem_tra_seed")))
                 .filter(e -> !Boolean.TRUE.equals(e.get("luyen_hien_tai_seed")))
+                // SQL giao bài loại ngân hàng tự học; các bài này không sinh lịch sử.
+                .filter(e -> !Boolean.TRUE.equals(e.get("tu_hoc_seed")))
                 .filter(e -> "DA_DUYET".equals(((Map<?,?>)e.get("duyet_seed")).get("trang_thai")))
                 .sorted(Comparator.<Map<String,Object>,String>comparing(e -> e.get("ky_nang_chinh").toString())
                     .thenComparing(e -> level(e.get("muc_do_4").toString()))
@@ -48,7 +50,8 @@ class PhanBoMucHieuSeedTest {
                     String kind=LichSuNguyenTraiSeeder.outcome(student,chapters.indexOf(chapterCode),
                         chapterTasks.indexOf(exercise),chapterTasks.size());
                     String id=exercise.get("id").toString();
-                    assertThat(fixtures.stream().filter(f -> id.equals(f.get("ma")) && kind.equals(f.get("loai"))).count()).isEqualTo(1);
+                    assertThat(fixtures.stream().filter(f -> id.equals(f.get("ma")) && kind.equals(f.get("loai"))).count())
+                        .as("Bài %s, học sinh %s, kịch bản %s", id, student, kind).isEqualTo(1);
                     if (kind.equals("CAN_DUYET")) { pending++; continue; }
                     boolean correct=kind.equals("DUNG");
                     if(correct) { passed++; studentPasses[student]++; } else failed++;

@@ -5686,5 +5686,169 @@
       "ghi_chu": "Giáo viên hư cấu duyệt lời giải đã được pytest kiểm độc lập."
     },
     "luyen_hien_tai_seed": true
+  },
+  {
+    "id": "NT-KG12-TUHOC-01",
+    "chu_de": "KG12",
+    "ky_nang_chinh": "T12.NT.KG",
+    "ky_nang_phu": [],
+    "muc_do_4": "NB",
+    "muc_do_bo_3": "BIET",
+    "muc_bloom": "NHO",
+    "dang_cau": "TU_LUAN",
+    "de_bai": {
+      "van_ban": "Hình chóp có đáy tam giác vuông với hai cạnh góc vuông $3$ cm, $4$ cm; chiều cao $6$ cm. Tính thể tích.",
+      "latex": "\\text{Chóp đáy tam giác vuông, hai cạnh }3,4\\text{ cm; cao }6\\text{ cm}",
+      "ham_so_sympy": null
+    },
+    "thang_goi_y": [],
+    "loi_giai": {
+      "cac_buoc": [
+        {
+          "van_ban": "Tính diện tích đáy.",
+          "bieu_thuc_sympy": "3*4/2",
+          "ket_qua_sympy": "6",
+          "latex": "6 = 6"
+        },
+        {
+          "van_ban": "Lấy một phần ba tích diện tích đáy và chiều cao.",
+          "bieu_thuc_sympy": "3*4*6/6",
+          "ket_qua_sympy": "12",
+          "latex": "12 = 12"
+        }
+      ],
+      "dap_an": "12",
+      "latex": "12"
+    },
+    "kiem_dinh": {
+      "loai": "pyramid",
+      "du_kien": {
+        "a": 3,
+        "b": 4,
+        "h": 6
+      }
+    },
+    "bai_lam": null,
+    "su_kien": [
+      {
+        "loai": "DAP_AN",
+        "gia_tri": "\"12\""
+      }
+    ],
+    "nguon": "Tổ Toán Trường THPT Nguyễn Trãi (hư cấu), tự soạn cho MathL+, không chép SGK",
+    "duyet_seed": {
+      "trang_thai": "DA_DUYET",
+      "can_cu": "test_teacher_solution",
+      "ghi_chu": "Giáo viên hư cấu duyệt bài tự học từ dữ kiện và lời giải đã kiểm."
+    },
+    "kiem_tra_seed": false,
+    "tu_hoc_seed": true
+  },
+  {
+    "id": "NT-TP12-TUHOC-01",
+    "chu_de": "TP12",
+    "ky_nang_chinh": "T12.NT.TP",
+    "ky_nang_phu": [],
+    "muc_do_4": "NB",
+    "muc_do_bo_3": "BIET",
+    "muc_bloom": "NHO",
+    "dang_cau": "TU_LUAN",
+    "de_bai": {
+      "van_ban": "Tính tích phân của $f(x)=12x^2$ trên $[0;1]$. Trình bày nguyên hàm và cách thay cận.",
+      "latex": "\\int_0^1 12x^2\\,dx",
+      "ham_so_sympy": null
+    },
+    "thang_goi_y": [],
+    "loi_giai": {
+      "cac_buoc": [
+        {
+          "van_ban": "Tìm nguyên hàm.",
+          "bieu_thuc_sympy": "Integral(12*x**2,x)",
+          "ket_qua_sympy": "4*x**3",
+          "latex": "\\int12x^2\\,dx=4x^3"
+        },
+        {
+          "van_ban": "Lấy hiệu giá trị ở hai cận.",
+          "bieu_thuc_sympy": "4*1**3-4*0**3",
+          "ket_qua_sympy": "4",
+          "latex": "4 = 4"
+        }
+      ],
+      "dap_an": "4",
+      "latex": "4"
+    },
+    "kiem_dinh": {
+      "loai": "integral",
+      "du_kien": {
+        "ham": "12*x**2",
+        "can_duoi": 0,
+        "can_tren": 1
+      }
+    },
+    "bai_lam": null,
+    "su_kien": [
+      {
+        "loai": "DAP_AN",
+        "gia_tri": "\"4\""
+      }
+    ],
+    "nguon": "Tổ Toán Trường THPT Nguyễn Trãi (hư cấu), tự soạn cho MathL+, không chép SGK",
+    "duyet_seed": {
+      "trang_thai": "DA_DUYET",
+      "can_cu": "test_teacher_solution",
+      "ghi_chu": "Giáo viên hư cấu duyệt bài tự học từ dữ kiện và lời giải đã kiểm."
+    },
+    "kiem_tra_seed": false,
+    "tu_hoc_seed": true
+  },
+  {
+    "id": "NT-XS12-TUHOC-01",
+    "chu_de": "XS12",
+    "ky_nang_chinh": "T12.NT.XS.2",
+    "ky_nang_phu": [],
+    "muc_do_4": "NB",
+    "muc_do_bo_3": "BIET",
+    "muc_bloom": "NHO",
+    "dang_cau": "TU_LUAN",
+    "de_bai": {
+      "van_ban": "Gọi $I$ là biến cố chọn hộp I và $X$ là biến cố lấy được thẻ xanh. Biết $P(I\\cap X)=\\dfrac{1}{6}$ và $P(X)=\\dfrac{1}{3}$. Tính $P(I\\mid X)$ và trình bày cách áp dụng công thức xác suất có điều kiện.",
+      "latex": "\\text{Thẻ xanh: }P(I\\cap X)=\\dfrac{1}{6},\\quad P(X)=\\dfrac{1}{3}",
+      "ham_so_sympy": null
+    },
+    "thang_goi_y": [],
+    "loi_giai": {
+      "cac_buoc": [
+        {
+          "van_ban": "Chia xác suất giao cho xác suất của biến cố điều kiện.",
+          "bieu_thuc_sympy": "(1/6)/(1/3)",
+          "ket_qua_sympy": "1/2",
+          "latex": "\\dfrac{1/6}{1/3}=\\dfrac{1}{2}"
+        }
+      ],
+      "dap_an": "1/2",
+      "latex": "\\dfrac{1}{2}"
+    },
+    "kiem_dinh": {
+      "loai": "bayes_given",
+      "du_kien": {
+        "joint": "1/6",
+        "evidence": "1/3"
+      }
+    },
+    "bai_lam": null,
+    "su_kien": [
+      {
+        "loai": "DAP_AN",
+        "gia_tri": "\"1/2\""
+      }
+    ],
+    "nguon": "Tổ Toán Trường THPT Nguyễn Trãi (hư cấu), tự soạn cho MathL+, không chép SGK",
+    "duyet_seed": {
+      "trang_thai": "DA_DUYET",
+      "can_cu": "test_teacher_solution",
+      "ghi_chu": "Giáo viên hư cấu duyệt bài tự học từ dữ kiện và lời giải đã kiểm."
+    },
+    "kiem_tra_seed": false,
+    "tu_hoc_seed": true
   }
 ]

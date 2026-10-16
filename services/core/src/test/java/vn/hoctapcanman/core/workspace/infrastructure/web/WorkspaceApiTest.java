@@ -107,6 +107,7 @@ class WorkspaceApiTest {
     }
     @Test void assignmentPersistsTestPolicyAndDeadline() throws Exception {
         when(membership.hocSinhCuaLop(actor,cl)).thenReturn(List.of(student));
+        when(store.activeStudents(List.of(student))).thenReturn(List.of(student));
         mvc.perform(post("/api/gv/giao").with(as(actor,"TEACHER")).contentType(MediaType.APPLICATION_JSON)
             .content("""
                 {"lopId":"%s","studentIds":[],"problemIds":["%s"],"mode":"KIEM_TRA","dueAt":"2026-10-14T10:00:00Z","setName":"Kiểm tra"}
@@ -214,5 +215,59 @@ class WorkspaceApiTest {
         mvc.perform(put("/api/qt/lop/{id}/khoa",cl).with(as(actor,"ADMIN")).contentType(MediaType.APPLICATION_JSON)
             .content("{}"))
             .andExpect(status().isBadRequest());
+    }
+
+    @Test void pagedBankReturnsTotalHeaderAndCallsPagedStoreOnly()throws Exception {
+        when(store.bankPage(cl,"tich phan","","","",2,10)).thenReturn(new BankPage(List.of(),31));
+        mvc.perform(get("/api/gv/ngan-hang").with(as(actor,"TEACHER")).param("lopId",cl.toString()).param("page","2").param("size","10").param("q","Tích phân"))
+            .andExpect(status().isOk()).andExpect(header().string("X-Total-Count","31")).andExpect(content().json("[]"));
+        verify(store).bankPage(cl,"tich phan","","","",2,10);verify(store,never()).bank(cl);
+    }
+    @Test void pagedBankPassesSkillFilterAndReturnsFilteredTotal()throws Exception {
+        var row=item(problem.toString(),"Bài tích phân","","DA_PHAT_HANH",Map.of("skillCode","TP12"));
+        when(store.bankPage(cl,"","NHAN_BIET","TP12","DAT",1,10)).thenReturn(new BankPage(List.of(row),1));
+        mvc.perform(get("/api/gv/ngan-hang").with(as(actor,"TEACHER")).param("lopId",cl.toString())
+            .param("page","1").param("size","10").param("skillCode","TP12").param("level4","NHAN_BIET").param("gate","DAT"))
+            .andExpect(status().isOk()).andExpect(header().string("X-Total-Count","1"))
+            .andExpect(jsonPath("$[0].details.skillCode").value("TP12"));
+        verify(store).bankPage(cl,"","NHAN_BIET","TP12","DAT",1,10);
+    }
+    @Test void resetPasswordValidatesAndChecksAdminScope()throws Exception {
+        when(hasher.hash("New-password-123")).thenReturn("{bcrypt}HASH");
+        when(store.resetPassword(actor,student,"{bcrypt}HASH",NOW)).thenReturn(true);
+        mvc.perform(put("/api/qt/nguoi-dung/"+student+"/mat-khau").with(as(actor,"ADMIN")).contentType(MediaType.APPLICATION_JSON)
+            .content("{\"password\":\"New-password-123\"}"))
+            .andExpect(status().isOk());
+        verify(store).resetPassword(actor,student,"{bcrypt}HASH",NOW);
+        mvc.perform(put("/api/qt/nguoi-dung/"+student+"/mat-khau").with(as(actor,"TEACHER")).contentType(MediaType.APPLICATION_JSON)
+            .content("{\"password\":\"New-password-123\"}"))
+            .andExpect(status().isForbidden());
+        mvc.perform(put("/api/qt/nguoi-dung/"+student+"/mat-khau").with(as(actor,"ADMIN")).contentType(MediaType.APPLICATION_JSON)
+            .content("{\"password\":\"short\"}"))
+            .andExpect(status().isBadRequest());
+    }
+    @Test void archiveApiDeniesStudentAndChecksTeacherClass()throws Exception {
+        mvc.perform(delete("/api/gv/tai-lieu/"+problem).param("lopId",cl.toString()).with(as(student,"STUDENT")))
+            .andExpect(status().isForbidden());
+        when(store.archiveDocument(actor,cl,problem,NOW)).thenReturn(true);
+        mvc.perform(delete("/api/gv/tai-lieu/"+problem).param("lopId",cl.toString()).with(as(actor,"TEACHER")))
+            .andExpect(status().isOk());
+        verify(membership).kiemGiaoVien(actor,cl);verify(store).archiveDocument(actor,cl,problem,NOW);
+    }
+
+    @Test void archiveSetUsesServerKeyAndReturnsActualCount()throws Exception {
+        when(store.archiveAssignments(actor,cl,"bo-thu",NOW)).thenReturn(2001);
+        mvc.perform(post("/api/gv/giao/luu-tru").with(as(actor,"TEACHER")).contentType(MediaType.APPLICATION_JSON)
+            .content("{\"lopId\":\""+cl+"\",\"setKey\":\"bo-thu\"}"))
+            .andExpect(status().isOk()).andExpect(jsonPath("$.count").value(2001));
+        verify(membership).kiemGiaoVien(actor,cl);
+        mvc.perform(post("/api/gv/giao/luu-tru").with(as(actor,"TEACHER")).contentType(MediaType.APPLICATION_JSON)
+            .content("{\"lopId\":\""+cl+"\",\"setKey\":\"khong-co\"}"))
+            .andExpect(status().isNotFound());
+        for(String body:List.of("{\"lopId\":\""+cl+"\",\"setKey\":\" \"}",
+            "{\"lopId\":\""+cl+"\",\"ids\":[\""+problem+"\"]}")) {
+            mvc.perform(post("/api/gv/giao/luu-tru").with(as(actor,"TEACHER")).contentType(MediaType.APPLICATION_JSON).content(body))
+                .andExpect(status().isBadRequest());
+        }
     }
 }

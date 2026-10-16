@@ -443,7 +443,7 @@ class HocSinhBaiApiTest {
 
     private String bearer(UUID id) {
         Instant now = Instant.now();
-        User u = new User(new UserId(id), new Email(id + "@demo.local"), "x", "Người thử", vaiTro.get(id), true, true, now, now);
+        User u = new User(new UserId(id), new Email(id + "@demo.local"), "x", "Người thử", vaiTro.get(id), true, true, now, now, 0);
         return "Bearer " + tokens.issue(u, now).value();
     }
 

@@ -69,6 +69,7 @@ class WorkspaceWorkflowIntegrationTest {
     static final String SKILL="T12.NT.HS",TEXT="Đạo hàm của x bình phương là 2x.";
     @BeforeEach void fixture() throws Exception {
         DuLieuPractice.danhMuc(db);
+        db.sql("INSERT INTO step_templates(step_code,topic_code,ordinal,input_kind,description) VALUES('B.TD.TRALOI',NULL,1,'DONG','Bài làm tự luận') ON CONFLICT DO NOTHING").update();
         // Fresh current seed: no legacy T12.DH.* skill is present.
         db.sql("DELETE FROM skills WHERE code='T12.DH.02'").update();
         var seed=json.readTree(java.nio.file.Path.of("../../data/dev/nguyen-trai/ky-nang.json").toFile());
@@ -93,7 +94,75 @@ class WorkspaceWorkflowIntegrationTest {
             Map.of("tang",1,"trang_thai","DAT"),Map.of("tang",2,"trang_thai","DAT","trich_dan",List.of(Map.of("document_id",document.toString(),"vi_tri",0,"trich",TEXT))),Map.of("tang",3,"trang_thai","DAT")))));
     }
     @AfterEach void clearPrincipal() { SecurityContextHolder.clearContext(); }
+    @Test void archivesWholeLargeSetByServerKeyAndKeepsOtherSets() throws Exception {
+        db.sql("""
+            INSERT INTO users(id,email,password_hash,display_name,role,enabled,synthetic,created_at,updated_at)
+            SELECT gen_random_uuid(),'archive-'||n||'@demo.local','hash','Học sinh tổng hợp '||n,'STUDENT',true,true,now(),now()
+            FROM generate_series(1,2005) n
+            """).update();
+        db.sql("INSERT INTO enrollments(class_id,user_id,role_in_class,enrolled_at) SELECT :cl,id,'STUDENT',now() FROM users WHERE email LIKE 'archive-%@demo.local'")
+            .param("cl",cl).update();
+        db.sql("""
+            INSERT INTO assignments(id,class_id,problem_id,student_id,status,assigned_by,assigned_at,set_name,due_at,mode)
+            SELECT gen_random_uuid(),:cl,:problem,u.id,'DA_GIAO',:teacher,
+                CASE WHEN u.email='archive-2002@demo.local' THEN timestamptz '2026-10-16 08:00:01.123456Z' ELSE timestamptz '2026-10-16 08:00:00.123456Z' END,
+                CASE WHEN u.email='archive-2003@demo.local' THEN 'Bộ khác' ELSE 'Ôn: cực trị' END,
+                CASE WHEN u.email='archive-2004@demo.local' THEN timestamptz '2026-10-20 08:00:00Z' ELSE NULL END,
+                CASE WHEN u.email='archive-2005@demo.local' THEN 'KIEM_TRA' ELSE 'ON_TAP' END
+            FROM users u WHERE u.email LIKE 'archive-%@demo.local'
+            """).param("cl",cl).param("problem",problem).param("teacher",teacher).update();
+        String key=cl+":2026-10-16T08:00:00.123456Z:Ôn: cực trị::ON_TAP";
+        assertThat(WorkspaceStoreAdapter.groupAssignments(store.assignments(cl))).extracting(Item::id).contains(key);
+        as(teacher);
+        mvc.perform(post("/api/gv/giao/luu-tru").contentType("application/json")
+            .content(json.writeValueAsString(Map.of("lopId",cl,"setKey",key))))
+            .andExpect(status().isOk()).andExpect(jsonPath("$.count").value(2001));
+        assertThat(db.sql("SELECT count(*) FROM assignments WHERE class_id=:cl AND status='DA_HUY'").param("cl",cl).query(Integer.class).single()).isEqualTo(2001);
+        assertThat(store.assignments(cl)).hasSize(4);
+        mvc.perform(post("/api/gv/giao/luu-tru").contentType("application/json")
+            .content(json.writeValueAsString(Map.of("lopId",cl,"setKey",key))))
+            .andExpect(status().isNotFound());
+        // A key from another class cannot select this class's rows.
+        mvc.perform(post("/api/gv/giao/luu-tru").contentType("application/json")
+            .content(json.writeValueAsString(Map.of("lopId",cl,"setKey",UUID.randomUUID()+key.substring(cl.toString().length())))))
+            .andExpect(status().isNotFound());
+        assertThat(store.assignments(cl)).hasSize(4);
+        String dueKey=cl+":2026-10-16T08:00:00.123456Z:Ôn: cực trị:2026-10-20T08:00:00Z:ON_TAP";
+        mvc.perform(post("/api/gv/giao/luu-tru").contentType("application/json")
+            .content(json.writeValueAsString(Map.of("lopId",cl,"setKey",dueKey))))
+            .andExpect(status().isOk()).andExpect(jsonPath("$.count").value(1));
+        assertThat(store.assignments(cl)).hasSize(3);
+    }
+    @Test void archivedAssignmentCanBeChosenAgainWithoutConflictOrDuplicate() throws Exception {
+        Instant old=Instant.now().minusSeconds(3600);
+        store.assign(teacher,new Assign(cl,List.of(student),List.of(problem),"KIEM_TRA",old.plusSeconds(60),"Bộ cũ"),List.of(student),old);
+        UUID id=db.sql("SELECT id FROM assignments WHERE class_id=:cl").param("cl",cl).query(UUID.class).single();
+        db.sql("UPDATE assignments SET status='DA_HUY' WHERE id=:id").param("id",id).update();
+        as(student);
+        mvc.perform(post("/api/hs/tu-hoc/{code}",code)).andExpect(status().isOk());
+        assertThat(db.sql("SELECT id FROM assignments WHERE class_id=:cl").param("cl",cl).query(UUID.class).list()).containsExactly(id);
+        var row=store.assignments(cl).getFirst();
+        assertThat(row.status()).isEqualTo("ON_TAP");
+        assertThat(row.title()).isEqualTo("Tự học");
+        assertThat(row.details().get("dueAt")).isEqualTo("");
+        assertThat(Instant.parse((String)row.details().get("assignedAt"))).isAfter(old);
+        assertThat(store.recommendations(student,cl)).extracting(Item::id).contains(code);
+    }
     void as(UUID actor) { SecurityContextHolder.getContext().setAuthentication(new JwtAuthenticationToken(Jwt.withTokenValue("synthetic").header("alg","none").subject(actor.toString()).build())); }
+    @Test void pagedBankFiltersSkillBeforeCountingAndSlicing() throws Exception {
+        db.sql("INSERT INTO skills(code,topic_code,name,grade,is_core) VALUES('QA.OTHER','DH12','Kỹ năng khác',12,true)").update();
+        var other=DuLieuPractice.baiV0(db,"QA-OTHER","QA.OTHER","NHAN_BIET","Đề khác","x","x","TU_LUAN_5_BUOC",null,"SUPHAM");
+        DuLieuPractice.phatHanh(db,cl,other.id());
+        as(teacher);
+        mvc.perform(get("/api/gv/ngan-hang").param("lopId",cl.toString()).param("page","1").param("size","1")
+            .param("skillCode",SKILL).param("level4","NHAN_BIET").param("gate","DAT"))
+            .andExpect(status().isOk()).andExpect(header().string("X-Total-Count","1"))
+            .andExpect(jsonPath("$.length()").value(1)).andExpect(jsonPath("$[0].id").value(problem.toString()));
+        mvc.perform(get("/api/gv/ngan-hang").param("lopId",cl.toString()).param("page","2").param("size","1").param("skillCode",SKILL))
+            .andExpect(status().isOk()).andExpect(header().string("X-Total-Count","1")).andExpect(content().json("[]"));
+        mvc.perform(get("/api/gv/ngan-hang").param("lopId",cl.toString()).param("page","1").param("skillCode","MISSING"))
+            .andExpect(status().isOk()).andExpect(header().string("X-Total-Count","0")).andExpect(content().json("[]"));
+    }
     @Test void studentListsAndChoosesPublishedExerciseThroughHttp() throws Exception {
         as(student);
         mvc.perform(get("/api/hs/tu-hoc").param("chuDe","DH12")).andExpect(status().isOk())
@@ -185,6 +254,79 @@ class WorkspaceWorkflowIntegrationTest {
             assertThat(store.selfStudy(student,cl,topic)).isEmpty();
             assertThat(store.recommendations(student,cl)).noneMatch(item->item.id().equals(exercise.ma()));
         }
+    }
+    @Test void freeResponseUsesRealTopicAndReferenceAnswerButMultipleChoiceStaysUnsupported() {
+        var frames=new KhungChamRepositoryAdapter(db);
+        for(String form:List.of("TU_LUAN","TN_NHIEU_LUA_CHON")) {
+            var exercise=DuLieuPractice.baiV0(db,"QA-FREE",SKILL,"NHAN_BIET","Đề tổng hợp","x",null,form,null,"SUPHAM");
+            solutions.save(new Solution(exercise.id(),"{}","[]","\"72\""));
+            DuLieuPractice.phatHanh(db,cl,exercise.id());
+            int version=problems.findContentVersion(exercise.id()).orElseThrow();
+            if(form.equals("TU_LUAN")) {
+                assertThat(frames.doc(exercise.id(),version)).get().satisfies(frame->{
+                    assertThat(frame.cacBuoc()).extracting(step->step.maBuoc()).containsExactly("B.TD.TRALOI");
+                    assertThat(frame.baiToan()).containsEntry("dap_so","72");
+                });
+                assertThat(store.selfStudy(student,cl,"DH12")).extracting(Item::id).contains(exercise.ma());
+                store.chooseStudy(student,cl,exercise.ma(),Instant.now());
+                assertThat(store.tutorContext(student,cl,new TutorRequest(exercise.ma(),"B.TD.TRALOI",1,"Em cần gợi ý")))
+                    .get().satisfies(context->{
+                        assertThat(context.step()).isEqualTo("B.TD.TRALOI");
+                        assertThat(context.stepName()).isEqualTo("Bài làm");
+                        assertThat(context.hint()).isEmpty();
+                    });
+                assertThat(store.tutorContext(UUID.randomUUID(),cl,new TutorRequest(exercise.ma(),"B.TD.TRALOI",1,"Em cần gợi ý"))).isEmpty();
+                assertThat(store.tutorContext(student,cl,new TutorRequest(exercise.ma(),"BOGUS",1,"Em cần gợi ý"))).isEmpty();
+                assertThat(store.recommendations(student,cl)).extracting(Item::id).contains(exercise.ma());
+            } else {
+                assertThat(frames.doc(exercise.id(),version)).isEmpty();
+                assertThat(store.selfStudy(student,cl,"DH12")).extracting(Item::id).doesNotContain(exercise.ma());
+                assertThatThrownBy(()->store.chooseStudy(student,cl,exercise.ma(),Instant.now()))
+                    .isInstanceOf(vn.hoctapcanman.core.workspace.application.exception.WorkspaceException.class);
+            }
+        }
+        assertThat(db.sql("SELECT count(*) FROM topics WHERE code='TRALOI'").query(Integer.class).single()).isZero();
+    }
+    @Test void structuredFreeResponseKeepsInputButLeavesAnswerForTeacherReview() {
+        var frames=new KhungChamRepositoryAdapter(db);
+        for(String answer:List.of("[3,4]","{\"H\":[\"2/9\",\"-1/9\",\"20/9\"],\"khoang_cach\":\"8/3\"}")) {
+            var exercise=DuLieuPractice.baiV0(db,"QA-STRUCTURED",SKILL,"NHAN_BIET","Đề tổng hợp","x",null,"TU_LUAN",null,"SUPHAM");
+            solutions.save(new Solution(exercise.id(),"{}","[]",answer));
+            DuLieuPractice.phatHanh(db,cl,exercise.id());
+            int version=problems.findContentVersion(exercise.id()).orElseThrow();
+            assertThat(frames.doc(exercise.id(),version)).get().satisfies(frame->{
+                assertThat(frame.cacBuoc()).extracting(step->step.maBuoc()).containsExactly("B.TD.TRALOI");
+                assertThat(frame.baiToan()).containsEntry("loai","tra_loi_tu_do").doesNotContainKey("dap_so");
+            });
+            store.chooseStudy(student,cl,exercise.ma(),Instant.now());
+            UUID submission=openWork(exercise.id());
+            db.sql("INSERT INTO submission_steps(submission_id,step_code,line_no,latex) VALUES(:s,'B.TD.TRALOI',0,:answer)")
+                .param("s",submission).param("answer",answer).update();
+            UUID grade=uncertainGrade(submission,"B.TD.TRALOI");
+            assertThat(store.reviews(cl)).anySatisfy(item->{
+                assertThat(item.id()).isEqualTo(grade.toString());
+                assertThat(item.details()).containsEntry("kind","STEP").containsEntry("draft",answer);
+            });
+        }
+    }
+    @Test void freeResponseTutorStepAlsoWorksForFiveStepFormWithoutFunction() {
+        var exercise=DuLieuPractice.baiV0(db,"QA-FREE-LEGACY",SKILL,"NHAN_BIET","Đề tổng hợp","x",null,"TU_LUAN_5_BUOC",null,"SUPHAM");
+        solutions.save(new Solution(exercise.id(),"{}","[]","72"));
+        DuLieuPractice.phatHanh(db,cl,exercise.id());
+        store.chooseStudy(student,cl,exercise.ma(),Instant.now());
+        assertThat(store.tutorContext(student,cl,new TutorRequest(exercise.ma(),"B.TD.TRALOI",1,"Em cần gợi ý"))).isPresent();
+        store.chooseStudy(student,cl,code,Instant.now());
+        assertThat(store.tutorContext(student,cl,new TutorRequest(code,"B.TD.TRALOI",1,"Em cần gợi ý"))).isEmpty();
+    }
+    @Test void workOpenedExactlyAtNanosecondAssignmentTimeBelongsToThatAssignment() {
+        Instant assigned=Instant.parse("2026-10-16T08:00:00.123456789Z");
+        store.assign(teacher,new Assign(cl,List.of(student),List.of(problem),"ON_TAP",null,"Ôn tập"),List.of(student),assigned);
+        var repo=new vn.hoctapcanman.core.practice.infrastructure.persistence.SubmissionRepositoryAdapter(db);
+        var work=repo.openOrGet(vn.hoctapcanman.core.practice.domain.model.Submission.open(cl,student,problem,
+            problems.findContentVersion(problem).orElseThrow(),assigned));
+        assertThat(repo.findOpen(student,cl,problem,work.contentVersion())).contains(work);
+        assertThat(db.sql("SELECT assignment_at=started_at FROM submissions WHERE id=:id")
+            .param("id",work.id()).query(Boolean.class).single()).isTrue();
     }
     @Test void uncertainStepAppearsBeforeSubmissionAndTeacherAcknowledgementDoesNotChangeCasResult() {
         store.chooseStudy(student,cl,code,Instant.now());

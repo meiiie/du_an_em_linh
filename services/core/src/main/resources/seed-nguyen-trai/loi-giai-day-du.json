@@ -2254,5 +2254,69 @@
       ],
       "gia_tri_cuc_tieu": []
     }
+  },
+  "NT-KG12-TUHOC-01": {
+    "cac_buoc": [
+      {
+        "van_ban": "Đáy là tam giác vuông nên diện tích bằng nửa tích hai cạnh góc vuông.",
+        "bieu_thuc_sympy": "3*4/2",
+        "ket_qua_sympy": "6",
+        "latex": "S_{\\text{đáy}}=\\frac{1}{2}\\cdot3\\cdot4=6\\,\\text{cm}^{2}"
+      },
+      {
+        "van_ban": "Thể tích khối chóp bằng một phần ba tích diện tích đáy và chiều cao.",
+        "latex": "V=\\frac{1}{3}S_{\\text{đáy}}h"
+      },
+      {
+        "van_ban": "Thay diện tích đáy và chiều cao đã cho, ta được thể tích khối chóp.",
+        "bieu_thuc_sympy": "6*6/3",
+        "ket_qua_sympy": "12",
+        "latex": "V=\\frac{1}{3}\\cdot6\\cdot6=12\\,\\text{cm}^{3}"
+      }
+    ],
+    "dap_an": "12",
+    "latex": "12"
+  },
+  "NT-TP12-TUHOC-01": {
+    "cac_buoc": [
+      {
+        "van_ban": "Áp dụng quy tắc nguyên hàm của lũy thừa, chọn một nguyên hàm của hàm số đã cho.",
+        "bieu_thuc_sympy": "Integral(12*x**2,x)",
+        "ket_qua_sympy": "4*x**3",
+        "latex": "F(x)=12\\cdot\\frac{x^{3}}{3}=4x^{3},\\quad F'(x)=12x^{2}"
+      },
+      {
+        "van_ban": "Hàm số liên tục trên đoạn lấy tích phân, nên áp dụng công thức Newton–Leibniz.",
+        "latex": "\\int_0^1 12x^{2}\\,dx=F(1)-F(0)"
+      },
+      {
+        "van_ban": "Thay cận trên rồi trừ giá trị tại cận dưới, ta được giá trị tích phân.",
+        "bieu_thuc_sympy": "4*1**3-4*0**3",
+        "ket_qua_sympy": "4",
+        "latex": "F(1)-F(0)=4\\cdot1^{3}-4\\cdot0^{3}=4"
+      }
+    ],
+    "dap_an": "4",
+    "latex": "4"
+  },
+  "NT-XS12-TUHOC-01": {
+    "cac_buoc": [
+      {
+        "van_ban": "Kiểm tra xác suất của biến cố điều kiện khác 0 để xác suất có điều kiện được xác định.",
+        "latex": "P(X)=\\frac{1}{3}>0"
+      },
+      {
+        "van_ban": "Áp dụng công thức xác suất có điều kiện: lấy xác suất giao chia cho xác suất của biến cố đã biết xảy ra.",
+        "latex": "P(I\\mid X)=\\frac{P(I\\cap X)}{P(X)}"
+      },
+      {
+        "van_ban": "Thay các xác suất đã cho và rút gọn; đây là xác suất chọn hộp I khi biết đã lấy được thẻ xanh.",
+        "bieu_thuc_sympy": "(1/6)/(1/3)",
+        "ket_qua_sympy": "1/2",
+        "latex": "P(I\\mid X)=\\frac{1/6}{1/3}=\\frac{1}{6}\\cdot3=\\frac{1}{2}"
+      }
+    ],
+    "dap_an": "1/2",
+    "latex": "\\dfrac{1}{2}"
   }
 }

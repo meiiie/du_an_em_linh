@@ -682,3 +682,7 @@ app-luyen .practice-grid .da-nop .phu { margin-bottom: 16px; }
   app-quan-tri .data-table tr:has(.table-select) th[scope=row] { flex: 1 1 calc(100% - 60px); }
   .choice-list > .toolbar { position: static; }
 }
+
+.assignment-form .choice-list { max-height:560px; }
+.assignment-form input[type=search] { width:100%; min-height:44px; border:1px solid var(--line-strong); border-radius:8px; padding:8px 16px; background:var(--canvas); color:var(--ink); }
+app-trang-hoc-sinh time { white-space:nowrap; }

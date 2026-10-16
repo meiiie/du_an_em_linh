@@ -72,19 +72,30 @@ class NoiDungNguyenTraiTest {
         var source=new NguonNoiDung(new NoiDungProperties(Path.of("../../data").toString(),true));
         var importer=new NhapNoiDungChung(source,math,catalog,problems,solutions,hints,manager,mock(ApplicationEventPublisher.class),Clock.systemUTC(), frames);
         var first=importer.nhapTruong();
-        assertThat(first.bai()).hasSize(74);
+        assertThat(first.bai()).hasSize(77);
         var khung = ArgumentCaptor.forClass(vn.hoctapcanman.core.content.application.dto.KhungCham.class);
         verify(frames, times(43)).ghi(any(), eq(1), khung.capture());
         assertThat(khung.getAllValues()).filteredOn(f -> f.cacBuoc().getFirst().maBuoc().startsWith("B.GT.")).hasSize(17);
         assertThat(khung.getAllValues()).filteredOn(f -> f.cacBuoc().getFirst().maBuoc().startsWith("B.XS.")).hasSize(16);
         assertThat(saved.values()).filteredOn(Problem::isFiveStep).hasSize(10);
-        assertThat(saved.values()).filteredOn(p -> !p.isFiveStep()).hasSize(64);
+        assertThat(saved.values()).filteredOn(p -> !p.isFiveStep()).hasSize(67);
         var skills=ArgumentCaptor.forClass(vn.hoctapcanman.core.content.domain.model.Skill.class);
         verify(catalog,atLeastOnce()).saveSkill(skills.capture());
         assertThat(skills.getAllValues()).extracting(vn.hoctapcanman.core.content.domain.model.Skill::name)
             .contains("Cực trị hàm bậc ba", "Thể tích khối chóp", "Cấp số cộng");
+        var topics=ArgumentCaptor.forClass(vn.hoctapcanman.core.content.domain.model.Topic.class);
+        verify(catalog,atLeastOnce()).saveTopic(topics.capture());
+        assertThat(topics.getAllValues()).extracting(vn.hoctapcanman.core.content.domain.model.Topic::code)
+            .doesNotContain("TRALOI");
+        var steps=ArgumentCaptor.forClass(vn.hoctapcanman.core.content.domain.model.StepTemplate.class);
+        verify(catalog,atLeastOnce()).saveStepTemplate(steps.capture());
+        assertThat(steps.getAllValues()).filteredOn(s -> s.stepCode().equals("B.TD.TRALOI"))
+            .singleElement().satisfies(s -> {
+                assertThat(s.topicCode()).isNull();
+                assertThat(s.skillCode()).isNull();
+            });
         var records=ArgumentCaptor.forClass(Solution.class);
-        verify(solutions,times(74)).save(records.capture());
+        verify(solutions,times(77)).save(records.capture());
         assertThat(records.getAllValues()).allSatisfy(s -> {
             assertThat(s.finalAnswer()).isNotBlank();assertThat(s.workedSolutionJson()).isNotBlank();
             String full = vn.hoctapcanman.core.content.application.service.VietLoiGiai.toanBo(s).orElseThrow();
@@ -95,7 +106,7 @@ class NoiDungNguyenTraiTest {
         assertThat(vn.hoctapcanman.core.content.application.service.VietLoiGiai.toanBo(integral).orElseThrow())
             .contains("F(x)=x^{2} + 5 x", "36-(6)=30", "Newton–Leibniz");
         importer.nhapTruong();
-        verify(problems,times(74)).save(any()); // Lần đọc thứ hai không sửa nội dung.
+        verify(problems,times(77)).save(any()); // Lần đọc thứ hai không sửa nội dung.
         verifyNoInteractions(math);
         assertThat(first.ketQua().bai()).doesNotHaveDuplicates();
     }

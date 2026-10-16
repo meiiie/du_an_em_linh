@@ -16,7 +16,8 @@ public record User(
         boolean enabled,
         boolean synthetic,
         Instant createdAt,
-        Instant updatedAt) {
+        Instant updatedAt,
+        long sessionEpoch) {
 
     private static final int TEN_DAI_TOI_DA = 120;
 
@@ -28,6 +29,7 @@ public record User(
         Objects.requireNonNull(role, "role");
         Objects.requireNonNull(createdAt, "createdAt");
         Objects.requireNonNull(updatedAt, "updatedAt");
+        if (sessionEpoch < 0) throw new IllegalArgumentException("Phiên bản phiên không hợp lệ");
         displayName = displayName.strip();
         if (displayName.isEmpty() || displayName.length() > TEN_DAI_TOI_DA) {
             throw new IllegalArgumentException("Tên hiển thị không hợp lệ");
@@ -38,7 +40,7 @@ public record User(
     }
 
     public static User create(Email email, String passwordHash, String displayName, Role role, boolean synthetic, Instant now) {
-        return new User(UserId.newId(), email, passwordHash, displayName, role, true, synthetic, now, now);
+        return new User(UserId.newId(), email, passwordHash, displayName, role, true, synthetic, now, now, 0);
     }
 
     /** Không in email hay mật khẩu băm vào log. */

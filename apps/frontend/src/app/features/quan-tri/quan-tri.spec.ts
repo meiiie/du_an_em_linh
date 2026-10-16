@@ -8,10 +8,11 @@ describe('Danh sách người dùng', () => {
   it('nhật ký hiện tên hành động và vai trò tiếng Việt thay cho mã', async () => {
     TestBed.configureTestingModule({providers:[provideHttpClient(),provideHttpClientTesting()]});
     const f=TestBed.createComponent(QuanTri);f.componentRef.setInput('trang','nhat-ky');f.detectChanges();
-    TestBed.inject(HttpTestingController).expectOne('/api/qt/nhat-ky').flush([{id:'1',title:'GIAO_BAI',subtitle:'ON_TAP',status:'4ea60e1f-c26c-456c-b85f-ca2fedd7bf86',details:{createdAt:'2026-10-13T19:18:45Z'}}]);
+    TestBed.inject(HttpTestingController).expectOne('/api/qt/nhat-ky').flush([{id:'1',title:'GIAO_BAI',subtitle:'ON_TAP',status:'4ea60e1f-c26c-456c-b85f-ca2fedd7bf86',details:{createdAt:'2026-10-13T19:18:45Z',targetName:'Lớp 12A3',actorName:'Cô Mai'}}]);
     await f.whenStable();
     const row=(f.nativeElement as HTMLElement).querySelector('tbody tr')!.textContent!;
-    expect(row).toContain('Giao bài');expect(row).toContain('Ôn tập');expect(row).toContain('4ea60e1f-c26c-456c-b85f-ca2fedd7bf86');
+    expect(row).toContain('Giao bài');expect(row).toContain('Ôn tập');expect(row).not.toContain('4ea60e1f-c26c-456c-b85f-ca2fedd7bf86');expect(row).toContain('Lớp 12A3');expect(row).toContain('Cô Mai');
+    expect(f.componentInstance['lyDoNhatKy']({id:'x',title:'KHOA_TAI_KHOAN',subtitle:'Thao tác quản trị',status:'',details:{}})).toBe('Khóa quyền đăng nhập và thu hồi các phiên');
     expect(row).not.toContain('GIAO_BAI');expect(row).not.toContain('ON_TAP');
     expect((f.nativeElement as HTMLElement).querySelector('thead')?.textContent).toContain('Đối tượng');
   });
@@ -164,5 +165,30 @@ describe('Khóa lớp và xác nhận thao tác quản trị',()=>{
   t.http.expectOne('/api/qt/nguoi-dung').flush([{id:'hs1',title:'An',subtitle:'',status:'STUDENT',details:{enabled:true}}]);
   t.http.expectOne('/api/qt/lop/lop1/gia-su/su-dung').flush({classId:'lop1',requests:1,inputTokens:10,outputTokens:20,estimatedTokens:0,students:[{studentId:'hs1',requests:1,inputTokens:10,outputTokens:20,estimatedTokens:0}]});await t.f.whenStable();
   expect(t.el.querySelector('app-su-dung-gia-su tbody th')?.textContent).toBe('An');t.http.verify();
+ });
+});
+
+describe('Ẩn người dùng và đặt mật khẩu mới',()=>{
+ it('đặt mật khẩu do quản trị nhập chỉ gửi sau xác nhận, rồi xóa khỏi ô',async()=>{
+  const t=await adminPage('nguoi-dung',[{id:'hs1',title:'An',subtitle:'',status:'STUDENT',details:{enabled:true}}]);
+  t.button('Đặt lại mật khẩu').click();await t.f.whenStable();
+  t.http.expectNone(r=>r.method==='PUT');
+  expect(t.button('Xác nhận').disabled).toBe(true);
+  const input=t.el.querySelector<HTMLInputElement>('dialog[open] input[type=password]')!;
+  input.value='Mat-khau-moi-123';input.dispatchEvent(new Event('input'));await t.f.whenStable();
+  t.button('Xác nhận').click();const r=t.http.expectOne('/api/qt/nguoi-dung/hs1/mat-khau');
+  expect(r.request.method).toBe('PUT');expect(r.request.body).toEqual({password:'Mat-khau-moi-123'});
+  r.flush({message:'Đã đặt mật khẩu mới',count:1});await new Promise(r=>setTimeout(r,0));TestBed.tick();
+  t.http.expectOne('/api/qt/nguoi-dung').flush([]);await t.f.whenStable();
+  expect(t.f.componentInstance['matKhauMoi']()).toBe('');t.http.verify();
+ });
+ it('ẩn tài khoản có xác nhận và hủy không gửi yêu cầu',async()=>{
+  const t=await adminPage('nguoi-dung',[{id:'hs1',title:'An',subtitle:'',status:'STUDENT',details:{enabled:true}}]);
+  t.button('Vô hiệu hóa và ẩn').click();await t.f.whenStable();t.http.expectNone(r=>r.method==='DELETE');
+  t.button('Hủy').click();await t.f.whenStable();t.http.expectNone(r=>r.method==='DELETE');
+  t.button('Vô hiệu hóa và ẩn').click();await t.f.whenStable();t.button('Xác nhận').click();
+  const r=t.http.expectOne('/api/qt/nguoi-dung/hs1');expect(r.request.method).toBe('DELETE');
+  r.flush({message:'Đã ẩn',count:1});await new Promise(r=>setTimeout(r,0));TestBed.tick();
+  t.http.expectOne('/api/qt/nguoi-dung').flush([]);await t.f.whenStable();expect(t.el.textContent).not.toContain('An');t.http.verify();
  });
 });

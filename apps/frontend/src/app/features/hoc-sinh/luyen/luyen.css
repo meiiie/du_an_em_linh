@@ -210,7 +210,7 @@
 .thanh-nop {
   position: fixed;
   inset-inline: 0;
-  bottom: var(--chieu-cao-nav-duoi, 0px);
+  bottom: var(--chieu-cao-nav-duoi, calc(80px + env(safe-area-inset-bottom)));
   z-index: 20;
   display: flex;
   gap: var(--space-3);
@@ -267,3 +267,8 @@
 }
 
 .loi-giai p { white-space: pre-wrap; }
+
+@media(max-width:1023px) {
+ :host { display:block; padding-bottom:calc(112px + env(safe-area-inset-bottom)); }
+ .phan-hoi { scroll-margin-bottom:calc(192px + env(safe-area-inset-bottom)); }
+}

@@ -291,6 +291,8 @@ export class Luyen {
     this.duaTieuDiem();
   }
 
+  protected datTrinhBay(v:string):void { this.sua(n => ({...n,trinhBay:v})); }
+
   protected datDong(ma: string, v: string): void {
     this.sua(n => ({ ...n, dongTheoBuoc: { ...n.dongTheoBuoc, [ma]: v } }));
   }

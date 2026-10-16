@@ -73,7 +73,7 @@ public class BaiDeLamService implements BaiDeLam {
                 .getOrDefault(p.skillCode(), p.skillCode());
             var metadata = frame.map(f -> f.cacBuoc()).orElseGet(() -> cacBuoc.stream().map(MoTaBuoc::cu).toList());
             return new BaiChoLamBai(p.id(), p.code(), r.contentVersion(), p.skillCode(), ten, p.level4().name(), p.statementText(),
-                p.statementLatex(), frame.isPresent() ? Problem.TU_LUAN_5_BUOC : p.answerForm(),
+                p.statementLatex(), frame.filter(f -> !"tra_loi_tu_do".equals(f.baiToan().get("loai"))).isPresent() ? Problem.TU_LUAN_5_BUOC : p.answerForm(),
                 chamDonDieu ? p.functionSympy() : null, metadata.stream().map(MoTaBuoc::maBuoc).toList(),
                 chamDonDieu ? p.conclusionClaims() : List.of(), p.startStep(), metadata);
         }

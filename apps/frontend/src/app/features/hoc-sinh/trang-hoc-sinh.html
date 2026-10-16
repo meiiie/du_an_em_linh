@@ -70,7 +70,7 @@
   </div>
   <aside class="hoc-so" aria-label="Sổ học tập">
   @if(nhac.isLoading()){<app-khung-cho nhan="Đang tải lịch nhắc học" />}
-  @if(nhac.hasValue() && nhacSapToi().length){<section class="surface nhac-hoc"><h2 class="nhan-muc">Hôm nay và hạn sắp tới</h2><ul class="row-list" aria-label="Lịch nhắc học và hạn nộp">@for(n of nhacSapToi();track n.id){<li><strong>{{nhacTen(n)}}</strong><p class="muted">{{nhacNgay(n)}}</p></li>}</ul><a routerLink="/hs/lich">Xem lịch học →</a></section>}
+  @if(nhac.hasValue() && nhacSapToi().length){<section class="surface nhac-hoc"><h2 class="nhan-muc">Hôm nay và hạn sắp tới</h2><ul class="row-list" aria-label="Lịch nhắc học và hạn nộp">@for(n of nhacSapToi();track n.id){<li><strong>{{nhacTen(n)}}</strong><p class="muted"><time>{{nhacNgay(n)}}</time></p></li>}</ul><a routerLink="/hs/lich">Xem lịch học →</a></section>}
   @if(nhac.error()){<app-loi-tai [loi]="nhac.error()" moTa="Chưa tải được lịch nhắc học." (thuLai)="nhac.reload()" />}
   @if(th.isLoading()){<app-khung-cho nhan="Đang tải mức hiểu" />}@else if(th.error()){<app-loi-tai [loi]="th.error()" moTa="Chưa tải được mức hiểu. Bài được giao vẫn làm được." (thuLai)="th.reload()" />}
   @if (th.hasValue()) {

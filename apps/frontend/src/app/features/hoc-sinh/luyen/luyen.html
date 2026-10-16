@@ -21,7 +21,7 @@
   }
   @if(cheDo.error()){<app-loi-tai [loi]="cheDo.error()" moTa="Chưa tải được chế độ bài. Thử lại để mở gia sư cho bài ôn." (thuLai)="cheDo.reload()" />}
     <div class="practice-grid" [class.co-gia-su]="coGiaSu() && giaSuMo() && giaSuDesktop()" [style.grid-template-columns]="coGiaSu() && giaSuMo() && giaSuDesktop() ? 'minmax(0, 1fr) min(45%, ' + giaSuRong() + 'px)' : 'minmax(0, 1fr)'">
-  @if (b.dangTraLoi !== 'TU_LUAN_5_BUOC' || !b.cacBuoc.length) {
+  @if (!b.cacBuoc.length || (b.dangTraLoi !== 'TU_LUAN_5_BUOC' && b.cacBuoc[0]?.kieu !== 'TU_DO')) {
     <div class="trong">
 @if (coGiaSu() || mode()?.status === 'KIEM_TRA') {<div class="tutor-trigger"><button appButton variant="secondary" type="button" data-testid="mo-gia-su" aria-label="Gia sư AI" aria-keyshortcuts="Control+/ Meta+/" [attr.aria-expanded]="giaSuMo()" [disabled]="!coGiaSu()" [title]="coGiaSu() ? 'Gia sư AI (Ctrl/Cmd+/)' : 'Đang kiểm tra — gia sư tạm tắt'" [attr.aria-describedby]="mode()?.status === 'KIEM_TRA' ? 'gia-su-tam-tat' : null" (click)="giaSu()?.moGiaSu()"><span class="fab-icon" aria-hidden="true">✦</span><span class="trigger-text">Gia sư AI</span></button></div>}
       <p><app-van-ban-toan [text]="b.de.text" /></p>
@@ -91,6 +91,13 @@
             <fieldset class="nhap" [disabled]="khoa()" [class.sai]="caBuocSai(s.maBuoc)">
               <legend class="sr-only">Bài làm bước {{ s.ten }}</legend>
               @switch (kieuNhap(s)) {
+                @case ('TU_DO') {
+                  <app-o-cong-thuc nhan="Đáp số cuối" testId="dap-so-tu-do"
+                    [value]="n.dongTheoBuoc?.[s.maBuoc] ?? ''" (valueChange)="datDong(s.maBuoc,$event)" />
+                  <label>Phần trình bày<textarea data-testid="trinh-bay-tu-do" maxlength="2000"
+                    [value]="n.trinhBay ?? ''" (input)="datTrinhBay($any($event.target).value)"></textarea></label>
+                  <p class="phu">Nếu chưa nhập được đáp số, em vẫn có thể gửi phần trình bày để thầy cô xem.</p>
+                }
                 @case ('TXD') {
                   <div class="dong" [class.sai]="dongSai(s.maBuoc, 0)">
                     <app-o-cong-thuc

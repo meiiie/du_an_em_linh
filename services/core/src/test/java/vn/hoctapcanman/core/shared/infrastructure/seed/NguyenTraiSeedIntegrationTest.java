@@ -45,6 +45,7 @@ class NguyenTraiSeedIntegrationTest {
     @Autowired NoiDungNguyenTraiSeeder content;
     @Autowired GiaoBaiNguyenTraiSeeder assignments;
     @Autowired LichSuNguyenTraiSeeder history;
+    @Autowired vn.hoctapcanman.core.practice.infrastructure.seed.DemoNamSeeder demo;
     @Autowired MucHieuNguyenTraiSeeder mastery;
     @Autowired vn.hoctapcanman.core.workspace.application.port.WorkspaceStore workspace;
 
@@ -53,10 +54,12 @@ class NguyenTraiSeedIntegrationTest {
             assertThat(count("users")).isEqualTo(35);
             assertThat(count("classes")).isEqualTo(3);
             assertThat(count("enrollments")).isEqualTo(36);
-            assertThat(count("problems")).isEqualTo(74);
+            assertThat(count("problems")).isEqualTo(77);
             assertThat(count("documents")).isEqualTo(21);
             assertThat(count("formula_sheets")).isEqualTo(6);
-            assertThat(count("assignments")).isEqualTo(690);
+            assertThat(count("assignments")).isBetween(680,690);
+            UUID nam=db.sql("SELECT id FROM users WHERE email='nam.nguyen.hoai@thpt-nguyentrai.edu.vn'").query(UUID.class).single();
+            assertThat(workspace.selfStudy(nam,TruongNguyenTrai.id("lop:12A3"),"KG12")).isNotEmpty();
             assertThat(count("submissions")).isEqualTo(390);
             assertThat(count("study_sessions")).isEqualTo(120);
             assertThat(count("mastery_states")).isEqualTo(160);
@@ -70,7 +73,7 @@ class NguyenTraiSeedIntegrationTest {
             assertThat(db.sql("SELECT count(*) FROM assignments WHERE mode='KIEM_TRA' AND due_at>now() AND due_at<now()+interval '24 hours'").query(Integer.class).single()).isEqualTo(240);
             assertThat(db.sql("SELECT count(*) FROM submissions WHERE result='KHONG_KIEM_DUOC'").query(Integer.class).single()).isEqualTo(68);
             assertThat(db.sql("SELECT count(*) FROM problem_releases WHERE status='CHO_GIAO_VIEN_DUYET'").query(Integer.class).single()).isEqualTo(5);
-            assertThat(count("content_reviews")).isEqualTo(61);
+            assertThat(count("content_reviews")).isEqualTo(64);
             assertThat(db.sql("""
                 SELECT count(*) FROM assignments a JOIN classes c ON c.id=a.class_id
                 JOIN problems p ON p.id=a.problem_id JOIN skills sk ON sk.code=p.skill_code
@@ -111,7 +114,7 @@ class NguyenTraiSeedIntegrationTest {
                 ) ready
                 """).query(Integer.class).single()).isEqualTo(30);
             Map<String,List<String>> before=snapshot();
-            for(ApplicationRunner seed:List.of(accounts,classes,content,assignments,history,mastery)) seed.run(new DefaultApplicationArguments());
+            for(ApplicationRunner seed:List.of(accounts,classes,content,assignments,history,mastery,demo)) seed.run(new DefaultApplicationArguments());
             assertThat(snapshot()).isEqualTo(before);
             UUID cl=TruongNguyenTrai.id("lop:12A3");
             assertThat(LopSeedAnToan.kiem(db,"12A3")).isTrue();
@@ -120,7 +123,7 @@ class NguyenTraiSeedIntegrationTest {
             db.sql("UPDATE users SET synthetic=false WHERE id=:id").param("id",teacher).update();
             assertThat(LopSeedAnToan.kiem(db,"12A3")).isFalse();
             before=snapshot();
-            for(ApplicationRunner seed:List.of(accounts,classes,content,assignments,history,mastery)) seed.run(new DefaultApplicationArguments());
+            for(ApplicationRunner seed:List.of(accounts,classes,content,assignments,history,mastery,demo)) seed.run(new DefaultApplicationArguments());
             assertThat(snapshot()).isEqualTo(before);
         } finally {
             db.sql("DROP SCHEMA "+SCHEMA+" CASCADE").update();

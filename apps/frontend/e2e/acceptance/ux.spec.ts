@@ -128,7 +128,7 @@ test('U10 KPI drill-down, tiến độ và ghi đè có lý do', async ({ page, 
     await expect(deadlines).toContainText('2 bài · 3 học sinh');
     await expect(deadlines).toContainText('1/6 đã nộp');
     await expect(page.getByRole('heading', { name: 'Phân bố mức hiểu' })).toBeVisible();
-    await page.getByRole('link', { name: /Học sinh cần hỗ trợ/ }).click();
+    await page.getByRole('link', { name: /Học sinh đang kẹt/ }).click();
     await expect(page).toHaveURL('/gv/tien-do');
     await expect(page.getByText(/3 mức khi xem/)).toBeVisible();
     await page.getByRole('link', { name: 'An', exact: true }).click();
@@ -161,10 +161,10 @@ test('U11 ngân hàng lọc mức/cổng; tài liệu và công thức', async (
 });
 test('U11 phân trang ngân hàng và tìm kiếm đặt lại trang', async ({ page, api }) => {
     api.role = 'TEACHER';
-    api.overrides.set('GET /api/gv/ngan-hang', { body: Array.from({ length: 21 }, (_, i) => ({
+    api.bankItems = Array.from({ length: 21 }, (_, i) => ({
         ...bank[0], id: `PAGE-${i}`, title: `PAGE-${i}`, subtitle: `Đề trang ${i}`,
         details: { ...bank[0].details, code: `PAGE-${i}` },
-    })) });
+    }));
     await page.goto('/gv/ngan-hang');
     const rows = page.getByRole('table').locator('tbody tr');
     const size = page.viewportSize()!.width === 390 ? 10 : 20;
@@ -177,6 +177,11 @@ test('U11 phân trang ngân hàng và tìm kiếm đặt lại trang', async ({ 
     await expect(rows).toHaveCount(1);
     await expect(rows.first()).toContainText('Đề trang 20');
     await expect(pagination).toHaveCount(0);
+    expect(api.calls.filter(c => c.path === '/api/gv/ngan-hang').map(c => c.query)).toEqual([
+        expect.objectContaining({ page: '1', size: String(size), q: '' }),
+        expect.objectContaining({ page: '2', size: String(size), q: '' }),
+        expect.objectContaining({ page: '1', size: String(size), q: 'PAGE-20' }),
+    ]);
 });
 
 test('U4 đề bài nhóm theo tên bộ và đếm bài đã nộp', async ({ page, api }) => {
@@ -374,13 +379,13 @@ test('U9 giáo viên giao chế độ Kiểm tra và hạn nộp', async ({ page
     await page.goto('/gv/giao');
     await page.getByLabel('Tên bộ bài').fill('Kiểm tra đơn điệu');
     await page.getByLabel('Chế độ', { exact: true }).selectOption('KIEM_TRA');
-    await page.getByLabel('Hạn nộp', { exact: true }).fill('2026-10-20T19:00');
+    await page.getByLabel('Hạn nộp', { exact: true }).fill('20/10/2026 19:00');
     await page.getByRole('checkbox', { name: /Bài nhận biết/ }).check();
     await page.getByRole('button', { name: 'Giao bài', exact: true }).click();
     await expect(page.locator('.toast')).toContainText('Đã giao bộ bài.');
     const body = api.calls.find(c => c.method === 'POST' && c.path === '/api/gv/giao')?.body;
     expect(body).toMatchObject({ mode: 'KIEM_TRA', problemIds: ['E2E-01'], studentIds: [] });
-    expect(body.dueAt).toMatch(/^2026-10-20T.*Z$/);
+    expect(body.dueAt).toBe('2026-10-20T12:00:00.000Z');
 });
 
 test('Học ghi rõ bài kiểm tra tiếp theo và Luyện hiện banner cùng hạn', async ({ page, api }) => {

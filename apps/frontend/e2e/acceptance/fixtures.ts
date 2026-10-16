@@ -23,6 +23,7 @@ export const tutorSession = (lastSeq=0): SessionGiaSuV2 => ({
 export class MockApi {
     role: VaiTro = 'STUDENT';
     mode = 'ON_TAP';
+    bankItems = bank;
     tutorStatus = 200;
     mastered = false;
     tutorSeq = 0;
@@ -30,6 +31,7 @@ export class MockApi {
     calls: {
         method: string;
         path: string;
+        query: Record<string, string>;
         body: any;
     }[] = [];
     unexpected: string[] = [];
@@ -44,10 +46,11 @@ export class MockApi {
         await this.page.addInitScript(() => localStorage.setItem('mathl-co-phien', '1'));
         await this.page.route('**/api/**', async (route) => {
             const req = route.request();
-            const path = new URL(req.url()).pathname;
+            const url = new URL(req.url());
+            const path = url.pathname;
             const method = req.method();
             const body = req.postData() ? req.postDataJSON() : null;
-            this.calls.push({ method, path, body });
+            this.calls.push({ method, path, query: Object.fromEntries(url.searchParams), body });
             const override = this.overrides.get(`${method} ${path}`);
             if (override) {
                 await route.fulfill({ status: override.status ?? 200, json: override.body });
@@ -131,8 +134,23 @@ export class MockApi {
                 response = [student];
             else if (path === '/api/gv/hoc-sinh/hs1')
                 response = { student, history: [item('h1', 'Bài đã làm', '', 'DAT')] };
-            else if (path === '/api/gv/ngan-hang')
-                response = bank;
+            else if (path === '/api/gv/ngan-hang' && method === 'GET') {
+                const params = url.searchParams;
+                const normalize = (text: string) => text.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/g, 'd').toLowerCase();
+                const q = normalize(params.get('q') ?? '').trim();
+                const filtered = this.bankItems.filter(row =>
+                    (!q || normalize(`${row.title} ${row.subtitle} ${'code' in row.details ? row.details.code : ''} ${row.details.skillCode}`).includes(q)) &&
+                    (!params.get('level4') || row.details.level4 === params.get('level4')) &&
+                    (!params.get('skillCode') || row.details.skillCode === params.get('skillCode')) &&
+                    (!params.get('gate') || row.details.gate === params.get('gate')));
+                const page = Number(params.get('page') ?? -1);
+                const size = Number(params.get('size') ?? 20);
+                await route.fulfill({
+                    json: page === -1 ? filtered : filtered.slice((page - 1) * size, page * size),
+                    headers: page === -1 ? {} : { 'X-Total-Count': String(filtered.length) },
+                });
+                return;
+            }
             else if (path === '/api/gv/cong-thuc')
                 response = [formula];
             else if (path === '/api/gv/duyet')

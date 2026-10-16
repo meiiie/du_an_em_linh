@@ -21,7 +21,7 @@ public class ContentDraftStoreAdapter implements ContentDraftStore {
             .param("cl",cl).query(String.class).list();
     }
     public Optional<String> material(UUID cl,UUID doc) {
-        return db.sql("SELECT text_content FROM documents WHERE id=:id AND class_id=:cl AND license_status IN ('tu_soan','duoc_phep','cong_khai')")
+        return db.sql("SELECT text_content FROM documents WHERE id=:id AND class_id=:cl AND archived_at IS NULL AND license_status IN ('tu_soan','duoc_phep','cong_khai')")
             .param("id",doc).param("cl",cl).query(String.class).optional();
     }
     public void save(UUID actor,DraftRequest req,GeneratedDraft draft,Instant now) {

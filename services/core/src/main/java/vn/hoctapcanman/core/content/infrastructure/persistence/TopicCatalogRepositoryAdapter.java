@@ -161,7 +161,7 @@ public class TopicCatalogRepositoryAdapter implements TopicCatalogRepository {
     }
 
     private static StepTemplate buoc(ResultSet rs, int n) throws SQLException {
-        return new StepTemplate(Cot.chu(rs, "step_code"), Cot.chu(rs, "topic_code"), rs.getInt("ordinal"),
+        return new StepTemplate(Cot.chu(rs, "step_code"), rs.getString("topic_code"), rs.getInt("ordinal"),
             InputKind.valueOf(Cot.chu(rs, "input_kind")), rs.getString("skill_code"), Cot.chu(rs, "description"));
     }
 
