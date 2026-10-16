@@ -27,7 +27,9 @@ public class KhungChamRepositoryAdapter implements KhungChamTheoBai {
         return jdbc.sql("""
             SELECT s.final_answer FROM problems p LEFT JOIN solutions s ON s.problem_id=p.id
             WHERE p.id=:id AND p.content_version=:v
+                AND p.answer_form IN ('TU_LUAN','TU_LUAN_5_BUOC')
                 AND (p.answer_form<>'TU_LUAN_5_BUOC' OR p.function_sympy IS NULL)
+                AND s.final_answer IS NOT NULL AND s.final_answer NOT IN ('null','""')
             """).param("id",id).param("v",version).query((rs,n) -> {
                 Map<String,Object> data = new java.util.LinkedHashMap<>();
                 data.put("loai","tra_loi_tu_do");

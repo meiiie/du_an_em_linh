@@ -186,6 +186,40 @@ class WorkspaceWorkflowIntegrationTest {
             assertThat(store.recommendations(student,cl)).noneMatch(item->item.id().equals(exercise.ma()));
         }
     }
+    @Test void freeResponseUsesRealTopicAndReferenceAnswerButMultipleChoiceStaysUnsupported() {
+        var frames=new KhungChamRepositoryAdapter(db);
+        for(String form:List.of("TU_LUAN","TN_NHIEU_LUA_CHON")) {
+            var exercise=DuLieuPractice.baiV0(db,"QA-FREE",SKILL,"NHAN_BIET","Đề tổng hợp","x",null,form,null,"SUPHAM");
+            solutions.save(new Solution(exercise.id(),"{}","[]","\"72\""));
+            DuLieuPractice.phatHanh(db,cl,exercise.id());
+            int version=problems.findContentVersion(exercise.id()).orElseThrow();
+            if(form.equals("TU_LUAN")) {
+                assertThat(frames.doc(exercise.id(),version)).get().satisfies(frame->{
+                    assertThat(frame.cacBuoc()).extracting(step->step.maBuoc()).containsExactly("B.TD.TRALOI");
+                    assertThat(frame.baiToan()).containsEntry("dap_so","72");
+                });
+                assertThat(store.selfStudy(student,cl,"DH12")).extracting(Item::id).contains(exercise.ma());
+                store.chooseStudy(student,cl,exercise.ma(),Instant.now());
+                assertThat(store.recommendations(student,cl)).extracting(Item::id).contains(exercise.ma());
+            } else {
+                assertThat(frames.doc(exercise.id(),version)).isEmpty();
+                assertThat(store.selfStudy(student,cl,"DH12")).extracting(Item::id).doesNotContain(exercise.ma());
+                assertThatThrownBy(()->store.chooseStudy(student,cl,exercise.ma(),Instant.now()))
+                    .isInstanceOf(vn.hoctapcanman.core.workspace.application.exception.WorkspaceException.class);
+            }
+        }
+        assertThat(db.sql("SELECT count(*) FROM topics WHERE code='TRALOI'").query(Integer.class).single()).isZero();
+    }
+    @Test void workOpenedExactlyAtNanosecondAssignmentTimeBelongsToThatAssignment() {
+        Instant assigned=Instant.parse("2026-10-16T08:00:00.123456789Z");
+        store.assign(teacher,new Assign(cl,List.of(student),List.of(problem),"ON_TAP",null,"Ôn tập"),List.of(student),assigned);
+        var repo=new vn.hoctapcanman.core.practice.infrastructure.persistence.SubmissionRepositoryAdapter(db);
+        var work=repo.openOrGet(vn.hoctapcanman.core.practice.domain.model.Submission.open(cl,student,problem,
+            problems.findContentVersion(problem).orElseThrow(),assigned));
+        assertThat(repo.findOpen(student,cl,problem,work.contentVersion())).contains(work);
+        assertThat(db.sql("SELECT assignment_at=started_at FROM submissions WHERE id=:id")
+            .param("id",work.id()).query(Boolean.class).single()).isTrue();
+    }
     @Test void uncertainStepAppearsBeforeSubmissionAndTeacherAcknowledgementDoesNotChangeCasResult() {
         store.chooseStudy(student,cl,code,Instant.now());
         UUID submission=openWork(problem);UUID grade=uncertainGrade(submission);

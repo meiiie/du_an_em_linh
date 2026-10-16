@@ -65,6 +65,17 @@ class NoiDungNguyenTraiTest {
         verify(catalog,atLeastOnce()).saveSkill(skills.capture());
         assertThat(skills.getAllValues()).extracting(vn.hoctapcanman.core.content.domain.model.Skill::name)
             .contains("Cực trị hàm bậc ba", "Thể tích khối chóp", "Cấp số cộng");
+        var topics=ArgumentCaptor.forClass(vn.hoctapcanman.core.content.domain.model.Topic.class);
+        verify(catalog,atLeastOnce()).saveTopic(topics.capture());
+        assertThat(topics.getAllValues()).extracting(vn.hoctapcanman.core.content.domain.model.Topic::code)
+            .doesNotContain("TRALOI");
+        var steps=ArgumentCaptor.forClass(vn.hoctapcanman.core.content.domain.model.StepTemplate.class);
+        verify(catalog,atLeastOnce()).saveStepTemplate(steps.capture());
+        assertThat(steps.getAllValues()).filteredOn(s -> s.stepCode().equals("B.TD.TRALOI"))
+            .singleElement().satisfies(s -> {
+                assertThat(s.topicCode()).isNull();
+                assertThat(s.skillCode()).isNull();
+            });
         var records=ArgumentCaptor.forClass(Solution.class);
         verify(solutions,times(77)).save(records.capture());
         assertThat(records.getAllValues()).allSatisfy(s -> {
