@@ -128,11 +128,11 @@ describe('Phiên gia sư v2', () => {
     });
     await service.mo('assignment-1');
     expect(service.luot()).toHaveLength(49);
-    expect(service.luot().find(t=>t.turnId===partial.id)).toMatchObject({text:partial.answer,status:'completed'});
+    expect(service.luot().find(t=>t.turnId===partial.id)).toMatchObject({text:partial.answer,status:'cancelled'});
     expect(service.luot().some(t=>t.error)).toBe(false);
     await service.taiCu();
     expect(service.luot()).toHaveLength(50);
-    expect(service.luot()[0]).toMatchObject({turnId:'older-partial',text:partial.answer,status:'completed'});
+    expect(service.luot()[0]).toMatchObject({turnId:'older-partial',text:partial.answer,status:'cancelled'});
     expect(service.luot().some(t=>t.turnId.includes('empty') || t.error)).toBe(false);
     expect(fetchMock.mock.calls.at(-1)?.[0]).toBe(`${base}/luot?offset=50&limit=50`);
   });
