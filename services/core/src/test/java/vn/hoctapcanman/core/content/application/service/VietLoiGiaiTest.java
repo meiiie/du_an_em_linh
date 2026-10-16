@@ -43,6 +43,13 @@ class VietLoiGiaiTest {
     }
 
     @Test
+    void loiGiaiTheoBuocHienThiCongThucThayViDapAnJson() {
+        var solution = new Solution(UUID.randomUUID(), "{\"cac_buoc\":[{\"van_ban\":\"Tìm nguyên hàm.\",\"latex\":\"F(x)=x^{2}+5x\"},{\"van_ban\":\"Lấy hiệu hai cận.\",\"latex\":\"F(4)-F(1)=36-6=30\"}]}", "[]", "\"30\"");
+        assertThat(VietLoiGiai.toanBo(solution)).hasValueSatisfying(text ->
+            assertThat(text).contains("Tìm nguyên hàm.", "$F(x)=x^{2}+5x$", "\n", "36-6=30").doesNotContain("\"30\""));
+    }
+
+    @Test
     void khongCoLoiGiaiMauThiRong() {
         assertThat(VietLoiGiai.viet(new Solution(UUID.randomUUID(), null, "[\"x = 0\"]", null))).isEmpty();
         assertThat(VietLoiGiai.viet(new Solution(UUID.randomUUID(), null, "[\"x = 0\"]", "x = 0"))).contains("x = 0");

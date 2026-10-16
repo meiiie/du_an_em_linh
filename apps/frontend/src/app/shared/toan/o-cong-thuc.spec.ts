@@ -106,3 +106,20 @@ describe('OCongThuc', () => {
     expect(t.oToan().getAttribute('aria-invalid')).toBe('true');
   });
 });
+
+
+describe('Nhập kết luận bằng chữ', () => {
+  it('giữ khoảng trắng tiếng Việt trong MathLive và bản xem trước', async () => {
+    TestBed.configureTestingModule({ providers: [{ provide: NAP_MATHLIVE, useValue: () => Promise.resolve(true) }] });
+    const f = TestBed.createComponent(OCongThuc);
+    f.componentRef.setInput('nhan', 'Kết luận');
+    f.componentRef.setInput('value', 'không có');
+    await f.whenStable();
+    await new Promise(r => setTimeout(r, 0));
+    await f.whenStable();
+    const el = f.nativeElement as HTMLElement;
+    expect((el.querySelector('math-field') as MathFieldGia).value).toBe(String.raw`\text{không có}`);
+    expect(el.querySelector('annotation')?.textContent).toBe(String.raw`\text{không có}`);
+    expect(el.querySelector('input')?.value).toBe('không có');
+  });
+});

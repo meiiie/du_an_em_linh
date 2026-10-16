@@ -1,5 +1,9 @@
 /** Chỉ đổi cú pháp hiển thị; không tính toán hoặc thực thi chuỗi từ máy chủ. */
 export function latexHienThi(value: string): string {
+  // Câu kết luận tiếng Việt cần chế độ chữ để MathLive/KaTeX giữ khoảng trắng.
+  if (/[À-ỹĐđ]/.test(value) && !/[\\$^_={}]/.test(value)) {
+    return `\\text{${value}}`;
+  }
   // LaTeX có sẵn (kể cả lệnh có dấu *) phải giữ nguyên.
   if (value.includes('\\') || !/(\*|\b(?:sqrt|sin|cos|tan|exp|log)\s*\()/.test(value)) return value;
   if (value.length > 4000) return value;

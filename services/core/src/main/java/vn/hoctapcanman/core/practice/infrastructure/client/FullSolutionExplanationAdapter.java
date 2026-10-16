@@ -20,11 +20,19 @@ public class FullSolutionExplanationAdapter implements FullSolutionExplanation {
     private final SolutionRevealEvents events;
     private final Clock clock;
     private static final JsonMapper JSON=JsonMapper.builder().build();
+    private static final Set<String> LEGACY_DH_STEPS = Set.of(
+        "B.DH.TXD", "B.DH.DAOHAM", "B.DH.NGHIEM", "B.DH.XETDAU", "B.DH.KETLUAN");
     public FullSolutionExplanationAdapter(HintModel model,WorkspaceStore workspace,MathServiceClient math,SolutionRevealEvents events,Clock clock) {
         this.model=model;this.workspace=workspace;this.math=math;this.events=events;this.clock=clock;
     }
     public Optional<String> explain(UUID classId,BaiChoLamBai problem) {
-        if(problem.ham()==null)return Optional.empty();
+        // This prompt and CAS gate describe only the legacy derivative workflow.
+        // Other frames use their complete stored teacher explanation.
+        if (problem.ham() == null || !"TU_LUAN_5_BUOC".equals(problem.dangTraLoi())
+            || !problem.cacBuoc().stream().allMatch(LEGACY_DH_STEPS::contains)
+            || !problem.moTaBuoc().stream().allMatch(step -> LEGACY_DH_STEPS.contains(step.maBuoc()))) {
+            return Optional.empty();
+        }
         try {
             HintModel selected=model.selected(workspace.settings(classId).aiProvider());
             if("offline".equalsIgnoreCase(selected.provider())||"unavailable".equalsIgnoreCase(selected.provider()))return Optional.empty();

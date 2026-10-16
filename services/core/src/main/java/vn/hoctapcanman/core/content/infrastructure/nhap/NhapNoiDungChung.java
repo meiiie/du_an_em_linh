@@ -141,10 +141,16 @@ public class NhapNoiDungChung {
         List<Map<String, @Nullable Object>> tap = nguon.danhSach("dev/nguyen-trai/bai-tap.json");
         List<Map<String, @Nullable Object>> kyNang = nguon.danhSach("dev/nguyen-trai/ky-nang.json");
         var khungCham = DocKhungCham.doc(nguon);
+        Map<String, Object> worked;
+        try (var stream = Objects.requireNonNull(getClass().getResourceAsStream("/seed-nguyen-trai/loi-giai-day-du.json"))) {
+            worked = tools.jackson.databind.json.JsonMapper.builder().build().readValue(stream, Map.class);
+        } catch (java.io.IOException e) {
+            throw new java.io.UncheckedIOException("Không đọc được lời giải seed Nguyễn Trãi", e);
+        }
         List<BaiNhap> bai = tap.stream().map(ex -> {
             Map<String, @Nullable Object> de = doiTuong(ex.get("de_bai"));
             String muc = chu(ex.get("muc_do_4"));
-            Object loiGiai = ex.get("bai_lam") != null ? ex.get("bai_lam") : ex.get("loi_giai");
+            Object loiGiai = Objects.requireNonNull(worked.get(chu(ex.get("id"))), "Thiếu lời giải đầy đủ của bài seed");
             return new BaiNhap(chu(ex.get("id")), chu(ex.get("ky_nang_chinh")), List.of(), muc4(muc),
                 muc3(chu(ex.get("muc_do_bo_3")), muc), bloom(chu(ex.get("muc_bloom"))), chu(de.get("van_ban")),
                 chu(de.get("latex")), chuNeuCo(de.get("ham_so_sympy")), chu(ex.get("dang_cau")), null,

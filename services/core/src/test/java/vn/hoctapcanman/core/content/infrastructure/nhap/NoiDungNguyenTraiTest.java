@@ -41,6 +41,24 @@ class NoiDungNguyenTraiTest {
         verifyNoInteractions(jdbc, theoLop, math, manager);
     }
 
+    @Test void migrationVaImporterDungCungLoiGiaiDayDu() throws java.io.IOException {
+        var json = tools.jackson.databind.json.JsonMapper.builder().build();
+        try (var source = getClass().getResourceAsStream("/seed-nguyen-trai/loi-giai-day-du.json");
+             var migration = getClass().getResourceAsStream("/db/migration/V20__loi_giai_day_du_seed.sql")) {
+            var expected = json.readTree(java.util.Objects.requireNonNull(source));
+            String sql = new String(java.util.Objects.requireNonNull(migration).readAllBytes(), java.nio.charset.StandardCharsets.UTF_8);
+            var matcher = java.util.regex.Pattern.compile("\\('([^']+)', \\$worked\\$(.*?)\\$worked\\$::jsonb\\)", java.util.regex.Pattern.DOTALL).matcher(sql);
+            int count = 0;
+            while (matcher.find()) {
+                assertThat(json.readTree(matcher.group(2))).isEqualTo(expected.path(matcher.group(1)));
+                count++;
+            }
+            assertThat(count).isEqualTo(74);
+            assertThat(sql).contains("p.origin='GIAO_VIEN_NGUYEN_TRAI'", "IS DISTINCT FROM");
+            assertThat(sql).doesNotContain("DISABLE TRIGGER", "UPDATE submissions", "UPDATE problem_releases");
+        }
+    }
+
     @Test void nguonTruongKhongDungMaySinhVaGhiLoiGiaiDayDuMotLan() {
         var problems=mock(ProblemRepository.class);var solutions=mock(SolutionRepository.class);
         var catalog=mock(TopicCatalogRepository.class);var hints=mock(HintLevelRepository.class);
@@ -80,7 +98,13 @@ class NoiDungNguyenTraiTest {
         verify(solutions,times(77)).save(records.capture());
         assertThat(records.getAllValues()).allSatisfy(s -> {
             assertThat(s.finalAnswer()).isNotBlank();assertThat(s.workedSolutionJson()).isNotBlank();
+            String full = vn.hoctapcanman.core.content.application.service.VietLoiGiai.toanBo(s).orElseThrow();
+            assertThat(full.lines().count()).as("Lời giải nhiều bước cho %s", s.problemId()).isGreaterThanOrEqualTo(2);
+            assertThat(full).contains("**Bước 1.**", "**Bước 2.**").doesNotContain("**2", "**3", "**4", "sqrt(", "Derivative(", "Integral(", "binomial(", "oo");
         });
+        var integral = records.getAllValues().stream().filter(s -> s.problemId().equals(saved.get("NT-TP12-TH-02").id())).findFirst().orElseThrow();
+        assertThat(vn.hoctapcanman.core.content.application.service.VietLoiGiai.toanBo(integral).orElseThrow())
+            .contains("F(x)=x^{2} + 5 x", "36-(6)=30", "Newton–Leibniz");
         importer.nhapTruong();
         verify(problems,times(77)).save(any()); // Lần đọc thứ hai không sửa nội dung.
         verifyNoInteractions(math);
