@@ -94,6 +94,20 @@ class WorkspaceWorkflowIntegrationTest {
     }
     @AfterEach void clearPrincipal() { SecurityContextHolder.clearContext(); }
     void as(UUID actor) { SecurityContextHolder.getContext().setAuthentication(new JwtAuthenticationToken(Jwt.withTokenValue("synthetic").header("alg","none").subject(actor.toString()).build())); }
+    @Test void pagedBankFiltersSkillBeforeCountingAndSlicing() throws Exception {
+        db.sql("INSERT INTO skills(code,topic_code,name,grade,is_core) VALUES('QA.OTHER','DH12','Kỹ năng khác',12,true)").update();
+        var other=DuLieuPractice.baiV0(db,"QA-OTHER","QA.OTHER","NHAN_BIET","Đề khác","x","x","TU_LUAN_5_BUOC",null,"SUPHAM");
+        DuLieuPractice.phatHanh(db,cl,other.id());
+        as(teacher);
+        mvc.perform(get("/api/gv/ngan-hang").param("lopId",cl.toString()).param("page","1").param("size","1")
+            .param("skillCode",SKILL).param("level4","NHAN_BIET").param("gate","DAT"))
+            .andExpect(status().isOk()).andExpect(header().string("X-Total-Count","1"))
+            .andExpect(jsonPath("$.length()").value(1)).andExpect(jsonPath("$[0].id").value(problem.toString()));
+        mvc.perform(get("/api/gv/ngan-hang").param("lopId",cl.toString()).param("page","2").param("size","1").param("skillCode",SKILL))
+            .andExpect(status().isOk()).andExpect(header().string("X-Total-Count","1")).andExpect(content().json("[]"));
+        mvc.perform(get("/api/gv/ngan-hang").param("lopId",cl.toString()).param("page","1").param("skillCode","MISSING"))
+            .andExpect(status().isOk()).andExpect(header().string("X-Total-Count","0")).andExpect(content().json("[]"));
+    }
     @Test void studentListsAndChoosesPublishedExerciseThroughHttp() throws Exception {
         as(student);
         mvc.perform(get("/api/hs/tu-hoc").param("chuDe","DH12")).andExpect(status().isOk())

@@ -73,7 +73,7 @@ import vn.hoctapcanman.core.workspace.application.service.WorkspaceService;
         @RequestParam(defaultValue="") String skillCode,@RequestParam(defaultValue="") String gate,
         @RequestParam(defaultValue="-1") int page,@RequestParam(defaultValue="20") int size) {
         if(page==-1)return org.springframework.http.ResponseEntity.ok(service.bank(actor(jwt),lopId,q,level4,skillCode,gate));
-        var result=service.bankPage(actor(jwt),lopId,q,level4,gate,page,size);
+        var result=service.bankPage(actor(jwt),lopId,q,level4,skillCode,gate,page,size);
         return org.springframework.http.ResponseEntity.ok().header("X-Total-Count",Long.toString(result.total())).body(result.items());
     }
 

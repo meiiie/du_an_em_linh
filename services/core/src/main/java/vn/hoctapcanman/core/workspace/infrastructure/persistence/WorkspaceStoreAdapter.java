@@ -111,23 +111,23 @@ import vn.hoctapcanman.core.workspace.application.exception.WorkspaceException;
         return rows;
     }
 
-    public BankPage bankPage(UUID cl,String query,String level,String gate,int page,int size) {
+    public BankPage bankPage(UUID cl,String query,String level,String skillCode,String gate,int page,int size) {
         String from="""
             FROM problems p JOIN skills sk ON sk.code=p.skill_code JOIN topics t ON t.code=sk.topic_code
             JOIN classes c ON c.id=:cl AND c.grade=t.grade AND coalesce(sk.grade,t.grade)=c.grade
             JOIN problem_releases r ON r.problem_id=p.id AND r.class_id=:cl
             LEFT JOIN verification_runs v ON v.id=r.run_id
-            WHERE (:level='' OR p.level4=:level) AND (:gate='' OR v.overall_status=:gate)
+            WHERE (:level='' OR p.level4=:level) AND (:skillCode='' OR p.skill_code=:skillCode) AND (:gate='' OR v.overall_status=:gate)
                 AND (:query='' OR strpos(translate(lower(p.code||' '||p.statement_text||' '||sk.code||' '||sk.name),
                     'áàảãạăắằẳẵặâấầẩẫậéèẻẽẹêếềểễệíìỉĩịóòỏõọôốồổỗộơớờởỡợúùủũụưứừửữựýỳỷỹỵđ','aaaaaaaaaaaaaaaaaeeeeeeeeeeeiiiiiooooooooooooooooouuuuuuuuuuuyyyyyd'),:query)>0)
             """;
-        long total=db.sql("SELECT count(*) "+from).param("cl",cl).param("level",level).param("gate",gate).param("query",query).query(Long.class).single();
+        long total=db.sql("SELECT count(*) "+from).param("cl",cl).param("level",level).param("skillCode",skillCode).param("gate",gate).param("query",query).query(Long.class).single();
         var items=db.sql("""
             SELECT p.id,p.code,p.statement_text,p.statement_latex,p.skill_code,p.level4,sk.name skill_name,t.grade,
                 CASE WHEN EXISTS(SELECT 1 FROM review_blocks b WHERE b.run_id=v.id) THEN 'BI_CHAN' ELSE r.status END release_status,
                 v.overall_status
             """+from+" ORDER BY p.code,p.id LIMIT :size OFFSET :offset")
-            .param("cl",cl).param("level",level).param("gate",gate).param("query",query).param("size",size).param("offset",(page-1)*size)
+            .param("cl",cl).param("level",level).param("skillCode",skillCode).param("gate",gate).param("query",query).param("size",size).param("offset",(page-1)*size)
             .query((r,n)->new Item(r.getString("id"),r.getString("code"),r.getString("statement_text"),r.getString("release_status"),
                 details("code",r.getString("code"),"skillCode",r.getString("skill_code"),"skillName",r.getString("skill_name"),
                     "grade",r.getInt("grade"),"level4",r.getString("level4"),"gate",str(r,"overall_status"),"latex",r.getString("statement_latex")))).list();

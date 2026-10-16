@@ -77,10 +77,10 @@ class NguyenTraiQaIntegrationTest {
                 service.chooseStudy(nam,code);
                 assertThat(store.selfStudy(nam,cl,topic)).noneMatch(i->i.id().equals(code));
             }
-            var page=service.bankPage(teacher,cl,"tich phan","","",1,2);
+            var page=service.bankPage(teacher,cl,"tich phan","","","",1,2);
             assertThat(page.items()).hasSize(2);assertThat(page.total()).isGreaterThan(2);
             assertThat(page.items()).allSatisfy(i->assertThat(i.details()).containsEntry("grade",12));
-            assertThat(service.bankPage(teacher,cl,"tich phan","","",2,2).items()).noneMatch(i->page.items().stream().anyMatch(first->first.id().equals(i.id())));
+            assertThat(service.bankPage(teacher,cl,"tich phan","","","",2,2).items()).noneMatch(i->page.items().stream().anyMatch(first->first.id().equals(i.id())));
             var geometry=content.bai(cl,"NT-KG12-NB-01").orElseThrow();
             assertThat(geometry.moTaBuoc()).singleElement().satisfies(s->assertThat(s.kieu()).isEqualTo("TU_DO"));
             var internal=content.duKienCham(geometry.problemId(),geometry.phienBan());

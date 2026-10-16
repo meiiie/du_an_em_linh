@@ -10,7 +10,7 @@ public interface WorkspaceStore {
     List<Item> students(UUID classId);
     List<Item> history(UUID student,UUID classId);
     List<Item> bank(UUID classId);
-    BankPage bankPage(UUID classId,String query,String level,String gate,int page,int size);
+    BankPage bankPage(UUID classId,String query,String level,String skillCode,String gate,int page,int size);
     List<Item> assignments(UUID classId);
     List<Item> modes(UUID student,UUID classId);
     List<Item> topics(UUID student,UUID classId);

@@ -112,13 +112,13 @@ import vn.hoctapcanman.core.workspace.application.port.*;
             .filter(i->gate.isEmpty()||gate.equals(i.details().get("gate"))).toList();
     }
 
-    public BankPage bankPage(UUID actor,UUID cl,String query,String level,String gate,int page,int size) {
+    public BankPage bankPage(UUID actor,UUID cl,String query,String level,String skillCode,String gate,int page,int size) {
         teacher(actor,cl);
         if(page<1||page>100000||size<1||size>100)throw new WorkspaceException(400,"Chọn trang và số bài từ 1 đến 100.");
         if(!level.isEmpty()&&!Set.of("NHAN_BIET","THONG_HIEU","VAN_DUNG","VAN_DUNG_CAO").contains(level)
             ||!gate.isEmpty()&&!Set.of("DAT","SAI","KHONG_KIEM_DUOC","GV_DUYET").contains(gate))
             throw new WorkspaceException(400,"Chọn mức và kết quả kiểm hợp lệ.");
-        return store.bankPage(cl,searchQuery(query),level,gate,page,size);
+        return store.bankPage(cl,searchQuery(query),level,skillCode,gate,page,size);
     }
 
     public Library library(UUID actor,UUID cl,String q) {

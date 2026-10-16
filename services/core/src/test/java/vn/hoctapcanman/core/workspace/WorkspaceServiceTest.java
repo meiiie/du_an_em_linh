@@ -81,10 +81,10 @@ class WorkspaceServiceTest {
  }
 
  @Test void bankPaginationRejectsInvalidSizeAndDelegatesNormalizedQuery(){
-  assertThrows(WorkspaceException.class,()->service.bankPage(actor,cl,"","","",1,1000));
-  verify(store,never()).bankPage(any(),any(),any(),any(),anyInt(),anyInt());
-  when(store.bankPage(cl,"tich phan","","",2,10)).thenReturn(new BankPage(List.of(),0));
-  assertEquals(0,service.bankPage(actor,cl,"Tích phân","","",2,10).total());
-  verify(store).bankPage(cl,"tich phan","","",2,10);
+  assertThrows(WorkspaceException.class,()->service.bankPage(actor,cl,"","","","",1,1000));
+  verify(store,never()).bankPage(any(),any(),any(),any(),any(),anyInt(),anyInt());
+  when(store.bankPage(cl,"tich phan","","","",2,10)).thenReturn(new BankPage(List.of(),0));
+  assertEquals(0,service.bankPage(actor,cl,"Tích phân","","","",2,10).total());
+  verify(store).bankPage(cl,"tich phan","","","",2,10);
  }
 }

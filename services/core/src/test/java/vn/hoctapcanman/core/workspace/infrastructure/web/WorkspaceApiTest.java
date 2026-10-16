@@ -217,10 +217,19 @@ class WorkspaceApiTest {
     }
 
     @Test void pagedBankReturnsTotalHeaderAndCallsPagedStoreOnly()throws Exception {
-        when(store.bankPage(cl,"tich phan","","",2,10)).thenReturn(new BankPage(List.of(),31));
+        when(store.bankPage(cl,"tich phan","","","",2,10)).thenReturn(new BankPage(List.of(),31));
         mvc.perform(get("/api/gv/ngan-hang").with(as(actor,"TEACHER")).param("lopId",cl.toString()).param("page","2").param("size","10").param("q","Tích phân"))
             .andExpect(status().isOk()).andExpect(header().string("X-Total-Count","31")).andExpect(content().json("[]"));
-        verify(store).bankPage(cl,"tich phan","","",2,10);verify(store,never()).bank(cl);
+        verify(store).bankPage(cl,"tich phan","","","",2,10);verify(store,never()).bank(cl);
+    }
+    @Test void pagedBankPassesSkillFilterAndReturnsFilteredTotal()throws Exception {
+        var row=item(problem.toString(),"Bài tích phân","","DA_PHAT_HANH",Map.of("skillCode","TP12"));
+        when(store.bankPage(cl,"","NHAN_BIET","TP12","DAT",1,10)).thenReturn(new BankPage(List.of(row),1));
+        mvc.perform(get("/api/gv/ngan-hang").with(as(actor,"TEACHER")).param("lopId",cl.toString())
+            .param("page","1").param("size","10").param("skillCode","TP12").param("level4","NHAN_BIET").param("gate","DAT"))
+            .andExpect(status().isOk()).andExpect(header().string("X-Total-Count","1"))
+            .andExpect(jsonPath("$[0].details.skillCode").value("TP12"));
+        verify(store).bankPage(cl,"","NHAN_BIET","TP12","DAT",1,10);
     }
     @Test void resetPasswordValidatesAndChecksAdminScope()throws Exception {
         when(hasher.hash("New-password-123")).thenReturn("{bcrypt}HASH");

@@ -41,3 +41,21 @@ def test_rejects_missing_reordered_and_duplicate_lines():
         p = payload()
         p["cac_buoc"][0]["cac_dong"] = lines
         assert grade(p)["ket_qua"] == "KHONG_KIEM_DUOC"
+
+
+@pytest.mark.parametrize("presentation", [
+    "", "a" * 2000,
+    'Em dùng Pythagoras: BC = √(AB² + AC²). Kết quả: 72 cm³. ✅',
+    "__import__('os').getcwd() <script>alert('text')</script>",
+])
+def test_presentation_is_free_text(presentation):
+    assert grade(payload(presentation=presentation))["ket_qua"] == "DAT"
+
+
+@pytest.mark.parametrize("presentation", ["a" * 2001, None, 72, [], {}])
+def test_presentation_must_be_text_at_most_2000_characters(presentation):
+    assert grade(payload(presentation=presentation))["ket_qua"] == "KHONG_KIEM_DUOC"
+
+
+def test_answer_still_passes_expression_whitelist():
+    assert grade(payload(answer="7" * 301))["ket_qua"] == "KHONG_KIEM_DUOC"
