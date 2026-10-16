@@ -38,6 +38,14 @@ import vn.hoctapcanman.core.workspace.application.exception.WorkspaceException;
         return t==null?"":t.toInstant().toString();
     }
 
+    private record AssignmentSet(String assignedAt,String name,String dueAt,String mode) {
+        String key(UUID cl) { return cl+":"+assignedAt+":"+name+":"+dueAt+":"+mode; }
+    }
+
+    private static AssignmentSet assignmentSet(ResultSet rs)throws SQLException {
+        return new AssignmentSet(instant(rs,"assigned_at"),str(rs,"set_name"),instant(rs,"due_at"),rs.getString("mode"));
+    }
+
     private int count(String sql,UUID cl) {
         return db.sql(sql).param("cl",cl).query(Integer.class).single();
     }
@@ -151,7 +159,7 @@ import vn.hoctapcanman.core.workspace.application.exception.WorkspaceException;
                 r.getString("display_name"),r.getString("mode"),details("classId",cl.toString(),
                 "studentId",r.getString("student_id"),"problemCode",r.getString("code"),
                 "tenBo",str(r,"set_name"),"assignedAt",instant(r,"assigned_at"),
-                "setKey",cl+":"+instant(r,"assigned_at")+":"+str(r,"set_name")+":"+instant(r,"due_at")+":"+r.getString("mode"),"submitted",r.getBoolean("submitted"),
+                "setKey",assignmentSet(r).key(cl),"submitted",r.getBoolean("submitted"),
                 "mode",r.getString("mode"),"dueAt",instant(r,"due_at")))).list();
     }
 
@@ -278,7 +286,10 @@ import vn.hoctapcanman.core.workspace.application.exception.WorkspaceException;
             FROM problems p JOIN problem_releases r ON r.problem_id=p.id AND r.class_id=:cl AND r.status='DA_PHAT_HANH' AND NOT EXISTS(SELECT 1 FROM review_blocks blocked WHERE blocked.run_id=r.run_id) AND EXISTS(SELECT 1 FROM verification_runs fresh WHERE fresh.id=r.run_id AND NOT fresh.stale AND fresh.content_version=p.content_version AND fresh.content_hash=p.content_hash)
             JOIN skills sk ON sk.code=p.skill_code JOIN topics t ON t.code=sk.topic_code
             JOIN classes c ON c.id=:cl AND c.grade=t.grade AND coalesce(sk.grade,t.grade)=c.grade WHERE p.code=:code AND NOT EXISTS(SELECT 1 FROM review_blocks b WHERE b.run_id=r.run_id)
-            ON CONFLICT(class_id,problem_id,student_id) DO NOTHING
+            ON CONFLICT(class_id,problem_id,student_id) DO UPDATE
+            SET status='DA_GIAO',assigned_by=excluded.assigned_by,assigned_at=excluded.assigned_at,
+                mode=excluded.mode,set_name=excluded.set_name,due_at=NULL
+            WHERE assignments.status='DA_HUY'
             """).param("id",UUID.randomUUID()).param("cl",cl).param("code",code).param("student",student).param("now",java.sql.Timestamp.from(now.truncatedTo(java.time.temporal.ChronoUnit.MICROS))).update();
         if(count==0 && db.sql("SELECT count(*) FROM assignments a JOIN problems p ON p.id=a.problem_id JOIN problem_releases r ON r.problem_id=p.id AND r.class_id=a.class_id AND r.status='DA_PHAT_HANH' AND NOT EXISTS(SELECT 1 FROM review_blocks blocked WHERE blocked.run_id=r.run_id) AND EXISTS(SELECT 1 FROM verification_runs fresh WHERE fresh.id=r.run_id AND NOT fresh.stale AND fresh.content_version=p.content_version AND fresh.content_hash=p.content_hash) WHERE a.class_id=:cl AND a.student_id=:student AND p.code=:code AND a.status='DA_GIAO' AND a.mode='ON_TAP' AND (a.due_at IS NULL OR a.due_at>:now)")
             .param("cl",cl).param("student",student).param("code",code).param("now",java.sql.Timestamp.from(now.truncatedTo(java.time.temporal.ChronoUnit.MICROS))).query(Integer.class).single()==0)
@@ -455,14 +466,22 @@ import vn.hoctapcanman.core.workspace.application.exception.WorkspaceException;
         return db.sql("SELECT id,display_name,email,role,enabled,synthetic FROM users WHERE archived_at IS NULL ORDER BY display_name LIMIT 1000").query((r,n)->new Item(r.getString("id"),r.getString("display_name"),r.getString("email"),r.getString("role"),details("enabled",r.getBoolean("enabled"),"synthetic",r.getBoolean("synthetic")))).list();
     }
 
-    public boolean archiveAssignments(UUID actor,UUID cl,List<UUID> ids,Instant now) {
-        var found=db.sql("SELECT id FROM assignments WHERE class_id=:cl AND id IN (:ids) FOR UPDATE")
-            .param("cl",cl).param("ids",ids).query(UUID.class).list();
-        if(!new HashSet<>(found).equals(new HashSet<>(ids)))return false;
-        db.sql("UPDATE assignments SET status='DA_HUY' WHERE class_id=:cl AND id IN (:ids)")
-            .param("cl",cl).param("ids",ids).update();
+    public int archiveAssignments(UUID actor,UUID cl,String setKey,Instant now) {
+        // Dùng cùng khóa với tổng quan; không phân tích tên bộ có thể chứa dấu hai chấm.
+        var selected=db.sql("SELECT DISTINCT assigned_at,set_name,due_at,mode FROM assignments WHERE class_id=:cl AND status='DA_GIAO'")
+            .param("cl",cl).query((r,n)->assignmentSet(r)).list().stream().filter(set->set.key(cl).equals(setKey)).findFirst();
+        if(selected.isEmpty())return 0;
+        var set=selected.orElseThrow();
+        int count=db.sql("""
+            UPDATE assignments SET status='DA_HUY' WHERE class_id=:cl AND status='DA_GIAO'
+                AND assigned_at=:assigned AND coalesce(set_name,'')=:name AND mode=:mode
+                AND due_at IS NOT DISTINCT FROM cast(:due AS timestamptz)
+            """).param("cl",cl).param("assigned",java.sql.Timestamp.from(Instant.parse(set.assignedAt())))
+            .param("name",set.name()).param("mode",set.mode())
+            .param("due",set.dueAt().isEmpty()?null:java.sql.Timestamp.from(Instant.parse(set.dueAt())),java.sql.Types.TIMESTAMP).update();
+        if(count==0)return 0;
         log(actor,"LUU_TRU_GIAO_BAI",cl.toString(),"Ẩn bộ bài được giao khỏi lớp",now);
-        return true;
+        return count;
     }
 
     public boolean archiveDocument(UUID actor,UUID cl,UUID id,Instant now) {
@@ -478,7 +497,7 @@ import vn.hoctapcanman.core.workspace.application.exception.WorkspaceException;
     }
 
     public boolean archiveUser(UUID actor,UUID id,Instant now) {
-        if(db.sql("UPDATE users SET enabled=false,archived_at=:now,updated_at=:now WHERE id=:id AND archived_at IS NULL")
+        if(db.sql("UPDATE users SET enabled=false,archived_at=:now,updated_at=:now,session_epoch=session_epoch+1 WHERE id=:id AND archived_at IS NULL")
             .param("id",id).param("now",java.sql.Timestamp.from(now)).update()!=1)return false;
         revokeSessions(id,now);
         log(actor,"AN_TAI_KHOAN",id.toString(),"Vô hiệu hóa và ẩn tài khoản",now);
@@ -486,7 +505,7 @@ import vn.hoctapcanman.core.workspace.application.exception.WorkspaceException;
     }
 
     public boolean resetPassword(UUID actor,UUID id,String hash,Instant now) {
-        if(db.sql("UPDATE users SET password_hash=:hash,updated_at=:now WHERE id=:id AND archived_at IS NULL")
+        if(db.sql("UPDATE users SET password_hash=:hash,updated_at=:now,session_epoch=session_epoch+1 WHERE id=:id AND archived_at IS NULL")
             .param("hash",hash).param("id",id).param("now",java.sql.Timestamp.from(now)).update()!=1)return false;
         revokeSessions(id,now);
         log(actor,"DAT_LAI_MAT_KHAU",id.toString(),"Quản trị đặt mật khẩu mới và thu hồi các phiên đăng nhập",now);
@@ -501,7 +520,7 @@ import vn.hoctapcanman.core.workspace.application.exception.WorkspaceException;
 
     public void bulk(UUID actor,Bulk r,Instant now) {
         for(UUID id:r.ids().stream().distinct().toList()) {
-            if(db.sql("UPDATE users SET enabled=:enabled,updated_at=:now WHERE id=:id AND archived_at IS NULL").param("enabled",r.enabled()).param("now",java.sql.Timestamp.from(now)).param("id",id).update()!=1)
+            if(db.sql("UPDATE users SET enabled=:enabled,updated_at=:now,session_epoch=session_epoch+CASE WHEN :enabled THEN 0 ELSE 1 END WHERE id=:id AND archived_at IS NULL").param("enabled",r.enabled()).param("now",java.sql.Timestamp.from(now)).param("id",id).update()!=1)
                 throw new WorkspaceException(404,"Không tìm thấy tài khoản.");
             if(!r.enabled()) {
                 db.sql("UPDATE auth_sessions SET revoked_at=:now WHERE user_id=:id AND revoked_at IS NULL").param("now",java.sql.Timestamp.from(now)).param("id",id).update();

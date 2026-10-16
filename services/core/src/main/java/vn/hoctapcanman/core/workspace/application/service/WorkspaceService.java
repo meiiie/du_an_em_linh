@@ -340,9 +340,10 @@ import vn.hoctapcanman.core.workspace.application.port.*;
 
     public Result archiveAssignments(UUID actor,ArchiveSet r) {
         teacher(actor,r.lopId());
-        if(!store.archiveAssignments(actor,r.lopId(),r.ids(),clock.instant()))
+        int count=store.archiveAssignments(actor,r.lopId(),r.setKey(),clock.instant());
+        if(count==0)
             throw new WorkspaceException(404,"Không tìm thấy lượt giao trong lớp.");
-        return ok("Đã lưu trữ bộ bài được giao.",r.ids().size());
+        return ok("Đã lưu trữ bộ bài được giao.",count);
     }
 
     public Result archiveDocument(UUID actor,UUID cl,UUID id) {

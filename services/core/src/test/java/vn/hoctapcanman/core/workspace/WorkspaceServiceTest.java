@@ -51,7 +51,7 @@ class WorkspaceServiceTest {
 
  @Test void archiveAssignmentChecksClassBeforeWriting(){
   doThrow(new WorkspaceException(403,"Không thuộc lớp")).when(members).kiemGiaoVien(actor,cl);
-  assertThrows(WorkspaceException.class,()->service.archiveAssignments(actor,new ArchiveSet(cl,List.of(problem))));
+  assertThrows(WorkspaceException.class,()->service.archiveAssignments(actor,new ArchiveSet(cl,"bo-thu")));
   verifyNoInteractions(store);
  }
  @Test void archiveDocumentChecksClassAndMissingResource(){

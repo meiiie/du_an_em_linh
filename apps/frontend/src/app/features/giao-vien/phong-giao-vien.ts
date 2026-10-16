@@ -124,7 +124,7 @@ export class PhongGiaoVien{
  protected async xacNhanLuuTru(){
   const x=this.luuTru();if(!x||this.ban())return;
   if(x.loai==='giao'){
-   if(await this.ghi('/api/gv/giao/luu-tru',{lopId:this.lop.id(),ids:x.muc.details['assignmentIds']})){
+   if(await this.ghi('/api/gv/giao/luu-tru',{lopId:this.lop.id(),setKey:x.muc.details['setKey']})){
     this.hop.set(null);this.ds.reload();this.tongQuan.reload();
    }
   }else{

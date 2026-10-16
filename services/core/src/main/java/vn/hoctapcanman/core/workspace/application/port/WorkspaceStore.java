@@ -35,7 +35,7 @@ public interface WorkspaceStore {
     String accountRole(UUID actor);
     boolean managesUser(UUID actor,UUID target);
     List<Item> users();
-    boolean archiveAssignments(UUID actor,UUID classId,List<UUID> ids,Instant now);
+    int archiveAssignments(UUID actor,UUID classId,String setKey,Instant now);
     boolean archiveDocument(UUID actor,UUID classId,UUID id,Instant now);
     boolean archiveUser(UUID actor,UUID id,Instant now);
     boolean resetPassword(UUID actor,UUID id,String hash,Instant now);

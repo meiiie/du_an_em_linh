@@ -69,7 +69,7 @@ public final class WorkspaceDto {
     public record Bulk(@NotEmpty @Size(max=200) List<UUID> ids,boolean enabled) {
     }
 
-    public record ArchiveSet(@NotNull UUID lopId,@NotEmpty @Size(max=2000) List<UUID> ids) {}
+    public record ArchiveSet(@NotNull UUID lopId,@NotBlank @Size(max=512) String setKey) {}
     public record ResetPassword(@NotNull @Size(min=12,max=72)
         @vn.hoctapcanman.core.identity.application.dto.ToiDaByteUtf8(72) String password) {
         @Override public String toString() { return "ResetPassword[đã ẩn]"; }

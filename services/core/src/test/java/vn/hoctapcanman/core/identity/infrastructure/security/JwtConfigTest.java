@@ -12,6 +12,40 @@ import vn.hoctapcanman.core.identity.domain.repository.UserRepository;
 
 /** Test ops đặt ngoài src/test để không đụng lane core; chạy bằng ops/test-jwt.sh. */
 class JwtConfigTest {
+    @Test
+    void accessTokenCarriesEpochAndRejectsMissingOrDifferentEpoch() {
+        var user = vn.hoctapcanman.core.identity.domain.model.User.create(
+            new vn.hoctapcanman.core.identity.domain.model.Email("epoch@demo.local"), "hash", "Tài khoản thử",
+            vn.hoctapcanman.core.identity.domain.model.Role.STUDENT, true, java.time.Instant.now());
+        var users = org.mockito.Mockito.mock(UserRepository.class);
+        org.mockito.Mockito.when(users.findById(user.id())).thenReturn(java.util.Optional.of(user));
+        var config = new JwtConfig();
+        var properties = new IdentityProperties("", java.time.Duration.ofMinutes(15), "test", false);
+        var key = new javax.crypto.spec.SecretKeySpec(new byte[32], "HmacSHA256");
+        var encoder = config.jwtEncoder(key);
+        var decoder = config.jwtDecoder(key, properties, users);
+        var now = java.time.Instant.now();
+        var issued = new JwtAccessTokenIssuer(encoder, properties).issue(user, now);
+        assertThat(decoder.decode(issued.value()).getClaims()).containsEntry("session_epoch", 0L);
+        var updated = new vn.hoctapcanman.core.identity.domain.model.User(user.id(), user.email(), user.passwordHash(),
+            user.displayName(), user.role(), true, true, user.createdAt(), now, 1);
+        org.mockito.Mockito.when(users.findById(user.id())).thenReturn(java.util.Optional.of(updated));
+        org.assertj.core.api.Assertions.assertThatThrownBy(() -> decoder.decode(issued.value()))
+            .isInstanceOf(org.springframework.security.oauth2.jwt.JwtValidationException.class);
+        assertThat(decoder.decode(new JwtAccessTokenIssuer(encoder, properties).issue(updated, now).value()).getClaims())
+            .containsEntry("session_epoch", 1L);
+        org.mockito.Mockito.when(users.findById(user.id())).thenReturn(java.util.Optional.of(user));
+        for (Object epoch : java.util.Arrays.asList(null, 1L, -1L, "0", 0.5)) {
+            var claims = org.springframework.security.oauth2.jwt.JwtClaimsSet.builder().issuer("test")
+                .subject(user.id().value().toString()).issuedAt(now).expiresAt(now.plusSeconds(900)).claim("role", "STUDENT");
+            if (epoch != null) claims.claim("session_epoch", epoch);
+            String token = encoder.encode(org.springframework.security.oauth2.jwt.JwtEncoderParameters.from(
+                org.springframework.security.oauth2.jwt.JwsHeader.with(org.springframework.security.oauth2.jose.jws.MacAlgorithm.HS256).build(), claims.build())).getTokenValue();
+            org.assertj.core.api.Assertions.assertThatThrownBy(() -> decoder.decode(token))
+                .as("epoch %s", epoch).isInstanceOf(org.springframework.security.oauth2.jwt.JwtValidationException.class);
+        }
+    }
+
     private ApplicationContextRunner context(String profiles, String secret) {
         return new ApplicationContextRunner()
             .withUserConfiguration(JwtConfig.class)

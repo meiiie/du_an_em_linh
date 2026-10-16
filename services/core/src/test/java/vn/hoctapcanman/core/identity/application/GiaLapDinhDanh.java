@@ -211,13 +211,13 @@ public final class GiaLapDinhDanh {
 
     public void khoa(User user) {
         users.put(user.id().value(), new User(
-            user.id(), user.email(), user.passwordHash(), user.displayName(), user.role(), false, user.synthetic(), NOW, NOW));
+            user.id(), user.email(), user.passwordHash(), user.displayName(), user.role(), false, user.synthetic(), NOW, NOW, user.sessionEpoch()));
     }
 
     public User themNguoiDung(String email, String matKhau, Role role, boolean enabled) {
         User user = User.create(new Email(email), hasher.hash(matKhau), "Người thử", role, true, NOW);
         if (!enabled) {
-            user = new User(user.id(), user.email(), user.passwordHash(), user.displayName(), role, false, true, NOW, NOW);
+            user = new User(user.id(), user.email(), user.passwordHash(), user.displayName(), role, false, true, NOW, NOW, user.sessionEpoch());
         }
         return userRepository.save(user);
     }

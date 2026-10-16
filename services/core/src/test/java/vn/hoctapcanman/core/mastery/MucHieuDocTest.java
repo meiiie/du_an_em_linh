@@ -160,7 +160,7 @@ class MucHieuDocTest {
 
     private String bearer(UUID id, Role role) {
         Instant now = Instant.now();
-        User u = new User(new UserId(id), new Email(id + "@demo.local"), "x", "Người thử", role, true, true, now, now);
+        User u = new User(new UserId(id), new Email(id + "@demo.local"), "x", "Người thử", role, true, true, now, now, 0);
         return "Bearer " + tokens.issue(u, now).value();
     }
 }

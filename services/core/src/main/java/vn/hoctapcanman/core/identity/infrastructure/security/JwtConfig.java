@@ -61,8 +61,14 @@ public class JwtConfig {
         decoder.setJwtValidator(new org.springframework.security.oauth2.core.DelegatingOAuth2TokenValidator<>(
             JwtValidators.createDefaultWithIssuer(properties.issuer()), jwt -> {
                 try {
+                    Object epoch = jwt.getClaim("session_epoch");
+                    if (jwt.getSubject() == null || !(epoch instanceof Long || epoch instanceof Integer)) {
+                        return org.springframework.security.oauth2.core.OAuth2TokenValidatorResult.failure(
+                            new org.springframework.security.oauth2.core.OAuth2Error("invalid_token","Phiên không còn hợp lệ.",null));
+                    }
                     boolean active=users.findById(new vn.hoctapcanman.core.identity.domain.model.UserId(java.util.UUID.fromString(jwt.getSubject())))
-                        .filter(u->u.enabled() && u.role().name().equals(jwt.getClaimAsString("role"))).isPresent();
+                        .filter(u->u.enabled() && u.role().name().equals(jwt.getClaimAsString("role"))
+                            && u.sessionEpoch()==((Number)epoch).longValue()).isPresent();
                     if(active)return org.springframework.security.oauth2.core.OAuth2TokenValidatorResult.success();
                 } catch(IllegalArgumentException ignored) { /* malformed subject fails closed */ }
                 return org.springframework.security.oauth2.core.OAuth2TokenValidatorResult.failure(

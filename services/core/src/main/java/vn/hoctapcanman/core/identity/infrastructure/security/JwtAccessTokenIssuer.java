@@ -31,6 +31,7 @@ public class JwtAccessTokenIssuer implements AccessTokenIssuer {
                 .issuedAt(now)
                 .expiresAt(expiresAt)
                 .claim("role", user.role().name())
+                .claim("session_epoch", user.sessionEpoch())
                 .build();
         String value = encoder.encode(JwtEncoderParameters.from(JwsHeader.with(MacAlgorithm.HS256).build(), claims)).getTokenValue();
         return new IssuedAccessToken(value, expiresAt);

@@ -303,7 +303,7 @@ describe('Chữ về gia sư đúng hiện trạng',()=>{
 });
 
 describe('Lưu trữ nội dung lớp',()=>{
- it('gộp toàn bộ mã lượt giao và chỉ gửi sau xác nhận',async()=>{
+ it('gửi khóa bộ giao thay vì danh sách mã sau xác nhận',async()=>{
   const t=await setup();
   for(const d of t.el.querySelectorAll<HTMLDialogElement>('dialog')){d.showModal=()=>{d.open=true;};d.close=()=>{d.open=false;};}
   t.fixture.componentInstance['ds'].reload();TestBed.tick();
@@ -311,7 +311,7 @@ describe('Lưu trữ nội dung lớp',()=>{
   const button=(name:string)=>[...t.el.querySelectorAll<HTMLButtonElement>('button')].find(b=>b.textContent?.trim()===name)!;
   button('Lưu trữ bộ bài').click();await t.fixture.whenStable();t.http.expectNone('/api/gv/giao/luu-tru');
   expect(t.el.querySelector('dialog[open]')?.textContent).toContain('Bộ hình học');
-  button('Xác nhận').click();const req=t.http.expectOne('/api/gv/giao/luu-tru');expect(req.request.body).toEqual({lopId:'lop1',ids:['a1','a2']});
+  button('Xác nhận').click();const req=t.http.expectOne('/api/gv/giao/luu-tru');expect(req.request.body).toEqual({lopId:'lop1',setKey:'bo1'});
   req.flush({message:'Đã lưu trữ',count:2});await new Promise(r=>setTimeout(r,0));TestBed.tick();
   t.http.expectOne('/api/gv/giao?lopId=lop1').flush([]);t.http.expectOne('/api/gv/tong-quan?lopId=lop1').flush({students:1,stuck:0,pending:0,assignments:0,boBai:0,distribution:{},deadlines:[]});await t.fixture.whenStable();t.http.verify();
  });

@@ -112,7 +112,7 @@ class NguyenTraiQaIntegrationTest {
             var assigned=store.assignments(cl).getFirst();
             var ids=store.assignments(cl).stream().filter(i->i.details().get("setKey").equals(assigned.details().get("setKey")))
                 .map(i->UUID.fromString(i.id())).toList();
-            service.archiveAssignments(teacher,new ArchiveSet(cl,ids));
+            service.archiveAssignments(teacher,new ArchiveSet(cl,(String)assigned.details().get("setKey")));
             assertThat(store.assignments(cl)).noneMatch(i->ids.contains(UUID.fromString(i.id())));
             assertThat(store.dashboard(cl).assignments()).isEqualTo(store.assignments(cl).size());
             UUID session=UUID.randomUUID();

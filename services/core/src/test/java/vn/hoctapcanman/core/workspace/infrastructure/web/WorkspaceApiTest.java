@@ -253,4 +253,20 @@ class WorkspaceApiTest {
             .andExpect(status().isOk());
         verify(membership).kiemGiaoVien(actor,cl);verify(store).archiveDocument(actor,cl,problem,NOW);
     }
+
+    @Test void archiveSetUsesServerKeyAndReturnsActualCount()throws Exception {
+        when(store.archiveAssignments(actor,cl,"bo-thu",NOW)).thenReturn(2001);
+        mvc.perform(post("/api/gv/giao/luu-tru").with(as(actor,"TEACHER")).contentType(MediaType.APPLICATION_JSON)
+            .content("{\"lopId\":\""+cl+"\",\"setKey\":\"bo-thu\"}"))
+            .andExpect(status().isOk()).andExpect(jsonPath("$.count").value(2001));
+        verify(membership).kiemGiaoVien(actor,cl);
+        mvc.perform(post("/api/gv/giao/luu-tru").with(as(actor,"TEACHER")).contentType(MediaType.APPLICATION_JSON)
+            .content("{\"lopId\":\""+cl+"\",\"setKey\":\"khong-co\"}"))
+            .andExpect(status().isNotFound());
+        for(String body:List.of("{\"lopId\":\""+cl+"\",\"setKey\":\" \"}",
+            "{\"lopId\":\""+cl+"\",\"ids\":[\""+problem+"\"]}")) {
+            mvc.perform(post("/api/gv/giao/luu-tru").with(as(actor,"TEACHER")).contentType(MediaType.APPLICATION_JSON).content(body))
+                .andExpect(status().isBadRequest());
+        }
+    }
 }

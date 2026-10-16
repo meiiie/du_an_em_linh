@@ -93,6 +93,60 @@ class WorkspaceWorkflowIntegrationTest {
             Map.of("tang",1,"trang_thai","DAT"),Map.of("tang",2,"trang_thai","DAT","trich_dan",List.of(Map.of("document_id",document.toString(),"vi_tri",0,"trich",TEXT))),Map.of("tang",3,"trang_thai","DAT")))));
     }
     @AfterEach void clearPrincipal() { SecurityContextHolder.clearContext(); }
+    @Test void archivesWholeLargeSetByServerKeyAndKeepsOtherSets() throws Exception {
+        db.sql("""
+            INSERT INTO users(id,email,password_hash,display_name,role,enabled,synthetic,created_at,updated_at)
+            SELECT gen_random_uuid(),'archive-'||n||'@demo.local','hash','Học sinh tổng hợp '||n,'STUDENT',true,true,now(),now()
+            FROM generate_series(1,2005) n
+            """).update();
+        db.sql("INSERT INTO enrollments(class_id,user_id,role_in_class,enrolled_at) SELECT :cl,id,'STUDENT',now() FROM users WHERE email LIKE 'archive-%@demo.local'")
+            .param("cl",cl).update();
+        db.sql("""
+            INSERT INTO assignments(id,class_id,problem_id,student_id,status,assigned_by,assigned_at,set_name,due_at,mode)
+            SELECT gen_random_uuid(),:cl,:problem,u.id,'DA_GIAO',:teacher,
+                CASE WHEN u.email='archive-2002@demo.local' THEN timestamptz '2026-10-16 08:00:01.123456Z' ELSE timestamptz '2026-10-16 08:00:00.123456Z' END,
+                CASE WHEN u.email='archive-2003@demo.local' THEN 'Bộ khác' ELSE 'Ôn: cực trị' END,
+                CASE WHEN u.email='archive-2004@demo.local' THEN timestamptz '2026-10-20 08:00:00Z' ELSE NULL END,
+                CASE WHEN u.email='archive-2005@demo.local' THEN 'KIEM_TRA' ELSE 'ON_TAP' END
+            FROM users u WHERE u.email LIKE 'archive-%@demo.local'
+            """).param("cl",cl).param("problem",problem).param("teacher",teacher).update();
+        String key=cl+":2026-10-16T08:00:00.123456Z:Ôn: cực trị::ON_TAP";
+        assertThat(WorkspaceStoreAdapter.groupAssignments(store.assignments(cl))).extracting(Item::id).contains(key);
+        as(teacher);
+        mvc.perform(post("/api/gv/giao/luu-tru").contentType("application/json")
+            .content(json.writeValueAsString(Map.of("lopId",cl,"setKey",key))))
+            .andExpect(status().isOk()).andExpect(jsonPath("$.count").value(2001));
+        assertThat(db.sql("SELECT count(*) FROM assignments WHERE class_id=:cl AND status='DA_HUY'").param("cl",cl).query(Integer.class).single()).isEqualTo(2001);
+        assertThat(store.assignments(cl)).hasSize(4);
+        mvc.perform(post("/api/gv/giao/luu-tru").contentType("application/json")
+            .content(json.writeValueAsString(Map.of("lopId",cl,"setKey",key))))
+            .andExpect(status().isNotFound());
+        // A key from another class cannot select this class's rows.
+        mvc.perform(post("/api/gv/giao/luu-tru").contentType("application/json")
+            .content(json.writeValueAsString(Map.of("lopId",cl,"setKey",UUID.randomUUID()+key.substring(cl.toString().length())))))
+            .andExpect(status().isNotFound());
+        assertThat(store.assignments(cl)).hasSize(4);
+        String dueKey=cl+":2026-10-16T08:00:00.123456Z:Ôn: cực trị:2026-10-20T08:00:00Z:ON_TAP";
+        mvc.perform(post("/api/gv/giao/luu-tru").contentType("application/json")
+            .content(json.writeValueAsString(Map.of("lopId",cl,"setKey",dueKey))))
+            .andExpect(status().isOk()).andExpect(jsonPath("$.count").value(1));
+        assertThat(store.assignments(cl)).hasSize(3);
+    }
+    @Test void archivedAssignmentCanBeChosenAgainWithoutConflictOrDuplicate() throws Exception {
+        Instant old=Instant.now().minusSeconds(3600);
+        store.assign(teacher,new Assign(cl,List.of(student),List.of(problem),"KIEM_TRA",old.plusSeconds(60),"Bộ cũ"),List.of(student),old);
+        UUID id=db.sql("SELECT id FROM assignments WHERE class_id=:cl").param("cl",cl).query(UUID.class).single();
+        db.sql("UPDATE assignments SET status='DA_HUY' WHERE id=:id").param("id",id).update();
+        as(student);
+        mvc.perform(post("/api/hs/tu-hoc/{code}",code)).andExpect(status().isOk());
+        assertThat(db.sql("SELECT id FROM assignments WHERE class_id=:cl").param("cl",cl).query(UUID.class).list()).containsExactly(id);
+        var row=store.assignments(cl).getFirst();
+        assertThat(row.status()).isEqualTo("ON_TAP");
+        assertThat(row.title()).isEqualTo("Tự học");
+        assertThat(row.details().get("dueAt")).isEqualTo("");
+        assertThat(Instant.parse((String)row.details().get("assignedAt"))).isAfter(old);
+        assertThat(store.recommendations(student,cl)).extracting(Item::id).contains(code);
+    }
     void as(UUID actor) { SecurityContextHolder.getContext().setAuthentication(new JwtAuthenticationToken(Jwt.withTokenValue("synthetic").header("alg","none").subject(actor.toString()).build())); }
     @Test void pagedBankFiltersSkillBeforeCountingAndSlicing() throws Exception {
         db.sql("INSERT INTO skills(code,topic_code,name,grade,is_core) VALUES('QA.OTHER','DH12','Kỹ năng khác',12,true)").update();
