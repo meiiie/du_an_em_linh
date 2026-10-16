@@ -142,7 +142,7 @@ describe('Sidebar gia sư',()=>{
     writer.enqueue(new TextEncoder().encode(event('delta',2,{text:'Câu'})));
     await settle();await t.f.whenStable();
     expect(status().textContent).toContain('Đang soạn lời gợi ý…');
-    expect(t.el.querySelector('.cau-cua-ai')?.textContent).toContain('Câu');
+    await vi.waitFor(()=>{t.f.detectChanges();expect(t.el.querySelector('.cau-cua-ai')?.textContent).toContain('Câu');});
     expect(t.el.querySelector('[data-testid="gia-su-dung"]')).not.toBeNull();
     writer.enqueue(new TextEncoder().encode(event('done',3,{status:'completed'})));
     await settle();await t.f.whenStable();
