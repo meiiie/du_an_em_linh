@@ -22,6 +22,7 @@ public class GlmModelConfiguration {
         @Value("${mathl.gia-su.first-token-timeout:20s}") Duration firstTokenTimeout,
         @Value("${mathl.gia-su.max-tokens:700}") int maxTokens,
         @Value("${mathl.gia-su.temperature:0.8}") double temperature,
+        @Value("${mathl.gia-su.reasoning-effort:low}") String reasoningEffort,
         @Value("${mathl.gia-su.top-p:0.9}") double topP, org.springframework.core.env.Environment environment, io.micrometer.core.instrument.MeterRegistry meters) {
         HintModel offline=environment.acceptsProfiles(org.springframework.core.env.Profiles.of("dev", "test"))
             ? new OfflineHintModelAdapter() : new UnavailableHintModelAdapter();
@@ -34,6 +35,6 @@ public class GlmModelConfiguration {
             .followRedirects(HttpClient.Redirect.NEVER).build());
         factory.setReadTimeout(timeout);
         return new SelectedHintModelAdapter(new GlmHintModelAdapter(RestClient.builder().baseUrl(url).requestFactory(factory).build(),
-            key.strip(), model.isBlank() ? "glm-5.3" : model.strip(), timeout, maxTokens, firstTokenTimeout,temperature,topP,meters),offline);
+            key.strip(), model.isBlank() ? "glm-5.3" : model.strip(), timeout, maxTokens, firstTokenTimeout,temperature,topP,reasoningEffort,meters),offline);
     }
 }
