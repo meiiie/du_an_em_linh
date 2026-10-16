@@ -80,7 +80,7 @@ describe('Sidebar gia sư',()=>{
     const cap=t.el.querySelector('select')!;cap.value='2';cap.dispatchEvent(new Event('change'));
     input.dispatchEvent(new KeyboardEvent('keydown',{key:'Enter',bubbles:true,cancelable:true}));await settle();await t.f.whenStable();
     expect(JSON.parse(fetchMock.mock.calls[2][1].body)).toMatchObject({maBuoc:'B.DH.TXD',cap:2,cauHoi:'Em hỏi về đạo hàm'});
-    await vi.waitFor(()=>{t.f.detectChanges();expect(t.el.querySelector('article strong')?.textContent).toBe('Câu đã kiểm');});expect(t.el.querySelector('.katex')).not.toBeNull();
+    await vi.waitFor(()=>{t.f.detectChanges();expect(t.el.querySelector('article strong')?.textContent).toBe('Câu đã kiểm');expect(t.el.querySelector('.katex')).not.toBeNull();});
     expect(t.el.querySelectorAll('article')).toHaveLength(2);
   });
   it('bài chưa có khung gửi BAI_LAM và dòng giới thiệu; mỗi lượt lấy nháp và bước hiện tại',async()=>{
