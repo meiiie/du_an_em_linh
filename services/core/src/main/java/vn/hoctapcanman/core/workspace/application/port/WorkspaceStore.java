@@ -48,4 +48,6 @@ public interface WorkspaceStore {
     void log(UUID actor,String action,String target,String reason,Instant now);
     Optional<TutorContext> tutorContext(UUID student,UUID classId,TutorRequest request);
     boolean testMode(UUID student,UUID classId,String code);
+    /** Học sinh còn hoạt động (chưa lưu trữ) trong danh sách. */
+    java.util.List<java.util.UUID> activeStudents(java.util.List<java.util.UUID> ids);
 }

@@ -107,6 +107,7 @@ class WorkspaceApiTest {
     }
     @Test void assignmentPersistsTestPolicyAndDeadline() throws Exception {
         when(membership.hocSinhCuaLop(actor,cl)).thenReturn(List.of(student));
+        when(store.activeStudents(List.of(student))).thenReturn(List.of(student));
         mvc.perform(post("/api/gv/giao").with(as(actor,"TEACHER")).contentType(MediaType.APPLICATION_JSON)
             .content("""
                 {"lopId":"%s","studentIds":[],"problemIds":["%s"],"mode":"KIEM_TRA","dueAt":"2026-10-14T10:00:00Z","setName":"Kiểm tra"}

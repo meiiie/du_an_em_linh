@@ -159,7 +159,7 @@ import vn.hoctapcanman.core.workspace.application.port.*;
         teacher(actor,r.lopId());
         if(r.dueAt()!=null&&!r.dueAt().isAfter(clock.instant()))throw new WorkspaceException(400,"Hạn nộp phải ở tương lai.");
         List<UUID> all=membership.hocSinhCuaLop(actor,r.lopId());
-        List<UUID> selected=r.studentIds().isEmpty()?all:r.studentIds().stream().distinct().toList();
+        List<UUID> selected=r.studentIds().isEmpty()?store.activeStudents(all):r.studentIds().stream().distinct().toList();
         if(!all.containsAll(selected))throw new WorkspaceException(403,"Chỉ giao bài cho học sinh trong lớp.");
         if(selected.isEmpty())throw new WorkspaceException(400,"Lớp chưa có học sinh.");
         Set<String> published=new HashSet<>();

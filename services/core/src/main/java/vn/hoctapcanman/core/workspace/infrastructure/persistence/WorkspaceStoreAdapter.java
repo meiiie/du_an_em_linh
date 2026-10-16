@@ -383,7 +383,7 @@ import vn.hoctapcanman.core.workspace.application.exception.WorkspaceException;
     }
 
     public void recommend(UUID actor,NextProblem r,Instant now) {
-        db.sql("INSERT INTO assignments(id,class_id,problem_id,student_id,status,set_name,assigned_by,assigned_at,mode) VALUES(:id,:cl,:problem,:student,'DA_GIAO','Bài giáo viên đề xuất',:actor,:now,'ON_TAP') ON CONFLICT(class_id,problem_id,student_id) DO NOTHING").param("id",UUID.randomUUID()).param("cl",r.lopId()).param("problem",r.problemId()).param("student",r.studentId()).param("actor",actor).param("now",java.sql.Timestamp.from(now)).update();
+        db.sql("INSERT INTO assignments(id,class_id,problem_id,student_id,status,set_name,assigned_by,assigned_at,mode) VALUES(:id,:cl,:problem,:student,'DA_GIAO','Bài giáo viên đề xuất',:actor,:now,'ON_TAP') ON CONFLICT(class_id,problem_id,student_id) DO UPDATE SET status='DA_GIAO',set_name=excluded.set_name,assigned_by=excluded.assigned_by,assigned_at=excluded.assigned_at,mode=excluded.mode WHERE assignments.status='DA_HUY'").param("id",UUID.randomUUID()).param("cl",r.lopId()).param("problem",r.problemId()).param("student",r.studentId()).param("actor",actor).param("now",java.sql.Timestamp.from(now)).update();
         db.sql("SELECT id FROM users WHERE id=:id FOR UPDATE").param("id",r.studentId()).query(UUID.class).single();
         db.sql("UPDATE next_problem_overrides SET consumed_at=:now WHERE student_id=:student AND consumed_at IS NULL").param("now",java.sql.Timestamp.from(now)).param("student",r.studentId()).update();
         db.sql("INSERT INTO next_problem_overrides(id,student_id,problem_id,reason,teacher_id,created_at) VALUES(:id,:student,:problem,:reason,:actor,:now)").param("id",UUID.randomUUID()).param("student",r.studentId()).param("problem",r.problemId()).param("reason",r.reason()).param("actor",actor).param("now",java.sql.Timestamp.from(now)).update();
@@ -617,5 +617,10 @@ import vn.hoctapcanman.core.workspace.application.exception.WorkspaceException;
                 """).param("student",student).param("cl",cl).param("problem",c.problemId()).query(String.class).list();
             return new TutorContext(c.problemId(),c.code(),c.statement(),c.function(),c.step(),c.hint(),c.stepName(),formulas,lines);
         });
+    }
+    @Override public java.util.List<java.util.UUID> activeStudents(java.util.List<java.util.UUID> ids){
+        if(ids.isEmpty())return java.util.List.of();
+        java.util.Set<java.util.UUID> ok=new java.util.HashSet<>(db.sql("SELECT id FROM users WHERE id IN (:ids) AND archived_at IS NULL").param("ids",ids).query(java.util.UUID.class).list());
+        return ids.stream().filter(ok::contains).toList();
     }
 }
