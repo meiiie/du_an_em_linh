@@ -60,7 +60,7 @@ class WorkspacePersistenceTest {
 
     @BeforeEach
     void prepare() {
-        now = Instant.now();
+        now = Instant.now().truncatedTo(java.time.temporal.ChronoUnit.MICROS);
         DuLieuPractice.danhMuc(db);
         teacher = DuLieuPractice.nguoi(db, "TEACHER");
         student = DuLieuPractice.nguoi(db, "STUDENT");
