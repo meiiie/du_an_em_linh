@@ -5,7 +5,6 @@ import { Marked, Token } from 'marked';
 import katex from 'katex';
 import { NguonGiaSu } from '../../../api/gia-su';
 import { Katex } from '../../../shared/toan/katex';
-import { VanBanToan } from '../../../shared/toan/van-ban-toan';
 
 type ToanToken = Token & { latex?: string; block?: boolean };
 const escapeHtml = (s: string) => s.replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' })[c]!);
@@ -14,9 +13,9 @@ const escapeHtml = (s: string) => s.replace(/[&<>"']/g, c => ({ '&':'&amp;', '<'
 @Component({
   selector: 'app-gia-su-markdown',
   encapsulation: ViewEncapsulation.None,
-  imports: [Katex, VanBanToan],
-  template: `<div #content class="markdown" (click)="chonNguon($event)" (mouseover)="chonNguon($event)" (focusin)="chonNguon($event)"></div>
-    @if (nguonDangMo(); as n) {<div class="source" role="note"><strong>Nguồn [{{n.index}}]</strong><p><app-van-ban-toan [text]="n.text" /></p>@if(n.latex){<app-katex [latex]="n.latex" khoi />}</div>}`,
+  imports: [Katex],
+  template: `<div #content class="markdown" (click)="chonNguon($event)"></div>
+    @if (nguonDangMo(); as n) {<div class="source" role="note"><strong>Nguồn [{{n.index}}]</strong><p>{{n.text}}</p>@if(n.latex){<app-katex [latex]="n.latex" khoi />}</div>}`,
   styles: `
     app-gia-su-markdown{display:block;min-width:0;overflow-wrap:anywhere}
     app-gia-su-markdown .source{padding:8px;margin-top:8px;border:1px solid var(--line);border-radius:8px;background:var(--wash)}
@@ -107,7 +106,7 @@ export class GiaSuMarkdown {
     });
   }
 
-  protected chonNguon(event: Event): void {
+  protected chonNguon(event: MouseEvent): void {
     const button = (event.target as HTMLElement).closest<HTMLButtonElement>('.tutor-source');
     if (!button) return;
     const cls = [...button.classList].find(c => /^source-\d+$/.test(c));

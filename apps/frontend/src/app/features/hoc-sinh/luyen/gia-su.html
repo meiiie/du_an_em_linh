@@ -9,10 +9,9 @@
   <dialog #hop class="tutor-sheet" aria-label="Gia sư AI" data-testid="gia-su-panel" (cancel)="$event.preventDefault(); dong()" (keydown)="giuFocus($event)"><ng-container [ngTemplateOutlet]="noiDung" /></dialog>
 }
 <ng-template #noiDung>
-  <header><div><h2>Gia sư AI</h2>@if(tenBuoc()){<p class="muted">Đang làm: {{tenBuoc()}}</p>}</div><button type="button" class="nut-icon" aria-label="Đóng gia sư" (click)="dong()">×</button></header>
+  <header><div><h2>Gia sư AI</h2><p class="muted">{{tenBuoc()}}</p></div><button type="button" class="nut-icon" aria-label="Đóng gia sư" (click)="dong()">×</button></header>
   <div #thread class="tutor-messages" role="log" aria-label="Cuộc trò chuyện với gia sư" aria-live="off" (scroll)="cuon()">
     @if(chat.dangTai()){<p role="status">Đang tải cuộc trò chuyện…</p>}
-    @if(!chat.dangTai() && !chat.loi() && !chat.luot().length){<p class="muted" data-testid="gia-su-chao">Chào em! Em đang vướng ở đâu trong bài này?</p>}
     @if(chat.coLichSuCu()){<button appButton variant="secondary" type="button" [disabled]="chat.dangTaiCu()" (click)="chat.taiCu()">Xem các lượt trước</button>}
     @for(t of chat.luot(); track t.requestId){
       @if(!t.retryOfTurnId){<article class="cau-cua-em"><span class="sr-only">Em hỏi</span><span class="tutor-text">{{t.cauHoi}}</span></article>}

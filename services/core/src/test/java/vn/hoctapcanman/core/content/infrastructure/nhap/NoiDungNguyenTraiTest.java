@@ -44,7 +44,7 @@ class NoiDungNguyenTraiTest {
     @Test void migrationVaImporterDungCungLoiGiaiDayDu() throws java.io.IOException {
         var json = tools.jackson.databind.json.JsonMapper.builder().build();
         try (var source = getClass().getResourceAsStream("/seed-nguyen-trai/loi-giai-day-du.json");
-             var migration = getClass().getResourceAsStream("/db/migration/V21__loi_giai_day_du_seed.sql")) {
+             var migration = getClass().getResourceAsStream("/db/migration/V20__loi_giai_day_du_seed.sql")) {
             var expected = json.readTree(java.util.Objects.requireNonNull(source));
             String sql = new String(java.util.Objects.requireNonNull(migration).readAllBytes(), java.nio.charset.StandardCharsets.UTF_8);
             var matcher = java.util.regex.Pattern.compile("\\('([^']+)', \\$worked\\$(.*?)\\$worked\\$::jsonb\\)", java.util.regex.Pattern.DOTALL).matcher(sql);

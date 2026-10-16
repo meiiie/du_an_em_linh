@@ -76,7 +76,7 @@ public final class WorkspaceDto {
     public record Enrollment(@NotNull UUID lopId,@NotNull UUID userId,@Pattern(regexp="STUDENT|TEACHER") @NotNull String role) {
     }
 
-    public record TutorRequest(@NotBlank @Size(max=64) String maBai,@org.jspecify.annotations.Nullable @Pattern(regexp="\\S+") @Size(max=32) String maBuoc,@Min(1) @Max(3) int cap,@NotNull @Size(max=2000) String cauHoi) {
+    public record TutorRequest(@NotBlank @Size(max=64) String maBai,@NotBlank @Size(max=32) String maBuoc,@Min(1) @Max(3) int cap,@NotNull @Size(max=2000) String cauHoi) {
     }
 
     /** nguon: MO_HINH hoặc null (sự kiện trạng thái); không chứa dữ liệu cá nhân. */
@@ -89,14 +89,14 @@ public final class WorkspaceDto {
     public record TutorFormula(int number,String code,String title,String latex,String statement) {
     }
 
-    public record TutorContext(UUID problemId,String code,String statement,String function,@org.jspecify.annotations.Nullable String step,String hint,
+    public record TutorContext(UUID problemId,String code,String statement,String function,String step,String hint,
         String stepName,List<TutorFormula> formulas,List<String> submittedLines) {
         public TutorContext {
             formulas=List.copyOf(formulas);
             submittedLines=List.copyOf(submittedLines);
         }
-        public TutorContext(UUID problemId,String code,String statement,String function,@org.jspecify.annotations.Nullable String step,String hint) {
-            this(problemId,code,statement,function,step,hint,step!=null?step:"Toàn bài",List.of(),List.of());
+        public TutorContext(UUID problemId,String code,String statement,String function,String step,String hint) {
+            this(problemId,code,statement,function,step,hint,step,List.of(),List.of());
         }
         @Override public String toString() { return "TutorContext[đã ẩn nội dung]"; }
     }

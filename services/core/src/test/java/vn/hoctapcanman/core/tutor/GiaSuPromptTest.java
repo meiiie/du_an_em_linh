@@ -8,21 +8,6 @@ import vn.hoctapcanman.core.tutor.infrastructure.ai.OfflineHintModelAdapter;
 import vn.hoctapcanman.core.workspace.application.dto.WorkspaceDto.*;
 
 class GiaSuPromptTest {
-    @Test void currentStepTakesPrecedenceOverEarlierHistory() {
-        var context=new TutorContext(UUID.randomUUID(),"DH1","Xét hàm số","x**2","B.DH.XETDAU","","Xét dấu",List.of(),List.of());
-        var base=TutorPrompt.compose(context,new TutorRequest("DH1","B.DH.XETDAU",1,"Em còn phân vân"));
-        var prompt=TutorPrompt.withMemory(base,"NHAN_BIET","Lượt trước em hỏi bước Đạo hàm B.DH.DAOHAM.");
-        assertTrue(prompt.user().contains("Bước: B.DH.XETDAU — Xét dấu"));
-        assertTrue(prompt.user().contains("chỉ gợi ý cho bước «Xét dấu»"));
-        assertTrue(prompt.user().endsWith("Bước và phạm vi hiện tại ở đề trên ưu tiên hơn bước nhắc trong lịch sử; không coi bước cũ là bước đang làm."));
-    }
-    @Test void wholeExercisePromptDoesNotInventACompletedStep() {
-        var context=new TutorContext(UUID.randomUUID(),"NT-KG12-NB-01","Đọc đồ thị đã cho","",null,"","Toàn bài",List.of(),List.of());
-        var prompt=TutorPrompt.compose(context,new TutorRequest("NT-KG12-NB-01",null,1,"Em nên bắt đầu từ đâu?"));
-        assertTrue(prompt.user().contains("Toàn bài"));
-        assertFalse(prompt.user().contains("null"));
-        assertFalse(prompt.user().contains("coi như em đã làm xong các bước trước"));
-    }
     @Test void promptContainsOnlyProblemStepSheetAndStudentsOwnWork() {
         UUID problem = UUID.randomUUID();
         String solution = "Cực tiểu bí mật tại x=-987654321";

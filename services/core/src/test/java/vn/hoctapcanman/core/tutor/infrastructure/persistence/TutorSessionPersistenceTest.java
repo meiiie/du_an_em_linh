@@ -48,63 +48,6 @@ class TutorSessionPersistenceTest {
     }
     Ask ask(UUID id){return new Ask(id,"B.DH.TXD",1,"Em đã thử gì?");}
     Accepted accept(){var q=ask(UUID.randomUUID());return store.accept(store.snapshot(session.id()),q,q.cauHoi(),version);}
-    @Test void currentExerciseFrameDefinesAllowedStepsAndNamesAcrossTopicFamilies() {
-        String code=store.assignment(student,assignment).orElseThrow().code();
-        var workspace=new vn.hoctapcanman.core.workspace.infrastructure.persistence.WorkspaceStoreAdapter(db,java.time.Clock.systemUTC());
-        // Shared templates live under KHUNG_GT, while the exercise keeps its own skill topic.
-        db.sql("INSERT INTO topics(code,name,grade) VALUES('KHUNG_GT','Khung giải tích',12) ON CONFLICT DO NOTHING").update();
-        for(int i=1;i<=5;i++)db.sql("INSERT INTO step_templates(step_code,topic_code,ordinal,input_kind,description) VALUES(:step,'KHUNG_GT',:n,'DONG',:name) ON CONFLICT DO NOTHING")
-            .param("step","B.GT.TEST_"+i).param("n",i).param("name","Tên khung chung "+i).update();
-        String steps=java.util.stream.IntStream.rangeClosed(1,5)
-            .mapToObj(i -> "{\"maBuoc\":\"B.GT.TEST_"+i+"\",\"ten\":\"Tên riêng của bài "+i+"\",\"viec\":\"Đọc đề\",\"kieu\":\"GIAY\"}")
-            .collect(java.util.stream.Collectors.joining(",","[","]"));
-        int current=db.sql("SELECT content_version FROM problems WHERE id=:id").param("id",problem).query(Integer.class).single();
-        db.sql("INSERT INTO exercise_step_frames(problem_id,content_version,frame_version,steps,problem_data) VALUES(:id,:v,1,CAST(:steps AS jsonb),'{}'::jsonb)")
-            .param("id",problem).param("v",current).param("steps",steps).update();
-        for(int i=1;i<=5;i++) {
-            var request=new vn.hoctapcanman.core.workspace.application.dto.WorkspaceDto.TutorRequest(code,"B.GT.TEST_"+i,1,"Em còn phân vân");
-            var context=workspace.tutorContext(student,cl,request).orElseThrow();
-            assertEquals(request.maBuoc(),context.step());assertEquals("Tên riêng của bài "+i,context.stepName());
-        }
-        // A valid same-topic legacy step must not override this exercise's own frame.
-        var unrelated=new vn.hoctapcanman.core.workspace.application.dto.WorkspaceDto.TutorRequest(code,"B.DH.TXD",1,"Em còn phân vân");
-        assertTrue(workspace.tutorContext(student,cl,unrelated).isEmpty());
-        var whole=new vn.hoctapcanman.core.workspace.application.dto.WorkspaceDto.TutorRequest(code,null,1,"Em còn phân vân");
-        assertTrue(workspace.tutorContext(student,cl,whole).isPresent());
-    }
-    @Test void nonCurrentExerciseFrameDoesNotGrantAccessToAnotherTopicsStep() {
-        String code=store.assignment(student,assignment).orElseThrow().code();
-        var workspace=new vn.hoctapcanman.core.workspace.infrastructure.persistence.WorkspaceStoreAdapter(db,java.time.Clock.systemUTC());
-        int current=db.sql("SELECT content_version FROM problems WHERE id=:id").param("id",problem).query(Integer.class).single();
-        String steps="[{\"maBuoc\":\"B.GT.TEST_1\",\"ten\":\"Bước khác phiên bản\"},{},{},{},{}]";
-        db.sql("INSERT INTO exercise_step_frames(problem_id,content_version,frame_version,steps,problem_data) VALUES(:id,:v,1,CAST(:steps AS jsonb),'{}'::jsonb)")
-            .param("id",problem).param("v",current+1).param("steps",steps).update();
-        var other=new vn.hoctapcanman.core.workspace.application.dto.WorkspaceDto.TutorRequest(code,"B.GT.TEST_1",1,"Em còn phân vân");
-        assertTrue(workspace.tutorContext(student,cl,other).isEmpty());
-        var legacy=new vn.hoctapcanman.core.workspace.application.dto.WorkspaceDto.TutorRequest(code,"B.DH.TXD",1,"Em còn phân vân");
-        assertTrue(workspace.tutorContext(student,cl,legacy).isPresent());
-    }
-    @Test void wholeExerciseContextDoesNotRequireAStepTemplateAndRejectsUnknownSteps() {
-        String code=store.assignment(student,assignment).orElseThrow().code();
-        var workspace=new vn.hoctapcanman.core.workspace.infrastructure.persistence.WorkspaceStoreAdapter(db,java.time.Clock.systemUTC());
-        var request=new vn.hoctapcanman.core.workspace.application.dto.WorkspaceDto.TutorRequest(code,null,1,"Em nên bắt đầu từ đâu?");
-        var context=workspace.tutorContext(student,cl,request).orElseThrow();
-        assertNull(context.step());assertEquals("Toàn bài",context.stepName());
-        var invalid=new vn.hoctapcanman.core.workspace.application.dto.WorkspaceDto.TutorRequest(code,"BUOC.KHONG_TON_TAI",1,"Em nên bắt đầu từ đâu?");
-        assertTrue(workspace.tutorContext(student,cl,invalid).isEmpty());
-        assertTrue(workspace.tutorContext(UUID.randomUUID(),cl,request).isEmpty());
-        assertTrue(workspace.tutorContext(student,UUID.randomUUID(),request).isEmpty());
-    }
-    @Test void wholeExerciseNullStepPersistsAndReplaysIdempotently() {
-        var request=new Ask(UUID.randomUUID(),null,1,"Em nên bắt đầu từ đâu?");
-        var accepted=store.accept(session,request,request.cauHoi(),version);
-        assertNull(accepted.turn().step());
-        assertFalse(store.accept(store.snapshot(session.id()),request,request.cauHoi(),version).created());
-        store.append(session.id(),accepted.turn().id(),"delta",Map.of("text","Em thử đọc yêu cầu nhé?"));
-        store.append(session.id(),accepted.turn().id(),"done",Map.of("status","completed"));
-        assertEquals("completed",store.turn(session.id(),accepted.turn().id()).orElseThrow().status());
-        assertEquals(List.of("start","delta","done"),store.events(session.id(),0).stream().map(Event::type).toList());
-    }
     @Test void ownerAssignmentForeignKeyAndPersistentIdentity() {
         assertEquals(session.id(),store.open(store.assignment(student,assignment).orElseThrow()).id());
         assertTrue(store.find(UUID.randomUUID(),session.id()).isEmpty());

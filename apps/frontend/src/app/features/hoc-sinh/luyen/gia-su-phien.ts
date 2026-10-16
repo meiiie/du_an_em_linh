@@ -124,9 +124,8 @@ export class GiaSuPhien {
     finally { if (epoch === this.epoch) this.dangTaiCu.set(false); }
   }
 
-  async hoi(cauHoi: string, maBuoc: string | null, cap: number, retry?: LuotGiaSuV2): Promise<void> {
+  async hoi(cauHoi: string, maBuoc: string, cap: number, retry?: LuotGiaSuV2): Promise<void> {
     if (!this.sanSang()) return;
-    maBuoc = maBuoc?.trim() || null;
     const requestId = crypto.randomUUID();
     const turn: LuotGiaSuV2 = { requestId, turnId: '', maBuoc, cap, cauHoi, text: '', status: 'generating',
       ...(retry ? { retryOfTurnId: retry.turnId || retry.requestId } : {}) };
@@ -289,11 +288,6 @@ export class GiaSuPhien {
         for (const event of parsed.events) {
           if (!this.current(a) || a.terminal) break;
           this.event(event, a);
-          // Một lần đọc có thể chứa hàng chục frame. Nhường event loop để Angular
-          // zoneless vẽ từng delta, thay vì dồn tất cả signal vào một lần render.
-          if (event.event === 'delta' && !a.terminal && parsed.events.length > 1) {
-            await this.pause(0, a.abort.signal);
-          }
         }
         if (chunk.done) break;
       }

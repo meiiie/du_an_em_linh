@@ -87,7 +87,7 @@ public class TutorSessionStoreAdapter implements TutorSessionStore {
             var existing=db.sql("SELECT * FROM yeu_cau_gia_su WHERE phien_id=:s AND request_id=:r").param("s",session.id()).param("r",request.requestId()).query(TutorSessionStoreAdapter::turn).optional();
             if(existing.isPresent()) {
                 Turn t=existing.get();
-                if(!Objects.equals(t.step(),request.maBuoc()) || t.level()!=request.cap() || !t.question().equals(question)) throw conflict();
+                if(!t.step().equals(request.maBuoc()) || t.level()!=request.cap() || !t.question().equals(question)) throw conflict();
                 return new Accepted(current,t,false);
             }
             if(db.sql("SELECT count(*) FROM yeu_cau_gia_su WHERE phien_id=:s AND trang_thai='generating'").param("s",session.id()).query(Long.class).single()>0)throw conflict();
@@ -97,14 +97,10 @@ public class TutorSessionStoreAdapter implements TutorSessionStore {
             UUID id=UUID.randomUUID();
             long ordinal=db.sql("SELECT coalesce(max(thu_tu),0)+1 FROM yeu_cau_gia_su WHERE phien_id=:s").param("s",session.id()).query(Long.class).single();
             db.sql("INSERT INTO yeu_cau_gia_su(id,phien_id,thu_tu,request_id,ma_buoc,cap,cau_hoi) VALUES(:id,:s,:n,:r,:step,:cap,:q)")
-                .param("id",id).param("s",session.id()).param("n",ordinal).param("r",request.requestId()).param("step",request.maBuoc(),java.sql.Types.VARCHAR).param("cap",request.cap()).param("q",question).update();
+                .param("id",id).param("s",session.id()).param("n",ordinal).param("r",request.requestId()).param("step",request.maBuoc()).param("cap",request.cap()).param("q",question).update();
             db.sql("INSERT INTO luot_gia_su(id,phien_id,luot_id,seq,role,content,tokens) VALUES(:id,:s,:t,:n,'user',:q,:tokens)").param("id",UUID.randomUUID()).param("s",session.id()).param("t",id).param("n",ordinal*2-1).param("q",question).param("tokens",HintModel.estimate(question)).update();
             db.sql("UPDATE phien_gia_su SET token_count=token_count+:tokens WHERE id=:s").param("s",session.id()).param("tokens",HintModel.estimate(question)).update();
-            var start=new LinkedHashMap<String,Object>();
-            start.put("requestId",request.requestId().toString());
-            if(request.maBuoc()!=null)start.put("maBuoc",request.maBuoc());
-            start.put("cap",request.cap());start.put("contextVersion",version);start.put("references",references);
-            append(session.id(),id,"start",start);
+            append(session.id(),id,"start",Map.of("requestId",request.requestId().toString(),"maBuoc",request.maBuoc(),"cap",request.cap(),"contextVersion",version,"references",references));
             Turn t=db.sql("SELECT * FROM yeu_cau_gia_su WHERE id=:id").param("id",id).query(TutorSessionStoreAdapter::turn).single();
             return new Accepted(read(session.id(),false),t,true);
         }));

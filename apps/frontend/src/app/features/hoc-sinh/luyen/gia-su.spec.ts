@@ -40,48 +40,6 @@ describe('Sidebar gia sư',()=>{
     const fill=async(q:string)=>{const t=el.querySelector('textarea')!;t.value=q;t.dispatchEvent(new Event('input'));await f.whenStable();return t;};
     return {f,el,click,fill};
   }
-  it('khung mới chào ngắn, không có câu trả lời soạn sẵn; đổi bước cập nhật ngữ cảnh', async () => {
-    const t = await setup();
-    expect(t.el.querySelector('[data-testid="gia-su-chao"]')?.textContent).toContain('Em đang vướng ở đâu');
-    expect(t.el.querySelectorAll('.tutor-messages button')).toHaveLength(0);
-    t.f.componentRef.setInput('tenBuoc', 'Đạo hàm');
-    await t.f.whenStable();
-    expect(t.el.querySelector('header p')?.textContent).toBe('Đang làm: Đạo hàm');
-    t.f.componentRef.setInput('tenBuoc', '');
-    await t.f.whenStable();
-    expect(t.el.querySelector('header p')).toBeNull();
-  });
-  it('Enter ngay sau input gửi chữ hiện tại, bài không có bước gửi null', async () => {
-    const t = await setup();
-    t.f.componentRef.setInput('maBuoc', '');
-    await t.f.whenStable();
-    const input = t.el.querySelector('textarea')!;
-    input.value = 'Em cần hiểu hình chóp';
-    input.dispatchEvent(new Event('input'));
-    input.dispatchEvent(new KeyboardEvent('keydown', {key:'Enter', bubbles:true, cancelable:true}));
-    await settle(); await t.f.whenStable();
-    expect(JSON.parse(fetchMock.mock.calls[2][1].body)).toMatchObject({maBuoc:null, cauHoi:'Em cần hiểu hình chóp'});
-  });
-  it('nhiều delta cùng một chunk vẫn vẽ phần trả lời trước khi kết thúc', async () => {
-    response = init => new Response(event('start', 1, {requestId:JSON.parse(init.body as string).requestId})
-      + Array.from({length:50}, (_, i) => event('delta', i+2, {text:'chữ '})).join('')
-      + event('done', 52, {status:'completed'}), {headers:{'Content-Type':'text/event-stream'}});
-    const t = await setup(); await t.fill('Em hỏi');
-    // Ghi nhận DOM thực được cập nhật giữa các delta, không chỉ signal cuối cùng.
-    const lengths: number[] = [];
-    const observer = new MutationObserver(() => {
-      const answer = t.el.querySelector('.cau-cua-ai .markdown')?.textContent ?? '';
-      if (answer) lengths.push(answer.length);
-    });
-    observer.observe(t.el, {childList:true, subtree:true, characterData:true});
-    await t.click('Gửi câu hỏi');
-    for (let i=0; i<100 && t.el.querySelector('.typing'); i++) {
-      await new Promise(r=>setTimeout(r,5)); await t.f.whenStable();
-    }
-    observer.disconnect();
-    expect(lengths.some(n => n > 0 && n < 200)).toBe(true);
-    expect(t.el.querySelector('.cau-cua-ai .markdown')?.textContent?.trim()).toBe('chữ '.repeat(50).trim());
-  });
   it('mở mới tải lịch sử, giữ độ rộng, phím tắt và Escape trả focus',async()=>{
     localStorage.setItem('mathl-gia-su-mo','true');localStorage.setItem('mathl-gia-su-rong','460');
     const t=await setup(false);
@@ -134,8 +92,6 @@ describe('Sidebar gia sư',()=>{
     expect(button.type).toBe('button');expect(button.getAttribute('aria-label')).toBe('Mở công thức 1');
     expect(t.el.querySelector('article strong')?.textContent).toBe('căn cứ');
     expect(t.el.querySelector('article br')).not.toBeNull();
-    button.dispatchEvent(new MouseEvent('mouseover', {bubbles:true}));await t.f.whenStable();
-    expect(t.el.querySelector('[role="note"]')?.textContent).toContain('Lũy thừa của lượt mới.');
     button.click();await t.f.whenStable();
     expect(t.el.querySelector('[role="note"]')?.textContent).toContain('Lũy thừa của lượt mới.');
     expect(t.el.querySelector('[role="note"] .katex')).not.toBeNull();
@@ -236,19 +192,6 @@ describe('Sidebar gia sư',()=>{
 });
 
 describe('Markdown gia sư',()=>{
-  it('nguồn hiện tên và đoạn trích có toán, mở được bằng focus bàn phím', async () => {
-    const f=TestBed.createComponent(GiaSuMarkdown);
-    f.componentRef.setInput('text', 'Xem [1].');
-    f.componentRef.setInput('references', [{index:1,text:String.raw`Quy tắc lũy thừa — Đạo hàm $x^n$ là $nx^{n-1}$.`}]);
-    await f.whenStable(); const el=f.nativeElement as HTMLElement;
-    el.querySelector('.tutor-source')!.dispatchEvent(new FocusEvent('focusin',{bubbles:true}));
-    await f.whenStable();
-    expect(el.querySelector('[role="note"]')?.textContent).toContain('Quy tắc lũy thừa');
-    expect(el.querySelectorAll('[role="note"] .katex')).toHaveLength(2);
-    const visible=el.querySelector('[role="note"]')!.cloneNode(true) as HTMLElement;
-    visible.querySelectorAll('.katex-mathml').forEach(n=>n.remove());
-    expect(visible.textContent).not.toContain('$');
-  });
   it.each([
     ['$','x_1 + \\frac{','x}{2}','$'],
     ['$$','x_1 + \\frac{','x}{2}','$$'],
