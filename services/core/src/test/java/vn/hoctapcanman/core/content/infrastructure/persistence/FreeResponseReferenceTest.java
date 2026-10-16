@@ -9,4 +9,9 @@ class FreeResponseReferenceTest {
         assertThat(KhungChamRepositoryAdapter.answerText(null)).isEmpty();
         assertThat(KhungChamRepositoryAdapter.answerText("\"broken")).isEmpty();
     }
+    @Test void structuredAndNonNumericJsonTypesAreLeftForTeacherReview() {
+        for(String raw : new String[]{"[3,4]", "{\"H\":[\"2/9\",\"-1/9\",\"20/9\"],\"khoang_cach\":\"8/3\"}", "[]", "{}", "true", "false"}) {
+            assertThat(KhungChamRepositoryAdapter.answerText(raw)).isEmpty();
+        }
+    }
 }

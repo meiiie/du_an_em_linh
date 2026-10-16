@@ -59,3 +59,18 @@ def test_presentation_must_be_text_at_most_2000_characters(presentation):
 
 def test_answer_still_passes_expression_whitelist():
     assert grade(payload(answer="7" * 301))["ket_qua"] == "KHONG_KIEM_DUOC"
+
+
+@pytest.mark.parametrize("code,answer", [
+    ("NT-MT10-NB-01", "[4,3]"),
+    ("NT-KG12-VDC-05", '{"H":["2/9","-1/9","20/9"],"khoang_cach":"8/3"}'),
+])
+def test_structured_reference_omitted_by_core_goes_to_teacher(code, answer):
+    p = payload(code=code, answer=answer)
+    # Core giữ bước nhập nhưng không cung cấp đáp số cho phép so vô hướng.
+    del p["bai_toan"]["dap_so"]
+    result = grade(p)
+    assert result["ket_qua"] == "KHONG_KIEM_DUOC"
+    assert result["per_buoc"] == {"B.TD.TRALOI": "KHONG_KIEM_DUOC"}
+    assert result["loai_ket_qua"] == "KHONG_KIEM_DUOC"
+    assert answer not in result["thong_bao"]

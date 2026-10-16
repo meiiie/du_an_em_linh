@@ -33,7 +33,10 @@ public class KhungChamRepositoryAdapter implements KhungChamTheoBai {
             """).param("id",id).param("v",version).query((rs,n) -> {
                 Map<String,Object> data = new java.util.LinkedHashMap<>();
                 data.put("loai","tra_loi_tu_do");
-                data.put("dap_so", answerText(rs.getString(1)));
+                // Mảng/đối tượng chưa có ngữ nghĩa tập hợp/thứ tự: thiếu đáp số máy
+                // để free_response trả KHONG_KIEM_DUOC, đưa bài vào hàng duyệt GV.
+                String answer = answerText(rs.getString(1));
+                if (!answer.isEmpty()) data.put("dap_so", answer);
                 return new KhungCham(1,List.of(new MoTaBuoc("B.TD.TRALOI","Bài làm",
                     "Nhập đáp số cuối và trình bày cách giải. Thầy cô sẽ xem phần trình bày.","TU_DO")),data);
             }).optional();
@@ -41,6 +44,10 @@ public class KhungChamRepositoryAdapter implements KhungChamTheoBai {
 
     static String answerText(String raw) {
         if(raw==null||raw.equals("null"))return "";
+        try {
+            var value = JSON.readTree(raw);
+            if (!value.isTextual() && !value.isNumber()) return "";
+        } catch(RuntimeException e) { return ""; }
         if(raw.startsWith("\"")) {
             try { return JSON.readValue(raw,String.class); }
             catch(RuntimeException e) { return ""; }

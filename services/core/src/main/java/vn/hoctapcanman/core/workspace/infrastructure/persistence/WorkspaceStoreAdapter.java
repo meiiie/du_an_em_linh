@@ -591,7 +591,10 @@ import vn.hoctapcanman.core.workspace.application.exception.WorkspaceException;
  LEFT JOIN step_templates t ON t.step_code=:step AND t.topic_code=(SELECT topic_code FROM skills WHERE code=p.skill_code)
  WHERE a.student_id=:student AND a.class_id=:cl AND p.code=:code AND a.status='DA_GIAO' AND a.mode='ON_TAP' AND pr.status='DA_PHAT_HANH'
  AND (a.due_at IS NULL OR a.due_at>now())
- AND (t.step_code IS NOT NULL OR (:step='BAI_LAM' AND p.answer_form<>'TU_LUAN_5_BUOC'
+ AND (t.step_code IS NOT NULL OR (
+      ((:step='BAI_LAM' AND p.answer_form<>'TU_LUAN_5_BUOC')
+       OR (:step='B.TD.TRALOI' AND p.answer_form IN ('TU_LUAN','TU_LUAN_5_BUOC')
+           AND (p.answer_form<>'TU_LUAN_5_BUOC' OR p.function_sympy IS NULL)))
       AND NOT EXISTS(SELECT 1 FROM exercise_step_frames f WHERE f.problem_id=p.id AND f.content_version=p.content_version)))
  LIMIT 1 FOR SHARE OF a
  """).param("student",student).param("cl",cl).param("code",request.maBai()).param("step",request.maBuoc()).query((r,n)->new TutorContext(UUID.fromString(r.getString("id")),r.getString("code"),r.getString("statement_text"),str(r,"function_sympy"),request.maBuoc(),"",r.getString("step_name"),List.of(),List.of())).optional();

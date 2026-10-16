@@ -69,6 +69,7 @@ class WorkspaceWorkflowIntegrationTest {
     static final String SKILL="T12.NT.HS",TEXT="Đạo hàm của x bình phương là 2x.";
     @BeforeEach void fixture() throws Exception {
         DuLieuPractice.danhMuc(db);
+        db.sql("INSERT INTO step_templates(step_code,topic_code,ordinal,input_kind,description) VALUES('B.TD.TRALOI',NULL,1,'DONG','Bài làm tự luận') ON CONFLICT DO NOTHING").update();
         // Fresh current seed: no legacy T12.DH.* skill is present.
         db.sql("DELETE FROM skills WHERE code='T12.DH.02'").update();
         var seed=json.readTree(java.nio.file.Path.of("../../data/dev/nguyen-trai/ky-nang.json").toFile());
@@ -268,6 +269,14 @@ class WorkspaceWorkflowIntegrationTest {
                 });
                 assertThat(store.selfStudy(student,cl,"DH12")).extracting(Item::id).contains(exercise.ma());
                 store.chooseStudy(student,cl,exercise.ma(),Instant.now());
+                assertThat(store.tutorContext(student,cl,new TutorRequest(exercise.ma(),"B.TD.TRALOI",1,"Em cần gợi ý")))
+                    .get().satisfies(context->{
+                        assertThat(context.step()).isEqualTo("B.TD.TRALOI");
+                        assertThat(context.stepName()).isEqualTo("Bài làm");
+                        assertThat(context.hint()).isEmpty();
+                    });
+                assertThat(store.tutorContext(UUID.randomUUID(),cl,new TutorRequest(exercise.ma(),"B.TD.TRALOI",1,"Em cần gợi ý"))).isEmpty();
+                assertThat(store.tutorContext(student,cl,new TutorRequest(exercise.ma(),"BOGUS",1,"Em cần gợi ý"))).isEmpty();
                 assertThat(store.recommendations(student,cl)).extracting(Item::id).contains(exercise.ma());
             } else {
                 assertThat(frames.doc(exercise.id(),version)).isEmpty();
@@ -277,6 +286,37 @@ class WorkspaceWorkflowIntegrationTest {
             }
         }
         assertThat(db.sql("SELECT count(*) FROM topics WHERE code='TRALOI'").query(Integer.class).single()).isZero();
+    }
+    @Test void structuredFreeResponseKeepsInputButLeavesAnswerForTeacherReview() {
+        var frames=new KhungChamRepositoryAdapter(db);
+        for(String answer:List.of("[3,4]","{\"H\":[\"2/9\",\"-1/9\",\"20/9\"],\"khoang_cach\":\"8/3\"}")) {
+            var exercise=DuLieuPractice.baiV0(db,"QA-STRUCTURED",SKILL,"NHAN_BIET","Đề tổng hợp","x",null,"TU_LUAN",null,"SUPHAM");
+            solutions.save(new Solution(exercise.id(),"{}","[]",answer));
+            DuLieuPractice.phatHanh(db,cl,exercise.id());
+            int version=problems.findContentVersion(exercise.id()).orElseThrow();
+            assertThat(frames.doc(exercise.id(),version)).get().satisfies(frame->{
+                assertThat(frame.cacBuoc()).extracting(step->step.maBuoc()).containsExactly("B.TD.TRALOI");
+                assertThat(frame.baiToan()).containsEntry("loai","tra_loi_tu_do").doesNotContainKey("dap_so");
+            });
+            store.chooseStudy(student,cl,exercise.ma(),Instant.now());
+            UUID submission=openWork(exercise.id());
+            db.sql("INSERT INTO submission_steps(submission_id,step_code,line_no,latex) VALUES(:s,'B.TD.TRALOI',0,:answer)")
+                .param("s",submission).param("answer",answer).update();
+            UUID grade=uncertainGrade(submission,"B.TD.TRALOI");
+            assertThat(store.reviews(cl)).anySatisfy(item->{
+                assertThat(item.id()).isEqualTo(grade.toString());
+                assertThat(item.details()).containsEntry("kind","STEP").containsEntry("draft",answer);
+            });
+        }
+    }
+    @Test void freeResponseTutorStepAlsoWorksForFiveStepFormWithoutFunction() {
+        var exercise=DuLieuPractice.baiV0(db,"QA-FREE-LEGACY",SKILL,"NHAN_BIET","Đề tổng hợp","x",null,"TU_LUAN_5_BUOC",null,"SUPHAM");
+        solutions.save(new Solution(exercise.id(),"{}","[]","72"));
+        DuLieuPractice.phatHanh(db,cl,exercise.id());
+        store.chooseStudy(student,cl,exercise.ma(),Instant.now());
+        assertThat(store.tutorContext(student,cl,new TutorRequest(exercise.ma(),"B.TD.TRALOI",1,"Em cần gợi ý"))).isPresent();
+        store.chooseStudy(student,cl,code,Instant.now());
+        assertThat(store.tutorContext(student,cl,new TutorRequest(code,"B.TD.TRALOI",1,"Em cần gợi ý"))).isEmpty();
     }
     @Test void workOpenedExactlyAtNanosecondAssignmentTimeBelongsToThatAssignment() {
         Instant assigned=Instant.parse("2026-10-16T08:00:00.123456789Z");
