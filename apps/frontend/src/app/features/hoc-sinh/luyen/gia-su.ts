@@ -1,5 +1,5 @@
 import { NgTemplateOutlet } from '@angular/common';
-import { afterNextRender, Component, DestroyRef, effect, ElementRef, inject, input, output, signal, viewChild } from '@angular/core';
+import { afterNextRender, computed, Component, DestroyRef, effect, ElementRef, inject, input, output, signal, viewChild } from '@angular/core';
 import { form, FormField, maxLength } from '@angular/forms/signals';
 import { GiaSuMarkdown } from './gia-su-markdown';
 import { GiaSuPhien } from './gia-su-phien';
@@ -103,6 +103,17 @@ export class GiaSu {
     protected readonly oDay = signal(true);
     readonly maBuoc = input.required<string>();
     readonly tenBuoc = input('');
+    readonly tenBai = input('');
+    protected readonly buocCuThe = computed(() => {
+        const ten = this.tenBuoc().trim();
+        return ten && !/^bài làm(?: tự luận)?$/iu.test(ten) ? ten : '';
+    });
+    protected readonly loiChao = computed(() => {
+        const bai = this.tenBai().trim() || 'này';
+        return (this.buocCuThe()
+            ? `Em đang ở bước ${this.buocCuThe()} của bài ${bai}.`
+            : `Em đang làm bài ${bai}.`) + ' Em vướng ở đâu thì cứ hỏi nhé.';
+    });
     readonly baiLamHienTai = input('');
     readonly moChange = output<boolean>();
     protected readonly mo = signal(false);
@@ -142,7 +153,7 @@ export class GiaSu {
                 this.model.set({ cauHoi: '' });
                 this.cap.set(1);
                 this.oDay.set(true);
-                void this.chat.mo(assignment);
+                void this.chat.mo(assignment, problem);
             }
             this.daMo = this.mo();
         });
@@ -218,7 +229,7 @@ export class GiaSu {
         if (t) t.scrollTop = t.scrollHeight;
         this.oDay.set(true);
     }
-    protected taiLai() { void this.chat.mo(this.giaoBaiId()); }
+    protected taiLai() { void this.chat.mo(this.giaoBaiId(), this.maBai()); }
     protected gui(e: Event) {
         e.preventDefault();
         const q = this.model().cauHoi.trim();

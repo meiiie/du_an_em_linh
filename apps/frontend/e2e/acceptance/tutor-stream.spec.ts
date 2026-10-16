@@ -77,6 +77,17 @@ for(const reducedMotion of ['no-preference','reduce'] as const){
   });
 }
 
+test('SSE: reasoning chỉ hiện trạng thái đang nghĩ, giữ thứ tự sự kiện',async({page})=>{
+  await installStream(page);const panel=await open(page);await ask(page);
+  await emit(page,'status',2,{phase:'thinking'});
+  await expect(panel.locator('.typing')).toContainText('Gia sư đang nghĩ…');
+  await expect(panel.locator('.cau-cua-ai')).toHaveCount(0);
+  await emit(page,'delta',3,{text:'Em muốn thử cách nào?'});
+  await expect(panel.locator('.cau-cua-ai')).toContainText('Em muốn thử cách nào?');
+  await emit(page,'done',4,{status:'completed'});
+  await expect(panel.locator('.typing')).toHaveCount(0);
+});
+
 test('SSE: chữ hiện qua nhiều frame trước done, cả khi delta đến dồn',async({page})=>{
   await installStream(page);const panel=await open(page);await ask(page);
   const text='Em thử xác định diện tích đáy rồi chọn chiều cao tương ứng. '.repeat(30);

@@ -25,6 +25,10 @@ public interface HintModel {
     final class Cancellation {
         private final java.util.concurrent.atomic.AtomicBoolean cancelled=new java.util.concurrent.atomic.AtomicBoolean();
         private final java.util.Set<AutoCloseable> resources=java.util.concurrent.ConcurrentHashMap.newKeySet();
+        private volatile Runnable thinking=() -> {};
+        public void onThinking(Runnable listener) { thinking=listener; }
+        /** Tín hiệu không có nội dung; suy luận của nhà luôn ở nội bộ. */
+        public void thinking() { check(); thinking.run(); check(); }
         public void check() { if(cancelled.get())throw new java.util.concurrent.CancellationException(); }
         public void attach(AutoCloseable resource) {
             resources.add(resource);

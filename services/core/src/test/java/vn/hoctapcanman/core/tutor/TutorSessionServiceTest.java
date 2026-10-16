@@ -31,6 +31,26 @@ class TutorSessionServiceTest {
         when(workspace.tutorContext(eq(student),eq(cl),any())).thenReturn(Optional.of(new TutorContext(problem,"DH1","Đề","x**2","B.DH.TXD","Thang không được dùng")));
         when(model.draft(any())).thenReturn(Optional.of("Em cần tìm điều gì ở bước này?"));
     }
+    @Test void opensPracticeByCodeWhenDetailHasNoAssignmentIdAndStillChecksOwnership() {
+        assertEquals(service.open(student,assignment).id(),service.open(student,new Open(null,"DH1")).id());
+        assertEquals(404,assertThrows(WorkspaceException.class,() -> service.open(UUID.randomUUID(),new Open(null,"DH1"))).status());
+        assertEquals(404,assertThrows(WorkspaceException.class,() -> service.open(student,new Open(null,"INVISIBLE"))).status());
+        assertEquals(400,assertThrows(WorkspaceException.class,() -> service.open(student,new Open(null,null))).status());
+        assertEquals(400,assertThrows(WorkspaceException.class,() -> service.open(student,new Open(assignment,"DH1"))).status());
+    }
+    @Test void reasoningStatusIsPersistedBeforeAnyContentAndReplaysWithoutReasoning() throws Exception {
+        doAnswer(call -> {
+            HintModel.Cancellation cancellation=call.getArgument(2);
+            cancellation.thinking();
+            java.util.function.Consumer<String> tokens=call.getArgument(1);
+            tokens.accept("Em muốn thử cách nào?");
+            return new ModelUsage(20,8,false);
+        }).when(model).stream(any(),any(),any());
+        var accepted=ask();assertEquals("completed",terminal(accepted).status());
+        var events=store.events(accepted.session().id(),0);
+        assertEquals(List.of("start","status","delta","done"),events.stream().map(Event::type).toList());
+        assertEquals(Map.of("phase","thinking"),events.get(1).data());
+    }
     Ask request(UUID id){return new Ask(id,"B.DH.TXD",1,"Em đã thử cách này");}
     Accepted ask(){Session s=service.open(student,assignment);return service.ask(student,s.id(),request(UUID.randomUUID()));}
     Turn terminal(Accepted a) throws Exception {

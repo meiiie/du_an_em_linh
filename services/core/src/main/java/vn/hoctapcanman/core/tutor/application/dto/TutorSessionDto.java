@@ -6,7 +6,13 @@ import jakarta.validation.constraints.*;
 
 public final class TutorSessionDto {
     private TutorSessionDto() {}
-    public record Open(@NotNull UUID giaoBaiId) {}
+    public record Open(@org.jspecify.annotations.Nullable UUID giaoBaiId,
+        @Size(max=100) @org.jspecify.annotations.Nullable String maBai) {
+        public Open(UUID giaoBaiId) { this(giaoBaiId,null); }
+        @AssertTrue public boolean isValid() {
+            return (giaoBaiId!=null) != (maBai!=null && !maBai.isBlank());
+        }
+    }
     public record Ask(@NotNull UUID requestId, @NotBlank @Size(max=32) String maBuoc,
         @Min(1) @Max(3) int cap, @NotNull @Size(max=2000) String cauHoi,
         @Size(max=12000) @org.jspecify.annotations.Nullable String baiLamHienTai) {

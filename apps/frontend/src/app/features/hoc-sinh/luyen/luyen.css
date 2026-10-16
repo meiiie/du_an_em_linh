@@ -272,3 +272,7 @@
  :host { display:block; padding-bottom:calc(112px + env(safe-area-inset-bottom)); }
  .phan-hoi { scroll-margin-bottom:calc(192px + env(safe-area-inset-bottom)); }
 }
+
+.trinh-bay-tu-do { display: grid; gap: 8px; width: 100%; }
+.trinh-bay-tu-do textarea { display: block; box-sizing: border-box; width: 100%; min-height: 160px; padding: 12px 16px; resize: vertical; font: inherit; color: var(--ink); background: var(--raise); border: 1px solid var(--line); border-radius: 8px; }
+.trinh-bay-tu-do textarea:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }

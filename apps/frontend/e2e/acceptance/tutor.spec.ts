@@ -14,6 +14,7 @@ test('Gia sư: toggle, shortcut, persistence, resize hoặc sheet và focus', as
   await toggle.click();
   await expect(panel).toBeVisible();
   await expect(panel.locator('article')).toHaveCount(0);
+  await expect(panel).toContainText('Em đang ở bước Tập xác định của bài Đơn điệu. Em vướng ở đâu thì cứ hỏi nhé.');
   if (page.viewportSize()!.width > 1024) {
     const solve = await page.getByTestId('solve-screen').boundingBox();
     const box = await panel.boundingBox();
@@ -87,7 +88,7 @@ test('Gia sư: bài hình chóp chưa có khung vẫn hỏi được trong ngữ
   }}));
   await page.goto('/hs/luyen/E2E-01');await page.getByTestId('mo-gia-su').click();
   const panel=page.getByTestId('gia-su-panel');
-  await expect(panel).toContainText('Em đang làm bài này.');
+  await expect(panel).toContainText('Em đang làm bài Đơn điệu. Em vướng ở đâu thì cứ hỏi nhé.');
   await page.getByTestId('gia-su-composer').fill('Em chọn diện tích đáy thế nào?');
   await page.getByTestId('gia-su-composer').press('Enter');
   await expect(panel.locator('.cau-cua-ai')).toBeVisible();
@@ -134,4 +135,28 @@ test('Gia sư: chờ, reduced motion và sửa câu hỏi sau lỗi', async ({ p
   await expect(page.getByTestId('gia-su-composer')).toHaveValue('Em cần giải thích công thức');
   await expect(page.getByTestId('gia-su-composer')).toBeFocused();
   expect(api.calls.filter(c=>c.path.endsWith('/luot') && c.method==='POST')).toHaveLength(1);
+});
+
+test('Gia sư: bước Bài làm dùng tên bài, thiếu ID mở bằng mã và ô trình bày đủ rộng', async ({page,api}) => {
+  await page.route('**/api/hs/bai/E2E-01', route => route.fulfill({json: {...detail, giaoBaiId: null,
+    tenKyNang: 'Biến cố điều kiện', dangTraLoi: 'TU_LUAN',
+    cacBuoc: [{maBuoc:'B.TD.TRALOI',ten:'Bài làm',viec:'Trình bày cách giải.',kieu:'TU_DO'}],
+  }}));
+  await page.goto('/hs/luyen/E2E-01');
+  const area = page.getByTestId('trinh-bay-tu-do');
+  await expect(area).toBeVisible();await expect(area).toHaveAttribute('rows','6');
+  const dimensions = await area.evaluate(el => ({width:el.getBoundingClientRect().width, height:el.getBoundingClientRect().height,
+    parentWidth:el.parentElement!.getBoundingClientRect().width, resize:getComputedStyle(el).resize}));
+  expect(dimensions.width).toBeCloseTo(dimensions.parentWidth,0);expect(dimensions.height).toBeGreaterThanOrEqual(160);
+  expect(dimensions.resize).toBe('vertical');
+  await page.getByTestId('mo-gia-su').click();
+  const panel=page.getByTestId('gia-su-panel');
+  await expect(panel.locator('header .muted')).toHaveText('Biến cố điều kiện');
+  await expect(panel).toContainText('Em đang làm bài Biến cố điều kiện. Em vướng ở đâu thì cứ hỏi nhé.');
+  const opened=api.calls.find(c=>c.path==='/api/hs/gia-su/v2/phien' && c.method==='POST');
+  expect(opened?.body).toEqual({maBai:'E2E-01'});
+  await page.getByTestId('gia-su-composer').fill('Em bắt đầu thế nào?');
+  await page.getByTestId('gia-su-composer').press('Enter');
+  await expect(panel.locator('.cau-cua-ai')).toBeVisible();
+  await flat(page);await noOverflow(page);
 });

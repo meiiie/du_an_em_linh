@@ -42,6 +42,13 @@ public class TutorSessionService {
     public Session open(UUID student,UUID assignment) {
         return sessions.open(assignment(student,assignment));
     }
+    public Session open(UUID student,Open request) {
+        if(!request.isValid())throw new WorkspaceException(400,"Em chọn bài rồi mở lại gia sư nhé.");
+        if(request.giaoBaiId()!=null)return open(student,request.giaoBaiId());
+        var a=sessions.assignmentByCode(student,Objects.requireNonNull(request.maBai()).strip())
+            .orElseThrow(() -> new WorkspaceException(404,"Bài này chưa mở gia sư."));
+        return open(student,a.id());
+    }
     private Assignment assignment(UUID student,UUID id) {
         var a=sessions.assignment(student,id).orElseThrow(() -> new WorkspaceException(404,"Bài này chưa mở gia sư."));
         if(!members.lopHoc(student).filter(a.classId()::equals).isPresent())throw new WorkspaceException(404,"Bài này chưa mở gia sư.");
@@ -128,6 +135,10 @@ public class TutorSessionService {
             long t=System.nanoTime();
             if(t-lastFull[0]>=1_000_000_000L){lastFull[0]=t;fullCheckpoint.run();}
         };
+        cancellation.onThinking(() -> {
+            checkpoint.run();
+            if(sessions.append(id,turn,"status",Map.of("phase","thinking")).isEmpty())throw new CancellationException();
+        });
         try {
             checkpoint.run();
             var base=pipeline.termPrompt(TutorPrompt.compose(context,request),context,request);
@@ -248,7 +259,8 @@ public class TutorSessionService {
     }
     private static int estimate(HintPrompt p){return HintModel.estimate(p.system()+p.user())+16;}
     private static String render(String summary,List<Turn> turns) {
-        StringBuilder text=new StringBuilder("Tóm tắt: ").append(memoryText(summary));
+        StringBuilder text=new StringBuilder();
+        if(!summary.isBlank())text.append("Tóm tắt: ").append(memoryText(summary));
         for(Turn t:turns)text.append("\nLượt ").append(t.ordinal()).append(" [bước ").append(t.step()).append("] — học sinh: ").append(memoryText(t.question())).append("\nGia sư: ").append(memoryText(t.answer()));
         return text.toString();
     }

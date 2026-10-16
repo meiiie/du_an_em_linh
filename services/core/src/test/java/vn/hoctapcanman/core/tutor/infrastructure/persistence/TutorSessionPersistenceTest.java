@@ -64,6 +64,38 @@ class TutorSessionPersistenceTest {
         assertTrue(workspace.tutorContext(UUID.randomUUID(),cl,request).isEmpty());
         assertTrue(workspace.tutorContext(student,cl,new vn.hoctapcanman.core.workspace.application.dto.WorkspaceDto.TutorRequest(code,"BOGUS",1,"Em hỏi")).isEmpty());
     }
+    @Test void probabilityExerciseWithOwnFrameSupportsFirstQuestionAndRejectsForeignSteps() {
+        // NT-XS12-NB-01 có khung B.XS riêng, không nằm trong step_templates theo chủ đề.
+        db.sql("UPDATE problems SET code='NT-XS12-NB-01',answer_form='TU_LUAN',function_sympy=NULL WHERE id=:p").param("p",problem).update();
+        int v=db.sql("SELECT content_version FROM problems WHERE id=:p").param("p",problem).query(Integer.class).single();
+        db.sql("INSERT INTO exercise_step_frames(problem_id,content_version,frame_version,steps,problem_data) VALUES(:p,:v,1,CAST(:steps AS jsonb),'{}'::jsonb)")
+            .param("p",problem).param("v",v).param("steps","""
+                [{"maBuoc":"B.XS.DUKIEN","ten":"Biến cố điều kiện","viec":"Ghi dữ kiện","kieu":"BIEU_THUC"},
+                 {"maBuoc":"B.XS.THANHPHAN1","ten":"Biến cố đối","viec":"Trình bày","kieu":"BIEU_THUC"},
+                 {"maBuoc":"B.XS.THANHPHAN2","ten":"Giao hai biến cố","viec":"Trình bày","kieu":"BIEU_THUC"},
+                 {"maBuoc":"B.XS.KETHOP","ten":"Kết hợp","viec":"Trình bày","kieu":"BIEU_THUC"},
+                 {"maBuoc":"B.XS.KETLUAN","ten":"Kết luận","viec":"Trình bày","kieu":"BIEU_THUC"}]
+                """).update();
+        DuLieuPractice.phatHanh(db,cl,problem);
+        var workspace=new vn.hoctapcanman.core.workspace.infrastructure.persistence.WorkspaceStoreAdapter(db,java.time.Clock.systemUTC());
+        var request=new vn.hoctapcanman.core.workspace.application.dto.WorkspaceDto.TutorRequest("NT-XS12-NB-01","B.XS.DUKIEN",1,"Em bắt đầu thế nào?");
+        var context=workspace.tutorContext(student,cl,request).orElseThrow();
+        assertEquals("Biến cố điều kiện",context.stepName());
+        var members=org.mockito.Mockito.mock(vn.hoctapcanman.core.classroom.application.port.ClassMembership.class);
+        org.mockito.Mockito.when(members.lopHoc(student)).thenReturn(Optional.of(cl));
+        var pipeline=new vn.hoctapcanman.core.tutor.application.service.OfflineTutorService(workspace,members,
+            new vn.hoctapcanman.core.tutor.infrastructure.ai.OfflineHintModelAdapter(),
+            new vn.hoctapcanman.core.tutor.application.service.TutorRateLimiter(java.time.Clock.systemUTC(),100,java.time.Duration.ofMinutes(10)));
+        var service=new vn.hoctapcanman.core.tutor.application.service.TutorSessionService(store,pipeline,members,workspace,6000);
+        // Payload chi tiết có thể không mang giaoBaiId: mở theo mã vẫn kiểm giao bài thật.
+        var opened=service.open(student,new Open(null,request.maBai()));
+        var accepted=service.ask(student,opened.id(),new Ask(UUID.randomUUID(),request.maBuoc(),1,request.cauHoi()));
+        assertEquals("xong",service.await(accepted).status());
+        assertTrue(workspace.tutorContext(student,cl,new vn.hoctapcanman.core.workspace.application.dto.WorkspaceDto.TutorRequest(request.maBai(),"B.DH.TXD",1,"Em hỏi")).isEmpty());
+        assertTrue(workspace.tutorContext(UUID.randomUUID(),cl,request).isEmpty());
+        db.sql("UPDATE assignments SET mode='KIEM_TRA' WHERE id=:id").param("id",assignment).update();
+        assertTrue(store.assignmentByCode(student,request.maBai()).isEmpty());
+    }
     @Test void ownerAssignmentForeignKeyAndPersistentIdentity() {
         assertEquals(session.id(),store.open(store.assignment(student,assignment).orElseThrow()).id());
         assertTrue(store.find(UUID.randomUUID(),session.id()).isEmpty());

@@ -37,7 +37,7 @@ ENV APP_CONTENT_SOURCE=/app/noi-dung
 COPY --from=build /src/target/extracted/application/ ./
 USER 1001:1001
 EXPOSE 8080
-ENV JAVA_TOOL_OPTIONS="-XX:MaxRAMPercentage=75 -XX:+ExitOnOutOfMemoryError"
+ENV JAVA_TOOL_OPTIONS="-XX:MaxRAMPercentage=75 -XX:+ExitOnOutOfMemoryError -Djdk.httpclient.keepalive.timeout=300 -Djdk.httpclient.keepalive.timeout.h2=300"
 HEALTHCHECK --interval=30s --timeout=5s --start-period=60s --retries=3 \
   CMD wget -qO- http://127.0.0.1:8080/actuator/health/liveness > /dev/null || exit 1
 ENTRYPOINT ["java", "org.springframework.boot.loader.launch.JarLauncher"]

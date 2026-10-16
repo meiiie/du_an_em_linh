@@ -22,7 +22,7 @@ public class TutorSessionController {
     public TutorSessionController(TutorSessionService tutor){this.tutor=tutor;}
     @PostMapping("/api/hs/gia-su/v2/phien")
     public Opened open(@AuthenticationPrincipal Jwt jwt,@Valid @RequestBody Open request) {
-        var session=tutor.open(student(jwt),request.giaoBaiId());
+        var session=tutor.open(student(jwt),request);
         var history=tutor.history(student(jwt),session.id(),0,1);
         var last=history.turns().stream().findFirst();
         return new Opened(session.id(),history.session().lastSeq(),last.map(Turn::id).orElse(null),last.map(Turn::status).orElse("idle"));

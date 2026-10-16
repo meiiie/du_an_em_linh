@@ -51,6 +51,14 @@ class GlmHintModelAdapterTest {
         var chunks=new ArrayList<String>();var usage=adapter.stream(prompt,chunks::add);
         assertEquals(List.of("Em đã ","thử gì?"),chunks);assertEquals(25,usage.inputTokens());assertEquals(7,usage.outputTokens());assertFalse(usage.estimated());server.verify();
     }
+    @Test void reasoningEmitsOnlyStatusBeforeContentWithoutLeakingText() {
+        server.expect(requestTo(BASE+"/chat/completions")).andRespond(withSuccess(SUCCESS,MediaType.TEXT_EVENT_STREAM));
+        var events=new ArrayList<String>();
+        var cancellation=new vn.hoctapcanman.core.tutor.application.port.HintModel.Cancellation();
+        cancellation.onThinking(() -> events.add("thinking"));
+        adapter.stream(prompt,events::add,cancellation);
+        assertEquals(List.of("thinking","Em đã ","thử gì?"),events);server.verify();
+    }
     @org.junit.jupiter.params.ParameterizedTest
     @org.junit.jupiter.params.provider.ValueSource(strings={"glm-5.2","glm-5.3","GLM-5.3-FLASH","glm-5.10"})
     void forcedThinkingModelsUseLowEffortAndNeverForwardReasoning(String model) {

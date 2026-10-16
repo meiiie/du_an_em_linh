@@ -586,12 +586,14 @@ import vn.hoctapcanman.core.workspace.application.exception.WorkspaceException;
     @Transactional
     public Optional<TutorContext> tutorContext(UUID student,UUID cl,TutorRequest request) {
         Optional<TutorContext> context=db.sql("""
- SELECT p.id,p.code,p.statement_text,p.function_sympy,coalesce(t.description,'Bài làm') step_name FROM assignments a
+ SELECT p.id,p.code,p.statement_text,p.function_sympy,coalesce(frame.step->>'ten',t.description,'Bài làm') step_name FROM assignments a
  JOIN problems p ON p.id=a.problem_id JOIN problem_releases pr ON pr.problem_id=p.id AND pr.class_id=a.class_id
- LEFT JOIN step_templates t ON t.step_code=:step AND t.topic_code=(SELECT topic_code FROM skills WHERE code=p.skill_code)
+ LEFT JOIN exercise_step_frames f ON f.problem_id=p.id AND f.content_version=p.content_version
+ LEFT JOIN LATERAL (SELECT step FROM jsonb_array_elements(f.steps) step WHERE step->>'maBuoc'=:step LIMIT 1) frame ON true
+ LEFT JOIN step_templates t ON f.problem_id IS NULL AND t.step_code=:step AND t.topic_code=(SELECT topic_code FROM skills WHERE code=p.skill_code)
  WHERE a.student_id=:student AND a.class_id=:cl AND p.code=:code AND a.status='DA_GIAO' AND a.mode='ON_TAP' AND pr.status='DA_PHAT_HANH'
  AND (a.due_at IS NULL OR a.due_at>now())
- AND (t.step_code IS NOT NULL OR (
+ AND (frame.step IS NOT NULL OR t.step_code IS NOT NULL OR (
       ((:step='BAI_LAM' AND p.answer_form<>'TU_LUAN_5_BUOC')
        OR (:step='B.TD.TRALOI' AND p.answer_form IN ('TU_LUAN','TU_LUAN_5_BUOC')
            AND (p.answer_form<>'TU_LUAN_5_BUOC' OR p.function_sympy IS NULL)))
