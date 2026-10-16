@@ -115,6 +115,43 @@ describe('Phiên gia sư v2', () => {
     expect(service.luot().at(-1)?.status).toBe('completed');
   });
 
+  it.each(['error', 'cancelled', 'incomplete'] as const)('lịch sử %s giữ chữ, bỏ lượt rỗng ở cả trang đầu và taiCu', async status => {
+    const partial = {...saved, status, answer:'Phần gợi ý đã lưu.'};
+    const empty = {...partial, id:'empty', requestId:'empty-r', answer:'  '};
+    const recent = Array.from({length:48}, (_, i) => ({...saved, id:'recent-'+i, requestId:'recent-r-'+i}));
+    fetchMock.mockImplementation(async(url:string) => {
+      if(url===API_GIA_SU) return json({sessionId:'s1',lastSeq:0,status:'idle'});
+      return json({session:session(),turns:url.includes('offset=0&') ? [empty,partial,...recent] : [
+        {...empty,id:'older-empty',requestId:'older-empty-r'},
+        {...partial,id:'older-partial',requestId:'older-partial-r'},
+      ]});
+    });
+    await service.mo('assignment-1');
+    expect(service.luot()).toHaveLength(49);
+    expect(service.luot().find(t=>t.turnId===partial.id)).toMatchObject({text:partial.answer,status:'cancelled'});
+    expect(service.luot().some(t=>t.error)).toBe(false);
+    await service.taiCu();
+    expect(service.luot()).toHaveLength(50);
+    expect(service.luot()[0]).toMatchObject({turnId:'older-partial',text:partial.answer,status:'cancelled'});
+    expect(service.luot().some(t=>t.turnId.includes('empty') || t.error)).toBe(false);
+    expect(fetchMock.mock.calls.at(-1)?.[0]).toBe(`${base}/luot?offset=50&limit=50`);
+  });
+
+  it.each(['dispose', 'mo'] as const)('%s chỉ ngắt kết nối, không gửi cancel', async action => {
+    await service.mo('assignment-1');
+    let signal: AbortSignal | null | undefined;
+    handler=(_url,init)=>{
+      signal=init.signal;
+      return new Response(new ReadableStream({start(c){c.enqueue(new TextEncoder().encode(event('start',1,{requestId:JSON.parse(String(init.body)).requestId})));}}),{headers:{'Content-Type':'text/event-stream'}});
+    };
+    const streaming=service.hoi('Em hỏi','B.DH.TXD',1);
+    await settle();
+    if(action==='dispose') service.dispose(); else await service.mo('assignment-2');
+    await streaming;
+    expect(signal?.aborted).toBe(true);
+    expect(fetchMock.mock.calls.some(c=>String(c[0]).endsWith('/cancel'))).toBe(false);
+  });
+
   it('nghĩ ngay khi gửi và đến start, từng token thô hiện trước done', async()=>{
     let respond!: (response: Response) => void;
     let writer!: ReadableStreamDefaultController<Uint8Array>;
@@ -353,6 +390,18 @@ describe('Phiên gia sư v2', () => {
     expect(service.luot()[0].text).toBe('**Phần đã lưu**. Phần tiếp theo $x^2$.');
     expect(service.luot()[0].status).toBe('completed');
     expect(fetchMock.mock.calls.some(c=>c[1].method==='POST' && String(c[0]).endsWith('/luot'))).toBe(false);
+  });
+
+  it.each(['', 'Phần đã lưu.'])('lượt trang trước nối lại rồi lỗi chỉ giữ chữ: %s', async answer => {
+    fetchMock.mockImplementation(async(url:string)=>{
+      if(url===API_GIA_SU) return json({sessionId:'s1',lastSeq:2,status:'generating'});
+      if(url.includes('/luot?')) return json({session:session('s1',2),turns:[{...saved,id:'t1',status:'generating',answer}]});
+      return sse(event('error',3,{message:'Chưa hoàn tất.',retryable:true}));
+    });
+    await service.mo('assignment-1');await settle();
+    expect(service.luot()).toHaveLength(answer ? 1 : 0);
+    if(answer) expect(service.luot()[0]).toMatchObject({text:answer,status:'cancelled'});
+    expect(service.luot().some(t=>t.error)).toBe(false);
   });
 
   it('CancelAck error replay lời đã kiểm và lỗi gốc; ACK sai lượt không dừng lượt hiện tại', async()=>{

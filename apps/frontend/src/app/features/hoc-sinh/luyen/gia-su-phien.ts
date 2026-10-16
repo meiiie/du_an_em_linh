@@ -61,7 +61,6 @@ export class GiaSuPhien {
     // Mở lại sau đóng cũng tải snapshot; không khởi tạo một lượt model mới.
     const epoch = ++this.epoch;
     const old = this.active;
-    if (old && !old.terminal) void this.huy(old);
     old?.abort.abort();
     this.active = null;
     this.loadAbort?.abort();
@@ -158,7 +157,6 @@ export class GiaSuPhien {
   }
   dispose(): void {
     const old = this.active;
-    if (old && !old.terminal && old.turnId) void this.huy(old);
     ++this.epoch;
     old?.abort.abort();
     this.loadAbort?.abort();
@@ -171,7 +169,11 @@ export class GiaSuPhien {
   private path(session: string, suffix: string): string { return `${API_GIA_SU}/${encodeURIComponent(session)}/${suffix}`; }
   private current(a: KetNoi): boolean { return this.active === a && a.epoch === this.epoch; }
   private update(a: KetNoi, change: (t: LuotGiaSuV2) => LuotGiaSuV2): void {
-    this.luot.update(turns => turns.map(t => (a.requestId && t.requestId === a.requestId) || (a.turnId && t.turnId === a.turnId) ? change(t) : t));
+    this.luot.update(turns => turns
+      .map(t => (a.requestId && t.requestId === a.requestId) || (a.turnId && t.turnId === a.turnId) ? change(t) : t)
+      // Lượt dở từ trang trước: giữ chữ đã nhận, đánh dấu dừng giữa chừng (nhẹ), không hiện hộp lỗi.
+      .filter(t => t.live || t.status === 'generating' || t.status === 'completed' || !!t.text.trim())
+      .map(t => !t.live && (t.status === 'error' || t.status === 'cancelled') ? { ...t, status: 'cancelled' as const, error: undefined } : t));
   }
 
   private async huy(a: KetNoi): Promise<void> {
@@ -352,12 +354,13 @@ export class GiaSuPhien {
   }
 
   private mapHistory(turns: readonly TurnGiaSuV2[]): LuotGiaSuV2[] {
-    return [...turns].reverse().map(t => ({
-      requestId: t.requestId, turnId: t.id, maBuoc: t.step, cap: t.level, cauHoi: t.question, status: t.status,
-      // Snapshot đã ghép delta đến session.lastSeq; chỉ nối chữ sau cursor này.
-      text: t.answer, references: t.references ?? [],
-      ...(t.status === 'error' ? { error: { message: 'Lượt hỏi chưa hoàn tất. Em có thể hỏi lại.', retryable: true } } : {}),
-    }));
+    return [...turns].reverse()
+      .filter(t => t.status === 'generating' || t.status === 'completed' || !!t.answer.trim())
+      .map(t => ({
+        requestId: t.requestId, turnId: t.id, maBuoc: t.step, cap: t.level, cauHoi: t.question, status: t.status === 'generating' || t.status === 'completed' ? t.status : 'cancelled',
+        // Snapshot đã ghép delta đến session.lastSeq; chỉ nối chữ sau cursor này.
+        text: t.answer, references: t.references ?? [],
+      }));
   }
 
   private async request(url: string, init: RequestInit = {}): Promise<Response> {
