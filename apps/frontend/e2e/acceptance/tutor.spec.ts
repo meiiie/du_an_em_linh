@@ -1,5 +1,5 @@
 import AxeBuilder from '@axe-core/playwright';
-import { test, expect, flat, noOverflow } from './fixtures';
+import { test, expect, flat, noOverflow, detail } from './fixtures';
 
 test('Gia sư: toggle, shortcut, persistence, resize hoặc sheet và focus', async ({ page }) => {
   await page.goto('/hs/luyen/E2E-01');
@@ -78,7 +78,22 @@ test('Gia sư: KaTeX, Enter và Shift+Enter, chọn mức hỗ trợ', async ({ 
   await expect(panel.locator('.katex').first()).toBeVisible();
   const asks=api.calls.filter(c=>c.path.endsWith('/luot') && c.method==='POST');
   expect(asks.map(c=>c.body.cap)).toEqual([1,2,3,3]);
-  for(const call of asks) expect(Object.keys(call.body).sort()).toEqual(['cap','cauHoi','maBuoc','requestId']);
+  for(const call of asks) expect(Object.keys(call.body).sort()).toEqual(['baiLamHienTai','cap','cauHoi','maBuoc','requestId']);
+});
+
+test('Gia sư: bài hình chóp chưa có khung vẫn hỏi được trong ngữ cảnh toàn bài', async ({page,api})=>{
+  await page.route('**/api/hs/bai/E2E-01',route=>route.fulfill({json:{...detail,
+    dangTraLoi:'TU_LUAN',cacBuoc:[],de:{text:'Hình chóp có đáy tam giác vuông. Tính thể tích.',latex:''},
+  }}));
+  await page.goto('/hs/luyen/E2E-01');await page.getByTestId('mo-gia-su').click();
+  const panel=page.getByTestId('gia-su-panel');
+  await expect(panel).toContainText('Em đang làm bài này.');
+  await page.getByTestId('gia-su-composer').fill('Em chọn diện tích đáy thế nào?');
+  await page.getByTestId('gia-su-composer').press('Enter');
+  await expect(panel.locator('.cau-cua-ai')).toBeVisible();
+  const ask=api.calls.find(c=>c.path.endsWith('/luot') && c.method==='POST')!;
+  expect(ask.body.maBuoc).toBe('BAI_LAM');
+  await expect(panel.getByRole('alert')).toHaveCount(0);
 });
 
 test('Kiểm tra: toggle/FAB tạm tắt kể cả khi đã lưu trạng thái mở', async ({ page, api }) => {

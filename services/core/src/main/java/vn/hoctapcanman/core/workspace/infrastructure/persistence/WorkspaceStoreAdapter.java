@@ -567,11 +567,13 @@ import vn.hoctapcanman.core.workspace.application.exception.WorkspaceException;
     @Transactional
     public Optional<TutorContext> tutorContext(UUID student,UUID cl,TutorRequest request) {
         Optional<TutorContext> context=db.sql("""
- SELECT p.id,p.code,p.statement_text,p.function_sympy,t.description step_name FROM assignments a
+ SELECT p.id,p.code,p.statement_text,p.function_sympy,coalesce(t.description,'Bài làm') step_name FROM assignments a
  JOIN problems p ON p.id=a.problem_id JOIN problem_releases pr ON pr.problem_id=p.id AND pr.class_id=a.class_id
- JOIN step_templates t ON t.step_code=:step AND t.topic_code=(SELECT topic_code FROM skills WHERE code=p.skill_code)
+ LEFT JOIN step_templates t ON t.step_code=:step AND t.topic_code=(SELECT topic_code FROM skills WHERE code=p.skill_code)
  WHERE a.student_id=:student AND a.class_id=:cl AND p.code=:code AND a.status='DA_GIAO' AND a.mode='ON_TAP' AND pr.status='DA_PHAT_HANH'
  AND (a.due_at IS NULL OR a.due_at>now())
+ AND (t.step_code IS NOT NULL OR (:step='BAI_LAM' AND p.answer_form<>'TU_LUAN_5_BUOC'
+      AND NOT EXISTS(SELECT 1 FROM exercise_step_frames f WHERE f.problem_id=p.id AND f.content_version=p.content_version)))
  LIMIT 1 FOR SHARE OF a
  """).param("student",student).param("cl",cl).param("code",request.maBai()).param("step",request.maBuoc()).query((r,n)->new TutorContext(UUID.fromString(r.getString("id")),r.getString("code"),r.getString("statement_text"),str(r,"function_sympy"),request.maBuoc(),"",r.getString("step_name"),List.of(),List.of())).optional();
         // Không đọc bảng solutions: chỉ đề, bảng đã khóa và bài làm của chính em, đúng phiên bản đề.

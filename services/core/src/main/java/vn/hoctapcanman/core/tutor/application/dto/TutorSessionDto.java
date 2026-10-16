@@ -8,7 +8,9 @@ public final class TutorSessionDto {
     private TutorSessionDto() {}
     public record Open(@NotNull UUID giaoBaiId) {}
     public record Ask(@NotNull UUID requestId, @NotBlank @Size(max=32) String maBuoc,
-        @Min(1) @Max(3) int cap, @NotNull @Size(max=2000) String cauHoi) {
+        @Min(1) @Max(3) int cap, @NotNull @Size(max=2000) String cauHoi,
+        @Size(max=12000) @org.jspecify.annotations.Nullable String baiLamHienTai) {
+        public Ask(UUID requestId,String maBuoc,int cap,String cauHoi) { this(requestId,maBuoc,cap,cauHoi,null); }
         @Override public String toString(){return "Ask[đã ẩn nội dung]";}
     }
     public record Cancel(@NotNull UUID turnId) {}

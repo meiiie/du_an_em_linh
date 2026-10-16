@@ -28,6 +28,39 @@ class TutorSessionControllerTest {
     }
     @AfterEach void clear(){SecurityContextHolder.clearContext();}
     String body(UUID request){return "{\"requestId\":\""+request+"\",\"maBuoc\":\"B.DH.TXD\",\"cap\":1,\"cauHoi\":\"Em đã thử cách này\"}";}
+    @Test void v2FlushesStartAndEachDeltaBeforeModelFinishes() throws Exception {
+        var entered=new java.util.concurrent.CountDownLatch(1);
+        var first=new java.util.concurrent.CountDownLatch(1);
+        var second=new java.util.concurrent.CountDownLatch(1);
+        var finish=new java.util.concurrent.CountDownLatch(1);
+        org.mockito.Mockito.doAnswer(call -> {
+            java.util.function.Consumer<String> tokens=call.getArgument(1);
+            entered.countDown();assertTrue(first.await(5,java.util.concurrent.TimeUnit.SECONDS));
+            tokens.accept("Đầu tiên ");assertTrue(second.await(5,java.util.concurrent.TimeUnit.SECONDS));
+            tokens.accept("em chọn căn cứ.");assertTrue(finish.await(5,java.util.concurrent.TimeUnit.SECONDS));
+            return new vn.hoctapcanman.core.tutor.application.dto.TutorSessionDto.ModelUsage(20,10,false);
+        }).when(fixture.model).stream(org.mockito.ArgumentMatchers.any(),org.mockito.ArgumentMatchers.any());
+        try {
+            var response=mvc.perform(post("/api/hs/gia-su/v2/phien/{id}/luot",session).contentType(MediaType.APPLICATION_JSON).content(body(UUID.randomUUID())))
+                .andExpect(request().asyncStarted()).andExpect(header().string("X-Accel-Buffering","no")).andReturn();
+            assertTrue(entered.await(3,java.util.concurrent.TimeUnit.SECONDS));
+            awaitEvent(response,"event:start",1);
+            assertFalse(response.getResponse().getContentAsString().contains("event:delta"));
+            first.countDown();awaitEvent(response,"event:delta",1);
+            second.countDown();awaitEvent(response,"event:delta",2);
+            assertFalse(response.getResponse().getContentAsString().contains("event:done"));
+            finish.countDown();response.getAsyncResult(5000);
+            mvc.perform(asyncDispatch(response)).andExpect(status().isOk()).andExpect(content().contentTypeCompatibleWith(MediaType.TEXT_EVENT_STREAM));
+        } finally {first.countDown();second.countDown();finish.countDown();}
+    }
+    private static void awaitEvent(MvcResult result,String event,int count) throws Exception {
+        long deadline=System.nanoTime()+java.util.concurrent.TimeUnit.SECONDS.toNanos(3);
+        while(System.nanoTime()<deadline) {
+            if(result.getResponse().getContentAsString().split(event,-1).length-1>=count)return;
+            Thread.sleep(10);
+        }
+        fail("Không flush sự kiện SSE: "+event);
+    }
     @Test void legacyStreamsDeltaBeforeProviderCompletes() throws Exception {
         var emitted=new java.util.concurrent.CountDownLatch(1);
         var release=new java.util.concurrent.CountDownLatch(1);

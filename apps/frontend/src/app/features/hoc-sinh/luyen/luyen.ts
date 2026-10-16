@@ -144,6 +144,10 @@ export class Luyen {
   });
 
   protected readonly buocHien = computed(() => this.bai.value()?.cacBuoc[this.buoc()]);
+  protected readonly baiLamGiaSu = computed(() => {
+    const s = this.buocHien(), n = this.nhap(), b = this.bai.value();
+    return s && n && b ? JSON.stringify(yeuCauNop(s.maBuoc, n, b.khaiBaoKetLuan, kieuNhap(s))) : '';
+  });
   protected readonly ketQuaHien = computed(() => {
     const ma = this.buocHien()?.maBuoc;
     return ma ? this.ketQua()[ma] : undefined;
