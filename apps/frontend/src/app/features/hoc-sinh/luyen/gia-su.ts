@@ -61,7 +61,7 @@ export class GiaSu {
     }
     protected readonly chieuRong = this.width.asReadonly();
     protected goPhim(e: KeyboardEvent) {
-        if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) {
+        if (e.key === 'Enter' && !e.shiftKey && !e.isComposing && e.keyCode !== 229) {
             e.preventDefault();
             this.gui(e);
         }
@@ -103,6 +103,7 @@ export class GiaSu {
     protected readonly oDay = signal(true);
     readonly maBuoc = input.required<string>();
     readonly tenBuoc = input('');
+    readonly baiLamHienTai = input('');
     readonly moChange = output<boolean>();
     protected readonly mo = signal(false);
     protected readonly rong = signal(false);
@@ -225,6 +226,6 @@ export class GiaSu {
         this.model.set({ cauHoi: '' });
         this.oDay.set(true);
         queueMicrotask(() => this.gianO());
-        void this.chat.hoi(q, this.maBuoc(), Math.max(1, this.cap()));
+        void this.chat.hoi(q, this.maBuoc() || 'BAI_LAM', Math.max(1, this.cap()), undefined, this.baiLamHienTai());
     }
 }

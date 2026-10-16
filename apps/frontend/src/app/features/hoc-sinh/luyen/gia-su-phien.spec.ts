@@ -57,6 +57,42 @@ describe('Phiên gia sư v2', () => {
   });
   afterEach(()=>{service.dispose(); vi.unstubAllGlobals();});
 
+  it.each([503, 502, 500, 'network', '401-after-refresh'])('POST đầu lỗi %s tự thử lại cùng requestId và nháp', async failure => {
+    await service.mo('assignment-1');
+    let count = 0;
+    handler = (_url, init) => {
+      count++;
+      if (failure === 'network' && count === 1) throw new TypeError('Failed to fetch');
+      if (typeof failure === 'number' && count === 1) return json({}, failure);
+      if (failure === '401-after-refresh' && count <= 2) return json({}, 401);
+      const req = JSON.parse(String(init.body));
+      return sse(event('start',1,{requestId:req.requestId}) + event('delta',2,{text:'Em đang chọn căn cứ nào?'}) + event('done',3,{status:'completed'}));
+    };
+    await service.hoi('Em cần gợi ý', 'BAI_LAM', 1, undefined, 'S = 6*8/2');
+    const posts = fetchMock.mock.calls.filter(c => c[0] === `${base}/luot`);
+    expect(posts.length).toBeGreaterThan(1);
+    expect(new Set(posts.map(c => JSON.parse(String(c[1].body)).requestId)).size).toBe(1);
+    expect(JSON.parse(String(posts.at(-1)![1].body))).toMatchObject({maBuoc:'BAI_LAM',baiLamHienTai:'S = 6*8/2'});
+    expect(service.luot()[0].status).toBe('completed');expect(service.loi()).toBe('');
+  });
+  it('400 hiện lý do từ core và không tự thử lại', async () => {
+    await service.mo('assignment-1');
+    handler = () => json({detail:'Bước hiện tại chưa hợp lệ.'},400);
+    await service.hoi('Em hỏi', 'BAI_LAM', 1);
+    expect(service.loi()).toBe('Bước hiện tại chưa hợp lệ.');
+    expect(fetchMock.mock.calls.filter(c=>c[0]===`${base}/luot`)).toHaveLength(1);
+  });
+  it('401 với token cũ dùng token vừa đổi, không xoay refresh cookie lần nữa', async () => {
+    await service.mo('assignment-1');
+    let count=0;
+    handler=(_url,init)=> {
+      if (++count===1) {token='refreshed-elsewhere';return json({},401);}
+      const req=JSON.parse(String(init.body));
+      return sse(event('start',1,{requestId:req.requestId})+event('done',2,{status:'completed'}));
+    };
+    await service.hoi('Em hỏi','B.DH.TXD',1);
+    expect(refresh).not.toHaveBeenCalled();expect(service.luot()[0].status).toBe('completed');
+  });
   it('ánh xạ history theo session.id/lastSeq, đảo thứ tự và phân trang offset/limit', async()=>{
     const recent = Array.from({length:50}, (_, i) => ({...saved, id:'t-'+(50-i), requestId:'r-'+(50-i), ordinal:50-i}));
     fetchMock.mockImplementation(async(url:string, init:RequestInit = {})=>{

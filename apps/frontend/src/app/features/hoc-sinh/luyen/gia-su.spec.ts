@@ -75,12 +75,26 @@ describe('Sidebar gia sư',()=>{
     const t=await setup();const input=await t.fill('Em hỏi về đạo hàm');
     input.dispatchEvent(new KeyboardEvent('keydown',{key:'Enter',shiftKey:true,bubbles:true}));
     input.dispatchEvent(new KeyboardEvent('keydown',{key:'Enter',isComposing:true,bubbles:true}));
+    input.dispatchEvent(new KeyboardEvent('keydown',{key:'Enter',keyCode:229,bubbles:true}));
     expect(fetchMock).toHaveBeenCalledTimes(2);
     const cap=t.el.querySelector('select')!;cap.value='2';cap.dispatchEvent(new Event('change'));
     input.dispatchEvent(new KeyboardEvent('keydown',{key:'Enter',bubbles:true,cancelable:true}));await settle();await t.f.whenStable();
     expect(JSON.parse(fetchMock.mock.calls[2][1].body)).toMatchObject({maBuoc:'B.DH.TXD',cap:2,cauHoi:'Em hỏi về đạo hàm'});
     expect(t.el.querySelector('article strong')?.textContent).toBe('Câu đã kiểm');expect(t.el.querySelector('.katex')).not.toBeNull();
     expect(t.el.querySelectorAll('article')).toHaveLength(2);
+  });
+  it('bài chưa có khung gửi BAI_LAM và dòng giới thiệu; mỗi lượt lấy nháp và bước hiện tại',async()=>{
+    const t=await setup();
+    t.f.componentRef.setInput('maBuoc','');t.f.componentRef.setInput('tenBuoc','');
+    t.f.componentRef.setInput('baiLamHienTai','');await t.f.whenStable();
+    expect(t.el.textContent).toContain('Em đang làm bài này.');
+    await t.fill('Em chọn đáy thế nào?');await t.click('Gửi câu hỏi');
+    expect(JSON.parse(fetchMock.mock.calls[2][1].body).maBuoc).toBe('BAI_LAM');
+    t.f.componentRef.setInput('maBuoc','B.DH.DAOHAM');
+    t.f.componentRef.setInput('baiLamHienTai',"f'(x)=2x");await t.f.whenStable();
+    await t.fill('Em vừa sửa dòng này');await t.click('Gửi câu hỏi');
+    expect(JSON.parse(fetchMock.mock.calls.at(-1)![1].body)).toMatchObject({maBuoc:'B.DH.DAOHAM',baiLamHienTai:"f'(x)=2x"});
+    expect(t.el.textContent).toContain('Lượt trước');
   });
   it('trích dẫn streamed mở đúng công thức và giữ in đậm/xuống dòng',async()=>{
     response=init=>new Response(event('start',1,{requestId:JSON.parse(init.body as string).requestId,
@@ -223,15 +237,17 @@ describe('Markdown gia sư',()=>{
     el.querySelector<HTMLButtonElement>('.tutor-source')!.click();await f.whenStable();
     expect(el.querySelector('[role="note"]')?.textContent).toContain('Dòng đã khóa của lượt cũ.');
   });
-  it('mọi [n] là nút bàn phím kể cả khi thiếu nguồn, không bịa công thức',async()=>{
+  it('ẩn trích dẫn không có nguồn, nguồn có thật hiện khi focus/hover',async()=>{
     const f=TestBed.createComponent(GiaSuMarkdown);
-    f.componentRef.setInput('text','Xem [1] và [2].');f.detectChanges();await f.whenStable();
+    f.componentRef.setInput('text','Xem [1] và [2].');
+    f.componentRef.setInput('references',[{index:1,text:'Diện tích đáy',latex:'S'}]);
+    f.detectChanges();await f.whenStable();
     const el=f.nativeElement as HTMLElement;
     const buttons=el.querySelectorAll<HTMLButtonElement>('.tutor-source');
-    expect(buttons).toHaveLength(2);expect(buttons[1].getAttribute('aria-label')).toBe('Mở công thức 2');
-    buttons[1].click();await f.whenStable();
-    expect(el.querySelector('[role="note"]')?.textContent).toContain('Chưa có công thức');
-    expect(el.querySelector('.katex')).toBeNull();
+    expect(buttons).toHaveLength(1);expect(buttons[0].title).toBe('Diện tích đáy');
+    buttons[0].dispatchEvent(new Event('focus'));await f.whenStable();
+    expect(el.querySelector('[role="note"]')?.textContent).toContain('Diện tích đáy');
+    expect(el.textContent).not.toContain('[2]');
   });
   it('cấu trúc chưa kín và LaTeX lỗi vẫn giữ chữ, code không bị render thành toán',async()=>{
     const f=TestBed.createComponent(GiaSuMarkdown);

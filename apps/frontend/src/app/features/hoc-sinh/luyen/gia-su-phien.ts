@@ -4,15 +4,15 @@ import { Phien } from '../../../core/auth/phien';
 import { docSse } from './gia-su-sse';
 
 export const NOI_LAI_GIA_SU = new InjectionToken<readonly number[]>('Thời gian nối lại gia sư', {
-  factory: () => [500, 1500, 3000],
+  factory: () => [250, 750],
 });
 class LoiHttp extends Error {
-  constructor(readonly status: number, readonly retryAt = 0) {
-    super(status === 401 ? 'Phiên đăng nhập đã hết. Hãy đăng nhập lại.'
+  constructor(readonly status: number, readonly retryAt = 0, message = '', readonly retryable = status >= 500) {
+    super(message || (status === 400 ? 'Câu hỏi hoặc bước hiện tại chưa hợp lệ. Em tải lại bài rồi thử lại.' : status === 413 ? 'Nội dung quá dài. Em rút gọn rồi thử lại.' : status === 401 ? 'Phiên đăng nhập đã hết. Hãy đăng nhập lại.'
       : status === 404 ? 'Không tìm thấy bài được giao. Hãy quay lại danh sách bài.'
       : status === 403 ? 'Gia sư không mở cho bài này.' : status === 429
       ? 'Đã hết lượt hỏi lúc này. Chờ một chút rồi thử lại.'
-      : 'Chưa kết nối được gia sư. Kiểm tra kết nối rồi thử lại.');
+      : 'Chưa kết nối được gia sư. Kiểm tra kết nối rồi thử lại.'));
   }
 }
 interface KetNoi {
@@ -24,6 +24,7 @@ interface KetNoi {
   terminal: boolean;
   stopping: boolean;
   cancelRequest?: Promise<void>;
+  pending?: HoiGiaSuV2;
 }
 
 /** Một instance cho mỗi sidebar. Chat và token chỉ ở bộ nhớ. */
@@ -124,24 +125,24 @@ export class GiaSuPhien {
     finally { if (epoch === this.epoch) this.dangTaiCu.set(false); }
   }
 
-  async hoi(cauHoi: string, maBuoc: string, cap: number, retry?: LuotGiaSuV2): Promise<void> {
+  async hoi(cauHoi: string, maBuoc: string, cap: number, retry?: LuotGiaSuV2, baiLamHienTai = ''): Promise<void> {
     if (!this.sanSang()) return;
     const requestId = crypto.randomUUID();
-    const turn: LuotGiaSuV2 = { requestId, turnId: '', maBuoc, cap, cauHoi, text: '', status: 'generating',
+    const turn: LuotGiaSuV2 = { requestId, turnId: '', maBuoc, cap, cauHoi, text: '', live: true, status: 'generating',
       ...(retry ? { retryOfTurnId: retry.turnId || retry.requestId } : {}) };
     // Thử lại gắn với lượt lỗi, chỉ giữ một câu hỏi trong UI; phần đã nhận vẫn ở lượt cũ.
     this.luot.update(turns => [...turns, turn]);
     const active = this.connection(this.sessionId(), requestId, '');
     this.active = active;
     this.loi.set('');
-    await this.stream(active, { requestId, maBuoc, cap, cauHoi });
+    await this.stream(active, { requestId, maBuoc, cap, cauHoi, ...(baiLamHienTai ? { baiLamHienTai } : {}) });
   }
 
-  thuLai(turn: LuotGiaSuV2): void {
-    if (turn.status === 'error' && turn.error?.retryable) void this.hoi(turn.cauHoi, turn.maBuoc, turn.cap, turn);
+  thuLai(turn: LuotGiaSuV2, maBuoc = turn.maBuoc, baiLamHienTai = ''): void {
+    if (turn.status === 'error' && turn.error?.retryable) void this.hoi(turn.cauHoi, maBuoc, turn.cap, turn, baiLamHienTai);
   }
   noiLai(): void {
-    if (this.active && !this.active.terminal && !this.dangHoi()) void this.stream(this.active);
+    if (this.active && !this.active.terminal && !this.dangHoi()) void this.stream(this.active, this.active.pending);
   }
   async dung(): Promise<void> {
     const active = this.active;
@@ -226,6 +227,7 @@ export class GiaSuPhien {
     this.dangHoi.set(true);
     this.matKetNoi.set(false);
     this.trangThai.set(a.stopping ? 'Đang xác nhận dừng…' : body ? 'Đang suy nghĩ…' : 'Đang kết nối lại…');
+    a.pending = body;
     let attempt = 0;
     try {
       while (this.current(a) && !a.terminal) {
@@ -239,6 +241,7 @@ export class GiaSuPhien {
           if (!response.body || !response.headers.get('Content-Type')?.includes('text/event-stream')) throw new Error('Kết nối bị gián đoạn.');
           if (this.current(a)) this.loi.set('');
           body = undefined;
+          a.pending = undefined;
           await this.read(response.body, a);
           if (!a.terminal) throw new Error('Kết nối bị gián đoạn.');
         } catch (error) {
@@ -249,15 +252,16 @@ export class GiaSuPhien {
               this.sessionId.set('');
               break;
             }
-            if (body || [401, 403, 404, 429].includes(error.status)) {
+            if (!error.retryable || attempt >= this.backoff.length) {
               a.terminal = true;
-              this.update(a, t => ({ ...t, status: 'error', error: { message: error.message, retryable: ![401,403,404].includes(error.status) } }));
+              this.update(a, t => ({ ...t, status: 'error', error: { message: error.message, retryable: error.retryable || error.status === 429 } }));
               this.showError(error);
               this.choDung.set(false);
               break;
             }
           }
-          body = undefined; // Mất mạng chỉ replay; không POST lại để gọi model.
+          // Trước khi có phản hồi, gửi lại cùng requestId: core nhận idempotent.
+          // Khi đã có SSE, body đã xóa và chỉ replay từ lastSeq.
           if (attempt >= this.backoff.length) {
             this.matKetNoi.set(true);
             this.loi.set('Kết nối bị gián đoạn. Bấm Kết nối lại để tiếp tục.');
@@ -354,12 +358,23 @@ export class GiaSuPhien {
     const req = () => fetch(url, { ...init, credentials: 'same-origin', headers: {
       'Content-Type': 'application/json', Authorization: 'Bearer ' + this.auth.tokenTruyCap(), ...init.headers,
     } });
+    const token = this.auth.tokenTruyCap();
+    if (!token) await this.auth.lamMoi();
     let response = await req();
-    if (response.status === 401 && !init.signal?.aborted && await this.auth.lamMoi()) response = await req();
+    let authRetried = false;
+    if (response.status === 401 && !init.signal?.aborted) {
+      // Một request HttpClient khác có thể vừa làm mới trong lúc fetch còn dùng token cũ.
+      if (this.auth.tokenTruyCap() !== token || await this.auth.lamMoi()) {
+        authRetried = true;
+        await response.body?.cancel();
+        response = await req();
+      }
+    }
     if (!response.ok) {
       const after = response.headers.get('Retry-After');
       const delay = after && /^\d+$/.test(after) ? Number(after) * 1000 : after ? Date.parse(after) - Date.now() : 0;
-      throw new LoiHttp(response.status, response.status === 429 ? Date.now() + Math.max(1000, delay || 1000) : 0);
+      const detail = await response.json().catch(() => null);
+      throw new LoiHttp(response.status, response.status === 429 ? Date.now() + Math.max(1000, delay || 1000) : 0, [400, 413, 422].includes(response.status) && typeof detail?.detail === 'string' ? detail.detail : '', response.status >= 500 || (response.status === 401 && authRetried));
     }
     return response;
   }

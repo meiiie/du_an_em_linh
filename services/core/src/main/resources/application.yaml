@@ -34,6 +34,8 @@ spring:
       max-attempts: 0
 
 server:
+  compression:
+    enabled: false # SSE phải được flush theo từng delta, kể cả khi gọi core trực tiếp.
   shutdown: graceful
   # IP thật của client sau proxy (nginx của frontend, máy chủ triển khai): Tomcat RemoteIpValve chỉ tin X-Forwarded-For
   # từ proxy nội bộ (mặc định 10/8, 172.16/12, 192.168/16, 127/8…); khác thì đặt server.tomcat.remoteip.internal-proxies.

@@ -1,4 +1,4 @@
-import { afterRenderEffect, Component, ElementRef, inject, input, signal, viewChild, ViewEncapsulation } from '@angular/core';
+import { afterRenderEffect, effect, untracked, DestroyRef, Component, ElementRef, inject, input, signal, viewChild, ViewEncapsulation } from '@angular/core';
 import { DomSanitizer } from '@angular/platform-browser';
 import { SecurityContext } from '@angular/core';
 import { Marked, Token } from 'marked';
@@ -31,13 +31,37 @@ const escapeHtml = (s: string) => s.replace(/[&<>"']/g, c => ({ '&':'&amp;', '<'
 })
 export class GiaSuMarkdown {
   readonly text = input.required<string>();
+  readonly animate = input(false);
+  private readonly revealed = signal('');
+  private frame = 0;
   readonly references = input<readonly NguonGiaSu[]>([]);
   protected readonly nguonDangMo = signal<NguonGiaSu | null>(null);
   private readonly content = viewChild.required<ElementRef<HTMLElement>>('content');
   private readonly sanitizer = inject(DomSanitizer);
 
   constructor() {
+    effect(() => {
+      const target = this.text();
+      cancelAnimationFrame(this.frame);
+      if (!this.animate() || (typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches)) {
+        this.revealed.set(target);
+        return;
+      }
+      const previous = untracked(this.revealed);
+      if (!target.startsWith(previous)) this.revealed.set('');
+      // Nhịp nhỏ theo frame; backlog lớn bắt kịp trong khoảng 150–250 ms.
+      const drain = () => {
+        const current = this.revealed();
+        let end = Math.min(target.length, current.length + Math.max(24, Math.ceil((target.length - current.length) / 4)));
+        if (end < target.length && /[\uD800-\uDBFF]/.test(target[end - 1])) end++;
+        this.revealed.set(target.slice(0, end));
+        if (end < target.length) this.frame = requestAnimationFrame(drain);
+      };
+      untracked(drain);
+    });
+    inject(DestroyRef).onDestroy(() => cancelAnimationFrame(this.frame));
     afterRenderEffect(() => {
+      const references = this.references();
       const math: { latex: string; block: boolean }[] = [];
       const marked = new Marked({
         gfm: true, breaks: true,
@@ -74,12 +98,12 @@ export class GiaSuMarkdown {
           },
           renderer: token => {
             const n = Number(token['index']);
-            // Mọi trích dẫn là nút; chỉ snapshot thật được mở thành công thức.
+            if (!references.some(r => r.index === n)) return '';
             return `<span class="tutor-source source-${n}">[${n}]</span>`;
           },
         }],
       });
-      const html = marked.parse(this.text(), { async: false });
+      const html = marked.parse(this.revealed(), { async: false });
       const root = this.content().nativeElement;
       root.innerHTML = this.sanitizer.sanitize(SecurityContext.HTML, html) ?? '';
       root.querySelectorAll<HTMLElement>('.tutor-source').forEach(node => {
@@ -87,6 +111,11 @@ export class GiaSuMarkdown {
         button.type = 'button';
         button.className = node.className;
         button.textContent = node.textContent;
+        const index = Number(node.textContent?.replace(/[\[\]]/g, ''));
+        const source = references.find(r => r.index === index);
+        button.title = source?.text ?? '';
+        button.addEventListener('focus', () => this.nguonDangMo.set(source ?? null));
+        button.addEventListener('mouseenter', () => this.nguonDangMo.set(source ?? null));
         button.setAttribute('aria-label', 'Mở công thức ' + node.textContent?.replace(/[\[\]]/g, ''));
         node.replaceWith(button);
       });
@@ -111,6 +140,6 @@ export class GiaSuMarkdown {
     if (!button) return;
     const cls = [...button.classList].find(c => /^source-\d+$/.test(c));
     const index = Number(cls?.slice(7));
-    this.nguonDangMo.set(this.references().find(r => r.index === index) ?? { index, text: 'Chưa có công thức của nguồn này trong lượt hỏi. Em có thể xem bảng công thức của bước đang làm.' });
+    this.nguonDangMo.set(this.references().find(r => r.index === index) ?? null);
   }
 }

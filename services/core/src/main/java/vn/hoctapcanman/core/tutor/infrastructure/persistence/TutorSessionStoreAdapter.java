@@ -62,7 +62,7 @@ public class TutorSessionStoreAdapter implements TutorSessionStore {
         return new Session(r.getObject("id",UUID.class),r.getObject("hoc_sinh_id",UUID.class),r.getObject("giao_bai_id",UUID.class),r.getObject("lop_id",UUID.class),r.getString("tom_tat"),r.getLong("summary_den_luot"),r.getString("context_version"),r.getLong("last_seq"),r.getLong("revision"),r.getInt("token_count"));
     }
     private static Turn turn(ResultSet r,int n)throws SQLException {
-        return new Turn(r.getObject("id",UUID.class),r.getObject("phien_id",UUID.class),r.getObject("request_id",UUID.class),r.getLong("thu_tu"),r.getString("ma_buoc"),r.getInt("cap"),r.getString("cau_hoi"),r.getString("tra_loi"),r.getString("trang_thai"),r.getTimestamp("created_at").toInstant(),references(r.getString("su_kien")),turnVersion(r.getString("su_kien")));
+        return new Turn(r.getObject("id",UUID.class),r.getObject("phien_id",UUID.class),r.getObject("request_id",UUID.class),r.getLong("thu_tu"),Objects.requireNonNullElse(r.getString("ma_buoc"),"BAI_LAM"),r.getInt("cap"),r.getString("cau_hoi"),r.getString("tra_loi"),r.getString("trang_thai"),r.getTimestamp("created_at").toInstant(),references(r.getString("su_kien")),turnVersion(r.getString("su_kien")));
     }
     private static String turnVersion(String events) {
         for(var event:JSON.readTree(events))
@@ -97,7 +97,7 @@ public class TutorSessionStoreAdapter implements TutorSessionStore {
             UUID id=UUID.randomUUID();
             long ordinal=db.sql("SELECT coalesce(max(thu_tu),0)+1 FROM yeu_cau_gia_su WHERE phien_id=:s").param("s",session.id()).query(Long.class).single();
             db.sql("INSERT INTO yeu_cau_gia_su(id,phien_id,thu_tu,request_id,ma_buoc,cap,cau_hoi) VALUES(:id,:s,:n,:r,:step,:cap,:q)")
-                .param("id",id).param("s",session.id()).param("n",ordinal).param("r",request.requestId()).param("step",request.maBuoc()).param("cap",request.cap()).param("q",question).update();
+                .param("id",id).param("s",session.id()).param("n",ordinal).param("r",request.requestId()).param("step",request.maBuoc().equals("BAI_LAM")?null:request.maBuoc()).param("cap",request.cap()).param("q",question).update();
             db.sql("INSERT INTO luot_gia_su(id,phien_id,luot_id,seq,role,content,tokens) VALUES(:id,:s,:t,:n,'user',:q,:tokens)").param("id",UUID.randomUUID()).param("s",session.id()).param("t",id).param("n",ordinal*2-1).param("q",question).param("tokens",HintModel.estimate(question)).update();
             db.sql("UPDATE phien_gia_su SET token_count=token_count+:tokens WHERE id=:s").param("s",session.id()).param("tokens",HintModel.estimate(question)).update();
             append(session.id(),id,"start",Map.of("requestId",request.requestId().toString(),"maBuoc",request.maBuoc(),"cap",request.cap(),"contextVersion",version,"references",references));
