@@ -3,6 +3,16 @@
 > Tài liệu sống. Nguồn: sơ đồ khách hàng gửi (bản ảnh, nhận 2026-10-01). Phân tích: 2026-10-01.
 > Đây là **nguồn chuẩn về phạm vi** cho bản v2. Thay đổi phạm vi → sửa file này trong PR riêng, chủ repo duyệt.
 
+## 0. Chỉ đạo của chủ repo (2026-10-05)
+
+Nguyên văn: «từ bây giờ không phải xây dựng một web mà "mẫu thử nghiệm" mà đạt level product thực tế và các seed dữ liệu thực tế nhé, và dữ liệu đối tác có thì họ muốn là người dùng của họ có thể là từ lớp 10 - 12 tức là cấp 3 ở Việt Nam nhé. Người dùng có thể là giáo viên, tạo lớp mà họ quản lý và thêm học sinh ...v.v hay logic thế nào thì tùy có thể tìm hiểu sâu sắc bản LMS mà chúng ta tham khảo để hiểu rõ nhé».
+
+Hệ quả cho phạm vi:
+- **Mức sản phẩm thật**, không còn mẫu thử. Vận hành được với người dùng thật của đối tác: tài khoản, lớp, quyền, quản trị, sao lưu. Dữ liệu mẫu sát thực tế (trường, năm học, nhiều lớp, sĩ số thật) nhưng vẫn **tổng hợp**: không dữ liệu của người thật (ADR 006, bất biến 4).
+- **Người dùng là học sinh THPT lớp 10–12** của đối tác, cùng giáo viên và quản trị của trường.
+- **Giáo viên tự tạo lớp** mình quản lý và thêm học sinh. Mô hình trường, năm học, lớp, ghi danh: ADR 015 («Đề xuất», #138).
+- Lát cắt dọc P2 (một chủ đề Toán 12) vẫn là chỗ bắt đầu. Danh mục chủ đề và kỹ năng của cả ba khối có trước; bài, bộ chấm và gia sư theo từng chủ đề, theo thứ tự ở Q1.
+
 ## 1. Sơ đồ, chép lại thành chữ
 
 ```mermaid
@@ -113,10 +123,10 @@ Mỗi câu có **giả định mặc định** để đội không bị chặn. 
 
 | # | Câu hỏi | Giả định mặc định |
 | --- | --- | --- |
-| Q1 | Phạm vi chương trình: lớp nào, chủ đề nào trước? | THPT, bắt đầu Toán 12 (ôn thi TN), sau đó lớp 11, lớp 10 |
+| Q1 | Phạm vi chương trình: lớp nào, chủ đề nào trước? | **Lớp 10–12** (chủ repo, 2026-10-05). Thứ tự chủ đề chưa chốt: đề xuất hết chương 1 Toán 12, rồi đạo hàm Toán 11, rồi hàm số bậc hai Toán 10 (ADR 015, phân tích mục 8) |
 | Q2 | «Theo giai đoạn» là bước giải hay giai đoạn NB → VDC? | Cả hai: khung bước trong bài, giai đoạn mức xuyên bài |
 | Q3 | Học sinh có thấy chữ «Bloom» / mức của mình không? | Thấy 4 mức bằng lời thường; không hiện thuật ngữ Bloom |
-| Q4 | Mô hình triển khai: trường mua cho lớp (B2B), học sinh tự học (B2C), hay cả hai? | B2B qua giáo viên trước; tự học sau |
+| Q4 | Mô hình triển khai: trường mua cho lớp (B2B), học sinh tự học (B2C), hay cả hai? | **B2B qua đối tác và trường** (chủ repo, 2026-10-05): giáo viên tạo lớp, thêm học sinh. Tự học (B2C) chưa làm: cần cách xin đồng ý của cha mẹ (ADR 012) |
 | Q5 | Thiết bị chính của học sinh? | Điện thoại; web PWA, chưa làm app gốc |
 | Q6 | Học sinh nhập bài làm bằng gì: gõ công thức, chụp ảnh bài viết tay, hay cả hai? | Gõ (MathLive) trước; ảnh bài làm ở pha sau |
 | Q7 | Nhà cung cấp AI và ngân sách mỗi học sinh mỗi tháng? | Một nhà chính và một nhà dự phòng do máy chủ quản lý; có hạn mức theo lớp |
@@ -141,6 +151,7 @@ Mỗi câu có **giả định mặc định** để đội không bị chặn. 
 - Bộ GD&ĐT. Công văn 7991/BGDĐT-GDTrH ngày 17/12/2024 về kiểm tra, đánh giá cấp THCS, THPT. https://thuvienphapluat.vn/cong-van/Giao-duc/Cong-van-7991-BGDDT-GDTrH-2024-thuc-hien-kiem-tra-danh-gia-doi-voi-cap-trung-hoc-co-so-636462.aspx
 - Cấu trúc đề thi TN THPT môn Toán từ 2025. https://thuvienphapluat.vn/hoi-dap-phap-luat/cau-truc-de-thi-tot-nghiep-thpt-mon-toan-nam-2025-thay-doi-nhu-the-nao-138020660.html
 - Luật Bảo vệ dữ liệu cá nhân số 91/2025/QH15. https://english.luatvietnam.vn/dan-su/law-on-personal-data-protection-law-no-91-2025-qh15-405135-d1.html
+- Thông tư 32/2020/TT-BGDĐT, Điều lệ trường THCS, THPT (≤ 45 học sinh/lớp). https://tulieuvankien.dangcongsan.vn/he-thong-van-ban/van-ban-quy-pham-phap-luat/thong-tu-so-322020tt-bgddt-ngay-1592020-cua-bo-giao-duc-va-dao-tao-ban-hanh-dieu-le-truong-trung-hoc-co-so-truong-trung-hoc-6829 (truy cập 2026-10-05)
 - Luật Trí tuệ nhân tạo số 134/2025/QH15. https://thuvienphapluat.vn/van-ban/Cong-nghe-thong-tin/Luat-Tri-tue-nhan-tao-2025-so-134-2025-QH15-679013.aspx
 - Anderson L. W. & Krathwohl D. R. (2001). *A Taxonomy for Learning, Teaching, and Assessing.* Longman.
 - Bloom B. S. (1984). The 2 Sigma Problem. *Educational Researcher*, 13(6).
